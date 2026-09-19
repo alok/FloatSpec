@@ -59,7 +59,7 @@ as a build error. The six public definitions in
 whole-file strict coverage. Ordinary `Source:` URL comments beside the
 `Defs.lean` attributes can be opened from an editor; the attribute string
 itself is not yet a special go-to-source action. The paired conformance command
-checks all 26 annotated path/line/name anchors against the pinned Flocq
+checks all 30 annotated path/line/name anchors against the pinned Flocq
 checkout. A correct anchor does not establish that the Lean type, body, or
 proof matches Coq; those require source review and paired tests or proofs.
 
@@ -73,6 +73,12 @@ and four Lean-only checks are classified. [`Core/FLT.lean`](../src/Core/FLT.lean
 is the fourth strict-gated module: `FLT_exp` and `FLT_format` have pinned links;
 seven Lean-only checks, payloads, or aliases are classified. Instances and
 theorem statements are not covered by these definition-only gates.
+[`Core/FIX.lean`](../src/Core/FIX.lean) is the fifth strict-gated module:
+`FIX_exp` and the structural `FIX_format` have source links.
+[`Calc/Plus.lean`](../src/Calc/Plus.lean) is the sixth: `Fplus_core` and
+`Fplus` are linked, while its named Lean-only proof-contract payload is
+classified. The source-link gate cannot tell whether Lean's hand-expanded
+exact-addition branch equals Flocq's call to `Operations.Fplus`.
 
 ## 4. What the checks establish
 

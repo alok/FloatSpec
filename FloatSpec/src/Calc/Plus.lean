@@ -6,6 +6,7 @@ Helper function and theorem for computing the rounded sum of two floating-point 
 Translated from Coq file: flocq/src/Calc/Plus.v
 -/
 
+import FloatSpec.Linter.OmegaLinter
 import FloatSpec.src.Core
 import FloatSpec.src.Calc.Bracket
 import FloatSpec.src.Calc.Round
@@ -18,6 +19,9 @@ import FloatSpec.src.SimprocWP
 open Real FloatSpec.Calc.Bracket FloatSpec.Core.Digits FloatSpec.Core.Defs FloatSpec.Core.Generic_fmt
 open FloatSpec.Core.Generic_fmt
 open Std.Do
+
+set_option linter.coqSource true
+set_option warningAsError true
 
 namespace FloatSpec.Calc.Plus
 
@@ -47,6 +51,8 @@ private theorem F2R_scale_to_lower (m e₁ e : Int) (he : e ≤ e₁) :
 
     Performs addition with specified target exponent and location tracking
 -/
+-- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Calc/Plus.v#L35
+@[flocq_source "src/Calc/Plus.v" 35 "Fplus_core"]
 noncomputable def Fplus_core (m1 e1 m2 e2 e : Int) : (Int × Location) :=
   let k := e - e2
   let t :=
@@ -126,6 +132,8 @@ variable [Monotone_exp fexp]
     Adds two floats with intelligent exponent selection for precision.
     This follows the Coq Flocq implementation structure.
 -/
+-- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Calc/Plus.v#L80
+@[flocq_source "src/Calc/Plus.v" 80 "Fplus"]
 noncomputable def Fplus (f1 f2 : FlocqFloat beta) : (Int × Int × Location) :=
   let m1 := f1.Fnum
   let e1 := f1.Fexp
@@ -158,6 +166,7 @@ noncomputable def Fplus (f1 f2 : FlocqFloat beta) : (Int × Int × Location) :=
 
 /-- The proposition stated by upstream `Fplus_correct`, exposed separately for
     clients that want to name the contract. -/
+@[flocq_local "Lean-only named payload for the source Fplus_correct theorem contract"]
 def Fplus_correct_obligation (x y : FlocqFloat beta) : Prop :=
   let result := Fplus beta fexp x y
   let m := result.1

@@ -88,7 +88,7 @@ itself is not yet a go-to-source LSP action. This is an incremental coverage
 gate, not a whole-repository map or proof of source equivalence. No Rocq
 compiler or coinduction translation is attempted.
 
-The current paired run validated all 28 pinned source anchors. This confirms
+The current paired run validated all 30 pinned source anchors. This confirms
 their locations and names, not equivalence of the Lean types or bodies.
 
 `Core/FLX.lean` now has whole-file strict coverage for public definitions:
@@ -108,6 +108,13 @@ with interval assumptions and the corrected structural FIX carrier.
 the format has its own source-shaped witness. Its conversion proofs and the
 two affected FLX callers were rebuilt; this establishes the Lean contract
 and its use, not a universal equivalence with Rocq's semantics.
+
+`Calc/Plus.lean` now strict-gates its two source-facing definitions at pinned
+`Plus.v:35,80`; its named Lean theorem-contract payload is explicitly local.
+The `Fplus_core` negative-exponent counterexample remains a paired
+cross-language regression. The main `Fplus` close-magnitude branch manually
+aligns exponents in Lean where Flocq calls `Operations.Fplus`; this is a
+review target, not yet certified by the source-anchor gate.
 
 `Core/FTZ.lean` is the third strict-gated public-definition module: three
 source-shaped definitions link to `FTZ.v`, while four Lean-local Boolean
