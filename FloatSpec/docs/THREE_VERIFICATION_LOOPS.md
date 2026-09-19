@@ -80,6 +80,14 @@ field splitting, and validity. They preserve NaN payloads and signs instead of
 canonicalizing them. Inputs include unbounded negative and over-width integers:
 Flocq's input is `Z`, and its sign comparison is not machine-word wrapping.
 
+A sixteenth family executes the integer-width `Bits.Source.join_bits` and
+`split_bits` interfaces, including negative widths and invalid field ranges.
+It observes packing, splitting, and both compositions. A negative shift is a
+right shift, not a clamp to width zero. These total-function tests do not assert
+the roundtrip theorem outside its width/field hypotheses. An 836-case run
+(seed `593873`, 500 random inputs) agreed in compiled Lean, kernel reduction,
+and Rocq and generated 836 passing kernel regression equalities.
+
 Lean both executes compiled calls with `--run` and reduces them with `#reduce`;
 Rocq uses `vm_compute`. Enabling compiled execution required removing
 unnecessary `noncomputable` markers from twelve integer-only Calc definitions
@@ -91,6 +99,9 @@ kernel/Rocq-agreeing batches, it then generates
 Rocq's observed values as the expected results. Lean checks those statements
 using `decide +kernel`. Separate statements avoid the expensive normalization
 of one enormous conjunction/list equality for the more complex operations.
+The core bridge builds its imports by default. Its explicit `--skip-build`
+option is only for a known prebuilt, stable snapshot and records
+`fresh_build: false`; it must not be used to hide stale imports.
 
 A disagreement retains the exact input, all three results, the generated `.lean`
 and `.v` files, and a `replay.json` corpus. This is the feedback step: inspect

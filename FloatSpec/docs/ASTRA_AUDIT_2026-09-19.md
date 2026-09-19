@@ -226,6 +226,18 @@ HEAD. Executions use a separate detached reference checkout.
     upward rounding to nearest-even only on the Lean side and verifying the
     resulting replay case. This path runs the actual source-shaped decoders
     and operations, but is kernel/Rocq execution, not native directed rounding.
+20. **Integer-width bit interfaces have a separate execution slice:** the
+    existing source facade, unlike the root natural-width helper, preserves
+    negative widths and the corresponding right-shift/zero-power behavior.
+    All **836 cases** (seed `593873`, 500 random cases after 336 boundaries)
+    agreed in compiled Lean, kernel reduction, and Rocq, and all 836 expected
+    rows passed generated kernel proofs. Artifact:
+    `floatspec-bridge-ykxsmrng/report.json`. A targeted live harness regression
+    checks negative right-shift rounding and zero moduli; the nine non-live
+    parser/coverage tests also pass. This run reused the already built stable
+    product snapshot explicitly (`fresh_build: false`), without changing or
+    rebuilding product files underneath the concurrent native runs. The
+    operation bodies and theorem contracts were not changed.
 
 See [the three-loop guide](THREE_VERIFICATION_LOOPS.md) for commands, output
 artifacts, and current coverage. Repairs include the source-link/trust gates,

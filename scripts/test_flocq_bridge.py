@@ -75,13 +75,15 @@ class ParserTests(unittest.TestCase):
         self.assertIn(bridge.Case("div_eucl", (7, -3)), first)
         self.assertIn(bridge.Case("bits64", (-1,)), first)
         self.assertIn(bridge.Case("bits32", (1 << 32,)), first)
+        self.assertIn(bridge.Case("bit_fields", (-3, -2, 1, -3, -2, -1)), first)
 
     def test_replay_input_validation(self):
         for op, args in (("no_such_function", ()), ("power", (2,)),
                          ("power", (2, "sorry")), ("power", (2, True)),
                          ("location", (4, 2, -1)), ("round", (2, 0, 1)),
                          ("sqrt", (1, 4, 0, 0)), ("overflow", (0, 4, 0, 0)),
-                         ("overflow", (4, 4, 0, 0)), ("overflow", (3, 4, 5, 0))):
+                         ("overflow", (4, 4, 0, 0)), ("overflow", (3, 4, 5, 0)),
+                         ("bit_fields", (0, 0, 2, 0, 0, 0))):
             with self.subTest(op=op, args=args), self.assertRaises(ValueError):
                 bridge.Case(op, args)
 
@@ -143,6 +145,16 @@ class LiveTests(unittest.TestCase):
         self.assertEqual(lean[-2], [2, 1, 1, 0, 0xfff0000000000001, 1, 1, 2047, 1])
         self.assertEqual(lean[-1], [2, 0, (1 << 23) - 1, 0, (1 << 31) - 1,
                                    0, (1 << 23) - 1, 255, 1])
+
+    def test_negative_bit_widths_execute_without_natural_clamping(self):
+        flocq = Path(os.environ["FLOCQ_AUDIT_DIR"]).resolve()
+        cases = [bridge.Case("bit_fields", (-1, 2, 0, 0, -3, -3)),
+                 bridge.Case("bit_fields", (2, -1, 1, 1, 0, -1))]
+        with tempfile.TemporaryDirectory(prefix="floatspec-bit-fields-") as directory:
+            observations = bridge.execute(cases, flocq, bridge.configured_coqc(flocq), Path(directory))
+            bridge.bootstrap_lean(cases, observations["rocq"], Path(directory))
+        self.assertEqual(bridge.compare(cases, observations), [])
+        self.assertEqual(observations["lean"][0], [-2, 0, -3, 0, 0, -2, 0, -3])
 
     def test_compiled_only_mutation_is_not_hidden_by_kernel_agreement(self):
         original = bridge.compiled_source

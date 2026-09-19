@@ -30,9 +30,10 @@ ROOT = Path(__file__).resolve().parents[1]
 LEAN_LOC = [".loc_Exact", ".loc_Inexact .lt", ".loc_Inexact .eq", ".loc_Inexact .gt"]
 COQ_LOC = ["loc_Exact", "loc_Inexact Lt", "loc_Inexact Eq", "loc_Inexact Gt"]
 OPS = ("power", "div_eucl", "location", "round", "truncate", "div", "plus", "sqrt",
-       "formats", "digits", "operations", "format_calc", "overflow", "bits32", "bits64")
-ARITIES = dict(zip(OPS, (2, 2, 3, 3, 5, 6, 6, 4, 3, 2, 5, 8, 4, 1, 1), strict=True))
-WIDTHS = dict(zip(OPS, (1, 2, 3, 6, 3, 2, 2, 2, 4, 1, 13, 12, 5, 9, 9), strict=True))
+       "formats", "digits", "operations", "format_calc", "overflow", "bits32", "bits64",
+       "bit_fields")
+ARITIES = dict(zip(OPS, (2, 2, 3, 3, 5, 6, 6, 4, 3, 2, 5, 8, 4, 1, 1, 6), strict=True))
+WIDTHS = dict(zip(OPS, (1, 2, 3, 6, 3, 2, 2, 2, 4, 1, 13, 12, 5, 9, 9, 8), strict=True))
 RADIX_OPS = {"truncate", "div", "plus", "sqrt", "digits", "operations", "format_calc"}
 
 
@@ -59,6 +60,8 @@ class Case:
             prec, emax, mode, sign = self.args
             if not 0 < prec < emax or mode not in range(5) or sign not in (0, 1):
                 raise ValueError("overflow requires 0 < prec < emax, mode 0..4, sign 0..1")
+        if self.op == "bit_fields" and self.args[2] not in (0, 1):
+            raise ValueError("bit-field sign must be 0 or 1")
 
 
 def corpus(seed: int, samples: int) -> list[Case]:
@@ -105,6 +108,11 @@ def corpus(seed: int, samples: int) -> list[Case]:
                     for fmt in range(4):
                         cases.append(Case("format_calc", (base, left, exponent, right,
                                                           -exponent, -2, 3, fmt)))
+    for mw in (-3, -1, 0, 1, 2, 8, 23, 52):
+        for ew in (-2, -1, 0, 1, 2, 8, 11):
+            for sign in (0, 1):
+                for mantissa, exponent, word in ((0, 0, 0), (-3, -2, -1), (7, 5, 257)):
+                    cases.append(Case("bit_fields", (mw, ew, sign, mantissa, exponent, word)))
     rng = random.Random(seed)
     for width, fraction_width, exponent_width in ((32, 23, 8), (64, 52, 11)):
         for sign in (0, 1 << (width - 1)):
@@ -156,6 +164,9 @@ def corpus(seed: int, samples: int) -> list[Case]:
             elif op in ("bits32", "bits64"):
                 width = int(op[4:])
                 args = (rng.randrange(-(1 << width), 1 << (width + 1)),)
+            elif op == "bit_fields":
+                args = (rng.randint(-8, 64), rng.randint(-8, 16), rng.randrange(2),
+                        m1, m2, rng.randrange(-(1 << 65), 1 << 65))
             else:
                 args = (base, m1, e1, m2, e2, target, rng.randint(1, 5), rng.randrange(4))
             cases.append(Case(op, args))
@@ -170,6 +181,11 @@ def expressions(case: Case) -> tuple[str, str]:
         width = op[4:]
         return (f"FloatSpec.Test.BitsExecution.observation{width} {a[0]}",
                 f"observation{width} {a[0]}")
+    if op == "bit_fields":
+        mw, ew, _, mantissa, exponent, word = a
+        sign = "true" if case.args[2] else "false"
+        args = f"{mw} {ew} {sign} {mantissa} {exponent} {word}"
+        return f"bitFields {args}", f"bit_fields {args}"
     if op == "power":
         return (f"[Zaux.Zpower {a[0]} {a[1]}]", f"[Zpower {a[0]} {a[1]}]")
     if op == "div_eucl":
@@ -251,6 +267,7 @@ import FloatSpec.src.Calc.Div
 import FloatSpec.src.Calc.Sqrt
 import FloatSpec.src.Core.FTZ
 import FloatSpec.src.IEEE754.BinarySingleNaNSourceFacade
+import FloatSpec.src.IEEE754.BitsSourceFacade
 import FloatSpec.Test.BitsExecution
 open FloatSpec.Core FloatSpec.Calc FloatSpec.Calc.Bracket
 set_option maxRecDepth 100000
@@ -275,6 +292,13 @@ private def standard : StandardFloat → List Int
   | .S754_infinity s => [1, boolean s, 0, 0]
   | .S754_nan => [2, 0, 0, 0]
   | .S754_finite s m e => [3, boolean s, m, e]
+private def fields (p : Bool × Int × Int) : List Int := [boolean p.1, p.2.1, p.2.2]
+private def bitFields (mw ew : Int) (s : Bool) (m e word : Int) : List Int :=
+  let joined := FloatSpec.IEEE754.Bits.Source.join_bits mw ew s m e
+  let split := FloatSpec.IEEE754.Bits.Source.split_bits mw ew word
+  [joined] ++ fields split ++
+    fields (FloatSpec.IEEE754.Bits.Source.split_bits mw ew joined) ++
+    [FloatSpec.IEEE754.Bits.Source.join_bits mw ew split.1 split.2.1 split.2.2]
 """
 
 COQ_HEADER = """From Stdlib Require Import ZArith List.
@@ -321,6 +345,13 @@ Definition observation64 (bits : Z) : list Z :=
   let '(s, m, e) := Bits.split_bits 52 11 bits in
   let raw := Binary.B2FF 53 1024 x in
   full raw ++ [Bits.bits_of_b64 x; boolean s; m; e; boolean (Binary.valid_binary 53 1024 raw)].
+Definition fields (p : bool * Z * Z) : list Z :=
+  let '(s, m, e) := p in [boolean s; m; e].
+Definition bit_fields (mw ew : Z) (s : bool) (m e word : Z) : list Z :=
+  let joined := Bits.join_bits mw ew s m e in
+  let '(ss, mm, ee) := Bits.split_bits mw ew word in
+  [joined] ++ fields (ss, mm, ee) ++ fields (Bits.split_bits mw ew joined) ++
+    [Bits.join_bits mw ew ss mm ee].
 """
 
 
@@ -477,6 +508,8 @@ def main() -> None:
     parser.add_argument("--output", type=Path)
     parser.add_argument("--replay", type=Path, help="JSON list of {op, args} inputs")
     parser.add_argument("--operations", help="comma-separated test families; default is all")
+    parser.add_argument("--skip-build", action="store_true",
+                        help="reuse an explicitly prebuilt stable Lean snapshot; default builds first")
     args = parser.parse_args()
     if args.samples < 0 or args.batch_size < 1:
         parser.error("samples must be nonnegative and batch-size positive")
@@ -503,6 +536,7 @@ def main() -> None:
               "lean_version": run(["lake", "env", "lean", "--version"]).strip(),
               "rocq_version": run([coqc, "--version"]).strip(), "cases": len(cases),
               "operations": dict(Counter(case.op for case in cases)), "status": "running",
+              "fresh_build": not args.skip_build,
               "method": "Lean compiled execution and kernel reduction versus Rocq vm_compute; finite tests only",
               "compared_cases": 0, "compiled_cases": 0, "bootstrapped_lean_cases": 0, "mismatches": []}
     report_path = output / "report.json"
@@ -511,11 +545,13 @@ def main() -> None:
     started = time.monotonic()
     mismatches = []
     try:
-        build = run(["lake", "build", "FloatSpec.src.Calc.Plus", "FloatSpec.src.Calc.Div",
-                     "FloatSpec.src.Calc.Sqrt", "FloatSpec.src.Core.FTZ",
-                     "FloatSpec.src.IEEE754.BinarySingleNaNSourceFacade",
-                     "FloatSpec.Test.BitsExecution"], timeout=600)
-        (output / "lean_build.out").write_text(build)
+        if not args.skip_build:
+            build = run(["lake", "build", "FloatSpec.src.Calc.Plus", "FloatSpec.src.Calc.Div",
+                         "FloatSpec.src.Calc.Sqrt", "FloatSpec.src.Core.FTZ",
+                         "FloatSpec.src.IEEE754.BinarySingleNaNSourceFacade",
+                         "FloatSpec.src.IEEE754.BitsSourceFacade",
+                         "FloatSpec.Test.BitsExecution"], timeout=600)
+            (output / "lean_build.out").write_text(build)
         require_lean_source_snapshot(report["lean_source_sha256"])
         for offset in range(0, len(cases), args.batch_size):
             batch = cases[offset:offset + args.batch_size]
