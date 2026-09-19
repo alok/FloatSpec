@@ -170,25 +170,13 @@ theorem inbetween_spec (Hx : d ≤ x ∧ x < u) :
     simp [hx]
     exact inbetween.inbetween_Exact hxeq
 
-/-- Determine uniqueness of location
-
-    Two valid locations for the same point must be equal
--/
-@[flocq_local "Lean-only Boolean probe for the inbetween_unique theorem"]
-def inbetween_unique_check (l l' : Location) : Bool :=
-  (l == l')
-
 /-- Specification: Location is unique
 
     If x has two valid locations in `[d, u)`, they must be identical
 -/
 theorem inbetween_unique (l l' : Location)
     (Hl : inbetween d u x l) (Hl' : inbetween d u x l') :
-    ⦃⌜inbetween d u x l ∧ inbetween d u x l'⌝⦄
-    (pure (inbetween_unique_check l l') : Id Bool)
-    ⦃⇓result => ⌜result = true⌝⦄ := by
-  intro _
-  simp only [wp, PostCond.noThrow, pure, inbetween_unique_check]
+    l = l' := by
   -- Prove locations must be equal, then conclude by rewriting to `true`
   have hEq : l = l' := by
     cases Hl with
@@ -216,8 +204,7 @@ theorem inbetween_unique (l l' : Location)
             have hord : ord = ord' := by
               simpa [hcmp] using hcmp'
             simpa [hord]
-  -- Turn equality into boolean equality for the BEq derived from DecidableEq
-  simp [hEq, BEq.rfl]
+  exact hEq
 
 end BasicOperations
 
@@ -227,25 +214,12 @@ variable (d u x : ℝ)
 variable (l : Location)
 variable (Hdu : d < u)
 
-/-- Extract bounds from inbetween property
-
-    Returns whether x is within the interval bounds
--/
-@[flocq_local "Lean-only Unit carrier for the inbetween_bounds theorem"]
-def inbetween_bounds_check (h : inbetween d u x l) : Unit :=
-  -- Computation carries no data; theorem provides the bounds.
-  ()
-
 /-- Specification: Bounds are satisfied
 
     Any x with a valid location satisfies d ≤ x < u
 -/
 theorem inbetween_bounds (h : inbetween d u x l) (Hdu : d < u) :
-    ⦃⌜inbetween d u x l⌝⦄
-    (pure (inbetween_bounds_check d u x l h) : Id Unit)
-    ⦃⇓result => ⌜d ≤ x ∧ x < u⌝⦄ := by
-  intro _
-  simp only [wp, PostCond.noThrow, pure, inbetween_bounds_check]
+    d ≤ x ∧ x < u := by
   -- Discharge the bounds from the inbetween hypothesis
   cases h with
   | inbetween_Exact hxeq =>
@@ -257,27 +231,13 @@ theorem inbetween_bounds (h : inbetween d u x l) (Hdu : d < u) :
       -- Already have strict bounds, weaken left to ≤
       exact And.intro (le_of_lt hbounds.1) hbounds.2
 
-/-- Check bounds for non-exact locations
-
-    For inexact locations, x is strictly between bounds
--/
-@[flocq_local "Lean-only Unit carrier for inbetween_bounds_not_Eq"]
-def inbetween_bounds_not_Eq_check (h : inbetween d u x l)
-    (hl : l ≠ Location.loc_Exact) : Unit :=
-  -- Computation carries no data; theorem provides the strict bounds.
-  ()
-
 /-- Specification: Strict bounds for inexact locations
 
     Non-exact locations guarantee strict inequalities
 -/
 theorem inbetween_bounds_not_Eq (h : inbetween d u x l)
     (hl : l ≠ Location.loc_Exact) :
-    ⦃⌜inbetween d u x l ∧ l ≠ Location.loc_Exact⌝⦄
-    (pure (inbetween_bounds_not_Eq_check d u x l h hl) : Id Unit)
-    ⦃⇓result => ⌜d < x ∧ x < u⌝⦄ := by
-  intro _
-  simp only [wp, PostCond.noThrow, pure, inbetween_bounds_not_Eq_check]
+    d < x ∧ x < u := by
   -- Use the inbetween hypothesis and non-exactness to derive strict bounds
   cases h with
   | inbetween_Exact hxeq =>

@@ -168,11 +168,15 @@ the separate core correctness proof still has a legacy triple interface.
 
 `Calc/Bracket.lean` is the eleventh strict-gated module for public
 definitions. Five source-shaped definitions link to `Bracket.v:38,406,463,511,601`;
-twelve Lean-only theorem payloads or local proof adapters are classified.
+nine Lean-only theorem payloads or local proof adapters are classified.
 Flocq's section variables make `nb_steps` an implicit parameter to its
 stepped-location definitions, while Lean passes it explicitly. Its
-`inbetween_spec` statement now directly asserts the bracketing predicate
-under the same interval premise as the source, with its existing proof.
+`inbetween_spec`, `inbetween_unique`, `inbetween_bounds`, and
+`inbetween_bounds_not_Eq` now state direct source propositions rather than
+pure `Id` triples, with their existing proofs. Three now-unused Boolean/Unit
+probe definitions were removed. In particular, source `inbetween_unique`
+states equality of two valid locations; the old Lean statement only claimed
+that a separate Boolean equality probe returned `true`.
 Paired even-middle and odd-middle examples exercise two location branches;
 neither the link gate nor these examples inspect the `Location` and
 `inbetween` inductive declarations or certify every theorem and input.
