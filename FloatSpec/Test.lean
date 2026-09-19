@@ -1,6 +1,7 @@
 import FloatSpec.Test.BracketSource
 import FloatSpec.Test.FlocqConformance
 import FloatSpec.Test.FIXDirect
+import FloatSpec.Test.FLXDirect
 import FloatSpec.Test.NativeBridgeBits
 import FloatSpec.Test.CoqSourceLinks
 import FloatSpec.Test.ZauxSource

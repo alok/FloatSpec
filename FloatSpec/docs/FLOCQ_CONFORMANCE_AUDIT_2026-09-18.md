@@ -102,6 +102,13 @@ definitions and unused `@[spec]` annotations were removed. A CI guard keeps
 the unused tactic surface out of the float sources. Most other modules still
 contain legacy triples and have not been migrated.
 
+The next small migration is `Core/FLX.lean`'s two source-named format
+conversion theorems. At pinned `src/Core/FLX.v:69,95`, Coq states direct
+implications. Lean now states direct implications too, with positive precision
+on the generic-to-FLX direction. A focused Lean regression applies both
+theorems at their public types. Other FLX theorems still use compatibility
+triples, and typechecking does not prove the predicates extensionally match.
+
 1. The permissive `Binary754` compatibility carrier and its `binary_*`
    helpers are not equivalent to the proof-carrying `Binary.binary_float`
    operations. In particular, real-only compatibility arithmetic may lose

@@ -92,6 +92,15 @@ Coq introduces it inductively and then proves equivalence. The direct Lean
 conversion theorems are therefore simpler, but that representation choice
 still needs source-level review.
 
+The next slice is [`Core/FLX.lean`](../src/Core/FLX.lean). Flocq states
+[`FLX_format_generic`](https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Core/FLX.v#L69)
+and [`generic_format_FLX`](https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Core/FLX.v#L95)
+as implications between mathematical predicates. The Lean theorems now have
+that same *shape*, instead of wrapping the predicates in `Id` Hoare triples.
+`FLX_format_generic` still needs positive precision, as in the Flocq section;
+the reverse theorem does not. This checks the interface, not every detail of
+the predicate implementations or proof correspondence.
+
 On this Mac, the checked-in Lean `v4.34.0` toolchain makes plain `lake build`
 work. Mathlib and CSLib remain at the reviewed rc2 source pins; a future
 dependency upgrade is separate work from fixing the local compiler crash.

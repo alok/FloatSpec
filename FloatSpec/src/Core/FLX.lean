@@ -297,11 +297,9 @@ Theorem generic_format_FLX :
   forall x, FLX_format x -> generic_format beta FLX_exp x.
 -/
 theorem generic_format_FLX (beta : Int) [ValidRadix beta] (x : ℝ) :
-    ⦃⌜FLX_format prec beta x⌝⦄
-    (pure (FloatSpec.Core.Generic_fmt.generic_format beta (FLX_exp prec) x) : Id Prop)
-    ⦃⇓result => ⌜result⌝⦄ := by
+    FLX_format prec beta x →
+      FloatSpec.Core.Generic_fmt.generic_format beta (FLX_exp prec) x := by
   intro hx
-  simp only [wp, PostCond.noThrow, pure]
   rcases hx with ⟨f, rfl, hbound⟩
   by_cases hm : f.Fnum = 0
   · simp [FloatSpec.Core.Defs.F2R, hm, generic_format, scaled_mantissa,
@@ -1080,11 +1078,9 @@ Theorem FLX_format_generic :
 -/
 theorem FLX_format_generic (beta : Int) [ValidRadix beta] [Prec_gt_0 prec]
     (x : ℝ) :
-    ⦃⌜(FloatSpec.Core.Generic_fmt.generic_format beta (FLX_exp prec) x)⌝⦄
-    (pure (FLX_format prec beta x) : Id Prop)
-    ⦃⇓result => ⌜result⌝⦄ := by
+    FloatSpec.Core.Generic_fmt.generic_format beta (FLX_exp prec) x →
+      FLX_format prec beta x := by
   intro hx
-  simp only [wp, PostCond.noThrow, pure]
   exact FLX_format_generic_run (prec := prec) beta x hx
 
 /-- Compatibility specification for the exact source predicate. -/
