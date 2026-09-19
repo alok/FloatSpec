@@ -16,6 +16,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 COPYING file for more details.
 -/
 
+import FloatSpec.Linter.OmegaLinter
 import FloatSpec.src.Core.Defs
 import FloatSpec.src.Core.Generic_fmt
 import FloatSpec.src.Core.Round_NE
@@ -24,6 +25,9 @@ import Mathlib.Data.Real.Basic
 
 open Real
 open FloatSpec.Core.Generic_fmt
+
+set_option linter.coqSource true
+set_option warningAsError true
 
 namespace FloatSpec.Core.FIX
 
@@ -35,6 +39,8 @@ variable (emin : Int)
     This creates a uniform representation where the position of
     the binary/decimal point is fixed across all values.
 -/
+-- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Core/FIX.v#L38
+@[flocq_source "src/Core/FIX.v" 38 "FIX_exp"]
 def FIX_exp (_ : Int) : Int :=
   emin
 
@@ -46,14 +52,12 @@ def FIX_exp (_ : Int) : Int :=
 -/
 theorem FIX_exp_spec (e : Int) : FIX_exp emin e = emin := rfl
 
-/-- Fixed-point format predicate
-
-    A real number x is in FIX format if it can be represented
-    using the generic format with the fixed exponent function.
-    This means x = m × β^emin for some integer mantissa m.
--/
+/-- Fixed-point format predicate: a float witness whose exponent is `emin`. -/
+-- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Core/FIX.v#L34
+@[flocq_source "src/Core/FIX.v" 34 "FIX_format"]
 def FIX_format (beta : Int) [ValidRadix beta] (x : ℝ) : Prop :=
-  FloatSpec.Core.Generic_fmt.generic_format beta (FIX_exp emin) x
+  ∃ f : FloatSpec.Core.Defs.FlocqFloat beta,
+    x = FloatSpec.Core.Defs.F2R f ∧ f.Fexp = emin
 
 /-- Exponent-validity instance for the fixed exponent function. -/
 instance FIX_exp_valid :
@@ -101,13 +105,15 @@ instance exists_NE_FIX (beta : Int) [ValidRadix beta] :
 
 /-- Zero belongs to the fixed-point format. -/
 theorem FIX_format_zero (beta : Int) [ValidRadix beta] : FIX_format emin beta 0 := by
-  simpa only [FIX_format] using
-    FloatSpec.Core.Generic_fmt.generic_format_0_run beta (FIX_exp emin)
+  refine ⟨⟨0, emin⟩, ?_, rfl⟩
+  simp [FloatSpec.Core.Defs.F2R]
 
 /-- The fixed-point format is closed under negation. -/
 theorem FIX_format_neg (beta : Int) [ValidRadix beta] (x : ℝ)
     (hx : FIX_format emin beta x) : FIX_format emin beta (-x) := by
-  exact FloatSpec.Core.Generic_fmt.generic_format_opp beta (FIX_exp emin) x hx
+  rcases hx with ⟨f, hxf, hfexp⟩
+  refine ⟨⟨-f.Fnum, f.Fexp⟩, ?_, hfexp⟩
+  simp [hxf, FloatSpec.Core.Defs.F2R]
 
 /-
 Coq (FIX.v):
@@ -117,8 +123,9 @@ Theorem generic_format_FIX :
 theorem generic_format_FIX (beta : Int) [ValidRadix beta] (x : ℝ) :
     FIX_format emin beta x →
       FloatSpec.Core.Generic_fmt.generic_format beta (FIX_exp emin) x := by
-  intro hx
-  exact hx
+  rintro ⟨f, rfl, hfexp⟩
+  apply FloatSpec.Core.Generic_fmt.generic_format_canonical
+  simpa [FloatSpec.Core.Generic_fmt.canonical, FIX_exp] using hfexp
 
 /-
 Coq (FIX.v):
@@ -129,7 +136,9 @@ theorem FIX_format_generic (beta : Int) [ValidRadix beta] (x : ℝ) :
     FloatSpec.Core.Generic_fmt.generic_format beta (FIX_exp emin) x →
       FIX_format emin beta x := by
   intro hx
-  exact hx
+  obtain ⟨f, hxf, hcan⟩ :=
+    FloatSpec.Core.Generic_fmt.canonical_generic_format beta (FIX_exp emin) x hx
+  exact ⟨f, hxf, by simpa [FloatSpec.Core.Generic_fmt.canonical, FIX_exp] using hcan⟩
 
 /-
 Coq (FIX.v):
@@ -138,9 +147,14 @@ Theorem FIX_format_satisfies_any :
 -/
 theorem FIX_format_satisfies_any (beta : Int) [ValidRadix beta] :
     FloatSpec.Core.Generic_fmt.satisfies_any (fun y => FIX_format emin beta y) := by
-  -- Immediate from the generic format version
-  simpa [FIX_format]
-    using FloatSpec.Core.Generic_fmt.generic_format_satisfies_any (beta := beta) (fexp := FIX_exp emin)
+  apply FloatSpec.Core.Generic_fmt.satisfies_any_eq
+    (F₁ := fun y => FloatSpec.Core.Generic_fmt.generic_format beta (FIX_exp emin) y)
+  · intro x
+    constructor
+    · exact FIX_format_generic (emin := emin) beta x
+    · exact generic_format_FIX (emin := emin) beta x
+  · exact FloatSpec.Core.Generic_fmt.generic_format_satisfies_any
+      (beta := beta) (fexp := FIX_exp emin)
 
 /-- Coq (FIX.v):
 Theorem ulp_FIX : forall x, ulp beta FIX_exp x = bpow emin.

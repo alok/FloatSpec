@@ -29,6 +29,7 @@
 | Test evaluation trust | `native_decide` delegates reduction to the native evaluator, adding a trust boundary. | Eight existing `FloatSpec/Test/LeanFloat.lean` examples used it even though their small propositions can be kernel-reduced. | Changed each to `decide` and compiled the module after each edit. The scanner now flags `native_decide`, with a failing fixture. |
 | Legacy closure checks | Flocq's structural closure lives in `satisfies_any`. | `*_format_0/opp/abs_check` return only unrelated `Ztrunc` identities, while their prose claimed format membership/closure. | Corrected the prose and removed unused format-membership premises from these local arithmetic regressions. The actual zero/negation/rounding proofs are in the repaired `*_format_satisfies_any` contracts. |
 | `Core.FTZ.FTZ_format` | `src/Core/FTZ.v:36-41` requires an explicit finite float witness, normalized nonzero mantissa, and minimum exponent. `FTZ_format_generic` and `generic_format_FTZ` are separate source theorems at lines 106 and 80. | Lean defined `FTZ_format` to be `generic_format beta FTZ_exp`, so both conversion theorems were definitional restatements and the source carrier was absent. | Replaced the definition with the source-shaped existential; conversion theorems are direct implications. A single named `FTZ_format_iff_generic` proof debt now supports both directions and downstream generic-grid callers. Independent zero-witness and direct `FLXN_format_FTZ` regressions check the structural carrier. The conversion itself is **unproved**. |
+| `Core.FIX.FIX_format` | `src/Core/FIX.v:34-38` requires a float witness with exponent exactly `emin`; `generic_format_FIX` and `FIX_format_generic` are separate conversions. | Lean defined `FIX_format` as `generic_format beta FIX_exp`, making the conversions identity proofs and hiding the source witness. | Replaced it with the structural witness; both directions use canonical-float lemmas. Direct zero/negation proofs and a witness-construction regression test the carrier. No new proof debt was needed. |
 | ErrorBound | This is proposed VCFloat integration, not a Flocq module. | README called six empty files an implemented layer. | README and aggregator now explicitly say they are empty import scaffolding. |
 
 ## Executable evidence
@@ -87,7 +88,7 @@ itself is not yet a go-to-source LSP action. This is an incremental coverage
 gate, not a whole-repository map or proof of source equivalence. No Rocq
 compiler or coinduction translation is attempted.
 
-The current paired run validated all 26 pinned source anchors. This confirms
+The current paired run validated all 28 pinned source anchors. This confirms
 their locations and names, not equivalence of the Lean types or bodies.
 
 `Core/FLX.lean` now has whole-file strict coverage for public definitions:
@@ -99,6 +100,14 @@ Its `generic_format_FLXN` and `FLXN_format_generic` theorems now have direct
 implication types matching the pinned source statements at `FLX.v:142,156`.
 The existing proofs and downstream callers typecheck without another debt;
 this is a contract-shape check, not full semantic equivalence.
+`FIX_format_FLX` and `FLX_format_FIX` also have direct implication types,
+with interval assumptions and the corrected structural FIX carrier.
+
+`Core/FIX.lean` is now strict-gated for its two public definitions,
+`FIX_exp` and `FIX_format`, at pinned `FIX.v:38,34`. Unlike the old alias,
+the format has its own source-shaped witness. Its conversion proofs and the
+two affected FLX callers were rebuilt; this establishes the Lean contract
+and its use, not a universal equivalence with Rocq's semantics.
 
 `Core/FTZ.lean` is the third strict-gated public-definition module: three
 source-shaped definitions link to `FTZ.v`, while four Lean-local Boolean

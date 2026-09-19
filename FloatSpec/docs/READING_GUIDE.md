@@ -99,12 +99,15 @@ two IEEE callers were updated accordingly. Its former Boolean checks proved
 truncation identities rather than FIX-format membership, so they were removed
 and replaced by direct zero-membership and negation-closure facts. Other
 modules still contain legacy triples; this one example does not certify them.
-Lean's `FIX_format` remains a definition in terms of `generic_format`, whereas
-Coq introduces it inductively and then proves equivalence. The direct Lean
-conversion theorems are therefore simpler, but that representation choice
-still needs source-level review.
 
-The next slice is [`Core/FLX.lean`](../src/Core/FLX.lean). Flocq states
+Lean's [`FIX_format`](https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Core/FIX.v#L34)
+now requires a float witness with exponent exactly `emin`, as in the
+pinned source. Its two conversion theorems genuinely cross between that
+witness and `generic_format`, using the existing canonical-float lemmas.
+Zero and negation closure are proved directly from the witness. This removes
+the former definitional shortcut without adding a proof debt.
+
+Another reviewed slice is [`Core/FLX.lean`](../src/Core/FLX.lean). Flocq states
 [`FLX_format_generic`](https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Core/FLX.v#L69)
 and [`generic_format_FLX`](https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Core/FLX.v#L95)
 as implications between mathematical predicates. The Lean theorems now have
@@ -122,6 +125,15 @@ goes from the normal witness to the generic format, and
 reconstructs the witness under positive precision. Both existing proofs
 typecheck; this still does not establish a theorem-by-theorem equivalence
 audit of all of `FLX.lean`.
+The bounded-magnitude conversions
+[`FIX_format_FLX`](https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Core/FLX.v#L55)
+and
+[`FLX_format_FIX`](https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Core/FLX.v#L121)
+also now state direct implications. They cross the newly structural
+`FIX_format` and `FLX_format` witnesses; the first proof constructs a
+fixed-exponent witness, while the second passes through the proved generic
+conversions. Their assumptions still include the source interval
+`β^(e-1) ≤ |x| ≤ β^e`.
 
 The FTZ format shows why the distinction matters. Pinned Flocq
 [`FTZ_format`](https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Core/FTZ.v#L36)

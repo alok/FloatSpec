@@ -486,13 +486,10 @@ Lean (spec): If |x| lies in [β^(e-1), β^e] and x is in FLX_format,
 then x is in FIX_format with minimal exponent (e - prec).
 -/
 theorem FIX_format_FLX (beta : Int) [ValidRadix beta] (x : ℝ) (e : Int) :
-    ⦃⌜(beta : ℝ) ^ (e - 1) ≤ |x| ∧ |x| ≤ (beta : ℝ) ^ e ∧
-      FLX_format prec beta x⌝⦄
-    (pure (FloatSpec.Core.FIX.FIX_format (emin := e - prec) beta x) : Id Prop)
-    ⦃⇓result => ⌜result⌝⦄ := by
-  intro hpre
-  simp only [wp, PredTrans.apply, PostCond.noThrow, Id.run, pure, PredTrans.pure]
-  rcases hpre with ⟨hlow, _hupp, f, hxf, hm⟩
+    ((beta : ℝ) ^ (e - 1) ≤ |x| ∧ |x| ≤ (beta : ℝ) ^ e) →
+      FLX_format prec beta x →
+        FloatSpec.Core.FIX.FIX_format (emin := e - prec) beta x := by
+  rintro ⟨hlow, _hupp⟩ ⟨f, hxf, hm⟩
   have hprec : 0 ≤ prec := by
     by_contra hp
     exact (not_lt_of_ge (abs_nonneg f.Fnum)) (by
@@ -510,17 +507,8 @@ theorem FIX_format_FLX (beta : Int) [ValidRadix beta] (x : ℝ) (e : Int) :
     (beta := beta) f.Fnum f.Fexp e prec ValidRadix.valid hm'
       (by simpa [hxf] using hlow)
   let m' := f.Fnum * beta ^ (f.Fexp - e + prec).natAbs
-  have hgeneric :
-      FloatSpec.Core.Generic_fmt.generic_format beta
-        (FloatSpec.Core.FIX.FIX_exp (emin := e - prec))
-        (F2R (FlocqFloat.mk m' (e - prec) : FlocqFloat beta)) := by
-    exact (generic_format_F2R
-      (beta := beta) (fexp := FloatSpec.Core.FIX.FIX_exp (emin := e - prec))
-      m' (e - prec)) ⟨ValidRadix.valid, by
-        intro _
-        simp [cexp, FloatSpec.Core.FIX.FIX_exp]⟩
   rw [hxf, hnorm]
-  simpa [FloatSpec.Core.FIX.FIX_format, m'] using hgeneric
+  exact ⟨⟨m', e - prec⟩, rfl, rfl⟩
 
 /-
 Coq (FLX.v):
@@ -535,14 +523,10 @@ with minimal exponent (e - prec), then x is in FLX_format.
 -/
 theorem FLX_format_FIX (beta : Int) [ValidRadix beta] [Prec_gt_0 prec]
     (x : ℝ) (e : Int) :
-    ⦃⌜(beta : ℝ) ^ (e - 1) ≤ |x| ∧ |x| ≤ (beta : ℝ) ^ e ∧
-      FloatSpec.Core.FIX.FIX_format (emin := e - prec) beta x⌝⦄
-    (pure (FLX_format prec beta x) : Id Prop)
-    ⦃⇓result => ⌜result⌝⦄ := by
-  intro hpre
-  simp only [wp, PostCond.noThrow, Id.run, pure, PredTrans.pure]
-  -- Unpack hypotheses
-  rcases hpre with ⟨_hlb, hupp, hx_fix⟩
+    ((beta : ℝ) ^ (e - 1) ≤ |x| ∧ |x| ≤ (beta : ℝ) ^ e) →
+      FloatSpec.Core.FIX.FIX_format (emin := e - prec) beta x →
+        FLX_format prec beta x := by
+  rintro ⟨_hlb, hupp⟩ hx_fix
   -- Use inclusion lemma with fexp1 := FIX_exp (emin := e - prec), fexp2 := FLX_exp
   -- We only need a pointwise inequality for all e' ≤ e, which holds by arithmetic.
   have hle_all : ∀ e' : Int,
@@ -560,7 +544,8 @@ theorem FLX_format_FIX (beta : Int) [ValidRadix beta] [Prec_gt_0 prec]
         (fexp1 := FloatSpec.Core.FIX.FIX_exp (emin := e - prec))
         (fexp2 := FLX_exp prec)
         (e2 := e))
-        ValidRadix.valid hle_all x hupp hx_fix
+        ValidRadix.valid hle_all x hupp
+        (FloatSpec.Core.FIX.generic_format_FIX (emin := e - prec) beta x hx_fix)
   exact FLX_format_generic_run (prec := prec) beta x hrun
 
 end FloatSpec.Core.FLX
