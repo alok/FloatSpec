@@ -129,6 +129,12 @@ differences nonnegative, and the existing Lean value-preservation proof
 typechecks. A paired reverse-exponent alignment example checks `(1,0)` and
 `(1,-1)` produce `(2,1,-1)` on both sides. This is a targeted comparison,
 not a full differential audit of every operation.
+`Falign_spec` (`Operations.v:44`) and `Falign_spec_exp` (`Operations.v:59`)
+now have direct proposition types and retain their existing Lean proofs.
+The former's `1 < beta` premise is carried by Lean's `ValidRadix beta` type,
+not an additional unproved assumption. The same-exponent results at
+`Operations.v:111,143` now have direct equality types too. Other operation
+theorem interfaces remain legacy triples with downstream callers.
 
 `Core/FTZ.lean` is the third strict-gated public-definition module: three
 source-shaped definitions link to `FTZ.v`, while four Lean-local Boolean

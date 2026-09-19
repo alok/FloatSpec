@@ -88,6 +88,12 @@ why they lack a standalone Coq definition. Paired examples exercise
 `Operations.Fplus` on close magnitudes and `Falign` when the second exponent
 is lower, but six correct source links and two examples do not certify all
 operation inputs.
+Its two source alignment theorems, `Falign_spec` and `Falign_spec_exp`, now
+state ordinary propositions rather than pure `Id` triples. The radix
+premise is already enforced by `ValidRadix beta`; the existing proofs
+typecheck without a new trust obligation. The same-exponent addition and
+subtraction statements likewise have direct equality types; other primitive
+operation proofs retain their legacy callers and triples for now.
 
 ## 4. What the checks establish
 

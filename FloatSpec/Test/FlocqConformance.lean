@@ -28,6 +28,21 @@ example :
       (2, 1, -1) := by
   rfl
 
+example (beta : Int) [ValidRadix beta]
+    (x y : FloatSpec.Core.Defs.FlocqFloat beta) :
+    FloatSpec.Calc.Operations.Falign_exp beta x y = min x.Fexp y.Fexp :=
+  FloatSpec.Calc.Operations.Falign_spec_exp beta x y
+
+example (beta : Int) [ValidRadix beta] (m1 m2 e : Int) :
+    FloatSpec.Calc.Operations.Fplus_same_exp beta m1 m2 e =
+      FloatSpec.Core.Defs.FlocqFloat.mk (m1 + m2) e :=
+  FloatSpec.Calc.Operations.Fplus_same_exp_spec beta m1 m2 e
+
+example (beta : Int) [ValidRadix beta] (m1 m2 e : Int) :
+    FloatSpec.Calc.Operations.Fminus_same_exp beta m1 m2 e =
+      FloatSpec.Core.Defs.FlocqFloat.mk (m1 - m2) e :=
+  FloatSpec.Calc.Operations.Fminus_same_exp_spec beta m1 m2 e
+
 example :
     FloatSpec.Calc.Plus.Fplus 2 (FloatSpec.Core.FIX.FIX_exp 0)
       ⟨1, 0⟩ ⟨1, 1⟩ =

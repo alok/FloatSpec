@@ -51,15 +51,12 @@ def Falign (f1 f2 : FlocqFloat beta) : (Int × Int × Int) :=
     but are expressed with a common exponent
 -/
 theorem Falign_spec (f1 f2 : FlocqFloat beta) :
-    ⦃⌜1 < beta⌝⦄
-    (pure (Falign beta f1 f2) : Id _)
-    ⦃⇓result => let (m1, m2, e) := result
-                ⌜(F2R f1) = (F2R (FlocqFloat.mk m1 e : FlocqFloat beta)) ∧
-                (F2R f2) = (F2R (FlocqFloat.mk m2 e : FlocqFloat beta))⌝⦄ := by
-  intro hbeta
-  -- Unfold Falign and simplify the wp goal
+    let (m1, m2, e) := Falign beta f1 f2
+    F2R f1 = F2R (FlocqFloat.mk m1 e : FlocqFloat beta) ∧
+      F2R f2 = F2R (FlocqFloat.mk m2 e : FlocqFloat beta) := by
+  have hbeta : 1 < beta := ValidRadix.valid
   unfold Falign
-  simp only [pure, PostCond.noThrow, Id.run, F2R]
+  simp only [F2R]
   -- Split cases based on which exponent is smaller
   by_cases hle : f1.Fexp ≤ f2.Fexp
   · -- Case: e1 ≤ e2, common exponent is e1
@@ -68,7 +65,7 @@ theorem Falign_spec (f1 f2 : FlocqFloat beta) :
     have hpos : 0 < beta := lt_trans (by decide : (0:Int) < 1) hbeta_pos
     have hdiff_nonneg : 0 ≤ f2.Fexp - f1.Fexp := Int.sub_nonneg.mpr hle
     constructor
-    · rfl  -- First float unchanged since we use its exponent
+    · trivial  -- First float unchanged since we use its exponent
     · -- Second float: f2.Fnum * beta^e2 = (f2.Fnum * beta^(e2-e1)) * beta^e1
       -- Simplify tuple projection
       show (f2.Fnum : ℝ) * (beta : ℝ) ^ f2.Fexp =
@@ -102,7 +99,7 @@ theorem Falign_spec (f1 f2 : FlocqFloat beta) :
       -- Now rhs is ↑f1.Fnum * ↑beta ^ (f1.Fexp - f2.Fexp) * ↑beta ^ f2.Fexp
       -- Reassociate and combine exponents
       rw [mul_assoc, ← zpow_add₀ hβne, sub_add_cancel]
-    · rfl  -- Second float unchanged since we use its exponent
+    · trivial  -- Second float unchanged since we use its exponent
 
 /-- Extract aligned exponent
 
@@ -118,10 +115,7 @@ def Falign_exp (f1 f2 : FlocqFloat beta) : Int :=
     The common exponent is the minimum of the two original exponents
 -/
 theorem Falign_spec_exp (f1 f2 : FlocqFloat beta) :
-    ⦃⌜True⌝⦄
-    (pure (Falign_exp beta f1 f2) : Id _)
-    ⦃⇓result => ⌜result = min f1.Fexp f2.Fexp⌝⦄ := by
-  intro _
+    Falign_exp beta f1 f2 = min f1.Fexp f2.Fexp := by
   unfold Falign_exp
   cases f1 with
   | mk m1 e1 =>
@@ -129,10 +123,10 @@ theorem Falign_spec_exp (f1 f2 : FlocqFloat beta) :
     | mk m2 e2 =>
       by_cases hle : e1 ≤ e2
       · -- exponent chosen is e1, which is min when e1 ≤ e2
-        simp [Falign, hle, pure]
+        simp [Falign, hle]
       · -- exponent chosen is e2, which is min when e2 ≤ e1
         have hle' : e2 ≤ e1 := le_of_lt (lt_of_not_ge hle)
-        simp [Falign, hle, pure, min_eq_right hle']
+        simp [Falign, hle, min_eq_right hle']
 
 end FloatAlignment
 
@@ -319,13 +313,10 @@ def Fplus_same_exp (m1 m2 e : Int) : FlocqFloat beta :=
     Adding floats with identical exponents just adds mantissas
 -/
 theorem Fplus_same_exp_spec (m1 m2 e : Int) :
-    ⦃⌜True⌝⦄
-    (pure (Fplus_same_exp beta m1 m2 e) : Id _)
-    ⦃⇓result => ⌜result = FlocqFloat.mk (m1 + m2) e⌝⦄ := by
-  intro _
+    Fplus_same_exp beta m1 m2 e = FlocqFloat.mk (m1 + m2) e := by
   unfold Fplus_same_exp Fplus
   -- With equal exponents, alignment keeps mantissas unchanged
-  simp [Falign, pure, Int.natAbs_zero, pow_zero, mul_one]
+  simp [Falign, Int.natAbs_zero, pow_zero, mul_one]
 
 /-- Extract exponent of sum
 
@@ -486,13 +477,10 @@ def Fminus_same_exp (m1 m2 e : Int) : FlocqFloat beta :=
     Subtracting floats with identical exponents just subtracts mantissas
 -/
 theorem Fminus_same_exp_spec (m1 m2 e : Int) :
-    ⦃⌜True⌝⦄
-    (pure (Fminus_same_exp beta m1 m2 e) : Id _)
-    ⦃⇓result => ⌜result = FlocqFloat.mk (m1 - m2) e⌝⦄ := by
-  intro _
+    Fminus_same_exp beta m1 m2 e = FlocqFloat.mk (m1 - m2) e := by
   unfold Fminus_same_exp Fminus Fplus
   -- With equal exponents, alignment keeps mantissas unchanged; then apply negation
-  simp [Fopp, Falign, pure, Int.natAbs_zero, pow_zero, mul_one,
+  simp [Fopp, Falign, Int.natAbs_zero, pow_zero, mul_one,
     sub_eq_add_neg]
 
 end FloatSubtraction
