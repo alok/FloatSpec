@@ -9,6 +9,7 @@ Translated from Coq file: flocq/src/Calc/Plus.v
 import FloatSpec.Linter.OmegaLinter
 import FloatSpec.src.Core
 import FloatSpec.src.Calc.Bracket
+import FloatSpec.src.Calc.Operations
 import FloatSpec.src.Calc.Round
 import FloatSpec.src.Core.Digits
 import FloatSpec.src.Core.Generic_fmt
@@ -158,11 +159,8 @@ noncomputable def Fplus (f1 f2 : FlocqFloat beta) : (Int × Int × Location) :=
           Fplus_core beta m1 e1 m2 e2 e
       (m, e, l)
     else
-      -- When |p1 - p2| < 2, compute exact sum at minimum exponent
-      let e_min := min e1 e2
-      let result_m := m1 * beta ^ Int.natAbs (e1 - e_min) +
-                      m2 * beta ^ Int.natAbs (e2 - e_min)
-      (result_m, e_min, Location.loc_Exact)
+      let sum := FloatSpec.Calc.Operations.Fplus beta f1 f2
+      (sum.Fnum, sum.Fexp, Location.loc_Exact)
 
 /-- The proposition stated by upstream `Fplus_correct`, exposed separately for
     clients that want to name the contract. -/
@@ -293,25 +291,20 @@ theorem Fplus_correct (x y : FlocqFloat beta) :
             simp [Fplus, hm1, hm2, p1, p2, hp, e, he1]
           rw [Fplus_correct_obligation, hresult]
           simpa [z] using And.intro (Or.inr he_cexp) hcore
-      · let e : Int := min e1 e2
-        have he1 : e ≤ e1 := min_le_left _ _
-        have he2 : e ≤ e2 := min_le_right _ _
-        have hs1 := F2R_scale_to_lower (beta := beta) m1 e1 e he1
-        have hs2 := F2R_scale_to_lower (beta := beta) m2 e2 e he2
+      · let sum : FlocqFloat beta := FloatSpec.Calc.Operations.Fplus beta
+          (FlocqFloat.mk m1 e1) (FlocqFloat.mk m2 e2)
+        have hsum : F2R sum =
+            F2R (FlocqFloat.mk m1 e1 : FlocqFloat beta) +
+              F2R (FlocqFloat.mk m2 e2 : FlocqFloat beta) := by
+          have h := (FloatSpec.Calc.Operations.F2R_plus (beta := beta)
+            (FlocqFloat.mk m1 e1) (FlocqFloat.mk m2 e2)) hβ
+          simpa [sum, wp, PostCond.noThrow, pure] using h
         simp only [Fplus_correct_obligation, Fplus, hm1, hm2, ite_false, p1, p2,
-          hp, e]
+          hp]
         constructor
         · exact Or.inl trivial
         · apply inbetween.inbetween_Exact
-          simp only [F2R, Int.cast_add, Int.cast_mul, Int.cast_pow]
-          have hs1' : ((m1 : ℝ) * (beta : ℝ) ^ Int.natAbs (e1 - e)) *
-              (beta : ℝ) ^ e = (m1 : ℝ) * (beta : ℝ) ^ e1 := by
-            simpa [F2R, Int.cast_mul, Int.cast_pow] using hs1
-          have hs2' : ((m2 : ℝ) * (beta : ℝ) ^ Int.natAbs (e2 - e)) *
-              (beta : ℝ) ^ e = (m2 : ℝ) * (beta : ℝ) ^ e2 := by
-            simpa [F2R, Int.cast_mul, Int.cast_pow] using hs2
-          rw [← hs1', ← hs2']
-          ring
+          simpa [sum, F2R] using hsum.symm
 
 end MainAddition
 

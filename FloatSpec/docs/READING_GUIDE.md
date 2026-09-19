@@ -77,8 +77,10 @@ theorem statements are not covered by these definition-only gates.
 `FIX_exp` and the structural `FIX_format` have source links.
 [`Calc/Plus.lean`](../src/Calc/Plus.lean) is the sixth: `Fplus_core` and
 `Fplus` are linked, while its named Lean-only proof-contract payload is
-classified. The source-link gate cannot tell whether Lean's hand-expanded
-exact-addition branch equals Flocq's call to `Operations.Fplus`.
+classified. The main `Fplus` close-magnitude branch now uses the same
+`Operations.Fplus` decomposition as the source; one paired exact-addition
+example checks that branch. This does not review every input or certify the
+separate `Operations.Fplus` implementation.
 
 ## 4. What the checks establish
 
