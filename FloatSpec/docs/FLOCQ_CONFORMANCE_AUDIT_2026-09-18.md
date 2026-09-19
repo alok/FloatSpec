@@ -89,7 +89,7 @@ itself is not yet a go-to-source LSP action. This is an incremental coverage
 gate, not a whole-repository map or proof of source equivalence. No Rocq
 compiler or coinduction translation is attempted.
 
-The current paired run validated all 46 pinned source anchors. This confirms
+The current paired run validated all 48 pinned source anchors. This confirms
 their locations and names, not equivalence of the Lean types or bodies.
 
 `Core/FLX.lean` now has whole-file strict coverage for public definitions:
@@ -153,6 +153,18 @@ the `inbetween_int_DN_sign`, `inbetween_float_DN_sign`, `inbetween_int_UP`,
 and `inbetween_float_UP` statement types now reference source-named choice
 definitions instead of their duplicate primed helpers; their existing Lean
 proofs close after explicit unfolding of the identical match branches.
+
+`Calc/Div.lean` is the ninth strict-gated public-definition module:
+`Fdiv_core` and `Fdiv` point to `Div.v:62,124`; two Lean-only helpers carry
+explicit reasons. The source `Fdiv_correct` at `Div.v:132` states a direct
+mathematical conjunction for the computed quotient. Its Lean type no longer
+wraps a pure computation in an `Id` Hoare triple or repeats the source radix
+bound already provided by `ValidRadix beta`; the existing proof closes
+and the SingleNaN caller consumes the conjunction directly. Paired
+`4 / 2 = 2` examples exercise both core and top-level divisions; a `1 / 2`
+core example checks the halfway location. These
+tests do not establish equivalence on all input mantissas/exponents, and
+the separate core correctness proof still has a legacy triple interface.
 
 `Core/FTZ.lean` is the third strict-gated public-definition module: three
 source-shaped definitions link to `FTZ.v`, while four Lean-local Boolean

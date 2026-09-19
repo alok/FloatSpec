@@ -4148,12 +4148,12 @@ private theorem SFdiv_core_binary_correct_data {prec emax : Int}
     FloatSpec.Core.Float_prop.F2R_gt_0
       (beta := 2) (f := Y) (by norm_num) (by simpa [Y] using hmy_pos)
   have hdiv := FloatSpec.Calc.Div.Fdiv_correct
-    (beta := 2) (fexp := fexp) X Y (by norm_num) hx_pos hy_pos
+    (beta := 2) (fexp := fexp) X Y hx_pos hy_pos
   have hbetween :
       FloatSpec.Calc.Bracket.inbetween_float 2 result.1 result.2.1
         quotient result.2.2 := by
     dsimp [result, SFdiv_core_binary, quotient, X, Y, fexp]
-    exact (hdiv ⟨hx_pos, hy_pos⟩).2
+    exact hdiv.2
   let d1 := FloatSpec.Core.Digits.Zdigits 2 mx
   let d2 := FloatSpec.Core.Digits.Zdigits 2 my
   let e' := (d1 + ex) - (d2 + ey)

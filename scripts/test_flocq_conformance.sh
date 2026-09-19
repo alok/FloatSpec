@@ -55,7 +55,7 @@ fi
 
 cat >"$scratch/FloatSpecConformance.v" <<'COQ'
 From Stdlib Require Import ZArith.
-From Flocq Require Import Core.Zaux Core.Defs Core.FIX Calc.Operations Calc.Plus Calc.Round IEEE754.Binary Pff.Pff2FlocqAux.
+From Flocq Require Import Core.Zaux Core.Defs Core.FIX Calc.Operations Calc.Plus Calc.Round Calc.Div IEEE754.Binary Pff.Pff2FlocqAux.
 
 Open Scope Z_scope.
 
@@ -81,6 +81,24 @@ Example fplus_close_magnitudes :
     (let beta := Build_radix 2 eq_refl in
       Plus.Fplus beta (FIX_exp 0) (Float beta 1 0) (Float beta 1 1)) =
     (3, 0, SpecFloat.loc_Exact).
+Proof. vm_compute. reflexivity. Qed.
+
+Example fdiv_core_exact_quotient :
+    (let beta := Build_radix 2 eq_refl in
+      Div.Fdiv_core beta 4 0 2 0 0) =
+    (2, SpecFloat.loc_Exact).
+Proof. vm_compute. reflexivity. Qed.
+
+Example fdiv_core_halfway_location :
+    (let beta := Build_radix 2 eq_refl in
+      Div.Fdiv_core beta 1 0 2 0 0) =
+    (0, SpecFloat.loc_Inexact Eq).
+Proof. vm_compute. reflexivity. Qed.
+
+Example fdiv_exact_quotient :
+    (let beta := Build_radix 2 eq_refl in
+      Div.Fdiv (FIX_exp 0) (Float beta 4 0) (Float beta 2 0)) =
+    (2, 0, SpecFloat.loc_Exact).
 Proof. vm_compute. reflexivity. Qed.
 
 Example truncate_aux_negative_scale :

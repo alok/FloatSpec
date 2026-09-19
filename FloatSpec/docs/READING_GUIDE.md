@@ -59,7 +59,7 @@ as a build error. The six public definitions in
 whole-file strict coverage. Ordinary `Source:` URL comments beside the
 `Defs.lean` attributes can be opened from an editor; the attribute string
 itself is not yet a special go-to-source action. The paired conformance command
-checks all 46 annotated path/line/name anchors against the pinned Flocq
+checks all 48 annotated path/line/name anchors against the pinned Flocq
 checkout. A correct anchor does not establish that the Lean type, body, or
 proof matches Coq; those require source review and paired tests or proofs.
 
@@ -123,6 +123,20 @@ used `truncate_at_exp` and stated only a trivial wrapper theorem; it has
 been removed because it was not a source contract.
 The SingleNaN theorem unfolds its chosen implementation, so it is not an
 independent proof that Flocq's iterative shift algorithm is equivalent.
+
+[`Calc/Div.lean`](../src/Calc/Div.lean) is the ninth strict-gated module:
+`Fdiv_core` and `Fdiv` have pinned source links; two Lean-only magnitude or
+midpoint helpers are classified. The source
+[`Fdiv_correct`](https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Calc/Div.v#L132)
+states a proposition about the resulting quotient and its location. Lean's
+theorem now has that direct shape, and its IEEE caller consumes the conjunction
+without running a pure `Id` triple. The theorem gets the radix bound from
+`ValidRadix beta`, as the source gets it
+from its `radix` type.
+The lower-level division correctness
+triple and other older callers remain as they were. Paired exact-quotient
+and halfway-location examples cover two core cases and one top-level
+operation, not arbitrary division.
 
 ## 4. What the checks establish
 

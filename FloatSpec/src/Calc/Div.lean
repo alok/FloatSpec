@@ -7,6 +7,7 @@ Translated from Coq file: flocq/src/Calc/Div.v
 -/
 
 import FloatSpec.src.Core.Zaux
+import FloatSpec.Linter.CoqSourceLinter
 import FloatSpec.src.Core.Raux
 import FloatSpec.src.Core.Defs
 import FloatSpec.src.Core.Generic_fmt
@@ -21,6 +22,9 @@ open Real FloatSpec.Calc.Bracket FloatSpec.Core.Defs FloatSpec.Core.Digits Float
 open FloatSpec.Core.Generic_fmt FloatSpec.Core.Raux
 open Std.Do
 
+set_option linter.coqSource true
+set_option warningAsError true
+
 namespace FloatSpec.Calc.Div
 
 variable (beta : Int) [ValidRadix beta]
@@ -32,6 +36,7 @@ section MagnitudeBounds
 
     Calculates the exponent range for the quotient of two floats
 -/
+@[flocq_local "Lean-only projection of source mag_div_F2R bound; not a source operation"]
 def mag_div_F2R_compute (m1 e1 m2 e2 : Int) : Int :=
   let d1 := Zdigits beta m1
   let d2 := Zdigits beta m2
@@ -87,6 +92,7 @@ section CoreDivision
 
     Performs division by adjusting mantissas to achieve desired exponent
 -/
+@[flocq_local "Lean-only real-midpoint comparison payload for auditing Fdiv_core"]
 noncomputable def Fdiv_core_from_real_midpoint_payload
     (m1 e1 m2 e2 e : Int) : (Int × Location) :=
   (
@@ -108,6 +114,8 @@ noncomputable def Fdiv_core_from_real_midpoint_payload
     (q, l))
 
 /-- Exact executable translation of FLoCq `Fdiv_core`. -/
+-- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Calc/Div.v#L62
+@[flocq_source "src/Calc/Div.v" 62 "Fdiv_core"]
 noncomputable def Fdiv_core (m1 e1 m2 e2 e : Int) : (Int × Location) :=
   let (m1', m2') :=
     if e ≤ e1 - e2 then
@@ -404,6 +412,8 @@ section MainDivision
 
     Computes the quotient of two floats with automatic exponent selection
 -/
+-- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Calc/Div.v#L124
+@[flocq_source "src/Calc/Div.v" 124 "Fdiv"]
 noncomputable def Fdiv (x y : FlocqFloat beta) : (Int × Int × Location) :=
   let m1 := x.Fnum
   let e1 := x.Fexp
@@ -421,15 +431,13 @@ noncomputable def Fdiv (x y : FlocqFloat beta) : (Int × Int × Location) :=
     The division result accurately represents the quotient with proper location
 -/
 theorem Fdiv_correct (x y : FlocqFloat beta)
-    (Hβ : 1 < beta)
     (Hx : 0 < (F2R x)) (Hy : 0 < (F2R y)) :
-    ⦃⌜0 < (F2R x) ∧ 0 < (F2R y)⌝⦄
-    (pure (Fdiv beta fexp x y) : Id _)
-    ⦃⇓result => let (m, e, l) := result
-                ⌜e ≤ cexp beta fexp ((F2R x) / (F2R y)) ∧
-                  inbetween_float beta m e ((F2R x) / (F2R y)) l⌝⦄ := by
-  intro hpre
-  rcases hpre with ⟨hx_pos, hy_pos⟩
+    let (m, e, l) := Fdiv beta fexp x y
+    e ≤ cexp beta fexp ((F2R x) / (F2R y)) ∧
+      inbetween_float beta m e ((F2R x) / (F2R y)) l := by
+  have hx_pos := Hx
+  have hy_pos := Hy
+  have Hβ : 1 < beta := ValidRadix.valid
   -- Destructure inputs to access components
   cases x with
   | mk m1 e1 =>
