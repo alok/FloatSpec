@@ -2501,8 +2501,7 @@ theorem binary_fit_aux_correct
       simp
 
 -- Coq: `shr_fexp`, specialized to the SingleNaN `FLT_exp` exponent function.
--- The root `shr_fexp` name is already used by the Binary.v compatibility
--- layer, so this local helper keeps the BSN payload explicit.
+-- This local helper keeps the precision-dependent BSN payload explicit.
 noncomputable def bsn_shr_fexp (m e : Int) (l : Loc) : ShrRecord × Int :=
   let r := FloatSpec.Calc.Round.truncate_triple
     (beta := 2) (fexp := FLT_exp (3 - emax - prec) prec) (m, e, l)
@@ -5860,18 +5859,18 @@ theorem shl_align_fexp_correct {prec emax : Int}
       rw [hr] at hrun
       simpa [shl_align_fexp, n, hr, binaryPositiveOfNat_spec] using hrun
 
+-- Binary.v imports the SingleNaN shift before re-exporting its theorem.
+-- Use the precision-dependent source-shaped shift here; the unrelated root
+-- compatibility helper has been removed.
 noncomputable abbrev shr_fexp (m e : Int) (l : Loc) : ShrRecord × Int :=
-  _root_.shr_fexp m e l
+  bsn_shr_fexp (prec := prec) (emax := emax) m e l
 
 theorem shr_fexp_truncate (m e : Int) (l : Loc) (hm : 0 ≤ m) :
-    shr_fexp m e l =
-      let r := FloatSpec.Calc.Round.truncate (beta:=2)
-        (f:=(FloatSpec.Core.Defs.FlocqFloat.mk m e :
-          FloatSpec.Core.Defs.FlocqFloat 2)) (e:=e) (l:=l)
+    shr_fexp (prec := prec) (emax := emax) m e l =
+      let r := FloatSpec.Calc.Round.truncate 2
+        (FLT_exp (3 - emax - prec) prec) (m, e, l)
       (_root_.shr_record_of_loc r.1 r.2.2, r.2.1) := by
-  have h := _root_.shr_fexp_truncate m e l hm
-  simpa [wp, PostCond.noThrow, pure, _root_.shr_fexp_truncate_check,
-    shr_fexp] using h trivial
+  rfl
 
 def erase {prec emax : Int} (x : binary_float prec emax) : binary_float prec emax := x
 

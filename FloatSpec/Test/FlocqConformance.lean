@@ -1,6 +1,7 @@
 import FloatSpec.src.Calc.Plus
 import FloatSpec.src.Calc.Round
 import FloatSpec.src.IEEE754.Binary
+import FloatSpec.src.IEEE754.BinarySingleNaN
 import FloatSpec.src.Pff.Pff2FlocqAux
 
 namespace FloatSpec.Test.FlocqConformance
@@ -59,6 +60,19 @@ example :
     FloatSpec.Calc.Round.truncate_aux 2
       (2, 0, Location.loc_Exact) 1 =
       (1, 1, Location.loc_Exact) := by
+  rfl
+
+-- Source `truncate` derives the target exponent from `fexp`, not from a
+-- caller-supplied exponent.  The legacy `truncate_at_exp` would not shift here.
+example :
+    FloatSpec.Calc.Round.truncate 2 (FloatSpec.Core.FIX.FIX_exp 1)
+      (4, 0, Location.loc_Exact) =
+      (2, 1, Location.loc_Exact) := by
+  rfl
+
+example :
+    Binary.shr_fexp (prec := 2) (emax := 4) 4 0 Location.loc_Exact =
+      ({ shr_m := 2, shr_r := false, shr_s := false }, 1) := by
   rfl
 
 example :

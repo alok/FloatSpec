@@ -95,6 +95,12 @@ Example truncate_aux_positive_control :
     (1, 1, SpecFloat.loc_Exact).
 Proof. vm_compute. reflexivity. Qed.
 
+Example truncate_source_exponent :
+    (let beta := Build_radix 2 eq_refl in
+      truncate beta (FIX_exp 1) (4, 0, SpecFloat.loc_Exact)) =
+    (2, 1, SpecFloat.loc_Exact).
+Proof. vm_compute. reflexivity. Qed.
+
 Example nan_payload_bitlength_boundary :
     Zlt_bool (Zpos (SpecFloat.digits2_pos 4)) 3 = false.
 Proof. vm_compute. reflexivity. Qed.

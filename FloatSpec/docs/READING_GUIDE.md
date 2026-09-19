@@ -95,6 +95,24 @@ typecheck without a new trust obligation. The same-exponent addition and
 subtraction statements likewise have direct equality types; other primitive
 operation proofs retain their legacy callers and triples for now.
 
+[`Calc/Round.lean`](../src/Calc/Round.lean) illustrates a dangerous naming
+mistake. Flocq's
+[`truncate`](https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Calc/Round.v#L638)
+accepts a `(mantissa, exponent, location)` triple and an exponent function;
+the function determines how far to shift. The old Lean `truncate` instead
+accepted a float and an already-chosen exponent, so it could not implement
+that contract. The source-facing `truncate` now names the existing
+`truncate_triple` implementation; the old utility is `truncate_at_exp`.
+A paired test shifts `(4, 0, Exact)` to `(2, 1, Exact)` with fixed exponent 1.
+These two links and the example do not certify the rest of `Round.lean`.
+The `Binary.shr_fexp` re-export in `BinarySingleNaN.lean` now uses the
+precision-dependent truncation and its theorem refers to source-shaped
+`truncate`. An unrelated root compatibility helper of the same name had
+used `truncate_at_exp` and stated only a trivial wrapper theorem; it has
+been removed because it was not a source contract.
+The SingleNaN theorem unfolds its chosen implementation, so it is not an
+independent proof that Flocq's iterative shift algorithm is equivalent.
+
 ## 4. What the checks establish
 
 `lake build` typechecks the present Lean statements. The paired

@@ -7,6 +7,7 @@ Translated from Coq file: flocq/src/Calc/Round.v
 -/
 
 import FloatSpec.src.Core
+import FloatSpec.Linter.CoqSourceLinter
 import FloatSpec.src.Calc.Bracket
 import FloatSpec.src.Core.Defs
 import FloatSpec.src.Core.Digits
@@ -62,6 +63,8 @@ section Truncation
 
     Helper for truncating float values with location tracking
 -/
+-- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Calc/Round.v#L609
+@[flocq_source "src/Calc/Round.v" 609 "truncate_aux"]
 noncomputable def truncate_aux (beta : Int) [ValidRadix beta] (f : Int × Int × Location) (k : Int) : (Int × Int × Location) :=
   let m := f.1
   let e := f.2.1
@@ -69,11 +72,13 @@ noncomputable def truncate_aux (beta : Int) [ValidRadix beta] (f : Int × Int ×
   let p := FloatSpec.Core.Zaux.Zpower beta k
   (m / p, e + k, FloatSpec.Calc.Bracket.new_location (nb_steps := p) (k := (m % p)) l)
 
-/-- Truncate a float to a higher exponent
+/-- Lean-only truncation at a caller-specified exponent.
 
-    Adjusts a float to have a specified higher exponent while tracking precision loss
+    Unlike Flocq's `truncate`, this does not compute a canonical exponent from
+    `fexp` and the digits of the mantissa.
 -/
-noncomputable def truncate (beta : Int) [ValidRadix beta] (f : FlocqFloat beta) (e : Int) (l : Location) : (Int × Int × Location) :=
+noncomputable def truncate_at_exp (beta : Int) [ValidRadix beta]
+    (f : FlocqFloat beta) (e : Int) (l : Location) : Int × Int × Location :=
   let k := e - f.Fexp
   if 0 < k then
     truncate_aux beta (f.Fnum, f.Fexp, l) k
@@ -86,11 +91,11 @@ noncomputable def truncate (beta : Int) [ValidRadix beta] (f : FlocqFloat beta) 
     preservation theorem needs the full Coq `Round.v` proof chain and must not
     be claimed from the executable definition alone.
 -/
-theorem truncate_spec (f : FlocqFloat beta) (e : Int) (l : Location)
+theorem truncate_at_exp_spec (f : FlocqFloat beta) (e : Int) (l : Location)
     (He : f.Fexp ≤ e) (Hl : inbetween_float beta f.Fnum e ((F2R f)) l) :
     ⦃⌜f.Fexp ≤ e ∧ inbetween_float beta f.Fnum e ((F2R f)) l⌝⦄
-    (pure (truncate beta f e l) : Id (Int × Int × Location))
-    ⦃⇓result => ⌜result = truncate beta f e l⌝⦄ := by
+    (pure (truncate_at_exp beta f e l) : Id (Int × Int × Location))
+    ⦃⇓result => ⌜result = truncate_at_exp beta f e l⌝⦄ := by
   intro _
   simp [wp, PostCond.noThrow, pure]
 
@@ -140,6 +145,16 @@ noncomputable def truncate_triple (beta : Int) [ValidRadix beta] (fexp : Int →
   let l := t.2.2
   let k := fexp (FloatSpec.Core.Digits.Zdigits beta m + e) - e
   if 0 < k then truncate_aux beta t k else t
+
+/-- Canonical-exponent truncation of a mantissa, exponent, and location triple.
+
+This is the source-facing name; `truncate_triple` remains as the legacy name
+used by existing proof chains. -/
+-- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Calc/Round.v#L638
+@[flocq_source "src/Calc/Round.v" 638 "truncate"]
+noncomputable abbrev truncate (beta : Int) [ValidRadix beta] (fexp : Int → Int)
+    (t : Int × Int × Location) : Int × Int × Location :=
+  truncate_triple beta fexp t
 
 lemma truncate_triple_eq_def (m e : Int) (l : Location) :
     (truncate_triple (beta := beta) (fexp := fexp) (m, e, l)) =

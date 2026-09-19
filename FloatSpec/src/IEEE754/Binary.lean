@@ -5047,9 +5047,7 @@ theorem shl_align_fexp_correct {prec emax : Int}
       -- So FLT_exp ... > ex, which gives ex < FLT_exp ..., thus ex ≤ FLT_exp ...
       omega
 
--- Truncation helpers and theorem (Coq: shr_fexp_truncate)
--- Local encoding of the shift record used to connect the theorem statement to
--- `Calc.Round.truncate`.
+-- Shift-record representation shared with the SingleNaN source-facing layer.
 
 -- Local alias of the Bracket location type
 abbrev Loc := FloatSpec.Calc.Bracket.Location
@@ -5080,33 +5078,6 @@ def shr_record_of_loc (m : Int) (l : Loc) : ShrRecord :=
       { shr_m := m, shr_r := true, shr_s := false }
   | FloatSpec.Calc.Bracket.Location.loc_Inexact Ordering.gt =>
       { shr_m := m, shr_r := true, shr_s := true }
-
--- Shifting according to `fexp` via truncation; mirrors Coq's `shr_fexp` shape
-noncomputable def shr_fexp (m e : Int) (l : Loc) : ShrRecord × Int :=
-  let r := FloatSpec.Calc.Round.truncate (beta := 2)
-              (f := (FloatSpec.Core.Defs.FlocqFloat.mk m e : FloatSpec.Core.Defs.FlocqFloat 2))
-              (e := e) (l := l)
-  let m' := r.1; let e' := r.2.1; let l' := r.2.2
-  (shr_record_of_loc m' l', e')
-
--- Hoare wrapper to expose `shr_fexp` as a pure computation
-noncomputable def shr_fexp_truncate_check (m e : Int) (l : Loc) : (ShrRecord × Int) :=
-  (shr_fexp m e l)
-
--- Coq: shr_fexp_truncate — express `shr_fexp` via `truncate`
-theorem shr_fexp_truncate (m e : Int) (l : Loc)
-  (hm : 0 ≤ m) :
-  ⦃⌜True⌝⦄
-  (pure (shr_fexp_truncate_check m e l) : Id (ShrRecord × Int))
-  ⦃⇓result => ⌜
-      let r := FloatSpec.Calc.Round.truncate (beta := 2)
-                  (f := (FloatSpec.Core.Defs.FlocqFloat.mk m e : FloatSpec.Core.Defs.FlocqFloat 2))
-                  (e := e) (l := l)
-      let m' := r.1; let e' := r.2.1; let l' := r.2.2
-      result = (shr_record_of_loc m' l', e')⌝⦄ := by
-  intro _
-  simp only [wp, PostCond.noThrow, pure, shr_fexp_truncate_check, shr_fexp]
-  trivial
 
 namespace ExperimentalBinaryRound
 
