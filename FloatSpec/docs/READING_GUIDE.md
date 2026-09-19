@@ -266,3 +266,14 @@ single percent-complete number.
 The [independent continuation audit](ASTRA_AUDIT_2026-09-19.md) records fresh
 checks of the previous work, including a reproduced gap in the source-link
 linter and the distinction between paired examples and differential execution.
+
+## 6. Run the feedback loop
+
+The [three-loop testing guide](THREE_VERIFICATION_LOOPS.md) explains the runnable
+checks in order: independent finite arithmetic invariants in Lean, those same
+invariants checked against pinned Flocq in Rocq, then shared-input differential
+execution. Rocq outputs become generated Lean regression theorems, which Lean
+checks in its kernel. The bridge retains seeds, inputs, outputs, and replay
+files; a deliberate historical-bug mutation checks that it really rejects a
+disagreement. This is executable evidence for concrete cases, not a replacement
+for reviewing the mathematical contract.

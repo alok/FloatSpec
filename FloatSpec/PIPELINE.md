@@ -31,9 +31,12 @@ artifacts, not in the library tree.
 7. Run the trust gates and record the source-to-target mapping for the judge.
 
 Never replace an unresolved proposition with a same-name `Unit` definition.
-Never add `sorry`, `admit`, an axiom, or a weakened theorem to make a run green.
-If a faithful proof is blocked, keep the declaration out of trusted exports and
-record the missing lemma in the external run report.
+Never weaken a statement or add an axiom to make a run green. For this
+source-contract audit, the user explicitly permits deferring difficult proofs:
+retain the faithful proposition and use a named `FLOCQ-DEBT` sorry recorded in
+`docs/proof_debts.json`. Such declarations and their dependents are not proved
+results. Do not hide new debt in unnamed admissions or describe compilation as
+proof completion.
 
 ## Source-facing and compatibility APIs
 
@@ -54,13 +57,17 @@ lake build FloatSpecTests
 lake build floatspec
 lake build FloatSpec.Test
 scripts/audit_placeholders.sh --json FloatSpec
+uv run scripts/check_proof_debts.py
+bash scripts/test_flocq_conformance.sh
 scripts/status_report.sh --write
 git diff --check
 ```
 
-The placeholder audit must report zero active `sorry`, `admit`, axioms, and
-semantic-placeholder patterns.  The generated status files must be committed
-and reproducible from a clean checkout.
+The proof-debt check must reject every trust finding except the exact named
+obligations in the manifest. The generated status files must be committed and
+reproducible from a clean checkout. The [three-loop guide](docs/THREE_VERIFICATION_LOOPS.md)
+distinguishes independent finite Lean/Rocq checks from differential execution
+and from universal source equivalence.
 
 ## Alignment judge
 

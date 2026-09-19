@@ -36,6 +36,7 @@ jobs:
           scripts/test_coq_source_linter.sh
           scripts/test_unused_mvcgen.sh
           python3 scripts/check_proof_debts.py
+          python3 scripts/test_flocq_bridge.py -v
 
       - name: Verify generated status is current
         run: |

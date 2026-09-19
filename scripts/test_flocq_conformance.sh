@@ -41,6 +41,14 @@ else
   flocq_dir="$managed_worktree"
 fi
 
+# A matching HEAD alone does not make a modified reference pinned. Generated
+# build files are fine; changed tracked sources and untracked .v files are not.
+git -C "$flocq_dir" diff --exit-code HEAD -- src
+if git -C "$flocq_dir" ls-files --others --exclude-standard src | rg -q '\.v$'; then
+  echo 'Reference checkout contains untracked Rocq source files' >&2
+  exit 1
+fi
+
 python3 "$repo_root/scripts/validate_flocq_source_refs.py" "$flocq_dir" \
   --lean-dir "$repo_root/FloatSpec/src"
 
@@ -186,11 +194,21 @@ else
   fi
 fi
 "$coqc_bin" -q -R "$flocq_dir/src" Flocq "$scratch/FloatSpecConformance.v"
+"$coqc_bin" -q -R "$flocq_dir/src" Flocq -o "$scratch/ArithmeticProperties.vo" \
+  "$repo_root/scripts/fixtures/ArithmeticProperties.v"
+echo 'Pure Rocq loop passed: examples and 10,734 independent arithmetic invariant cases'
 
 if [[ -n "${LEAN_TOOLCHAIN_OVERRIDE:-}" ]]; then
-  elan run "$LEAN_TOOLCHAIN_OVERRIDE" lake build FloatSpec.Test.FlocqConformance
+  elan run "$LEAN_TOOLCHAIN_OVERRIDE" lake build \
+    FloatSpec.Test.FlocqConformance FloatSpec.Test.ArithmeticProperties
 else
-  lake build FloatSpec.Test.FlocqConformance
+  lake build FloatSpec.Test.FlocqConformance FloatSpec.Test.ArithmeticProperties
 fi
+echo 'Pure Lean loop passed: examples and 10,734 kernel-checked arithmetic invariant cases'
 
-echo "Flocq and Lean conformance regressions passed at $gitlink_commit"
+uv run "$repo_root/scripts/flocq_bridge.py" --flocq-dir "$flocq_dir" --coqc "$coqc_bin" \
+  --seed "${FLOCQ_BRIDGE_SEED:-20260919}" --samples "${FLOCQ_BRIDGE_SAMPLES:-100}" \
+  --batch-size "${FLOCQ_BRIDGE_BATCH_SIZE:-200}"
+FLOCQ_AUDIT_DIR="$flocq_dir" uv run "$repo_root/scripts/test_flocq_bridge.py" -v
+
+echo "Three finite-test loops passed against pinned Flocq $gitlink_commit"

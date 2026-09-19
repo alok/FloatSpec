@@ -38,9 +38,35 @@ HEAD. Executions use a separate detached reference checkout.
    The shell's other `coqc` is Rocq 9.1 and cannot load that checkout's `.vo`
    files; the bridge must resolve the compiler from `config.status`.
 4. **The old paired tests are not a differential harness:** they execute small
-   hand-written Lean and Rocq example sets independently. A generated shared
-   input corpus and machine comparison are being added; do not treat the old
-   test name as evidence of randomized or exhaustive cross-testing.
+   hand-written Lean and Rocq example sets independently. The new shared-input
+   bridge replaces that coverage gap; do not retroactively treat the old test
+   name as evidence of randomized or exhaustive cross-testing.
+5. **Three executable loops now pass on macOS:** the standalone Lean and Rocq
+   grids each check 10,734 independent arithmetic-invariant cases. The new
+   differential runner passed 4,247 cases (seed `20260919`) and then 10,736
+   cases (seed `483921`). After adding bootstrapping, a full three-loop run
+   passed 4,996 differential cases (seed `20260919`, 200 random samples per
+   family), and all 4,996 generated Lean equality statements checked in the
+   kernel. These runs used the cached Rocq 9.2 reference. The three Lean grid
+   theorems have no `sorryAx`: division uses no axioms; location and square
+   root use only `propext`. The aggregate build now passes 6,208 jobs.
+   A second full three-loop run built **all pinned Flocq from scratch** under
+   the project-local Rocq 9.1.0, then passed both invariant grids, 4,247 bridge
+   cases and their generated Lean proofs, and all nine harness tests. The
+   clean reference worktree was removed afterwards; the user's nested checkout
+   and its untracked dependency-graph files were unchanged. `lake exe floatspec`
+   also ran, but its no-op `main` is only a launch check, not an arithmetic test.
+6. **The bridge fails closed:** the initial run correctly rejected abbreviated
+   `#reduce` output containing `⋯`; full pretty printing resolved it. A second
+   setup failure exposed missing `ValidRadix 3` instances, fixed with proved
+   local instances for each test radix. Neither failed run is counted as a
+   pass. Live mutation testing changes the historical `2^(-1)` case to use
+   `natAbs` in the generated Lean input; the runner detects Lean `[2]` versus
+   Rocq `[0]`, exits unsuccessfully, and writes an exact replay corpus.
+
+See [the three-loop guide](THREE_VERIFICATION_LOOPS.md) for commands, output
+artifacts, and current coverage. No source algorithm was changed to make these
+new tests pass; the substantive repair so far is the source-link linter gate.
 
 ## Execution priorities
 
