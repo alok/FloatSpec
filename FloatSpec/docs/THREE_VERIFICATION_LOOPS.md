@@ -228,7 +228,34 @@ or edit imported Lean source during an active run: rebuilding can temporarily
 remove `.olean` files that another evaluator is reading. Finish or explicitly
 stop the run, rebuild, and then start a fresh evidence run.
 
-## 7. What this still does not establish
+## 7. All five IEEE rounding modes, including fused multiply-add
+
+The standalone `scripts/ieee_modes_bridge.py` directly exercises the port's
+binary32 and binary64 APIs under nearest-even, toward-zero, downward, upward,
+and nearest-away rounding. Each row retains three exact input encodings and
+six results: add, subtract, multiply, divide, square root, and fused
+multiply-add. Unlike the native arithmetic bridge, it preserves NaN signs and
+payloads and checks the source's first-NaN propagation policy.
+
+This is a Lean-kernel/Rocq comparison, **not** native hardware directed rounding.
+Its cases include half-ULP ties, tiny subnormal products, cancellation after an
+overflowing intermediate product, signed zeros, infinities, negative square
+roots, and NaNs in each of the three operand positions. Random triples are
+generated separately for every format/mode pair. Every agreeing batch produces
+kernel-checked Lean equality statements, with replay artifacts on a mismatch.
+
+```sh
+uv run scripts/ieee_modes_bridge.py --flocq-dir /path/to/pinned-flocq \
+  --seed 923451 --samples 30 --batch-size 5
+FLOCQ_AUDIT_DIR=/path/to/pinned-flocq uv run scripts/test_ieee_modes_bridge.py -v
+```
+
+The live harness replaces upward rounding with nearest-even in only the Lean
+adapter and requires a failed comparison with the exact replay input. Timeout
+and interruption tests must report errors, never successful zero-case runs.
+This newer bridge is currently run separately from the combined shell suite.
+
+## 8. What this still does not establish
 
 No finite grid or random corpus proves universal source equivalence. The bridge
 does not yet exercise all of IEEE arithmetic, every native primitive,

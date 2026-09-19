@@ -216,6 +216,16 @@ HEAD. Executions use a separate detached reference checkout.
     bootstrapped kernel equalities. Artifact: `floatspec-bridge-ijq9bfmq`.
     The combined suite's native unary/arithmetic phases are still running;
     this is a core-phase pass, not yet an aggregate-suite completion.
+19. **Directed rounding and payload-sensitive arithmetic are now tested:**
+    a standalone source-API bridge passed **290 boundary triples** across
+    binary32/binary64 and all five rounding modes. It checks exact input bits,
+    add/subtract/multiply/divide/sqrt/FMA results, retaining NaN signs and
+    payloads rather than taking a quotient. All 290 rows became kernel-checked
+    equalities. Artifact: `floatspec-ieee-modes-0xd58h1c` (seed `923451`, zero
+    additional random samples). Five harness tests pass, including changing
+    upward rounding to nearest-even only on the Lean side and verifying the
+    resulting replay case. This path runs the actual source-shaped decoders
+    and operations, but is kernel/Rocq execution, not native directed rounding.
 
 See [the three-loop guide](THREE_VERIFICATION_LOOPS.md) for commands, output
 artifacts, and current coverage. Repairs include the source-link/trust gates,
@@ -265,6 +275,19 @@ and the expanded bit bridge and aggregate build passed. Rerun the complete
 combined suite with stable imported Lean sources. The native
 arithmetic bridge still decodes through Float.Model; the new core bit families
 exercise the distinct source-shaped decoder directly and retain NaN payloads.
+
+Next execution slice, queued until the active combined run finishes:
+`Bits.b32_compare` and `b64_compare` (root Lean names) use mathematical Real
+comparison and cannot execute with `#eval`, even for `1.0` versus `2.0`.
+Pinned `Bits.v` delegates to `Binary.Bcompare`, which delegates to the
+executable `SpecFloat.SFcompare`: constructor/sign cases followed by
+exponent/mantissa lexicographic comparison for canonical finite values.
+The fixed-width Lean APIs have no callers outside their own definitions, so
+they can be repaired without disrupting the existing real-valued comparison
+proof chains. Compare the configured Rocq 9.2 `SpecFloat.v:177` as well as
+pinned Flocq `Binary.v:773`/`Bits.v` wrappers, retain NaN unorderedness and
+signed-zero equality, and cross-test compiled Lean/kernel/Rocq. The generic
+`Binary.Bcompare` and primitive `SFcompare` still need separate review.
 
 Maintain three separate loops: independent Lean tests, independent pinned
 Flocq/Rocq tests, and a differential bridge that sends identical inputs to both.
