@@ -33,9 +33,15 @@ example (emin beta : Int) [ValidRadix beta] (x : ℝ)
     FIX_format emin beta x :=
   FIX_format_generic (emin := emin) beta x hx
 
-example (f : ℝ → Int) [FloatSpec.Core.Generic_fmt.Valid_rnd f] (x : ℝ) :
+example (f : ℝ → Int) (x : ℝ) :
     FloatSpec.Core.Generic_fmt.round_to_generic (beta := 2)
       (fexp := FIX_exp (emin := (0 : Int))) (mode := f) x = (f x : ℝ) :=
   round_FIX_IZR f x
+
+-- Source FIX.v quantifies over every integer-valued function, not just valid
+-- rounding functions. The constant seven function is deliberately not Valid_rnd.
+example (x : ℝ) :
+    FloatSpec.Core.Generic_fmt.round_to_generic 2 (FIX_exp 0) (fun _ ↦ 7) x = 7 :=
+  round_FIX_IZR (fun _ ↦ 7) x
 
 end FloatSpec.Test.FIXDirect

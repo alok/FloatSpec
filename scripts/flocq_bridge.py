@@ -29,8 +29,8 @@ ROOT = Path(__file__).resolve().parents[1]
 LEAN_LOC = [".loc_Exact", ".loc_Inexact .lt", ".loc_Inexact .eq", ".loc_Inexact .gt"]
 COQ_LOC = ["loc_Exact", "loc_Inexact Lt", "loc_Inexact Eq", "loc_Inexact Gt"]
 OPS = ("power", "div_eucl", "location", "round", "truncate", "div", "plus", "sqrt",
-       "formats", "digits", "operations", "format_calc")
-ARITIES = dict(zip(OPS, (2, 2, 3, 3, 5, 6, 6, 4, 3, 2, 5, 8), strict=True))
+       "formats", "digits", "operations", "format_calc", "overflow")
+ARITIES = dict(zip(OPS, (2, 2, 3, 3, 5, 6, 6, 4, 3, 2, 5, 8, 4), strict=True))
 RADIX_OPS = {"truncate", "div", "plus", "sqrt", "digits", "operations", "format_calc"}
 
 
@@ -53,6 +53,10 @@ class Case:
             raise ValueError("rounding sign must be 0 or 1")
         if self.op == "format_calc" and self.args[7] not in range(4):
             raise ValueError("format selector must be FIX=0, FLX=1, FLT=2, or FTZ=3")
+        if self.op == "overflow":
+            prec, emax, mode, sign = self.args
+            if not 0 < prec < emax or mode not in range(5) or sign not in (0, 1):
+                raise ValueError("overflow requires 0 < prec < emax, mode 0..4, sign 0..1")
 
 
 def corpus(seed: int, samples: int) -> list[Case]:
@@ -100,6 +104,11 @@ def corpus(seed: int, samples: int) -> list[Case]:
                         cases.append(Case("format_calc", (base, left, exponent, right,
                                                           -exponent, -2, 3, fmt)))
     rng = random.Random(seed)
+    for prec in (1, 2, 3, 24, 53):
+        for emax in sorted({prec + 1, 2 * prec, 128, 1024}):
+            for mode in range(5):
+                for sign in range(2):
+                    cases.append(Case("overflow", (prec, emax, mode, sign)))
     for op in OPS:
         for _ in range(samples):
             base = rng.choice((2, 3, 10, 16))
@@ -126,6 +135,9 @@ def corpus(seed: int, samples: int) -> list[Case]:
                 args = (base, m1)
             elif op == "operations":
                 args = (base, m1, e1, m2, e2)
+            elif op == "overflow":
+                prec = rng.randint(1, 64)
+                args = (prec, rng.randint(prec + 1, 2048), rng.randrange(5), rng.randrange(2))
             else:
                 args = (base, m1, e1, m2, e2, target, rng.randint(1, 5), rng.randrange(4))
             cases.append(Case(op, args))
@@ -141,6 +153,16 @@ def expressions(case: Case) -> tuple[str, str]:
     if op == "div_eucl":
         return (f"pair (Zaux.Z_div_eucl {a[0]} {a[1]})",
                 f"pair (Z.div_eucl {a[0]} {a[1]})")
+    if op == "overflow":
+        prec, emax, mode, sign = case.args
+        lean_mode = (".RNE", ".RTZ", ".RTN", ".RTP", ".RNA")[mode]
+        coq_mode = ("mode_NE", "mode_ZR", "mode_DN", "mode_UP", "mode_NA")[mode]
+        s = "true" if sign else "false"
+        lean = f"bsn_binary_overflow (prec := {prec}) (emax := {emax}) {lean_mode} {s}"
+        coq = f"BinarySingleNaN.binary_overflow {prec} {emax} {coq_mode} {s}"
+        return (f"let x := {lean}; standard x ++ "
+                f"[boolean (validBinarySingleNaNStandardFloat (prec := {prec}) (emax := {emax}) x)]",
+                f"let x := {coq} in standard x ++ [boolean (SpecFloat.valid_binary {prec} {emax} x)]")
     if op == "formats":
         emin, prec, exponent = a
         return (f"[FIX.FIX_exp {emin} {exponent}, FLX.FLX_exp {prec} {exponent}, "
@@ -206,6 +228,7 @@ LEAN_HEADER = """import FloatSpec.src.Calc.Plus
 import FloatSpec.src.Calc.Div
 import FloatSpec.src.Calc.Sqrt
 import FloatSpec.src.Core.FTZ
+import FloatSpec.src.IEEE754.BinarySingleNaNSourceFacade
 open FloatSpec.Core FloatSpec.Calc FloatSpec.Calc.Bracket
 set_option maxRecDepth 100000
 set_option maxHeartbeats 100000000
@@ -224,11 +247,16 @@ private def triple (p : Int × Int × Location) : List Int := [p.1, p.2.1, locat
 private def alignment (p : Int × Int × Int) : List Int := [p.1, p.2.1, p.2.2]
 private def floating {beta : Int} [ValidRadix beta]
     (x : Defs.FlocqFloat beta) : List Int := [x.Fnum, x.Fexp]
+private def standard : StandardFloat → List Int
+  | .S754_zero s => [0, boolean s, 0, 0]
+  | .S754_infinity s => [1, boolean s, 0, 0]
+  | .S754_nan => [2, 0, 0, 0]
+  | .S754_finite s m e => [3, boolean s, m, e]
 """
 
 COQ_HEADER = """From Stdlib Require Import ZArith List.
 From Flocq Require Import Core.Zaux Core.Defs Core.Digits Core.FIX Core.FLX Core.FLT Core.FTZ
-  Calc.Bracket Calc.Operations Calc.Round Calc.Plus Calc.Div Calc.Sqrt.
+  Calc.Bracket Calc.Operations Calc.Round Calc.Plus Calc.Div Calc.Sqrt IEEE754.BinarySingleNaN.
 Import ListNotations.
 Open Scope Z_scope.
 Definition location (l : SpecFloat.location) : Z :=
@@ -245,6 +273,13 @@ Definition triple (p : Z * Z * SpecFloat.location) : list Z :=
   let '(m, e, l) := p in [m; e; location l].
 Definition alignment (p : Z * Z * Z) : list Z := let '(m, n, e) := p in [m; n; e].
 Definition floating {beta : radix} (x : float beta) : list Z := [Fnum x; Fexp x].
+Definition standard (x : SpecFloat.spec_float) : list Z :=
+  match x with
+  | SpecFloat.S754_zero s => [0; boolean s; 0; 0]
+  | SpecFloat.S754_infinity s => [1; boolean s; 0; 0]
+  | SpecFloat.S754_nan => [2; 0; 0; 0]
+  | SpecFloat.S754_finite s m e => [3; boolean s; Zpos m; e]
+  end.
 """
 
 
@@ -383,7 +418,8 @@ def main() -> None:
     mismatches = []
     try:
         build = run(["lake", "build", "FloatSpec.src.Calc.Plus", "FloatSpec.src.Calc.Div",
-                     "FloatSpec.src.Calc.Sqrt", "FloatSpec.src.Core.FTZ"], timeout=600)
+                     "FloatSpec.src.Calc.Sqrt", "FloatSpec.src.Core.FTZ",
+                     "FloatSpec.src.IEEE754.BinarySingleNaNSourceFacade"], timeout=600)
         (output / "lean_build.out").write_text(build)
         for offset in range(0, len(cases), args.batch_size):
             batch = cases[offset:offset + args.batch_size]

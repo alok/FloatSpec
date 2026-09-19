@@ -1,4 +1,5 @@
 import FloatSpec.src.IEEE754.PrimFloat
+import FloatSpec.src.IEEE754.BinarySingleNaNSourceFacade
 
 /-! Regression checks for the source-facing Coq primitive-float contract. -/
 
@@ -30,3 +31,19 @@ example : (2 : Int) ≤ FaithfulPrimFloat.primEmax := by
   have hprec := FaithfulPrimFloat.Hprec.pos
   have hlt := FaithfulPrimFloat.Hmax.prec_lt_emax
   omega
+
+-- This consumer pins the real source validity contract. Replacing it with the
+-- permissive compatibility predicate would make this example fail to typecheck.
+example {prec emax : Int} [Prec_gt_0 prec] [Prec_lt_emax prec emax]
+    (mode : RoundingMode) (sign : Bool) :
+    validBinarySingleNaNStandardFloat (prec := prec) (emax := emax)
+      (BinarySingleNaN.binary_overflow (prec := prec) (emax := emax) mode sign) = true :=
+  BinarySingleNaN.binary_overflow_correct mode sign
+
+-- Nat-based compatibility carriers can express malformed finite values that
+-- Coq excludes through its positive mantissa type. Actual validity must reject them.
+example : validBinarySingleNaNStandardFloat (prec := 53) (emax := 1024)
+    (.S754_finite false 0 (-1074)) = false := by decide
+
+example : validBinarySingleNaNStandardFloat (prec := 53) (emax := 1024)
+    (.S754_finite false 1 1024) = false := by decide

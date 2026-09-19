@@ -62,6 +62,12 @@ negation, absolute value, addition, subtraction, multiplication), and combined
 format-dependent addition/division/square root/truncation. The adapters account
 explicitly for parameter-order differences between the Lean and Coq APIs.
 
+A thirteenth family tests IEEE overflow in all five rounding modes: result
+constructor, sign, mantissa, exponent, and actual canonical/bounded validity.
+It enforces `0 < prec < emax`, the source contract's precision premises. The
+real validity predicate is essential here; the legacy always-true predicate
+would provide no evidence about whether an overflow result is representable.
+
 Lean reduces the calls with `#reduce`; Rocq uses `vm_compute`. The runner rejects
 compiler failures, unknown output, abbreviated output, missing rows, and empty
 corpora. It compares every output row. For agreeing batches, it then generates

@@ -45,7 +45,8 @@ class ParserTests(unittest.TestCase):
         for op, args in (("no_such_function", ()), ("power", (2,)),
                          ("power", (2, "sorry")), ("power", (2, True)),
                          ("location", (4, 2, -1)), ("round", (2, 0, 1)),
-                         ("sqrt", (1, 4, 0, 0))):
+                         ("sqrt", (1, 4, 0, 0)), ("overflow", (0, 4, 0, 0)),
+                         ("overflow", (4, 4, 0, 0)), ("overflow", (3, 4, 5, 0))):
             with self.subTest(op=op, args=args), self.assertRaises(ValueError):
                 bridge.Case(op, args)
 
@@ -63,13 +64,14 @@ class LiveTests(unittest.TestCase):
                  bridge.Case("formats", (-2, 3, 0)), bridge.Case("digits", (3, -9)),
                  bridge.Case("operations", (2, 1, 0, -2, -1)),
                  *[bridge.Case("format_calc", (3, 9, -1, 2, 1, -2, 3, fmt))
-                   for fmt in range(4)]]
+                   for fmt in range(4)], bridge.Case("overflow", (3, 4, 1, 0))]
         with tempfile.TemporaryDirectory(prefix="floatspec-bridge-test-") as directory:
             lean, rocq = bridge.execute(cases, flocq, bridge.configured_coqc(flocq), Path(directory))
         self.assertEqual(lean, rocq)
         self.assertEqual(lean[0], [0])
         self.assertEqual(lean[1], [-3, -2])
         self.assertEqual(lean[7], [0, 0])
+        self.assertEqual(lean[-1], [3, 0, 7, 1, 1])
 
     def test_real_mutation_exits_with_replay(self):
         # Reproduce the historical negative-exponent/natAbs bug only in the

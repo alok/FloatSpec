@@ -100,14 +100,64 @@ HEAD. Executions use a separate detached reference checkout.
    minimum-subnormal model theorem depends only on standard axioms
    (`propext`, `Classical.choice`, `Quot.sound`), with no `sorryAx`.
 
-The next confirmed source-contract finding is the exported
-`BinarySingleNaN.binary_overflow_correct`: it still uses the always-true legacy
-`valid_binary_SF` predicate. A separate existing private proof establishes real
-validity; strengthening the exported statement is the next repair.
+10. **A source-facing validity theorem was vacuous:** the exported
+    `BinarySingleNaN.binary_overflow_correct` used the always-true legacy
+    `valid_binary_SF` predicate. Its statement and root implementation now use
+    `validBinarySingleNaNStandardFloat`, matching pinned
+    `IEEE754/BinarySingleNaN.v:1195`. An existing private proof supplies the
+    stronger result; no sorry was needed. A typed consumer regression prevents
+    accidental reversion, and malformed finite inputs are explicitly rejected.
+    All **390** new overflow cases (seed `34781`) agree with Rocq and became
+    checked Lean equalities: five modes, both signs, small precisions and the
+    usual 24/53-bit formats. Inputs enforce the source premises
+    `0 < prec < emax`; this run does not assert out-of-domain equivalence.
+    Axiom inspection of the exported theorem reports only standard axioms.
+11. **An extra rounding premise narrowed a source theorem:**
+    `FIX.round_FIX_IZR` required `[Valid_rnd f]`, although the pinned source
+    theorem quantifies over every `f : R -> Z`. Removing the premise preserves
+    its existing proof. The regression now works for arbitrary `f` and for the
+    deliberately invalid rounding function `fun _ => 7`.
 
 See [the three-loop guide](THREE_VERIFICATION_LOOPS.md) for commands, output
-artifacts, and current coverage. No source algorithm was changed to make these
-new tests pass; completed repairs so far are in the source-link and trust gates.
+artifacts, and current coverage. No arithmetic algorithm was changed to make
+these new tests pass. Repairs include the source-link/trust gates and the two
+source-facing theorem signatures above.
+
+## Prior-commit review ledger
+
+The table tracks the **changed surfaces**, not certification of all declarations
+in each affected file. “Checked” means the named definition/statement was read
+against pinned source and exercised by the described build/tests; it does not
+mean a universal cross-assistant equivalence theorem exists. The two broad
+initial commits remain partially reviewed because their tooling and legacy
+compatibility boundaries have more surface than the focused later changes.
+
+| Prior commit | Changed surface checked | Boundary / finding |
+|---|---|---|
+| `f10d70b1` | `satisfies_any`, signed powers in Plus/Round, format closure contracts, Pff minimum exponent, native/model claim split | Partial broad review; scanner bypass repaired; old paired tests were not a shared-input bridge. |
+| `c50fdb3a` | FullFloat validity against Binary.v; source-link metadata; native bit operations and four explicit proof obligations | Partial broad review; mutual-block linter bypass repaired; raw sign-bit proof still open. |
+| `0de3c3bf` | Toolchain changed from 4.34 RC2 to stable 4.34.0 | Actual arm64 macOS builds pass; dependency pins were not silently upgraded. |
+| `e500d138` | Removal of unused mvcgen/Hoare lint surface; direct FIX contracts | Unnecessary `Valid_rnd` premise found and removed; no new proof framework required. |
+| `0fdc837d` | Defs predicates and source-anchor validation | Defs predicates match the source forms read; anchor validator remains textual/heuristic. |
+| `4800ce00` | FLX generic/structural format conversions | Hypotheses and implications checked; generic-format equivalence is not merely renamed identity. |
+| `5447ff8a` | FLX/FLXN source links and explicitly local helper labels | Metadata classification is not a proof of correspondence. |
+| `653175ac` | FTZ normalized witness and exponent lower bound | Matches FTZ.v:36; the temporary proof debt was closed later by Claude. |
+| `5ffe7a86` | FLT structural witness and generic conversion statements | Matches bounded mantissa/minimum-exponent source form; legacy arithmetic probes remain clearly separate. |
+| `62e58771` | FLXN conversion and FIX/FLX inclusions | Source interval endpoints and precision premises checked. |
+| `33102927` | FIX witness with exponent exactly `emin` | Matches FIX.v:34; zero/negation and both generic conversions checked. |
+| `70705e9d` | Plus source metadata | Actual Plus operation also participates in shared-input tests. |
+| `f8b288a4` | Close-magnitude addition now calls `Operations.Fplus` | Source branch checked; tested through combined format-dependent operations. |
+| `75655bb0` | Operations definitions and metadata | Alignment, sign/abs, addition/subtraction/multiplication cross-tested. |
+| `9a9b6c1c` | Direct alignment and same-exponent statements | Compared with Operations.v:44,59,111,143; no added mathematical premise. |
+| `f2e8f192` | Canonical `truncate` signature and precision-dependent binary shift | Source Round.v:638 input triple/exponent function restored; callers rebuilt and format-dependent truncation cross-tested. |
+| `454ba287` | Round source names and mode decisions | Source helpers exercised over sign/location combinations; duplicate local helpers are not separate algorithms. |
+| `8fd2639d` | Direct positive-quotient correctness | Source Div.v:132 retains both positivity hypotheses; radix premise comes from `ValidRadix`. |
+| `bb24499f` | Square-root contracts | Source Sqrt.v:73,179 positivity/shift premises checked; negative total-function cases tested separately. |
+| `495d815e` | Bracket link gate and interval specification | Source Bracket.v:38,50 checked; even/odd functions have independent rational-grid tests. |
+| `3e3749e9` | Direct Bracket uniqueness and bounds | Source Bracket.v:63,82,94 checked; strict interval hypothesis retained where required. |
+| `8fd8bb36` | Direct inexact distance comparisons | Source Bracket.v:106,116 checked; removed identity-returning wrappers. |
+| `10bd939f` | Direct existential interval witness | Source Bracket.v:135 checked; downstream float witness updated coherently. |
+| `d4c44d9b` (Claude) | Both FTZ conversion proof directions | Proof structure compared with source; fresh kernel build and standard-axiom check passed. |
 
 ## Execution priorities
 
@@ -120,9 +170,12 @@ or skipped command cannot silently produce a green result.
 
 ## Still unreviewed
 
-The bulk of the theorem-by-theorem port and prior changes remain unreviewed.
-Next work includes executable arithmetic/rounding cross-tests, the trust and
-source-anchor scanner boundaries, and source-signature checks informed by any
-counterexamples. Passing compilation, finite agreement, and a proof of a Lean
-statement are three different claims; none alone proves whole-library Flocq
-equivalence.
+The bulk of the complete theorem-by-theorem port remains unreviewed. In
+particular, root compatibility predicates such as `valid_binary_SF := true`
+still exist: the repaired overflow export does not certify every legacy user
+of that predicate. The source-anchor scanner is textual, the linter is opt-in,
+and many public declarations are outside its current gate. Next work includes
+native execution of integer-only algorithms, more IEEE arithmetic cross-tests,
+and further source-signature checks. Passing compilation, finite agreement,
+and a proof of a Lean statement are three different claims; none alone proves
+whole-library Flocq equivalence.

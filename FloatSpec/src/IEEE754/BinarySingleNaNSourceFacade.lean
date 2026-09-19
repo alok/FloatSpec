@@ -617,7 +617,7 @@ theorem is_nan_binary_overflow {prec emax : Int}
 theorem binary_overflow_correct {prec emax : Int}
     [Prec_gt_0 prec] [Prec_lt_emax prec emax]
     (mode : RoundingMode) (s : Bool) :
-    valid_binary_SF (prec:=prec) (emax:=emax)
+    validBinarySingleNaNStandardFloat (prec:=prec) (emax:=emax)
       (binary_overflow (prec:=prec) (emax:=emax) mode s) = true :=
   _root_.binary_overflow_correct (prec:=prec) (emax:=emax) mode s
 

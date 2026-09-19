@@ -2356,12 +2356,6 @@ theorem is_nan_binary_overflow (mode : RoundingMode) (s : Bool) :
     is_nan_SF (bsn_binary_overflow (prec:=prec) (emax:=emax) mode s) = false := by
   cases mode <;> cases s <;> rfl
 
--- Coq: binary_overflow_correct
-theorem binary_overflow_correct (mode : RoundingMode) (s : Bool) :
-    valid_binary_SF (prec:=prec) (emax:=emax)
-      (bsn_binary_overflow (prec:=prec) (emax:=emax) mode s) = true := by
-  rfl
-
 -- Coq: binary_fit_aux
 def binary_fit_aux (mode : RoundingMode) (sx : Bool) (mx : Nat) (ex : Int) :
     StandardFloat :=
@@ -3376,6 +3370,14 @@ private theorem validBinarySingleNaNStandardFloat_bsn_binary_overflow
   cases mode <;> cases sx <;>
     simp [bsn_binary_overflow, overflow_to_inf, validBinarySingleNaNStandardFloat,
       hm_pos, hmax_spec]
+
+-- Coq: IEEE754/BinarySingleNaN.v:1195. Use the real bounded/canonical validity
+-- predicate, not the always-true compatibility predicate valid_binary_SF.
+theorem _root_.binary_overflow_correct (mode : RoundingMode) (s : Bool) :
+    validBinarySingleNaNStandardFloat (prec:=prec) (emax:=emax)
+      (bsn_binary_overflow (prec:=prec) (emax:=emax) mode s) = true := by
+  exact validBinarySingleNaNStandardFloat_bsn_binary_overflow
+    (prec:=prec) (emax:=emax) mode s
 
 private theorem validBinarySingleNaNStandardFloat_binary_fit_aux
     (mode : RoundingMode) (sx : Bool) (mx : Nat) (ex : Int)

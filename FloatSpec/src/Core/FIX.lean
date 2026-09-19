@@ -189,7 +189,7 @@ Lean: for {lit}`fexp = FIX_exp 0`, the canonical exponent is zero, so the
 result is exactly the integer selected by the supplied rounding function.
 -/
 theorem round_FIX_IZR
-    (f : ℝ → Int) [FloatSpec.Core.Generic_fmt.Valid_rnd f] (x : ℝ) :
+    (f : ℝ → Int) (x : ℝ) :
     round_to_generic (beta := 2) (fexp := FIX_exp (emin := (0 : Int)))
       (mode := f) x = ((f x : Int) : ℝ) := by
   -- Unfold the rounding model and compute with the constant exponent 0
