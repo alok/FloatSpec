@@ -91,6 +91,13 @@ def flipSign (w : UInt64) : UInt64 := w ^^^ signBitMask
 def negated (w : UInt64) : Binary754 53 1023 :=
   FF2B (prec:=53) (emax:=1023) (Bopp (ofBits w).val)
 
+set_option warningAsError false in
+/-- All-bit-pattern correspondence between sign-bit XOR and decoded negation.
+The proof must split the bit fields and preserve NaN payloads and signed zero;
+real-value negation alone cannot establish this statement. -/
+theorem ofBits_flipSign (w : UInt64) : ofBits (flipSign w) = negated w := by
+  sorry -- FLOCQ-DEBT: binary64_flip_sign
+
 /-- Decoder-level semantic negation via FloatSpec's verified `Bopp`.
 
 This proves the real-value negation property without asserting the still-missing

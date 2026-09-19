@@ -1,4 +1,5 @@
 import FloatSpec.src.IEEE754.Bits
+import FloatSpec.Linter.CoqSourceLinter
 
 /-!
 # Exact FLoCq `IEEE754/Bits.v` surface
@@ -10,6 +11,8 @@ implementation once the source hypotheses establish positive widths.
 -/
 
 namespace FloatSpec.IEEE754.Bits.Source
+
+set_option linter.coqSource true
 
 local notation "Zpower" => FloatSpec.Core.Zaux.Zpower
 
@@ -25,11 +28,15 @@ private theorem zpower_eq_zero_of_neg {w : Int} (hw : w < 0) :
 private def zshiftl (x n : Int) : Int :=
   if 0 ≤ n then x * Zpower 2 n else x / Zpower 2 (-n)
 
+-- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/IEEE754/Bits.v#L37
 /-- Coq `Bits.join_bits`; both widths remain integers. -/
+@[flocq_source "src/IEEE754/Bits.v" 37 "join_bits"]
 def join_bits (mw ew : Int) (s : Bool) (m e : Int) : Int :=
   zshiftl ((if s then Zpower 2 ew else 0) + e) mw + m
 
+-- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/IEEE754/Bits.v#L77
 /-- Coq `Bits.split_bits`; both widths remain integers. -/
+@[flocq_source "src/IEEE754/Bits.v" 77 "split_bits"]
 def split_bits (mw ew x : Int) : Bool × Int × Int :=
   let mm := Zpower 2 mw
   let em := Zpower 2 ew
@@ -127,7 +134,9 @@ private def sourcePrec (mw : Int) : Int := mw + 1
 private def sourceEmax (ew : Int) : Int := Zpower 2 (ew - 1)
 private def sourceEmin (mw ew : Int) : Int := 3 - sourceEmax ew - sourcePrec mw
 
+-- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/IEEE754/Bits.v#L220
 /-- Coq `Bits.bits_of_binary_float`. -/
+@[flocq_source "src/IEEE754/Bits.v" 220 "bits_of_binary_float"]
 def bits_of_binary_float (mw ew : Int)
     (x : binary_float (mw + 1) (Zpower 2 (ew - 1))) : Int :=
   match x with
@@ -143,7 +152,9 @@ def bits_of_binary_float (mw ew : Int)
       else
         join_bits mw ew s (FloatSpec.Core.Zaux.Zpos mantissa) 0
 
+-- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/IEEE754/Bits.v#L233
 /-- Coq `Bits.split_bits_of_binary_float`. -/
+@[flocq_source "src/IEEE754/Bits.v" 233 "split_bits_of_binary_float"]
 def split_bits_of_binary_float (mw ew : Int)
     (x : binary_float (mw + 1) (Zpower 2 (ew - 1))) : Bool × Int × Int :=
   match x with
@@ -342,6 +353,8 @@ private theorem positiveOfNat_spec (n : Nat) (h : 0 < n) :
   simp [FloatSpec.Core.Zaux.Zpos, positiveOfNat_spec]
 
 /-- Coq `Bits.binary_float_of_bits_aux`, before attaching the validity proof. -/
+-- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/IEEE754/Bits.v#L348
+@[flocq_source "src/IEEE754/Bits.v" 348 "binary_float_of_bits_aux"]
 def binary_float_of_bits_aux (mw ew x : Int) : full_float :=
   let (s, m, e) := split_bits mw ew x
   if e = 0 then
@@ -569,6 +582,8 @@ theorem binary_float_of_bits_aux_correct (mw ew : Int)
 
 /-- Coq `Bits.binary_float_of_bits`, attaching the validity proof to the
 proof-free decoder result. -/
+-- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/IEEE754/Bits.v#L491
+@[flocq_source "src/IEEE754/Bits.v" 491 "binary_float_of_bits"]
 def binary_float_of_bits (mw ew : Int)
     (Hmw : 0 < mw) (Hew : 0 < ew)
     (Hmax : mw + 1 < Zpower 2 (ew - 1)) (x : Int) :

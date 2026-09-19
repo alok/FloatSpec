@@ -50,6 +50,37 @@ targeted examples.
 
 ## Unresolved boundaries
 
+### Definition-first follow-up on this branch
+
+The source-shaped `Binary.valid_binary` now checks finite exponent bounds and
+significand normalization and checks a positive, precision-bounded NaN payload.
+The permissive `Binary754` compatibility carrier remains separate; its
+conversion theorem requires a validity premise. `Binary.valid_binary_SF`
+remains a legacy `true` bridge over unrestricted inputs; the source-shaped
+predicate `valid_binary_SF_payload` is used for the source-facing conversion
+postcondition. Replacing the legacy bridge requires migrating its callers and
+possibly restricting its carrier.
+
+`PrimFloat` now exposes raw-bit next-up/down operations, with finite/special-
+value examples. The sign-flip, native `Float.frExp`, and native next-up/down
+correspondence theorems are deliberately named `sorry` obligations recorded in
+`proof_debts.json`. These statements compile, but no native-runtime theorem is
+claimed proved. CI rejects any unregistered `sorry` or trust escape.
+
+`@[flocq_source]` records a pinned path, line, and Coq name for six public
+definitions in `BitsSourceFacade` and `Binary.valid_binary`. The opt-in
+`linter.coqSource` warns on unmapped public definitions in an enabled module.
+The `Source:` URL comments provide editor-clickable links to the pinned Coq
+lines; the attribute string itself is not yet a go-to-source LSP action. This
+is a first coverage gate, not a whole-repository map. No Rocq compiler or
+coinduction translation is attempted.
+
+The `Std.Do`/Hoare layer was separately reviewed: sampled float modules use
+`Id` wrappers for pure operations, and no actual `mvcgen` tactic call was
+found. Direct propositions are the simpler source-facing contracts. Existing
+Hoare wrappers still have downstream callers, so any migration should be
+incremental rather than a mechanical removal.
+
 1. The permissive `Binary754` compatibility carrier and its `binary_*`
    helpers are not equivalent to the proof-carrying `Binary.binary_float`
    operations. In particular, real-only compatibility arithmetic may lose

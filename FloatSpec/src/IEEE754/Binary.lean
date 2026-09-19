@@ -4,6 +4,7 @@
 import FloatSpec.src.Core
 import FloatSpec.src.Compat
 import FloatSpec.src.Calc
+import FloatSpec.Linter.CoqSourceLinter
 import Mathlib.Data.Real.Basic
 import Std.Do.Triple
 import Std.Tactic.Do
@@ -969,45 +970,49 @@ theorem B2R_Bsign_inj_compat {prec emax} (x y : Binary754 prec emax)
 -- (reserved) Coq counterparts `valid_binary_B2FF` and `FF2B_B2FF_valid`
 -- will be introduced in hoare-triple form after aligning specs.
 
--- Coq: valid_binary_B2FF — validity of `B2FF` images
--- We expose a lightweight validity predicate and state the theorem
--- using the Hoare-triple style around a pure computation.
+-- Coq: valid_binary — the source predicate checks positive finite mantissas,
+-- canonical boundedness, and positive bounded NaN payloads.
+set_option linter.coqSource true
+-- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/IEEE754/Binary.v#L166
+/-- Flocq `valid_binary` on the Nat-payload compatibility carrier.
+Positivity checks replace source-level `positive` payload types. -/
+@[flocq_source "src/IEEE754/Binary.v" 166 "valid_binary"]
 def valid_binary {prec emax : Int} (x : FullFloat) : Bool :=
-  -- Local permissive predicate for the current bridge model.
-  true
-
--- Faithful validity predicate for the migration away from the permissive
--- `Binary754` bridge.  This mirrors Flocq's finite/NaN payload checks while
--- leaving the historical `valid_binary` surface untouched until callers can
--- carry the required evidence.
-def valid_binary_payload {prec emax : Int} (x : FullFloat) : Bool :=
   match x with
-  | FullFloat.F754_finite _ m e => specFloat_bounded (prec:=prec) (emax:=emax) m e
+  | FullFloat.F754_finite _ m e =>
+      decide (0 < m) && specFloat_bounded (prec:=prec) (emax:=emax) m e
   | FullFloat.F754_nan _ payload =>
       decide (0 < payload) &&
         FloatSpec.Core.Zaux.Zlt_bool
-          (FloatSpec.Core.Digits.digits2_pos payload)
-          prec
+          (FloatSpec.Core.Digits.digits2_pos payload) prec
   | FullFloat.F754_zero _ => true
   | FullFloat.F754_infinity _ => true
+
+set_option linter.coqSource false
+
+-- Compatibility alias retained for callers of the earlier payload check.
+def valid_binary_payload {prec emax : Int} (x : FullFloat) : Bool :=
+  valid_binary (prec:=prec) (emax:=emax) x
 
 def valid_binary_B2FF_check {prec emax : Int} (x : Binary754 prec emax) : Bool :=
   (valid_binary (prec:=prec) (emax:=emax) (B2FF (prec:=prec) (emax:=emax) x))
 
-theorem valid_binary_B2FF_compat {prec emax} (x : Binary754 prec emax) :
+theorem valid_binary_B2FF_compat {prec emax} (x : Binary754 prec emax)
+    (hvalid : valid_binary (prec:=prec) (emax:=emax) x.val = true) :
   ⦃⌜True⌝⦄
   (pure (valid_binary_B2FF_check (prec:=prec) (emax:=emax) x) : Id Bool)
   ⦃⇓result => ⌜result = true⌝⦄ := by
   intro _
   simp only [wp, PostCond.noThrow, pure]
   unfold valid_binary_B2FF_check
-  rfl
+  exact hvalid
 
 -- Coq: valid_binary_SF2FF — validity of SF after conversion to FF
 -- We introduce a StandardFloat-side validity predicate and state
 -- the correspondence in hoare-triple form.
 def valid_binary_SF {prec emax : Int} (x : StandardFloat) : Bool :=
-  -- Local permissive predicate for the current bridge model.
+  -- Legacy bridge predicate retained for compatibility callers.  Use
+  -- `valid_binary_SF_payload` for the actual source-shaped validity test.
   true
 
 -- StandardFloat-side payload validity induced by the fixed local `SF2FF`
@@ -1028,10 +1033,9 @@ theorem valid_binary_SF2FF {prec emax} (x : StandardFloat)
   (hnotnan : is_nan_SF x = false) :
   ⦃⌜True⌝⦄
   (pure (valid_binary_SF2FF_check (prec:=prec) (emax:=emax) x) : Id Bool)
-  ⦃⇓result => ⌜result = valid_binary_SF (prec:=prec) (emax:=emax) x⌝⦄ := by
+  ⦃⇓result => ⌜result = valid_binary_SF_payload (prec:=prec) (emax:=emax) x⌝⦄ := by
   intro _
   simp only [wp, PostCond.noThrow, pure]
-  unfold valid_binary_SF2FF_check
   rfl
 
 -- Coq: FF2B_B2FF_valid — round-trip with validity argument

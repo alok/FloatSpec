@@ -28,12 +28,12 @@
       "axiom": 0,
       "lean_files": 10,
       "placeholder": 0,
-      "sorry": 0
+      "sorry": 4
     },
     "Other": {
       "admit": 0,
       "axiom": 0,
-      "lean_files": 23,
+      "lean_files": 26,
       "placeholder": 0,
       "sorry": 0
     },
@@ -52,8 +52,8 @@
       "sorry": 0
     }
   },
-  "lean_files": 78,
+  "lean_files": 81,
   "placeholder_semantics_count": 0,
-  "sorry_count": 0,
+  "sorry_count": 4,
   "spec_weakened_count": 0
 }

@@ -2,6 +2,7 @@ import FloatSpec.Linter.OmegaLinter
 import FloatSpec.Linter.SimpOnlyLinter
 import FloatSpec.Linter.IdReturnLinter
 import FloatSpec.Linter.HoareStyleLinter
+import FloatSpec.Linter.CoqSourceLinter
 
 /-! # FloatSpec Linters
 
@@ -12,6 +13,7 @@ Project-specific linters for FloatSpec development.
 - {lit}`linter.preferSimp`: Warns when {lit}`simp only` is used, suggests {lit}`simp` instead.
 - {lit}`linter.noIdReturn`: Warns when {lit}`def`/{lit}`abbrev` returns {lean}`Id`.
 - {lit}`linter.hoareStyle`: Warns on non-True Hoare preconditions and trivial postconditions.
+- {lit}`linter.coqSource`: Opt-in check for pinned Flocq links on public definitions.
 
 **Disabling:** Use {lit}`set_option linter.preferGrind false` or similar.
 -/

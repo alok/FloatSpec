@@ -37,16 +37,27 @@ revisions.
 
 ## Current Progress
 
-The project is actively under development. The integrated library compiles
-without active `sorry`, `admit`, or project axioms. This syntactic trust result
-does not replace source-semantic review: translated declarations are checked
-against the pinned Flocq source and compatibility helpers are kept distinct
-from source-facing APIs.
+The project is actively under development. Four named `sorry` obligations now
+mark native-runtime correspondence and raw-bit sign proofs that remain open;
+they are listed in `FloatSpec/docs/proof_debts.json`. A successful build checks
+the definitions and theorem statements, not these proofs or whole-library
+equivalence to Flocq. Source-facing APIs and compatibility helpers remain
+distinct.
 
-- Build: compiles with Lean 4 and Mathlib `v4.34.0-rc2`, with warnings treated as errors.
+- Build: CI uses the pinned Lean 4 `v4.34.0-rc2`; the local macOS audit used
+  stable `v4.34.0` because the rc2 Lake executable crashes on this host.
 - Trust gates: `scripts/audit_placeholders.sh` and
-  `scripts/status_report.sh` check active Lean syntax; generated status is under
+  `scripts/check_proof_debts.py` reject unregistered proof holes and trust
+  escapes; `scripts/status_report.sh` records the current counts under
   `FloatSpec/docs/status.{md,json}`.
+- Source links: `@[flocq_source "src/Module.v" LINE "name"]` stores a pinned
+  Coq correspondence, and the opt-in `linter.coqSource` checks public
+  definitions in source-facing modules. An adjacent `Source:` URL is clickable
+  in editors that recognize URLs; clicking the attribute's path string itself
+  is not yet an LSP navigation feature. Coverage is incremental, not a claim
+  that every public definition has been mapped.
+- Start with the [linear reading guide](FloatSpec/docs/READING_GUIDE.md) for
+  the distinction between module coverage, source alignment, and proof status.
 - Source contracts: regression modules under `FloatSpec/Test` cover important
   representation, rounding-mode, primitive-float, Pff, and IEEE correctness-name mappings.
 - ErrorBound status: `FloatSpec/src/ErrorBound.lean` is an import aggregator,
@@ -76,6 +87,7 @@ Build locally
 1) Update dependencies: `lake update`
 2) Build: `lake build`
 3) Run trust gates: `scripts/audit_placeholders.sh --json FloatSpec`
+   and `scripts/check_proof_debts.py`.
 4) With Rocq and autotools installed, run the executable cross-language
    regressions: `scripts/test_flocq_conformance.sh`. The script checks out the
    exact `Deps/flocq` gitlink in a temporary worktree (or clone), builds it,

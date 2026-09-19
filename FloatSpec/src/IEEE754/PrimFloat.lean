@@ -1461,6 +1461,52 @@ def ofModel (x : Float.Model) : FaithfulPrimFloat.PrimitiveFloat :=
 def ofFloat (x : Float) : FaithfulPrimFloat.PrimitiveFloat :=
   ofModel x.toModel
 
+set_option warningAsError false in
+/-- Native `Float.frExp` correspondence, restricted to nonzero finite inputs.
+The native operation is opaque to the Lean kernel; this is a proof obligation,
+not a consequence of the existing model-transported `frexp_equiv`. -/
+theorem native_frExp_equiv (x : FaithfulPrimFloat.PrimitiveFloat)
+    (hx : BinarySingleNaN.is_finite_strict (FaithfulPrimFloat.Prim2B x) = true) :
+    let result := Float.frExp (toFloat x)
+    (ofFloat result.1, result.2) = FaithfulPrimFloat.Z.frexp x := by
+  sorry -- FLOCQ-DEBT: native_frexp
+
+/-- IEEE-754 binary64 successor on raw bits, with NaNs and positive infinity fixed. -/
+def nextUpBits (w : UInt64) : UInt64 :=
+  let signMask : UInt64 := 0x8000000000000000
+  let magnitude := w &&& 0x7fffffffffffffff
+  if magnitude > 0x7ff0000000000000 then w
+  else if w == 0x7ff0000000000000 then w
+  else if magnitude == 0 then 1
+  else if w &&& signMask != 0 then w - 1 else w + 1
+
+/-- IEEE-754 binary64 predecessor on raw bits, with NaNs and negative infinity fixed. -/
+def nextDownBits (w : UInt64) : UInt64 :=
+  let signMask : UInt64 := 0x8000000000000000
+  let magnitude := w &&& 0x7fffffffffffffff
+  if magnitude > 0x7ff0000000000000 then w
+  else if w == 0xfff0000000000000 then w
+  else if magnitude == 0 then 0x8000000000000001
+  else if w &&& signMask != 0 then w + 1 else w - 1
+
+/-- Native-carrier successor implemented through the binary64 bit layout. -/
+def nativeNextUp (x : Float) : Float := Float.ofBits (nextUpBits x.toBits)
+
+/-- Native-carrier predecessor implemented through the binary64 bit layout. -/
+def nativeNextDown (x : Float) : Float := Float.ofBits (nextDownBits x.toBits)
+
+set_option warningAsError false in
+/-- Bridge obligation from native-carrier successor to Flocq's `Bsucc` model. -/
+theorem nativeNextUp_equiv (x : FaithfulPrimFloat.PrimitiveFloat) :
+    ofFloat (nativeNextUp (toFloat x)) = FaithfulPrimFloat.next_up x := by
+  sorry -- FLOCQ-DEBT: native_next_up
+
+set_option warningAsError false in
+/-- Bridge obligation from native-carrier predecessor to Flocq's `Bpred` model. -/
+theorem nativeNextDown_equiv (x : FaithfulPrimFloat.PrimitiveFloat) :
+    ofFloat (nativeNextDown (toFloat x)) = FaithfulPrimFloat.next_down x := by
+  sorry -- FLOCQ-DEBT: native_next_down
+
 @[simp] theorem toFloat_toModel (x : FaithfulPrimFloat.PrimitiveFloat) :
     (toFloat x).toModel = toModel x := rfl
 

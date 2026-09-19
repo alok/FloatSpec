@@ -33,7 +33,8 @@ jobs:
       - name: Reject proof and semantic placeholders
         run: |
           scripts/test_audit_placeholders.sh
-          scripts/audit_placeholders.sh --json --fail-on-findings FloatSpec
+          scripts/test_coq_source_linter.sh
+          python3 scripts/check_proof_debts.py
 
       - name: Verify generated status is current
         run: |
