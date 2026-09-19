@@ -86,13 +86,6 @@ def FTZ_format (beta : Int) [ValidRadix beta] (x : ℝ) : Prop :=
         |f.Fnum| < FloatSpec.Core.Zaux.Zpower beta prec) ∧
       emin ≤ f.Fexp
 
-set_option warningAsError false in
-/-- Proof debt: identify the source-shaped FTZ carrier with its generic-format characterization. -/
-theorem FTZ_format_iff_generic (beta : Int) [ValidRadix beta] (x : ℝ) :
-    FTZ_format prec emin beta x ↔
-      FloatSpec.Core.Generic_fmt.generic_format beta (FTZ_exp prec emin) x := by
-  sorry -- FLOCQ-DEBT: ftz_format_generic_equivalence
-
 /-- Integer rounding with flush-to-zero behavior.
 
 Values with magnitude less than 1 are rounded to 0, otherwise we reuse the
@@ -211,6 +204,153 @@ instance FTZ_exp_valid :
         simp [FTZ_exp, hlt]
       -- Conclude constancy below fexp k
       simpa [hfexp_k] using hfl
+
+/-
+Coq (FTZ.v):
+Theorem generic_format_FTZ :
+  forall x, FTZ_format x -> generic_format beta FTZ_exp x.
+
+Proof outline (mirrors Flocq): an `FTZ_format` number is in particular an
+`FLXN_format` number, hence in `generic_format` for `FLX_exp`.  For nonzero `x`
+the normalized mantissa bound forces `prec ≤ mag beta (Fnum f)`, so
+`emin + prec ≤ mag beta x` and the flush branch of `FTZ_exp` is unreachable at
+`mag beta x`; there `FTZ_exp` and `FLX_exp` agree, and `generic_inclusion_mag`
+transfers membership.
+-/
+private theorem FTZ_generic_format_run (beta : Int) [ValidRadix beta] (x : ℝ)
+    (hx : FTZ_format prec emin beta x) :
+    FloatSpec.Core.Generic_fmt.generic_format beta (FTZ_exp prec emin) x := by
+  have hbeta : 1 < beta := ValidRadix.valid
+  -- Step 1: FTZ_format ⊆ FLXN_format, which lands in `generic_format` for FLX_exp.
+  have hflx :
+      FloatSpec.Core.Generic_fmt.generic_format beta
+        (FloatSpec.Core.FLX.FLX_exp prec) x := by
+    refine FloatSpec.Core.FLX.generic_format_FLXN (prec := prec) beta x ?_
+    obtain ⟨f, hxf, hb, _⟩ := hx
+    exact ⟨f, hxf, hb⟩
+  -- Step 2: at `mag beta x` the two exponent functions agree.
+  refine FloatSpec.Core.Generic_fmt.generic_inclusion_mag beta
+    (FloatSpec.Core.FLX.FLX_exp prec) (FTZ_exp prec emin) x hbeta ?_ hflx
+  intro hx0
+  obtain ⟨f, hxf, hb, hemin⟩ := hx
+  obtain ⟨hlow, _⟩ := hb hx0
+  have hfnum : f.Fnum ≠ 0 := by
+    intro h0
+    exact hx0 (by rw [hxf]; simp [FloatSpec.Core.Defs.F2R, h0])
+  -- The normalized lower bound gives `prec - 1 < mag beta (Fnum f)`.
+  have hmagm : prec - 1 < FloatSpec.Core.Raux.mag beta ((f.Fnum : Int) : ℝ) :=
+    FloatSpec.Core.Raux.mag_gt_Zpower beta f.Fnum (prec - 1) hbeta hfnum hlow
+  have hmagx : FloatSpec.Core.Raux.mag beta x
+      = FloatSpec.Core.Raux.mag beta ((f.Fnum : Int) : ℝ) + f.Fexp := by
+    rw [hxf]
+    exact FloatSpec.Core.Float_prop.mag_F2R (beta := beta) f.Fnum f.Fexp hbeta hfnum
+  have hbranch : ¬ (FloatSpec.Core.Raux.mag beta x - prec < emin) := by omega
+  simp [FTZ_exp, FloatSpec.Core.FLX.FLX_exp, hbranch]
+
+/-
+Coq (FTZ.v):
+Theorem FTZ_format_generic :
+  forall x, generic_format beta FTZ_exp x -> FTZ_format x.
+
+Proof outline (mirrors Flocq): zero is witnessed by `Float 0 emin`.  For nonzero
+`x`, `mag_generic_gt` says the canonical exponent is strictly below `mag beta x`;
+since the flush value `emin + prec - 1` is *above* `mag beta x` exactly when the
+flush branch is taken, that branch is impossible and `cexp = mag beta x - prec`.
+The canonical float then has a mantissa normalized between `β^(prec-1)` and
+`β^prec`.
+-/
+private theorem FTZ_format_generic_run (beta : Int) [ValidRadix beta] (x : ℝ)
+    (hx : FloatSpec.Core.Generic_fmt.generic_format beta (FTZ_exp prec emin) x) :
+    FTZ_format prec emin beta x := by
+  classical
+  have hbeta : 1 < beta := ValidRadix.valid
+  have hbposR : (0 : ℝ) < (beta : ℝ) := by
+    exact_mod_cast lt_trans Int.zero_lt_one hbeta
+  have hbne : (beta : ℝ) ≠ 0 := ne_of_gt hbposR
+  have hprec : 0 < prec := Fact.out
+  by_cases hx0 : x = 0
+  · refine ⟨(FloatSpec.Core.Defs.FlocqFloat.mk 0 emin :
+      FloatSpec.Core.Defs.FlocqFloat beta), ?_, ?_, le_rfl⟩
+    · simp [hx0, FloatSpec.Core.Defs.F2R]
+    · intro h; exact absurd hx0 h
+  · set ex : Int := FloatSpec.Core.Raux.mag beta x with hex
+    -- The canonical exponent of a nonzero generic number is below its magnitude.
+    have hcexp_lt : FTZ_exp prec emin ex < ex := by
+      have h := FloatSpec.Core.Generic_fmt.mag_generic_gt beta (FTZ_exp prec emin) x
+      simpa [FloatSpec.Core.Generic_fmt.cexp, wp, PostCond.noThrow, Id.run, pure, hex]
+        using h ⟨hbeta, hx0, hx⟩
+    -- Hence the flush branch is unreachable.
+    have hbranch : ¬ (ex - prec < emin) := by
+      intro hlt
+      simp only [FTZ_exp, hlt, ite_true] at hcexp_lt
+      omega
+    have hcexp : FloatSpec.Core.Generic_fmt.cexp beta (FTZ_exp prec emin) x = ex - prec := by
+      simp [FloatSpec.Core.Generic_fmt.cexp, FTZ_exp, hbranch, ← hex]
+    set m : Int := FloatSpec.Core.Raux.Ztrunc
+      (FloatSpec.Core.Generic_fmt.scaled_mantissa beta (FTZ_exp prec emin) x) with hm
+    -- The scaled mantissa is exactly `m`.
+    have hsm_eq :
+        FloatSpec.Core.Generic_fmt.scaled_mantissa beta (FTZ_exp prec emin) x = (m : ℝ) := by
+      have h := FloatSpec.Core.Generic_fmt.scaled_mantissa_generic
+        (beta := beta) (fexp := FTZ_exp prec emin) x hx
+      simpa [wp, PostCond.noThrow, Id.run, pure, hm] using h
+    have hxeq : x = (m : ℝ) * (beta : ℝ) ^ (ex - prec) := by
+      simpa [FloatSpec.Core.Generic_fmt.generic_format, hcexp, hm] using hx
+    -- Upper bound: |m| < β^prec.
+    have hupperR : |(m : ℝ)| < (beta : ℝ) ^ prec := by
+      have h := FloatSpec.Core.Generic_fmt.scaled_mantissa_lt_bpow
+        (beta := beta) (fexp := FTZ_exp prec emin) (x := x) hbeta
+      rw [hsm_eq, hcexp] at h
+      simpa [← hex, sub_sub_cancel] using h
+    -- Lower bound: β^(prec-1) ≤ |m|.
+    have hlowerR : (beta : ℝ) ^ (prec - 1) ≤ |(m : ℝ)| := by
+      have hmag_low : (beta : ℝ) ^ (ex - 1) ≤ |x| :=
+        FloatSpec.Core.Raux.bpow_mag_le beta x hbeta hx0
+      have hpow_pos : 0 < (beta : ℝ) ^ (prec - ex) := zpow_pos hbposR _
+      have hmul :
+          (beta : ℝ) ^ (ex - 1) * (beta : ℝ) ^ (prec - ex) ≤
+            |x| * (beta : ℝ) ^ (prec - ex) :=
+        mul_le_mul_of_nonneg_right hmag_low (le_of_lt hpow_pos)
+      have hcollapse :
+          (beta : ℝ) ^ (ex - 1) * (beta : ℝ) ^ (prec - ex) = (beta : ℝ) ^ (prec - 1) := by
+        rw [← zpow_add₀ hbne]
+        congr 1
+        ring
+      have habs : |x| * (beta : ℝ) ^ (prec - ex) = |(m : ℝ)| := by
+        rw [hxeq, abs_mul, abs_of_pos (zpow_pos hbposR (ex - prec)), mul_assoc,
+          ← zpow_add₀ hbne]
+        have : (ex - prec) + (prec - ex) = (0 : Int) := by ring
+        rw [this, zpow_zero, mul_one]
+      rw [hcollapse, habs] at hmul
+      exact hmul
+    -- Transfer the two real bounds to the integer `Zpower` bounds.
+    have hpowR : ∀ k : Int, 0 ≤ k →
+        ((FloatSpec.Core.Zaux.Zpower beta k : Int) : ℝ) = (beta : ℝ) ^ k := by
+      intro k hk
+      have heq : (k.toNat : Int) = k := Int.toNat_of_nonneg hk
+      simp [FloatSpec.Core.Zaux.Zpower, hk, Int.cast_pow, ← zpow_natCast, heq]
+    refine ⟨(FloatSpec.Core.Defs.FlocqFloat.mk m (ex - prec) :
+      FloatSpec.Core.Defs.FlocqFloat beta), hxeq, ?_, ?_⟩
+    swap
+    · show emin ≤ ex - prec
+      omega
+    intro _
+    constructor
+    · have : ((FloatSpec.Core.Zaux.Zpower beta (prec - 1) : Int) : ℝ) ≤ ((|m| : Int) : ℝ) := by
+        rw [hpowR (prec - 1) (by omega), Int.cast_abs]
+        exact hlowerR
+      exact_mod_cast this
+    · have : ((|m| : Int) : ℝ) < ((FloatSpec.Core.Zaux.Zpower beta prec : Int) : ℝ) := by
+        rw [hpowR prec (by omega), Int.cast_abs]
+        exact hupperR
+      exact_mod_cast this
+
+/-- The source-shaped FTZ carrier agrees with its generic-format characterization. -/
+theorem FTZ_format_iff_generic (beta : Int) [ValidRadix beta] (x : ℝ) :
+    FTZ_format prec emin beta x ↔
+      FloatSpec.Core.Generic_fmt.generic_format beta (FTZ_exp prec emin) x :=
+  ⟨FTZ_generic_format_run (prec := prec) (emin := emin) beta x,
+   FTZ_format_generic_run (prec := prec) (emin := emin) beta x⟩
 
 /-- Specification: FTZ format using generic format
 

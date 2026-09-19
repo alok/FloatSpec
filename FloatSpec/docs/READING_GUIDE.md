@@ -173,9 +173,9 @@ outside this targeted review.
 Flocq source, and checks small examples on each side; it catches selected
 counterexamples, not all inputs. `scripts/check_proof_debts.py` rejects
 unregistered `sorry` and trust
-escapes. Its five registered debts are in `proof_debts.json`: sign-bit
-negation, native `frExp`, native next-up, native next-down, and the new FTZ
-format equivalence. A theorem with
+escapes. Its four registered debts are in `proof_debts.json`: sign-bit
+negation, native `frExp`, native next-up, and native next-down. The FTZ
+format equivalence is now proved. A theorem with
 `sorry` is an explicitly unproved claim even when the build passes.
 
 Most current Hoare triples wrap pure `Id` computations. This project does not
