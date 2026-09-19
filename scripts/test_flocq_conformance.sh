@@ -211,4 +211,9 @@ uv run "$repo_root/scripts/flocq_bridge.py" --flocq-dir "$flocq_dir" --coqc "$co
   --batch-size "${FLOCQ_BRIDGE_BATCH_SIZE:-200}"
 FLOCQ_AUDIT_DIR="$flocq_dir" uv run "$repo_root/scripts/test_flocq_bridge.py" -v
 
+uv run "$repo_root/scripts/native_ieee_bridge.py" --flocq-dir "$flocq_dir" --coqc "$coqc_bin" \
+  --seed "${FLOCQ_BRIDGE_SEED:-20260919}" --samples "${FLOCQ_NATIVE_SAMPLES:-200}" \
+  --batch-size "${FLOCQ_NATIVE_BATCH_SIZE:-25}"
+FLOCQ_AUDIT_DIR="$flocq_dir" uv run "$repo_root/scripts/test_native_ieee_bridge.py" -v
+
 echo "Three finite-test loops passed against pinned Flocq $gitlink_commit"

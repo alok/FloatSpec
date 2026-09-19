@@ -269,6 +269,11 @@ linter and the distinction between paired examples and differential execution.
 
 ## 6. Run the feedback loop
 
+The native extension feeds the same binary64 words into actual Lean runtime
+calls, the logical Lean carrier, and pinned Rocq. Read its five output columns
+as input bits → next-up → next-down → `frExp` significand → exponent. It keeps
+NaN canonicalization and the nonzero-finite `frExp` precondition explicit.
+
 The [three-loop testing guide](THREE_VERIFICATION_LOOPS.md) explains the runnable
 checks in order: independent finite arithmetic invariants in Lean, those same
 invariants checked against pinned Flocq in Rocq, then shared-input differential

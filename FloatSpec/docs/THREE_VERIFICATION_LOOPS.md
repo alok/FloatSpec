@@ -25,8 +25,8 @@ finite grids, not all integers.
 
 The current `floatspec` executable's `main` does nothing. Running it is a
 launch smoke test only, not an arithmetic regression; the checks described here
-execute inside the test modules and bridge. Native machine arithmetic is a
-separate coverage target.
+execute inside the test modules and bridges. Native execution is covered by
+the three-way binary64 bridge described below, not by that no-op executable.
 
 ## 2. Flocq checks itself
 
@@ -85,11 +85,11 @@ bash scripts/test_flocq_conformance.sh
 ```
 
 This creates and builds a detached reference worktree, runs the standalone
-Rocq and Lean checks, runs the differential bridge, and executes the harness's
-own tests, including a live mutation that recreates the historical
-negative-exponent bug. That mutation must cause a failed comparison and emit a
-replay case. The temporary reference worktree is removed; bridge artifacts are
-retained at the path printed by the runner.
+Rocq and Lean checks, runs both differential bridges, and executes their own
+tests. Live mutations recreate the historical negative-exponent bug and replace
+native successor by predecessor. Each mutation must cause a failed comparison
+and emit a replay case. The temporary reference worktree is removed; bridge
+artifacts are retained at the paths printed by the runners.
 
 For a previously built reference checkout:
 
@@ -120,10 +120,48 @@ An interrupted or errored run is not a pass. CI currently runs the Lean grids
 and fast harness-unit tests; the live Rocq bridge is separately executed on
 this Mac and is not yet installed as a hosted-CI job.
 
-## 5. What this still does not establish
+## 5. Native binary64: three implementations, one input
+
+`scripts/native_ieee_bridge.py` adds actual native execution via `lean --run`
+and its floating-point FFI. For each raw 64-bit input, it compares five fields:
+decoded/canonicalized input, successor, predecessor, `frExp` significand, and
+signed `frExp` exponent. The other two paths reduce the Lean logical Flocq
+carrier in the kernel and execute the pinned Rocq definitions with `vm_compute`.
+
+The boundary corpus covers both signs, zero, subnormal powers of two and their
+neighbors, minimum normals, exponent transitions, maximum finite values,
+infinities, and signaling/quiet NaN payloads. Seeded arbitrary bit patterns
+supplement that corpus. All three result streams are retained independently.
+
+Two qualifications are deliberate and visible in the report:
+
+- NaNs are observed through the single-NaN model. All payloads and signs map to
+  `0x7ff8000000000000`; agreement does **not** establish payload preservation.
+- Native `frExp` equivalence is asserted only for nonzero finite values, as in
+  the theorem's precondition. The observed exceptional exponent is `0` on this
+  Mac, versus `-2101` in the logical Flocq model. Those exceptional observations
+  remain in the report; their input decoding and successor/predecessor results
+  are still compared. Lean-model versus Rocq comparison includes **all** fields
+  on **all** inputs, including the exceptional cases.
+
+Every agreeing model/Rocq row becomes a checked Lean equality. This proves the
+individual logical-model result, not the native FFI correspondence theorem.
+The native minimum-subnormal case is also a permanent model regression in
+`FloatSpec/Test/NativeIEEE.lean`, paired with `scripts/fixtures/NativeIEEE.v`.
+
+```sh
+uv run scripts/native_ieee_bridge.py --flocq-dir /path/to/pinned-flocq \
+  --seed 20260919 --samples 200 --batch-size 25
+# Use --replay /path/to/cases.json to run exactly the same bit patterns again.
+```
+
+The combined shell runner accepts `FLOCQ_NATIVE_SAMPLES` and
+`FLOCQ_NATIVE_BATCH_SIZE` for this additional loop.
+
+## 6. What this still does not establish
 
 No finite grid or random corpus proves universal source equivalence. The bridge
-does not yet exercise all of IEEE arithmetic, native machine execution,
-real-valued noncomputable mathematics, or theorem hypotheses/conclusions.
+does not yet exercise all of IEEE arithmetic, every native primitive,
+real-valued noncomputable mathematics, or all theorem hypotheses/conclusions.
 The four named native/bit proof debts remain separate. Read the
 [audit ledger](ASTRA_AUDIT_2026-09-19.md) for observed results and unreviewed scope.

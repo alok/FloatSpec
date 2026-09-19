@@ -6,6 +6,7 @@ import FloatSpec.Test.FLXDirect
 import FloatSpec.Test.FLTDirect
 import FloatSpec.Test.FTZSourceShape
 import FloatSpec.Test.NativeBridgeBits
+import FloatSpec.Test.NativeIEEE
 import FloatSpec.Test.CoqSourceLinks
 import FloatSpec.Test.ZauxSource
 import FloatSpec.Test.MagSource

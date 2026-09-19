@@ -290,6 +290,18 @@ def configured_coqc(flocq: Path) -> str:
     return match[1]
 
 
+def verify_reference(flocq: Path) -> str:
+    """Reject a different or modified reference, even if its build succeeds."""
+    pin = run(["git", "rev-parse", "HEAD:Deps/flocq"]).strip()
+    if run(["git", "-C", str(flocq), "rev-parse", "HEAD"]).strip() != pin:
+        raise ValueError("reference checkout does not match the parent repository's gitlink")
+    run(["git", "-C", str(flocq), "diff", "--exit-code", "HEAD", "--", "src"])
+    untracked = run(["git", "-C", str(flocq), "ls-files", "--others", "--exclude-standard", "src"])
+    if any(path.endswith(".v") for path in untracked.splitlines()):
+        raise ValueError("reference contains untracked Rocq source files")
+    return pin
+
+
 def execute(cases: list[Case], flocq: Path, coqc: str, folder: Path) -> tuple[list, list]:
     rows = [expressions(case) for case in cases]
     lean_path, coq_path = folder / "Bridge.lean", folder / "Bridge.v"
@@ -341,13 +353,7 @@ def main() -> None:
     if args.samples < 0 or args.batch_size < 1:
         parser.error("samples must be nonnegative and batch-size positive")
     flocq = args.flocq_dir.resolve()
-    pin = run(["git", "rev-parse", "HEAD:Deps/flocq"]).strip()
-    if run(["git", "-C", str(flocq), "rev-parse", "HEAD"]).strip() != pin:
-        parser.error("reference checkout does not match the parent repository's gitlink")
-    run(["git", "-C", str(flocq), "diff", "--exit-code", "HEAD", "--", "src"])
-    untracked = run(["git", "-C", str(flocq), "ls-files", "--others", "--exclude-standard", "src"])
-    if any(path.endswith(".v") for path in untracked.splitlines()):
-        parser.error("reference contains untracked Rocq source files")
+    pin = verify_reference(flocq)
     coqc = args.coqc or configured_coqc(flocq)
     cases = ([Case(row["op"], tuple(row["args"])) for row in json.loads(args.replay.read_text())]
              if args.replay else corpus(args.seed, args.samples))

@@ -81,15 +81,33 @@ HEAD. Executions use a separate detached reference checkout.
    equality per case removed that bottleneck for the completed run. Adapters
    explicitly translate the precision/minimum-exponent parameter order; no
    product definition was changed merely to fit an incorrectly ordered test.
+   The subsequent full twelve-family run passed **7,564** shared cases and
+   all 7,564 generated kernel checks (seed `20260919`, 200 random samples per
+   family, batches of 100), plus both independent grids and nine harness tests.
+9. **Native IEEE three-way execution now passes:** **622** binary64 inputs
+   agreed between native Lean execution, the Lean logical carrier, and pinned
+   Rocq wherever the native contract applies. The corpus contains 308
+   subnormals, 298 normals, two signed zeros, two infinities, and twelve NaNs;
+   all 622 model/Rocq results became kernel-checked Lean equalities. NaNs are
+   explicitly canonicalized; payload preservation is not claimed. The sixteen
+   zero/nonfinite inputs retain their native `frExp` observations but do not
+   assert that operation's out-of-contract equality: native exponent `0`
+   differs from model/Rocq `-2101`. Their other fields still match, and the
+   model agrees with Rocq on all fields. Seven harness tests pass, including
+   live substitution of predecessor for successor that must fail with replay.
+   An initial generated `IO.println` expression had missing parentheses and
+   failed compilation; that run remains an error, not a pass. The permanent
+   minimum-subnormal model theorem depends only on standard axioms
+   (`propext`, `Classical.choice`, `Quot.sound`), with no `sorryAx`.
 
-Native probes also executed `Float.frExp` and native-carrier successor/
-predecessor at four exact binary64 inputs (minimum subnormal, minimum normal,
-maximum finite, negative minimum subnormal) and agreed with Rocq observations.
-These scratch probes are preliminary, not yet a broad native regression suite.
+The next confirmed source-contract finding is the exported
+`BinarySingleNaN.binary_overflow_correct`: it still uses the always-true legacy
+`valid_binary_SF` predicate. A separate existing private proof establishes real
+validity; strengthening the exported statement is the next repair.
 
 See [the three-loop guide](THREE_VERIFICATION_LOOPS.md) for commands, output
 artifacts, and current coverage. No source algorithm was changed to make these
-new tests pass; the substantive repair so far is the source-link linter gate.
+new tests pass; completed repairs so far are in the source-link and trust gates.
 
 ## Execution priorities
 
