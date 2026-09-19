@@ -59,7 +59,7 @@ as a build error. The six public definitions in
 whole-file strict coverage. Ordinary `Source:` URL comments beside the
 `Defs.lean` attributes can be opened from an editor; the attribute string
 itself is not yet a special go-to-source action. The paired conformance command
-checks all 50 annotated path/line/name anchors against the pinned Flocq
+checks all 55 annotated path/line/name anchors against the pinned Flocq
 checkout. A correct anchor does not establish that the Lean type, body, or
 proof matches Coq; those require source review and paired tests or proofs.
 
@@ -148,6 +148,18 @@ Lean's proof of the numeric examples uses `norm_num` to evaluate its integer
 square root; the Rocq examples use `vm_compute`. Neither finite sample nor
 the source-location gate proves all cases equivalent, and this slice does
 not change the previously unreviewed modules.
+
+[`Calc/Bracket.lean`](../src/Calc/Bracket.lean) is the eleventh
+strict-gated public-definition module: five definitions have pinned
+`Bracket.v` links and twelve proof adapters or local checks are marked
+Lean-only. Flocq's stepped-location definitions acquire `nb_steps` from a
+section; Lean passes it explicitly. Two paired examples check an exact
+middle step with even `nb_steps` and an inexact middle step with odd
+`nb_steps`. `inbetween_spec` now has the direct source proposition as its
+type instead of an `Id` triple, retaining its proof. The source-location
+gate does not inspect the `Location`/`inbetween` inductive declarations,
+the other Bracket theorem statements, or the theorem proofs. Those remain
+outside this targeted review.
 
 ## 4. What the checks establish
 

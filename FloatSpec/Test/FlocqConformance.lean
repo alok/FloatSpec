@@ -16,6 +16,14 @@ commit.  In particular, Flocq's integer `Zpower` is total and evaluates to zero
 at a negative exponent; replacing it with a power at `Int.natAbs` changes the
 result outside the proof theorem's positive-exponent preconditions. -/
 
+example : new_location_even 4 2 Location.loc_Exact =
+    Location.loc_Inexact Ordering.eq := by
+  rfl
+
+example : new_location_odd 3 1 (Location.loc_Inexact Ordering.gt) =
+    Location.loc_Inexact Ordering.gt := by
+  rfl
+
 example :
     FloatSpec.Calc.Plus.Fplus_core 2 1 0 0 1 1 =
       (0, Location.loc_Exact) := by

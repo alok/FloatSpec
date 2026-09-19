@@ -55,9 +55,19 @@ fi
 
 cat >"$scratch/FloatSpecConformance.v" <<'COQ'
 From Stdlib Require Import ZArith.
-From Flocq Require Import Core.Zaux Core.Defs Core.FIX Calc.Operations Calc.Plus Calc.Round Calc.Div Calc.Sqrt IEEE754.Binary Pff.Pff2FlocqAux.
+From Flocq Require Import Core.Zaux Core.Defs Core.FIX Calc.Bracket Calc.Operations Calc.Plus Calc.Round Calc.Div Calc.Sqrt IEEE754.Binary Pff.Pff2FlocqAux.
 
 Open Scope Z_scope.
+
+Example even_middle_exact_location :
+    Bracket.new_location_even 4 2 SpecFloat.loc_Exact =
+    SpecFloat.loc_Inexact Eq.
+Proof. vm_compute. reflexivity. Qed.
+
+Example odd_middle_inexact_location :
+    Bracket.new_location_odd 3 1 (SpecFloat.loc_Inexact Gt) =
+    SpecFloat.loc_Inexact Gt.
+Proof. vm_compute. reflexivity. Qed.
 
 Example fplus_core_negative_scale :
     (let beta := Build_radix 2 eq_refl in

@@ -7,6 +7,7 @@ Translated from Coq file: flocq/src/Calc/Bracket.v
 -/
 
 import FloatSpec.src.Core
+import FloatSpec.Linter.CoqSourceLinter
 import FloatSpec.src.Core.Zaux
 import FloatSpec.src.Core.Raux
 import FloatSpec.src.Core.Defs
@@ -17,6 +18,8 @@ import Std.Do.Triple
 import FloatSpec.src.SimprocWP
 
 set_option maxRecDepth 4096
+set_option linter.coqSource true
+set_option warningAsError true
 
 open Real
 open FloatSpec.Core
@@ -31,6 +34,7 @@ inductive Location where
   deriving DecidableEq
 
 /-- Compare two real numbers and return an Ordering -/
+@[flocq_local "Lean helper spelling Coq's Rcompare without a standalone Bracket declaration"]
 noncomputable def compare (x y : ℝ) : Ordering :=
   if x < y then Ordering.lt
   else if x > y then Ordering.gt
@@ -137,6 +141,8 @@ variable (x : ℝ)
     - Exact if x equals the lower bound d
     - Inexact with ordering information based on midpoint comparison
 -/
+-- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Calc/Bracket.v#L38
+@[flocq_source "src/Calc/Bracket.v" 38 "inbetween_loc"]
 noncomputable def inbetween_loc : Location :=
   (if x > d then
     Location.loc_Inexact (compare x ((d + u) / 2))
@@ -148,11 +154,7 @@ noncomputable def inbetween_loc : Location :=
     The computed location accurately represents x's position in `[d, u)`
 -/
 theorem inbetween_spec (Hx : d ≤ x ∧ x < u) :
-    ⦃⌜d ≤ x ∧ x < u⌝⦄
-    (pure (inbetween_loc d u x) : Id Location)
-    ⦃⇓result => ⌜inbetween d u x result⌝⦄ := by
-  intro _
-  simp only [wp, PostCond.noThrow, pure]
+    inbetween d u x (inbetween_loc d u x) := by
   unfold inbetween_loc
   by_cases hx : x > d
   · -- Inexact case: d < x < u and l = compare x mid
@@ -172,6 +174,7 @@ theorem inbetween_spec (Hx : d ≤ x ∧ x < u) :
 
     Two valid locations for the same point must be equal
 -/
+@[flocq_local "Lean-only Boolean probe for the inbetween_unique theorem"]
 def inbetween_unique_check (l l' : Location) : Bool :=
   (l == l')
 
@@ -228,6 +231,7 @@ variable (Hdu : d < u)
 
     Returns whether x is within the interval bounds
 -/
+@[flocq_local "Lean-only Unit carrier for the inbetween_bounds theorem"]
 def inbetween_bounds_check (h : inbetween d u x l) : Unit :=
   -- Computation carries no data; theorem provides the bounds.
   ()
@@ -257,6 +261,7 @@ theorem inbetween_bounds (h : inbetween d u x l) (Hdu : d < u) :
 
     For inexact locations, x is strictly between bounds
 -/
+@[flocq_local "Lean-only Unit carrier for inbetween_bounds_not_Eq"]
 def inbetween_bounds_not_Eq_check (h : inbetween d u x l)
     (hl : l ≠ Location.loc_Exact) : Unit :=
   -- Computation carries no data; theorem provides the strict bounds.
@@ -288,6 +293,7 @@ theorem inbetween_bounds_not_Eq (h : inbetween d u x l)
 
     Returns the ordering based on distances from boundaries
 -/
+@[flocq_local "Lean-only comparison adapter for inbetween_distance_inexact"]
 def inbetween_distance_inexact_compute (ord : Ordering) : Ordering :=
   -- For inexact locations, the result ordering is exactly `compare x mid`.
   -- The compute function just returns the provided ordering parameter.
@@ -337,6 +343,7 @@ theorem inbetween_distance_inexact (ord : Ordering)
 
     Uses absolute values for distance comparison
 -/
+@[flocq_local "Lean-only comparison adapter for inbetween_distance_inexact_abs"]
 def inbetween_distance_inexact_abs_compute (ord : Ordering) : Ordering :=
   ord
 
@@ -394,6 +401,7 @@ theorem inbetween_distance_inexact_abs (ord : Ordering)
 
     Produces an x value that has the given location in `[d, u)`
 -/
+@[flocq_local "Lean-only witness extracted from the source inbetween_ex existence proof"]
 noncomputable def inbetween_ex_witness (d u : ℝ) (l : Location) (Hdu : d < u) : ℝ :=
   -- Choose a witness depending on the desired ordering:
   --  - Exact: pick the lower bound d
@@ -511,6 +519,7 @@ variable (Hstep : 0 < step)
 
     Verifies that consecutive steps are properly ordered
 -/
+@[flocq_local "Lean-only Unit carrier for the ordered_steps proposition"]
 def ordered_steps_check (start step : ℝ) (k : Int) : Unit :=
   -- Computation carries no data; theorem proves the strict inequality.
   ()
@@ -536,6 +545,7 @@ lemma ordered_steps (k : Int) :
 
     Computes the midpoint of a stepped range
 -/
+@[flocq_local "Lean-only midpoint calculation used inside the stepped-range proof"]
 noncomputable def middle_range_calc (start step : ℝ) (k : Int) : ℝ :=
   -- Return the midpoint of the two consecutive stepped points explicitly.
   (start + (start + k * step)) / 2
@@ -559,6 +569,7 @@ variable (Hnb_steps : 1 < nb_steps)
 
     Determines location in larger interval based on step location
 -/
+@[flocq_local "Lean-only computed location for a stepped-range theorem"]
 noncomputable def inbetween_step_not_Eq_compute (start step : ℝ) (nb_steps : Int) (x : ℝ) (k : Int) (ord : Ordering) : Location :=
   -- For the global interval, we keep the same inexact ordering `ord`.
   Location.loc_Inexact ord
@@ -639,6 +650,7 @@ theorem inbetween_step_not_Eq (x : ℝ) (k : Int) (l : Location) (ord : Ordering
 
     Determines location when in lower half of range
 -/
+@[flocq_local "Lean-only computed low location for a stepped-range theorem"]
 def inbetween_step_Lo_compute : Location :=
   (Location.loc_Inexact Ordering.lt)
 
@@ -759,6 +771,7 @@ theorem inbetween_step_Lo (x : ℝ) (k : Int) (l : Location)
 
     Determines location when in upper half of range
 -/
+@[flocq_local "Lean-only computed high location for a stepped-range theorem"]
 def inbetween_step_Hi_compute : Location :=
   (Location.loc_Inexact Ordering.gt)
 
@@ -860,6 +873,8 @@ theorem inbetween_step_Hi (x : ℝ) (k : Int) (l : Location)
 
     Determines location based on even number of steps
 -/
+-- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Calc/Bracket.v#L406
+@[flocq_source "src/Calc/Bracket.v" 406 "new_location_even"]
 noncomputable def new_location_even (nb_steps k : Int) (l : Location) : Location :=
   -- Use explicit integer inequalities instead of generic `compare` to ease reasoning.
   if hkz : k = 0 then
@@ -1210,6 +1225,8 @@ theorem new_location_even_correct (Hnb_steps : 1 < nb_steps)
 
     Determines location based on odd number of steps
 -/
+-- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Calc/Bracket.v#L463
+@[flocq_source "src/Calc/Bracket.v" 463 "new_location_odd"]
 noncomputable def new_location_odd (nb_steps k : Int) (l : Location) : Location :=
   -- Use explicit integer comparisons instead of a generic `compare` to ease reasoning.
   if hkz : k = 0 then
@@ -1624,6 +1641,8 @@ theorem new_location_odd_correct (Hnb_steps : 1 < nb_steps)
 
     Main entry point choosing between even and odd step logic
 -/
+-- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Calc/Bracket.v#L511
+@[flocq_source "src/Calc/Bracket.v" 511 "new_location"]
 noncomputable def new_location (nb_steps k : Int) (l : Location) : Location :=
   if nb_steps % 2 = 0 then
     new_location_even nb_steps k l
@@ -1681,6 +1700,8 @@ theorem new_location_correct (x : ℝ) (k : Int) (l : Location)
 end SteppingRanges
 
 /-- Helper for float location -/
+-- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Calc/Bracket.v#L601
+@[flocq_source "src/Calc/Bracket.v" 601 "inbetween_float"]
 def inbetween_float (beta : Int) [ValidRadix beta] (m e : Int) (x : ℝ) (l : Location) : Prop :=
   -- Source `F2R (Float beta m e)` unfolded.  Keeping the interval predicate
   -- as real arithmetic avoids constructing a source float before a radix

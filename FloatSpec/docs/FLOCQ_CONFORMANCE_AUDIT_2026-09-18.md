@@ -89,7 +89,7 @@ itself is not yet a go-to-source LSP action. This is an incremental coverage
 gate, not a whole-repository map or proof of source equivalence. No Rocq
 compiler or coinduction translation is attempted.
 
-The current paired run validated all 50 pinned source anchors. This confirms
+The current paired run validated all 55 pinned source anchors. This confirms
 their locations and names, not equivalence of the Lean types or bodies.
 
 `Core/FLX.lean` now has whole-file strict coverage for public definitions:
@@ -165,6 +165,17 @@ and the SingleNaN caller consumes the conjunction directly. Paired
 core example checks the halfway location. These
 tests do not establish equivalence on all input mantissas/exponents, and
 the separate core correctness proof still has a legacy triple interface.
+
+`Calc/Bracket.lean` is the eleventh strict-gated module for public
+definitions. Five source-shaped definitions link to `Bracket.v:38,406,463,511,601`;
+twelve Lean-only theorem payloads or local proof adapters are classified.
+Flocq's section variables make `nb_steps` an implicit parameter to its
+stepped-location definitions, while Lean passes it explicitly. Its
+`inbetween_spec` statement now directly asserts the bracketing predicate
+under the same interval premise as the source, with its existing proof.
+Paired even-middle and odd-middle examples exercise two location branches;
+neither the link gate nor these examples inspect the `Location` and
+`inbetween` inductive declarations or certify every theorem and input.
 
 `Calc/Sqrt.lean` is the tenth strict-gated module: its two source-facing
 definitions point to `Sqrt.v:64,172`. Both source correctness contracts are
