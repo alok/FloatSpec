@@ -50,6 +50,16 @@ Run `lake env lean FloatSpec/Test/RoundingWalkthrough.lean` to see the actual
 sign/mantissa/exponent rows. Mantissa 4 or 5 at exponent -2 is 1 or 1.25.
 Larger boundary corpora separately exercise real binary32/binary64 inputs.
 
+One more small example explains why `Prop/Double_rounding` has hypotheses.
+The exact number `73/64 = 1.140625` is just above that three-bit midpoint.
+Nearest-even rounding straight to three bits gives `1.25`. Rounding first
+to four bits gives `1.125`; rounding that to three bits gives `1` instead.
+Extra intermediate precision is not automatically harmless. The matching
+[Lean](../../scripts/fixtures/DoubleRoundingWitness.lean) and
+[Rocq](../../scripts/fixtures/DoubleRoundingWitness.v) fixtures execute and
+prove this example for both signs. This is a counterexample to unconditional
+double-rounding equality, not to Flocq's conditional theorems.
+
 ## 2. Know what a value is before reading its arithmetic
 
 A finite float has a sign, a positive integer mantissa, and an integer
@@ -121,6 +131,16 @@ a conversion with a wrapper defined to be that same expression. It was
 provable but missed the intended relationship. The repaired theorem compares
 full-float validity with an independently defined SingleNaN validity
 predicate, under the source's non-NaN premise.
+
+Assumptions matter for error bounds too. In the three-bit format with minimum
+exponent -4, the usual nearest-rounding relative bound is `1/8`. But the tiny
+value `2^-8` rounds to zero, so its relative error is one. Below normal
+magnitude, an absolute error term is needed instead. The paired
+[Lean](../../scripts/fixtures/RelativeErrorGrid.lean) and
+[Rocq](../../scripts/fixtures/RelativeErrorGrid.v) tests check 4,092 signed
+nearest-rounding cases using exact integer arithmetic, including this
+counterexample to dropping the normal-magnitude premise. Their finite grid
+is separate from the universal real-valued theorems.
 
 FTZ had a similar issue at the definition level. Its old predicate was simply
 generic-format membership, so conversion theorems concealed the intended
