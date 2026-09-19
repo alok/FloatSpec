@@ -47,19 +47,29 @@ The source's finite and NaN constructors explain the Lean branches. The
 adjacent `Source:` URL is clickable in editors that recognize URLs; the path
 string inside the attribute is not yet a special go-to-source action.
 
-`linter.coqSource` can be enabled in a source-facing Lean module to warn when
-a public definition lacks this attribute. It is currently enabled for the six
-public definitions in [`BitsSourceFacade.lean`](../src/IEEE754/BitsSourceFacade.lean)
-and locally for `valid_binary`. A link proves neither that the Coq name exists
-at that line nor that the Lean body is equivalent; those require source review
-and paired tests or proofs.
+`linter.coqSource` checks that an opted-in public definition has either a
+pinned `@[flocq_source]` reference or an explicit `@[flocq_local "reason"]`
+classification. [`Core/Defs.lean`](../src/Core/Defs.lean) is now an entire
+strict-gated module: its eleven source-shaped definitions link to pinned
+`Defs.v` lines, and its eight public Lean-only helpers state why they have no
+direct Coq declaration. The module treats an unclassified definition warning
+as a build error. The six public definitions in
+[`BitsSourceFacade.lean`](../src/IEEE754/BitsSourceFacade.lean) and
+`Binary.valid_binary` are also linked, though those modules do not yet have
+whole-file strict coverage. Ordinary `Source:` URL comments beside the
+`Defs.lean` attributes can be opened from an editor; the attribute string
+itself is not yet a special go-to-source action. The paired conformance command
+checks all 18 annotated path/line/name anchors against the pinned Flocq
+checkout. A correct anchor does not establish that the Lean type, body, or
+proof matches Coq; those require source review and paired tests or proofs.
 
 ## 4. What the checks establish
 
 `lake build` typechecks the present Lean statements. The paired
-`scripts/test_flocq_conformance.sh` builds the pinned Flocq source and checks
-small examples on each side; it catches selected counterexamples, not all
-inputs. `scripts/check_proof_debts.py` rejects unregistered `sorry` and trust
+`scripts/test_flocq_conformance.sh` checks source anchors, builds the pinned
+Flocq source, and checks small examples on each side; it catches selected
+counterexamples, not all inputs. `scripts/check_proof_debts.py` rejects
+unregistered `sorry` and trust
 escapes. Its four registered debts are in `proof_debts.json`: sign-bit
 negation, native `frExp`, native next-up, and native next-down. A theorem with
 `sorry` is an explicitly unproved claim even when the build passes.

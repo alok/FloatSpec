@@ -25,7 +25,19 @@ structure SourceRef where
   coqName : String
   deriving Inhabited
 
+/-- A public Lean helper that deliberately has no same-named Flocq declaration. -/
+structure LocalRef where
+  declName : Name
+  reason : String
+  deriving Inhabited
+
 initialize sourceExt : SimplePersistentEnvExtension SourceRef (Array SourceRef) ←
+  registerSimplePersistentEnvExtension {
+    addImportedFn entries := entries.flatten
+    addEntryFn entries entry := entries.push entry
+  }
+
+initialize localExt : SimplePersistentEnvExtension LocalRef (Array LocalRef) ←
   registerSimplePersistentEnvExtension {
     addImportedFn entries := entries.flatten
     addEntryFn entries entry := entries.push entry
@@ -34,6 +46,10 @@ initialize sourceExt : SimplePersistentEnvExtension SourceRef (Array SourceRef) 
 /-- Look up a declaration's pinned Flocq source reference. -/
 def sourceRef? (env : Environment) (declName : Name) : Option SourceRef :=
   (sourceExt.getState env).find? (·.declName == declName)
+
+/-- Look up the reason a public definition has no direct Flocq counterpart. -/
+def localRef? (env : Environment) (declName : Name) : Option LocalRef :=
+  (localExt.getState env).find? (·.declName == declName)
 
 /-- A clickable link to the pinned source declaration. -/
 def sourceUrl (ref : SourceRef) : String :=
@@ -64,12 +80,29 @@ initialize registerBuiltinAttribute {
       { declName := decl, path, line, coqName })
 }
 
+syntax (name := flocqLocalAttr) "flocq_local " str : attr
+
+initialize registerBuiltinAttribute {
+  name := `flocqLocalAttr
+  descr := "Classify a public FloatSpec-only helper with no direct Flocq declaration."
+  applicationTime := .beforeElaboration
+  add := fun decl stx _kind => do
+    let `(attr| flocq_local $reason:str) := stx
+      | throwUnsupportedSyntax
+    let reason := reason.getString.trimAscii.toString
+    if reason.isEmpty then
+      throwError "flocq_local requires a nonempty reason"
+    modifyEnv (FloatSpec.Linter.CoqSource.localExt.addEntry ·
+      { declName := decl, reason })
+}
+
 namespace FloatSpec.Linter.CoqSource
 
 /-- Require a pinned Flocq source link on public definitions in an opted-in module. -/
+-- Explicitly classified Lean-only helpers are exempt from the source-link requirement.
 register_option linter.coqSource : Bool := {
   defValue := false
-  descr := "warn when a public def/abbrev lacks @[flocq_source]"
+  descr := "warn when a public def/abbrev lacks @[flocq_source] or @[flocq_local]"
 }
 
 private def definitionId? (stx : Syntax) : Option Syntax := do
@@ -91,11 +124,11 @@ def coqSourceLinter : Linter where run := withSetOptionIn fun stx => do
   if id.isMissing then return
   let name := (← getCurrNamespace) ++ id.getId
   if isPrivateName name then return
-  unless hasSourceRef env name do
+  unless hasSourceRef env name || (localRef? env name).isSome do
     logLint linter.coqSource id
-      s!"public definition {name} has no pinned Flocq link; add \
+      s!"public definition {name} is unclassified; add \
         @[flocq_source \"src/Module.v\" LINE \"coq_name\"] \
-        or keep a FloatSpec-only helper outside the source-facing surface"
+        or @[flocq_local \"reason\"]"
 
 initialize addLinter coqSourceLinter
 

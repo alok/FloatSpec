@@ -39,6 +39,8 @@ Lean toolchain available. It resolves `HEAD:Deps/flocq`, verifies a supplied
 compiles the pinned Rocq observations, then builds the paired Lean module.
 The script never resets the user's nested checkout. The protected-axiom and
 native-decide scanner fixtures are in `scripts/test_audit_placeholders.sh`.
+It also checks each annotated source path, line, and declaration name against
+the pinned checkout before attempting either language build.
 
 On this macOS host, Rocq compiled the pinned source and all paired Coq
 examples. Lean's pinned `v4.34.0-rc2` Lake crashed locally before building,
@@ -72,13 +74,20 @@ correspondence theorems are deliberately named `sorry` obligations recorded in
 `proof_debts.json`. These statements compile, but no native-runtime theorem is
 claimed proved. CI rejects any unregistered `sorry` or trust escape.
 
-`@[flocq_source]` records a pinned path, line, and Coq name for six public
-definitions in `BitsSourceFacade` and `Binary.valid_binary`. The opt-in
-`linter.coqSource` warns on unmapped public definitions in an enabled module.
-The `Source:` URL comments provide editor-clickable links to the pinned Coq
-lines; the attribute string itself is not yet a go-to-source LSP action. This
-is a first coverage gate, not a whole-repository map. No Rocq compiler or
-coinduction translation is attempted.
+`@[flocq_source]` records a pinned path, line, and Coq name. Eleven source-
+shaped public definitions in `Core/Defs.lean` now have such references, and
+its eight public Lean-only helpers have reason-bearing `@[flocq_local]`
+classifications. That whole module enables `linter.coqSource` and treats an
+unclassified-definition warning as a build error. Six definitions in
+`BitsSourceFacade` and `Binary.valid_binary` retain their source references;
+those files are not yet whole-file strict gates. The `Source:` URL comments
+provide editor-clickable links to pinned Coq lines; the attribute string
+itself is not yet a go-to-source LSP action. This is an incremental coverage
+gate, not a whole-repository map or proof of source equivalence. No Rocq
+compiler or coinduction translation is attempted.
+
+The current paired run validated all 18 pinned source anchors. This confirms
+their locations and names, not equivalence of the Lean types or bodies.
 
 The `Std.Do`/Hoare layer was separately reviewed: sampled float modules use
 `Id` wrappers for pure operations, and no actual `mvcgen` tactic call was

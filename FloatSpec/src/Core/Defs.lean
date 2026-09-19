@@ -18,11 +18,15 @@ COPYING file for more details.
 
 import FloatSpec.src.Core.Raux
 import FloatSpec.src.Core.Zaux
+import FloatSpec.Linter.CoqSourceLinter
 -- import Mathlib.Data.Real.Basic
 import Std.Do.Triple
 
 open Real
 open Std.Do
+
+set_option linter.coqSource true
+set_option warningAsError true
 
 /-- Precision is strictly positive.
 
@@ -43,6 +47,7 @@ class ValidRadix (beta : Int) : Prop where
   valid : 1 < beta
 
 /-- Canonical structured radix corresponding to a valid integer index. -/
+@[flocq_local "Bridge from the integer-indexed Lean API to Flocq's structured radix"]
 def ValidRadix.toRadix (beta : Int) [ValidRadix beta] : FloatSpec.Core.Zaux.Radix :=
   ⟨beta, by have h := ValidRadix.valid (beta := beta); omega⟩
 
@@ -69,6 +74,7 @@ structure FlocqFloat (beta : Int) [ValidRadix beta] where
   Fexp : Int
 
 /-- Recover the canonical source radix carried by a float's type context. -/
+@[flocq_local "Lean accessor for the ValidRadix bridge, not a Flocq declaration"]
 def FlocqFloat.radix {beta : Int} [ValidRadix beta]
     (_f : FlocqFloat beta) : FloatSpec.Core.Zaux.Radix :=
   ValidRadix.toRadix beta
@@ -83,6 +89,8 @@ variable {beta : Int} [ValidRadix beta]
     as approximations of real numbers.
 -/
 
+-- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Core/Defs.v#L36
+@[flocq_source "src/Core/Defs.v" 36 "F2R"]
 noncomputable def F2R (f : FlocqFloat beta) : ℝ :=
   (f.Fnum * (beta : ℝ) ^ f.Fexp)
 
@@ -169,6 +177,8 @@ section RoundingPredicates
     in the format that the predicate relates to it.
     This ensures rounding is always possible.
 -/
+-- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Core/Defs.v#L40
+@[flocq_source "src/Core/Defs.v" 40 "round_pred_total"]
 def round_pred_total (P : ℝ → ℝ → Prop) : Prop :=
   ∀ x : ℝ, ∃ f : ℝ, P x f
 
@@ -178,6 +188,8 @@ def round_pred_total (P : ℝ → ℝ → Prop) : Prop :=
     then f ≤ g. This preserves the ordering of values
     through the rounding process.
 -/
+-- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Core/Defs.v#L43
+@[flocq_source "src/Core/Defs.v" 43 "round_pred_monotone"]
 def round_pred_monotone (P : ℝ → ℝ → Prop) : Prop :=
   ∀ x y f g : ℝ, P x f → P y g → x ≤ y → f ≤ g
 
@@ -186,6 +198,8 @@ def round_pred_monotone (P : ℝ → ℝ → Prop) : Prop :=
     Combines totality and monotonicity to ensure
     well-behaved rounding operations.
 -/
+-- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Core/Defs.v#L46
+@[flocq_source "src/Core/Defs.v" 46 "round_pred"]
 def round_pred (P : ℝ → ℝ → Prop) : Prop :=
   round_pred_total P ∧ round_pred_monotone P
 
@@ -198,6 +212,8 @@ section RoundingModes
     Rounds to the largest representable value not exceeding x.
     This is also known as rounding down or floor rounding.
 -/
+-- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Core/Defs.v#L59
+@[flocq_source "src/Core/Defs.v" 59 "Rnd_DN_pt"]
 def Rnd_DN_pt (F : ℝ → Prop) (x f : ℝ) : Prop :=
   F f ∧ f ≤ x ∧ ∀ g : ℝ, F g → g ≤ x → g ≤ f
 
@@ -206,6 +222,8 @@ def Rnd_DN_pt (F : ℝ → Prop) (x f : ℝ) : Prop :=
     Rounds to the smallest representable value not less than x.
     This is also known as rounding up or ceiling rounding.
 -/
+-- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Core/Defs.v#L64
+@[flocq_source "src/Core/Defs.v" 64 "Rnd_UP_pt"]
 def Rnd_UP_pt (F : ℝ → Prop) (x f : ℝ) : Prop :=
   F f ∧ x ≤ f ∧ ∀ g : ℝ, F g → x ≤ g → f ≤ g
 
@@ -214,6 +232,8 @@ def Rnd_UP_pt (F : ℝ → Prop) (x f : ℝ) : Prop :=
     Rounds positive values down and negative values up,
     effectively truncating toward zero.
 -/
+-- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Core/Defs.v#L69
+@[flocq_source "src/Core/Defs.v" 69 "Rnd_ZR_pt"]
 def Rnd_ZR_pt (F : ℝ → Prop) (x f : ℝ) : Prop :=
   (0 ≤ x → Rnd_DN_pt F x f) ∧ (x ≤ 0 → Rnd_UP_pt F x f)
 
@@ -223,6 +243,8 @@ def Rnd_ZR_pt (F : ℝ → Prop) (x f : ℝ) : Prop :=
     This definition allows any tie-breaking rule when
     two values are equidistant.
 -/
+-- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Core/Defs.v#L74
+@[flocq_source "src/Core/Defs.v" 74 "Rnd_N_pt"]
 def Rnd_N_pt (F : ℝ → Prop) (x f : ℝ) : Prop :=
   F f ∧ ∀ g : ℝ, F g → |f - x| ≤ |g - x|
 
@@ -231,6 +253,8 @@ def Rnd_N_pt (F : ℝ → Prop) (x f : ℝ) : Prop :=
     Extends Rnd_N_pt with a predicate P that specifies
     the tie-breaking rule when multiple values are nearest.
 -/
+-- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Core/Defs.v#L78
+@[flocq_source "src/Core/Defs.v" 78 "Rnd_NG_pt"]
 def Rnd_NG_pt (F : ℝ → Prop) (P : ℝ → ℝ → Prop) (x f : ℝ) : Prop :=
   Rnd_N_pt F x f ∧ (P x f ∨ ∀ f2 : ℝ, Rnd_N_pt F x f2 → f2 = f)
 
@@ -239,6 +263,8 @@ def Rnd_NG_pt (F : ℝ → Prop) (P : ℝ → ℝ → Prop) (x f : ℝ) : Prop :
     When two values are equidistant, chooses the one
     with larger absolute value.
 -/
+-- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Core/Defs.v#L82
+@[flocq_source "src/Core/Defs.v" 82 "Rnd_NA_pt"]
 def Rnd_NA_pt (F : ℝ → Prop) (x f : ℝ) : Prop :=
   Rnd_N_pt F x f ∧ ∀ f2 : ℝ, Rnd_N_pt F x f2 → |f2| ≤ |f|
 
@@ -247,6 +273,8 @@ def Rnd_NA_pt (F : ℝ → Prop) (x f : ℝ) : Prop :=
     When two values are equidistant, chooses the one
     with smaller absolute value.
 -/
+-- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Core/Defs.v#L86
+@[flocq_source "src/Core/Defs.v" 86 "Rnd_N0_pt"]
 def Rnd_N0_pt (F : ℝ → Prop) (x f : ℝ) : Prop :=
   Rnd_N_pt F x f ∧ ∀ f2 : ℝ, Rnd_N_pt F x f2 → |f| ≤ |f2|
 
@@ -258,6 +286,7 @@ section HelperFunctions
 
     Simple accessor function for the mantissa field.
 -/
+@[flocq_local "Lean convenience accessor; Flocq uses the float record projection Fnum"]
 def Fnum_extract {beta : Int} [ValidRadix beta] (f : FlocqFloat beta) : Int :=
   f.Fnum
 
@@ -276,6 +305,7 @@ theorem Fnum_extract_spec {beta : Int} [ValidRadix beta] (f : FlocqFloat beta) :
 
     Simple accessor function for the exponent field.
 -/
+@[flocq_local "Lean convenience accessor; Flocq uses the float record projection Fexp"]
 def Fexp_extract {beta : Int} [ValidRadix beta] (f : FlocqFloat beta) : Int :=
   f.Fexp
 
@@ -294,6 +324,7 @@ theorem Fexp_extract_spec {beta : Int} [ValidRadix beta] (f : FlocqFloat beta) :
 
     Constructor function for building floating-point values.
 -/
+@[flocq_local "Lean convenience constructor; Flocq uses the Float record constructor"]
 def make_float {beta : Int} [ValidRadix beta] (num exp : Int) : FlocqFloat beta :=
   ⟨num, exp⟩
 
@@ -316,6 +347,7 @@ section StructuralProperties
 
     Returns true if both mantissa and exponent match.
 -/
+@[flocq_local "Lean Boolean equality helper, not a declaration in Flocq Defs.v"]
 def FlocqFloat_eq {beta : Int} [ValidRadix beta] (f g : FlocqFloat beta) : Bool :=
   (f.Fnum == g.Fnum && f.Fexp == g.Fexp)
 
@@ -335,6 +367,7 @@ theorem FlocqFloat_eq_spec {beta : Int} [ValidRadix beta] (f g : FlocqFloat beta
 
     The zero float (0, 0) should convert to real zero.
 -/
+@[flocq_local "Lean convenience example specializing F2R to the zero float"]
 noncomputable def F2R_zero_float {beta : Int} [ValidRadix beta] : ℝ :=
   F2R (⟨0, 0⟩ : FlocqFloat beta)
 
@@ -354,6 +387,7 @@ theorem F2R_zero_spec {beta : Int} [ValidRadix beta] :
     When two floats have the same exponent, their sum
     can be computed by adding mantissas.
 -/
+@[flocq_local "Lean convenience pair for an additive F2R regression"]
 noncomputable def F2R_add_same_exp {beta : Int} [ValidRadix beta] (f g : FlocqFloat beta) : (ℝ × ℝ) :=
   let sum_float : FlocqFloat beta := ⟨f.Fnum + g.Fnum, f.Fexp⟩
   let f_real := F2R f

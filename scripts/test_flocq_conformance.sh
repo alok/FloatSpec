@@ -41,6 +41,9 @@ else
   flocq_dir="$managed_worktree"
 fi
 
+python3 "$repo_root/scripts/validate_flocq_source_refs.py" "$flocq_dir" \
+  --lean-dir "$repo_root/FloatSpec/src"
+
 if [[ "${FLOCQ_SKIP_BUILD:-0}" != "1" ]]; then
   (
     cd "$flocq_dir"
