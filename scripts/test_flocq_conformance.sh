@@ -55,7 +55,7 @@ fi
 
 cat >"$scratch/FloatSpecConformance.v" <<'COQ'
 From Stdlib Require Import ZArith.
-From Flocq Require Import Core.Zaux Core.Defs Core.FIX Calc.Plus Calc.Round IEEE754.Binary Pff.Pff2FlocqAux.
+From Flocq Require Import Core.Zaux Core.Defs Core.FIX Calc.Operations Calc.Plus Calc.Round IEEE754.Binary Pff.Pff2FlocqAux.
 
 Open Scope Z_scope.
 
@@ -69,6 +69,12 @@ Example fplus_core_positive_control :
     (let beta := Build_radix 2 eq_refl in
       Fplus_core beta 1 0 0 1 0) =
     (1, SpecFloat.loc_Exact).
+Proof. vm_compute. reflexivity. Qed.
+
+Example falign_reverse_exponent :
+    (let beta := Build_radix 2 eq_refl in
+      Operations.Falign (Float beta 1 0) (Float beta 1 (-1))) =
+    (2, 1, -1).
 Proof. vm_compute. reflexivity. Qed.
 
 Example fplus_close_magnitudes :

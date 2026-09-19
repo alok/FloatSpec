@@ -88,7 +88,7 @@ itself is not yet a go-to-source LSP action. This is an incremental coverage
 gate, not a whole-repository map or proof of source equivalence. No Rocq
 compiler or coinduction translation is attempted.
 
-The current paired run validated all 30 pinned source anchors. This confirms
+The current paired run validated all 36 pinned source anchors. This confirms
 their locations and names, not equivalence of the Lean types or bodies.
 
 `Core/FLX.lean` now has whole-file strict coverage for public definitions:
@@ -119,6 +119,16 @@ uses that operation's real-value theorem. A paired `(1,0)+(1,1)=(3,0)`
 example exercises the branch. The `Operations.Fplus` implementation itself
 still needs a separate source review; a matching example is not a universal
 equivalence proof.
+
+`Calc/Operations.lean` is strict-gated for `Falign`, `Fopp`, `Fabs`, `Fplus`,
+`Fminus`, and `Fmult` at pinned `Operations.v:37,70,81,92,131,152`. Four
+Lean-only projections and same-exponent wrappers are classified. The
+`Falign` branches use natural powers of nonnegative exponent differences,
+while the source spells these as total `Zpower`; the branch guards make the
+differences nonnegative, and the existing Lean value-preservation proof
+typechecks. A paired reverse-exponent alignment example checks `(1,0)` and
+`(1,-1)` produce `(2,1,-1)` on both sides. This is a targeted comparison,
+not a full differential audit of every operation.
 
 `Core/FTZ.lean` is the third strict-gated public-definition module: three
 source-shaped definitions link to `FTZ.v`, while four Lean-local Boolean

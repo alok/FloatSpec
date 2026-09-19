@@ -59,7 +59,7 @@ as a build error. The six public definitions in
 whole-file strict coverage. Ordinary `Source:` URL comments beside the
 `Defs.lean` attributes can be opened from an editor; the attribute string
 itself is not yet a special go-to-source action. The paired conformance command
-checks all 30 annotated path/line/name anchors against the pinned Flocq
+checks all 36 annotated path/line/name anchors against the pinned Flocq
 checkout. A correct anchor does not establish that the Lean type, body, or
 proof matches Coq; those require source review and paired tests or proofs.
 
@@ -81,6 +81,13 @@ classified. The main `Fplus` close-magnitude branch now uses the same
 `Operations.Fplus` decomposition as the source; one paired exact-addition
 example checks that branch. This does not review every input or certify the
 separate `Operations.Fplus` implementation.
+[`Calc/Operations.lean`](../src/Calc/Operations.lean) is the seventh
+strict-gated module: six primitive float operations point to their source
+declarations and four Lean-only projections or same-exponent wrappers explain
+why they lack a standalone Coq definition. Paired examples exercise
+`Operations.Fplus` on close magnitudes and `Falign` when the second exponent
+is lower, but six correct source links and two examples do not certify all
+operation inputs.
 
 ## 4. What the checks establish
 

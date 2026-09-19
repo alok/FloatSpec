@@ -24,6 +24,11 @@ example :
   rfl
 
 example :
+    FloatSpec.Calc.Operations.Falign 2 ⟨1, 0⟩ ⟨1, -1⟩ =
+      (2, 1, -1) := by
+  rfl
+
+example :
     FloatSpec.Calc.Plus.Fplus 2 (FloatSpec.Core.FIX.FIX_exp 0)
       ⟨1, 0⟩ ⟨1, 1⟩ =
       (3, 0, Location.loc_Exact) := by

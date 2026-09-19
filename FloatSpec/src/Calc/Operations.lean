@@ -6,6 +6,7 @@ Basic operations on floats: alignment, addition, multiplication
 Translated from Coq file: flocq/src/Calc/Operations.v
 -/
 
+import FloatSpec.Linter.OmegaLinter
 import FloatSpec.src.Core.Zaux
 import FloatSpec.src.Core.Raux
 import FloatSpec.src.Core.Defs
@@ -16,6 +17,9 @@ import FloatSpec.src.SimprocWP
 
 open Real FloatSpec.Core.Defs
 open Std.Do
+
+set_option linter.coqSource true
+set_option warningAsError true
 
 namespace FloatSpec.Calc.Operations
 
@@ -29,6 +33,8 @@ section FloatAlignment
     which is the minimum of the two original exponents. This enables
     direct mantissa operations while preserving values.
 -/
+-- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Calc/Operations.v#L37
+@[flocq_source "src/Calc/Operations.v" 37 "Falign"]
 def Falign (f1 f2 : FlocqFloat beta) : (Int × Int × Int) :=
   let m1 := f1.Fnum
   let e1 := f1.Fexp
@@ -102,6 +108,7 @@ theorem Falign_spec (f1 f2 : FlocqFloat beta) :
 
     Returns the common exponent after alignment
 -/
+@[flocq_local "Lean-only projection of source Falign; source states Falign_spec_exp as a theorem"]
 def Falign_exp (f1 f2 : FlocqFloat beta) : Int :=
   let (_, _, e) := Falign beta f1 f2
   e
@@ -135,6 +142,8 @@ section FloatNegation
 
     Negation flips the sign of the mantissa while preserving the exponent
 -/
+-- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Calc/Operations.v#L70
+@[flocq_source "src/Calc/Operations.v" 70 "Fopp"]
 def Fopp (f1 : FlocqFloat beta) : (FlocqFloat beta) :=
   FlocqFloat.mk (-f1.Fnum) f1.Fexp
 
@@ -157,6 +166,8 @@ section FloatAbsoluteValue
 
     Takes the absolute value of the mantissa, keeping exponent unchanged
 -/
+-- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Calc/Operations.v#L81
+@[flocq_source "src/Calc/Operations.v" 81 "Fabs"]
 def Fabs (f1 : FlocqFloat beta) : (FlocqFloat beta) :=
   FlocqFloat.mk (Int.natAbs f1.Fnum) f1.Fexp
 
@@ -185,6 +196,8 @@ section FloatAddition
 
     Aligns the floats to a common exponent then adds their mantissas
 -/
+-- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Calc/Operations.v#L92
+@[flocq_source "src/Calc/Operations.v" 92 "Fplus"]
 def Fplus (f1 f2 : FlocqFloat beta) : (FlocqFloat beta) :=
   let (m1, m2, e) := Falign beta f1 f2
   FlocqFloat.mk (m1 + m2) e
@@ -297,6 +310,7 @@ theorem F2R_plus (f1 f2 : FlocqFloat beta) :
 
     Direct mantissa addition when exponents match
 -/
+@[flocq_local "Lean-only wrapper around Fplus for source theorem Fplus_same_exp"]
 def Fplus_same_exp (m1 m2 e : Int) : FlocqFloat beta :=
   Fplus beta (FlocqFloat.mk m1 e) (FlocqFloat.mk m2 e)
 
@@ -317,6 +331,7 @@ theorem Fplus_same_exp_spec (m1 m2 e : Int) :
 
     Returns the exponent of the sum of two floats
 -/
+@[flocq_local "Lean-only projection of Fplus for source theorem Fexp_Fplus"]
 def Fexp_Fplus (f1 f2 : FlocqFloat beta) : Int :=
   (Fplus beta f1 f2).Fexp
 
@@ -349,6 +364,8 @@ section FloatSubtraction
 
     Subtraction is addition of the negation
 -/
+-- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Calc/Operations.v#L131
+@[flocq_source "src/Calc/Operations.v" 131 "Fminus"]
 def Fminus (f1 f2 : FlocqFloat beta) : (FlocqFloat beta) :=
   Fplus beta f1 (Fopp beta f2)
 
@@ -460,6 +477,7 @@ theorem F2R_minus (f1 f2 : FlocqFloat beta) :
 
     Direct mantissa subtraction when exponents match
 -/
+@[flocq_local "Lean-only wrapper around Fminus for source theorem Fminus_same_exp"]
 def Fminus_same_exp (m1 m2 e : Int) : FlocqFloat beta :=
   Fminus beta (FlocqFloat.mk m1 e) (FlocqFloat.mk m2 e)
 
@@ -485,6 +503,8 @@ section FloatMultiplication
 
     Multiplication multiplies mantissas and adds exponents
 -/
+-- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Calc/Operations.v#L152
+@[flocq_source "src/Calc/Operations.v" 152 "Fmult"]
 def Fmult (f1 f2 : FlocqFloat beta) : (FlocqFloat beta) :=
   FlocqFloat.mk (f1.Fnum * f2.Fnum) (f1.Fexp + f2.Fexp)
 
