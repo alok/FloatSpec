@@ -113,6 +113,16 @@ that same *shape*, instead of wrapping the predicates in `Id` Hoare triples.
 the reverse theorem does not. This checks the interface, not every detail of
 the predicate implementations or proof correspondence.
 
+The same file has a second predicate, `FLXN_format`, which records a
+*normal* mantissa for nonzero values. Its two conversions now follow the
+source's direct-implication form:
+[`generic_format_FLXN`](https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Core/FLX.v#L142)
+goes from the normal witness to the generic format, and
+[`FLXN_format_generic`](https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Core/FLX.v#L156)
+reconstructs the witness under positive precision. Both existing proofs
+typecheck; this still does not establish a theorem-by-theorem equivalence
+audit of all of `FLX.lean`.
+
 The FTZ format shows why the distinction matters. Pinned Flocq
 [`FTZ_format`](https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Core/FTZ.v#L36)
 requires a float witness with a normalized mantissa and a minimum exponent.

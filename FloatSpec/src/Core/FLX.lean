@@ -383,11 +383,9 @@ Theorem generic_format_FLXN:
   forall x, FLXN_format x -> generic_format beta FLX_exp x.
 -/
 theorem generic_format_FLXN (beta : Int) [ValidRadix beta] (x : ℝ) :
-    ⦃⌜FLXN_format prec beta x⌝⦄
-    (pure (FloatSpec.Core.Generic_fmt.generic_format beta (FLX_exp prec) x) : Id Prop)
-    ⦃⇓result => ⌜result⌝⦄ := by
+    FLXN_format prec beta x →
+      FloatSpec.Core.Generic_fmt.generic_format beta (FLX_exp prec) x := by
   intro hx
-  simp only [wp, PostCond.noThrow, pure]
   rcases hx with ⟨f, hxf, hnorm⟩
   by_cases hx0 : x = 0
   · rw [hx0]
@@ -402,11 +400,9 @@ Theorem FLXN_format_generic:
 -/
 theorem FLXN_format_generic (beta : Int) [ValidRadix beta] [Prec_gt_0 prec]
     (x : ℝ) :
-    ⦃⌜FloatSpec.Core.Generic_fmt.generic_format beta (FLX_exp prec) x⌝⦄
-    (pure (FLXN_format prec beta x) : Id Prop)
-    ⦃⇓result => ⌜result⌝⦄ := by
+    FloatSpec.Core.Generic_fmt.generic_format beta (FLX_exp prec) x →
+      FLXN_format prec beta x := by
   intro hx
-  simp only [wp, PostCond.noThrow, pure]
   let m := Ztrunc (scaled_mantissa beta (FLX_exp prec) x)
   let e := cexp beta (FLX_exp prec) x
   refine ⟨(FlocqFloat.mk m e : FlocqFloat beta), ?_, ?_⟩

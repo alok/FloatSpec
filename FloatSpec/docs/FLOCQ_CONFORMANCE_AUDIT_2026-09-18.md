@@ -95,6 +95,10 @@ their locations and names, not equivalence of the Lean types or bodies.
 six Lean-local checks, payloads, or aliases are explicitly classified. The
 source-shaped predicates were manually compared at their declarations; the
 gate itself checks only coverage and source-anchor location, not their meaning.
+Its `generic_format_FLXN` and `FLXN_format_generic` theorems now have direct
+implication types matching the pinned source statements at `FLX.v:142,156`.
+The existing proofs and downstream callers typecheck without another debt;
+this is a contract-shape check, not full semantic equivalence.
 
 `Core/FTZ.lean` is the third strict-gated public-definition module: three
 source-shaped definitions link to `FTZ.v`, while four Lean-local Boolean
