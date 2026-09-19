@@ -249,27 +249,13 @@ theorem inbetween_bounds_not_Eq (h : inbetween d u x l)
   | inbetween_Inexact _ hbounds _ =>
       exact And.intro hbounds.1 hbounds.2
 
-/-- Compare distances for inexact location
-
-    Returns the ordering based on distances from boundaries
--/
-@[flocq_local "Lean-only comparison adapter for inbetween_distance_inexact"]
-def inbetween_distance_inexact_compute (ord : Ordering) : Ordering :=
-  -- For inexact locations, the result ordering is exactly `compare x mid`.
-  -- The compute function just returns the provided ordering parameter.
-  ord
-
 /-- Specification: Distance comparison for inexact locations
 
     The ordering reflects relative distances from interval endpoints
 -/
 theorem inbetween_distance_inexact (ord : Ordering)
     (h : inbetween d u x (Location.loc_Inexact ord)) :
-    ⦃⌜inbetween d u x (Location.loc_Inexact ord)⌝⦄
-    (pure (inbetween_distance_inexact_compute ord) : Id Ordering)
-    ⦃⇓result => ⌜compare (x - d) (u - x) = result⌝⦄ := by
-  intro _
-  simp only [wp, PostCond.noThrow, pure, inbetween_distance_inexact_compute]
+    compare (x - d) (u - x) = ord := by
   -- Extract facts from the inexact-location hypothesis
   cases h with
   | inbetween_Inexact _ _ hc =>
@@ -299,25 +285,13 @@ theorem inbetween_distance_inexact (ord : Ordering)
         simpa [hcmp_mid] using hc
       exact this
 
-/-- Compute absolute distance comparison
-
-    Uses absolute values for distance comparison
--/
-@[flocq_local "Lean-only comparison adapter for inbetween_distance_inexact_abs"]
-def inbetween_distance_inexact_abs_compute (ord : Ordering) : Ordering :=
-  ord
-
 /-- Specification: Absolute distance comparison
 
     The ordering reflects absolute distances from boundaries
 -/
 theorem inbetween_distance_inexact_abs (ord : Ordering)
     (h : inbetween d u x (Location.loc_Inexact ord)) :
-    ⦃⌜inbetween d u x (Location.loc_Inexact ord)⌝⦄
-    (pure (inbetween_distance_inexact_abs_compute ord) : Id Ordering)
-    ⦃⇓result => ⌜compare (|d - x|) (|u - x|) = result⌝⦄ := by
-  intro _
-  simp only [wp, PostCond.noThrow, pure, inbetween_distance_inexact_abs_compute]
+    compare (|d - x|) (|u - x|) = ord := by
   -- Use the inexact-location hypothesis to rewrite absolute values
   cases h with
   | inbetween_Inexact _ hbounds hcmp =>

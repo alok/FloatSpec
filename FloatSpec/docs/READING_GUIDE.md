@@ -151,15 +151,16 @@ not change the previously unreviewed modules.
 
 [`Calc/Bracket.lean`](../src/Calc/Bracket.lean) is the eleventh
 strict-gated public-definition module: five definitions have pinned
-`Bracket.v` links and nine proof adapters or local checks are marked
+`Bracket.v` links and seven proof adapters or local checks are marked
 Lean-only. Flocq's stepped-location definitions acquire `nb_steps` from a
 section; Lean passes it explicitly. Two paired examples check an exact
 middle step with even `nb_steps` and an inexact middle step with odd
 `nb_steps`. The four elementary interval theorems—`inbetween_spec`,
 `inbetween_unique`, `inbetween_bounds`, and `inbetween_bounds_not_Eq`—
 now state the source's direct propositions rather than `Id` triples.
-Their proofs still typecheck; three now-unused Boolean/Unit probe definitions
-were removed. The source-location
+Two more inexact distance-comparison theorems also have direct source-shaped
+equalities. Their proofs still typecheck; five now-unused Boolean, Unit, or
+identity probe definitions were removed. The source-location
 gate does not inspect the `Location`/`inbetween` inductive declarations,
 the other Bracket theorem statements, or the theorem proofs. Those remain
 outside this targeted review.
