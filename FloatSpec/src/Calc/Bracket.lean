@@ -354,11 +354,8 @@ noncomputable def inbetween_ex_witness (d u : ℝ) (l : Location) (Hdu : d < u) 
     For any valid interval and location, there exists a corresponding point
 -/
 theorem inbetween_ex (d u : ℝ) (l : Location) (Hdu : d < u) :
-    ⦃⌜d < u⌝⦄
-    (pure (inbetween_ex_witness d u l Hdu) : Id ℝ)
-    ⦃⇓x => ⌜inbetween d u x l⌝⦄ := by
-  intro _
-  simp only [wp, PostCond.noThrow, pure]
+    ∃ x, inbetween d u x l := by
+  refine ⟨inbetween_ex_witness d u l Hdu, ?_⟩
   -- Now prove the postcondition on the concrete returned value.
   cases l with
   | loc_Exact =>
@@ -2548,14 +2545,8 @@ theorem inbetween_float_ex
     -- Rewrite in terms of F2R-based bounds d and u
     simpa [d, u, FloatSpec.Core.Defs.F2R, Int.cast_add, Int.cast_ofNat]
       using this
-  -- Use the general existence result on real intervals and instantiate d,u
-  -- Obtain a concrete witness x from the pure program
-  let x := Id.run (inbetween_ex_witness d u l Hdu)
-  -- Turn the Hoare-triple postcondition into a plain proposition
-  have hx : inbetween d u x l := by
-    -- Apply the triple with the precondition proof Hdu
-    have htrip := inbetween_ex d u l Hdu
-    simpa [x] using htrip Hdu
+  -- Use the general existence result on real intervals and instantiate d,u.
+  obtain ⟨x, hx⟩ := inbetween_ex d u l Hdu
   -- Conclude in terms of inbetween_float by unfolding d and u
   refine ⟨x, ?_⟩
   simpa [inbetween_float, d, u]

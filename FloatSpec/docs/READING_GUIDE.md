@@ -158,8 +158,9 @@ middle step with even `nb_steps` and an inexact middle step with odd
 `nb_steps`. The four elementary interval theorems—`inbetween_spec`,
 `inbetween_unique`, `inbetween_bounds`, and `inbetween_bounds_not_Eq`—
 now state the source's direct propositions rather than `Id` triples.
-Two more inexact distance-comparison theorems also have direct source-shaped
-equalities. Their proofs still typecheck; five now-unused Boolean, Unit, or
+Two more inexact distance-comparison theorems have direct source-shaped
+equalities, and `inbetween_ex` directly produces the existential witness
+used by `inbetween_float_ex`. Their proofs still typecheck; five now-unused Boolean, Unit, or
 identity probe definitions were removed. The source-location
 gate does not inspect the `Location`/`inbetween` inductive declarations,
 the other Bracket theorem statements, or the theorem proofs. Those remain

@@ -176,7 +176,9 @@ stepped-location definitions, while Lean passes it explicitly. Its
 pure `Id` triples, with their existing proofs. Three now-unused Boolean/Unit
 probe definitions were removed. Two inexact distance-comparison theorems
 now assert the corresponding comparison equalities directly too, removing
-their identity adapters. In particular, source `inbetween_unique`
+their identity adapters. `inbetween_ex` now states source-style existence,
+and its downstream float-existence theorem consumes that witness directly.
+In particular, source `inbetween_unique`
 states equality of two valid locations; the old Lean statement only claimed
 that a separate Boolean equality probe returned `true`.
 Paired even-middle and odd-middle examples exercise two location branches;
