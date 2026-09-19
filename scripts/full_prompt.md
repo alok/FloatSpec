@@ -29,7 +29,7 @@ Repair **exactly one** item: the **first** theorem in the target file that lacks
 ## Prerequisites (read first)
 
 * `FloatSpec/PIPELINE.md` (overall pipeline)
-* `./CLAUDE.md` (proof-writing conventions and `mvcgen` info)
+* `./CLAUDE.md` (proof-writing conventions and source-facing proof guidance)
 
 ---
 

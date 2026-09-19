@@ -24,7 +24,6 @@ import Mathlib.Data.Real.Basic
 import Mathlib.Algebra.Ring.Defs
 import Mathlib.Algebra.Ring.Basic
 import Std.Do.Triple
-import Std.Tactic.Do
 import FloatSpec.src.Core.Ulp
 import FloatSpec.src.Core.FIX
 
@@ -65,7 +64,6 @@ def FLX_exp_correct_check (e : Int) : Bool :=
     input exponent. This adjustment ensures that all representable
     numbers have exactly 'prec' significant digits in their mantissa.
 -/
-@[spec]
 theorem FLX_exp_spec (e : Int) :
     ⦃⌜True⌝⦄
     (pure (FLX_exp_correct_check prec e) : Id Bool)
@@ -102,7 +100,6 @@ def FLXN_format (beta : Int) [ValidRadix beta] (x : ℝ) : Prop :=
     with the fixed-precision exponent function. This characterizes
     floating-point numbers with constant precision.
 -/
-@[spec]
 theorem FLX_format_from_generic_payload_spec
     (beta : Int) [ValidRadix beta] (x : ℝ) (hp : 0 ≤ prec) :
     ⦃⌜True⌝⦄
@@ -117,7 +114,6 @@ theorem FLX_format_from_generic_payload_spec
     adjustment by returning e - prec. This ensures the mantissa
     precision remains constant across different magnitudes.
 -/
-@[spec]
 theorem FLX_exp_correct_spec (e : Int) :
     ⦃⌜True⌝⦄
     (pure (FLX_exp_correct_check prec e) : Id Bool)
@@ -138,7 +134,6 @@ noncomputable def FLX_format_0_check (beta : Int) [ValidRadix beta] : Bool :=
 
     See `FLX_format_satisfies_any` for actual zero membership.
 -/
-@[spec]
 theorem FLX_format_0_spec (beta : Int) [ValidRadix beta] :
     ⦃⌜beta > 1⌝⦄
     (pure (FLX_format_0_check beta) : Id Bool)
@@ -163,7 +158,6 @@ noncomputable def FLX_format_opp_check (beta : Int) [ValidRadix beta] (x : ℝ) 
     Actual FLX negation closure is a field of
     `FLX_format_satisfies_any`.
 -/
-@[spec]
 theorem FLX_format_opp_spec (beta : Int) [ValidRadix beta] (x : ℝ) :
     ⦃⌜True⌝⦄
     (pure (FLX_format_opp_check beta x) : Id Bool)
@@ -191,7 +185,6 @@ noncomputable def FLX_format_abs_check (beta : Int) [ValidRadix beta] (x : ℝ) 
     Actual FLX absolute-value closure follows from zero and negation closure
     in `FLX_format_satisfies_any`; this helper proves only an integer identity.
 -/
-@[spec]
 theorem FLX_format_abs_spec (beta : Int) [ValidRadix beta] (x : ℝ) :
     ⦃⌜True⌝⦄
     (pure (FLX_format_abs_check beta x) : Id Bool)
@@ -1095,7 +1088,6 @@ theorem FLX_format_generic (beta : Int) [ValidRadix beta] [Prec_gt_0 prec]
   exact FLX_format_generic_run (prec := prec) beta x hx
 
 /-- Compatibility specification for the exact source predicate. -/
-@[spec]
 theorem FLX_format_spec (beta : Int) [ValidRadix beta] [Prec_gt_0 prec]
     (x : ℝ) :
     ⦃⌜True⌝⦄

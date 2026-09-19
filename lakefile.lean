@@ -23,11 +23,8 @@ package FloatSpec where
     ⟨`weak.linter.preferGrind, false⟩,
     -- Keep style-only lint out of product proof hygiene enforcement.
     ⟨`weak.linter.preferSimp, false⟩,
-    -- Avoid returning Id in definitions; keep Id only in mvcgen specs
-    ⟨`weak.linter.noIdReturn, true⟩,
-    -- Hoare-style normalization is useful during pipeline work but too noisy
-    -- for product proof hygiene enforcement.
-    ⟨`weak.linter.hoareStyle, false⟩
+    -- Keep source-facing definitions pure; legacy Id triples belong only in proofs.
+    ⟨`weak.linter.noIdReturn, true⟩
   ]
   -- Cloud release configuration for pre-built artifacts
   releaseRepo := "https://github.com/Beneficial-AI-Foundation/FloatSpec"

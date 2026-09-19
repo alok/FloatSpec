@@ -15,7 +15,6 @@ import FloatSpec.src.Core.Digits
 import FloatSpec.src.Calc.Bracket
 import Mathlib.Data.Real.Basic
 import Std.Do.Triple
-import Std.Tactic.Do
 import FloatSpec.src.SimprocWP
 
 open Real FloatSpec.Calc.Bracket FloatSpec.Core.Defs FloatSpec.Core.Digits FloatSpec.Core.Generic_fmt

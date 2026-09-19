@@ -66,7 +66,7 @@ Introduce missing theorems in the directory. You can find the record of missing 
 
 1. **Read documentation first:**
     - FloatSpec/PIPELINE.md - understand the overall pipeline
-    - ./CLAUDE.md - focus on proof writing instructions and mvcgen info
+    - ./CLAUDE.md - focus on proof writing instructions and source-facing proof guidance
     - The markdown file named with Theorem_Compatison_Manual in /data/hantao/FloatSpec/FloatSpec/src/__FILE_PLACEHOLDER__ - produce the list of theorems with `no match`, `no Lean counterpart`, or `not-found` tag, and be ready to implement them one by one
 
 ### Core Requirements

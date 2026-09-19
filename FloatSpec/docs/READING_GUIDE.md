@@ -64,10 +64,27 @@ escapes. Its four registered debts are in `proof_debts.json`: sign-bit
 negation, native `frExp`, native next-up, and native next-down. A theorem with
 `sorry` is an explicitly unproved claim even when the build passes.
 
-Most current Hoare triples wrap pure `Id` computations. For source comparison,
-a direct mathematical proposition is usually easier to read. The wrappers
-still have callers, so removing them is a gradual interface migration, not
-a prerequisite for understanding the source definition.
+Most current Hoare triples wrap pure `Id` computations. This project does not
+invoke `mvcgen` or `mspec`; their lookup annotations, direct tactic imports,
+and the Hoare-style linter have been removed. A direct mathematical proposition
+is usually easier to compare with Coq. The surviving triples have callers, so
+removing them is a gradual interface migration, not a prerequisite for
+understanding the source definition.
+
+[`Core/FIX.lean`](../src/Core/FIX.lean) is a concrete completed slice: its
+format conversions, ulp, and rounding theorem now state direct propositions;
+two IEEE callers were updated accordingly. Its former Boolean checks proved
+truncation identities rather than FIX-format membership, so they were removed
+and replaced by direct zero-membership and negation-closure facts. Other
+modules still contain legacy triples; this one example does not certify them.
+Lean's `FIX_format` remains a definition in terms of `generic_format`, whereas
+Coq introduces it inductively and then proves equivalence. The direct Lean
+conversion theorems are therefore simpler, but that representation choice
+still needs source-level review.
+
+On this Mac, the checked-in Lean `v4.34.0` toolchain makes plain `lake build`
+work. Mathlib and CSLib remain at the reviewed rc2 source pins; a future
+dependency upgrade is separate work from fixing the local compiler crash.
 
 ## 5. Where to go next
 

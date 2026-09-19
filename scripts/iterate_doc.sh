@@ -80,7 +80,7 @@ Repair **exactly one** theorem: the **first** theorem in the target file that ha
 ## Prerequisites (read first)
 
 * `FloatSpec/PIPELINE.md` (overall pipeline)
-* `./CLAUDE.md` (proof-writing conventions and `mvcgen` info)
+* `./CLAUDE.md` (proof-writing conventions and source-facing proof guidance)
 * `scripts/manual.pdf` (issues related to documentation)
 
 ---

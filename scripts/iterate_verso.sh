@@ -63,7 +63,7 @@ Please ensure your implementation Always Works™ for:
 
 1. **Read documentation first:**
     - FloatSpec/PIPELINE.md - understand the overall pipeline
-    - ./CLAUDE.md - focus on proof writing instructions and mvcgen info
+    - ./CLAUDE.md - focus on proof writing instructions and source-facing proof guidance
 
 ### Core Requirements
 

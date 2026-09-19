@@ -69,7 +69,7 @@ theorems: Fix the first (only the very first, work really hard on it and don't c
 
 1. **Read documentation first:**
     - FloatSpec/PIPELINE.md - understand the overall pipeline
-    - ./CLAUDE.md - focus on proof writing instructions and mvcgen info
+    - ./CLAUDE.md - focus on proof writing instructions and source-facing proof guidance
 
 ### Core Requirements
 

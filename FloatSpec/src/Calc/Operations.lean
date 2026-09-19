@@ -12,7 +12,6 @@ import FloatSpec.src.Core.Defs
 import FloatSpec.src.Core.Float_prop
 import Mathlib.Data.Real.Basic
 import Std.Do.Triple
-import Std.Tactic.Do
 import FloatSpec.src.SimprocWP
 
 open Real FloatSpec.Core.Defs
@@ -45,7 +44,6 @@ def Falign (f1 f2 : FlocqFloat beta) : (Int × Int × Int) :=
     After alignment, both floats maintain their original real values
     but are expressed with a common exponent
 -/
-@[spec]
 theorem Falign_spec (f1 f2 : FlocqFloat beta) :
     ⦃⌜1 < beta⌝⦄
     (pure (Falign beta f1 f2) : Id _)
@@ -112,7 +110,6 @@ def Falign_exp (f1 f2 : FlocqFloat beta) : Int :=
 
     The common exponent is the minimum of the two original exponents
 -/
-@[spec]
 theorem Falign_spec_exp (f1 f2 : FlocqFloat beta) :
     ⦃⌜True⌝⦄
     (pure (Falign_exp beta f1 f2) : Id _)
@@ -307,7 +304,6 @@ def Fplus_same_exp (m1 m2 e : Int) : FlocqFloat beta :=
 
     Adding floats with identical exponents just adds mantissas
 -/
-@[spec]
 theorem Fplus_same_exp_spec (m1 m2 e : Int) :
     ⦃⌜True⌝⦄
     (pure (Fplus_same_exp beta m1 m2 e) : Id _)
@@ -328,7 +324,6 @@ def Fexp_Fplus (f1 f2 : FlocqFloat beta) : Int :=
 
     The exponent of a sum is the minimum of the input exponents
 -/
-@[spec]
 theorem Fexp_Fplus_spec (f1 f2 : FlocqFloat beta) :
     ⦃⌜True⌝⦄
     (pure (Fexp_Fplus beta f1 f2) : Id _)
@@ -472,7 +467,6 @@ def Fminus_same_exp (m1 m2 e : Int) : FlocqFloat beta :=
 
     Subtracting floats with identical exponents just subtracts mantissas
 -/
-@[spec]
 theorem Fminus_same_exp_spec (m1 m2 e : Int) :
     ⦃⌜True⌝⦄
     (pure (Fminus_same_exp beta m1 m2 e) : Id _)

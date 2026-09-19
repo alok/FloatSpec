@@ -29,7 +29,6 @@ import Mathlib.Tactic
 import Mathlib.Algebra.Divisibility.Basic
 import Mathlib.Algebra.Order.Monoid.Unbundled.Pow
 import Std.Do.Triple
-import Std.Tactic.Do
 import FloatSpec.src.SimprocWP
 
 open Real

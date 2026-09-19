@@ -786,7 +786,7 @@ theorem Btrunc_correct {prec emax : Int} (x : binary_float prec emax) :
       FloatSpec.Core.Generic_fmt.round_to_generic 2
         (FloatSpec.Core.FIX.FIX_exp 0) FloatSpec.Core.Raux.Ztrunc (B2R x) := by
   have h := FloatSpec.Core.FIX.round_FIX_IZR FloatSpec.Core.Raux.Ztrunc (B2R x)
-  simpa [Btrunc, wp, Std.Do.PostCond.noThrow, pure] using (h trivial).symm
+  simpa [Btrunc] using h.symm
 
 noncomputable abbrev Bone {prec emax : Int}
     [Prec_gt_0 prec] [Prec_lt_emax prec emax] :=

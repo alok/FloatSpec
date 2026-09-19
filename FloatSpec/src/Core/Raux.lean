@@ -25,7 +25,6 @@ import FloatSpecRoles  -- Register {coq} doc role
 -- import Mathlib.Data.Nat.Find
 -- import Mathlib.Tactic
 import Std.Do.Triple
-import Std.Tactic.Do
 
 open Real
 open Std.Do
@@ -47,7 +46,6 @@ def Rle_0_minus (x y : ℝ) : ℝ :=
     The operation ensures that if x ≤ y, then y - x ≥ 0.
     This captures the relationship between ordering and subtraction.
 -/
-@[spec]
 theorem Rle_0_minus_spec (x y : ℝ) (hxy : x ≤ y) :
     ⦃⌜True⌝⦄
     (pure (Rle_0_minus x y) : Id _)
@@ -71,7 +69,6 @@ def Rabs_eq_Rabs_case (x y : ℝ) : (ℝ × ℝ) :=
     Under the precondition |x| = |y|, the pair (x, y) satisfies
     x = y or x = -y.
 -/
-@[spec]
 theorem Rabs_eq_Rabs_spec (x y : ℝ) (hxy : |x| = |y|) :
     ⦃⌜True⌝⦄
     (pure (Rabs_eq_Rabs_case x y) : Id _)
@@ -92,7 +89,6 @@ def Rabs_minus_le_val (x y : ℝ) : ℝ :=
 
     Under {lean}`0 ≤ y` and {lean}`y ≤ 2 * x`, the value {lean}`|x - y|` is bounded by {lean}`x`.
 -/
-@[spec]
 theorem Rabs_minus_le_spec (x y : ℝ) (h : 0 ≤ y ∧ y ≤ 2 * x) :
     ⦃⌜True⌝⦄
     (pure (Rabs_minus_le_val x y) : Id _)
@@ -125,7 +121,6 @@ theorem Rabs_minus_le_spec (x y : ℝ) (h : 0 ≤ y ∧ y ≤ 2 * x) :
 def Rabs_ge_case (x y : ℝ) : (ℝ × ℝ) :=
   (x, y)
 
-@[spec]
 theorem Rabs_ge_spec (x y : ℝ) (h : y ≤ -x ∨ x ≤ y) :
     ⦃⌜True⌝⦄
     (pure (Rabs_ge_case x y) : Id _)
@@ -147,7 +142,6 @@ theorem Rabs_ge_spec (x y : ℝ) (h : y ≤ -x ∨ x ≤ y) :
 def Rabs_ge_inv_case (x y : ℝ) : (ℝ × ℝ) :=
   (x, y)
 
-@[spec]
 theorem Rabs_ge_inv_spec (x y : ℝ) (hx : x ≤ |y|) :
     ⦃⌜True⌝⦄
     (pure (Rabs_ge_inv_case x y) : Id _)
@@ -172,7 +166,6 @@ theorem Rabs_ge_inv_spec (x y : ℝ) (hx : x ≤ |y|) :
 def Rabs_le_inv_pair (x y : ℝ) : (ℝ × ℝ) :=
   (x, y)
 
-@[spec]
 theorem Rabs_le_inv_spec (x y : ℝ) (h : |x| ≤ y) :
     ⦃⌜True⌝⦄
     (pure (Rabs_le_inv_pair x y) : Id _)
@@ -196,7 +189,6 @@ def Rmult_lt_compat (r1 r2 r3 r4 : ℝ) : (ℝ × ℝ) :=
     then {lean}`r1 * r3 < r2 * r4`.
     This property is crucial for analyzing products of bounds.
 -/
-@[spec]
 theorem Rmult_lt_compat_spec (r1 r2 r3 r4 : ℝ)
     (h : 0 ≤ r1 ∧ 0 ≤ r3 ∧ r1 < r2 ∧ r3 < r4) :
     ⦃⌜True⌝⦄
@@ -225,7 +217,6 @@ def Rmult_neq_reg_r (_r1 r2 r3 : ℝ) : (ℝ × ℝ) :=
     If {lean}`r2 * r1 ≠ r3 * r1`, then {lean}`r2 ≠ r3`.
     This allows cancellation in multiplication inequalities.
 -/
-@[spec]
 theorem Rmult_neq_reg_r_spec (r1 r2 r3 : ℝ) (h : r2 * r1 ≠ r3 * r1) :
     ⦃⌜True⌝⦄
     (pure (Rmult_neq_reg_r r1 r2 r3) : Id _)
@@ -252,7 +243,6 @@ def Rmult_neq_compat_r (r1 r2 r3 : ℝ) : (ℝ × ℝ) :=
     If {lean}`r1 ≠ 0` and {lean}`r2 ≠ r3`,
     then {lean}`r2 * r1 ≠ r3 * r1`.
 -/
-@[spec]
 theorem Rmult_neq_compat_r_spec (r1 r2 r3 : ℝ) (h : r1 ≠ 0 ∧ r2 ≠ r3) :
     ⦃⌜True⌝⦄
     (pure (Rmult_neq_compat_r r1 r2 r3) : Id _)
@@ -275,7 +265,6 @@ def Rmult_min_distr_r (x y z : ℝ) : (ℝ × ℝ) :=
 
     If {lean}`0 ≤ z`, then {lean}`min (x * z) (y * z) = min x y * z`.
 -/
-@[spec]
 theorem Rmult_min_distr_r_spec (x y z : ℝ) (h : 0 ≤ z) :
     ⦃⌜True⌝⦄
     (pure (Rmult_min_distr_r x y z) : Id _)
@@ -298,7 +287,6 @@ def Rmult_min_distr_l (x y z : ℝ) : (ℝ × ℝ) :=
 
     If {lean}`0 ≤ x`, then {lean}`min (x * y) (x * z) = x * min y z`.
 -/
-@[spec]
 theorem Rmult_min_distr_l_spec (x y z : ℝ) (h : 0 ≤ x) :
     ⦃⌜True⌝⦄
     (pure (Rmult_min_distr_l x y z) : Id _)
@@ -322,7 +310,6 @@ def Rmin_opp (x y : ℝ) : (ℝ × ℝ) :=
     min (-x) (-y) = -(max x y).
     This duality between min and max under negation is fundamental.
 -/
-@[spec]
 theorem Rmin_opp_spec (x y : ℝ) :
     ⦃⌜True⌝⦄
     (pure (Rmin_opp x y) : Id _)
@@ -346,7 +333,6 @@ def Rmax_opp (x y : ℝ) : (ℝ × ℝ) :=
     max (-x) (-y) = -(min x y).
     This completes the duality between min/max under negation.
 -/
-@[spec]
 theorem Rmax_opp_spec (x y : ℝ) :
     ⦃⌜True⌝⦄
     (pure (Rmax_opp x y) : Id _)
@@ -368,7 +354,6 @@ noncomputable def exp_le_check (x _y : ℝ) : ℝ :=
 
     Given x ≤ y, the value exp x is bounded above by exp y.
 -/
-@[spec]
 theorem exp_le_spec (x y : ℝ) (hxy : x ≤ y) :
     ⦃⌜True⌝⦄
     (pure (exp_le_check x y) : Id _)
@@ -397,7 +382,6 @@ def IZR_le_lt_triple (m n p : Int) : (ℝ × ℝ × ℝ) :=
 
     If m ≤ n < p as integers, then (m:ℝ) ≤ (n:ℝ) < (p:ℝ).
 -/
-@[spec]
 theorem IZR_le_lt_spec (m n p : Int) (h : m ≤ n ∧ n < p) :
     ⦃⌜True⌝⦄
     (pure (IZR_le_lt_triple m n p) : Id _)
@@ -412,7 +396,6 @@ def le_lt_IZR_triple (m n p : Int) : (Int × Int × Int) :=
   (m, n, p)
 
 /-- If the real casts satisfy m <= n and n < p, then m <= n < p as integers (Coq: le_lt_IZR). -/
-@[spec]
 theorem le_lt_IZR_spec (m n p : Int) (h : (m : ℝ) ≤ (n : ℝ) ∧ (n : ℝ) < (p : ℝ)) :
     ⦃⌜True⌝⦄
     (pure (le_lt_IZR_triple m n p) : Id _)
@@ -442,7 +425,6 @@ theorem neq_IZR (m n : Int) (hmnR : (m : ℝ) ≠ (n : ℝ)) :
   exact fun hmn => hmnR (by simpa [hmn])
 
 /-- If the real casts of m and n are unequal, then m and n are unequal as integers (Coq: {lean}`neq_IZR`). -/
-@[spec]
 theorem neq_IZR_spec (m n : Int) (hmnR : (m : ℝ) ≠ (n : ℝ)) :
     ⦃⌜True⌝⦄
     (pure (neq_IZR_pair m n) : Id _)
@@ -464,7 +446,6 @@ noncomputable def Rinv_lt_check (x y : ℝ) : (ℝ × ℝ) :=
   (1 / y, 1 / x)
 
 /-- Specification: Reciprocal reverses order on positive reals -/
-@[spec]
 theorem Rinv_lt_spec (x y : ℝ) (h : 0 < x ∧ x < y) :
     ⦃⌜True⌝⦄
     (pure (Rinv_lt_check x y) : Id _)
@@ -479,7 +460,6 @@ noncomputable def Rinv_le_check (x y : ℝ) : (ℝ × ℝ) :=
   (1 / y, 1 / x)
 
 /-- Specification: Reciprocal is antitone on positive reals (≤ version) -/
-@[spec]
 theorem Rinv_le_spec (x y : ℝ) (h : 0 < x ∧ x ≤ y) :
     ⦃⌜True⌝⦄
     (pure (Rinv_le_check x y) : Id _)
@@ -505,7 +485,6 @@ noncomputable def sqrt_ge_0_check (x : ℝ) : ℝ :=
 
     Given 0 ≤ x, the computed value satisfies 0 ≤ sqrt x.
 -/
-@[spec]
 theorem sqrt_ge_0_spec (x : ℝ) :
     ⦃⌜True⌝⦄
     (pure (sqrt_ge_0_check x) : Id _)
@@ -524,7 +503,6 @@ theorem sqrt_ge_0_spec (x : ℝ) :
 noncomputable def sqrt_neg_check (x : ℝ) : ℝ :=
   Real.sqrt x
 
-@[spec]
 theorem sqrt_neg_spec (x : ℝ) (hx : x ≤ 0) :
     ⦃⌜True⌝⦄
     (pure (sqrt_neg_check x) : Id _)
@@ -562,7 +540,6 @@ noncomputable def Rabs_eq_R0_check (x : ℝ) : Bool :=
 
     The absolute value of a real number is zero if and only if the number itself is zero.
 -/
-@[spec]
 theorem Rabs_eq_R0_spec (x : ℝ) :
     ⦃⌜True⌝⦄
     (pure (Rabs_eq_R0_check x) : Id _)
@@ -587,7 +564,6 @@ section Squares
 noncomputable def Rsqr_le_abs_0_alt_val (x _y : ℝ) : ℝ :=
   x
 
-@[spec]
 theorem Rsqr_le_abs_0_alt_spec (x y : ℝ) (hxy : x^2 ≤ y^2) :
     ⦃⌜True⌝⦄
     (pure (Rsqr_le_abs_0_alt_val x y) : Id _)
@@ -617,7 +593,6 @@ noncomputable def Rabs_lt_check (x y : ℝ) : Bool :=
   (|x| < y)
 
 /-- Specification: |x| < y iff the boolean returns true -/
-@[spec]
 theorem Rabs_lt_spec (x y : ℝ) :
     ⦃⌜True⌝⦄
     (pure (Rabs_lt_check x y) : Id _)
@@ -636,7 +611,6 @@ noncomputable def Rabs_gt_from_bound_payload (x y : ℝ) : Bool :=
   (y < |x|)
 
 /-- Specification: y < |x| iff the boolean returns true -/
-@[spec]
 theorem Rabs_gt_from_bound_payload_spec (x y : ℝ) :
     ⦃⌜True⌝⦄
     (pure (Rabs_gt_from_bound_payload x y) : Id _)
@@ -656,7 +630,6 @@ theorem Rabs_gt (x y : ℝ) (h : y < -x ∨ x < y) : x < |y| := by
 
 noncomputable def Rabs_gt_check (x y : ℝ) : ℝ × ℝ := (x, y)
 
-@[spec]
 theorem Rabs_gt_spec (x y : ℝ) (h : y < -x ∨ x < y) :
     ⦃⌜True⌝⦄
     (pure (Rabs_gt_check x y) : Id _)
@@ -687,7 +660,6 @@ def Rabs_gt_inv_pair (x y : ℝ) : (ℝ × ℝ) :=
 
     This is the converse direction corresponding to {lean}`Rabs_gt_spec`.
 -/
-@[spec]
 theorem Rabs_gt_inv_spec (x y : ℝ) (h : y < x ∨ y < -x) :
     ⦃⌜True⌝⦄
     (pure (Rabs_gt_inv_pair x y) : Id _)
@@ -746,7 +718,6 @@ theorem Rcompare_prop_spec (x y : ℝ) : Rcompare_prop x y (Rcompare x y) := by
 
     This captures the complete ordering of real numbers.
 -/
-@[spec]
 theorem Rcompare_spec (x y : ℝ) :
     ⦃⌜True⌝⦄
     (pure (Rcompare x y) : Id _)
@@ -780,7 +751,6 @@ noncomputable def Rcompare_sym_from_rhs_payload (x y : ℝ) : Int :=
     Rcompare x y = -(Rcompare y x).
     This captures the antisymmetric nature of ordering.
 -/
-@[spec]
 theorem Rcompare_sym_from_rhs_payload_spec (x y : ℝ) :
     ⦃⌜True⌝⦄
     (pure (Rcompare_sym_from_rhs_payload x y) : Id _)
@@ -803,7 +773,6 @@ theorem Rcompare_sym (x y : ℝ) : Rcompare x y = -(Rcompare y x) := by
 noncomputable def Rcompare_sym_check (x y : ℝ) : Int × Int :=
   (Rcompare x y, -(Rcompare y x))
 
-@[spec]
 theorem Rcompare_sym_spec (x y : ℝ) :
     ⦃⌜True⌝⦄
     (pure (Rcompare_sym_check x y) : Id _)
@@ -824,7 +793,6 @@ noncomputable def Rcompare_opp_from_rhs_payload (x y : ℝ) : Int :=
     Rcompare (-x) (-y) = Rcompare y x.
     Negating both arguments reverses the comparison.
 -/
-@[spec]
 theorem Rcompare_opp_from_rhs_payload_spec (x y : ℝ) :
     ⦃⌜True⌝⦄
     (pure (Rcompare_opp_from_rhs_payload x y) : Id _)
@@ -848,7 +816,6 @@ theorem Rcompare_opp (x y : ℝ) : Rcompare (-x) (-y) = Rcompare y x := by
 noncomputable def Rcompare_opp_check (x y : ℝ) : Int × Int :=
   (Rcompare (-x) (-y), Rcompare y x)
 
-@[spec]
 theorem Rcompare_opp_spec (x y : ℝ) :
     ⦃⌜True⌝⦄
     (pure (Rcompare_opp_check x y) : Id _)
@@ -869,7 +836,6 @@ noncomputable def Rcompare_plus_r_from_rhs_payload (x y _z: ℝ) : Int :=
     Rcompare (x + z) (y + z) = Rcompare x y.
     Translation preserves ordering relationships.
 -/
-@[spec]
 theorem Rcompare_plus_r_from_rhs_payload_spec (x y z : ℝ) :
     ⦃⌜True⌝⦄
     (pure (Rcompare_plus_r_from_rhs_payload x y z) : Id _)
@@ -886,7 +852,6 @@ theorem Rcompare_plus_r (z x y : ℝ) :
 noncomputable def Rcompare_plus_r_check (z x y : ℝ) : Int × Int :=
   (Rcompare (x + z) (y + z), Rcompare x y)
 
-@[spec]
 theorem Rcompare_plus_r_spec (z x y : ℝ) :
     ⦃⌜True⌝⦄
     (pure (Rcompare_plus_r_check z x y) : Id _)
@@ -905,7 +870,6 @@ noncomputable def Rcompare_plus_l_from_rhs_payload (x y _z : ℝ) : Int :=
 
     Rcompare (z + x) (z + y) = Rcompare x y.
 -/
-@[spec]
 theorem Rcompare_plus_l_from_rhs_payload_spec (x y z : ℝ) :
     ⦃⌜True⌝⦄
     (pure (Rcompare_plus_l_from_rhs_payload x y z) : Id _)
@@ -922,7 +886,6 @@ theorem Rcompare_plus_l (z x y : ℝ) :
 noncomputable def Rcompare_plus_l_check (z x y : ℝ) : Int × Int :=
   (Rcompare (z + x) (z + y), Rcompare x y)
 
-@[spec]
 theorem Rcompare_plus_l_spec (z x y : ℝ) :
     ⦃⌜True⌝⦄
     (pure (Rcompare_plus_l_check z x y) : Id _)
@@ -941,7 +904,6 @@ noncomputable def Rcompare_mult_r_from_rhs_payload (x y _z : ℝ) : Int :=
 
     If {lean}`0<z`, then {lean}`Rcompare (x*z) (y*z) = Rcompare x y`.
 -/
-@[spec]
 theorem Rcompare_mult_r_from_rhs_payload_spec (x y z : ℝ) (_hz : 0 < z) :
     ⦃⌜True⌝⦄
     (pure (Rcompare_mult_r_from_rhs_payload x y z) : Id _)
@@ -971,7 +933,6 @@ theorem Rcompare_mult_r (z x y : ℝ) (hz : 0 < z) :
 noncomputable def Rcompare_mult_r_check (z x y : ℝ) : Int × Int :=
   (Rcompare (x * z) (y * z), Rcompare x y)
 
-@[spec]
 theorem Rcompare_mult_r_spec (z x y : ℝ) (hz : 0 < z) :
     ⦃⌜True⌝⦄
     (pure (Rcompare_mult_r_check z x y) : Id _)
@@ -990,7 +951,6 @@ noncomputable def Rcompare_mult_l_from_rhs_payload (x y _z : ℝ) : Int :=
 
     If {lean}`0<z`, then {lean}`Rcompare (z*x) (z*y) = Rcompare x y`.
 -/
-@[spec]
 theorem Rcompare_mult_l_from_rhs_payload_spec (x y z : ℝ) (_hz : 0 < z) :
     ⦃⌜True⌝⦄
     (pure (Rcompare_mult_l_from_rhs_payload x y z) : Id _)
@@ -1020,7 +980,6 @@ theorem Rcompare_mult_l (z x y : ℝ) (hz : 0 < z) :
 noncomputable def Rcompare_mult_l_check (z x y : ℝ) : Int × Int :=
   (Rcompare (z * x) (z * y), Rcompare x y)
 
-@[spec]
 theorem Rcompare_mult_l_spec (z x y : ℝ) (hz : 0 < z) :
     ⦃⌜True⌝⦄
     (pure (Rcompare_mult_l_check z x y) : Id _)
@@ -1049,7 +1008,6 @@ noncomputable def Rcompare_not_Gt (x y : ℝ) : Int := Rcompare x y
 noncomputable def Rcompare_val (x y : ℝ) : Int := Rcompare x y
 
 /-- Coq: {lean}`Rcompare_Lt` — if {lean}`x < y` then the comparison yields the Lt code {lean}`-1`. -/
-@[spec]
 theorem Rcompare_Lt_spec (x y : ℝ) (hxy : x < y) :
     ⦃⌜True⌝⦄
     (pure (Rcompare_val x y) : Id _)
@@ -1070,7 +1028,6 @@ private theorem Rcompare_Lt_wr (x y : ℝ) (hxy : x < y) :
   simpa using Rcompare_Lt_spec x y hxy
 
 /-- Coq: Rcompare_Lt_inv - from code Lt (-1) deduce x < y. -/
-@[spec]
 theorem Rcompare_Lt_inv_spec (x y : ℝ) :
     ⦃⌜True⌝⦄
     (pure (Rcompare_val x y) : Id _)
@@ -1095,7 +1052,6 @@ theorem Rcompare_Lt_inv_spec (x y : ℝ) :
       exact (False.elim (h1 this))
 
 /-/ Coq: Rcompare_not_Lt - if y ≤ x then comparison is not Lt (-1). -/
-@[spec]
 theorem Rcompare_not_Lt_spec (x y : ℝ) (hyx : y ≤ x) :
     ⦃⌜True⌝⦄
     (pure (Rcompare_val x y) : Id _)
@@ -1119,7 +1075,6 @@ private theorem Rcompare_not_Lt_wr (x y : ℝ) (hyx : y ≤ x) :
   simpa using Rcompare_not_Lt_spec x y hyx
 
 /-- Coq: Rcompare\_not\_Lt\_inv. -/
-@[spec]
 theorem Rcompare_not_Lt_inv_spec (x y : ℝ) :
     ⦃⌜True⌝⦄
     (pure (Rcompare_val x y) : Id _)
@@ -1146,7 +1101,6 @@ theorem Rcompare_not_Lt_inv (x y : ℝ) :
   simpa using Rcompare_not_Lt_inv_spec x y
 
 /-/ Coq: {lit}`Rcompare_Eq` — if {lean}`x = y` then comparison yields Eq {lean}`0`. -/
-@[spec]
 theorem Rcompare_Eq_spec (x y : ℝ) (hxy : x = y) :
     ⦃⌜True⌝⦄
     (pure (Rcompare_val x y) : Id _)
@@ -1166,7 +1120,6 @@ private theorem Rcompare_Eq_wr (x y : ℝ) (hxy : x = y) :
   simpa using Rcompare_Eq_spec x y hxy
 
 /-/ Coq: {lean}`Rcompare_Eq_inv` - from code Eq {lean}`0` deduce {lean}`x = y`. -/
-@[spec]
 theorem Rcompare_Eq_inv_spec (x y : ℝ) :
     ⦃⌜True⌝⦄
     (pure (Rcompare_val x y) : Id _)
@@ -1201,7 +1154,6 @@ theorem Rcompare_Eq_inv (x y : ℝ) :
   simpa using Rcompare_Eq_inv_spec x y
 
 /-/ Coq: {lean}`Rcompare_Gt` — if {lean}`y < x` then comparison yields Gt {lean}`1`. -/
-@[spec]
 theorem Rcompare_Gt_spec (x y : ℝ) (hyx : y < x) :
     ⦃⌜True⌝⦄
     (pure (Rcompare_val x y) : Id _)
@@ -1224,7 +1176,6 @@ private theorem Rcompare_Gt_wr (x y : ℝ) (hyx : y < x) :
   simpa using Rcompare_Gt_spec x y hyx
 
 /-- Coq: Rcompare_Gt_inv — from code Gt 1, deduce y < x. -/
-@[spec]
 theorem Rcompare_Gt_inv_spec (x y : ℝ) :
     ⦃⌜True⌝⦄
     (pure (Rcompare_val x y) : Id _)
@@ -1258,7 +1209,6 @@ theorem Rcompare_Gt_inv (x y : ℝ) :
   simpa using Rcompare_Gt_inv_spec x y
 
 /-/ Coq: {lean}`Rcompare_not_Gt` — if {lean}`x ≤ y` then comparison is not Gt {lean}`1`. -/
-@[spec]
 theorem Rcompare_not_Gt_spec (x y : ℝ) (hxy : x ≤ y) :
     ⦃⌜True⌝⦄
     (pure (Rcompare_val x y) : Id _)
@@ -1284,7 +1234,6 @@ private theorem Rcompare_not_Gt_wr (x y : ℝ) (hxy : x ≤ y) :
   simpa using Rcompare_not_Gt_spec x y hxy
 
 /-- Coq theorem Rcompare\_not\_Gt\_inv. -/
-@[spec]
 theorem Rcompare_not_Gt_inv_spec (x y : ℝ) :
     ⦃⌜True⌝⦄
     (pure (Rcompare_val x y) : Id _)
@@ -1321,7 +1270,6 @@ def Zcompare_int (m n : Int) : Int :=
 noncomputable def Rcompare_IZR (m n : Int) : Int := Rcompare (m : ℝ) (n : ℝ)
 
 /-- Coq theorem {name}`Rcompare_IZR`: comparing casts of integers matches integer comparison. -/
-@[spec]
 theorem Rcompare_IZR_spec (m n : Int) :
     ⦃⌜True⌝⦄
     (pure (Rcompare_IZR m n) : Id _)
@@ -1358,7 +1306,6 @@ theorem Rcompare_middle (x d u : ℝ) :
         exact hleft_eq (heq.mpr hxeq)
       simp [hleft_lt, hleft_eq, hxnotlt, hxneq]
 
-@[spec]
 theorem Rcompare_middle_spec (x d u : ℝ) :
     ⦃⌜True⌝⦄
     (pure (Rcompare_middle_check x d u) : Id _)
@@ -1371,7 +1318,6 @@ theorem Rcompare_middle_spec (x d u : ℝ) :
 noncomputable def Rcompare_half_l_check (x y : ℝ) : (Int × Int) :=
   ((Rcompare (x / 2) y), (Rcompare x (2 * y)))
 
-@[spec]
 theorem Rcompare_half_l_spec (x y : ℝ) :
     ⦃⌜True⌝⦄
     (pure (Rcompare_half_l_check x y) : Id _)
@@ -1423,7 +1369,6 @@ theorem Rcompare_half_l_spec (x y : ℝ) :
 noncomputable def Rcompare_half_r_check (x y : ℝ) : (Int × Int) :=
   ((Rcompare x (y / 2)), (Rcompare (2 * x) y))
 
-@[spec]
 theorem Rcompare_half_r_spec (x y : ℝ) :
     ⦃⌜True⌝⦄
     (pure (Rcompare_half_r_check x y) : Id _)
@@ -1513,7 +1458,6 @@ private theorem Rcompare_sqr_run_eq (x y : ℝ) :
       exact (lt_irrefl _ this)
     simp [Rcompare, pure, Id.run, hnotlt, hneq, hnotlt_abs, hneq_abs]
 
-@[spec]
 theorem Rcompare_sqr_spec (x y : ℝ) :
     ⦃⌜True⌝⦄
     (pure (Rcompare_sqr_check x y) : Id _)
@@ -1529,7 +1473,6 @@ theorem Rcompare_sqr_spec (x y : ℝ) :
 noncomputable def Rmin_compare_check (x y : ℝ) : (ℝ × Int) :=
   (min x y, (Rcompare x y))
 
-@[spec]
 theorem Rmin_compare_spec (x y : ℝ) :
     ⦃⌜True⌝⦄
     (pure (Rmin_compare_check x y) : Id _)
@@ -1594,7 +1537,6 @@ theorem Rle_bool_prop_spec (x y : ℝ) : Rle_bool_prop x y (Rle_bool x y) := by
     The boolean less-or-equal test returns true if and only if
     x ≤ y. This provides a computational version of the ordering.
 -/
-@[spec]
 theorem Rle_bool_spec (x y : ℝ) :
     ⦃⌜True⌝⦄
     (pure (Rle_bool x y) : Id _)
@@ -1663,7 +1605,6 @@ theorem Rlt_bool_prop_spec (x y : ℝ) : Rlt_bool_prop x y (Rlt_bool x y) := by
     The boolean less-than test returns true if and only if
     x < y. This provides a computational version of strict ordering.
 -/
-@[spec]
 theorem Rlt_bool_spec (x y : ℝ) :
     ⦃⌜True⌝⦄
     (pure (Rlt_bool x y) : Id _)
@@ -1721,7 +1662,6 @@ noncomputable def negb_Rlt_bool_from_order_payload (x y : ℝ) : Bool :=
     For booleans, not (x < y) ↔ y ≤ x.
     This duality is fundamental for simplifying comparisons.
 -/
-@[spec]
 theorem negb_Rlt_bool_from_order_payload_spec (x y : ℝ) :
     ⦃⌜True⌝⦄
     (pure (negb_Rlt_bool_from_order_payload x y) : Id _)
@@ -1744,7 +1684,6 @@ noncomputable def negb_Rle_bool_from_order_payload (x y : ℝ) : Bool :=
     For booleans, {lean}`(¬ (x ≤ y)) ↔ y < x`.
     This completes the duality between orderings.
 -/
-@[spec]
 theorem negb_Rle_bool_from_order_payload_spec (x y : ℝ) :
     ⦃⌜True⌝⦄
     (pure (negb_Rle_bool_from_order_payload x y) : Id _)
@@ -1766,7 +1705,6 @@ theorem negb_Rlt_bool (x y : ℝ) :
 noncomputable def negb_Rlt_bool_check (x y : ℝ) : Bool × Bool :=
   (!(Rle_bool x y), Rlt_bool y x)
 
-@[spec]
 theorem negb_Rlt_bool_spec (x y : ℝ) :
     ⦃⌜True⌝⦄
     (pure (negb_Rlt_bool_check x y) : Id _)
@@ -1791,7 +1729,6 @@ theorem negb_Rle_bool (x y : ℝ) :
 noncomputable def negb_Rle_bool_check (x y : ℝ) : Bool × Bool :=
   (!(Rlt_bool x y), Rle_bool y x)
 
-@[spec]
 theorem negb_Rle_bool_spec (x y : ℝ) :
     ⦃⌜True⌝⦄
     (pure (negb_Rle_bool_check x y) : Id _)
@@ -1839,7 +1776,6 @@ theorem Req_bool_prop_spec (x y : ℝ) : Req_bool_prop x y (Req_bool x y) := by
     the real numbers are equal. This provides a computational
     version of equality.
 -/
-@[spec]
 theorem Req_bool_spec (x y : ℝ) :
     ⦃⌜True⌝⦄
     (pure (Req_bool x y) : Id _)
@@ -1888,7 +1824,6 @@ def eqb_sym (a b : Bool) : (Bool × Bool) :=
 
     a == b equals b == a for all booleans.
 -/
-@[spec]
 theorem eqb_sym_spec (a b : Bool) :
     ⦃⌜True⌝⦄
     (pure (eqb_sym a b) : Id _)
@@ -1903,7 +1838,6 @@ def eqb_check (a b : Bool) : Bool :=
   (a == b)
 
 /-- If a = b then (a == b) = true -/
-@[spec]
 theorem eqb_true_spec (a b : Bool) (hEq : a = b) :
     ⦃⌜True⌝⦄
     (pure (eqb_check a b) : Id _)
@@ -1916,7 +1850,6 @@ theorem eqb_true_spec (a b : Bool) (hEq : a = b) :
   cases a <;> simp
 
 /-- If a ≠ b then (a == b) = false -/
-@[spec]
 theorem eqb_false_spec (a b : Bool) (hNe : a ≠ b) :
     ⦃⌜True⌝⦄
     (pure (eqb_check a b) : Id _)
@@ -1948,7 +1881,6 @@ def cond_Ropp (b : Bool) (m : ℝ) : ℝ :=
 
     This is fundamental for handling signs in floating-point.
 -/
-@[spec]
 theorem cond_Ropp_spec (b : Bool) (m : ℝ) :
     ⦃⌜True⌝⦄
     (pure (cond_Ropp b m) : Id _)
@@ -1971,7 +1903,6 @@ def cond_Ropp_involutive (b : Bool) (m : ℝ) : ℝ :=
     cond_Ropp b (cond_Ropp b m) = m.
     Double application cancels out.
 -/
-@[spec]
 theorem cond_Ropp_involutive_spec (b : Bool) (m : ℝ) :
     ⦃⌜True⌝⦄
     (pure (cond_Ropp_involutive b m) : Id _)
@@ -1995,7 +1926,6 @@ def cond_Ropp_inj (_b : Bool) (m1 m2 : ℝ) : (ℝ × ℝ) :=
 
     If cond_Ropp b m1 = cond_Ropp b m2, then m1 = m2.
 -/
-@[spec]
 theorem cond_Ropp_inj_spec (b : Bool) (m1 m2 : ℝ)
     (h : (cond_Ropp b m1) = (cond_Ropp b m2)) :
     ⦃⌜True⌝⦄
@@ -2022,7 +1952,6 @@ section CondAbsMulAdd
 noncomputable def abs_cond_Ropp_check (b : Bool) (x : ℝ) : ℝ :=
   (|cond_Ropp b x|)
 
-@[spec]
 theorem abs_cond_Ropp_spec (b : Bool) (x : ℝ) :
     ⦃⌜True⌝⦄
     (pure (abs_cond_Ropp_check b x) : Id _)
@@ -2038,7 +1967,6 @@ theorem abs_cond_Ropp_spec (b : Bool) (x : ℝ) :
 noncomputable def cond_Ropp_mult_l_check (b : Bool) (x y : ℝ) : ℝ :=
   cond_Ropp b (x * y)
 
-@[spec]
 theorem cond_Ropp_mult_l_spec (b : Bool) (x y : ℝ) :
     ⦃⌜True⌝⦄
     (pure (cond_Ropp_mult_l_check b x y) : Id _)
@@ -2052,7 +1980,6 @@ theorem cond_Ropp_mult_l_spec (b : Bool) (x y : ℝ) :
 noncomputable def cond_Ropp_mult_r_check (b : Bool) (x y : ℝ) : ℝ :=
   cond_Ropp b (x * y)
 
-@[spec]
 theorem cond_Ropp_mult_r_spec (b : Bool) (x y : ℝ) :
     ⦃⌜True⌝⦄
     (pure (cond_Ropp_mult_r_check b x y) : Id _)
@@ -2066,7 +1993,6 @@ theorem cond_Ropp_mult_r_spec (b : Bool) (x y : ℝ) :
 noncomputable def cond_Ropp_plus_check (b : Bool) (x y : ℝ) : ℝ :=
   cond_Ropp b (x + y)
 
-@[spec]
 theorem cond_Ropp_plus_spec (b : Bool) (x y : ℝ) :
     ⦃⌜True⌝⦄
     (pure (cond_Ropp_plus_check b x y) : Id _)
@@ -2096,7 +2022,6 @@ noncomputable def cond_Ropp_Rlt_bool_check (b : Bool) (x y : ℝ) : Bool :=
   let y' := cond_Ropp b y
   Rlt_bool x' y'
 
-@[spec]
 theorem cond_Ropp_Rlt_bool_spec (b : Bool) (x y : ℝ) :
     ⦃⌜True⌝⦄
     (pure (cond_Ropp_Rlt_bool_check b x y) : Id _)
@@ -2128,7 +2053,6 @@ noncomputable def Rlt_bool_cond_Ropp_check (b : Bool) (x y : ℝ) : Bool :=
   let y' := cond_Ropp b y
   Rlt_bool x y'
 
-@[spec]
 theorem Rlt_bool_cond_Ropp_spec (b : Bool) (x y : ℝ) :
     ⦃⌜True⌝⦄
     (pure (Rlt_bool_cond_Ropp_check b x y) : Id _)
@@ -2149,7 +2073,6 @@ section IZRCond
 noncomputable def IZR_cond_Zopp_from_rhs_payload (b : Bool) (m : Int) : ℝ :=
   cond_Ropp b (m : ℝ)
 
-@[spec]
 theorem IZR_cond_Zopp_from_rhs_payload_spec (b : Bool) (m : Int) :
     ⦃⌜True⌝⦄
     (pure (IZR_cond_Zopp_from_rhs_payload b m) : Id _)
@@ -2166,7 +2089,6 @@ theorem IZR_cond_Zopp (b : Bool) (m : Int) :
 noncomputable def IZR_cond_Zopp_check (b : Bool) (m : Int) : ℝ × ℝ :=
   (((FloatSpec.Core.Zaux.cond_Zopp b m : Int) : ℝ), cond_Ropp b (m : ℝ))
 
-@[spec]
 theorem IZR_cond_Zopp_spec (b : Bool) (m : Int) :
     ⦃⌜True⌝⦄
     (pure (IZR_cond_Zopp_check b m) : Id _)
@@ -2184,7 +2106,6 @@ noncomputable def Rabs_lt_inv_pair (x y : ℝ) : (ℝ × ℝ) :=
   (x, y)
 
 /-- Specification: From {lit}`|x| < y` derive the two-sided strict bound {lit}`-y < x < y`. -/
-@[spec]
 theorem Rabs_lt_inv_spec (x y : ℝ) (h : |x| < y) :
     ⦃⌜True⌝⦄
     (pure (Rabs_lt_inv_pair x y) : Id _)
@@ -3000,7 +2921,6 @@ noncomputable def Rcompare_floor_ceil_middle_check (x : ℝ) : (Int × Int) :=
   let c := Zceil x
   ((Rcompare (f : ℝ) x), (Rcompare x (c : ℝ)))
 
-@[spec]
 theorem Rcompare_floor_ceil_middle_spec (x : ℝ) :
     ⦃⌜True⌝⦄
     (pure (Rcompare_floor_ceil_middle_check x) : Id _)
@@ -3137,7 +3057,6 @@ noncomputable def Rcompare_ceil_floor_middle_check (x : ℝ) : (Int × Int) :=
   let c := Zceil x
   ((Rcompare (c : ℝ) x), (Rcompare x (f : ℝ)))
 
-@[spec]
 theorem Rcompare_ceil_floor_middle_spec (x : ℝ) :
     ⦃⌜True⌝⦄
     (pure (Rcompare_ceil_floor_middle_check x) : Id _)

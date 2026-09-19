@@ -7,7 +7,6 @@ import FloatSpec.src.Calc
 import FloatSpec.Linter.CoqSourceLinter
 import Mathlib.Data.Real.Basic
 import Std.Do.Triple
-import Std.Tactic.Do
 import FloatSpec.src.SimprocWP
 
 open Real

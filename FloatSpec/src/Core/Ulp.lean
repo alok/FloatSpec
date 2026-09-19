@@ -33,7 +33,6 @@ import FloatSpec.src.SimprocWP
 import FloatSpec.VersoExt
 import Mathlib.Data.Real.Basic
 import Std.Do.Triple
-import Std.Tactic.Do
 
 
 open Real

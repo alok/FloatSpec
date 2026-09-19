@@ -31,7 +31,6 @@ import FloatSpec.src.Core.Float_prop
 -- import Mathlib.Data.Int.Basic
 -- import Mathlib.Tactic
 import Std.Do.Triple
-import Std.Tactic.Do
 
 open Real
 open Std.Do
@@ -238,7 +237,6 @@ section BasicProperties
     The canonical exponent is determined by applying
     the format's exponent function to the magnitude.
 -/
-@[spec]
 theorem cexp_spec (beta : Int) [ValidRadix beta] (fexp : Int → Int) (x : ℝ) :
     ⦃⌜beta > 1⌝⦄
     (pure (cexp beta fexp x) : Id Int)
@@ -252,7 +250,6 @@ theorem cexp_spec (beta : Int) [ValidRadix beta] (fexp : Int → Int) (x : ℝ) 
 
     The scaled mantissa is x scaled by beta^(-cexp(x)).
 -/
-@[spec]
 theorem scaled_mantissa_spec (beta : Int) [ValidRadix beta] (fexp : Int → Int) (x : ℝ) :
     ⦃⌜beta > 1⌝⦄
     (pure (scaled_mantissa beta fexp x) : Id ℝ)
@@ -267,7 +264,6 @@ theorem scaled_mantissa_spec (beta : Int) [ValidRadix beta] (fexp : Int → Int)
     x is in generic format iff x equals F2R of its
     canonical representation with truncated mantissa.
 -/
-@[spec]
 theorem generic_format_spec (beta : Int) [ValidRadix beta] (fexp : Int → Int) (x : ℝ) :
     ⦃⌜beta > 1⌝⦄
     (pure (generic_format beta fexp x) : Id Prop)
@@ -6508,7 +6504,6 @@ theorem mag_roundR_ge
       simpa [hmag_x, hround_eq, hmag_r] using hpos
     · exact positive_case rnd x hx_gt hr_ne
 
-@[spec]
 theorem round_to_generic_spec
     (beta : Int) [ValidRadix beta]
     (fexp : Int → Int) [Valid_exp fexp]

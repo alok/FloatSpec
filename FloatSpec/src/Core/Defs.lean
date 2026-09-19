@@ -20,7 +20,6 @@ import FloatSpec.src.Core.Raux
 import FloatSpec.src.Core.Zaux
 -- import Mathlib.Data.Real.Basic
 import Std.Do.Triple
-import Std.Tactic.Do
 
 open Real
 open Std.Do
@@ -96,7 +95,6 @@ noncomputable def F2R (f : FlocqFloat beta) : ℝ :=
     This is the bridge between the discrete float representation
     and the continuous real numbers it approximates.
 -/
-@[spec]
 theorem F2R_spec (f : FlocqFloat beta) :
     ⦃⌜True⌝⦄
     (pure (F2R f) : Id ℝ)
@@ -267,7 +265,6 @@ def Fnum_extract {beta : Int} [ValidRadix beta] (f : FlocqFloat beta) : Int :=
 
     The extraction returns the Fnum field unchanged.
 -/
-@[spec]
 theorem Fnum_extract_spec {beta : Int} [ValidRadix beta] (f : FlocqFloat beta) :
     ⦃⌜True⌝⦄
     (pure (Fnum_extract f) : Id Int)
@@ -286,7 +283,6 @@ def Fexp_extract {beta : Int} [ValidRadix beta] (f : FlocqFloat beta) : Int :=
 
     The extraction returns the Fexp field unchanged.
 -/
-@[spec]
 theorem Fexp_extract_spec {beta : Int} [ValidRadix beta] (f : FlocqFloat beta) :
     ⦃⌜True⌝⦄
     (pure (Fexp_extract f) : Id Int)
@@ -305,7 +301,6 @@ def make_float {beta : Int} [ValidRadix beta] (num exp : Int) : FlocqFloat beta 
 
     The constructor properly sets both fields.
 -/
-@[spec]
 theorem make_float_spec {beta : Int} [ValidRadix beta] (num exp : Int) :
     ⦃⌜True⌝⦄
     (pure (make_float (beta := beta) num exp) : Id (FlocqFloat beta))
@@ -328,7 +323,6 @@ def FlocqFloat_eq {beta : Int} [ValidRadix beta] (f g : FlocqFloat beta) : Bool 
 
     Two FlocqFloats are equal iff their components are equal.
 -/
-@[spec]
 theorem FlocqFloat_eq_spec {beta : Int} [ValidRadix beta] (f g : FlocqFloat beta) :
     ⦃⌜True⌝⦄
     (pure (FlocqFloat_eq f g) : Id Bool)
@@ -348,7 +342,6 @@ noncomputable def F2R_zero_float {beta : Int} [ValidRadix beta] : ℝ :=
 
     The zero float (0, 0) converts to real zero.
 -/
-@[spec]
 theorem F2R_zero_spec {beta : Int} [ValidRadix beta] :
     ⦃⌜True⌝⦄
     (pure (F2R_zero_float (beta := beta)) : Id ℝ)
@@ -372,7 +365,6 @@ noncomputable def F2R_add_same_exp {beta : Int} [ValidRadix beta] (f g : FlocqFl
 
     When two floats have the same exponent, F2R distributes over addition.
 -/
-@[spec]
 theorem F2R_add_same_exp_spec {beta : Int} [ValidRadix beta] (f g : FlocqFloat beta)
     (h_eq : f.Fexp = g.Fexp) :
     ⦃⌜True⌝⦄

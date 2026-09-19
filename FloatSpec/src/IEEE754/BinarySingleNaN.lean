@@ -8,7 +8,6 @@ import FloatSpec.src.Calc.Round
 import FloatSpec.src.Calc.Sqrt
 import Init.Data.Float
 import Std.Do.Triple
-import Std.Tactic.Do
 import Mathlib.Data.Real.Basic
 import Batteries.Data.Float.Lemmas
 
@@ -6630,8 +6629,7 @@ theorem Btrunc_correct {prec emax : Int} (x : binary_float prec emax) :
       FloatSpec.Core.Generic_fmt.round_to_generic 2
         (FloatSpec.Core.FIX.FIX_exp 0) FloatSpec.Core.Raux.Ztrunc (B2R x) := by
   have h := FloatSpec.Core.FIX.round_FIX_IZR FloatSpec.Core.Raux.Ztrunc (B2R x)
-  have hr := h trivial
-  simpa [Btrunc, wp, PostCond.noThrow, pure] using hr.symm
+  simpa [Btrunc] using h.symm
 
 abbrev BnearbyintNaNHandler (prec emax : Int) :=
   (x : binary_float prec emax) →

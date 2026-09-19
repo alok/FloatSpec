@@ -6,7 +6,8 @@ Formally verified floating‑point library for Lean 4, ported from the Coq Flocq
 ## Purpose
 
 - Provide a Lean 4 formalization of floating‑point arithmetic that mirrors the structure and guarantees of Flocq (by Boldo & Melquiond), while integrating with Lean 4 tooling and Mathlib.
-- Offer executable “reference” operations (alignment, plus, minus, multiply, sqrt, etc.) alongside Hoare‑triple style specifications to steadily close the gap to full proofs.
+- Offer executable reference operations and source-facing mathematical
+  specifications; existing `Id` Hoare triples remain as compatibility proofs.
 - Serve as a foundation for reasoning about rounding, ulp, error bounds, and IEEE 754 encodings/decodings in Lean 4.
 
 
@@ -31,8 +32,8 @@ The library is organized into layered modules. The top‑level aggregator `Float
   - Legacy compatibility modules and conversion helpers from an older floating‑point formalization
 
 Project configuration lives in `lakefile.lean` and `lean-toolchain` (Lean 4
-`v4.34.0-rc2`). Mathlib and CSLib are pinned to compatible `v4.34.0-rc2`
-revisions.
+`v4.34.0`). Mathlib and CSLib remain pinned to their `v4.34.0-rc2` source
+revisions; this combination builds on macOS with stable 4.34.0.
 
 
 ## Current Progress
@@ -44,8 +45,12 @@ the definitions and theorem statements, not these proofs or whole-library
 equivalence to Flocq. Source-facing APIs and compatibility helpers remain
 distinct.
 
-- Build: CI uses the pinned Lean 4 `v4.34.0-rc2`; the local macOS audit used
-  stable `v4.34.0` because the rc2 Lake executable crashes on this host.
+- Build: the checked-in toolchain is stable Lean 4 `v4.34.0`. The rc2 Lake
+  executable crashed on this macOS host; plain `lake build` now works here.
+- Proof framework: no source proof invokes `mvcgen` or `mspec`. Their unused
+  `@[spec]` annotations, tactic imports, and Hoare-style linter were removed.
+  Existing `Std.Do` triples remain until their callers are migrated to direct
+  propositions.
 - Trust gates: `scripts/audit_placeholders.sh` and
   `scripts/check_proof_debts.py` reject unregistered proof holes and trust
   escapes; `scripts/status_report.sh` records the current counts under
@@ -79,16 +84,16 @@ Version: the library exposes `FloatSpec.version = "0.7.0"` (see `FloatSpec.lean`
 
 Prerequisites
 
-- Lean 4 toolchain: `leanprover/lean4:v4.34.0-rc2` (see `lean-toolchain`)
+- Lean 4 toolchain: `leanprover/lean4:v4.34.0` (see `lean-toolchain`)
 - Lake build tool (included with the toolchain)
 
 Build locally
 
-1) Update dependencies: `lake update`
-2) Build: `lake build`
-3) Run trust gates: `scripts/audit_placeholders.sh --json FloatSpec`
+1) Build the locked dependencies and library: `lake build` (`lake update`
+   would change the reviewed dependency pins and is not required).
+2) Run trust gates: `scripts/audit_placeholders.sh --json FloatSpec`
    and `scripts/check_proof_debts.py`.
-4) With Rocq and autotools installed, run the executable cross-language
+3) With Rocq and autotools installed, run the executable cross-language
    regressions: `scripts/test_flocq_conformance.sh`. The script checks out the
    exact `Deps/flocq` gitlink in a temporary worktree (or clone), builds it,
    and runs paired Flocq/Lean observations without modifying an existing
@@ -120,7 +125,9 @@ require FloatSpec from git "https://github.com/Beneficial-AI-Foundation/FloatSpe
 
 ## Proof Style and Workflow
 
-The code uses a lightweight monadic specification style with Hoare‑triple syntax from `Std.Do.Triple`. A concise playbook for developing proofs lives in `PIPELINE.md`.
+New source-facing theorems should use direct propositions. Some existing proofs
+still use `Std.Do.Triple` over pure `Id` computations; migrate one theorem and
+its callers at a time. A concise playbook lives in `PIPELINE.md`.
 
 - Preferred pattern: reduce executable specs to pure facts using small helper equalities, then discharge via `unfold`/`simp`/`calc`.
 - Bool/Prop conversions: use `decide` when the spec relates boolean results to propositions.

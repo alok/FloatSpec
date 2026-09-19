@@ -7,7 +7,6 @@ import FloatSpec.src.IEEE754.Bits
 import FloatSpec.src.SimprocWP
 import Mathlib.Data.Real.Basic
 import Std.Do.Triple
-import Std.Tactic.Do
 
 open Real
 open Classical

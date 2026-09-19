@@ -25,7 +25,6 @@ import FloatSpec.src.Core.FLX
 import FloatSpec.src.Core.FIX
 import Mathlib.Data.Real.Basic
 import Std.Do.Triple
-import Std.Tactic.Do
 
 open Real
 open Std.Do
@@ -62,7 +61,6 @@ def FLT_exp_correct_check (e : Int) : Bool :=
     when possible, but enforces a minimum exponent emin to prevent
     excessive underflow and maintain gradual underflow behavior.
 -/
-@[spec]
 theorem FLT_exp_spec (e : Int) :
     ⦃⌜True⌝⦄
     (pure (FLT_exp_correct_check prec emin e) : Id Bool)
@@ -207,7 +205,6 @@ instance exists_NE_FLT (beta : Int) [ValidRadix beta]
     (for normal numbers) with minimum exponent protection
     (for subnormal numbers), matching IEEE 754 behavior.
 -/
-@[spec]
 theorem FLT_format_from_generic_payload_spec
     (beta : Int) [ValidRadix beta] (x : ℝ) :
     ⦃⌜True⌝⦄
@@ -223,7 +220,6 @@ theorem FLT_format_from_generic_payload_spec
     exponent selection logic, choosing between precision-based
     and minimum-bounded exponents as appropriate.
 -/
-@[spec]
 theorem FLT_exp_correct_spec (e : Int) :
     ⦃⌜True⌝⦄
     (pure (FLT_exp_correct_check prec emin e) : Id Bool)
@@ -244,7 +240,6 @@ noncomputable def FLT_format_0_check (beta : Int) [ValidRadix beta] : Bool :=
 
     See `FLT_format_satisfies_any` for actual zero membership.
 -/
-@[spec]
 theorem FLT_format_0_spec (beta : Int) [ValidRadix beta] :
     ⦃⌜beta > 1⌝⦄
     (pure (FLT_format_0_check beta) : Id Bool)
@@ -273,7 +268,6 @@ noncomputable def FLT_format_opp_check (beta : Int) [ValidRadix beta] (x : ℝ) 
     Actual FLT negation closure is a field of
     `FLT_format_satisfies_any`.
 -/
-@[spec]
 theorem FLT_format_opp_spec (beta : Int) [ValidRadix beta] (x : ℝ) :
     ⦃⌜True⌝⦄
     (pure (FLT_format_opp_check beta x) : Id Bool)
@@ -301,7 +295,6 @@ noncomputable def FLT_format_abs_check (beta : Int) [ValidRadix beta] (x : ℝ) 
     Actual FLT absolute-value closure follows from zero and negation closure
     in `FLT_format_satisfies_any`; this helper proves only an integer identity.
 -/
-@[spec]
 theorem FLT_format_abs_spec (beta : Int) [ValidRadix beta] (x : ℝ) :
     ⦃⌜True⌝⦄
     (pure (FLT_format_abs_check beta x) : Id Bool)
@@ -356,7 +349,6 @@ def FLT_exp_FLX_check (e : Int) : Bool :=
     FLT format behaves identically to FLX format. This captures
     the normal number range of IEEE 754 floating-point.
 -/
-@[spec]
 theorem FLT_exp_FLX_spec (e : Int) :
     ⦃⌜emin ≤ e - prec⌝⦄
     (pure (FLT_exp_FLX_check prec emin e) : Id Bool)
@@ -442,7 +434,6 @@ theorem FLT_format_generic (beta : Int) [ValidRadix beta] (x : ℝ) :
   exact FLT_format_generic_run (prec := prec) (emin := emin) beta x hx
 
 /-- Compatibility specification for the exact source predicate. -/
-@[spec]
 theorem FLT_format_spec (beta : Int) [ValidRadix beta] (x : ℝ) :
     ⦃⌜True⌝⦄
     (pure (FLT_format prec emin beta x) : Id Prop)

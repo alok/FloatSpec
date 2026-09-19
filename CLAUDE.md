@@ -165,7 +165,7 @@ lake build --verbose
 - Before each proof:
   - Verify the function body is correct and stable.
   - Check existing specs to understand precisely what needs to be proven.
-  - Preserve specification/Hoare triple syntax; avoid changing it unless absolutely necessary. If change is unavoidable, decompose the spec into simpler lemmas rather than rewriting wholesale.
+  - Check the statement against Coq before preserving it. Prefer direct propositions for new work; migrate a legacy Hoare triple together with its callers.
 - Compilation verification:
   - After every proof, run `lean_lsp_mcp.lean_diagnostic_messages` for the edited file.
   - Use `lake build` as a fallback or for a project-wide typecheck.
@@ -243,69 +243,24 @@ lake build --verbose
 - Decompose proofs until tools like `canonical`, `grind`, and `simp` dissolve the pieces. Use them to do the "how", the AI should do the "what".
 - Don't use `i` and `j` as variable names when you could use `r`(ow) and `c`(olumn) instead. Ditto for `m` and `n` as matrix dimensions. Use `R` and `C`.
 
-## Verifying Imperative Programs using mvcgen
+## Source-facing proof style
 
-The `mvcgen` tactic implements a monadic verification condition generator that breaks down goals involving imperative programs written using Lean's `do` notation into pure verification conditions.
+Flocq defines mathematical values and states mathematical propositions directly.
+Prefer pure Lean definitions and ordinary propositions for new source-facing APIs.
+Compare each definition and theorem statement with the pinned Coq source before
+working on its proof. Give public source-facing definitions a `flocq_source`
+link; document any temporary `sorry` in the proof-debt manifest.
 
-### Key Features:
-- **Monadic verification**: Handles programs with local mutability, for loops, and early returns
-- **Hoare triple support**: Specifications use the notation `⦃P⦄ prog ⦃Q⦄` for pre/postconditions
-- **Loop invariants**: Supports specifying invariants for loops using zipper data structures
-- **Compositional reasoning**: Allows building specifications for individual monadic functions
-- **Monad transformer stacks**: Works with StateT, ReaderT, ExceptT and custom monad combinations
+Much existing code wraps pure functions in `Id` Hoare triples. Those triples
+remain for compatibility with downstream proofs, but no product proof invokes
+`mvcgen` or `mspec`. Do not add `@[spec]` or import `Std.Tactic.Do` for new pure
+work. Migrate a legacy triple to a direct proposition only alongside its
+callers, checking the statement against Coq and rebuilding after each step.
 
-### Basic Usage Pattern:
-```lean
-theorem program_correct : program_spec := by
-  generalize h : (program args) = result
-  apply MonadType.of_wp_run_eq h  -- Focus on monadic part
-  mvcgen [unfold_hints]           -- Generate verification conditions
-  case inv1 => exact invariant_spec  -- Specify loop invariants
-  all_goals mleave; grind         -- Discharge pure goals
-```
-
-### Pure Functions with Id Monad Pattern
-
-**IMPORTANT**: For pure functions, keep return types pure and use `Id` wrapper ONLY in specs:
-
-```lean
--- CORRECT: Pure function returning plain type
-def myCheck (x : Int) : Bool := x > 0
-
--- CORRECT: Spec wraps with (pure ... : Id T)
-@[spec]
-theorem myCheck_spec (x : Int) :
-    ⦃⌜True⌝⦄
-    (pure (myCheck x) : Id Bool)
-    ⦃⇓r => ⌜r = true ↔ x > 0⌝⦄ := by
-  intro _
-  simp [wp, PostCond.noThrow, myCheck]
-
--- WRONG: Don't make the function return Id
-def badCheck (x : Int) : Id Bool := pure (x > 0)  -- DON'T DO THIS
-```
-
-**Why?** `mvcgen` requires SOME monad, even for pure functions. `Id` is the trivial monad, and wrapping only in specs keeps the function definitions clean.
-
-### The @[spec] Attribute
-
-Mark specification theorems with `@[spec]` to enable automatic lookup during verification:
-
-```lean
-@[spec]
-theorem operation_spec : ⦃P⦄ operation ⦃Q⦄ := ...
-```
-
-### Loop Invariants:
-- Use zipper data structures (`xs.pref` for processed elements, `xs.suff` for remaining)
-- Early returns supported with `Invariant.withEarlyReturn`
-- State-dependent invariants can reference monadic state through function arguments
-
-### Skill Documentation
-
-See `.claude/docs/lean4/mvcgen-tactic.md` and `.claude/docs/lean4/grind-tactic.md` for comprehensive documentation on these tactics.
-
-This approach scales to complex imperative programs while maintaining compositional reasoning and avoiding the need to replicate control flow in proofs.
+The `noIdReturn` linter still flags unnecessary `Id` return types in
+definitions. Its purpose is to keep definitions pure, not to require a
+particular proof framework. Use `Std.Do` only if an eventual executable
+algorithm actually needs monadic state, errors, loops, or early return.
 ### Import and Module Structure
 
 - Imports MUST come before any syntax elements, including module and doc comments
@@ -603,5 +558,5 @@ Do NOT use the `{lit}` verso role if an identifier is missing. Use `{given
 
 1. **Fill sorry stubs** in IEEE754/PrimFloat.lean and other files
 2. **Add missing docstrings** (linter warnings)
-3. **Refactor**: Pure defs should not return `Id`; only specs should use `(pure ... : Id _)`
+3. **Refactor**: Pure defs should not return `Id`; existing triples may wrap them only until their callers migrate.
 4. Continue cleaning Verso warnings using `{name}` and `{lit}` roles

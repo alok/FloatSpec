@@ -30,7 +30,6 @@ import FloatSpec.src.Core.Ulp
 import FloatSpec.VersoExt
 -- import Mathlib.Data.Real.Basic
 import Std.Do.Triple
-import Std.Tactic.Do
 import FloatSpec.src.SimprocWP
 
 open Real

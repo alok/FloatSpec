@@ -14,7 +14,6 @@ import FloatSpec.src.Core.Float_prop
 import Mathlib.Data.Real.Basic
 import Mathlib.Tactic
 import Std.Do.Triple
-import Std.Tactic.Do
 import FloatSpec.src.SimprocWP
 
 set_option maxRecDepth 4096
@@ -148,7 +147,6 @@ noncomputable def inbetween_loc : Location :=
 
     The computed location accurately represents x's position in `[d, u)`
 -/
-@[spec]
 theorem inbetween_spec (Hx : d ≤ x ∧ x < u) :
     ⦃⌜d ≤ x ∧ x < u⌝⦄
     (pure (inbetween_loc d u x) : Id Location)

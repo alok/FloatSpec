@@ -15,7 +15,6 @@ import FloatSpec.src.Core.Raux
 import Mathlib.Data.Real.Basic
 import Mathlib.Data.Int.Basic
 import Std.Do.Triple
-import Std.Tactic.Do
 import FloatSpec.src.SimprocWP
 
 open Real FloatSpec.Calc.Bracket FloatSpec.Core.Defs
@@ -87,7 +86,6 @@ noncomputable def truncate (beta : Int) [ValidRadix beta] (f : FlocqFloat beta) 
     preservation theorem needs the full Coq `Round.v` proof chain and must not
     be claimed from the executable definition alone.
 -/
-@[spec]
 theorem truncate_spec (f : FlocqFloat beta) (e : Int) (l : Location)
     (He : f.Fexp ≤ e) (Hl : inbetween_float beta f.Fnum e ((F2R f)) l) :
     ⦃⌜f.Fexp ≤ e ∧ inbetween_float beta f.Fnum e ((F2R f)) l⌝⦄

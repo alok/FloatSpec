@@ -228,23 +228,21 @@ This file lists theorem-like declarations per file (Coq vs Lean) and records cor
 - Theorem: `round_FIX_IZR`
 
 ### Lean Declarations
-- theorem: `FIX_exp_spec` (FIX.lean:60)
-- theorem: `FIX_format_spec` (FIX.lean:98)
-- theorem: `FIX_exp_correct_spec` (FIX.lean:110)
-- theorem: `FIX_format_0_spec` (FIX.lean:130)
-- theorem: `FIX_format_opp_spec` (FIX.lean:150)
-- theorem: `generic_format_FIX` (FIX.lean:161)
-- theorem: `FIX_format_generic` (FIX.lean:173)
-- theorem: `FIX_format_satisfies_any` (FIX.lean:185)
-- theorem: `ulp_FIX` (FIX.lean:196)
-- theorem: `round_FIX_IZR` (FIX.lean:212)
+- theorem: `FIX_exp_spec` (FIX.lean:47)
+- theorem: `FIX_format_zero` (FIX.lean:103)
+- theorem: `FIX_format_neg` (FIX.lean:108)
+- theorem: `generic_format_FIX` (FIX.lean:117)
+- theorem: `FIX_format_generic` (FIX.lean:128)
+- theorem: `FIX_format_satisfies_any` (FIX.lean:139)
+- theorem: `ulp_FIX` (FIX.lean:163)
+- theorem: `round_FIX_IZR` (FIX.lean:177)
 
 ### Mapping (Coq → Lean)
-- `generic_format_FIX` → `generic_format_FIX [FIX.lean:161]` (exact)
-- `FIX_format_generic` → `FIX_format_generic [FIX.lean:173]` (exact)
-- `FIX_format_satisfies_any` → `FIX_format_satisfies_any [FIX.lean:185]` (exact)
-- `ulp_FIX` → `ulp_FIX [FIX.lean:196]` (exact)
-- `round_FIX_IZR` → `round_FIX_IZR [FIX.lean:212]` (exact)
+- `generic_format_FIX` → `generic_format_FIX [FIX.lean:117]` (exact)
+- `FIX_format_generic` → `FIX_format_generic [FIX.lean:128]` (exact)
+- `FIX_format_satisfies_any` → `FIX_format_satisfies_any [FIX.lean:139]` (exact)
+- `ulp_FIX` → `ulp_FIX [FIX.lean:163]` (exact)
+- `round_FIX_IZR` → `round_FIX_IZR [FIX.lean:177]` (exact)
 
 ## File: FLT.v → FLT.lean
 

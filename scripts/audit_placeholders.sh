@@ -104,13 +104,8 @@ else
   rg -n -H --glob '*.lean' '.*' "${paths[@]}" >"$scan_file" || true
 fi
 
-# The Hoare-style linter contains syntax patterns that intentionally match
-# trivial postconditions. These lines are tooling logic, not theorem/spec
-# payloads, and are already documented as non-payload scanner noise.
 filtered_scan_file="$(mktemp)"
 awk -F: '
-  $1 == "FloatSpec/Linter/HoareStyleLinter.lean" &&
-    index($3, "`(term|") && index($3, "=> True) => true") { next }
   # Commented-out examples can mention relation-erased rounding attempts with
   # `fun _ _ => True`. They are not active declarations or spec payloads.
   $0 ~ /^[^:]+:[0-9]+:[[:space:]]*--/ && index($0, "fun _ _ => True") { next }

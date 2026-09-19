@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Alok Singh
 
 Linter that warns when `def`/`abbrev` returns `Id _`.
-Use `Id` only in Hoare triples (mvcgen) and keep definitions pure.
+Keep definitions pure; legacy `Id` triples can wrap them at proof boundaries.
 -/
 module
 
@@ -20,7 +20,7 @@ open Lean Elab Command Linter
 /-- Enables the no-Id-return linter. -/
 register_option linter.noIdReturn : Bool := {
   defValue := true
-  descr := "warn when a def/abbrev returns Id; keep Id only in mvcgen specs"
+  descr := "warn when a def/abbrev returns Id; keep mathematical definitions pure"
 }
 
 namespace NoIdReturn
@@ -62,7 +62,7 @@ def noIdReturnLinter : Linter where run := withSetOptionIn fun stx => do
   for ty in findIdReturnTypes stx [] do
     logLint linter.noIdReturn ty
       "avoid returning `Id` from `def`/`abbrev`. \
-       Keep definitions pure and use `(pure ...) : Id _` only inside mvcgen Hoare triples. \
+       Keep mathematical definitions pure; bridge legacy `Id` triples only in proofs. \
        Disable with `set_option linter.noIdReturn false`."
 
 initialize addLinter noIdReturnLinter

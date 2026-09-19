@@ -3,7 +3,6 @@
 
 import FloatSpec.src.Core
 import Std.Do.Triple
-import Std.Tactic.Do
 import FloatSpec.src.IEEE754.Binary
 import FloatSpec.src.IEEE754.BinarySingleNaN
 import Batteries.Data.Float.Lemmas

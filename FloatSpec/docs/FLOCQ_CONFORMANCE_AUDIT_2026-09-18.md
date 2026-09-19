@@ -40,13 +40,18 @@ compiles the pinned Rocq observations, then builds the paired Lean module.
 The script never resets the user's nested checkout. The protected-axiom and
 native-decide scanner fixtures are in `scripts/test_audit_placeholders.sh`.
 
-On this macOS host, Rocq 9.2 compiled the pinned source and all paired Coq
+On this macOS host, Rocq compiled the pinned source and all paired Coq
 examples. Lean's pinned `v4.34.0-rc2` Lake crashed locally before building,
 so the Lean checks used installed `v4.34.0` with the *same locked dependency
 revisions*. This is a local compiler-version caveat, not an assertion that the
-rc2 build itself passed here. Linux CI remains configured for the pinned rc2
-toolchain. The source build emitted only Rocq deprecation notices in the
+rc2 build itself passed here. At the time, Linux CI still selected rc2; the
+follow-up below supersedes that configuration. The source build emitted only Rocq deprecation notices in the
 targeted examples.
+
+Follow-up: `lean-toolchain` now selects stable `v4.34.0`, so plain `lake build`
+and the test/executable targets run on this macOS host. The Mathlib and CSLib
+source revisions remain at their reviewed rc2 pins; this change does not claim
+that rc2 Lake was repaired. The most recent paired Flocq run used Rocq 9.1.0.
 
 ## Unresolved boundaries
 
@@ -80,6 +85,13 @@ The `Std.Do`/Hoare layer was separately reviewed: sampled float modules use
 found. Direct propositions are the simpler source-facing contracts. Existing
 Hoare wrappers still have downstream callers, so any migration should be
 incremental rather than a mechanical removal.
+
+The first incremental migration is `Core/FIX.lean`: direct propositions now
+state its format conversions, zero and negation closure, ulp, and integer
+rounding result. Two IEEE callers were updated; the unrelated Boolean check
+definitions and unused `@[spec]` annotations were removed. A CI guard keeps
+the unused tactic surface out of the float sources. Most other modules still
+contain legacy triples and have not been migrated.
 
 1. The permissive `Binary754` compatibility carrier and its `binary_*`
    helpers are not equivalent to the proof-carrying `Binary.binary_float`

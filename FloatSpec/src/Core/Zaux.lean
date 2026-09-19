@@ -17,7 +17,6 @@ COPYING file for more details.
 -/
 
 import Std.Do.Triple
-import Std.Tactic.Do
 import Mathlib.Tactic
 import FloatSpec.src.SimprocWP
 
@@ -106,7 +105,6 @@ def Zopp_le_cancel_check (x y : Int) : Int :=
     The cancellation operation ensures that if the negatives are ordered,
     then the original values have the reverse order relationship.
 -/
-@[spec]
 theorem Zopp_le_cancel_spec (x y : Int) :
     ⦃⌜-y ≤ -x⌝⦄
     (pure (Zopp_le_cancel_check x y) : Id _)
@@ -134,7 +132,6 @@ def Zgt_not_eq_check (x y : Int) : Bool :=
     The operation verifies that strict ordering relationships
     guarantee distinctness of values.
 -/
-@[spec]
 theorem Zgt_not_eq_spec (x y : Int) :
     ⦃⌜y < x⌝⦄
     (pure (Zgt_not_eq_check x y) : Id _)
@@ -173,7 +170,6 @@ def eqbool_irrelevance_check (b : Bool) (_h1 _h2 : b = true) : Bool :=
     Any two proofs that a boolean equals true are themselves equal.
     This captures the principle of proof irrelevance for booleans.
 -/
-@[spec]
 theorem eqbool_irrelevance_spec (b : Bool) (h1 h2 : b = true) :
     ⦃⌜b = true⌝⦄
     (pure (eqbool_irrelevance_check b h1 h2) : Id _)
@@ -197,7 +193,6 @@ def Zeven_ex_check (x : Int) : (Int × Int) :=
   (p, r)
 
 /-- Specification: For any integer x, there exist p and r with r = 0 or r = 1 and x equals two times p plus r. -/
-@[spec]
 theorem Zeven_ex_spec (x : Int) :
     ⦃⌜True⌝⦄
     (pure (Zeven_ex_check x) : Id _)
@@ -250,7 +245,6 @@ def Zpower_plus_check (n k1 k2 : Int) : Int :=
     0  -- Undefined for negative exponents in this context
 
 /-- Specification: Exponential addition rule for nonnegative exponents. -/
-@[spec]
 theorem Zpower_plus_spec (n k1 k2 : Int) :
     ⦃⌜0 ≤ k1 ∧ 0 ≤ k2⌝⦄
     (pure (Zpower_plus_check n k1 k2) : Id _)
@@ -295,7 +289,6 @@ def radix_val_inj_check (r1 r2 : Radix) : Bool :=
   decide ((r1.val = r2.val) → (r1.val = r2.val))
 
 /-- Specification: Injectivity of radix by value -/
-@[spec]
 theorem radix_val_inj_spec (r1 r2 : Radix) :
     ⦃⌜True⌝⦄
     (pure (radix_val_inj_check r1 r2) : Id _)
@@ -366,7 +359,6 @@ def Zpower_Zpower_nat_check (b e : Int) : Int :=
     0  -- Undefined for negative exponents
 
 /-- Specification: When 0 ≤ e, integer and natural powers coincide. -/
-@[spec]
 theorem Zpower_Zpower_nat_spec (b e : Int) :
     ⦃⌜0 ≤ e⌝⦄
     (pure (Zpower_Zpower_nat_check b e) : Id _)
@@ -394,7 +386,6 @@ def Zpower_nat_S_check (b : Int) (e : Nat) : Int :=
   b * b^e
 
 /-- Specification: Successor exponent formula for natural powers. -/
-@[spec]
 theorem Zpower_nat_S_spec (b : Int) (e : Nat) :
     ⦃⌜True⌝⦄
     (pure (Zpower_nat_S_check b e) : Id _)
@@ -452,7 +443,6 @@ def Zeven_Zpower_odd_check (b e : Int) : Bool :=
 
     Under {lit}`0 ≤ e` and {lit}`b` odd, {lit}`b^e` is odd (i.e., not divisible by 2).
 -/
-@[spec]
 theorem Zeven_Zpower_odd_spec (b e : Int) :
     ⦃⌜0 ≤ e ∧ (decide ((b % 2) = 0) = false)⌝⦄
     (pure (Zeven_Zpower_odd_check b e) : Id _)
@@ -546,7 +536,6 @@ def Zpower_le_check (r : Radix) (e1 e2 : Int) : Bool :=
   decide (Zpower r.val e1 ≤ Zpower r.val e2)
 
 /-- Specification: If e1 ≤ e2 then r^e1 ≤ r^e2 -/
-@[spec]
 theorem Zpower_le_spec (r : Radix) (e1 e2 : Int) :
     ⦃⌜e1 ≤ e2⌝⦄
     (pure (Zpower_le_check r e1 e2) : Id _)
@@ -571,7 +560,6 @@ def Zpower_lt_check (r : Radix) (e1 e2 : Int) : Bool :=
   decide (Zpower r.val e1 < Zpower r.val e2)
 
 /-- Specification: Strict increase over exponent when upper exponent nonnegative -/
-@[spec]
 theorem Zpower_lt_spec (r : Radix) (e1 e2 : Int) :
     ⦃⌜0 ≤ e2 ∧ e1 < e2⌝⦄
     (pure (Zpower_lt_check r e1 e2) : Id _)
@@ -597,7 +585,6 @@ def Zpower_lt_Zpower_check (_r : Radix) (e1 e2 : Int) : Bool :=
   decide (e1 ≤ e2)
 
 /-- Specification: Power inequality implies exponent inequality -/
-@[spec]
 theorem Zpower_lt_Zpower_spec (r : Radix) (e1 e2 : Int) :
     ⦃⌜r.val ^ (e1 - 1).natAbs < r.val ^ e2.natAbs⌝⦄
     (pure (Zpower_lt_Zpower_check r e1 e2) : Id _)
@@ -618,7 +605,6 @@ def Zpower_gt_id_check (r : Radix) (n : Int) : Bool :=
   decide (n < Zpower r.val n)
 
 /-- Specification: n < r^n for any integer n (via natAbs exponent) -/
-@[spec]
 theorem Zpower_gt_id_spec (r : Radix) (n : Int) :
     ⦃⌜True⌝⦄
     (pure (Zpower_gt_id_check r n) : Id _)
@@ -652,7 +638,6 @@ def Zmod_mod_mult_check (n _a b : Int) : Int :=
   n % b
 
 /-- Specification: Nested modulo simplifies under side conditions. -/
-@[spec]
 theorem Zmod_mod_mult_spec (n a b : Int) :
     ⦃⌜0 < a ∧ 0 ≤ b⌝⦄
     (pure (Zmod_mod_mult_check n a b) : Id _)
@@ -672,7 +657,6 @@ def ZOmod_eq_check (a b : Int) : Int :=
   a.tmod b
 
 /-- Specification: Quotient and remainder decomposition. -/
-@[spec]
 theorem ZOmod_eq_spec (a b : Int) :
     ⦃⌜b ≠ 0⌝⦄
     (pure (ZOmod_eq_check a b) : Id _)
@@ -693,7 +677,6 @@ def Zdiv_mod_mult_check (n a b : Int) : Int :=
     0
 
 /-- Specification: Division distributes over modulo for nonnegative inputs, i.e. {lean}`(n % (a * b)) / a = (n / a) % b`. -/
-@[spec]
 theorem Zdiv_mod_mult_spec (n a b : Int) :
     ⦃⌜0 ≤ a ∧ 0 ≤ b⌝⦄
     (pure (Zdiv_mod_mult_check n a b) : Id _)
@@ -756,7 +739,6 @@ def ZOmod_mod_mult_check (n _a b : Int) : Int :=
 
 /-- Specification: {lean}`(fun (n a b : Int) => (n % (a * b)) % b = n % b)`
     (quotient-style statement). -/
-@[spec]
 theorem ZOmod_mod_mult_spec (n a b : Int) :
     ⦃⌜b ≠ 0⌝⦄
     (pure (ZOmod_mod_mult_check n a b) : Id _)
@@ -780,7 +762,6 @@ def ZOdiv_mod_mult_check (n a b : Int) : Bool :=
   decide (((n.tmod (a * b)).tdiv a) = ((n.tdiv a).tmod b))
 
 /-- Specification: Truncated division over remainder and multiplication -/
-@[spec]
 theorem ZOdiv_mod_mult_spec (n a b : Int) :
     ⦃⌜True⌝⦄
     (pure (ZOdiv_mod_mult_check n a b) : Id _)
@@ -835,7 +816,6 @@ def ZOdiv_small_abs_check (a b : Int) : Bool :=
   decide (a.tdiv b = 0)
 
 /-- Specification: Small absolute value implies zero quotient (truncated) -/
-@[spec]
 theorem ZOdiv_small_abs_spec (a b : Int) :
     ⦃⌜(Int.natAbs a : Int) < b⌝⦄
     (pure (ZOdiv_small_abs_check a b) : Id _)
@@ -860,7 +840,6 @@ def ZOmod_small_abs_check (a b : Int) : Bool :=
   decide (a.tmod b = a)
 
 /-- Specification: Small absolute value implies remainder equals dividend -/
-@[spec]
 theorem ZOmod_small_abs_spec (a b : Int) :
     ⦃⌜(Int.natAbs a : Int) < b⌝⦄
     (pure (ZOmod_small_abs_check a b) : Id _)
@@ -892,7 +871,6 @@ def ZOdiv_plus_check (a b c : Int) : Int :=
     0
 
 /-- Specification: Decomposes the quotient of a sum into a sum of quotients plus the quotient of remainders, under a nonnegativity side condition. -/
-@[spec]
 theorem ZOdiv_plus_spec (a b c : Int) :
     ⦃⌜0 ≤ a * b ∧ c ≠ 0⌝⦄
     (pure (ZOdiv_plus_check a b c) : Id _)
@@ -964,7 +942,6 @@ def Zsame_sign_trans_check (_v u w : Int) : Bool :=
   decide (0 ≤ u * w)
 
 /-- Specification: If v ≠ 0 and both u·v and v·w are nonnegative, then u·w is nonnegative. -/
-@[spec]
 theorem Zsame_sign_trans_spec (v u w : Int) :
     ⦃⌜v ≠ 0 ∧ 0 ≤ u * v ∧ 0 ≤ v * w⌝⦄
     (pure (Zsame_sign_trans_check v u w) : Id _)
@@ -988,7 +965,6 @@ def Zsame_sign_trans_weak_check (_v u w : Int) : Bool :=
   decide (0 ≤ u * w)
 
 /-- Specification: If (v = 0 → w = 0) and both u·v and v·w are nonnegative, then u·w is nonnegative. -/
-@[spec]
 theorem Zsame_sign_trans_weak_spec (v u w : Int) :
     ⦃⌜(v = 0 → w = 0) ∧ 0 ≤ u * v ∧ 0 ≤ v * w⌝⦄
     (pure (Zsame_sign_trans_weak_check v u w) : Id _)
@@ -1011,7 +987,6 @@ def Zsame_sign_imp_check (u v : Int)
   decide (0 ≤ u * v)
 
 /-- Specification: If u > 0 implies v ≥ 0 and −u > 0 implies −v ≥ 0, then 0 ≤ u·v. -/
-@[spec]
 theorem Zsame_sign_imp_spec (u v : Int)
     (hp : 0 < u → 0 ≤ v) (hn : 0 < -u → 0 ≤ -v) :
     ⦃⌜True⌝⦄
@@ -1039,7 +1014,6 @@ def Zsame_sign_odiv_check (u v : Int) : Bool :=
   decide (0 ≤ u * Int.tdiv u v)
 
 /-- Specification: If 0 ≤ v then 0 ≤ u·(u / v). -/
-@[spec]
 theorem Zsame_sign_odiv_spec (u v : Int) :
     ⦃⌜0 ≤ v⌝⦄
     (pure (Zsame_sign_odiv_check u v) : Id _)
@@ -1141,7 +1115,6 @@ def Zeq_bool_true_check (_ _ : Int) : Bool :=
   true
 
 /-- Specification: Equality implies true -/
-@[spec]
 theorem Zeq_bool_true_spec (x y : Int) :
     ⦃⌜x = y⌝⦄
     (pure (Zeq_bool_true_check x y) : Id _)
@@ -1159,7 +1132,6 @@ def Zeq_bool_false_check (_ _ : Int) : Bool :=
   false
 
 /-- Specification: Inequality implies false -/
-@[spec]
 theorem Zeq_bool_false_spec (x y : Int) :
     ⦃⌜x ≠ y⌝⦄
     (pure (Zeq_bool_false_check x y) : Id _)
@@ -1182,7 +1154,6 @@ def Zeq_bool_diag_check (_ : Int) : Bool :=
     comparing a value with itself. This is the boolean
     version of reflexivity.
 -/
-@[spec]
 theorem Zeq_bool_diag_spec (x : Int) :
     ⦃⌜True⌝⦄
     (pure (Zeq_bool_diag_check x) : Id _)
@@ -1209,7 +1180,6 @@ def Zeq_bool_opp_check (x y : Int) : Bool :=
     or moving negation between arguments. This is useful for
     simplifying equality tests involving negations.
 -/
-@[spec]
 theorem Zeq_bool_opp_spec (x y : Int) :
     ⦃⌜True⌝⦄
     (pure (Zeq_bool_opp_check x y) : Id _)
@@ -1258,7 +1228,6 @@ def Zle_bool_true_check (_ _ : Int) : Bool :=
     returns true. This is the soundness property for
     boolean ordering.
 -/
-@[spec]
 theorem Zle_bool_true_spec (x y : Int) :
     ⦃⌜x ≤ y⌝⦄
     (pure (Zle_bool_true_check x y) : Id _)
@@ -1281,7 +1250,6 @@ def Zle_bool_false_check (_ _ : Int) : Bool :=
     returns false. This is the completeness property
     for boolean ordering.
 -/
-@[spec]
 theorem Zle_bool_false_spec (x y : Int) :
     ⦃⌜y < x⌝⦄
     (pure (Zle_bool_false_check x y) : Id _)
@@ -1307,7 +1275,6 @@ def Zle_bool_opp_l_check (x y : Int) : Bool :=
     Negating the left argument and swapping gives the same
     result: Zle_bool(-x, y) = Zle_bool(-y, x).
 -/
-@[spec]
 theorem Zle_bool_opp_l_spec (x y : Int) :
     ⦃⌜True⌝⦄
     (pure (Zle_bool_opp_l_check x y) : Id _)
@@ -1333,7 +1300,6 @@ def Zle_bool_opp_check (x y : Int) : Bool :=
     Negating both arguments reverses the comparison:
     Zle_bool(-x, -y) = Zle_bool(y, x).
 -/
-@[spec]
 theorem Zle_bool_opp_spec (x y : Int) :
     ⦃⌜True⌝⦄
     (pure (Zle_bool_opp_check x y) : Id _)
@@ -1359,7 +1325,6 @@ def Zle_bool_opp_r_check (x y : Int) : Bool :=
     Negating the right argument relates to swapping with
     left negation: Zle_bool(x, -y) = Zle_bool(y, -x).
 -/
-@[spec]
 theorem Zle_bool_opp_r_spec (x y : Int) :
     ⦃⌜True⌝⦄
     (pure (Zle_bool_opp_r_check x y) : Id _)
@@ -1385,7 +1350,6 @@ def negb_Zle_bool_check (x y : Int) : Bool :=
     The negation of x ≤ y is equivalent to y < x. This duality
     is fundamental for simplifying boolean comparisons.
 -/
-@[spec]
 theorem negb_Zle_bool_spec (x y : Int) :
     ⦃⌜True⌝⦄
     (pure (negb_Zle_bool_check x y) : Id _)
@@ -1411,7 +1375,6 @@ def negb_Zlt_bool_check (x y : Int) : Bool :=
     The negation of x < y is equivalent to y ≤ x. This duality
     allows conversion between strict and non-strict comparisons.
 -/
-@[spec]
 theorem negb_Zlt_bool_spec (x y : Int) :
     ⦃⌜True⌝⦄
     (pure (negb_Zlt_bool_check x y) : Id _)
@@ -1434,7 +1397,6 @@ def Zlt_bool_true_check (_ _ : Int) : Bool :=
     returns true. This is the soundness property for
     boolean strict ordering.
 -/
-@[spec]
 theorem Zlt_bool_true_spec (x y : Int) :
     ⦃⌜x < y⌝⦄
     (pure (Zlt_bool_true_check x y) : Id _)
@@ -1457,7 +1419,6 @@ def Zlt_bool_false_check (_ _ : Int) : Bool :=
     returns false. This is the completeness property
     for boolean strict ordering.
 -/
-@[spec]
 theorem Zlt_bool_false_spec (x y : Int) :
     ⦃⌜y ≤ x⌝⦄
     (pure (Zlt_bool_false_check x y) : Id _)
@@ -1483,7 +1444,6 @@ def Zlt_bool_opp_l_check (x y : Int) : Bool :=
     Negating the left argument and swapping gives the same
     result: Zlt_bool(-x, y) = Zlt_bool(-y, x).
 -/
-@[spec]
 theorem Zlt_bool_opp_l_spec (x y : Int) :
     ⦃⌜True⌝⦄
     (pure (Zlt_bool_opp_l_check x y) : Id _)
@@ -1509,7 +1469,6 @@ def Zlt_bool_opp_r_check (x y : Int) : Bool :=
     Negating the right argument relates to swapping with
     left negation: Zlt_bool(x, -y) = Zlt_bool(y, -x).
 -/
-@[spec]
 theorem Zlt_bool_opp_r_spec (x y : Int) :
     ⦃⌜True⌝⦄
     (pure (Zlt_bool_opp_r_check x y) : Id _)
@@ -1535,7 +1494,6 @@ def Zlt_bool_opp_check (x y : Int) : Bool :=
     Negating both arguments reverses the comparison:
     Zlt_bool(-x, -y) = Zlt_bool(y, x).
 -/
-@[spec]
 theorem Zlt_bool_opp_spec (x y : Int) :
     ⦃⌜True⌝⦄
     (pure (Zlt_bool_opp_check x y) : Id _)
@@ -1588,7 +1546,6 @@ theorem Zcompare_spec (x y : Int) : Zcompare_prop x y (Zcompare x y) := by
 
     This captures the complete ordering of integers.
 -/
-@[spec]
 theorem Zcompare_behavior_spec (x y : Int) :
     ⦃⌜True⌝⦄
     (pure (Zcompare x y) : Id _)
@@ -1696,7 +1653,6 @@ def Zcompare_Lt_check (_ _ : Int) : Ordering :=
     The comparison function returns Lt exactly when x < y.
     This provides the forward direction of the comparison specification.
 -/
-@[spec]
 theorem Zcompare_Lt_spec (x y : Int) :
     ⦃⌜x < y⌝⦄
     (pure (Zcompare_Lt_check x y) : Id _)
@@ -1722,7 +1678,6 @@ def Zcompare_Eq_check (_ _ : Int) : Ordering :=
     The comparison function returns Eq exactly when x = y.
     This provides decidable equality through comparison.
 -/
-@[spec]
 theorem Zcompare_Eq_spec (x y : Int) :
     ⦃⌜x = y⌝⦄
     (pure (Zcompare_Eq_check x y) : Id _)
@@ -1748,7 +1703,6 @@ def Zcompare_Gt_check (_ _ : Int) : Ordering :=
     The comparison function returns Gt exactly when y < x.
     This completes the three cases of integer comparison.
 -/
-@[spec]
 theorem Zcompare_Gt_spec (x y : Int) :
     ⦃⌜y < x⌝⦄
     (pure (Zcompare_Gt_check x y) : Id _)
@@ -1782,7 +1736,6 @@ def cond_Zopp (b : Bool) (x : Int) : Int :=
 
     This is fundamental for handling signs in floating-point.
 -/
-@[spec]
 theorem cond_Zopp_spec (b : Bool) (x : Int) :
     ⦃⌜True⌝⦄
     (pure (cond_Zopp b x) : Id _)
@@ -1813,7 +1766,6 @@ def cond_Zopp_negb_check (x : Bool) (y : Int) : Int :=
   -(if x then -y else y)
 
 /-- Specification: Condition negation flips result. -/
-@[spec]
 theorem cond_Zopp_negb_spec (x : Bool) (y : Int) :
     ⦃⌜True⌝⦄
     (pure (cond_Zopp_negb_check x y) : Id _)
@@ -1832,7 +1784,6 @@ def abs_cond_Zopp_check (_b : Bool) (m : Int) : Int :=
   (Int.natAbs m : Int)
 
 /-- Specification: Conditional opposite preserves magnitude. -/
-@[spec]
 theorem abs_cond_Zopp_spec (b : Bool) (m : Int) :
     ⦃⌜True⌝⦄
     (pure (abs_cond_Zopp_check b m) : Id _)
@@ -1851,7 +1802,6 @@ def cond_Zopp_Zlt_bool_check (m : Int) : Int :=
   (Int.natAbs m : Int)
 
 /-- Specification: Absolute value computation. -/
-@[spec]
 theorem cond_Zopp_Zlt_bool_spec (m : Int) :
     ⦃⌜True⌝⦄
     (pure (cond_Zopp_Zlt_bool_check m) : Id _)
@@ -1880,7 +1830,6 @@ def Zeq_bool_cond_Zopp_check (s : Bool) (m n : Int) : Bool :=
     The equality test is preserved when moving conditional negation
     between arguments: Zeq_bool (cond_Zopp s m) n = Zeq_bool m (cond_Zopp s n).
 -/
-@[spec]
 theorem Zeq_bool_cond_Zopp_spec (s : Bool) (m n : Int) :
     ⦃⌜True⌝⦄
     (pure (Zeq_bool_cond_Zopp_check s m n) : Id _)
@@ -1913,7 +1862,6 @@ def Zfast_pow_pos (v : Int) (e : Positive) : Int :=
     The fast exponentiation algorithm computes the same result
     as naive exponentiation but with better complexity.
 -/
-@[spec]
 theorem Zfast_pow_pos_spec (v : Int) (e : Positive) :
     ⦃⌜True⌝⦄
     (pure (Zfast_pow_pos v e) : Id _)
@@ -1936,7 +1884,6 @@ def Z_div_eucl (a b : Int) : (Int × Int) :=
   (q, a - b * q)
 
 /-- Specification of the Coq-compatible Euclidean-division pair. -/
-@[spec]
 theorem Zdiv_eucl_unique_spec (a b : Int) :
     ⦃⌜True⌝⦄
     (pure (Z_div_eucl a b) : Id _)
@@ -2078,7 +2025,6 @@ theorem Zpos_div_eucl_aux_correct (a b : Positive) :
     · simp [heq, Zpos_div_eucl_aux1_correct]
 
 /-- Specification: correctness of secondary positive-aux division helper. -/
-@[spec]
 theorem Zpos_div_eucl_aux_correct_spec (a b : Positive) :
     ⦃⌜True⌝⦄
     (pure (Zpos_div_eucl_aux a b) : Id _)
@@ -2091,7 +2037,6 @@ def Zfast_div_eucl (a b : Int) : (Int × Int) :=
   Z_div_eucl a b
 
 /-- Specification: fast division computes the Coq-compatible division pair. -/
-@[spec]
 theorem Zfast_div_eucl_spec (a b : Int) :
     ⦃⌜True⌝⦄
     (pure (Zfast_div_eucl a b) : Id _)
@@ -2119,7 +2064,6 @@ def iter_nat {A : Type} (f : A → A) (n : Nat) (x : A) : A :=
   | n' + 1 => f (iter_nat f n' x)
 
 /-- Specification: Iteration applies function n times. -/
-@[spec]
 theorem iter_nat_spec {A : Type} (f : A → A) (n : Nat) (x : A) :
     ⦃⌜True⌝⦄
     (pure (iter_nat f n x) : Id _)
@@ -2144,7 +2088,6 @@ def iter_nat_S_check {A : Type} (f : A → A) (p : Nat) (x : A) : A :=
     followed by one more application of f. This captures
     the recursive nature of iteration.
 -/
-@[spec]
 theorem iter_nat_S_spec {A : Type} (f : A → A) (p : Nat) (x : A) :
     ⦃⌜True⌝⦄
     (pure (iter_nat_S_check f p x) : Id _)
@@ -2162,7 +2105,6 @@ def iter_nat_plus_check {A : Type} (f : A → A) (p q : Nat) (x : A) : A :=
   iter_nat f p (iter_nat f q x)
 
 /-- Specification: Iteration count addition. -/
-@[spec]
 theorem iter_nat_plus_spec {A : Type} (f : A → A) (p q : Nat) (x : A) :
     ⦃⌜True⌝⦄
     (pure (iter_nat_plus_check f p q x) : Id _)
@@ -2195,7 +2137,6 @@ def iter_pos_nat_check {A : Type} (f : A → A) (p : Positive) (x : A) : A :=
     natural number iteration after conversion. This allows
     unified reasoning about different iteration types.
 -/
-@[spec]
 theorem iter_pos_nat_spec {A : Type} (f : A → A) (p : Positive) (x : A) :
     ⦃⌜True⌝⦄
     (pure (iter_pos_nat_check f p x) : Id _)

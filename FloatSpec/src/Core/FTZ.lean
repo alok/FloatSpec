@@ -21,7 +21,6 @@ import FloatSpec.src.Core.Defs
 import FloatSpec.src.Core.Generic_fmt
 -- import Mathlib.Data.Real.Basic
 import Std.Do.Triple
-import Std.Tactic.Do
 import FloatSpec.src.Core.Ulp
 import FloatSpec.src.Core.FLX
 
@@ -56,7 +55,6 @@ def FTZ_exp_correct_check (e : Int) : Bool :=
     numbers but flushes small numbers to the minimum exponent,
     eliminating subnormal numbers from the representation.
 -/
-@[spec]
 theorem FTZ_exp_spec (e : Int) :
     ⦃⌜True⌝⦄
     (pure (FTZ_exp_correct_check prec emin e) : Id Bool)
@@ -198,7 +196,6 @@ instance FTZ_exp_valid :
     flush-to-zero exponent function, providing simpler arithmetic
     at the cost of reduced precision near zero.
 -/
-@[spec]
 theorem FTZ_format_spec (beta : Int) [ValidRadix beta] (x : ℝ) :
     ⦃⌜True⌝⦄
     (pure (FTZ_format prec emin beta x) : Id Prop)
@@ -213,7 +210,6 @@ theorem FTZ_format_spec (beta : Int) [ValidRadix beta] (x : ℝ) :
     semantics, choosing between precision-based and minimum
     exponents based on the magnitude of the input.
 -/
-@[spec]
 theorem FTZ_exp_correct_spec (e : Int) :
     ⦃⌜True⌝⦄
     (pure (FTZ_exp_correct_check prec emin e) : Id Bool)
@@ -235,7 +231,6 @@ noncomputable def FTZ_format_0_check (beta : Int) [ValidRadix beta] : Bool :=
 
     See `FTZ_format_satisfies_any` for actual zero membership.
 -/
-@[spec]
 theorem FTZ_format_0_spec (beta : Int) [ValidRadix beta] :
     ⦃⌜beta > 1⌝⦄
     (pure (FTZ_format_0_check beta) : Id Bool)
@@ -258,7 +253,6 @@ noncomputable def FTZ_format_opp_check (beta : Int) [ValidRadix beta] (x : ℝ) 
     Actual FTZ negation closure is a field of
     `FTZ_format_satisfies_any`.
 -/
-@[spec]
 theorem FTZ_format_opp_spec (beta : Int) [ValidRadix beta] (x : ℝ) :
     ⦃⌜True⌝⦄
     (pure (FTZ_format_opp_check beta x) : Id Bool)
@@ -287,7 +281,6 @@ noncomputable def FTZ_format_abs_check (beta : Int) [ValidRadix beta] (x : ℝ) 
     Actual FTZ absolute-value closure follows from zero and negation closure
     in `FTZ_format_satisfies_any`; this helper proves only an integer identity.
 -/
-@[spec]
 theorem FTZ_format_abs_spec (beta : Int) [ValidRadix beta] (x : ℝ) :
     ⦃⌜True⌝⦄
     (pure (FTZ_format_abs_check beta x) : Id Bool)

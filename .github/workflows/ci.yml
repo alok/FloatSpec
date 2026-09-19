@@ -34,6 +34,7 @@ jobs:
         run: |
           scripts/test_audit_placeholders.sh
           scripts/test_coq_source_linter.sh
+          scripts/test_unused_mvcgen.sh
           python3 scripts/check_proof_debts.py
 
       - name: Verify generated status is current
