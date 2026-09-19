@@ -1114,70 +1114,41 @@ def b32_abs (x : binary32) : binary32 :=
   | binary_float.B754_finite _ mantissa exponent hBounded =>
       binary_float.B754_finite false mantissa exponent hBounded
 
-private def b32_to_standard (x : binary32) : StandardFloat :=
-  match x with
-  | binary_float.B754_zero s => StandardFloat.S754_zero s
-  | binary_float.B754_infinity s => StandardFloat.S754_infinity s
-  | binary_float.B754_nan _ _ _ => StandardFloat.S754_nan
-  | binary_float.B754_finite s mantissa exponent _ =>
-      StandardFloat.S754_finite s
-        (FloatSpec.Core.Zaux.positiveToNat mantissa) exponent
-
-private noncomputable def b32_to_real (x : binary32) : ℝ :=
-  match x with
-  | binary_float.B754_finite s mantissa exponent _ =>
-      F2R (FloatSpec.Core.Defs.FlocqFloat.mk
-        (if s then
-          -((FloatSpec.Core.Zaux.positiveToNat mantissa : Nat) : Int)
-        else
-          ((FloatSpec.Core.Zaux.positiveToNat mantissa : Nat) : Int))
-        exponent : FloatSpec.Core.Defs.FlocqFloat 2)
-  | _ => 0
-
-private noncomputable def b32_compare_standard
-    (x y : StandardFloat) (rx ry : ℝ) : Option Int :=
+-- Flocq Binary.Bcompare delegates to SpecFloat.SFcompare. Its finite branch
+-- compares exponents first, then positive mantissas, reversing for negatives.
+-- The proof-carrying inputs enforce canonical finite representations; this is
+-- not a real-number comparator for arbitrary unnormalized mantissa/exponent pairs.
+private def binaryCompareCanonical {prec emax : Int}
+    (x y : binary_float prec emax) : Option Ordering :=
   match x, y with
-  | StandardFloat.S754_nan, _ => none
-  | _, StandardFloat.S754_nan => none
-  | StandardFloat.S754_infinity true, StandardFloat.S754_infinity true =>
-      some 0
-  | StandardFloat.S754_infinity true, _ => some (-1)
-  | _, StandardFloat.S754_infinity true => some 1
-  | StandardFloat.S754_infinity false, StandardFloat.S754_infinity false =>
-      some 0
-  | StandardFloat.S754_infinity false, _ => some 1
-  | _, StandardFloat.S754_infinity false => some (-1)
-  | _, _ => some (FloatSpec.Core.Raux.Rcompare rx ry)
+  | .B754_nan .., _ | _, .B754_nan .. => none
+  | .B754_infinity sx, .B754_infinity sy =>
+      some (if sx == sy then .eq else if sx then .lt else .gt)
+  | .B754_infinity sx, _ => some (if sx then .lt else .gt)
+  | _, .B754_infinity sy => some (if sy then .gt else .lt)
+  | .B754_finite sx _ _ _, .B754_zero _ => some (if sx then .lt else .gt)
+  | .B754_zero _, .B754_finite sy _ _ _ => some (if sy then .gt else .lt)
+  | .B754_zero _, .B754_zero _ => some .eq
+  | .B754_finite sx mx ex _, .B754_finite sy my ey _ =>
+      some (if sx != sy then (if sx then .lt else .gt) else
+        let c := if ex = ey then
+            FloatSpec.Core.Zaux.Zcompare (FloatSpec.Core.Zaux.Zpos mx) (FloatSpec.Core.Zaux.Zpos my)
+          else FloatSpec.Core.Zaux.Zcompare ex ey
+        if sx then c.swap else c)
 
--- Coq: `Definition b32_compare : binary32 -> binary32 -> option comparison := Bcompare 24 128.`
-noncomputable def b32_compare (x y : binary32) : Option Int :=
-  b32_compare_standard (b32_to_standard x) (b32_to_standard y)
-    (b32_to_real x) (b32_to_real y)
+-- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/IEEE754/Bits.v#L676
+/-- Source binary32 comparison: unordered NaNs, equal signed zeros, and integer
+comparison of canonical finite representations. The result type preserves
+Coq's three-constructor comparison, rather than allowing arbitrary integers. -/
+@[flocq_source "src/IEEE754/Bits.v" 676 "b32_compare"]
+def b32_compare (x y : binary32) : Option Ordering :=
+  binaryCompareCanonical x y
 
-private def b64_to_standard (x : binary64) : StandardFloat :=
-  match x with
-  | binary_float.B754_zero s => StandardFloat.S754_zero s
-  | binary_float.B754_infinity s => StandardFloat.S754_infinity s
-  | binary_float.B754_nan _ _ _ => StandardFloat.S754_nan
-  | binary_float.B754_finite s mantissa exponent _ =>
-      StandardFloat.S754_finite s
-        (FloatSpec.Core.Zaux.positiveToNat mantissa) exponent
-
-private noncomputable def b64_to_real (x : binary64) : ℝ :=
-  match x with
-  | binary_float.B754_finite s mantissa exponent _ =>
-      F2R (FloatSpec.Core.Defs.FlocqFloat.mk
-        (if s then
-          -((FloatSpec.Core.Zaux.positiveToNat mantissa : Nat) : Int)
-        else
-          ((FloatSpec.Core.Zaux.positiveToNat mantissa : Nat) : Int))
-        exponent : FloatSpec.Core.Defs.FlocqFloat 2)
-  | _ => 0
-
--- Coq: `Definition b64_compare : binary64 -> binary64 -> option comparison := Bcompare 53 1024.`
-noncomputable def b64_compare (x y : binary64) : Option Int :=
-  b32_compare_standard (b64_to_standard x) (b64_to_standard y)
-    (b64_to_real x) (b64_to_real y)
+-- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/IEEE754/Bits.v#L743
+/-- Source binary64 comparison, with the same four outcomes as binary32. -/
+@[flocq_source "src/IEEE754/Bits.v" 743 "b64_compare"]
+def b64_compare (x y : binary64) : Option Ordering :=
+  binaryCompareCanonical x y
 
 -- Coq: `Definition bits_of_b32 : binary32 -> Z := bits_of_binary_float 23 8.`
 def bits_of_b32 (x : binary32) : Int :=
@@ -1267,7 +1238,8 @@ private def b32_negative_infinity_bits : Int :=
 -- This is the fixed-width proof-carrying surface.  It avoids the permissive
 -- `Binary754` predecessor and rebuilds generated values through `b32_of_bits`,
 -- so finite outputs receive fresh `bounded` proofs while NaN payloads are kept.
-noncomputable def b32_pred (x : binary32) : binary32 :=
+@[flocq_source "src/IEEE754/Bits.v" 665 "b32_pred"]
+def b32_pred (x : binary32) : binary32 :=
   match x with
   | binary_float.B754_nan s payload hPayload =>
       binary_float.B754_nan s payload hPayload
@@ -1286,7 +1258,8 @@ noncomputable def b32_pred (x : binary32) : binary32 :=
 --
 -- Proof-carrying binary32 successor.  NaNs keep their original payload proof;
 -- every generated non-NaN value is reconstructed through `b32_of_bits`.
-noncomputable def b32_succ (x : binary32) : binary32 :=
+@[flocq_source "src/IEEE754/Bits.v" 666 "b32_succ"]
+def b32_succ (x : binary32) : binary32 :=
   match x with
   | binary_float.B754_nan s payload hPayload =>
       binary_float.B754_nan s payload hPayload
@@ -1476,7 +1449,8 @@ private def b64_negative_infinity_bits : Int :=
 --
 -- Proof-carrying binary64 predecessor.  NaNs keep their original payload proof;
 -- every generated non-NaN value is reconstructed through `b64_of_bits`.
-noncomputable def b64_pred (x : binary64) : binary64 :=
+@[flocq_source "src/IEEE754/Bits.v" 732 "b64_pred"]
+def b64_pred (x : binary64) : binary64 :=
   match x with
   | binary_float.B754_nan s payload hPayload =>
       binary_float.B754_nan s payload hPayload
@@ -1495,7 +1469,8 @@ noncomputable def b64_pred (x : binary64) : binary64 :=
 --
 -- Proof-carrying binary64 successor.  NaNs keep their original payload proof;
 -- every generated non-NaN value is reconstructed through `b64_of_bits`.
-noncomputable def b64_succ (x : binary64) : binary64 :=
+@[flocq_source "src/IEEE754/Bits.v" 733 "b64_succ"]
+def b64_succ (x : binary64) : binary64 :=
   match x with
   | binary_float.B754_nan s payload hPayload =>
       binary_float.B754_nan s payload hPayload

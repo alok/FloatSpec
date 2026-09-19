@@ -156,6 +156,44 @@ class LiveTests(unittest.TestCase):
         self.assertEqual(bridge.compare(cases, observations), [])
         self.assertEqual(observations["lean"][0], [-2, 0, -3, 0, 0, -2, 0, -3])
 
+    def test_fixed_width_order_and_exact_unary_operations(self):
+        flocq = Path(os.environ["FLOCQ_AUDIT_DIR"]).resolve()
+        cases = [bridge.Case("order32", (0x80000000, 0)),
+                 bridge.Case("order32", (0xff800001, 0)),
+                 bridge.Case("order64", (0x3ff0000000000000, 0x4000000000000000))]
+        with tempfile.TemporaryDirectory(prefix="floatspec-bit-order-") as directory:
+            observations = bridge.execute(cases, flocq, bridge.configured_coqc(flocq), Path(directory))
+            bridge.bootstrap_lean(cases, observations["rocq"], Path(directory))
+        self.assertEqual(bridge.compare(cases, observations), [])
+        self.assertEqual(observations["lean"][0], [0x80000000, 0, 0, 0, 0, 0,
+                                                 0x80000000, 0x80000001, 1])
+        self.assertEqual(observations["lean"][1], [0xff800001, 0, 2, 2] + [0xff800001] * 5)
+        self.assertEqual(observations["lean"][2], [0x3ff0000000000000, 0x4000000000000000,
+                          -1, 1, 0xbff0000000000000, 0x3ff0000000000000,
+                          0x3ff0000000000000, 0x3fefffffffffffff, 0x3ff0000000000001])
+
+    def test_nan_order_cannot_be_mutated_into_equality(self):
+        original = bridge.expressions
+
+        def mutated(case):
+            lean, rocq = original(case)
+            return lean.replace(".getD 2", ".getD 0"), rocq
+
+        with tempfile.TemporaryDirectory(prefix="floatspec-order-mutation-") as directory:
+            output, replay = Path(directory) / "output", Path(directory) / "cases.json"
+            case = {"op": "order32", "args": [0xff800001, 0]}
+            replay.write_text(json.dumps([case]))
+            argv = ["flocq_bridge", "--flocq-dir", os.environ["FLOCQ_AUDIT_DIR"],
+                    "--replay", str(replay), "--output", str(output)]
+            with (patch("sys.argv", argv), patch.object(bridge, "expressions", mutated),
+                  contextlib.redirect_stdout(io.StringIO()), self.assertRaises(SystemExit)):
+                bridge.main()
+            report = json.loads((output / "report.json").read_text())
+            self.assertEqual(report["status"], "mismatch")
+            self.assertEqual(report["mismatches"][0]["paths"], ["lean", "compiled"])
+            self.assertEqual(report["bootstrapped_lean_cases"], 0)
+            self.assertEqual(json.loads((output / "replay.json").read_text()), [case])
+
     def test_compiled_only_mutation_is_not_hidden_by_kernel_agreement(self):
         original = bridge.compiled_source
 

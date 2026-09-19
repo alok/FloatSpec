@@ -16,6 +16,14 @@ cleanup() {
 }
 trap cleanup EXIT
 
+run_lake() {
+  if [[ -n "${LEAN_TOOLCHAIN_OVERRIDE:-}" ]]; then
+    elan run "$LEAN_TOOLCHAIN_OVERRIDE" lake "$@"
+  else
+    lake "$@"
+  fi
+}
+
 if [[ -n "${FLOCQ_AUDIT_DIR:-}" ]]; then
   flocq_dir="$FLOCQ_AUDIT_DIR"
   actual_commit="$(git -C "$flocq_dir" rev-parse HEAD)"
@@ -51,6 +59,8 @@ fi
 
 uv run "$repo_root/scripts/validate_flocq_source_refs.py" "$flocq_dir"
 uv run "$repo_root/scripts/test_flocq_source_refs.py" -v
+uv run "$repo_root/scripts/check_compiled_trust.py"
+uv run "$repo_root/scripts/test_compiled_trust.py" -v
 
 if [[ "${FLOCQ_SKIP_BUILD:-0}" != "1" ]]; then
   (
@@ -200,14 +210,18 @@ echo 'Pure Rocq loop passed: examples and 10,734 independent arithmetic invarian
 "$coqc_bin" -q -R "$flocq_dir/src" Flocq -o "$scratch/BitsProperties.vo" \
   "$repo_root/scripts/fixtures/BitsProperties.v"
 echo 'Pure Rocq bit loop passed: 20,000 binary32/binary64 roundtrip checks'
+"$coqc_bin" -q -R "$flocq_dir/src" Flocq -o "$scratch/BitOrderProperties.vo" \
+  "$repo_root/scripts/fixtures/BitOrderProperties.v"
+echo 'Pure Rocq order loop passed: 2,000 ordering-law checks and boundary examples'
 
-if [[ -n "${LEAN_TOOLCHAIN_OVERRIDE:-}" ]]; then
-  elan run "$LEAN_TOOLCHAIN_OVERRIDE" lake build \
-    FloatSpec.Test.FlocqConformance FloatSpec.Test.ArithmeticProperties
-else
-  lake build FloatSpec.Test.FlocqConformance FloatSpec.Test.ArithmeticProperties
-fi
+run_lake build FloatSpec.Test.FlocqConformance FloatSpec.Test.ArithmeticProperties \
+  FloatSpec.Test.BitsExecution FloatSpec.Test.BitOrderExecution
+# Re-execute the checks, even when Lake already has their compiled modules.
+run_lake env lean "$repo_root/FloatSpec/Test/ArithmeticProperties.lean"
+run_lake env lean "$repo_root/FloatSpec/Test/BitsExecution.lean"
+run_lake env lean "$repo_root/FloatSpec/Test/BitOrderExecution.lean"
 echo 'Pure Lean loop passed: examples and 10,734 kernel-checked arithmetic invariant cases'
+echo 'Lean bit/order loops passed: 20,000 roundtrips, 2,000 pure laws, 200,000 native comparisons'
 
 uv run "$repo_root/scripts/flocq_bridge.py" --flocq-dir "$flocq_dir" --coqc "$coqc_bin" \
   --seed "${FLOCQ_BRIDGE_SEED:-20260919}" --samples "${FLOCQ_BRIDGE_SAMPLES:-100}" \
@@ -223,5 +237,10 @@ uv run "$repo_root/scripts/native_arithmetic_bridge.py" --flocq-dir "$flocq_dir"
   --seed "${FLOCQ_BRIDGE_SEED:-20260919}" --samples "${FLOCQ_ARITHMETIC_SAMPLES:-100}" \
   --batch-size "${FLOCQ_ARITHMETIC_BATCH_SIZE:-20}"
 FLOCQ_AUDIT_DIR="$flocq_dir" uv run "$repo_root/scripts/test_native_arithmetic_bridge.py" -v
+
+uv run "$repo_root/scripts/ieee_modes_bridge.py" --flocq-dir "$flocq_dir" --coqc "$coqc_bin" \
+  --seed "${FLOCQ_BRIDGE_SEED:-20260919}" --samples "${FLOCQ_MODES_SAMPLES:-10}" \
+  --batch-size "${FLOCQ_MODES_BATCH_SIZE:-5}"
+FLOCQ_AUDIT_DIR="$flocq_dir" uv run "$repo_root/scripts/test_ieee_modes_bridge.py" -v
 
 echo "Three finite-test loops passed against pinned Flocq $gitlink_commit"

@@ -31,9 +31,9 @@ LEAN_LOC = [".loc_Exact", ".loc_Inexact .lt", ".loc_Inexact .eq", ".loc_Inexact 
 COQ_LOC = ["loc_Exact", "loc_Inexact Lt", "loc_Inexact Eq", "loc_Inexact Gt"]
 OPS = ("power", "div_eucl", "location", "round", "truncate", "div", "plus", "sqrt",
        "formats", "digits", "operations", "format_calc", "overflow", "bits32", "bits64",
-       "bit_fields")
-ARITIES = dict(zip(OPS, (2, 2, 3, 3, 5, 6, 6, 4, 3, 2, 5, 8, 4, 1, 1, 6), strict=True))
-WIDTHS = dict(zip(OPS, (1, 2, 3, 6, 3, 2, 2, 2, 4, 1, 13, 12, 5, 9, 9, 8), strict=True))
+       "bit_fields", "order32", "order64")
+ARITIES = dict(zip(OPS, (2, 2, 3, 3, 5, 6, 6, 4, 3, 2, 5, 8, 4, 1, 1, 6, 2, 2), strict=True))
+WIDTHS = dict(zip(OPS, (1, 2, 3, 6, 3, 2, 2, 2, 4, 1, 13, 12, 5, 9, 9, 8, 9, 9), strict=True))
 RADIX_OPS = {"truncate", "div", "plus", "sqrt", "digits", "operations", "format_calc"}
 
 
@@ -115,6 +115,16 @@ def corpus(seed: int, samples: int) -> list[Case]:
                     cases.append(Case("bit_fields", (mw, ew, sign, mantissa, exponent, word)))
     rng = random.Random(seed)
     for width, fraction_width, exponent_width in ((32, 23, 8), (64, 52, 11)):
+        inf = ((1 << exponent_width) - 1) << fraction_width
+        one = ((1 << (exponent_width - 1)) - 1) << fraction_width
+        order_words = [sign | word for sign in (0, 1 << (width - 1)) for word in
+                       (0, 1, (1 << fraction_width) - 1, 1 << fraction_width,
+                        one - 1, one, one + 1, inf - 1, inf, inf + 1,
+                        inf + (1 << (fraction_width - 1)))]
+        cases.extend(Case(f"order{width}", (left, right))
+                     for left in order_words for right in order_words)
+        cases.extend(Case(f"order{width}", pair) for pair in
+                     ((-1, 0), (1 << width, 1 << (width - 1)), (-(1 << width), 0)))
         for sign in (0, 1 << (width - 1)):
             for exponent in (0, 1, (1 << (exponent_width - 1)) - 1,
                              (1 << exponent_width) - 2, (1 << exponent_width) - 1):
@@ -167,6 +177,12 @@ def corpus(seed: int, samples: int) -> list[Case]:
             elif op == "bit_fields":
                 args = (rng.randint(-8, 64), rng.randint(-8, 16), rng.randrange(2),
                         m1, m2, rng.randrange(-(1 << 65), 1 << 65))
+            elif op in ("order32", "order64"):
+                width = int(op[5:])
+                left = rng.getrandbits(width)
+                right = rng.choice((rng.getrandbits(width), left,
+                                    (left + 1) % (1 << width), left ^ (1 << (width - 1))))
+                args = (left, right)
             else:
                 args = (base, m1, e1, m2, e2, target, rng.randint(1, 5), rng.randrange(4))
             cases.append(Case(op, args))
@@ -186,6 +202,20 @@ def expressions(case: Case) -> tuple[str, str]:
         sign = "true" if case.args[2] else "false"
         args = f"{mw} {ew} {sign} {mantissa} {exponent} {word}"
         return f"bitFields {args}", f"bit_fields {args}"
+    if op in ("order32", "order64"):
+        width = op[5:]
+        lean = f"let x := b{width}_of_bits {a[0]}; let y := b{width}_of_bits {a[1]}; "
+        rocq = f"let x := Bits.b{width}_of_bits {a[0]} in let y := Bits.b{width}_of_bits {a[1]} in "
+        lean_columns = [f"bits_of_b{width} x", f"bits_of_b{width} y",
+                        f"((b{width}_compare x y).map comparisonCode).getD 2",
+                        f"((b{width}_compare y x).map comparisonCode).getD 2"]
+        coq_columns = [f"Bits.bits_of_b{width} x", f"Bits.bits_of_b{width} y",
+                       f"comparison_code (Bits.b{width}_compare x y)",
+                       f"comparison_code (Bits.b{width}_compare y x)"]
+        for name in ("opp", "abs", "erase", "pred", "succ"):
+            lean_columns.append(f"bits_of_b{width} (b{width}_{name} x)")
+            coq_columns.append(f"Bits.bits_of_b{width} (Bits.b{width}_{name} x)")
+        return lean + "[" + ", ".join(lean_columns) + "]", rocq + "[" + "; ".join(coq_columns) + "]"
     if op == "power":
         return (f"[Zaux.Zpower {a[0]} {a[1]}]", f"[Zpower {a[0]} {a[1]}]")
     if op == "div_eucl":
@@ -275,6 +305,10 @@ set_option maxHeartbeats 100000000
 set_option pp.maxSteps 200000
 set_option pp.deepTerms true
 namespace Bridge
+private def comparisonCode : Ordering → Int
+  | .lt => -1
+  | .eq => 0
+  | .gt => 1
 private def location : Location → Int
   | .loc_Exact => 0
   | .loc_Inexact .lt => 1
@@ -315,6 +349,8 @@ Definition location (l : SpecFloat.location) : Z :=
   | SpecFloat.loc_Inexact Gt => 3
   end.
 Definition boolean (b : bool) : Z := if b then 1 else 0.
+Definition comparison_code (c : option comparison) : Z :=
+  match c with None => 2 | Some Lt => -1 | Some Eq => 0 | Some Gt => 1 end.
 Definition pair (p : Z * Z) : list Z := [fst p; snd p].
 Definition located (p : Z * SpecFloat.location) : list Z := [fst p; location (snd p)].
 Definition triple (p : Z * Z * SpecFloat.location) : list Z :=

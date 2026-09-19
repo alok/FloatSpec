@@ -214,8 +214,14 @@ HEAD. Executions use a separate detached reference checkout.
     The expanded core run on source commit `3cb6d0a3` subsequently passed
     **9,879 cases** (seed `8491`) in all three evaluators, with all 9,879
     bootstrapped kernel equalities. Artifact: `floatspec-bridge-ijq9bfmq`.
-    The combined suite's native unary/arithmetic phases are still running;
-    this is a core-phase pass, not yet an aggregate-suite completion.
+    The aggregate seed-`8491` run then completed successfully: **1,022** native
+    unary cases (298.538 seconds), **1,424** native arithmetic pairs
+    (1,220.391 seconds), all corresponding generated kernel equalities, and
+    all live harness tests. Native artifacts are `floatspec-native-ieee-j8xtyw3o`
+    and `floatspec-native-arithmetic-srb2let1`. This receipt uses the stable
+    product snapshot `cea9a82a…` and the then-existing fifteen core families;
+    it does not include later order/bit-field families or the subsequently
+    integrated all-mode/trust phases.
 19. **Directed rounding and payload-sensitive arithmetic are now tested:**
     a standalone source-API bridge passed **290 boundary triples** across
     binary32/binary64 and all five rounding modes. It checks exact input bits,
@@ -252,6 +258,29 @@ HEAD. Executions use a separate detached reference checkout.
     passed its examples and signature checks (one existing prefer-grind
     warning). No mathematical definitions were changed by this documentation
     correction.
+22. **Fixed-width comparison is executable and correctly typed:**
+    `b32_compare` and `b64_compare` no longer convert to mathematical reals.
+    They implement the constructor/sign/exponent/mantissa branches of the
+    configured Rocq 9.2 `SpecFloat.SFcompare`, reached through pinned
+    `Bits.v:676,743` and `Binary.v:773`. Their result is now `Option Ordering`,
+    preserving Coq's comparison datatype rather than permitting arbitrary
+    integer outcomes. There were no pre-existing callers outside the replaced
+    helper definitions. Four fixed-width predecessor/successor definitions
+    also compile after removing unnecessary `noncomputable` markers; their
+    bodies and types are unchanged. A fresh **6,213-job** macOS build and
+    changed-file LSP checks pass. The actual APIs pass **2,000** pure ordering
+    laws and **200,000** native Float/Float32 comparisons; the matched pure
+    Rocq ordering-law grid also passes. All **17** core harness tests pass,
+    including a mutation collapsing unordered NaNs into equality. A separate
+    **2,974-case** compiled/kernel/Rocq order-and-exact-unary run passed
+    (seed `982731`, artifact `floatspec-bridge-lx9xecrq`), and all 2,974 generated
+    kernel equalities passed in 279.573 seconds. The refreshed compiler trust
+    audit checks **13,570 declarations** across all 58 source modules with only
+    the same four direct/transitive manifest debts; the lexical and source-link
+    regression gates also pass. The legacy generic real-valued
+    `Binary.Bcompare` and primitive comparison implementations are unchanged,
+    and no universal equivalence theorem connecting these implementations is
+    claimed. Six more source anchors bring the registered count to **62**.
 
 See [the three-loop guide](THREE_VERIFICATION_LOOPS.md) for commands, output
 artifacts, and current coverage. Repairs include the source-link/trust gates,
@@ -296,24 +325,21 @@ compatibility boundaries have more surface than the focused later changes.
 
 ## Execution priorities
 
-The queued validity and duplicate-converter repairs above are now applied,
-and the expanded bit bridge and aggregate build passed. Rerun the complete
-combined suite with stable imported Lean sources. The native
+The queued validity, duplicate-converter, and fixed-width comparison repairs
+are now applied. The prior complete combined suite passed at its documented
+snapshot; the new order bridge has also completed successfully. The native
 arithmetic bridge still decodes through Float.Model; the new core bit families
 exercise the distinct source-shaped decoder directly and retain NaN payloads.
 
-Next execution slice, queued until the active combined run finishes:
-`Bits.b32_compare` and `b64_compare` (root Lean names) use mathematical Real
-comparison and cannot execute with `#eval`, even for `1.0` versus `2.0`.
-Pinned `Bits.v` delegates to `Binary.Bcompare`, which delegates to the
-executable `SpecFloat.SFcompare`: constructor/sign cases followed by
-exponent/mantissa lexicographic comparison for canonical finite values.
-The fixed-width Lean APIs have no callers outside their own definitions, so
-they can be repaired without disrupting the existing real-valued comparison
-proof chains. Compare the configured Rocq 9.2 `SpecFloat.v:177` as well as
-pinned Flocq `Binary.v:773`/`Bits.v` wrappers, retain NaN unorderedness and
-signed-zero equality, and cross-test compiled Lean/kernel/Rocq. The generic
-`Binary.Bcompare` and primitive `SFcompare` still need separate review.
+Next execution slice: enable compiled execution of the integer-only IEEE
+rounding/arithmetic path, preserving bodies and theorem types. The candidate
+chain is `bsn_shr_fexp`, `binary_round_aux`, `binary_round`, the specialized
+division/square-root cores, `Binary.normalize`, the six proof-carrying
+arithmetic operations, and their fixed-width wrappers. Let compiler feedback
+identify genuinely noncomputable dependencies; do not replace mathematical
+reals by machine floats or bypass proof obligations. Extend the all-mode
+bridge with compiled Lean only after the actual APIs compile. The generic
+real-valued comparisons remain a separate source-contract review.
 
 Maintain three separate loops: independent Lean tests, independent pinned
 Flocq/Rocq tests, and a differential bridge that sends identical inputs to both.

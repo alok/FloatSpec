@@ -161,7 +161,10 @@ and reported separately.
 A separate IEEE source-API bridge covers binary32/binary64 in all five
 rounding modes, including fused multiply-add and exact NaN payloads.
 That bridge currently checks kernel/Rocq execution, not native directed
-rounding. The direct decoder and integer-width packing families also avoid
+rounding. Fixed-width comparison now executes the source's constructor/sign/
+exponent/mantissa algorithm with result type `Option Ordering`, not arbitrary
+integer codes or noncomputable real comparison. It is also checked against
+native Float/Float32 comparisons. The direct decoder and integer-width packing families avoid
 using `Float.Model.ofBits` as a substitute for the port's own decoder.
 
 For agreeing batches, Rocq's output becomes the expected value of generated
@@ -200,7 +203,7 @@ changed surfaces have been checked.
 Source links make that review navigable. `@[flocq_source]` records a pinned
 Coq path, line, and name; `@[flocq_local]` explains a Lean-only helper.
 Eleven modules currently enforce strict public-definition classification.
-The compiler-backed validator checks all 56 registered anchors, including
+The compiler-backed validator checks all 62 registered anchors, including
 combined attributes and later attribute commands. These links are metadata,
 not a proof that bodies or theorem signatures correspond.
 

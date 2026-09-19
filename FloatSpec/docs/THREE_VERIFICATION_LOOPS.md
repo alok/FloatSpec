@@ -30,6 +30,14 @@ generate inputs. Kernel examples separately pin ordinary values and a signed
 signaling NaN. The paired `BitsProperties.v` checks the same independent
 roundtrip invariants in Rocq.
 
+`Test/BitOrderExecution.lean` executes 2,000 pure ordering-law checks and
+separately compares the actual binary32/binary64 comparison APIs with 200,000
+native Float/Float32 comparisons (seed `388312`). Kernel examples pin signed
+zero, ordinary ordering, a signaling NaN, and the successor of a negative
+minimum subnormal. `BitOrderProperties.v` checks the same 2,000 independent
+ordering-law cases in Rocq. The combined runner directly re-executes the Lean
+test files, so an already cached test module does not skip these runtime loops.
+
 The current `floatspec` executable's `main` does nothing. Running it is a
 launch smoke test only, not an arithmetic regression; the checks described here
 execute inside the test modules and bridges. Native execution is covered by
@@ -88,6 +96,15 @@ the roundtrip theorem outside its width/field hypotheses. An 836-case run
 (seed `593873`, 500 random inputs) agreed in compiled Lean, kernel reduction,
 and Rocq and generated 836 passing kernel regression equalities.
 
+Two further families execute the fixed-width comparison APIs, negation,
+absolute value, proof erasure, predecessor, and successor. Their nine output
+columns retain both decoded input words, both comparison directions, and the
+five exact unary results. Comparison has type `Option Ordering`; only the
+serialization adapter uses integers (`lt=-1`, `eq=0`, `gt=1`, unordered `2`).
+Signed zeros compare equal; NaNs remain unordered and unary source operations
+preserve their exact signs and payloads. The boundary corpus crosses all
+selected operand pairs and includes negative/over-width integer decoder inputs.
+
 Lean both executes compiled calls with `--run` and reduces them with `#reduce`;
 Rocq uses `vm_compute`. Enabling compiled execution required removing
 unnecessary `noncomputable` markers from twelve integer-only Calc definitions
@@ -118,7 +135,7 @@ bash scripts/test_flocq_conformance.sh
 ```
 
 This creates and builds a detached reference worktree, runs the standalone
-Rocq and Lean checks, runs all three differential bridges, and executes their own
+Rocq and Lean checks, runs all four differential bridges, and executes their own
 tests. Live mutations recreate the historical negative-exponent bug and replace
 native successor by predecessor, swap native arithmetic operands, and alter
 only compiled Lean while kernel/Rocq still agree. Each
@@ -264,7 +281,11 @@ FLOCQ_AUDIT_DIR=/path/to/pinned-flocq uv run scripts/test_ieee_modes_bridge.py -
 The live harness replaces upward rounding with nearest-even in only the Lean
 adapter and requires a failed comparison with the exact replay input. Timeout
 and interruption tests must report errors, never successful zero-case runs.
-This newer bridge is currently run separately from the combined shell suite.
+The combined shell suite includes this bridge and its live harness; use
+`FLOCQ_MODES_SAMPLES` and `FLOCQ_MODES_BATCH_SIZE` to size this phase. It also
+runs the compiled trust gate and its adversarial fixtures. These additions
+postdate the completed seed-8491 aggregate receipt in the audit ledger; that
+receipt must not be relabeled as a run of later additions.
 
 ## 8. What this still does not establish
 
