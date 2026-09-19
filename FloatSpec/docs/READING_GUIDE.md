@@ -1,313 +1,214 @@
 # FloatSpec, read from start to finish
 
 FloatSpec is a Lean port of [Flocq](https://gitlab.inria.fr/flocq/flocq), a
-mathematical library for floating-point formats. Its first job is to describe
-which values and operations are valid; its second is to prove statements about
-them. A definition can compile while its claimed correspondence to Flocq is
-wrong, so these are separate milestones.
+mathematical library for floating-point formats and operations. The short
+version is: **describe the right values, compute the right answers, prove the
+right statements, and check that “right” still means what Flocq means.**
+Those are separate jobs. A program can compile while its specification is wrong.
 
-## 1. The source and the target
+This guide follows those jobs in order. The detailed
+[original audit](FLOCQ_CONFORMANCE_AUDIT_2026-09-18.md) and
+[independent continuation audit](ASTRA_AUDIT_2026-09-19.md) retain the
+declaration-by-declaration findings and historical milestones.
 
-The source for this audit is the Flocq commit
-`7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f`, recorded as this
-repository's `Deps/flocq` gitlink. `FloatSpec/src` mirrors its `Core`, `Calc`,
-`Prop`, `IEEE754`, and `Pff` areas. Each of the 36 Flocq source-module names
-has a corresponding Lean file or umbrella module. This says where to look; it
-does **not** say that every definition or theorem is equivalent.
+## 1. Start with one small rounding problem
 
-The old declaration pairing plan lists 2,548 extracted Flocq declarations.
-It paired 2,472 automatically and separately classified the other 76. Its
-5,951 comparison jobs include more than one check per source declaration;
-only 27 jobs received valid reviewed verdicts in its recorded batch. The
-current branch has targeted repairs and tests, but no fresh whole-library
-semantic score. Read “not reviewed” as unknown, not as correct or incorrect.
+Imagine binary floating point with three significant bits. Around one, the
+representable values include `1.00₂ = 1` and `1.01₂ = 1.25`.
+The exact value `1.001₂ = 1.125` lies halfway between them.
 
-## 2. A floating-point value has more than a real value
+First compute the exact value and identify the adjacent representable values.
+Then choose a rounding rule. Nearest-even chooses `1`: its three-bit
+significand is `100₂`, whose last bit is even, whereas the upper choice has
+`101₂`. Upward rounding chooses `1.25`. Downward and toward-zero rounding
+choose `1` for this positive input. Nearest-away chooses `1.25`.
 
-A finite value has a sign, significand, and exponent. There are also positive
-and negative zero, infinities, and NaNs with payloads. Mapping a value to a
-real number forgets several of those distinctions. Therefore a theorem about
-`toReal` cannot establish a theorem about all 64 raw bits.
+That separation is the architecture of the port:
 
-The source-shaped, proof-carrying types are in
+- **Core** describes values, formats, magnitudes, and rounding predicates.
+- **Calc** computes integer mantissas/exponents and records where the exact
+  result lies relative to a rounding boundary.
+- **IEEE754** adds finite exponent limits, signed zeros, infinities, NaNs,
+  payload policies, and actual bit encodings.
+- **Prop** proves relationships and error properties on top of those
+  definitions. **Pff** connects an older floating-point presentation.
+
+The example is explanatory, not an extra executed test receipt. The runnable
+boundary corpora exercise real binary32/binary64 halfway cases and all five
+rounding modes.
+
+## 2. Know what a value is before reading its arithmetic
+
+A finite float has a sign, a positive integer mantissa, and an integer
+exponent. Its mathematical value is the signed mantissa times a power of the
+radix. Several representations can describe the same real number; a format
+specifies which representations are allowed.
+
+Flocq's source-shaped Lean types live in
 [`IEEE754/Binary.lean`](../src/IEEE754/Binary.lean) and
-[`IEEE754/BinarySingleNaN.lean`](../src/IEEE754/BinarySingleNaN.lean). Older
-`Binary754` compatibility code permits values that the Flocq carrier excludes.
-Prefer the source-shaped interfaces when checking correspondence. The
-`valid_binary` predicate now checks finite bounds and NaN payload width, but
-does not itself turn the permissive carrier into a proof-carrying one.
-For example, `valid_binary_SF2FF` now equates full-float validity after
-conversion with the independently defined SingleNaN validity predicate.
-Its former statement merely compared the conversion with a wrapper around
-the same expression. Both statements were provable; only the new one states
-the intended source relationship.
+[`IEEE754/BinarySingleNaN.lean`](../src/IEEE754/BinarySingleNaN.lean).
+Their finite constructors carry validity evidence. The payload-preserving
+type also checks NaN payload width. The older `Binary754` compatibility
+wrapper is weaker: do not mistake its presence for a Flocq-valid carrier.
 
-## 3. Follow one source definition
+Mapping a float to a real number loses distinctions. Positive and negative
+zero have the same real value; NaNs and infinities need separate treatment.
+Consequently, a theorem about `toReal` cannot prove equality of all raw bits.
 
-Start at Flocq's
-[`valid_binary`](https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/IEEE754/Binary.v#L166),
-then read the Lean [`valid_binary`](../src/IEEE754/Binary.lean) definition.
-The source's finite and NaN constructors explain the Lean branches. The
-`@[flocq_source]` attribute stores the pinned path, line, and Coq name. The
-adjacent `Source:` URL is clickable in editors that recognize URLs; the path
-string inside the attribute is not yet a special go-to-source action.
+Magnitude is another boundary worth getting exactly right. For nonzero `x`
+and radix `β > 1`, Flocq's `mag x = e` means
 
-`linter.coqSource` checks that an opted-in public definition has either a
-pinned `@[flocq_source]` reference or an explicit `@[flocq_local "reason"]`
-classification. [`Core/Defs.lean`](../src/Core/Defs.lean) is now an entire
-strict-gated module: its eleven source-shaped definitions link to pinned
-`Defs.v` lines, and its eight public Lean-only helpers state why they have no
-direct Coq declaration. The module treats an unclassified definition warning
-as a build error. The six public definitions in
-[`BitsSourceFacade.lean`](../src/IEEE754/BitsSourceFacade.lean) and
-`Binary.valid_binary` are also linked, though those modules do not yet have
-whole-file strict coverage. Ordinary `Source:` URL comments beside the
-`Defs.lean` attributes can be opened from an editor; the attribute string
-itself is not yet a special go-to-source action. The paired conformance command
-checks all 56 annotated path/line/name anchors against the pinned Flocq
-checkout using Lean's compiled metadata, not a regular expression over comments
-and source text. Combined attributes and later `attribute` commands therefore
-participate in the same gate. A correct anchor does not establish that the Lean type, body, or
-proof matches Coq; those require source review and paired tests or proofs.
+```text
+β^(e - 1) ≤ |x| < β^e.
+```
 
-[`Core/FLX.lean`](../src/Core/FLX.lean) is the second strict-gated module.
-Its three source-shaped definitions have pinned links; six public Lean-only
-definitions or aliases have explicit reasons. This includes the three
-`*_check` definitions, which are arithmetic regressions rather than Flocq
-format-membership declarations. [`Core/FTZ.lean`](../src/Core/FTZ.lean) is
-the third strict-gated module: three source-shaped definitions link to Flocq,
-and four Lean-only checks are classified. [`Core/FLT.lean`](../src/Core/FLT.lean)
-is the fourth strict-gated module: `FLT_exp` and `FLT_format` have pinned links;
-seven Lean-only checks, payloads, or aliases are classified. Instances and
-theorem statements are not covered by these definition-only gates.
-[`Core/FIX.lean`](../src/Core/FIX.lean) is the fifth strict-gated module:
-`FIX_exp` and the structural `FIX_format` have source links.
-[`Calc/Plus.lean`](../src/Calc/Plus.lean) is the sixth: `Fplus_core` and
-`Fplus` are linked, while its named Lean-only proof-contract payload is
-classified. The main `Fplus` close-magnitude branch now uses the same
-`Operations.Fplus` decomposition as the source; one paired exact-addition
-example checks that branch. This does not review every input or certify the
-separate `Operations.Fplus` implementation.
-[`Calc/Operations.lean`](../src/Calc/Operations.lean) is the seventh
-strict-gated module: six primitive float operations point to their source
-declarations and four Lean-only projections or same-exponent wrappers explain
-why they lack a standalone Coq definition. Paired examples exercise
-`Operations.Fplus` on close magnitudes and `Falign` when the second exponent
-is lower, but six correct source links and two examples do not certify all
-operation inputs.
-Its two source alignment theorems, `Falign_spec` and `Falign_spec_exp`, now
-state ordinary propositions rather than pure `Id` triples. The radix
-premise is already enforced by `ValidRadix beta`; the existing proofs
-typecheck without a new trust obligation. The same-exponent addition and
-subtraction statements likewise have direct equality types; other primitive
-operation proofs retain their legacy callers and triples for now.
+The upper endpoint is strict. Thus `mag (β^k) = k + 1`, not `k`.
+The Lean implementation uses floor-of-log plus one, not a ceiling. Its chosen
+value at zero is one, but the magnitude bounds require a nonzero input.
+[`Test/MagSource.lean`](../Test/MagSource.lean) checks the observable value
+at one and the dependent bounds.
 
-[`Calc/Round.lean`](../src/Calc/Round.lean) illustrates a dangerous naming
-mistake. Flocq's
-[`truncate`](https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Calc/Round.v#L638)
-accepts a `(mantissa, exponent, location)` triple and an exponent function;
-the function determines how far to shift. The old Lean `truncate` instead
-accepted a float and an already-chosen exponent, so it could not implement
-that contract. The source-facing `truncate` now names the existing
-`truncate_triple` implementation; the old utility is `truncate_at_exp`.
-A paired test shifts `(4, 0, Exact)` to `(2, 1, Exact)` with fixed exponent 1.
-`Round.lean` is the eighth strict-gated public-definition module: its ten
-source-shaped definitions have pinned links (including `inbetween_int`,
-defined in Flocq's `Bracket.v`), and eight Lean-only adapters or duplicates
-are explicitly classified. Paired examples also exercise upward rounding
-for a negative sign, a nearest tie choice, and positive FIX truncation.
-`truncate_FIX` now explicitly requires a valid radix and spells its integer
-scaling as Flocq's `Zpower`; the existing positive-shift proof identifies that
-with the natural power it needs for the bracketing lemma.
-Four older downward/upward theorem statements now mention the source-named
-`round_sign_DN` or `round_UP` instead of duplicate Lean-only primed helpers.
-The source links and examples do not certify the rest of `Round.lean`;
-the gate does not inspect theorem statements, `Mode`'s structure, or bodies.
-The `Binary.shr_fexp` re-export in `BinarySingleNaN.lean` now uses the
-precision-dependent truncation and its theorem refers to source-shaped
-`truncate`. An unrelated root compatibility helper of the same name had
-used `truncate_at_exp` and stated only a trivial wrapper theorem; it has
-been removed because it was not a source contract.
-The SingleNaN theorem unfolds its chosen implementation, so it is not an
-independent proof that Flocq's iterative shift algorithm is equivalent.
+Formats then place different restrictions on mantissa and exponent.
+`FIX` fixes the exponent; `FLX` fixes precision; `FLT` adds a minimum
+exponent with gradual underflow; `FTZ` excludes the subnormal region.
+Their source-facing predicates now explicitly describe the appropriate
+witnesses. They are not merely aliases for a convenient generic predicate.
 
-[`Calc/Div.lean`](../src/Calc/Div.lean) is the ninth strict-gated module:
-`Fdiv_core` and `Fdiv` have pinned source links; two Lean-only magnitude or
-midpoint helpers are classified. The source
-[`Fdiv_correct`](https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Calc/Div.v#L132)
-states a proposition about the resulting quotient and its location. Lean's
-theorem now has that direct shape, and its IEEE caller consumes the conjunction
-without running a pure `Id` triple. The theorem gets the radix bound from
-`ValidRadix beta`, as the source gets it
-from its `radix` type.
-The lower-level division correctness
-triple and other older callers remain as they were. Paired exact-quotient
-and halfway-location examples cover two core cases and one top-level
-operation, not arbitrary division.
+## 3. Follow the exact result to a rounded result
 
-[`Calc/Sqrt.lean`](../src/Calc/Sqrt.lean) is the tenth strict-gated
-public-definition module. Its `Fsqrt_core` and `Fsqrt` definitions link to
-the pinned `Sqrt.v:64,172`; its two correctness theorems are direct
-propositions, with the radix bound supplied by `ValidRadix beta` rather than
-an extra premise. The paired examples evaluate the core at an exact square
-and an inexact square root, then the top-level operation at an exact square.
-Lean's proof of the numeric examples uses `norm_num` to evaluate its integer
-square root; the Rocq examples use `vm_compute`. Neither finite sample nor
-the source-location gate proves all cases equivalent, and this slice does
-not change the previously unreviewed modules.
+The integer algorithms in [`Calc`](../src/Calc.lean) avoid doing their
+arithmetic with machine floating point. They align exponents, shift
+mantissas, divide integers, and compute integer square roots.
 
-[`Calc/Bracket.lean`](../src/Calc/Bracket.lean) is the eleventh
-strict-gated public-definition module: five definitions have pinned
-`Bracket.v` links and seven proof adapters or local checks are marked
-Lean-only. Flocq's stepped-location definitions acquire `nb_steps` from a
-section; Lean passes it explicitly. Two paired examples check an exact
-middle step with even `nb_steps` and an inexact middle step with odd
-`nb_steps`. The four elementary interval theorems—`inbetween_spec`,
-`inbetween_unique`, `inbetween_bounds`, and `inbetween_bounds_not_Eq`—
-now state the source's direct propositions rather than `Id` triples.
-Two more inexact distance-comparison theorems have direct source-shaped
-equalities, and `inbetween_ex` directly produces the existential witness
-used by `inbetween_float_ex`. Their proofs still typecheck; five now-unused Boolean, Unit, or
-identity probe definitions were removed. The source-location
-gate does not inspect the `Location`/`inbetween` inductive declarations,
-the other Bracket theorem statements, or the theorem proofs. Those remain
-outside this targeted review.
+The `Location` information in [`Bracket.lean`](../src/Calc/Bracket.lean)
+says whether a result is exact or where an inexact result lies relative to
+the halfway point. [`Round.lean`](../src/Calc/Round.lean) uses that
+information, the sign, and the rounding choice to decide whether to increment.
 
-## 4. What the checks establish
+This explains one repaired interface mistake. Flocq's `truncate` accepts
+a mantissa/exponent/location triple **and an exponent function**. The
+function determines the target precision. An older Lean function with the
+same name accepted an already-selected exponent instead. Both functions
+were sensible, but they did not have the same contract. The source name now
+has the source-shaped signature; the other utility is `truncate_at_exp`.
 
-`lake build` typechecks the present Lean statements. The paired
-`scripts/test_flocq_conformance.sh` checks source anchors, builds the pinned
-Flocq source, and checks small examples on each side; it catches selected
-counterexamples, not all inputs. `scripts/check_proof_debts.py` rejects
-unregistered `sorry` and trust
-escapes. Its four registered debts are in `proof_debts.json`: sign-bit
-negation, native `frExp`, native next-up, and native next-down. The FTZ
-format equivalence is now proved. A theorem with
-`sorry` is an explicitly unproved claim even when the build passes.
+The IEEE layer then decides whether a rounded result is finite, subnormal,
+zero, or an overflow result. Overflow is not always infinity: toward-zero
+rounding selects the largest finite value. NaN propagation is a separate
+policy again. The exact-payload bridge checks the first-NaN policy rather
+than silently replacing every NaN by one canonical bit pattern.
 
-The complementary `scripts/check_compiled_trust.py` gate inspects elaborated
-declarations in every source module. It follows axiom dependencies through
-theorems and checks opaque bodies, so hiding a debt behind a wrapper does not
-make it disappear. At this checkpoint, exactly the four named obligations
-depend on `sorryAx`; no other source declaration does. Project axioms, unsafe
-declarations, runtime overrides, and nonstandard axiom dependencies are
-rejected. This does not validate the meaning of a theorem's statement or
-certify the compiler, standard library, or floating-point FFI.
+## 4. Read a theorem as a contract, not as a badge
 
-Most current Hoare triples wrap pure `Id` computations. This project does not
-invoke `mvcgen` or `mspec`; their lookup annotations, direct tactic imports,
-and the Hoare-style linter have been removed. A direct mathematical proposition
-is usually easier to compare with Coq. The surviving triples have callers, so
-removing them is a gradual interface migration, not a prerequisite for
-understanding the source definition.
+A Lean proof establishes **the Lean proposition actually written down**.
+It does not tell us that this proposition is the one intended by Flocq.
 
-[`Core/FIX.lean`](../src/Core/FIX.lean) is a concrete completed slice: its
-format conversions, ulp, and rounding theorem now state direct propositions;
-two IEEE callers were updated accordingly. Its former Boolean checks proved
-truncation identities rather than FIX-format membership, so they were removed
-and replaced by direct zero-membership and negation-closure facts. Other
-modules still contain legacy triples; this one example does not certify them.
+For example, the old `valid_binary_SF2FF` statement compared validity after
+a conversion with a wrapper defined to be that same expression. It was
+provable but missed the intended relationship. The repaired theorem compares
+full-float validity with an independently defined SingleNaN validity
+predicate, under the source's non-NaN premise.
 
-Lean's [`FIX_format`](https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Core/FIX.v#L34)
-now requires a float witness with exponent exactly `emin`, as in the
-pinned source. Its two conversion theorems genuinely cross between that
-witness and `generic_format`, using the existing canonical-float lemmas.
-Zero and negation closure are proved directly from the witness. This removes
-the former definitional shortcut without adding a proof debt.
+FTZ had a similar issue at the definition level. Its old predicate was simply
+generic-format membership, so conversion theorems concealed the intended
+normalized-mantissa and minimum-exponent conditions. The source-shaped
+witness predicate is now restored, and the nontrivial equivalence proof was
+completed in `d4c44d9b`. Its fresh axiom check found only Lean's standard
+`propext`, `Classical.choice`, and `Quot.sound`, not `sorryAx`.
 
-Another reviewed slice is [`Core/FLX.lean`](../src/Core/FLX.lean). Flocq states
-[`FLX_format_generic`](https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Core/FLX.v#L69)
-and [`generic_format_FLX`](https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Core/FLX.v#L95)
-as implications between mathematical predicates. The Lean theorems now have
-that same *shape*, instead of wrapping the predicates in `Id` Hoare triples.
-`FLX_format_generic` still needs positive precision, as in the Flocq section;
-the reverse theorem does not. This checks the interface, not every detail of
-the predicate implementations or proof correspondence.
+Many older theorems wrap pure computations in `Id` Hoare triples. Read
+these as a legacy way of presenting a mathematical proposition. The project
+does not invoke `mvcgen` or `mspec`; their unused annotations/imports and
+the Hoare-style linter were removed. New source-facing work prefers pure
+definitions and direct propositions. Existing triples are migrated with
+their callers, not removed indiscriminately.
 
-The same file has a second predicate, `FLXN_format`, which records a
-*normal* mantissa for nonzero values. Its two conversions now follow the
-source's direct-implication form:
-[`generic_format_FLXN`](https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Core/FLX.v#L142)
-goes from the normal witness to the generic format, and
-[`FLXN_format_generic`](https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Core/FLX.v#L156)
-reconstructs the witness under positive precision. Both existing proofs
-typecheck; this still does not establish a theorem-by-theorem equivalence
-audit of all of `FLX.lean`.
-The bounded-magnitude conversions
-[`FIX_format_FLX`](https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Core/FLX.v#L55)
-and
-[`FLX_format_FIX`](https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Core/FLX.v#L121)
-also now state direct implications. They cross the newly structural
-`FIX_format` and `FLX_format` witnesses; the first proof constructs a
-fixed-exponent witness, while the second passes through the proved generic
-conversions. Their assumptions still include the source interval
-`β^(e-1) ≤ |x| ≤ β^e`.
+Four explicit proof debts remain in `proof_debts.json`: raw sign-bit
+negation, native `frExp`, native next-up, and native next-down.
+A theorem using `sorry` remains unproved even if its statement compiles.
+The lexical debt gate and compiler-level dependency audit check that these
+holes are named and that no additional source declarations silently depend
+on them. Neither gate judges whether every mathematical statement is right.
 
-The FTZ format shows why the distinction matters. Pinned Flocq
-[`FTZ_format`](https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Core/FTZ.v#L36)
-requires a float witness with a normalized mantissa and a minimum exponent.
-The old Lean definition was simply `generic_format` at `FTZ_exp`, which made
-its two conversion theorems reflexive and hid those representation conditions.
-Lean now states the source-shaped witness contract; the conversion theorems
-have direct implication types. Their common equivalence proof was initially
-deferred, then proved in commit `d4c44d9b`. An independent axiom check on
-19 September found only Lean's standard `propext`, `Classical.choice`, and
-`Quot.sound`, with no `sorryAx`. The zero-witness regression and direct
-projection `FLXN_format_FTZ` are also proved. This closes that particular
-proof debt; it does not certify all downstream double-rounding statements.
+## 5. Run three loops, then connect them
 
-For gradual underflow, [`Core/FLT.lean`](../src/Core/FLT.lean) keeps an explicit
-bounded-mantissa, minimum-exponent witness, matching pinned Flocq
-[`FLT_format`](https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Core/FLT.v#L36).
-Its two source-named conversions now state direct implications. The
-format-to-generic direction needs no positive-precision assumption, matching
-the source proof's discharge of that section context; the reverse direction
-retains positive precision. Both existing Lean proofs and downstream callers
-typecheck without adding a proof debt. This is a reviewed contract slice, not
-a whole-file theorem-equivalence verdict.
+Start with the [runnable three-loop guide](THREE_VERIFICATION_LOOPS.md).
+Its combined command is:
 
-On this Mac, the checked-in Lean `v4.34.0` toolchain makes plain `lake build`
-work. Mathlib and CSLib remain at the reviewed rc2 source pins; a future
-dependency upgrade is separate work from fixing the local compiler crash.
+```sh
+bash scripts/test_flocq_conformance.sh
+```
 
-## 5. Where to go next
+The first loop checks independent finite properties in Lean: midpoint
+classification, quotient/remainder invariants, integer-square-root bounds,
+and bit roundtrips. The second checks the corresponding properties in
+pinned Flocq using Rocq. The third gives identical inputs to both ports
+and compares the observable results.
 
-Read the [focused audit](FLOCQ_CONFORMANCE_AUDIT_2026-09-18.md) for concrete
-mistakes found, paired observations, and boundaries. Then take one
-`@[flocq_source]` definition at a time: compare the Coq and Lean type, inspect
-each constructor or branch, test a boundary case on both sides, and only then
-judge its proof. That sequence is the remaining work more accurately than a
-single percent-complete number.
+The core bridge now runs **compiled Lean, Lean kernel reduction, and Rocq
+computation**. It includes ordinary inputs and explicitly labeled inputs
+outside theorem preconditions, such as negative shifts or zero divisors.
+Agreement on those inputs is a total-function observation, not permission
+to apply a theorem without its hypotheses.
 
-The [independent continuation audit](ASTRA_AUDIT_2026-09-19.md) records fresh
-checks of the previous work, including a reproduced gap in the source-link
-linter and the distinction between paired examples and differential execution.
+Native binary64 bridges also execute real runtime `Float` operations.
+They compare unary operations and nearest-even arithmetic with both the
+Lean logical model and Rocq. Signed zero is retained. NaNs are deliberately
+canonicalized in these native comparisons. Native `frExp` agreement has a
+nonzero-finite precondition; exceptional exponent observations are retained
+and reported separately.
 
-## 6. Run the feedback loop
+A separate IEEE source-API bridge covers binary32/binary64 in all five
+rounding modes, including fused multiply-add and exact NaN payloads.
+That bridge currently checks kernel/Rocq execution, not native directed
+rounding. The direct decoder and integer-width packing families also avoid
+using `Float.Model.ofBits` as a substitute for the port's own decoder.
 
-The native extension feeds the same binary64 words into actual Lean runtime
-calls, the logical Lean carrier, and pinned Rocq. Read its five output columns
-as input bits → next-up → next-down → `frExp` significand → exponent. It keeps
-NaN canonicalization and the nonzero-finite `frExp` precondition explicit.
+For agreeing batches, Rocq's output becomes the expected value of generated
+Lean equality statements. Lean checks each with `decide +kernel`.
+This bootstraps a Lean regression oracle; it is not a universal equivalence
+proof. Seeds, input JSON, generated programs, outputs, and replay files are
+retained. Deliberate mutations must produce failures, and interrupted,
+timed-out, or source-changing runs must remain errors.
 
-The arithmetic extension takes two input words and follows them through
-addition, subtraction, multiplication, division, and square root in all three
-implementations. Read its seven columns as left input → right input → sum →
-difference → product → quotient → square root of the left input. Signed zero
-is preserved; NaN payloads are deliberately collapsed. Boundary cases include
-cancellation, ties-to-even, underflow, overflow, and exceptional operands.
+## 6. What is done, and how much is left?
 
-The direct bit-decoder tests take a different path: they call the port's own
-binary32/binary64 decoder, not `Float.Model.ofBits`. Read their nine columns as
-constructor → sign → payload/mantissa → exponent → re-encoded bits → three
-split input fields → validity. Here NaN signs and payloads are preserved.
-The same rows run as compiled Lean, kernel reduction, and Rocq computation.
+On the audit Mac, the checked-in Lean `v4.34.0` toolchain builds the project.
+Mathlib and CSLib remain at their reviewed rc2 source pins. Compilation,
+finite execution agreement, a proof of a Lean theorem, and universal
+source correspondence are four different claims.
 
-The [three-loop testing guide](THREE_VERIFICATION_LOOPS.md) explains the runnable
-checks in order: independent finite arithmetic invariants in Lean, those same
-invariants checked against pinned Flocq in Rocq, then shared-input differential
-execution. Rocq outputs become generated Lean regression theorems, which Lean
-checks in its kernel. The bridge retains seeds, inputs, outputs, and replay
-files; a deliberate historical-bug mutation checks that it really rejects a
-disagreement. This is executable evidence for concrete cases, not a replacement
-for reviewing the mathematical contract.
+The source pin is
+`7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f`, stored in `Deps/flocq`'s
+gitlink. Tests use a separate clean reference checkout; the user's modified
+nested checkout is preserved.
+
+All 36 Flocq source-module names have corresponding Lean files or umbrella
+modules. The old extraction plan lists 2,548 source declarations, with
+2,472 automatic pairings and 76 separately classified items. Those are
+navigation counts, **not a completed-port percentage**. Its 5,951 comparison
+jobs include multiple jobs per declaration, and only 27 received valid
+reviewed verdicts in that historical batch.
+
+The remaining work is principally semantic review and repair, executable
+coverage, and closing the explicit native proof gaps—not merely creating
+missing filenames. Much of the full theorem-by-theorem port remains
+unreviewed, including legacy compatibility predicates. The
+[independent audit ledger](ASTRA_AUDIT_2026-09-19.md) says precisely which
+changed surfaces have been checked.
+
+Source links make that review navigable. `@[flocq_source]` records a pinned
+Coq path, line, and name; `@[flocq_local]` explains a Lean-only helper.
+Eleven modules currently enforce strict public-definition classification.
+The compiler-backed validator checks all 56 registered anchors, including
+combined attributes and later attribute commands. These links are metadata,
+not a proof that bodies or theorem signatures correspond.
+
+Adjacent `Source:` URLs can be opened by editors that recognize URLs.
+The attribute's path string itself does not yet have a special click action;
+that remains low-priority editor integration.
+
+The useful next step is always concrete: select one source declaration,
+compare its type and branches, run a boundary case through both systems,
+check its hypotheses, and then inspect its proof. That is the unit of
+progress the audit is tracking.

@@ -178,7 +178,8 @@ lake build --verbose
 ## Practical Lean Tips (FloatSpec)
 
 - Magnitude and logs:
-  - `mag` is defined with `Int.ceil (log (|x|)/log β)`. To get `|x| ≤ β^e`, sandwich `L := log|x|/logβ` and use `Real.log_le_iff_le_exp` plus `Real.log_zpow`.
+  - For nonzero `x`, `mag` is `Int.floor (log |x| / log β) + 1`, not a ceiling. Its source bounds are `β^(mag x - 1) ≤ |x| < β^(mag x)` for a valid radix. In particular, `mag (β^e) = e + 1`; using a ceiling silently gets exact powers wrong. The concrete zero witness is `mag 0 = 1`, but the magnitude bounds require `x ≠ 0`.
+  - To relate powers and magnitude, sandwich `L := log |x| / log β` with floor bounds and use `Real.log_le_iff_le_exp` plus `Real.log_zpow`. Preserve the strict upper endpoint; use `mag_bpow`, `mag_unique`, or the source-facing dependent bounds when available.
   - Keep a clean chain: derive `log |x| ≤ log (β^e)`, then exponentiate; avoid brittle simp rewrites between `exp (e*log β)` and `β^e`—prove equality explicitly using `Real.exp_log` and `Real.log_zpow`.
 - Powers and positivity:
   - Use `zpow_pos : 0 < a → 0 < a^n` and `abs_of_nonneg` for `a^n` when the base is positive.

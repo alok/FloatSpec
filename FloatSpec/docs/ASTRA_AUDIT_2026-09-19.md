@@ -226,6 +226,10 @@ HEAD. Executions use a separate detached reference checkout.
     upward rounding to nearest-even only on the Lean side and verifying the
     resulting replay case. This path runs the actual source-shaped decoders
     and operations, but is kernel/Rocq execution, not native directed rounding.
+    The expanded run subsequently passed **590 cases** (seed `924857`,
+    30 random triples per width/mode plus boundaries), with all 590 generated
+    kernel equalities, in 939.901 seconds. Artifact:
+    `floatspec-ieee-modes-37fz_hlr/report.json`.
 20. **Integer-width bit interfaces have a separate execution slice:** the
     existing source facade, unlike the root natural-width helper, preserves
     negative widths and the corresponding right-shift/zero-power behavior.
@@ -238,6 +242,16 @@ HEAD. Executions use a separate detached reference checkout.
     product snapshot explicitly (`fresh_build: false`), without changing or
     rebuilding product files underneath the concurrent native runs. The
     operation bodies and theorem contracts were not changed.
+21. **The linear reading guide now follows one computation:** a small
+    halfway-rounding example leads through representation, integer algorithms,
+    theorem contracts, the three execution loops, and remaining review scope.
+    Detailed historical per-module findings remain in the audit ledgers.
+    Corrected the stale ceiling-based magnitude advice in `CLAUDE.md`
+    (`AGENTS.md` is its symlink): the implemented/source rule is floor plus
+    one, with a strict upper endpoint. Fresh execution of `MagSource.lean`
+    passed its examples and signature checks (one existing prefer-grind
+    warning). No mathematical definitions were changed by this documentation
+    correction.
 
 See [the three-loop guide](THREE_VERIFICATION_LOOPS.md) for commands, output
 artifacts, and current coverage. Repairs include the source-link/trust gates,
