@@ -23,6 +23,13 @@ These Lean statements are proved by reduction in the kernel, without
 `native_decide`, new axioms, or admitted proofs. They certify the enumerated
 finite grids, not all integers.
 
+`Test/BitsExecution.lean` additionally executes 10,000 binary32 and 10,000
+binary64 decode/re-encode roundtrips in compiled Lean, retaining NaN payloads.
+It uses a documented fixed-seed recurrence, not floating-point arithmetic to
+generate inputs. Kernel examples separately pin ordinary values and a signed
+signaling NaN. The paired `BitsProperties.v` checks the same independent
+roundtrip invariants in Rocq.
+
 The current `floatspec` executable's `main` does nothing. Running it is a
 launch smoke test only, not an arithmetic regression; the checks described here
 execute inside the test modules and bridges. Native execution is covered by
@@ -68,15 +75,24 @@ It enforces `0 < prec < emax`, the source contract's precision premises. The
 real validity predicate is essential here; the legacy always-true predicate
 would provide no evidence about whether an overflow result is representable.
 
-Lean reduces the calls with `#reduce`; Rocq uses `vm_compute`. The runner rejects
+Two more families directly test binary32/binary64 bit decoding, re-encoding,
+field splitting, and validity. They preserve NaN payloads and signs instead of
+canonicalizing them. Inputs include unbounded negative and over-width integers:
+Flocq's input is `Z`, and its sign comparison is not machine-word wrapping.
+
+Lean both executes compiled calls with `--run` and reduces them with `#reduce`;
+Rocq uses `vm_compute`. Enabling compiled execution required removing
+unnecessary `noncomputable` markers from twelve integer-only Calc definitions
+and three bit decoders; their bodies and public types did not change. The runner rejects
 compiler failures, unknown output, abbreviated output, missing rows, and empty
-corpora. It compares every output row. For agreeing batches, it then generates
+corpora. It compares all expected columns of all three result streams. For
+kernel/Rocq-agreeing batches, it then generates
 `OracleRegressions.lean`: a separate equality statement for each input, with
 Rocq's observed values as the expected results. Lean checks those statements
 using `decide +kernel`. Separate statements avoid the expensive normalization
 of one enormous conjunction/list equality for the more complex operations.
 
-A disagreement retains the exact input, both results, the generated `.lean`
+A disagreement retains the exact input, all three results, the generated `.lean`
 and `.v` files, and a `replay.json` corpus. This is the feedback step: inspect
 the source, fix the incorrect definition or adapter, and preserve the case as
 a regression. Do not automatically alter the implementation merely to agree
@@ -93,7 +109,8 @@ bash scripts/test_flocq_conformance.sh
 This creates and builds a detached reference worktree, runs the standalone
 Rocq and Lean checks, runs all three differential bridges, and executes their own
 tests. Live mutations recreate the historical negative-exponent bug and replace
-native successor by predecessor, and swap native arithmetic operands. Each
+native successor by predecessor, swap native arithmetic operands, and alter
+only compiled Lean while kernel/Rocq still agree. Each
 mutation must cause a failed comparison
 and emit a replay case. The temporary reference worktree is removed; bridge
 artifacts are retained at the paths printed by the runners.

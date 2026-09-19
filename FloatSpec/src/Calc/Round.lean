@@ -71,7 +71,7 @@ section Truncation
 -/
 -- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Calc/Round.v#L609
 @[flocq_source "src/Calc/Round.v" 609 "truncate_aux"]
-noncomputable def truncate_aux (beta : Int) [ValidRadix beta] (f : Int × Int × Location) (k : Int) : (Int × Int × Location) :=
+def truncate_aux (beta : Int) [ValidRadix beta] (f : Int × Int × Location) (k : Int) : (Int × Int × Location) :=
   let m := f.1
   let e := f.2.1
   let l := f.2.2
@@ -84,7 +84,7 @@ noncomputable def truncate_aux (beta : Int) [ValidRadix beta] (f : Int × Int ×
     `fexp` and the digits of the mantissa.
 -/
 @[flocq_local "Caller-chosen exponent utility, unlike source Round.truncate"]
-noncomputable def truncate_at_exp (beta : Int) [ValidRadix beta]
+def truncate_at_exp (beta : Int) [ValidRadix beta]
     (f : FlocqFloat beta) (e : Int) (l : Location) : Int × Int × Location :=
   let k := e - f.Fexp
   if 0 < k then
@@ -147,7 +147,7 @@ end Int
 
 -- Coq-style truncate on a triple (m,e,l) using fexp and Zdigits
 @[flocq_local "Legacy name for the source-facing Round.truncate operation"]
-noncomputable def truncate_triple (beta : Int) [ValidRadix beta] (fexp : Int → Int)
+def truncate_triple (beta : Int) [ValidRadix beta] (fexp : Int → Int)
     (t : Int × Int × Location) : (Int × Int × Location) :=
   let m := t.1
   let e := t.2.1
@@ -161,7 +161,7 @@ This is the source-facing name; `truncate_triple` remains as the legacy name
 used by existing proof chains. -/
 -- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Calc/Round.v#L638
 @[flocq_source "src/Calc/Round.v" 638 "truncate"]
-noncomputable abbrev truncate (beta : Int) [ValidRadix beta] (fexp : Int → Int)
+abbrev truncate (beta : Int) [ValidRadix beta] (fexp : Int → Int)
     (t : Int × Int × Location) : Int × Int × Location :=
   truncate_triple beta fexp t
 
@@ -3810,7 +3810,7 @@ variable (emin : Int)
 
 -- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Calc/Round.v#L1141
 @[flocq_source "src/Calc/Round.v" 1141 "truncate_FIX"]
-noncomputable def truncate_FIX (beta : Int) [ValidRadix beta] (emin : Int)
+def truncate_FIX (beta : Int) [ValidRadix beta] (emin : Int)
     (t : Int × Int × Location) : Int × Int × Location :=
   let m := t.1; let e := t.2.1; let l := t.2.2
   let k := emin - e

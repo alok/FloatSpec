@@ -990,12 +990,10 @@ theorem valid_binary_B2FF_compat {prec emax} (x : Binary754 prec emax)
   unfold valid_binary_B2FF_check
   exact hvalid
 
--- Coq: valid_binary_SF2FF — validity of SF after conversion to FF
--- We introduce a StandardFloat-side validity predicate and state
--- the correspondence in hoare-triple form.
+-- Legacy compatibility predicate, not Coq's StandardFloat validity test.
+-- The direct source theorem `valid_binary_SF2FF` is exported from
+-- BinarySingleNaN, where its independent SingleNaN predicate is available.
 def valid_binary_SF {prec emax : Int} (x : StandardFloat) : Bool :=
-  -- Legacy bridge predicate retained for compatibility callers.  Use
-  -- `valid_binary_SF_payload` for the actual source-shaped validity test.
   true
 
 -- StandardFloat-side payload validity induced by the fixed local `SF2FF`
@@ -1012,7 +1010,9 @@ theorem valid_binary_SF_payload_SF2FF {prec emax : Int} (x : StandardFloat) :
 def valid_binary_SF2FF_check {prec emax : Int} (x : StandardFloat) : Bool :=
   (valid_binary (prec:=prec) (emax:=emax) (SF2FF x))
 
-theorem valid_binary_SF2FF {prec emax} (x : StandardFloat)
+-- This compatibility equality only unfolds an image predicate; it is not the
+-- source theorem relating independently defined validity predicates.
+theorem valid_binary_SF2FF_compat {prec emax} (x : StandardFloat)
   (hnotnan : is_nan_SF x = false) :
   ⦃⌜True⌝⦄
   (pure (valid_binary_SF2FF_check (prec:=prec) (emax:=emax) x) : Id Bool)

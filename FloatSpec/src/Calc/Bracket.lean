@@ -806,7 +806,7 @@ theorem inbetween_step_Hi (x : ℝ) (k : Int) (l : Location)
 -/
 -- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Calc/Bracket.v#L406
 @[flocq_source "src/Calc/Bracket.v" 406 "new_location_even"]
-noncomputable def new_location_even (nb_steps k : Int) (l : Location) : Location :=
+def new_location_even (nb_steps k : Int) (l : Location) : Location :=
   -- Use explicit integer inequalities instead of generic `compare` to ease reasoning.
   if hkz : k = 0 then
     match l with
@@ -1158,7 +1158,7 @@ theorem new_location_even_correct (Hnb_steps : 1 < nb_steps)
 -/
 -- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Calc/Bracket.v#L463
 @[flocq_source "src/Calc/Bracket.v" 463 "new_location_odd"]
-noncomputable def new_location_odd (nb_steps k : Int) (l : Location) : Location :=
+def new_location_odd (nb_steps k : Int) (l : Location) : Location :=
   -- Use explicit integer comparisons instead of a generic `compare` to ease reasoning.
   if hkz : k = 0 then
     match l with
@@ -1574,7 +1574,7 @@ theorem new_location_odd_correct (Hnb_steps : 1 < nb_steps)
 -/
 -- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Calc/Bracket.v#L511
 @[flocq_source "src/Calc/Bracket.v" 511 "new_location"]
-noncomputable def new_location (nb_steps k : Int) (l : Location) : Location :=
+def new_location (nb_steps k : Int) (l : Location) : Location :=
   if nb_steps % 2 = 0 then
     new_location_even nb_steps k l
   else

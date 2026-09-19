@@ -164,6 +164,40 @@ HEAD. Executions use a separate detached reference checkout.
     mode remains explicitly labeled a legacy textual heuristic. None of these
     anchor checks establish body/type equivalence or require classification
     outside modules that opt into the linter.
+15. **Another tautology occupied a source theorem name:** the old root
+    `valid_binary_SF2FF` compared the conversion's validity with
+    `valid_binary_SF_payload`, defined by the same expression. The source
+    `Binary.v:173` instead compares independently defined FullFloat and
+    SingleNaN validity. The source name now exports that direct equality from
+    `BinarySingleNaN.lean`; the old wrapper has an explicit `_compat` name.
+    The proof uses constructor cases and retains only the source's non-NaN
+    premise, not an input-validity premise. A typed consumer regression and
+    malformed-zero-mantissa example pass; no additional sorry is needed.
+16. **The bit decoder duplicated the unary-counting conversion:** even after
+    fixing the arithmetic converter, `bits_of_b64 (b64_of_bits 1.0_bits)` still
+    exhausted kernel recursion. `Bits.lean` now shares the proved bit-recursive
+    conversion. Its general, binary32, and binary64 decoders also compile
+    after removing unnecessary `noncomputable` markers without changing their
+    bodies/types. Compiled Lean runs 20,000 independent bit roundtrips, with
+    kernel examples for ordinary values and signed signaling NaN payloads.
+    The matching pure Rocq 20,000-check grid also passed. The direct decoder
+    bridge passed **1,134** cases (seed `834782`): all nine fields agreed in
+    compiled Lean, kernel reduction, and Rocq, and all 1,134 expected rows
+    were subsequently kernel-checked. These include negative and over-width
+    integer inputs and preserve NaN sign/payload data. Report artifact:
+    `floatspec-bridge-eiz5sf98/report.json`.
+17. **Core differential tests now check compiled Lean as well:** twelve
+    integer-only Calc definitions/aliases were needlessly noncomputable.
+    Removing just those markers enables all fifteen core bridge families to
+    run compiled Lean, kernel reduction, and pinned Rocq. The two new families
+    directly observe bit decoders rather than decoding through Float.Model.
+    Fourteen harness tests pass, including a compiled-only mutation that is
+    rejected even when kernel/Rocq agree. Initial Rocq adapter compilation
+    exposed omitted explicit `B2FF` format parameters; those were corrected
+    before the passing harness run, not hidden as skipped comparisons.
+    The aggregate macOS Lean 4.34.0 build passed **6,211 jobs**; source-link,
+    placeholder, unused-mvcgen, and proof-debt gates passed, and the fresh
+    compiler-backed anchor validator checked all **56** references.
 
 See [the three-loop guide](THREE_VERIFICATION_LOOPS.md) for commands, output
 artifacts, and current coverage. Repairs include the source-link/trust gates,
@@ -208,25 +242,11 @@ compatibility boundaries have more surface than the focused later changes.
 
 ## Execution priorities
 
-Current queued repair (do not rebuild during an active bridge): the root
-`valid_binary_SF2FF` theorem still compares with `valid_binary_SF_payload`,
-which is defined by applying the same full-float validity check to `SF2FF x`.
-The pinned `Binary.v:173` compares with the independently defined SingleNaN
-validity predicate. A scratch Lean proof of that stronger equality against
-`validBinarySingleNaNStandardFloat` passed by constructor cases, retaining
-the source's non-NaN premise and requiring no additional validity premise.
-Move the old wrapper to an explicit compatibility name and export the direct
-source statement where the independent predicate is available, then add a
-typed consumer regression. This paragraph records a finding, not an applied fix.
-
-A second execution repair is queued in `IEEE754/Bits.lean`: its private
-`positiveOfNatSucc` duplicates the unary-counting converter fixed in `Binary`.
-`#reduce bits_of_b64 (b64_of_bits 4607182418800017408)` still exhausts the
-recursion depth. Replace that private duplicate with the shared, proved
-`binaryPositiveOfNat` and exercise the port's own bit decoders directly.
-The current arithmetic bridge decodes through Lean's `Float.Model` before
-entering the port's arithmetic, so it does not establish execution of this
-separate source-shaped bit-decoder path.
+The queued validity and duplicate-converter repairs above are now applied,
+and the expanded bit bridge and aggregate build passed. Rerun the complete
+combined suite with stable imported Lean sources. The native
+arithmetic bridge still decodes through Float.Model; the new core bit families
+exercise the distinct source-shaped decoder directly and retain NaN payloads.
 
 Maintain three separate loops: independent Lean tests, independent pinned
 Flocq/Rocq tests, and a differential bridge that sends identical inputs to both.

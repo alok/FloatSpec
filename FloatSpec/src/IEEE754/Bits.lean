@@ -576,47 +576,14 @@ theorem binary_float_of_bits_aux_correct (bits : Int) :
 
 private abbrev ZPositive := FloatSpec.Core.Zaux.Positive
 
-private def positiveSucc : ZPositive → ZPositive
-  | FloatSpec.Core.Zaux.Positive.xH =>
-      FloatSpec.Core.Zaux.Positive.xO FloatSpec.Core.Zaux.Positive.xH
-  | FloatSpec.Core.Zaux.Positive.xO p =>
-      FloatSpec.Core.Zaux.Positive.xI p
-  | FloatSpec.Core.Zaux.Positive.xI p =>
-      FloatSpec.Core.Zaux.Positive.xO (positiveSucc p)
-
-private theorem positiveSucc_spec (p : ZPositive) :
-    FloatSpec.Core.Zaux.positiveToNat (positiveSucc p) =
-      FloatSpec.Core.Zaux.positiveToNat p + 1 := by
-  induction p with
-  | xH =>
-      simp [positiveSucc, FloatSpec.Core.Zaux.positiveToNat]
-  | xO p _ =>
-      simp [positiveSucc, FloatSpec.Core.Zaux.positiveToNat]
-  | xI p ih =>
-      simp [positiveSucc, FloatSpec.Core.Zaux.positiveToNat, ih]
-      omega
-
-private def positiveOfNatSucc : Nat → ZPositive
-  | 0 => FloatSpec.Core.Zaux.Positive.xH
-  | n + 1 => positiveSucc (positiveOfNatSucc n)
-
-private theorem positiveOfNatSucc_spec (n : Nat) :
-    FloatSpec.Core.Zaux.positiveToNat (positiveOfNatSucc n) = n + 1 := by
-  induction n with
-  | zero =>
-      simp [positiveOfNatSucc, FloatSpec.Core.Zaux.positiveToNat]
-  | succ n ih =>
-      simp [positiveOfNatSucc, positiveSucc_spec, ih]
-
-private def positiveOfNat (n : Nat) (_h : 0 < n) : ZPositive :=
-  positiveOfNatSucc (n - 1)
+-- Share the proved bit-recursive converter: binary64 mantissas cannot be
+-- constructed by counting from one in the numeric value.
+private def positiveOfNat (n : Nat) (h : 0 < n) : ZPositive :=
+  binaryPositiveOfNat n h
 
 private theorem positiveOfNat_spec (n : Nat) (h : 0 < n) :
     FloatSpec.Core.Zaux.positiveToNat (positiveOfNat n h) = n := by
-  cases n with
-  | zero => cases h
-  | succ n =>
-      simp [positiveOfNat, positiveOfNatSucc_spec]
+  exact binaryPositiveOfNat_spec n h
 
 private theorem split_bits_mantissa_range (mw ew : Nat) (x : Int) :
     0 ≤ (split_bits mw ew x).2.1 ∧ (split_bits mw ew x).2.1 < (2 : Int) ^ mw := by
@@ -875,7 +842,7 @@ def split_bits_of_binary_float
 -- `emax = 2^(ew-1)`.  Keep those width witnesses explicit here so the result is
 -- the proof-carrying `binary_float` surface, not the permissive `Binary754`
 -- compatibility wrapper used by `binary_float_of_bits_aux`.
-noncomputable def binary_float_of_bits (mw ew : Nat)
+def binary_float_of_bits (mw ew : Nat)
     (hmw : 0 < mw) (hew : 0 < ew)
     (hmax : ((mw : Int) + 1) < (2 : Int) ^ (ew - 1))
     (bits : Int) : binary_float ((mw : Int) + 1) ((2 : Int) ^ (ew - 1)) := by
@@ -1219,7 +1186,7 @@ def bits_of_b32 (x : binary32) : Int :=
   bits_of_binary_float (prec := 24) (emax := 128) x
 
 -- Coq: `Definition b32_of_bits : Z -> binary32 := binary_float_of_bits 23 8 ...`.
-noncomputable def b32_of_bits (bits : Int) : binary32 := by
+def b32_of_bits (bits : Int) : binary32 := by
   let fields := split_bits 23 8 bits
   let s := fields.1
   let mField := fields.2.1
@@ -1429,7 +1396,7 @@ def bits_of_b64 (x : binary64) : Int :=
   bits_of_binary_float (prec := 53) (emax := 1024) x
 
 -- Coq: `Definition b64_of_bits : Z -> binary64 := binary_float_of_bits 52 11 ...`.
-noncomputable def b64_of_bits (bits : Int) : binary64 := by
+def b64_of_bits (bits : Int) : binary64 := by
   let fields := split_bits 52 11 bits
   let s := fields.1
   let mField := fields.2.1

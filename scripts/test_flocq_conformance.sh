@@ -197,6 +197,9 @@ fi
 "$coqc_bin" -q -R "$flocq_dir/src" Flocq -o "$scratch/ArithmeticProperties.vo" \
   "$repo_root/scripts/fixtures/ArithmeticProperties.v"
 echo 'Pure Rocq loop passed: examples and 10,734 independent arithmetic invariant cases'
+"$coqc_bin" -q -R "$flocq_dir/src" Flocq -o "$scratch/BitsProperties.vo" \
+  "$repo_root/scripts/fixtures/BitsProperties.v"
+echo 'Pure Rocq bit loop passed: 20,000 binary32/binary64 roundtrip checks'
 
 if [[ -n "${LEAN_TOOLCHAIN_OVERRIDE:-}" ]]; then
   elan run "$LEAN_TOOLCHAIN_OVERRIDE" lake build \

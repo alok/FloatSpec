@@ -116,7 +116,7 @@ noncomputable def Fdiv_core_from_real_midpoint_payload
 /-- Exact executable translation of FLoCq `Fdiv_core`. -/
 -- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Calc/Div.v#L62
 @[flocq_source "src/Calc/Div.v" 62 "Fdiv_core"]
-noncomputable def Fdiv_core (m1 e1 m2 e2 e : Int) : (Int × Location) :=
+def Fdiv_core (m1 e1 m2 e2 e : Int) : (Int × Location) :=
   let (m1', m2') :=
     if e ≤ e1 - e2 then
       (m1 * beta ^ Int.natAbs (e1 - e2 - e), m2)
@@ -414,7 +414,7 @@ section MainDivision
 -/
 -- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Calc/Div.v#L124
 @[flocq_source "src/Calc/Div.v" 124 "Fdiv"]
-noncomputable def Fdiv (x y : FlocqFloat beta) : (Int × Int × Location) :=
+def Fdiv (x y : FlocqFloat beta) : (Int × Int × Location) :=
   let m1 := x.Fnum
   let e1 := x.Fexp
   let m2 := y.Fnum

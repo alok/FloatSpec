@@ -36,6 +36,11 @@ The source-shaped, proof-carrying types are in
 Prefer the source-shaped interfaces when checking correspondence. The
 `valid_binary` predicate now checks finite bounds and NaN payload width, but
 does not itself turn the permissive carrier into a proof-carrying one.
+For example, `valid_binary_SF2FF` now equates full-float validity after
+conversion with the independently defined SingleNaN validity predicate.
+Its former statement merely compared the conversion with a wrapper around
+the same expression. Both statements were provable; only the new one states
+the intended source relationship.
 
 ## 3. Follow one source definition
 
@@ -59,7 +64,7 @@ as a build error. The six public definitions in
 whole-file strict coverage. Ordinary `Source:` URL comments beside the
 `Defs.lean` attributes can be opened from an editor; the attribute string
 itself is not yet a special go-to-source action. The paired conformance command
-checks all 55 annotated path/line/name anchors against the pinned Flocq
+checks all 56 annotated path/line/name anchors against the pinned Flocq
 checkout using Lean's compiled metadata, not a regular expression over comments
 and source text. Combined attributes and later `attribute` commands therefore
 participate in the same gate. A correct anchor does not establish that the Lean type, body, or

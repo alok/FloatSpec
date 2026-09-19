@@ -4,8 +4,8 @@
 Run with uv run scripts/flocq_bridge.py --flocq-dir PATH. The reference must be
 built with its configured compiler. No algorithm is reimplemented in an adapter:
 the adapters only construct inputs and serialize integer/location/Boolean results.
-Lean uses kernel reduction, including for integer definitions marked noncomputable;
-Rocq uses vm_compute. Agreement is finite testing, not a proof of equivalence.
+Lean runs both compiled code and kernel reduction; Rocq uses vm_compute.
+Agreement is finite testing, not a proof of equivalence.
 """
 
 from __future__ import annotations
@@ -30,8 +30,9 @@ ROOT = Path(__file__).resolve().parents[1]
 LEAN_LOC = [".loc_Exact", ".loc_Inexact .lt", ".loc_Inexact .eq", ".loc_Inexact .gt"]
 COQ_LOC = ["loc_Exact", "loc_Inexact Lt", "loc_Inexact Eq", "loc_Inexact Gt"]
 OPS = ("power", "div_eucl", "location", "round", "truncate", "div", "plus", "sqrt",
-       "formats", "digits", "operations", "format_calc", "overflow")
-ARITIES = dict(zip(OPS, (2, 2, 3, 3, 5, 6, 6, 4, 3, 2, 5, 8, 4), strict=True))
+       "formats", "digits", "operations", "format_calc", "overflow", "bits32", "bits64")
+ARITIES = dict(zip(OPS, (2, 2, 3, 3, 5, 6, 6, 4, 3, 2, 5, 8, 4, 1, 1), strict=True))
+WIDTHS = dict(zip(OPS, (1, 2, 3, 6, 3, 2, 2, 2, 4, 1, 13, 12, 5, 9, 9), strict=True))
 RADIX_OPS = {"truncate", "div", "plus", "sqrt", "digits", "operations", "format_calc"}
 
 
@@ -105,6 +106,19 @@ def corpus(seed: int, samples: int) -> list[Case]:
                         cases.append(Case("format_calc", (base, left, exponent, right,
                                                           -exponent, -2, 3, fmt)))
     rng = random.Random(seed)
+    for width, fraction_width, exponent_width in ((32, 23, 8), (64, 52, 11)):
+        for sign in (0, 1 << (width - 1)):
+            for exponent in (0, 1, (1 << (exponent_width - 1)) - 1,
+                             (1 << exponent_width) - 2, (1 << exponent_width) - 1):
+                for fraction in (0, 1, 2, (1 << (fraction_width - 1)) - 1,
+                                 1 << (fraction_width - 1), (1 << fraction_width) - 1):
+                    word = sign | (exponent << fraction_width) | fraction
+                    cases.append(Case(f"bits{width}", (word,)))
+        # The source takes unbounded Z, not a machine word. Its sign test is
+        # a threshold comparison, so outside-domain behavior is not wrapping.
+        for word in (-(1 << (width + 2)), -(1 << width), -2, -1,
+                     1 << width, (1 << width) + 1, (1 << (width + 2)) - 1):
+            cases.append(Case(f"bits{width}", (word,)))
     for prec in (1, 2, 3, 24, 53):
         for emax in sorted({prec + 1, 2 * prec, 128, 1024}):
             for mode in range(5):
@@ -139,6 +153,9 @@ def corpus(seed: int, samples: int) -> list[Case]:
             elif op == "overflow":
                 prec = rng.randint(1, 64)
                 args = (prec, rng.randint(prec + 1, 2048), rng.randrange(5), rng.randrange(2))
+            elif op in ("bits32", "bits64"):
+                width = int(op[4:])
+                args = (rng.randrange(-(1 << width), 1 << (width + 1)),)
             else:
                 args = (base, m1, e1, m2, e2, target, rng.randint(1, 5), rng.randrange(4))
             cases.append(Case(op, args))
@@ -149,6 +166,10 @@ def expressions(case: Case) -> tuple[str, str]:
     """Translate inputs only; all arithmetic is performed by imported APIs."""
     a = [f"({n})" for n in case.args]
     op = case.op
+    if op in ("bits32", "bits64"):
+        width = op[4:]
+        return (f"FloatSpec.Test.BitsExecution.observation{width} {a[0]}",
+                f"observation{width} {a[0]}")
     if op == "power":
         return (f"[Zaux.Zpower {a[0]} {a[1]}]", f"[Zpower {a[0]} {a[1]}]")
     if op == "div_eucl":
@@ -230,6 +251,7 @@ import FloatSpec.src.Calc.Div
 import FloatSpec.src.Calc.Sqrt
 import FloatSpec.src.Core.FTZ
 import FloatSpec.src.IEEE754.BinarySingleNaNSourceFacade
+import FloatSpec.Test.BitsExecution
 open FloatSpec.Core FloatSpec.Calc FloatSpec.Calc.Bracket
 set_option maxRecDepth 100000
 set_option maxHeartbeats 100000000
@@ -257,7 +279,8 @@ private def standard : StandardFloat → List Int
 
 COQ_HEADER = """From Stdlib Require Import ZArith List.
 From Flocq Require Import Core.Zaux Core.Defs Core.Digits Core.FIX Core.FLX Core.FLT Core.FTZ
-  Calc.Bracket Calc.Operations Calc.Round Calc.Plus Calc.Div Calc.Sqrt IEEE754.BinarySingleNaN.
+  Calc.Bracket Calc.Operations Calc.Round Calc.Plus Calc.Div Calc.Sqrt IEEE754.BinarySingleNaN
+  IEEE754.Bits.
 Import ListNotations.
 Open Scope Z_scope.
 Definition location (l : SpecFloat.location) : Z :=
@@ -281,6 +304,23 @@ Definition standard (x : SpecFloat.spec_float) : list Z :=
   | SpecFloat.S754_nan => [2; 0; 0; 0]
   | SpecFloat.S754_finite s m e => [3; boolean s; Zpos m; e]
   end.
+Definition full (x : Binary.full_float) : list Z :=
+  match x with
+  | Binary.F754_zero s => [0; boolean s; 0; 0]
+  | Binary.F754_infinity s => [1; boolean s; 0; 0]
+  | Binary.F754_nan s payload => [2; boolean s; Zpos payload; 0]
+  | Binary.F754_finite s m e => [3; boolean s; Zpos m; e]
+  end.
+Definition observation32 (bits : Z) : list Z :=
+  let x := Bits.b32_of_bits bits in
+  let '(s, m, e) := Bits.split_bits 23 8 bits in
+  let raw := Binary.B2FF 24 128 x in
+  full raw ++ [Bits.bits_of_b32 x; boolean s; m; e; boolean (Binary.valid_binary 24 128 raw)].
+Definition observation64 (bits : Z) : list Z :=
+  let x := Bits.b64_of_bits bits in
+  let '(s, m, e) := Bits.split_bits 52 11 bits in
+  let raw := Binary.B2FF 53 1024 x in
+  full raw ++ [Bits.bits_of_b64 x; boolean s; m; e; boolean (Binary.valid_binary 53 1024 raw)].
 """
 
 
@@ -361,7 +401,13 @@ def verify_reference(flocq: Path) -> str:
     return pin
 
 
-def execute(cases: list[Case], flocq: Path, coqc: str, folder: Path) -> tuple[list, list]:
+def compiled_source(rows: list[tuple[str, str]], instances: str) -> str:
+    return (LEAN_HEADER + instances + "def main : IO Unit := IO.println ([\n" +
+            ",\n".join(row[0] for row in rows) +
+            "\n] : List (List Int))\nend Bridge\ndef main := Bridge.main\n")
+
+
+def execute(cases: list[Case], flocq: Path, coqc: str, folder: Path) -> dict[str, list]:
     rows = [expressions(case) for case in cases]
     lean_path, coq_path = folder / "Bridge.lean", folder / "Bridge.v"
     radices = sorted({case.args[0] for case in cases if case.op in RADIX_OPS})
@@ -372,14 +418,37 @@ def execute(cases: list[Case], flocq: Path, coqc: str, folder: Path) -> tuple[li
                          "\n] : List (List Int))\nend Bridge\n")
     coq_path.write_text(COQ_HEADER + "Eval vm_compute in [\n" +
                         ";\n".join(row[1] for row in rows) + "\n].\n")
-    with ThreadPoolExecutor(max_workers=2) as pool:
-        lean = pool.submit(run, ["lake", "env", "lean", str(lean_path)])
-        coq = pool.submit(run, [coqc, "-q", "-R", str(flocq / "src"), "Flocq", str(coq_path)])
-        outputs = lean.result(), coq.result()
-    (folder / "lean.out").write_text(outputs[0])
-    (folder / "rocq.out").write_text(outputs[1])
-    return (parse_result(outputs[0], "lean", len(cases)),
-            parse_result(outputs[1], "rocq", len(cases)))
+    compiled_path = folder / "Compiled.lean"
+    compiled_path.write_text(compiled_source(rows, instances))
+    commands = {"lean": ["lake", "env", "lean", str(lean_path)],
+                "compiled": ["lake", "env", "lean", "--run", str(compiled_path)],
+                "rocq": [coqc, "-q", "-R", str(flocq / "src"), "Flocq", str(coq_path)]}
+
+    def observe(name: str) -> list:
+        output = run(commands[name])
+        (folder / f"{name}.out").write_text(output)
+        return parse_result(output, "rocq" if name == "rocq" else "lean", len(cases))
+
+    with ThreadPoolExecutor(max_workers=3) as pool:
+        futures = {name: pool.submit(observe, name) for name in commands}
+        return {name: future.result() for name, future in futures.items()}
+
+
+def compare(cases: list[Case], observations: dict[str, list]) -> list[dict]:
+    if set(observations) != {"lean", "compiled", "rocq"}:
+        raise ValueError("all three execution paths are required")
+    for name, rows in observations.items():
+        if len(rows) != len(cases) or any(len(row) != WIDTHS[case.op]
+                                         for case, row in zip(cases, rows, strict=True)):
+            raise ValueError(f"{name}: incomplete observation columns")
+    mismatches = []
+    for index, case in enumerate(cases):
+        paths = [name for name in ("lean", "compiled")
+                 if observations[name][index] != observations["rocq"][index]]
+        if paths:
+            mismatches.append({"index": index, "case": asdict(case), "paths": paths,
+                               **{name: rows[index] for name, rows in observations.items()}})
+    return mismatches
 
 
 def bootstrap_lean(cases: list[Case], expected: list[list[int]], folder: Path) -> None:
@@ -434,8 +503,8 @@ def main() -> None:
               "lean_version": run(["lake", "env", "lean", "--version"]).strip(),
               "rocq_version": run([coqc, "--version"]).strip(), "cases": len(cases),
               "operations": dict(Counter(case.op for case in cases)), "status": "running",
-              "method": "Lean kernel reduction versus Rocq vm_compute; finite tests only",
-              "compared_cases": 0, "bootstrapped_lean_cases": 0, "mismatches": []}
+              "method": "Lean compiled execution and kernel reduction versus Rocq vm_compute; finite tests only",
+              "compared_cases": 0, "compiled_cases": 0, "bootstrapped_lean_cases": 0, "mismatches": []}
     report_path = output / "report.json"
     report_path.write_text(json.dumps(report, indent=2) + "\n")
     print(f"Executing {len(cases)} cases; seed={args.seed}; artifacts={output}", flush=True)
@@ -444,26 +513,27 @@ def main() -> None:
     try:
         build = run(["lake", "build", "FloatSpec.src.Calc.Plus", "FloatSpec.src.Calc.Div",
                      "FloatSpec.src.Calc.Sqrt", "FloatSpec.src.Core.FTZ",
-                     "FloatSpec.src.IEEE754.BinarySingleNaNSourceFacade"], timeout=600)
+                     "FloatSpec.src.IEEE754.BinarySingleNaNSourceFacade",
+                     "FloatSpec.Test.BitsExecution"], timeout=600)
         (output / "lean_build.out").write_text(build)
         require_lean_source_snapshot(report["lean_source_sha256"])
         for offset in range(0, len(cases), args.batch_size):
             batch = cases[offset:offset + args.batch_size]
             folder = output / f"batch_{offset:06d}"
             folder.mkdir()
-            lean, rocq = execute(batch, flocq, coqc, folder)
-            for index, (case, left, right) in enumerate(zip(batch, lean, rocq, strict=True)):
-                if left != right:
-                    mismatches.append({"index": offset + index, "case": asdict(case),
-                                       "lean": left, "rocq": right})
+            observations = execute(batch, flocq, coqc, folder)
+            for mismatch in compare(batch, observations):
+                mismatch["index"] += offset
+                mismatches.append(mismatch)
             report["compared_cases"] += len(batch)
+            report["compiled_cases"] += len(batch)
             report["mismatches"] = mismatches
             if mismatches:
                 (output / "replay.json").write_text(
                     json.dumps([m["case"] for m in mismatches], indent=2) + "\n")
             report_path.write_text(json.dumps(report, indent=2) + "\n")
-            if lean == rocq:
-                bootstrap_lean(batch, rocq, folder)
+            if observations["lean"] == observations["rocq"]:
+                bootstrap_lean(batch, observations["rocq"], folder)
                 report["bootstrapped_lean_cases"] += len(batch)
                 report_path.write_text(json.dumps(report, indent=2) + "\n")
             print(f"{min(offset + args.batch_size, len(cases))}/{len(cases)}; "

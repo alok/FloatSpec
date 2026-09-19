@@ -155,6 +155,15 @@ def validBinarySingleNaNStandardFloat {prec emax : Int} (x : StandardFloat) : Bo
   | StandardFloat.S754_infinity _ => true
   | StandardFloat.S754_nan => true
 
+/-- Conversion preserves the independently defined validity test on non-NaNs.
+Unlike the legacy image-predicate wrapper, this is the direct source equality. -/
+@[flocq_source "src/IEEE754/Binary.v" 173 "valid_binary_SF2FF"]
+theorem valid_binary_SF2FF {prec emax : Int} (x : StandardFloat)
+    (hnotnan : is_nan_SF x = false) :
+    valid_binary (prec := prec) (emax := emax) (SF2FF x) =
+      validBinarySingleNaNStandardFloat (prec := prec) (emax := emax) x := by
+  cases x <;> simp [valid_binary, SF2FF, validBinarySingleNaNStandardFloat, is_nan_SF] at *
+
 -- Coq `SF2B` on the proof-carrying SingleNaN carrier.
 def standardFloatToBinarySingleNaNFloat {prec emax : Int} (x : StandardFloat)
     (hx : validBinarySingleNaNStandardFloat (prec:=prec) (emax:=emax) x = true) :

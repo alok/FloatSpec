@@ -54,7 +54,7 @@ private theorem F2R_scale_to_lower (m e₁ e : Int) (he : e ≤ e₁) :
 -/
 -- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Calc/Plus.v#L35
 @[flocq_source "src/Calc/Plus.v" 35 "Fplus_core"]
-noncomputable def Fplus_core (m1 e1 m2 e2 e : Int) : (Int × Location) :=
+def Fplus_core (m1 e1 m2 e2 e : Int) : (Int × Location) :=
   let k := e - e2
   let t :=
     if 0 < k then
@@ -135,7 +135,7 @@ variable [Monotone_exp fexp]
 -/
 -- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Calc/Plus.v#L80
 @[flocq_source "src/Calc/Plus.v" 80 "Fplus"]
-noncomputable def Fplus (f1 f2 : FlocqFloat beta) : (Int × Int × Location) :=
+def Fplus (f1 f2 : FlocqFloat beta) : (Int × Int × Location) :=
   let m1 := f1.Fnum
   let e1 := f1.Fexp
   let m2 := f2.Fnum

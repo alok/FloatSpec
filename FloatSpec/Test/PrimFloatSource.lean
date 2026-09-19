@@ -47,3 +47,13 @@ example : validBinarySingleNaNStandardFloat (prec := 53) (emax := 1024)
 
 example : validBinarySingleNaNStandardFloat (prec := 53) (emax := 1024)
     (.S754_finite false 1 1024) = false := by decide
+
+-- The conversion theorem must relate independent validity predicates, with
+-- no assumption that the input is already valid.
+example {prec emax : Int} (x : StandardFloat) (hnotnan : is_nan_SF x = false) :
+    valid_binary (prec := prec) (emax := emax) (SF2FF x) =
+      validBinarySingleNaNStandardFloat (prec := prec) (emax := emax) x :=
+  valid_binary_SF2FF x hnotnan
+
+example : valid_binary (prec := 53) (emax := 1024)
+    (SF2FF (.S754_finite false 0 (-1074))) = false := by decide
