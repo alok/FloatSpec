@@ -143,6 +143,11 @@ the seed, per-family counts, completed regression count, and final status.
 It also hashes project Lean sources and dependency configuration, rejecting a
 change observed after the build or any batch. This prevents a successful run
 from silently mixing edited source snapshots; it is not binary attestation.
+`uv run scripts/check_compiled_trust.py` independently checks all elaborated
+source declarations and their transitive axiom dependencies against the four
+named proof debts. Its regression fixture deliberately includes theorem and
+opaque sorries, a propagated sorry, a new axiom, an unsafe definition, and
+runtime overrides; the gate must observe and reject all of those hazards.
 An interrupted or errored run is not a pass. CI currently runs the Lean grids
 and fast harness-unit tests; the live Rocq bridge is separately executed on
 this Mac and is not yet installed as a hosted-CI job.

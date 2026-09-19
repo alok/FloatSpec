@@ -36,6 +36,8 @@ jobs:
           scripts/test_coq_source_linter.sh
           scripts/test_unused_mvcgen.sh
           python3 scripts/check_proof_debts.py
+          python3 scripts/check_compiled_trust.py
+          python3 scripts/test_compiled_trust.py -v
           python3 scripts/test_flocq_bridge.py -v
           python3 scripts/test_native_ieee_bridge.py -v
           python3 scripts/test_native_arithmetic_bridge.py -v

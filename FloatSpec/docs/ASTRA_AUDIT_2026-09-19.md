@@ -198,6 +198,24 @@ HEAD. Executions use a separate detached reference checkout.
     The aggregate macOS Lean 4.34.0 build passed **6,211 jobs**; source-link,
     placeholder, unused-mvcgen, and proof-debt gates passed, and the fresh
     compiler-backed anchor validator checked all **56** references.
+18. **Compiled trust evidence is now reproducible:** the new compiler audit
+    inspected **13,577 declarations in all 58 source modules**. It found no
+    project axioms, unsafe declarations, custom runtime overrides, or
+    dependencies on axioms beyond `propext`, `Classical.choice`, `Quot.sound`,
+    and the four declared `sorryAx` debts. Exactly those four declarations
+    depend on sorry even transitively; no wrapper silently propagates them.
+    Two harness tests pass, including a compiled fixture containing theorem
+    and opaque sorries, a wrapper around a sorry, a project axiom, an unsafe
+    definition, a `native_decide`-generated axiom, and both
+    `extern`/`implemented_by` overrides. The checker
+    rejects missing source-module coverage and mismatched manifest names.
+    This supplements the lexical gate and does not certify compiler/FFI
+    semantics or the correctness of the source-facing mathematical statements.
+    The expanded core run on source commit `3cb6d0a3` subsequently passed
+    **9,879 cases** (seed `8491`) in all three evaluators, with all 9,879
+    bootstrapped kernel equalities. Artifact: `floatspec-bridge-ijq9bfmq`.
+    The combined suite's native unary/arithmetic phases are still running;
+    this is a core-phase pass, not yet an aggregate-suite completion.
 
 See [the three-loop guide](THREE_VERIFICATION_LOOPS.md) for commands, output
 artifacts, and current coverage. Repairs include the source-link/trust gates,

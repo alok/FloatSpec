@@ -185,6 +185,15 @@ negation, native `frExp`, native next-up, and native next-down. The FTZ
 format equivalence is now proved. A theorem with
 `sorry` is an explicitly unproved claim even when the build passes.
 
+The complementary `scripts/check_compiled_trust.py` gate inspects elaborated
+declarations in every source module. It follows axiom dependencies through
+theorems and checks opaque bodies, so hiding a debt behind a wrapper does not
+make it disappear. At this checkpoint, exactly the four named obligations
+depend on `sorryAx`; no other source declaration does. Project axioms, unsafe
+declarations, runtime overrides, and nonstandard axiom dependencies are
+rejected. This does not validate the meaning of a theorem's statement or
+certify the compiler, standard library, or floating-point FFI.
+
 Most current Hoare triples wrap pure `Id` computations. This project does not
 invoke `mvcgen` or `mspec`; their lookup annotations, direct tactic imports,
 and the Hoare-style linter have been removed. A direct mathematical proposition
@@ -287,6 +296,12 @@ implementations. Read its seven columns as left input → right input → sum �
 difference → product → quotient → square root of the left input. Signed zero
 is preserved; NaN payloads are deliberately collapsed. Boundary cases include
 cancellation, ties-to-even, underflow, overflow, and exceptional operands.
+
+The direct bit-decoder tests take a different path: they call the port's own
+binary32/binary64 decoder, not `Float.Model.ofBits`. Read their nine columns as
+constructor → sign → payload/mantissa → exponent → re-encoded bits → three
+split input fields → validity. Here NaN signs and payloads are preserved.
+The same rows run as compiled Lean, kernel reduction, and Rocq computation.
 
 The [three-loop testing guide](THREE_VERIFICATION_LOOPS.md) explains the runnable
 checks in order: independent finite arithmetic invariants in Lean, those same
