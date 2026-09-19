@@ -87,7 +87,7 @@ itself is not yet a go-to-source LSP action. This is an incremental coverage
 gate, not a whole-repository map or proof of source equivalence. No Rocq
 compiler or coinduction translation is attempted.
 
-The current paired run validated all 24 pinned source anchors. This confirms
+The current paired run validated all 26 pinned source anchors. This confirms
 their locations and names, not equivalence of the Lean types or bodies.
 
 `Core/FLX.lean` now has whole-file strict coverage for public definitions:
@@ -102,6 +102,13 @@ checks are classified. `FTZ_format` has been corrected to the structural
 source contract, and a fifth registered proof debt isolates its equivalence
 with `generic_format`. Existing downstream double-rounding proofs use that
 equivalence; they compile but are not fully proved until it is discharged.
+
+`Core/FLT.lean` is the fourth strict-gated public-definition module. Its
+`FLT_exp` and structural `FLT_format` link to pinned `FLT.v:41,36`; seven
+Lean-only definitions or aliases are classified. The source conversion
+theorems at `FLT.v:53,70` now state direct implications and retain their
+existing Lean proofs. Downstream IEEE and double-rounding callers still
+typecheck. No new `sorry` was introduced for this FLT slice.
 
 The `Std.Do`/Hoare layer was separately reviewed: sampled float modules use
 `Id` wrappers for pure operations, and no actual `mvcgen` tactic call was

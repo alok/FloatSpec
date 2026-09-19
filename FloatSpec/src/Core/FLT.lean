@@ -32,6 +32,9 @@ open FloatSpec.Core.Defs
 open FloatSpec.Core.Raux
 open FloatSpec.Core.Generic_fmt
 
+set_option linter.coqSource true
+set_option warningAsError true
+
 namespace FloatSpec.Core.FLT
 
 variable (prec emin : Int) [Prec_gt_0 prec]
@@ -42,6 +45,8 @@ variable (prec emin : Int) [Prec_gt_0 prec]
     with a minimum exponent bound. It returns max(e - prec, emin),
     providing precision when possible but limiting underflow.
 -/
+-- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Core/FLT.v#L41
+@[flocq_source "src/Core/FLT.v" 41 "FLT_exp"]
 def FLT_exp (e : Int) : Int :=
   max (e - prec) emin
 
@@ -51,6 +56,7 @@ def FLT_exp (e : Int) : Int :=
     the maximum of (e - prec) and emin. This validates the
     IEEE 754-style exponent calculation.
 -/
+@[flocq_local "Boolean arithmetic regression for the Lean FLT_exp implementation"]
 def FLT_exp_correct_check (e : Int) : Bool :=
   decide (FLT_exp prec emin e = max (e - prec) emin)
 
@@ -76,11 +82,14 @@ theorem FLT_exp_spec (e : Int) :
     This gives IEEE 754-style floating-point representation
     with both precision and minimum exponent constraints.
 -/
+@[flocq_local "Lean compatibility payload; Flocq uses the bounded-mantissa FLT_format"]
 def FLT_format_from_generic_payload
     (beta : Int) [ValidRadix beta] (x : ℝ) : Prop :=
   0 ≤ prec ∧ generic_format beta (FLT_exp prec emin) x
 
 /-- Exact FLoCq `FLT_format`: bounded mantissa and exponent representation. -/
+-- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Core/FLT.v#L36
+@[flocq_source "src/Core/FLT.v" 36 "FLT_format"]
 def FLT_format (beta : Int) [ValidRadix beta] (x : ℝ) : Prop :=
   ∃ f : FlocqFloat beta,
     x = F2R f ∧
@@ -163,6 +172,7 @@ instance FLT_exp_monotone :
     exact max_le_max (sub_le_sub_right hab prec) le_rfl⟩
 
 /-- Compatibility name retained for existing FloatSpec clients. -/
+@[flocq_local "Lean alias for the FLT_exp_monotone instance"]
 abbrev FLT_exp_mono := FLT_exp_monotone
 
 /-
@@ -232,6 +242,7 @@ theorem FLT_exp_correct_spec (e : Int) :
     This does not decide `FLT_format` membership.  The translated Flocq
     structural contract is `FLT_format_satisfies_any`.
 -/
+@[flocq_local "Ztrunc-zero regression, not a Flocq FLT_format declaration"]
 noncomputable def FLT_format_0_check (beta : Int) [ValidRadix beta] : Bool :=
   -- Concrete arithmetic check: Ztrunc 0 = 0
   ((FloatSpec.Core.Raux.Ztrunc (0 : ℝ))) == (0 : Int)
@@ -259,6 +270,7 @@ theorem FLT_format_0_spec (beta : Int) [ValidRadix beta] :
 
     This Boolean does not inspect `FLT_format` membership.
 -/
+@[flocq_local "Ztrunc-negation regression, not a Flocq FLT_format declaration"]
 noncomputable def FLT_format_opp_check (beta : Int) [ValidRadix beta] (x : ℝ) : Bool :=
   -- Concrete arithmetic check leveraging Ztrunc_neg: Ztrunc(-x) + Ztrunc(x) = 0
   ((FloatSpec.Core.Raux.Ztrunc (-x)) + (FloatSpec.Core.Raux.Ztrunc x)) == (0 : Int)
@@ -285,6 +297,7 @@ theorem FLT_format_opp_spec (beta : Int) [ValidRadix beta] (x : ℝ) :
 
     This Boolean does not inspect `FLT_format` membership.
 -/
+@[flocq_local "Ztrunc-absolute-value regression, not a Flocq FLT_format declaration"]
 noncomputable def FLT_format_abs_check (beta : Int) [ValidRadix beta] (x : ℝ) : Bool :=
   -- Concrete arithmetic check: Ztrunc(|x|) matches natAbs of Ztrunc(x)
   ((FloatSpec.Core.Raux.Ztrunc (abs x)))
@@ -340,6 +353,7 @@ theorem FLT_format_abs_spec (beta : Int) [ValidRadix beta] (x : ℝ) :
     (i.e., emin ≤ e - prec), FLT behaves exactly like FLX.
     This verifies the normal number behavior of IEEE 754.
 -/
+@[flocq_local "Boolean normal-exponent comparison with FLX, not a Flocq declaration"]
 def FLT_exp_FLX_check (e : Int) : Bool :=
   decide (emin ≤ e - prec → FLT_exp prec emin e = FLX.FLX_exp prec e)
 
@@ -365,11 +379,8 @@ Theorem generic_format_FLT :
 -/
 omit [Prec_gt_0 prec] in
 theorem generic_format_FLT (beta : Int) [ValidRadix beta] (x : ℝ) :
-    ⦃⌜FLT_format prec emin beta x⌝⦄
-    (pure ((generic_format beta (FLT_exp prec emin) x)) : Id Prop)
-    ⦃⇓result => ⌜result⌝⦄ := by
+    FLT_format prec emin beta x → generic_format beta (FLT_exp prec emin) x := by
   intro hx
-  simp only [wp, PostCond.noThrow, pure]
   rcases hx with ⟨f, rfl, hbound, hemin⟩
   by_cases hm : f.Fnum = 0
   · simp [F2R, hm, generic_format, scaled_mantissa, cexp, mag, Ztrunc]
@@ -426,11 +437,8 @@ Theorem FLT_format_generic :
   forall x, generic_format beta FLT_exp x -> FLT_format x.
 -/
 theorem FLT_format_generic (beta : Int) [ValidRadix beta] (x : ℝ) :
-    ⦃⌜(generic_format beta (FLT_exp prec emin) x)⌝⦄
-    (pure (FLT_format prec emin beta x) : Id Prop)
-    ⦃⇓result => ⌜result⌝⦄ := by
+    generic_format beta (FLT_exp prec emin) x → FLT_format prec emin beta x := by
   intro hx
-  simp only [wp, PredTrans.apply, PostCond.noThrow, Id.run, pure, PredTrans.pure]
   exact FLT_format_generic_run (prec := prec) (emin := emin) beta x hx
 
 /-- Compatibility specification for the exact source predicate. -/

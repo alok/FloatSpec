@@ -59,7 +59,7 @@ as a build error. The six public definitions in
 whole-file strict coverage. Ordinary `Source:` URL comments beside the
 `Defs.lean` attributes can be opened from an editor; the attribute string
 itself is not yet a special go-to-source action. The paired conformance command
-checks all 24 annotated path/line/name anchors against the pinned Flocq
+checks all 26 annotated path/line/name anchors against the pinned Flocq
 checkout. A correct anchor does not establish that the Lean type, body, or
 proof matches Coq; those require source review and paired tests or proofs.
 
@@ -69,8 +69,10 @@ definitions or aliases have explicit reasons. This includes the three
 `*_check` definitions, which are arithmetic regressions rather than Flocq
 format-membership declarations. [`Core/FTZ.lean`](../src/Core/FTZ.lean) is
 the third strict-gated module: three source-shaped definitions link to Flocq,
-and four Lean-only checks are classified. Instances and theorem statements
-are not covered by these definition-only gates.
+and four Lean-only checks are classified. [`Core/FLT.lean`](../src/Core/FLT.lean)
+is the fourth strict-gated module: `FLT_exp` and `FLT_format` have pinned links;
+seven Lean-only checks, payloads, or aliases are classified. Instances and
+theorem statements are not covered by these definition-only gates.
 
 ## 4. What the checks establish
 
@@ -123,6 +125,16 @@ regression is proved without that debt. The downstream double-rounding
 theorems still typecheck by using the conversion, but therefore inherit the
 unproved equivalence until the proof is supplied. The direct projection
 `FLXN_format_FTZ` is proved from the structural witness without that debt.
+
+For gradual underflow, [`Core/FLT.lean`](../src/Core/FLT.lean) keeps an explicit
+bounded-mantissa, minimum-exponent witness, matching pinned Flocq
+[`FLT_format`](https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Core/FLT.v#L36).
+Its two source-named conversions now state direct implications. The
+format-to-generic direction needs no positive-precision assumption, matching
+the source proof's discharge of that section context; the reverse direction
+retains positive precision. Both existing Lean proofs and downstream callers
+typecheck without adding a proof debt. This is a reviewed contract slice, not
+a whole-file theorem-equivalence verdict.
 
 On this Mac, the checked-in Lean `v4.34.0` toolchain makes plain `lake build`
 work. Mathlib and CSLib remain at the reviewed rc2 source pins; a future
