@@ -49,18 +49,26 @@ into calls to the real imported definitions in both languages. The adapters
 only construct inputs and serialize results. Location values are encoded as
 `Exact=0`, `Lt=1`, `Eq=2`, `Gt=3`; signed integers remain signed integers.
 
-The initial eight test families cover integer power, signed division, the three
+The first eight test families cover integer power, signed division, the three
 location update functions, six rounding decisions/increment operations,
 truncation, core addition, core division, and core square root. The corpus mixes
 small boundary grids with seeded random cases, including negative operands,
 zero divisors, negative shifts, and several radices. Tests outside a theorem's
 preconditions check total-function correspondence only.
 
+Four more families extend this to integer digit counts, all four exponent
+functions (`FIX`, `FLX`, `FLT`, `FTZ`), primitive float operations (alignment,
+negation, absolute value, addition, subtraction, multiplication), and combined
+format-dependent addition/division/square root/truncation. The adapters account
+explicitly for parameter-order differences between the Lean and Coq APIs.
+
 Lean reduces the calls with `#reduce`; Rocq uses `vm_compute`. The runner rejects
 compiler failures, unknown output, abbreviated output, missing rows, and empty
 corpora. It compares every output row. For agreeing batches, it then generates
-`OracleRegressions.lean`: equality statements with Rocq's observed values as the
-expected results. Lean checks those statements using `decide +kernel`.
+`OracleRegressions.lean`: a separate equality statement for each input, with
+Rocq's observed values as the expected results. Lean checks those statements
+using `decide +kernel`. Separate statements avoid the expensive normalization
+of one enormous conjunction/list equality for the more complex operations.
 
 A disagreement retains the exact input, both results, the generated `.lean`
 and `.v` files, and a `replay.json` corpus. This is the feedback step: inspect
@@ -96,6 +104,13 @@ Replay saved inputs without regenerating them:
 ```sh
 uv run scripts/flocq_bridge.py --flocq-dir /path/to/pinned-flocq \
   --replay /path/to/replay.json
+```
+
+Target just the newer source families while keeping the other loop intact:
+
+```sh
+uv run scripts/flocq_bridge.py --flocq-dir /path/to/pinned-flocq \
+  --operations formats,digits,operations,format_calc --seed 7831 --samples 100
 ```
 
 The bridge rebuilds its Lean imports before executing, records compiler

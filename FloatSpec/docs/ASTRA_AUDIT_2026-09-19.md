@@ -72,6 +72,20 @@ HEAD. Executions use a separate detached reference checkout.
    `--diff --json` failed on macOS because it used a GNU-only three-argument
    `awk match`; the portable form now executes successfully. The scan remains
    an explicitly documented heuristic, not a full Lean environment audit.
+8. **Higher-level execution coverage expanded:** 2,212 cases across digit
+   counts, format exponents, primitive operations, and format-dependent
+   addition/division/square root/truncation agreed with pinned Rocq (seed `7831`,
+   100 random samples per new family); all became checked Lean regressions.
+   An earlier larger run hit a 120-second timeout checking a single enormous
+   generated equality and is recorded as an error, not a pass. Generating one
+   equality per case removed that bottleneck for the completed run. Adapters
+   explicitly translate the precision/minimum-exponent parameter order; no
+   product definition was changed merely to fit an incorrectly ordered test.
+
+Native probes also executed `Float.frExp` and native-carrier successor/
+predecessor at four exact binary64 inputs (minimum subnormal, minimum normal,
+maximum finite, negative minimum subnormal) and agreed with Rocq observations.
+These scratch probes are preliminary, not yet a broad native regression suite.
 
 See [the three-loop guide](THREE_VERIFICATION_LOOPS.md) for commands, output
 artifacts, and current coverage. No source algorithm was changed to make these
