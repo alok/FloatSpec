@@ -1,5 +1,11 @@
 [
   {
+    "id": "ftz_format_generic_equivalence",
+    "path": "FloatSpec/src/Core/FTZ.lean",
+    "theorem": "FTZ_format_iff_generic",
+    "strategy": "Prove both directions between the bounded-mantissa, normalized, minimum-exponent FTZ carrier and the generic format at FTZ_exp, including zero and the flush boundary."
+  },
+  {
     "id": "binary64_flip_sign",
     "path": "FloatSpec/src/IEEE754/Decoder.lean",
     "theorem": "ofBits_flipSign",

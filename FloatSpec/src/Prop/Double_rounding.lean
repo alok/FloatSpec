@@ -2221,8 +2221,8 @@ theorem round_round_mult_FTZ (rnd : ℝ → Int)
       (fexp1 := FloatSpec.Core.FTZ.FTZ_exp prec emin)
       (fexp2 := FloatSpec.Core.FTZ.FTZ_exp prec' emin')
       (rnd := rnd) hβ hfexp x y
-      (by simpa [FloatSpec.Core.FTZ.FTZ_format] using hx)
-      (by simpa [FloatSpec.Core.FTZ.FTZ_format] using hy)
+      (by simpa only [FloatSpec.Core.FTZ.FTZ_format_iff_generic] using hx)
+      (by simpa only [FloatSpec.Core.FTZ.FTZ_format_iff_generic] using hy)
 
 theorem round_round_mult_FLX_from_mode_and_prec_payload
     (prec prec' : Int) [Prec_gt_0 prec] [Prec_gt_0 prec']
@@ -4790,7 +4790,7 @@ theorem round_round_sqrt_FTZ (emin prec emin' prec' : Int)
       (FTZ_round_round_sqrt_hyp_from_prec_prime_payload
         (emin := emin) (prec := prec) (emin' := emin') (prec' := prec')
         hemin hprec)
-      x (by simpa [FloatSpec.Core.FTZ.FTZ_format] using hx)
+      x (by simpa only [FloatSpec.Core.FTZ.FTZ_format_iff_generic] using hx)
 
 /-- Coq `round_round_sqrt_radix_ge_4`, factored at the missing arithmetic lemma
 `round_round_sqrt_radix_ge_4_aux`.
@@ -5086,7 +5086,7 @@ theorem round_round_sqrt_radix_ge_4_FTZ (emin prec emin' prec' : Int)
       (FTZ_round_round_sqrt_radix_ge_4_hyp_from_prec_prime_payload
         (emin := emin) (prec := prec) (emin' := emin') (prec' := prec')
         hemin hprec)
-      x (by simpa [FloatSpec.Core.FTZ.FTZ_format] using hx)
+      x (by simpa only [FloatSpec.Core.FTZ.FTZ_format_iff_generic] using hx)
 
 /-- Coq: `mag_div_disj`. -/
 theorem mag_div_disj (x y : ℝ)
@@ -9487,8 +9487,8 @@ theorem round_round_div_FTZ (emin prec emin' prec' : Int)
       (emin := emin) (prec := prec) (emin' := emin') (prec' := prec')
       hemin hprec)
     (x := x) (y := y) hy_ne
-    (by simpa [FloatSpec.Core.FTZ.FTZ_format] using hx)
-    (by simpa [FloatSpec.Core.FTZ.FTZ_format] using hy)
+    (by simpa only [FloatSpec.Core.FTZ.FTZ_format_iff_generic] using hx)
+    (by simpa only [FloatSpec.Core.FTZ.FTZ_format_iff_generic] using hy)
 
 /-- Coq: `round_round_plus_hyp`. -/
 def round_round_plus_hyp (fexp1 fexp2 : Int → Int) : Prop :=
@@ -11187,8 +11187,8 @@ theorem round_round_plus_FTZ (emin prec emin' prec' : Int)
       (emin := emin) (prec := prec) (emin' := emin') (prec' := prec')
       hemin hprec)
     (x := x) (y := y)
-    (hx_fmt := by simpa [FloatSpec.Core.FTZ.FTZ_format] using hx)
-    (hy_fmt := by simpa [FloatSpec.Core.FTZ.FTZ_format] using hy)
+    (hx_fmt := by simpa only [FloatSpec.Core.FTZ.FTZ_format_iff_generic] using hx)
+    (hy_fmt := by simpa only [FloatSpec.Core.FTZ.FTZ_format_iff_generic] using hy)
 
 /-- Coq: `round_round_minus_FTZ`. -/
 theorem round_round_minus_FTZ (emin prec emin' prec' : Int)
@@ -11213,8 +11213,8 @@ theorem round_round_minus_FTZ (emin prec emin' prec' : Int)
       (emin := emin) (prec := prec) (emin' := emin') (prec' := prec')
       hemin hprec)
     (x := x) (y := y)
-    (hx_fmt := by simpa [FloatSpec.Core.FTZ.FTZ_format] using hx)
-    (hy_fmt := by simpa [FloatSpec.Core.FTZ.FTZ_format] using hy)
+    (hx_fmt := by simpa only [FloatSpec.Core.FTZ.FTZ_format_iff_generic] using hx)
+    (hy_fmt := by simpa only [FloatSpec.Core.FTZ.FTZ_format_iff_generic] using hy)
 
 /-- Coq: `round_round_plus_radix_ge_3_hyp`. -/
 def round_round_plus_radix_ge_3_hyp (fexp1 fexp2 : Int → Int) : Prop :=
@@ -12397,8 +12397,8 @@ theorem round_round_plus_radix_ge_3_FTZ (emin prec emin' prec' : Int)
       (emin := emin) (prec := prec) (emin' := emin') (prec' := prec')
       hemin hprec)
     (x := x) (y := y)
-    (hx_fmt := by simpa [FloatSpec.Core.FTZ.FTZ_format] using hx)
-    (hy_fmt := by simpa [FloatSpec.Core.FTZ.FTZ_format] using hy)
+    (hx_fmt := by simpa only [FloatSpec.Core.FTZ.FTZ_format_iff_generic] using hx)
+    (hy_fmt := by simpa only [FloatSpec.Core.FTZ.FTZ_format_iff_generic] using hy)
 
 /-- Coq: `round_round_minus_radix_ge_3_FTZ`. -/
 theorem round_round_minus_radix_ge_3_FTZ (emin prec emin' prec' : Int)
@@ -12423,8 +12423,8 @@ theorem round_round_minus_radix_ge_3_FTZ (emin prec emin' prec' : Int)
       (emin := emin) (prec := prec) (emin' := emin') (prec' := prec')
       hemin hprec)
     (x := x) (y := y)
-    (hx_fmt := by simpa [FloatSpec.Core.FTZ.FTZ_format] using hx)
-    (hy_fmt := by simpa [FloatSpec.Core.FTZ.FTZ_format] using hy)
+    (hx_fmt := by simpa only [FloatSpec.Core.FTZ.FTZ_format_iff_generic] using hx)
+    (hy_fmt := by simpa only [FloatSpec.Core.FTZ.FTZ_format_iff_generic] using hy)
 
 /-! Source-shaped `_hyp` wrappers.  In each case the source arithmetic bound
 already implies positive `prec'`; keep that fact internal to the proof. -/

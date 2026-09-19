@@ -28,6 +28,7 @@
 | Proof-hole scan | A `protected axiom` introduces a trust assumption. | The old scanner recognized only a bare line-start `axiom`. | Scanner recognizes modifier-prefixed axioms and other trust escapes; a fixture requires `protected axiom` to fail the scan. |
 | Test evaluation trust | `native_decide` delegates reduction to the native evaluator, adding a trust boundary. | Eight existing `FloatSpec/Test/LeanFloat.lean` examples used it even though their small propositions can be kernel-reduced. | Changed each to `decide` and compiled the module after each edit. The scanner now flags `native_decide`, with a failing fixture. |
 | Legacy closure checks | Flocq's structural closure lives in `satisfies_any`. | `*_format_0/opp/abs_check` return only unrelated `Ztrunc` identities, while their prose claimed format membership/closure. | Corrected the prose and removed unused format-membership premises from these local arithmetic regressions. The actual zero/negation/rounding proofs are in the repaired `*_format_satisfies_any` contracts. |
+| `Core.FTZ.FTZ_format` | `src/Core/FTZ.v:36-41` requires an explicit finite float witness, normalized nonzero mantissa, and minimum exponent. `FTZ_format_generic` and `generic_format_FTZ` are separate source theorems at lines 106 and 80. | Lean defined `FTZ_format` to be `generic_format beta FTZ_exp`, so both conversion theorems were definitional restatements and the source carrier was absent. | Replaced the definition with the source-shaped existential; conversion theorems are direct implications. A single named `FTZ_format_iff_generic` proof debt now supports both directions and downstream generic-grid callers. Independent zero-witness and direct `FLXN_format_FTZ` regressions check the structural carrier. The conversion itself is **unproved**. |
 | ErrorBound | This is proposed VCFloat integration, not a Flocq module. | README called six empty files an implemented layer. | README and aggregator now explicitly say they are empty import scaffolding. |
 
 ## Executable evidence
@@ -86,7 +87,7 @@ itself is not yet a go-to-source LSP action. This is an incremental coverage
 gate, not a whole-repository map or proof of source equivalence. No Rocq
 compiler or coinduction translation is attempted.
 
-The current paired run validated all 21 pinned source anchors. This confirms
+The current paired run validated all 24 pinned source anchors. This confirms
 their locations and names, not equivalence of the Lean types or bodies.
 
 `Core/FLX.lean` now has whole-file strict coverage for public definitions:
@@ -94,6 +95,13 @@ their locations and names, not equivalence of the Lean types or bodies.
 six Lean-local checks, payloads, or aliases are explicitly classified. The
 source-shaped predicates were manually compared at their declarations; the
 gate itself checks only coverage and source-anchor location, not their meaning.
+
+`Core/FTZ.lean` is the third strict-gated public-definition module: three
+source-shaped definitions link to `FTZ.v`, while four Lean-local Boolean
+checks are classified. `FTZ_format` has been corrected to the structural
+source contract, and a fifth registered proof debt isolates its equivalence
+with `generic_format`. Existing downstream double-rounding proofs use that
+equivalence; they compile but are not fully proved until it is discharged.
 
 The `Std.Do`/Hoare layer was separately reviewed: sampled float modules use
 `Id` wrappers for pure operations, and no actual `mvcgen` tactic call was

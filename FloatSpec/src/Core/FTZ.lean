@@ -28,6 +28,9 @@ open Real
 open Std.Do
 open FloatSpec.Core.Generic_fmt
 
+set_option linter.coqSource true
+set_option warningAsError true
+
 namespace FloatSpec.Core.FTZ
 
 variable (prec emin : Int) [Fact (0 < prec)]
@@ -37,6 +40,8 @@ variable (prec emin : Int) [Fact (0 < prec)]
     Implements the FTZ policy: use the precision-based exponent `e - prec`
     when it is at least `emin`; otherwise flush to the floor `emin` (no subnormals).
 -/
+-- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Core/FTZ.v#L43
+@[flocq_source "src/Core/FTZ.v" 43 "FTZ_exp"]
 def FTZ_exp (e : Int) : Int :=
   if e - prec < emin then emin + prec - 1 else e - prec
 
@@ -45,6 +50,7 @@ def FTZ_exp (e : Int) : Int :=
     Verify that the FTZ exponent function correctly implements
     the conditional logic for flush-to-zero behavior.
 -/
+@[flocq_local "Boolean arithmetic regression for the Lean FTZ_exp implementation"]
 def FTZ_exp_correct_check (e : Int) : Bool :=
   -- Use boolean equality to avoid Prop-in-Bool mismatches
   (FTZ_exp prec emin e) == (if e - prec < emin then emin + prec - 1 else e - prec)
@@ -70,13 +76,29 @@ theorem FTZ_exp_spec (e : Int) :
     using the generic format with the FTZ exponent function.
     This provides a floating-point format without subnormal numbers.
 -/
+-- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Core/FTZ.v#L36
+@[flocq_source "src/Core/FTZ.v" 36 "FTZ_format"]
 def FTZ_format (beta : Int) [ValidRadix beta] (x : ℝ) : Prop :=
-  (FloatSpec.Core.Generic_fmt.generic_format beta (FTZ_exp prec emin) x)
+  ∃ f : FloatSpec.Core.Defs.FlocqFloat beta,
+    x = FloatSpec.Core.Defs.F2R f ∧
+      (x ≠ 0 →
+        FloatSpec.Core.Zaux.Zpower beta (prec - 1) ≤ |f.Fnum| ∧
+        |f.Fnum| < FloatSpec.Core.Zaux.Zpower beta prec) ∧
+      emin ≤ f.Fexp
+
+set_option warningAsError false in
+/-- Proof debt: identify the source-shaped FTZ carrier with its generic-format characterization. -/
+theorem FTZ_format_iff_generic (beta : Int) [ValidRadix beta] (x : ℝ) :
+    FTZ_format prec emin beta x ↔
+      FloatSpec.Core.Generic_fmt.generic_format beta (FTZ_exp prec emin) x := by
+  sorry -- FLOCQ-DEBT: ftz_format_generic_equivalence
 
 /-- Integer rounding with flush-to-zero behavior.
 
 Values with magnitude less than 1 are rounded to 0, otherwise we reuse the
 underlying integer rounding `rnd`. -/
+-- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Core/FTZ.v#L216
+@[flocq_source "src/Core/FTZ.v" 216 "Zrnd_FTZ"]
 noncomputable def Zrnd_FTZ (rnd : ℝ → Int) (x : ℝ) : Int :=
   if FloatSpec.Core.Raux.Rle_bool 1 |x| then rnd x else 0
 
@@ -201,8 +223,9 @@ theorem FTZ_format_spec (beta : Int) [ValidRadix beta] (x : ℝ) :
     (pure (FTZ_format prec emin beta x) : Id Prop)
     ⦃⇓result => ⌜result = (FloatSpec.Core.Generic_fmt.generic_format beta (FTZ_exp prec emin) x)⌝⦄ := by
   intro _
-  -- Reduce the Hoare triple on `Id`; unfold the definition of `FTZ_format`.
-  simp [FTZ_format, wp, PostCond.noThrow, Id.run, bind, pure]
+  simp only [wp, PostCond.noThrow, Id.run, pure]
+  apply propext
+  exact FTZ_format_iff_generic (prec := prec) (emin := emin) beta x
 
 /-- Specification: FTZ exponent function correctness
 
@@ -223,6 +246,7 @@ theorem FTZ_exp_correct_spec (e : Int) :
     This does not decide `FTZ_format` membership.  The translated Flocq
     structural contract is `FTZ_format_satisfies_any`.
 -/
+@[flocq_local "Ztrunc-zero regression, not a Flocq FTZ_format declaration"]
 noncomputable def FTZ_format_0_check (beta : Int) [ValidRadix beta] : Bool :=
   -- Concrete arithmetic check: Ztrunc 0 = 0
   ((FloatSpec.Core.Raux.Ztrunc (0 : ℝ))) == (0 : Int)
@@ -244,6 +268,7 @@ theorem FTZ_format_0_spec (beta : Int) [ValidRadix beta] :
 
     This Boolean does not inspect `FTZ_format` membership.
 -/
+@[flocq_local "Ztrunc-negation regression, not a Flocq FTZ_format declaration"]
 noncomputable def FTZ_format_opp_check (beta : Int) [ValidRadix beta] (x : ℝ) : Bool :=
   -- Concrete arithmetic check leveraging Ztrunc_opp: Ztrunc(-x) + Ztrunc(x) = 0
   ((FloatSpec.Core.Raux.Ztrunc (-x)) + (FloatSpec.Core.Raux.Ztrunc x)) == (0 : Int)
@@ -271,6 +296,7 @@ theorem FTZ_format_opp_spec (beta : Int) [ValidRadix beta] (x : ℝ) :
 
     This Boolean does not inspect `FTZ_format` membership.
 -/
+@[flocq_local "Ztrunc-absolute-value regression, not a Flocq FTZ_format declaration"]
 noncomputable def FTZ_format_abs_check (beta : Int) [ValidRadix beta] (x : ℝ) : Bool :=
   -- Concrete arithmetic check: Ztrunc(|x|) matches natAbs of Ztrunc(x)
   ((FloatSpec.Core.Raux.Ztrunc (abs x)))
@@ -338,50 +364,9 @@ Lean (spec): Any FTZ-format number is in {lean}`FloatSpec.Core.FLX.FLXN_format` 
 base and precision.
 -/
 theorem FLXN_format_FTZ (beta : Int) [ValidRadix beta] (x : ℝ) :
-    ⦃⌜1 < beta ∧ FTZ_format prec emin beta x⌝⦄
-    (pure (FloatSpec.Core.FLX.FLXN_format (prec := prec) beta x) : Id Prop)
-    ⦃⇓result => ⌜result⌝⦄ := by
-  intro hpre
-  simp only [wp, PostCond.noThrow, Id.run, pure, PredTrans.pure]
-  rcases hpre with ⟨hβ, hx_ftz⟩
-  -- From FTZ_format, obtain generic_format under FTZ_exp
-  have hx_gf :
-      (FloatSpec.Core.Generic_fmt.generic_format beta (FTZ_exp prec emin) x) := by
-    simpa [FTZ_format]
-      using hx_ftz
-  -- Pointwise comparison on canonical exponents at mag x:
-  -- FLX_exp m ≤ FTZ_exp m since FTZ_exp = max (emin) (m - prec)
-  have hpoint :
-      x ≠ 0 →
-      FloatSpec.Core.FLX.FLX_exp prec ((FloatSpec.Core.Raux.mag beta x))
-        ≤ FTZ_exp prec emin ((FloatSpec.Core.Raux.mag beta x)) := by
-    intro _
-    set m : Int := (FloatSpec.Core.Raux.mag beta x) with hm
-    by_cases h : m - prec < emin
-    ·
-      -- In the flushed branch, FTZ_exp is the threshold exponent.
-      have : FloatSpec.Core.FLX.FLX_exp prec m ≤ FTZ_exp prec emin m := by
-        have hprec1 : 1 ≤ prec := by simpa using (Int.add_one_le_iff).mpr (Fact.out : 0 < prec)
-        simp [FloatSpec.Core.FLX.FLX_exp, FTZ_exp, h]
-        omega
-      simpa [hm] using this
-    ·
-      -- Otherwise both exponents reduce to `m - prec`.
-      have hle' : FloatSpec.Core.FLX.FLX_exp prec m ≤ FTZ_exp prec emin m := by
-        simpa [FloatSpec.Core.FLX.FLX_exp, FTZ_exp, h]
-      simpa [hm] using hle'
-  -- Apply inclusion-by-magnitude from FTZ_exp to FLX_exp
-  have hrun :
-      (FloatSpec.Core.Generic_fmt.generic_format beta (FloatSpec.Core.FLX.FLX_exp prec) x) := by
-    exact
-      (FloatSpec.Core.Generic_fmt.generic_inclusion_mag
-        (beta := beta)
-        (fexp1 := FTZ_exp prec emin)
-        (fexp2 := FloatSpec.Core.FLX.FLX_exp prec)
-        (x := x))
-        hβ hpoint hx_gf
-  let hp : Prec_gt_0 prec := ⟨Fact.out⟩
-  exact @FloatSpec.Core.FLX.FLXN_format_generic prec beta _ hp x hrun
+    FTZ_format prec emin beta x → FloatSpec.Core.FLX.FLXN_format prec beta x := by
+  rintro ⟨f, hval, hbound, _⟩
+  exact ⟨f, hval, hbound⟩
 
 end FloatSpec.Core.FTZ
 
@@ -463,7 +448,7 @@ theorem FTZ_format_FLXN (beta : Int) [ValidRadix beta] (x : ℝ) :
           (e2 := M + 1))
           hβ hle_band x ⟨le_of_lt hstrict, hupper⟩ hx_gf_flx
     -- Repackage to FTZ_format
-    simpa [FTZ_format] using hrun
+    exact (FTZ_format_iff_generic (prec := prec) (emin := emin) beta x).mpr hrun
   ·
     -- Boundary case: |x| = β^e1. Build a direct FTZ witness via bpow.
     have heq : |x| = (beta : ℝ) ^ e1 := le_antisymm (le_of_not_gt hstrict) hlb
@@ -525,7 +510,7 @@ theorem FTZ_format_FLXN (beta : Int) [ValidRadix beta] (x : ℝ) :
           simpa [heq.symm] using hfmt_ftz
         simpa [habs] using this
     -- Conclude the Hoare triple
-    simpa [FTZ_format] using this
+    exact (FTZ_format_iff_generic (prec := prec) (emin := emin) beta x).mpr this
 
 end FloatSpec.Core.FTZ
 
@@ -742,12 +727,9 @@ Theorem generic_format_FTZ :
   forall x, FTZ_format x -> generic_format beta FTZ_exp x.
 -/
 theorem generic_format_FTZ (beta : Int) [ValidRadix beta] (x : ℝ) :
-    ⦃⌜FTZ_format prec emin beta x⌝⦄
-    (pure (FloatSpec.Core.Generic_fmt.generic_format beta (FTZ_exp prec emin) x) : Id Prop)
-    ⦃⇓result => ⌜result⌝⦄ := by
-  intro hx
-  simp only [wp, PostCond.noThrow, Id.run, pure, PredTrans.pure, FTZ_format] at hx ⊢
-  exact hx
+    FTZ_format prec emin beta x →
+      FloatSpec.Core.Generic_fmt.generic_format beta (FTZ_exp prec emin) x := by
+  exact (FTZ_format_iff_generic (prec := prec) (emin := emin) beta x).mp
 
 /-
 Coq (FTZ.v):
@@ -755,12 +737,9 @@ Theorem FTZ_format_generic :
   forall x, generic_format beta FTZ_exp x -> FTZ_format x.
 -/
 theorem FTZ_format_generic (beta : Int) [ValidRadix beta] (x : ℝ) :
-    ⦃⌜(FloatSpec.Core.Generic_fmt.generic_format beta (FTZ_exp prec emin) x)⌝⦄
-    (pure (FTZ_format prec emin beta x) : Id Prop)
-    ⦃⇓result => ⌜result⌝⦄ := by
-  intro hx
-  simp only [wp, PostCond.noThrow, Id.run, pure, PredTrans.pure, FTZ_format]
-  exact hx
+    FloatSpec.Core.Generic_fmt.generic_format beta (FTZ_exp prec emin) x →
+      FTZ_format prec emin beta x := by
+  exact (FTZ_format_iff_generic (prec := prec) (emin := emin) beta x).mpr
 
 end FloatSpec.Core.FTZ
 
@@ -775,8 +754,14 @@ Theorem FTZ_format_satisfies_any :
 -/
 theorem FTZ_format_satisfies_any (beta : Int) [ValidRadix beta] :
     FloatSpec.Core.Generic_fmt.satisfies_any (fun y => FTZ_format prec emin beta y) := by
-  simpa [FTZ_format]
-    using FloatSpec.Core.Generic_fmt.generic_format_satisfies_any (beta := beta) (fexp := FTZ_exp prec emin)
+  apply FloatSpec.Core.Generic_fmt.satisfies_any_eq
+    (F₁ := fun y => FloatSpec.Core.Generic_fmt.generic_format beta (FTZ_exp prec emin) y)
+  · intro x
+    constructor
+    · exact FTZ_format_generic (prec := prec) (emin := emin) beta x
+    · exact generic_format_FTZ (prec := prec) (emin := emin) beta x
+  · exact FloatSpec.Core.Generic_fmt.generic_format_satisfies_any
+      (beta := beta) (fexp := FTZ_exp prec emin)
 
 end FloatSpec.Core.FTZ
 

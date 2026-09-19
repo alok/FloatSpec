@@ -1,5 +1,6 @@
 import FloatSpec.src.IEEE754.BitsSourceFacade
 import FloatSpec.src.Core.FLX
+import FloatSpec.src.Core.FTZ
 import FloatSpec.Linter.CoqSourceLinter
 
 /-! Check that source references survive module imports and expose pinned links. -/
@@ -15,7 +16,10 @@ run_cmd do
       "src/IEEE754/Bits.v#L491"),
     (`FloatSpec.Core.FLX.FLX_exp, "src/Core/FLX.v#L43"),
     (`FloatSpec.Core.FLX.FLX_format, "src/Core/FLX.v#L39"),
-    (`FloatSpec.Core.FLX.FLXN_format, "src/Core/FLX.v#L136")
+    (`FloatSpec.Core.FLX.FLXN_format, "src/Core/FLX.v#L136"),
+    (`FloatSpec.Core.FTZ.FTZ_exp, "src/Core/FTZ.v#L43"),
+    (`FloatSpec.Core.FTZ.FTZ_format, "src/Core/FTZ.v#L36"),
+    (`FloatSpec.Core.FTZ.Zrnd_FTZ, "src/Core/FTZ.v#L216")
   ]
   for (decl, fragment) in expected do
     let some ref := FloatSpec.Linter.CoqSource.sourceRef? env decl

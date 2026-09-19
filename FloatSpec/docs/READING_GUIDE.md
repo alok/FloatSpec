@@ -59,7 +59,7 @@ as a build error. The six public definitions in
 whole-file strict coverage. Ordinary `Source:` URL comments beside the
 `Defs.lean` attributes can be opened from an editor; the attribute string
 itself is not yet a special go-to-source action. The paired conformance command
-checks all 21 annotated path/line/name anchors against the pinned Flocq
+checks all 24 annotated path/line/name anchors against the pinned Flocq
 checkout. A correct anchor does not establish that the Lean type, body, or
 proof matches Coq; those require source review and paired tests or proofs.
 
@@ -67,8 +67,10 @@ proof matches Coq; those require source review and paired tests or proofs.
 Its three source-shaped definitions have pinned links; six public Lean-only
 definitions or aliases have explicit reasons. This includes the three
 `*_check` definitions, which are arithmetic regressions rather than Flocq
-format-membership declarations. Instances and theorem statements are not
-covered by this definition-only gate.
+format-membership declarations. [`Core/FTZ.lean`](../src/Core/FTZ.lean) is
+the third strict-gated module: three source-shaped definitions link to Flocq,
+and four Lean-only checks are classified. Instances and theorem statements
+are not covered by these definition-only gates.
 
 ## 4. What the checks establish
 
@@ -77,8 +79,9 @@ covered by this definition-only gate.
 Flocq source, and checks small examples on each side; it catches selected
 counterexamples, not all inputs. `scripts/check_proof_debts.py` rejects
 unregistered `sorry` and trust
-escapes. Its four registered debts are in `proof_debts.json`: sign-bit
-negation, native `frExp`, native next-up, and native next-down. A theorem with
+escapes. Its five registered debts are in `proof_debts.json`: sign-bit
+negation, native `frExp`, native next-up, native next-down, and the new FTZ
+format equivalence. A theorem with
 `sorry` is an explicitly unproved claim even when the build passes.
 
 Most current Hoare triples wrap pure `Id` computations. This project does not
@@ -107,6 +110,19 @@ that same *shape*, instead of wrapping the predicates in `Id` Hoare triples.
 `FLX_format_generic` still needs positive precision, as in the Flocq section;
 the reverse theorem does not. This checks the interface, not every detail of
 the predicate implementations or proof correspondence.
+
+The FTZ format shows why the distinction matters. Pinned Flocq
+[`FTZ_format`](https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Core/FTZ.v#L36)
+requires a float witness with a normalized mantissa and a minimum exponent.
+The old Lean definition was simply `generic_format` at `FTZ_exp`, which made
+its two conversion theorems reflexive and hid those representation conditions.
+Lean now states the source-shaped witness contract; the conversion theorems
+have direct implication types. Their common equivalence proof is a named
+`sorry` in [`proof_debts.json`](proof_debts.json). The explicit zero-witness
+regression is proved without that debt. The downstream double-rounding
+theorems still typecheck by using the conversion, but therefore inherit the
+unproved equivalence until the proof is supplied. The direct projection
+`FLXN_format_FTZ` is proved from the structural witness without that debt.
 
 On this Mac, the checked-in Lean `v4.34.0` toolchain makes plain `lake build`
 work. Mathlib and CSLib remain at the reviewed rc2 source pins; a future
