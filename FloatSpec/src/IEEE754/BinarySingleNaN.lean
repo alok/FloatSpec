@@ -4240,7 +4240,7 @@ private theorem SFsqrt_core_binary_correct_data {prec emax : Int}
       (beta := 2) (f := input) (by norm_num) (by simpa [input] using hmx_pos)
   have hsqrt := FloatSpec.Calc.Sqrt.Fsqrt_correct
     (beta := 2) (fexp := FLT_exp (3 - emax - prec) prec)
-    input hx_pos (by norm_num : (1 : Int) < 2)
+    input hx_pos
   let result := SFsqrt_core_binary prec emax mx ex
   have hresult :
       result = FloatSpec.Calc.Sqrt.Fsqrt 2

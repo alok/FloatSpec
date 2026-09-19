@@ -55,7 +55,7 @@ fi
 
 cat >"$scratch/FloatSpecConformance.v" <<'COQ'
 From Stdlib Require Import ZArith.
-From Flocq Require Import Core.Zaux Core.Defs Core.FIX Calc.Operations Calc.Plus Calc.Round Calc.Div IEEE754.Binary Pff.Pff2FlocqAux.
+From Flocq Require Import Core.Zaux Core.Defs Core.FIX Calc.Operations Calc.Plus Calc.Round Calc.Div Calc.Sqrt IEEE754.Binary Pff.Pff2FlocqAux.
 
 Open Scope Z_scope.
 
@@ -98,6 +98,24 @@ Proof. vm_compute. reflexivity. Qed.
 Example fdiv_exact_quotient :
     (let beta := Build_radix 2 eq_refl in
       Div.Fdiv (FIX_exp 0) (Float beta 4 0) (Float beta 2 0)) =
+    (2, 0, SpecFloat.loc_Exact).
+Proof. vm_compute. reflexivity. Qed.
+
+Example fsqrt_core_exact_square :
+    (let beta := Build_radix 2 eq_refl in
+      Sqrt.Fsqrt_core beta 4 0 0) =
+    (2, SpecFloat.loc_Exact).
+Proof. vm_compute. reflexivity. Qed.
+
+Example fsqrt_core_inexact_location :
+    (let beta := Build_radix 2 eq_refl in
+      Sqrt.Fsqrt_core beta 2 0 0) =
+    (1, SpecFloat.loc_Inexact Lt).
+Proof. vm_compute. reflexivity. Qed.
+
+Example fsqrt_exact_square :
+    (let beta := Build_radix 2 eq_refl in
+      Sqrt.Fsqrt (FIX_exp 0) (Float beta 4 0)) =
     (2, 0, SpecFloat.loc_Exact).
 Proof. vm_compute. reflexivity. Qed.
 

@@ -59,7 +59,7 @@ as a build error. The six public definitions in
 whole-file strict coverage. Ordinary `Source:` URL comments beside the
 `Defs.lean` attributes can be opened from an editor; the attribute string
 itself is not yet a special go-to-source action. The paired conformance command
-checks all 48 annotated path/line/name anchors against the pinned Flocq
+checks all 50 annotated path/line/name anchors against the pinned Flocq
 checkout. A correct anchor does not establish that the Lean type, body, or
 proof matches Coq; those require source review and paired tests or proofs.
 
@@ -137,6 +137,17 @@ The lower-level division correctness
 triple and other older callers remain as they were. Paired exact-quotient
 and halfway-location examples cover two core cases and one top-level
 operation, not arbitrary division.
+
+[`Calc/Sqrt.lean`](../src/Calc/Sqrt.lean) is the tenth strict-gated
+public-definition module. Its `Fsqrt_core` and `Fsqrt` definitions link to
+the pinned `Sqrt.v:64,172`; its two correctness theorems are direct
+propositions, with the radix bound supplied by `ValidRadix beta` rather than
+an extra premise. The paired examples evaluate the core at an exact square
+and an inexact square root, then the top-level operation at an exact square.
+Lean's proof of the numeric examples uses `norm_num` to evaluate its integer
+square root; the Rocq examples use `vm_compute`. Neither finite sample nor
+the source-location gate proves all cases equivalent, and this slice does
+not change the previously unreviewed modules.
 
 ## 4. What the checks establish
 

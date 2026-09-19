@@ -1,5 +1,6 @@
 import FloatSpec.src.Calc.Plus
 import FloatSpec.src.Calc.Div
+import FloatSpec.src.Calc.Sqrt
 import FloatSpec.src.Calc.Round
 import FloatSpec.src.IEEE754.Binary
 import FloatSpec.src.IEEE754.BinarySingleNaN
@@ -66,6 +67,22 @@ example :
       ⟨4, 0⟩ ⟨2, 0⟩ =
       (2, 0, Location.loc_Exact) := by
   rfl
+
+example :
+    FloatSpec.Calc.Sqrt.Fsqrt_core 2 4 0 0 =
+      (2, Location.loc_Exact) := by
+  norm_num [FloatSpec.Calc.Sqrt.Fsqrt_core, FloatSpec.Core.Zaux.Zpower]
+
+example :
+    FloatSpec.Calc.Sqrt.Fsqrt_core 2 2 0 0 =
+      (1, Location.loc_Inexact Ordering.lt) := by
+  norm_num [FloatSpec.Calc.Sqrt.Fsqrt_core, FloatSpec.Core.Zaux.Zpower]
+
+example :
+    FloatSpec.Calc.Sqrt.Fsqrt 2 (FloatSpec.Core.FIX.FIX_exp 0)
+      ⟨4, 0⟩ = (2, 0, Location.loc_Exact) := by
+  norm_num [FloatSpec.Calc.Sqrt.Fsqrt, FloatSpec.Calc.Sqrt.Fsqrt_core,
+    FloatSpec.Core.Zaux.Zpower, FloatSpec.Core.FIX.FIX_exp]
 
 example :
     FloatSpec.Calc.Round.truncate_aux 2

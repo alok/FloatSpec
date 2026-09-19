@@ -89,7 +89,7 @@ itself is not yet a go-to-source LSP action. This is an incremental coverage
 gate, not a whole-repository map or proof of source equivalence. No Rocq
 compiler or coinduction translation is attempted.
 
-The current paired run validated all 48 pinned source anchors. This confirms
+The current paired run validated all 50 pinned source anchors. This confirms
 their locations and names, not equivalence of the Lean types or bodies.
 
 `Core/FLX.lean` now has whole-file strict coverage for public definitions:
@@ -165,6 +165,17 @@ and the SingleNaN caller consumes the conjunction directly. Paired
 core example checks the halfway location. These
 tests do not establish equivalence on all input mantissas/exponents, and
 the separate core correctness proof still has a legacy triple interface.
+
+`Calc/Sqrt.lean` is the tenth strict-gated module: its two source-facing
+definitions point to `Sqrt.v:64,172`. Both source correctness contracts are
+already direct mathematical propositions; their duplicate `1 < beta`
+premises were removed because `ValidRadix beta` supplies the radix bound.
+The existing proofs and IEEE SingleNaN caller typecheck with that interface.
+Paired exact-square and inexact-location examples cover two core cases,
+plus one top-level exact square. Flocq's negative `Z.sqrtrem` case was
+checked separately (`Z.sqrtrem (-1) = (0,0)` on Rocq 9.1); this matches
+Lean's explicit negative branch, but none of these checks universally
+establish source equivalence.
 
 `Core/FTZ.lean` is the third strict-gated public-definition module: three
 source-shaped definitions link to `FTZ.v`, while four Lean-local Boolean

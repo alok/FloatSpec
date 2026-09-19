@@ -7,6 +7,7 @@ Translated from Coq file: flocq/src/Calc/Sqrt.v
 -/
 
 import FloatSpec.src.Core.Zaux
+import FloatSpec.Linter.CoqSourceLinter
 import FloatSpec.src.Core.Raux
 import FloatSpec.src.Core.Defs
 import FloatSpec.src.Core.Digits
@@ -21,6 +22,9 @@ import FloatSpec.src.SimprocWP
 open Real FloatSpec.Calc.Bracket FloatSpec.Core.Defs FloatSpec.Core.Digits FloatSpec.Core.Generic_fmt FloatSpec.Core.Raux
 open FloatSpec.Core.Generic_fmt
 open Std.Do
+
+set_option linter.coqSource true
+set_option warningAsError true
 
 namespace FloatSpec.Calc.Sqrt
 
@@ -300,6 +304,8 @@ section CoreSquareRoot
     Computes integer square root with remainder for location determination.
     This matches the Coq definition {name}`Fsqrt_core`.
 -/
+-- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Calc/Sqrt.v#L64
+@[flocq_source "src/Calc/Sqrt.v" 64 "Fsqrt_core"]
 def Fsqrt_core (m1 e1 e : Int) : (Int × Location) :=
   let m1' := m1 * FloatSpec.Core.Zaux.Zpower beta (e1 - 2 * e)
   -- `Z.sqrtrem` is total: on a negative argument Coq returns `(0, 0)`.
@@ -314,9 +320,10 @@ def Fsqrt_core (m1 e1 e : Int) : (Int × Location) :=
     The core routine returns (m, l) such that `inbetween_float beta m e (sqrt (F2R f)) l`
     holds, matching the Coq theorem {name}`Fsqrt_core_correct`.
 -/
-theorem Fsqrt_core_correct (m1 e1 e : Int) (Hm1 : 0 < m1) (He : 2 * e ≤ e1) (Hβ : 1 < beta) :
+theorem Fsqrt_core_correct (m1 e1 e : Int) (Hm1 : 0 < m1) (He : 2 * e ≤ e1) :
     let (m, l) := Fsqrt_core beta m1 e1 e
     inbetween_float beta m e (Real.sqrt (F2R (FlocqFloat.mk m1 e1 : FlocqFloat beta))) l := by
+  have Hβ : 1 < beta := ValidRadix.valid
   -- Unfold Fsqrt_core
   simp only [Fsqrt_core]
   -- Set up key values
@@ -626,6 +633,8 @@ section MainSquareRoot
     Computes the square root with automatic exponent selection.
     This matches the Coq definition {name}`Fsqrt`.
 -/
+-- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Calc/Sqrt.v#L172
+@[flocq_source "src/Calc/Sqrt.v" 172 "Fsqrt"]
 def Fsqrt (x : FlocqFloat beta) : (Int × Int × Location) :=
   let m1 := x.Fnum
   let e1 := x.Fexp
@@ -640,11 +649,12 @@ def Fsqrt (x : FlocqFloat beta) : (Int × Int × Location) :=
     The result satisfies `e ≤ cexp beta fexp (sqrt (F2R x))` and the
     inbetween relation. This matches the Coq theorem {name}`Fsqrt_correct`.
 -/
-theorem Fsqrt_correct (x : FlocqFloat beta) (Hx : 0 < F2R x) (Hβ : 1 < beta)
+theorem Fsqrt_correct (x : FlocqFloat beta) (Hx : 0 < F2R x)
     [Hfexp : Valid_exp fexp] :
     let (m, e, l) := Fsqrt beta fexp x
     e ≤ cexp beta fexp (Real.sqrt (F2R x)) ∧
     inbetween_float beta m e (Real.sqrt (F2R x)) l := by
+  have Hβ : 1 < beta := ValidRadix.valid
   -- Extract mantissa and exponent from x
   set m1 := x.Fnum with hm1_def
   set e1 := x.Fexp with he1_def
@@ -665,7 +675,7 @@ theorem Fsqrt_correct (x : FlocqFloat beta) (Hx : 0 < F2R x) (Hβ : 1 < beta)
     calc 2 * e ≤ 2 * (e1 / 2) := Int.mul_le_mul_of_nonneg_left h_le_half (by norm_num)
       _ ≤ e1 := h_div2
   -- Step 3: Apply Fsqrt_core_correct for the inbetween relation
-  have hcore := Fsqrt_core_correct beta m1 e1 e Hm1 He Hβ
+  have hcore := Fsqrt_core_correct beta m1 e1 e Hm1 He
   -- Let m_out and l_out be the components of Fsqrt_core result
   set result := Fsqrt_core beta m1 e1 e with hresult_def
   set m_out := result.1 with hm_out_def
