@@ -125,21 +125,18 @@ theorem FLX_exp_correct_spec (e : Int) :
   intro _
   simp [wp, PostCond.noThrow, pure, FLX_exp_correct_check, FLX_exp]
 
-/-- Check if zero is in FLX format
+/-- Legacy arithmetic regression for `Ztrunc 0 = 0`.
 
-    Verify that zero is representable in the fixed-precision format.
-    Zero should always be representable regardless of the precision
-    since it can be expressed as 0 × β^e for any exponent e.
+    This does not decide `FLX_format` membership.  The translated Flocq
+    structural contract is `FLX_format_satisfies_any`.
 -/
 noncomputable def FLX_format_0_check (beta : Int) [ValidRadix beta] : Bool :=
   -- Concrete arithmetic check: Ztrunc 0 = 0
   ((FloatSpec.Core.Raux.Ztrunc (0 : ℝ))) == (0 : Int)
 
-/-- Specification: Zero is in FLX format
+/-- The legacy zero-truncation regression evaluates to `true`.
 
-    Zero is always representable in fixed-precision format.
-    This follows from the fact that 0 = 0 × β^(e-prec) for
-    any exponent e, making zero universal across all formats.
+    See `FLX_format_satisfies_any` for actual zero membership.
 -/
 @[spec]
 theorem FLX_format_0_spec (beta : Int) [ValidRadix beta] :
@@ -153,25 +150,22 @@ theorem FLX_format_0_spec (beta : Int) [ValidRadix beta] :
     rw [FloatSpec.Core.Generic_fmt.Ztrunc_zero]; decide
   exact h
 
-/-- Check closure under negation
+/-- Legacy arithmetic regression for `Ztrunc (-x) = -Ztrunc x`.
 
-    Verify that if x is in FLX format, then -x is also in FLX format.
-    This tests the closure property under additive inverse for
-    fixed-precision floating-point numbers.
+    This Boolean does not inspect `FLX_format` membership.
 -/
 noncomputable def FLX_format_opp_check (beta : Int) [ValidRadix beta] (x : ℝ) : Bool :=
   -- Concrete arithmetic check leveraging Ztrunc_opp: Ztrunc(-x) + Ztrunc(x) = 0
   ((FloatSpec.Core.Raux.Ztrunc (-x)) + (FloatSpec.Core.Raux.Ztrunc x)) == (0 : Int)
 
-/-- Specification: FLX format closed under negation
+/-- The legacy negated-truncation regression evaluates to `true`.
 
-    Fixed-precision formats are closed under negation. If x is
-    representable as m × β^(e-prec), then -x is representable
-    as (-m) × β^(e-prec), preserving precision and format properties.
+    Actual FLX negation closure is a field of
+    `FLX_format_satisfies_any`.
 -/
 @[spec]
 theorem FLX_format_opp_spec (beta : Int) [ValidRadix beta] (x : ℝ) :
-    ⦃⌜FLX_format prec beta x⌝⦄
+    ⦃⌜True⌝⦄
     (pure (FLX_format_opp_check beta x) : Id Bool)
     ⦃⇓result => ⌜result = true⌝⦄ := by
   intro _
@@ -183,26 +177,23 @@ theorem FLX_format_opp_spec (beta : Int) [ValidRadix beta] (x : ℝ) :
     simp only [neg_add_cancel, beq_self_eq_true]
   exact h
 
-/-- Check closure under absolute value
+/-- Legacy arithmetic regression relating truncation and absolute value.
 
-    Verify that if x is in FLX format, then |x| is also in FLX format.
-    This tests closure under the absolute value operation, which
-    should preserve representability in fixed-precision formats.
+    This Boolean does not inspect `FLX_format` membership.
 -/
 noncomputable def FLX_format_abs_check (beta : Int) [ValidRadix beta] (x : ℝ) : Bool :=
   -- Concrete arithmetic check: Ztrunc(|x|) matches natAbs of Ztrunc(x)
   ((FloatSpec.Core.Raux.Ztrunc (abs x)))
         == Int.ofNat ((FloatSpec.Core.Raux.Ztrunc x).natAbs)
 
-/-- Specification: FLX format closed under absolute value
+/-- The legacy absolute-value truncation regression evaluates to `true`.
 
-    Fixed-precision formats are closed under absolute value.
-    If x is representable, then |x| is also representable since
-    |x| can use the same mantissa magnitude with appropriate sign.
+    Actual FLX absolute-value closure follows from zero and negation closure
+    in `FLX_format_satisfies_any`; this helper proves only an integer identity.
 -/
 @[spec]
 theorem FLX_format_abs_spec (beta : Int) [ValidRadix beta] (x : ℝ) :
-    ⦃⌜FLX_format prec beta x⌝⦄
+    ⦃⌜True⌝⦄
     (pure (FLX_format_abs_check beta x) : Id Bool)
     ⦃⇓result => ⌜result = true⌝⦄ := by
   intro _
@@ -585,8 +576,14 @@ theorem FLXN_format_satisfies_any (beta : Int) [ValidRadix beta]
     [Prec_gt_0 prec] :
     FloatSpec.Core.Generic_fmt.satisfies_any
       (fun y => FLXN_format prec beta y) := by
-  refine ⟨0, ?_⟩
-  exact ⟨(FlocqFloat.mk 0 0 : FlocqFloat beta), by simp [F2R], by simp⟩
+  apply FloatSpec.Core.Generic_fmt.satisfies_any_eq
+    (F₁ := fun y => FloatSpec.Core.Generic_fmt.generic_format beta (FLX_exp prec) y)
+  · intro x
+    constructor
+    · exact fun hx => (FLXN_format_generic (prec := prec) beta x) hx
+    · exact fun hx => (generic_format_FLXN (prec := prec) beta x) hx
+  · exact FloatSpec.Core.Generic_fmt.generic_format_satisfies_any
+      (beta := beta) (fexp := FLX_exp prec)
 
 end FloatSpec.Core.FLX
 
@@ -615,19 +612,6 @@ instance exists_NE_FLX (beta : Int) [ValidRadix beta]
       · intro he
         simp [FLX_exp] at he ⊢
         grind
-
-/-
-Coq (FLX.v):
-Theorem FLX_format_satisfies_any :
-  satisfies_any FLX_format.
--/
-theorem FLX_format_satisfies_any (beta : Int) [ValidRadix beta]
-    [Prec_gt_0 prec] :
-    FloatSpec.Core.Generic_fmt.satisfies_any (fun y => FLX_format prec beta y) := by
-  refine ⟨0, (FlocqFloat.mk 0 0 : FlocqFloat beta), by simp [F2R], ?_⟩
-  have hp : 0 ≤ prec := le_of_lt (Prec_gt_0.pos : 0 < prec)
-  simpa using FloatSpec.Core.Zaux.Zpower_gt_0
-    (⟨beta, ValidRadix.valid⟩ : FloatSpec.Core.Zaux.Radix) prec hp
 
 end FloatSpec.Core.FLX
 
@@ -1124,6 +1108,23 @@ theorem FLX_format_spec (beta : Int) [ValidRadix beta] [Prec_gt_0 prec]
   constructor
   · exact fun hx => (generic_format_FLX (prec := prec) beta x) hx
   · exact FLX_format_generic_run (prec := prec) beta x
+
+/-
+Coq (FLX.v):
+Theorem FLX_format_satisfies_any :
+  satisfies_any FLX_format.
+-/
+theorem FLX_format_satisfies_any (beta : Int) [ValidRadix beta]
+    [Prec_gt_0 prec] :
+    FloatSpec.Core.Generic_fmt.satisfies_any (fun y => FLX_format prec beta y) := by
+  apply FloatSpec.Core.Generic_fmt.satisfies_any_eq
+    (F₁ := fun y => FloatSpec.Core.Generic_fmt.generic_format beta (FLX_exp prec) y)
+  · intro x
+    constructor
+    · exact FLX_format_generic_run (prec := prec) beta x
+    · exact fun hx => (generic_format_FLX (prec := prec) beta x) hx
+  · exact FloatSpec.Core.Generic_fmt.generic_format_satisfies_any
+      (beta := beta) (fexp := FLX_exp prec)
 
 end FloatSpec.Core.FLX
 

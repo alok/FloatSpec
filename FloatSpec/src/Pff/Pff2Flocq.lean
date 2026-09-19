@@ -325,7 +325,7 @@ theorem Fast2Sum_correct (emin prec : Int) [Prec_gt_0 prec]
   let bo : Fbound_skel := toFboundSkel bnd
   have hbeta : (1 : Int) < 2 := by decide
   have hbnd_dExp : -bnd.dExp = emin := by
-    have h := make_bound_Emin 2 prec emin (hp := by exact hprec)
+    have h := make_bound_Emin 2 prec emin
     have hd : bnd.dExp = -emin := by
       simpa [bnd, wp, PostCond.noThrow, make_bound_Emin_check, pure] using h hemin
     omega
@@ -599,7 +599,7 @@ theorem TwoSum_correct (emin prec : Int) [Prec_gt_0 prec]
   let bo : Fbound_skel := toFboundSkel bnd
   have hbeta : (1 : Int) < 2 := by decide
   have hbnd_dExp : -bnd.dExp = emin := by
-    have h := make_bound_Emin 2 prec emin (hp := by exact hprec)
+    have h := make_bound_Emin 2 prec emin
     have hd : bnd.dExp = -emin := by
       simpa [bnd, wp, PostCond.noThrow, make_bound_Emin_check, pure] using h hemin
     omega
@@ -1243,7 +1243,7 @@ theorem Veltkamp_round_N_witnesses (beta emin prec s : Int) [ValidRadix beta] [P
       simpa [wp, PostCond.noThrow, make_bound_p_check, pure] using h True.intro
     simpa [pGivesBound, bnd] using hv
   have hbnd_dExp : -bnd.dExp = emin := by
-    have h := make_bound_Emin beta prec emin (hp := by exact hprec)
+    have h := make_bound_Emin beta prec emin
     have hd : bnd.dExp = -emin := by
       simpa [bnd, wp, PostCond.noThrow, make_bound_Emin_check, pure] using
         h hemin
@@ -1321,7 +1321,7 @@ theorem Veltkamp_tail_round_N_witnesses (beta emin prec s : Int) [ValidRadix bet
       simpa [wp, PostCond.noThrow, make_bound_p_check, pure] using h True.intro
     simpa [pGivesBound, bnd] using hv
   have hbnd_dExp : -bnd.dExp = emin := by
-    have h := make_bound_Emin beta prec emin (hp := by exact hprec)
+    have h := make_bound_Emin beta prec emin
     have hd : bnd.dExp = -emin := by
       simpa [bnd, wp, PostCond.noThrow, make_bound_Emin_check, pure] using
         h hemin
@@ -2070,7 +2070,7 @@ theorem Dekker_round_N_witnesses (emin prec s : Int) [Prec_gt_0 prec]
       simpa [wp, PostCond.noThrow, make_bound_p_check, pure] using h True.intro
     simpa [pGivesBound, bnd] using hv
   have hbnd_dExp : -bnd.dExp = emin := by
-    have h := make_bound_Emin 2 prec emin (hp := by exact hprec)
+    have h := make_bound_Emin 2 prec emin
     have hd : bnd.dExp = -emin := by
       simpa [bnd, wp, PostCond.noThrow, make_bound_Emin_check, pure] using
         h hemin
@@ -2807,7 +2807,7 @@ theorem ErrFMA_round_N_witnesses (emin prec : Int) [Prec_gt_0 prec]
       simpa [wp, PostCond.noThrow, make_bound_p_check, pure] using h True.intro
     simpa [pGivesBound, bnd] using hv
   have hbnd_dExp : -bnd.dExp = emin := by
-    have h := make_bound_Emin 2 prec emin (hp := by exact hprec)
+    have h := make_bound_Emin 2 prec emin
     have hd : bnd.dExp = -emin := by
       simpa [bnd, wp, PostCond.noThrow, make_bound_Emin_check, pure] using
         h hemin
@@ -3014,7 +3014,7 @@ theorem ErrFMA_error_value_witnesses (beta emin prec : Int) [ValidRadix beta] [P
       simpa [wp, PostCond.noThrow, make_bound_p_check, pure] using h True.intro
     simpa [pGivesBound, bnd] using hv
   have hbnd_dExp : -bnd.dExp = emin := by
-    have h := make_bound_Emin beta prec emin (hp := by exact hprec)
+    have h := make_bound_Emin beta prec emin
     have hd : bnd.dExp = -emin := by
       simpa [bnd, wp, PostCond.noThrow, make_bound_Emin_check, pure] using
         h hemin
@@ -5092,7 +5092,7 @@ theorem ErrFmaAppr_format_witnesses (beta emin prec : Int) [ValidRadix beta] [Pr
       simpa [wp, PostCond.noThrow, make_bound_p_check, pure] using h True.intro
     simpa [pGivesBound, bnd] using hv
   have hbnd_dExp : -bnd.dExp = emin := by
-    have h := make_bound_Emin beta prec emin (hp := by exact hprec)
+    have h := make_bound_Emin beta prec emin
     have hd : bnd.dExp = -emin := by
       simpa [bnd, wp, PostCond.noThrow, make_bound_Emin_check, pure] using
         h hemin
@@ -5198,7 +5198,7 @@ theorem ErrFmaAppr_round_N_witnesses (beta emin prec : Int) [ValidRadix beta] [P
       simpa [wp, PostCond.noThrow, make_bound_p_check, pure, PredTrans.pure, PredTrans.apply, SPred.down_pure_nil, Int.cast_ofNat] using h True.intro
     simpa [pGivesBound, bnd] using hv
   have hbnd_dExp : -bnd.dExp = emin := by
-    have h := make_bound_Emin beta prec emin (hp := by exact hprec)
+    have h := make_bound_Emin beta prec emin
     have hd : bnd.dExp = -emin := by
       simpa [bnd, wp, PostCond.noThrow, make_bound_Emin_check, pure] using
         h hemin
@@ -5570,7 +5570,7 @@ theorem Axpy_from_min_or_max (emin prec : Int) [Prec_gt_0 prec]
       simpa [wp, PostCond.noThrow, make_bound_p_check, pure] using h True.intro
     simpa [pGivesBound, bnd] using hv
   have hbnd_dExp : -bnd.dExp = emin := by
-    have h := make_bound_Emin 2 prec emin (hp := by exact hprec)
+    have h := make_bound_Emin 2 prec emin
     have hd : bnd.dExp = -emin := by
       simpa [bnd, wp, PostCond.noThrow, make_bound_Emin_check, pure] using
         h hemin
@@ -6551,7 +6551,7 @@ theorem discri_bound_from_pff_delta (emin prec : Int) [Prec_gt_0 prec]
       2 * ulp 2 (FLT_exp emin prec) d := by
   have hprec_pos : 0 < prec := Prec_gt_0.pos
   have hbnd_dExp : -(make_bound 2 prec emin).dExp = emin := by
-    have h := make_bound_Emin 2 prec emin (hp := by exact hprec)
+    have h := make_bound_Emin 2 prec emin
     have hd : (make_bound 2 prec emin).dExp = -emin := by
       simpa [wp, PostCond.noThrow, make_bound_Emin_check, pure] using
         h hemin
@@ -6675,7 +6675,7 @@ private theorem discri_correct_test_nonexceptional
         h True.intro
     simpa [pGivesBound]
   have hbndExp : -bnd.dExp = emin := by
-    have h := make_bound_Emin 2 prec emin (hp := hprec)
+    have h := make_bound_Emin 2 prec emin
     have hd : bnd.dExp = -emin := by
       simpa [bnd, wp, PostCond.noThrow, make_bound_Emin_check, pure] using
         h hemin
@@ -7218,7 +7218,7 @@ theorem discri_fp_test (emin prec : Int) [Prec_gt_0 prec]
         h True.intro
     simpa [pGivesBound]
   have hbndExp : -bnd.dExp = emin := by
-    have h := make_bound_Emin 2 prec emin (hp := hprec1)
+    have h := make_bound_Emin 2 prec emin
     have hd : bnd.dExp = -emin := by
       simpa [bnd, wp, PostCond.noThrow, make_bound_Emin_check, pure] using
         h hemin

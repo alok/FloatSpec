@@ -222,21 +222,18 @@ theorem FTZ_exp_correct_spec (e : Int) :
   unfold FTZ_exp_correct_check FTZ_exp
   simp
 
-/-- Check if zero is in FTZ format
+/-- Legacy arithmetic regression for `Ztrunc 0 = 0`.
 
-    Verify that zero is representable in flush-to-zero format.
-    Zero should always be representable since it can be expressed
-    with any exponent as 0 × β^e = 0.
+    This does not decide `FTZ_format` membership.  The translated Flocq
+    structural contract is `FTZ_format_satisfies_any`.
 -/
 noncomputable def FTZ_format_0_check (beta : Int) [ValidRadix beta] : Bool :=
   -- Concrete arithmetic check: Ztrunc 0 = 0
   ((FloatSpec.Core.Raux.Ztrunc (0 : ℝ))) == (0 : Int)
 
-/-- Specification: Zero is in FTZ format
+/-- The legacy zero-truncation regression evaluates to `true`.
 
-    Zero is always representable in FTZ format since it has
-    the special property that 0 × β^e = 0 for any exponent e,
-    making it representable regardless of format constraints.
+    See `FTZ_format_satisfies_any` for actual zero membership.
 -/
 @[spec]
 theorem FTZ_format_0_spec (beta : Int) [ValidRadix beta] :
@@ -248,25 +245,22 @@ theorem FTZ_format_0_spec (beta : Int) [ValidRadix beta] :
   -- Ztrunc 0 reduces to ⌊0⌋ which is 0, hence the boolean equality is true.
   simp [FTZ_format_0_check, FloatSpec.Core.Raux.Ztrunc]
 
-/-- Check closure under negation
+/-- Legacy arithmetic regression for `Ztrunc (-x) = -Ztrunc x`.
 
-    Verify that if x is in FTZ format, then -x is also in FTZ format.
-    This tests the symmetry property of flush-to-zero representation
-    under sign changes.
+    This Boolean does not inspect `FTZ_format` membership.
 -/
 noncomputable def FTZ_format_opp_check (beta : Int) [ValidRadix beta] (x : ℝ) : Bool :=
   -- Concrete arithmetic check leveraging Ztrunc_opp: Ztrunc(-x) + Ztrunc(x) = 0
   ((FloatSpec.Core.Raux.Ztrunc (-x)) + (FloatSpec.Core.Raux.Ztrunc x)) == (0 : Int)
 
-/-- Specification: FTZ format closed under negation
+/-- The legacy negated-truncation regression evaluates to `true`.
 
-    FTZ formats are closed under negation. If x = m × β^e
-    is representable, then -x = (-m) × β^e is also representable
-    using the same exponent with negated mantissa.
+    Actual FTZ negation closure is a field of
+    `FTZ_format_satisfies_any`.
 -/
 @[spec]
 theorem FTZ_format_opp_spec (beta : Int) [ValidRadix beta] (x : ℝ) :
-    ⦃⌜FTZ_format prec emin beta x⌝⦄
+    ⦃⌜True⌝⦄
     (pure (FTZ_format_opp_check beta x) : Id Bool)
     ⦃⇓result => ⌜result = true⌝⦄ := by
   intro _
@@ -279,26 +273,23 @@ theorem FTZ_format_opp_spec (beta : Int) [ValidRadix beta] (x : ℝ) :
     simp only [neg_add_cancel, beq_self_eq_true]
   exact h
 
-/-- Check closure under absolute value
+/-- Legacy arithmetic regression relating truncation and absolute value.
 
-    Verify that if x is in FTZ format, then |x| is also in FTZ format.
-    This ensures that magnitude operations preserve representability
-    in the flush-to-zero format.
+    This Boolean does not inspect `FTZ_format` membership.
 -/
 noncomputable def FTZ_format_abs_check (beta : Int) [ValidRadix beta] (x : ℝ) : Bool :=
   -- Concrete arithmetic check: Ztrunc(|x|) matches natAbs of Ztrunc(x)
   ((FloatSpec.Core.Raux.Ztrunc (abs x)))
         == Int.ofNat ((FloatSpec.Core.Raux.Ztrunc x).natAbs)
 
-/-- Specification: FTZ format closed under absolute value
+/-- The legacy absolute-value truncation regression evaluates to `true`.
 
-    FTZ formats are closed under absolute value operations.
-    The magnitude of any representable number remains representable
-    using the same exponent structure with positive mantissa.
+    Actual FTZ absolute-value closure follows from zero and negation closure
+    in `FTZ_format_satisfies_any`; this helper proves only an integer identity.
 -/
 @[spec]
 theorem FTZ_format_abs_spec (beta : Int) [ValidRadix beta] (x : ℝ) :
-    ⦃⌜FTZ_format prec emin beta x⌝⦄
+    ⦃⌜True⌝⦄
     (pure (FTZ_format_abs_check beta x) : Id Bool)
     ⦃⇓result => ⌜result = true⌝⦄ := by
   intro _

@@ -154,20 +154,19 @@ theorem FIX_exp_correct_spec (e : Int) :
     ⦃⇓result => ⌜result = true⌝⦄ := by
   simpa using (FIX_exp_spec (emin := emin) (e := e))
 
-/-- Check if zero is in FIX format
+/-- Legacy arithmetic regression for `Ztrunc 0 = 0`.
 
-    Verify that zero is representable in the fixed-point format.
-    Zero should always be representable as 0 × β^emin = 0.
+    This does not decide `FIX_format` membership.  The source-facing zero,
+    negation, and rounding closure contract is `FIX_format_satisfies_any`.
 -/
 noncomputable def FIX_format_0_check (beta : Int) [ValidRadix beta] : Bool :=
   -- A concrete, checkable fact used by the spec proof: Ztrunc 0 = 0
   ((FloatSpec.Core.Raux.Ztrunc (0 : ℝ))) == (0 : Int)
 
-/-- Specification: Zero is in FIX format
+/-- The legacy zero-truncation regression evaluates to `true`.
 
-    Zero is always representable in fixed-point format since
-    it can be expressed as 0 × β^emin. This ensures that
-    fixed-point formats always contain the additive identity.
+    This is intentionally not presented as a proof of format membership; see
+    `FIX_format_satisfies_any` for the translated Flocq contract.
 -/
 @[spec]
 theorem FIX_format_0_spec (beta : Int) [ValidRadix beta] :
@@ -185,24 +184,23 @@ theorem FIX_format_0_spec (beta : Int) [ValidRadix beta] :
     decide
   exact h
 
-/-- Check closure under negation
+/-- Legacy arithmetic regression for `Ztrunc (-x) = -Ztrunc x`.
 
-    Verify that if x is in FIX format, then -x is also in FIX format.
-    This tests the closure property under additive inverse.
+    This Boolean does not inspect `FIX_format` membership.
 -/
 noncomputable def FIX_format_opp_check (beta : Int) [ValidRadix beta] (x : ℝ) : Bool :=
   -- Concrete arithmetic check leveraging Ztrunc_neg: Ztrunc(-x) + Ztrunc(x) = 0
   ((FloatSpec.Core.Raux.Ztrunc (-x)) + (FloatSpec.Core.Raux.Ztrunc x)) == (0 : Int)
 
-/-- Specification: FIX format closed under negation
+/-- The legacy negated-truncation regression evaluates to `true`.
 
-    Fixed-point formats are closed under negation: if x is
-    representable, then -x is also representable. This follows
-    from the fact that if x = m × β^emin, then -x = (-m) × β^emin.
+    Actual FIX negation closure is a field of
+    `FIX_format_satisfies_any`; this helper proves only the displayed integer
+    identity.
 -/
 @[spec]
 theorem FIX_format_opp_spec (beta : Int) [ValidRadix beta] (x : ℝ) :
-    ⦃⌜FIX_format emin beta x⌝⦄
+    ⦃⌜True⌝⦄
     (pure (FIX_format_opp_check beta x) : Id Bool)
     ⦃⇓result => ⌜result = true⌝⦄ := by
   intro _

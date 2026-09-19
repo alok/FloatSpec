@@ -106,7 +106,7 @@ simproc [simp] reduceZtruncNeg (Ztrunc _) := fun e => do
     return .continue
   let arg := e.appArg!
   let some x := getNegArg? arg | return .continue
-  let expr := mkApp (mkConst ``Neg.neg) (mkApp (mkConst ``Ztrunc) x)
+  let expr ← mkAppM ``Neg.neg #[mkApp (mkConst ``Ztrunc) x]
   let proof := mkApp (mkConst ``Ztrunc_neg_val) x
   return .done { expr := expr, proof? := some proof }
 

@@ -22,7 +22,7 @@ The library is organized into layered modules. The top‑level aggregator `Float
 - Prop (`FloatSpec/src/Prop`)
   - Error bounds and classical theorems about rounding: `Plus_error.lean`, `Div_sqrt_error.lean`, `Double_rounding.lean`, `Relative.lean`, `Round_odd.lean`, `Sterbenz.lean`
 - ErrorBound (`FloatSpec/src/ErrorBound`)
-  - VCFloat-style error-bound integration scaffold: `Types.lean`, `RExpr.lean`, `MakeRounding.lean`, `Absolute.lean`, `Compose.lean`, `Examples/FPBench.lean`
+  - Reserved VCFloat-style integration modules: `Types.lean`, `RExpr.lean`, `MakeRounding.lean`, `Absolute.lean`, `Compose.lean`, `Examples/FPBench.lean`; these files are currently empty and expose no error-bound API
 - IEEE754 (`FloatSpec/src/IEEE754`)
   - Encodings/decodings, bit‑level operations, and a structured IEEE 754 view: `Binary.lean`, `BinarySingleNaN.lean`, `Bits.lean`, and a bridge to primitive floats `PrimFloat.lean`
 - Compat (`FloatSpec/src/Compat.lean`)
@@ -31,7 +31,8 @@ The library is organized into layered modules. The top‑level aggregator `Float
   - Legacy compatibility modules and conversion helpers from an older floating‑point formalization
 
 Project configuration lives in `lakefile.lean` and `lean-toolchain` (Lean 4
-`v4.29.0`). Mathlib and CSLib are pinned to compatible `v4.29.0` revisions.
+`v4.34.0-rc2`). Mathlib and CSLib are pinned to compatible `v4.34.0-rc2`
+revisions.
 
 
 ## Current Progress
@@ -42,14 +43,15 @@ does not replace source-semantic review: translated declarations are checked
 against the pinned Flocq source and compatibility helpers are kept distinct
 from source-facing APIs.
 
-- Build: compiles with Lean 4 and Mathlib `v4.29.0`, with warnings treated as errors.
+- Build: compiles with Lean 4 and Mathlib `v4.34.0-rc2`, with warnings treated as errors.
 - Trust gates: `scripts/audit_placeholders.sh` and
   `scripts/status_report.sh` check active Lean syntax; generated status is under
   `FloatSpec/docs/status.{md,json}`.
 - Source contracts: regression modules under `FloatSpec/Test` cover important
   representation, rounding-mode, primitive-float, Pff, and IEEE correctness-name mappings.
-- ErrorBound support: `FloatSpec/src/ErrorBound/**` contains the VCFloat-style
-  error-bound layer.
+- ErrorBound status: `FloatSpec/src/ErrorBound.lean` is an import aggregator,
+  but its six component modules are currently empty. The VCFloat-style layer
+  remains planned work, not implemented support.
 - VCFloat integration plan and tasks live in `FloatSpec/docs/vcfloat_integration/ARCHITECTURE_AND_PLAN.md` and `FloatSpec/docs/vcfloat_integration/TODOs.md`.
 - Status artifacts:
   - Progress PDF: `FloatSpec_status.pdf`
@@ -66,7 +68,7 @@ Version: the library exposes `FloatSpec.version = "0.7.0"` (see `FloatSpec.lean`
 
 Prerequisites
 
-- Lean 4 toolchain: `leanprover/lean4:v4.29.0` (see `lean-toolchain`)
+- Lean 4 toolchain: `leanprover/lean4:v4.34.0-rc2` (see `lean-toolchain`)
 - Lake build tool (included with the toolchain)
 
 Build locally
@@ -74,6 +76,11 @@ Build locally
 1) Update dependencies: `lake update`
 2) Build: `lake build`
 3) Run trust gates: `scripts/audit_placeholders.sh --json FloatSpec`
+4) With Rocq and autotools installed, run the executable cross-language
+   regressions: `scripts/test_flocq_conformance.sh`. The script checks out the
+   exact `Deps/flocq` gitlink in a temporary worktree (or clone), builds it,
+   and runs paired Flocq/Lean observations without modifying an existing
+   nested checkout.
 
 Lean-level tests (smoke/property checks)
 

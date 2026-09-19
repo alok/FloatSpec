@@ -231,21 +231,18 @@ theorem FLT_exp_correct_spec (e : Int) :
   intro _
   simp [FLT_exp_correct_check, FLT_exp]
 
-/-- Check if zero is in FLT format
+/-- Legacy arithmetic regression for `Ztrunc 0 = 0`.
 
-    Verify that zero is representable in the floating-point format.
-    Zero should always be representable as 0 × β^e for any
-    allowed exponent e, making it universal across FLT formats.
+    This does not decide `FLT_format` membership.  The translated Flocq
+    structural contract is `FLT_format_satisfies_any`.
 -/
 noncomputable def FLT_format_0_check (beta : Int) [ValidRadix beta] : Bool :=
   -- Concrete arithmetic check: Ztrunc 0 = 0
   ((FloatSpec.Core.Raux.Ztrunc (0 : ℝ))) == (0 : Int)
 
-/-- Specification: Zero is in FLT format
+/-- The legacy zero-truncation regression evaluates to `true`.
 
-    Zero is always representable in FLT format since it can
-    be expressed as 0 × β^e for any exponent e, regardless
-    of precision or minimum exponent constraints.
+    See `FLT_format_satisfies_any` for actual zero membership.
 -/
 @[spec]
 theorem FLT_format_0_spec (beta : Int) [ValidRadix beta] :
@@ -263,25 +260,22 @@ theorem FLT_format_0_spec (beta : Int) [ValidRadix beta] :
     rw [hz]; simp only [beq_self_eq_true]
   exact h
 
-/-- Check closure under negation
+/-- Legacy arithmetic regression for `Ztrunc (-x) = -Ztrunc x`.
 
-    Verify that if x is in FLT format, then -x is also in FLT format.
-    This tests the sign symmetry property of IEEE 754-style
-    floating-point representation.
+    This Boolean does not inspect `FLT_format` membership.
 -/
 noncomputable def FLT_format_opp_check (beta : Int) [ValidRadix beta] (x : ℝ) : Bool :=
   -- Concrete arithmetic check leveraging Ztrunc_neg: Ztrunc(-x) + Ztrunc(x) = 0
   ((FloatSpec.Core.Raux.Ztrunc (-x)) + (FloatSpec.Core.Raux.Ztrunc x)) == (0 : Int)
 
-/-- Specification: FLT format closed under negation
+/-- The legacy negated-truncation regression evaluates to `true`.
 
-    FLT formats are closed under negation. If x = m × β^e
-    is representable, then -x = (-m) × β^e is also representable
-    using the same exponent and negated mantissa.
+    Actual FLT negation closure is a field of
+    `FLT_format_satisfies_any`.
 -/
 @[spec]
 theorem FLT_format_opp_spec (beta : Int) [ValidRadix beta] (x : ℝ) :
-    ⦃⌜FLT_format prec emin beta x⌝⦄
+    ⦃⌜True⌝⦄
     (pure (FLT_format_opp_check beta x) : Id Bool)
     ⦃⇓result => ⌜result = true⌝⦄ := by
   intro _
@@ -293,26 +287,23 @@ theorem FLT_format_opp_spec (beta : Int) [ValidRadix beta] (x : ℝ) :
     simp only [neg_add_cancel, beq_self_eq_true]
   exact h
 
-/-- Check closure under absolute value
+/-- Legacy arithmetic regression relating truncation and absolute value.
 
-    Verify that if x is in FLT format, then |x| is also in FLT format.
-    This tests the magnitude preservation property, ensuring that
-    absolute values remain representable.
+    This Boolean does not inspect `FLT_format` membership.
 -/
 noncomputable def FLT_format_abs_check (beta : Int) [ValidRadix beta] (x : ℝ) : Bool :=
   -- Concrete arithmetic check: Ztrunc(|x|) matches natAbs of Ztrunc(x)
   ((FloatSpec.Core.Raux.Ztrunc (abs x)))
         == Int.ofNat ((FloatSpec.Core.Raux.Ztrunc x).natAbs)
 
-/-- Specification: FLT format closed under absolute value
+/-- The legacy absolute-value truncation regression evaluates to `true`.
 
-    FLT formats are closed under absolute value operations.
-    The magnitude of a representable number is always
-    representable using the same exponent structure.
+    Actual FLT absolute-value closure follows from zero and negation closure
+    in `FLT_format_satisfies_any`; this helper proves only an integer identity.
 -/
 @[spec]
 theorem FLT_format_abs_spec (beta : Int) [ValidRadix beta] (x : ℝ) :
-    ⦃⌜FLT_format prec emin beta x⌝⦄
+    ⦃⌜True⌝⦄
     (pure (FLT_format_abs_check beta x) : Id Bool)
     ⦃⇓result => ⌜result = true⌝⦄ := by
   intro _
@@ -470,10 +461,14 @@ Theorem FLT_format_satisfies_any :
 -/
 theorem FLT_format_satisfies_any (beta : Int) [ValidRadix beta] :
     FloatSpec.Core.Generic_fmt.satisfies_any (fun y => FLT_format prec emin beta y) := by
-  refine ⟨0, (FlocqFloat.mk 0 emin : FlocqFloat beta), by simp [F2R], ?_, le_rfl⟩
-  have hp : 0 ≤ prec := le_of_lt (Prec_gt_0.pos : 0 < prec)
-  simpa using FloatSpec.Core.Zaux.Zpower_gt_0
-    (⟨beta, ValidRadix.valid⟩ : FloatSpec.Core.Zaux.Radix) prec hp
+  apply FloatSpec.Core.Generic_fmt.satisfies_any_eq
+    (F₁ := fun y => generic_format beta (FLT_exp prec emin) y)
+  · intro x
+    constructor
+    · exact FLT_format_generic_run (prec := prec) (emin := emin) beta x
+    · exact fun hx => (generic_format_FLT (prec := prec) (emin := emin) beta x) hx
+  · exact FloatSpec.Core.Generic_fmt.generic_format_satisfies_any
+      (beta := beta) (fexp := FLT_exp prec emin)
 
 /-
 Coq (FLT.v):

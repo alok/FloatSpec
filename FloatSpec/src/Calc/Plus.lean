@@ -54,10 +54,10 @@ noncomputable def Fplus_core (m1 e1 m2 e2 e : Int) : (Int × Location) :=
     if 0 < k then
       FloatSpec.Calc.Round.truncate_aux beta (m2, e2, Location.loc_Exact) k
     else
-      (m2 * beta ^ Int.natAbs (-k), e, Location.loc_Exact)
+      (m2 * FloatSpec.Core.Zaux.Zpower beta (-k), e, Location.loc_Exact)
   let m2' := t.1
   let l := t.2.2
-  let m1' := m1 * beta ^ Int.natAbs (e1 - e)
+  let m1' := m1 * FloatSpec.Core.Zaux.Zpower beta (e1 - e)
   (m1' + m2', l)
 
 /-- Coq `Fplus_core_correct`: the mantissa/location returned by `Fplus_core`
@@ -69,8 +69,14 @@ theorem Fplus_core_correct (m1 e1 m2 e2 e : Int) (He1 : e ≤ e1) :
        F2R (FlocqFloat.mk m2 e2 : FlocqFloat beta)) l := by
   have hβ : 1 < beta := ValidRadix.valid
   have hm1 := F2R_scale_to_lower (beta := beta) m1 e1 e He1
+  have hpow1 : FloatSpec.Core.Zaux.Zpower beta (e1 - e) =
+      beta ^ Int.natAbs (e1 - e) :=
+    FloatSpec.Core.Zaux.Zpower_Zpower_nat beta (e1 - e) (sub_nonneg.mpr He1)
   by_cases hk : 0 < e - e2
   · let p : Int := beta ^ Int.natAbs (e - e2)
+    have hpowk : FloatSpec.Core.Zaux.Zpower beta (e - e2) =
+        beta ^ Int.natAbs (e - e2) :=
+      FloatSpec.Core.Zaux.Zpower_Zpower_nat beta (e - e2) (le_of_lt hk)
     have hbase : inbetween_float beta m2 e2
         (F2R (FlocqFloat.mk m2 e2 : FlocqFloat beta)) Location.loc_Exact := by
       exact inbetween.inbetween_Exact rfl
@@ -89,12 +95,17 @@ theorem Fplus_core_correct (m1 e1 m2 e2 e : Int) (He1 : e ≤ e1) :
     have hm1' : ((m1 : ℝ) * (beta : ℝ) ^ Int.natAbs (e1 - e)) *
         (beta : ℝ) ^ e = (m1 : ℝ) * (beta : ℝ) ^ e1 := by
       simpa [F2R, Int.cast_mul, Int.cast_pow] using hm1
-    simpa [Fplus_core, hk, hk', FloatSpec.Calc.Round.truncate_aux, p,
+    simpa [Fplus_core, hk, hk', hpow1, hpowk,
+      FloatSpec.Calc.Round.truncate_aux, p,
       inbetween_float, hm1', add_comm, add_left_comm, add_assoc,
       Int.cast_add, Int.cast_mul, Int.cast_pow, mul_add, add_mul] using htranslated
   · have he2 : e ≤ e2 := by omega
     have hm2 := F2R_scale_to_lower (beta := beta) m2 e2 e he2
-    simp only [Fplus_core, hk, ite_false]
+    have hpow2 : FloatSpec.Core.Zaux.Zpower beta (e2 - e) =
+        beta ^ Int.natAbs (e2 - e) :=
+      FloatSpec.Core.Zaux.Zpower_Zpower_nat beta (e2 - e) (sub_nonneg.mpr he2)
+    have hneg : -(e - e2) = e2 - e := by omega
+    simp only [Fplus_core, hk, ite_false, hpow1, hneg, hpow2]
     apply inbetween.inbetween_Exact
     have hm1' : (((m1 * beta ^ Int.natAbs (e1 - e) : Int) : ℝ) * (beta : ℝ) ^ e) =
         (m1 : ℝ) * (beta : ℝ) ^ e1 := by simpa [F2R] using hm1
@@ -102,8 +113,6 @@ theorem Fplus_core_correct (m1 e1 m2 e2 e : Int) (He1 : e ≤ e1) :
         (m2 : ℝ) * (beta : ℝ) ^ e2 := by simpa [F2R] using hm2
     simp only [F2R, Int.cast_add, Int.cast_mul, Int.cast_pow]
     rw [← hm1', ← hm2']
-    have hneg : -(e - e2) = e2 - e := by omega
-    rw [hneg]
     simp only [Int.cast_mul, Int.cast_pow]
     ring
 

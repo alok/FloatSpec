@@ -10,10 +10,12 @@ import Mathlib.Data.Real.Basic
 /-!
 # Pure-Lean IEEE-754 Binary64 Decoder
 
-A verified decoder from `UInt64` bit patterns to `ℝ`, using FloatSpec's
-`bits_to_binary` and `B2R` infrastructure. This replaces the opaque
+A pure-Lean decoder from `UInt64` bit patterns to `ℝ`, using FloatSpec's
+`bits_to_binary` and `B2R` infrastructure, with verified zero, one, and
+semantic-negation results below. This replaces the opaque
 `Float.ofBits` path used in `FPRBridge.toReal` with a pure-Lean definition
-that the kernel can reason about.
+that the kernel can reason about.  It does not yet include a general theorem
+connecting raw sign-bit XOR to semantic negation.
 
 ## Main Definitions
 

@@ -67,7 +67,7 @@ noncomputable def truncate_aux (beta : Int) [ValidRadix beta] (f : Int × Int ×
   let m := f.1
   let e := f.2.1
   let l := f.2.2
-  let p := beta ^ Int.natAbs k
+  let p := FloatSpec.Core.Zaux.Zpower beta k
   (m / p, e + k, FloatSpec.Calc.Bracket.new_location (nb_steps := p) (k := (m % p)) l)
 
 /-- Truncate a float to a higher exponent
@@ -2172,7 +2172,14 @@ theorem truncate_aux_comp (t : Int × Int × Location) (k1 k2 : Int)
       new_location (beta ^ Int.natAbs (k1 + k2))
         (m % (beta ^ Int.natAbs (k1 + k2))) l := by
     simpa using hl
-  simp [truncate_aux, add_assoc, hm, hl'.symm]
+  have hpow1 : FloatSpec.Core.Zaux.Zpower beta k1 = beta ^ k1.natAbs :=
+    FloatSpec.Core.Zaux.Zpower_Zpower_nat beta k1 (le_of_lt Hk1)
+  have hpow2 : FloatSpec.Core.Zaux.Zpower beta k2 = beta ^ k2.natAbs :=
+    FloatSpec.Core.Zaux.Zpower_Zpower_nat beta k2 (le_of_lt Hk2)
+  have hpow12 : FloatSpec.Core.Zaux.Zpower beta (k1 + k2) =
+      beta ^ (k1 + k2).natAbs :=
+    FloatSpec.Core.Zaux.Zpower_Zpower_nat beta (k1 + k2) (le_of_lt Hk12)
+  simp [truncate_aux, hpow1, hpow2, hpow12, add_assoc, hm, hl'.symm]
 
 theorem truncate_0 (e : Int) (l : Location) :
     let r := truncate_triple (beta := beta) (fexp := fexp) (0, e, l)
@@ -2197,7 +2204,9 @@ theorem generic_format_truncate
   dsimp [truncate_triple]
   set k : Int := fexp (FloatSpec.Core.Digits.Zdigits beta m + e) - e with hk
   by_cases hkpos : 0 < k
-  · set q : Int := m / beta ^ k.natAbs with hq
+  · have hpow : FloatSpec.Core.Zaux.Zpower beta k = beta ^ k.natAbs :=
+      FloatSpec.Core.Zaux.Zpower_Zpower_nat beta k (le_of_lt hkpos)
+    set q : Int := m / beta ^ k.natAbs with hq
     have hfmt :
         FloatSpec.Core.Generic_fmt.generic_format beta fexp
           (FloatSpec.Core.Defs.F2R
@@ -2254,7 +2263,7 @@ theorem generic_format_truncate
         have hk_eq : fexp (FloatSpec.Core.Digits.Zdigits beta m + e) = e + k := by
           omega
         rw [hcexp, hk_eq]
-    simpa [hkpos, truncate_aux, q, hq] using hfmt
+    simpa [hkpos, truncate_aux, hpow, q, hq] using hfmt
   · have hk_nonpos : fexp (FloatSpec.Core.Digits.Zdigits beta m + e) ≤ e := by
       omega
     by_cases hm_zero : m = 0
@@ -2319,6 +2328,8 @@ theorem truncate_correct_format
   set k : Int := fexp (FloatSpec.Core.Digits.Zdigits beta m + e) - e with hk
   by_cases Hk : 0 < k
   · have Hk_nonneg : 0 ≤ k := le_of_lt Hk
+    have Hpow : FloatSpec.Core.Zaux.Zpower beta k = beta ^ k.natAbs :=
+      FloatSpec.Core.Zaux.Zpower_Zpower_nat beta k Hk_nonneg
     have Hexp : e + k = cexp beta fexp x := by
       rw [Hc]
       omega
@@ -2386,8 +2397,8 @@ theorem truncate_correct_format
               FloatSpec.Core.Defs.FlocqFloat beta) := by
       simpa [x, FloatSpec.Core.Generic_fmt.generic_format, sm] using Hx
     refine ⟨?_, ?_⟩
-    · simpa [x, truncate_aux, Hk, p, hp, q, hq, ← Hq_trunc, Hexp] using Hx_repr
-    · simpa [x, truncate_aux, Hk] using Hexp
+    · simpa [x, truncate_aux, Hk, Hpow, p, hp, q, hq, ← Hq_trunc, Hexp] using Hx_repr
+    · simpa [x, truncate_aux, Hk, Hpow] using Hexp
   · have Hk_nonneg : 0 ≤ k := by
       rw [hk]
       omega
@@ -2420,13 +2431,18 @@ theorem truncate_correct_partial'
         (k := fexp (FloatSpec.Core.Digits.Zdigits beta m + e) - e)
         Hk Hβ H1
     have Hk' : e < fexp (FloatSpec.Core.Digits.Zdigits beta m + e) := by omega
+    have Hpow :
+        FloatSpec.Core.Zaux.Zpower beta
+            (fexp (FloatSpec.Core.Digits.Zdigits beta m + e) - e) =
+          beta ^ (fexp (FloatSpec.Core.Digits.Zdigits beta m + e) - e).natAbs :=
+      FloatSpec.Core.Zaux.Zpower_Zpower_nat beta _ (le_of_lt Hk)
     have He' :
         e + (fexp (FloatSpec.Core.Digits.Zdigits beta m + e) - e) =
           cexp beta fexp x := by
       omega
     refine ⟨?_, ?_⟩
-    · simpa [truncate_aux, Hk'] using Hin
-    · simpa [truncate_aux, Hk', He']
+    · simpa [truncate_aux, Hk', Hpow] using Hin
+    · simpa [truncate_aux, Hk', Hpow, He']
   · have Heq : fexp (FloatSpec.Core.Digits.Zdigits beta m + e) = e := by
       have hle : fexp (FloatSpec.Core.Digits.Zdigits beta m + e) ≤ e := by omega
       have hge : e ≤ fexp (FloatSpec.Core.Digits.Zdigits beta m + e) := by
@@ -2554,6 +2570,11 @@ theorem truncate_correct'
     by_cases Hk : 0 < fexp (FloatSpec.Core.Digits.Zdigits beta 0 + e) - e
     · have Hk' : e < fexp (FloatSpec.Core.Digits.Zdigits beta 0 + e) := by
         omega
+      have Hpow :
+          FloatSpec.Core.Zaux.Zpower beta
+              (fexp (FloatSpec.Core.Digits.Zdigits beta 0 + e) - e) =
+            beta ^ (fexp (FloatSpec.Core.Digits.Zdigits beta 0 + e) - e).natAbs :=
+        FloatSpec.Core.Zaux.Zpower_Zpower_nat beta _ (le_of_lt Hk)
       have Hloc :
           FloatSpec.Calc.Bracket.new_location
               (beta ^ (fexp (FloatSpec.Core.Digits.Zdigits beta 0 + e) - e).natAbs)
@@ -2570,9 +2591,9 @@ theorem truncate_correct'
         apply inbetween.inbetween_Exact
         simp [Hx_zero, FloatSpec.Core.Defs.F2R]
       refine ⟨?_, Or.inr ?_⟩
-      · simpa [truncate_aux, Hk', Hloc] using Hin
+      · simpa [truncate_aux, Hk', Hpow, Hloc] using Hin
       · constructor
-        · simp [truncate_aux, Hk', Hloc]
+        · simp [truncate_aux, Hk', Hpow, Hloc]
         · simpa [Hx_zero] using
             (FloatSpec.Core.Generic_fmt.generic_format_0_run
               (beta := beta) (fexp := fexp))

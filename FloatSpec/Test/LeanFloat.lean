@@ -17,16 +17,16 @@ example : (model64OfStandardFloat (StandardFloat.S754_zero false)).toBits = 0 :=
 example : (model32OfStandardFloat (StandardFloat.S754_zero false)).toBits = 0 := by decide
 example :
     (model64OfStandardFloat (StandardFloat.S754_infinity true)).toBits =
-      18442240474082181120 := by native_decide
+      18442240474082181120 := by decide
 example :
     (model32OfStandardFloat (StandardFloat.S754_infinity true)).toBits =
-      4286578688 := by native_decide
+      4286578688 := by decide
 example :
     (model64OfStandardFloat (StandardFloat.S754_finite false 1 (-1074))).toBits = 1 := by
-  native_decide
+  decide
 example :
     (model32OfStandardFloat (StandardFloat.S754_finite false 1 (-149))).toBits = 1 := by
-  native_decide
+  decide
 
 example :
     (FloatSpec.IEEE754.Native.model64OfBinary
@@ -46,11 +46,11 @@ example :
 
 example :
     FloatSpec.IEEE754.Native.model64OfBinary default_nan_pl64.val =
-      Float.Model.nan := by native_decide
+      Float.Model.nan := by decide
 
 example :
     (FloatSpec.IEEE754.Native.model64OfBinarySingleNaNFloat
-      BinarySingleNaNFloat.B754_nan).isNaN = true := by native_decide
+      BinarySingleNaNFloat.B754_nan).isNaN = true := by decide
 
 example :
     (FaithfulPrimFloat.PrimitiveFloat.toModel FaithfulPrimFloat.zero).toBits = 0 := by
@@ -62,12 +62,12 @@ example (x : FaithfulPrimFloat.PrimitiveFloat) :
 
 example :
     (FaithfulPrimFloat.PrimitiveFloat.toModel FaithfulPrimFloat.one).toBits =
-      4607182418800017408 := by native_decide
+      4607182418800017408 := by decide
 
 example :
     (PrimitiveFloat.toModel
       (PrimitiveFloat.ofModel (Float.Model.ofBits 4607182418800017408))).toBits =
-      4607182418800017408 := by native_decide
+      4607182418800017408 := by decide
 
 example (x : Float.Model) :
     PrimitiveFloat.toModel (PrimitiveFloat.ofModel x) = x := by simp

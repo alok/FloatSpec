@@ -1762,6 +1762,11 @@ theorem shr_truncate (fexp : Int → Int)
       omega
     have Hshift_nonneg : 0 ≤ fexp (FloatSpec.Core.Digits.Zdigits 2 m + e) - e :=
       le_of_lt Hshift
+    have Hpow :
+        FloatSpec.Core.Zaux.Zpower 2
+            (fexp (FloatSpec.Core.Digits.Zdigits 2 m + e) - e) =
+          2 ^ (fexp (FloatSpec.Core.Digits.Zdigits 2 m + e) - e).natAbs :=
+      FloatSpec.Core.Zaux.Zpower_Zpower_nat 2 _ Hshift_nonneg
     have Hrec_expr :
         FloatSpec.Core.Zaux.iter_nat shr_1
             (fexp (FloatSpec.Core.Digits.Zdigits 2 m + e) - e).toNat
@@ -1774,7 +1779,7 @@ theorem shr_truncate (fexp : Int → Int)
               l) := by
       simpa [hk, mrs] using Hrec
     simp [shr, FloatSpec.Calc.Round.truncate_triple, FloatSpec.Calc.Round.truncate_aux,
-      Hshift, Hshift_nonneg, Hk_nonneg, Hk', Hrec, Hrec_expr, hk, mrs]
+      Hshift, Hshift_nonneg, Hpow, Hk_nonneg, Hk', Hrec, Hrec_expr, hk, mrs]
     intro Hbad
     omega
   · by_cases Hshift_nonneg : 0 ≤ fexp (FloatSpec.Core.Digits.Zdigits 2 m + e) - e
@@ -2535,12 +2540,23 @@ private theorem bsn_shr_fexp_nonneg (m e : Int) (l : Loc) (hm : 0 ≤ m) :
   unfold FloatSpec.Calc.Round.truncate_triple
   by_cases hk :
       e < FLT_exp (3 - emax - prec) prec (FloatSpec.Core.Digits.Zdigits 2 m + e)
-  · have hpow_nonneg :
+  · have hshift_nonneg :
+        0 ≤ FLT_exp (3 - emax - prec) prec
+            (FloatSpec.Core.Digits.Zdigits 2 m + e) - e := by
+      omega
+    have hpow :
+        FloatSpec.Core.Zaux.Zpower 2
+            (FLT_exp (3 - emax - prec) prec
+              (FloatSpec.Core.Digits.Zdigits 2 m + e) - e) =
+          2 ^ (FLT_exp (3 - emax - prec) prec
+            (FloatSpec.Core.Digits.Zdigits 2 m + e) - e).natAbs :=
+      FloatSpec.Core.Zaux.Zpower_Zpower_nat 2 _ hshift_nonneg
+    have hpow_nonneg :
         0 ≤ (2 : Int) ^
           (FLT_exp (3 - emax - prec) prec
             (FloatSpec.Core.Digits.Zdigits 2 m + e) - e).natAbs :=
       pow_nonneg (by norm_num : (0 : Int) ≤ 2) _
-    simp [hk, FloatSpec.Calc.Round.truncate_aux,
+    simp [hk, FloatSpec.Calc.Round.truncate_aux, hpow,
       Int.ediv_nonneg hm hpow_nonneg]
   · simp [hk, hm]
 

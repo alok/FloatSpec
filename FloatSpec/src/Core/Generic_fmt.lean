@@ -80,13 +80,32 @@ lemma Ztrunc_int (n : Int) : (Ztrunc (n : ℝ)) = n := by
 lemma zpow_ne_zero_of_pos (a : ℝ) (n : Int) (ha : 0 < a) : a ^ n ≠ 0 := by
   exact zpow_ne_zero n (ne_of_gt ha)
 
-/-- A format is nonempty if it contains representable values
+/-- A format has the structural properties needed to make rounding total.
 
-    This property ensures that the floating-point format is non-empty
-    and can represent at least some real numbers.
+    This is the source contract of Flocq's `Round_pred.satisfies_any`: zero is
+    representable, the format is closed under negation, and downward rounding
+    has a witness for every real input.
 -/
-def satisfies_any (F : ℝ → Prop) : Prop :=
-  ∃ x : ℝ, F x
+inductive satisfies_any (F : ℝ → Prop) : Prop where
+  | intro :
+      F 0 →
+      (∀ x : ℝ, F x → F (-x)) →
+      round_pred_total (Rnd_DN_pt F) →
+      satisfies_any F
+
+/-- Pointwise-equivalent formats preserve the source `satisfies_any` contract. -/
+theorem satisfies_any_eq {F₁ F₂ : ℝ → Prop}
+    (hEq : ∀ x, F₁ x ↔ F₂ x) (hAny : satisfies_any F₁) :
+    satisfies_any F₂ := by
+  cases hAny with
+  | intro hZero hNeg hRound =>
+      refine satisfies_any.intro ((hEq 0).mp hZero) ?_ ?_
+      · intro x hx
+        exact (hEq (-x)).mp (hNeg x ((hEq x).mpr hx))
+      · intro x
+        rcases hRound x with ⟨f, hf, hfx, hmax⟩
+        exact ⟨f, (hEq f).mp hf, hfx,
+          fun g hg hgx => hmax g ((hEq g).mpr hg) hgx⟩
 
 /-- Valid exponent property
 
@@ -1041,17 +1060,6 @@ def format_discrete (F : ℝ → Prop) : Prop :=
   ∀ x, F x → x ≠ 0 → ∃ δ : ℝ, δ > 0 ∧ ∀ y, F y → y ≠ x → abs (y - x) ≥ δ
 
 -- Section: Generic format satisfies properties
-
-
-/-- Specification: Generic format satisfies rounding properties
-
-    The generic format contains at least some representable values.
--/
-theorem generic_format_satisfies_any (beta : Int) [ValidRadix beta] (fexp : Int → Int) [Valid_exp fexp] :
-    satisfies_any (fun y => (generic_format beta fexp y)) := by
-  refine ⟨0, ?_⟩
-  unfold generic_format scaled_mantissa cexp
-  simp [Ztrunc]
 
 
 /-- Coq {lit}`Generic_fmt.v`: {lean}`generic_format_EM`
@@ -6021,6 +6029,21 @@ theorem round_DN_pt
     Rnd_DN_pt (fun y => (generic_format beta fexp y)) x
       (roundR beta fexp rnd_floor x) := by
   exact roundR_DN_pt (beta := beta) (fexp := fexp) (x := x) hbeta
+
+/-- Coq {lit}`Generic_fmt.v`: {lean}`generic_format_satisfies_any`
+
+    The generic format contains zero, is closed under negation, and admits a
+    downward-rounding point for every real input.
+-/
+theorem generic_format_satisfies_any
+    (beta : Int) [ValidRadix beta] (fexp : Int → Int) [Valid_exp fexp] :
+    satisfies_any (fun y => generic_format beta fexp y) := by
+  refine satisfies_any.intro (generic_format_0_run beta fexp) ?_ ?_
+  · intro x hx
+    exact generic_format_opp beta fexp x hx
+  · intro x
+    exact ⟨roundR beta fexp rnd_floor x,
+      round_DN_pt beta fexp x ValidRadix.valid⟩
 
 /-- Coq {lit}`Generic_fmt.v`:
     Theorem {lean}`round_UP_pt`:

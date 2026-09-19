@@ -1084,6 +1084,8 @@ noncomputable def Bfrexp (x : PrimBinaryFloat) : PrimBinaryFloat × Int :=
 
 namespace Z
 
+/-- FLoCq-model `frexp` transported through the proof-carrying binary64
+carrier.  This is not a theorem about a native Lean runtime `frexp` call. -/
 noncomputable def frexp (x : PrimitiveFloat) : PrimitiveFloat × Int :=
   let result := Bfrexp (Prim2B x)
   (B2Prim result.1, result.2)
@@ -1212,9 +1214,13 @@ noncomputable def Bsucc (x : PrimBinaryFloat) : PrimBinaryFloat :=
 noncomputable def Bpred (x : PrimBinaryFloat) : PrimBinaryFloat :=
   Bopp (Bsucc (Bopp x))
 
+/-- FLoCq-model successor transported through the proof-carrying carrier.
+No native Lean runtime `nextUp` correspondence is asserted here. -/
 noncomputable def next_up (x : PrimitiveFloat) : PrimitiveFloat :=
   B2Prim (Bsucc (Prim2B x))
 
+/-- FLoCq-model predecessor transported through the proof-carrying carrier.
+No native Lean runtime `nextDown` correspondence is asserted here. -/
 noncomputable def next_down (x : PrimitiveFloat) : PrimitiveFloat :=
   B2Prim (Bpred (Prim2B x))
 
@@ -1375,7 +1381,13 @@ theorem sub_equiv (x y : PrimitiveFloat) :
 
 end FaithfulPrimFloat
 
-/-! Direct compatibility with Lean's binary64 logical and native carriers. -/
+/-! Compatibility with Lean's binary64 logical model and conversion to the
+native carrier.
+
+The arithmetic theorems below are stated against `Float.Model`.  `toFloat`
+and `ofFloat` convert through that logical model, but this section does not
+claim an observational equivalence theorem for hardware/runtime evaluation.
+-/
 
 namespace FloatSpec.IEEE754.Native
 

@@ -2,6 +2,15 @@
 
 Audit date: 2026-09-06
 
+Update (2026-09-18): a new focused audit of upstream baseline
+`158263e983ec3925e02b10f5b312498bf414e0f1` and pinned Flocq
+`7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f` found and repaired further
+source divergences on branch `codex/flocq-conformance-audit`. See
+`FloatSpec/docs/FLOCQ_CONFORMANCE_AUDIT_2026-09-18.md` for exact observations,
+tests, and unresolved boundaries. The historical repair status below refers
+to its stated earlier branch and date; it does not certify this branch, and
+the whole-repository alignment gate remains **INCOMPLETE**.
+
 ## Pinned audit scope
 
 - FLoCq source: `../sources/flocq`, commit

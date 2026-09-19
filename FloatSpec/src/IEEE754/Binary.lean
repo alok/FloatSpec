@@ -984,9 +984,10 @@ def valid_binary_payload {prec emax : Int} (x : FullFloat) : Bool :=
   match x with
   | FullFloat.F754_finite _ m e => specFloat_bounded (prec:=prec) (emax:=emax) m e
   | FullFloat.F754_nan _ payload =>
-      FloatSpec.Core.Zaux.Zlt_bool
-        ((FloatSpec.Core.Digits.digits2_Pnat payload : Nat) : Int)
-        prec
+      decide (0 < payload) &&
+        FloatSpec.Core.Zaux.Zlt_bool
+          (FloatSpec.Core.Digits.digits2_pos payload)
+          prec
   | FullFloat.F754_zero _ => true
   | FullFloat.F754_infinity _ => true
 
@@ -1442,6 +1443,16 @@ noncomputable def Btrunc (x : BinaryFloat) : Int :=
   FloatSpec.Core.Raux.Ztrunc (B2R x)
 
 end BinarySingleNaNBridge
+
+/-! ## Legacy `Binary754` compatibility surface
+
+The declarations below operate on the permissive `Binary754` carrier.  They
+are retained for older local callers and are not the source-shaped Flocq API.
+The proof-carrying operations and correctness theorems live in namespace
+`Binary` (exported from `BinarySingleNaN`) and must be used for Flocq
+correspondence claims.  In particular, the `binary_*` helpers below may erase
+special-value or signed-zero behavior and are only compatibility utilities.
+-/
 
 abbrev BplusNaNHandler (prec emax : Int) :=
   (x y : Binary754 prec emax) →

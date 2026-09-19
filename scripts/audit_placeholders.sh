@@ -59,7 +59,12 @@ trap 'rm -f "$pattern_file" "$scan_file"' EXIT
 
 cat >"$pattern_file" <<'PATTERNS'
 sorry	^\s*sorry\b|\bsorry\b
-axiom	^\s*(private\s+)?axiom\b
+axiom	^\s*((private|protected|noncomputable|unsafe)\s+)*axiom\b
+opaque	^\s*((private|protected|noncomputable|unsafe)\s+)*opaque\b
+extern	^\s*((private|protected|noncomputable|unsafe)\s+)*extern\b
+unsafe_declaration	^\s*((private|protected|noncomputable)\s+)*unsafe\s+(def|theorem|lemma|instance)\b
+implemented_by	\bimplemented_by\b
+native_decide	\bnative_decide\b
 admit	^\s*admit\b|\badmit\b
 true_definition	:\s*Prop\s*:=\s*True\b|:\s*True\s*:=\s*True\.intro\b
 true_relation	fun\s+(_|[A-Za-z][A-Za-z0-9_']*)\s+(_|[A-Za-z][A-Za-z0-9_']*)\s*=>\s*True\b

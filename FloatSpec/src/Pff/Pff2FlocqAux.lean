@@ -131,7 +131,7 @@ noncomputable def make_bound_Emin_check (beta p E : Int) : Id Unit :=
 
 /-- Coq: `make_bound_Emin` — if `E ≤ 0`, then `(dExp (make_bound beta p E)) = -E`. -/
 theorem make_bound_Emin (beta p E : Int)
-    (hβ : 1 < beta := by omega) (hp : 1 < p := by omega) :
+    (hβ : 1 < beta := by omega) :
     ⦃⌜E ≤ 0⌝⦄
     make_bound_Emin_check beta p E
     ⦃⇓_ => ⌜(make_bound beta p E).dExp = -E⌝⦄ := by
