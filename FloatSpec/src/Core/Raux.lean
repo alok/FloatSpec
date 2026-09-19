@@ -4012,8 +4012,9 @@ theorem mag_le (beta : Int) (x y : ℝ)
 
 /-- If {lit}`0 < |x| < bpow e` then {lit}`mag x ≤ e`
 
-    Since {coq}`mag` is defined via {lean}`Int.ceil (log |x| / log beta)`, the bound
-    {lit}`|x| < (beta : ℝ) ^ e` implies {lit}`log_beta |x| < e`, hence {lit}`mag x ≤ e`.
+    For nonzero inputs this port computes {coq}`mag` as the floor of the
+    base-beta logarithm plus one. The strict bound {lit}`|x| < (beta : ℝ) ^ e`
+    implies {lit}`log_beta |x| < e`, hence {lit}`mag x ≤ e`.
     This corrects the direction compared to an earlier draft. -/
 theorem lt_mag_from_bpow_payload (beta : Int) (x : ℝ) (e : Int)
     (hβ : 1 < beta)
@@ -4741,7 +4742,7 @@ theorem mag_minus_lb (beta : Int) (x y : ℝ)
   have hx_ne : x ≠ 0 := ne_of_gt hx_pos
   have hy_ne : y ≠ 0 := ne_of_gt hy_pos
 
-  -- Rewrite the hypothesis on magnitudes using the definition by ceilings
+  -- Rewrite the magnitude hypothesis using floor(log_beta |x|) + 1.
   set Lx : ℝ := Real.log x / Real.log (beta : ℝ) with hLx
   set Ly : ℝ := Real.log y / Real.log (beta : ℝ) with hLy
   -- From hmy_le: ⌊Ly⌋ + 1 ≤ (⌊Lx⌋ + 1) - 2, i.e., ⌊Ly⌋ ≤ ⌊Lx⌋ - 2
@@ -4799,10 +4800,10 @@ theorem mag_minus_lb (beta : Int) (x y : ℝ)
       exact ((zpow_right_strictMono₀ hβR).monotone hceil_le_floor)
     exact le_trans hy_le_pow_ceil hmono
 
-  -- Now reduce the Hoare-style goal to an inequality on ceilings
+  -- Reduce the legacy Hoare-style goal to an inequality on floors.
   simp [mag, hLx, hLy, abs_of_pos hx_pos, abs_of_pos hy_pos]
-  -- Goal (after simp): Int.ceil Lx - 1 ≤ Int.ceil ((Real.log (x - y)) / Real.log β)
-  -- It suffices to show Lx - 1 ≤ Lxy and use monotonicity of ceil
+  -- After establishing positivity of x - y, compare the logarithmic floors
+  -- using Lx - 1 ≤ Lxy. Ceiling bounds below are intermediate estimates only.
   set Lxy : ℝ := Real.log (x - y) / Real.log (beta : ℝ) with hLxy
 
   -- Show x/β ≤ x - y, which implies log(x) - log(β) ≤ log(x - y)
@@ -4928,7 +4929,7 @@ theorem mag_minus_lb (beta : Int) (x y : ℝ)
     exact sub_pos.mpr hy_lt_x
   have hxy_ne : x - y ≠ 0 := ne_of_gt hxy_pos
 
-  -- Now reduce the Hoare-style goal to an inequality on ceilings
+  -- Now reduce the legacy Hoare-style goal to an inequality on floors.
   simp [mag, hx_ne, hy_ne, hxy_ne, hLx, hLy, abs_of_pos hx_pos, abs_of_pos hy_pos]
 
   -- Translate to Lx - 1 ≤ Lxy

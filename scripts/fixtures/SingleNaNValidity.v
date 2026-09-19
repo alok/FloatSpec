@@ -11,6 +11,13 @@ Example validity_boundaries :
   valid 1 (-4) = true /\ valid 1 (-5) = false.
 Proof. vm_compute. repeat split; reflexivity. Qed.
 
+Example total_converter_rejects_noncanonical_one :
+  @BinarySingleNaN.B2SF 3 4 (@BinarySingleNaN.SF2B' 3 4 (SpecFloat.S754_finite false 1 0)) =
+    SpecFloat.S754_nan /\
+  @BinarySingleNaN.B2SF 3 4 (@BinarySingleNaN.SF2B' 3 4 (SpecFloat.S754_finite false 4 (-2))) =
+    SpecFloat.S754_finite false 4 (-2).
+Proof. vm_compute. split; reflexivity. Qed.
+
 Example fit_requires_canonical_input :
   SpecFloat.valid_binary 3 4 (binary_fit_aux 3 4 mode_NE false 1 0) = false /\
   SpecFloat.valid_binary 3 4 (binary_fit_aux 3 4 mode_NE false 4 (-2)) = true.

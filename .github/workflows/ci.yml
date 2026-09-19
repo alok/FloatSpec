@@ -45,6 +45,7 @@ jobs:
           python3 scripts/test_native_ieee_bridge.py -v
           python3 scripts/test_native_arithmetic_bridge.py -v
           python3 scripts/test_ieee_modes_bridge.py -v
+          python3 scripts/test_ieee_scale_bridge.py -v
           python3 scripts/test_flocq_source_refs.py -v
 
       - name: Verify generated status is current

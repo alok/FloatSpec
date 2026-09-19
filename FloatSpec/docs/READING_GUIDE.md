@@ -74,6 +74,13 @@ Their finite constructors carry validity evidence. The payload-preserving
 type also checks NaN payload width. The older `Binary754` compatibility
 wrapper is weaker: do not mistake its presence for a Flocq-valid carrier.
 
+Validity is not just a test of the real number represented. In the three-bit
+format, `(mantissa=1, exponent=0)` and `(4,-2)` both denote one, but only
+the latter is canonical. The SingleNaN tests feed these representations to
+the actual validators and total converters in Lean and Rocq. A source-facing
+validity theorem must prove the canonical/bounded predicate, not merely a
+compatibility predicate that always returns true.
+
 Mapping a float to a real number loses distinctions. Positive and negative
 zero have the same real value; NaNs and infinities need separate treatment.
 Consequently, a theorem about `toReal` cannot prove equality of all raw bits.
@@ -266,7 +273,7 @@ changed surfaces have been checked.
 Source links make that review navigable. `@[flocq_source]` records a pinned
 Coq path, line, and name; `@[flocq_local]` explains a Lean-only helper.
 Eleven modules currently enforce strict public-definition classification.
-The compiler-backed validator checks all 100 registered anchors, including
+The compiler-backed validator checks all 105 registered anchors, including
 combined attributes and later attribute commands. These links are metadata,
 not a proof that bodies or theorem signatures correspond.
 

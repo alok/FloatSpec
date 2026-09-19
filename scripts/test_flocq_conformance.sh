@@ -260,4 +260,9 @@ uv run "$repo_root/scripts/ieee_modes_bridge.py" --flocq-dir "$flocq_dir" --coqc
   --batch-size "${FLOCQ_MODES_BATCH_SIZE:-5}"
 FLOCQ_AUDIT_DIR="$flocq_dir" uv run "$repo_root/scripts/test_ieee_modes_bridge.py" -v
 
+uv run "$repo_root/scripts/ieee_scale_bridge.py" --flocq-dir "$flocq_dir" --coqc "$coqc_bin" \
+  --seed "${FLOCQ_BRIDGE_SEED:-20260919}" --samples "${FLOCQ_SCALE_SAMPLES:-20}" \
+  --batch-size "${FLOCQ_SCALE_BATCH_SIZE:-40}"
+FLOCQ_AUDIT_DIR="$flocq_dir" uv run "$repo_root/scripts/test_ieee_scale_bridge.py" -v
+
 echo "Three finite-test loops passed against pinned Flocq $gitlink_commit"

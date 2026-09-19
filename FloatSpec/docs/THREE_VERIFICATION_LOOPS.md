@@ -137,6 +137,15 @@ Signed zeros compare equal; NaNs remain unordered and unary source operations
 preserve their exact signs and payloads. The boundary corpus crosses all
 selected operand pairs and includes negative/over-width integer decoder inputs.
 
+A nineteenth family audits SingleNaN validity and total conversion. It compares
+the actual validity Boolean, the raw-carrier validity proposition, and three
+converter views. Its raw precision/exponent parameters can violate later
+arithmetic hypotheses; its mantissa must be positive because that is a source
+constructor requirement. Seed `860213` found 240 mismatches in 1,180 inputs
+before the raw-boundary repair and none afterwards. All 1,180 repaired cases
+also pass as generated kernel equalities. A deliberate conversion mutation
+must reproduce the noncanonical `(mantissa=1, exponent=0)` failure.
+
 Lean both executes compiled calls with `--run` and reduces them with `#reduce`;
 Rocq uses `vm_compute`. Enabling compiled execution required removing
 unnecessary `noncomputable` markers from twelve integer-only Calc definitions
@@ -167,7 +176,7 @@ bash scripts/test_flocq_conformance.sh
 ```
 
 This creates and builds a detached reference worktree, runs the standalone
-Rocq and Lean checks, runs all four differential bridges, and executes their own
+Rocq and Lean checks, runs all five differential bridges, and executes their own
 tests. Live mutations recreate the historical negative-exponent bug and replace
 native successor by predecessor, swap native arithmetic operands, and alter
 only compiled Lean while kernel/Rocq still agree. Each
@@ -332,7 +341,41 @@ live harness tests. Its source fingerprint is
 The newly added premise/error/oracle fixtures were executed separately after
 that frozen run; do not retroactively include them in that aggregate receipt.
 
-## 8. What this still does not establish
+## 8. Scaling and decomposition: four execution paths
+
+`scripts/ieee_scale_bridge.py` runs `Binary.Bldexp` and `Binary.Bfrexp`
+directly as compiled Lean, kernel reduction, and pinned Rocq. Those three
+paths compare all five fields exactly: original bits, scaled bits, fraction
+bits, exponent, and the reconstructed input. NaN signs/payloads are retained.
+The definitions are integer-only; enabling execution removed unnecessary
+`noncomputable` markers without changing their bodies or types.
+
+A fourth path uses native `Float` and `Float32`. Its scale comparison is
+restricted to nearest-even, because native `scaleB` does not accept a mode.
+Its fraction/exponent comparison is restricted to nonzero finite inputs,
+the domain of the source normalization theorem. Native exceptional outputs
+are retained in the report with an explicit list of checked fields. NaNs
+are quotiented only for this native comparison, never between Lean and Rocq.
+
+```sh
+uv run scripts/ieee_scale_bridge.py --flocq-dir /path/to/pinned-flocq \
+  --seed 604719 --samples 20 --batch-size 40
+FLOCQ_AUDIT_DIR=/path/to/pinned-flocq uv run scripts/test_ieee_scale_bridge.py -v
+# Replay rows are [width, mode, unsigned_input_word, integer_shift].
+```
+
+The first extended run passed **2,360 cases and 2,360 kernel regressions**
+in 408.335 seconds, at source SHA-256
+`f5db09e6d0e537474ceb0d2d02e391d8646ed86e9588e43d0103728de8f790cd`.
+All seven harness tests pass, including separately mutated kernel/compiled/
+native scaling, missing paths/columns, and interruption/timeout/source drift.
+The corpus crosses signed zeros, least subnormals, the normal transition,
+finite overflow, infinities, and signed NaNs in all five modes and both widths.
+Its shifts are bounded; it does not claim practical execution of arbitrary
+enormous integer shifts. The combined runner now includes this phase through
+`FLOCQ_SCALE_SAMPLES` and `FLOCQ_SCALE_BATCH_SIZE`.
+
+## 9. What this still does not establish
 
 No finite grid or random corpus proves universal source equivalence. The bridge
 does not yet exercise all of IEEE arithmetic, every native primitive,

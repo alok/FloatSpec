@@ -22,7 +22,7 @@ SOURCE_REF = re.compile(
 COQ_DECL = re.compile(
     r"^\s*(?:(?:Local|Global|Program|Polymorphic|Monomorphic)\s+)*"
     r"(?:Definition|Fixpoint|CoFixpoint|Lemma|Theorem|Inductive|CoInductive|"
-    r"Record|Class|Axiom|Parameter)\s+(?P<name>[A-Za-z_][A-Za-z_0-9']*)\b"
+    r"Record|Class|Axiom|Parameter)\s+(?P<name>[A-Za-z_][A-Za-z_0-9']*)(?![A-Za-z_0-9'])"
 )
 
 

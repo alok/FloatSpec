@@ -97,13 +97,13 @@ number constructions.
 
 The proof-carrying `BinarySingleNaN.valid_binary_B2SF` facade uses the real
 `validBinarySingleNaNStandardFloat` predicate and agrees with source
-`IEEE754/BinarySingleNaN.v:113`. Its raw-carrier, root-namespaced namesake
-still uses the always-true compatibility predicate: that older theorem
-does not establish Flocq validity. The root `binary_fit_aux_correct` also
-still has that weaker first conjunct at the point of this inspection.
-The latter has an existing stronger private validity lemma available, so
-strengthening its source-facing statement is queued after the running
-fixed-snapshot suite finishes.
+`IEEE754/BinarySingleNaN.v:113`. The root-namespaced namesake has now been
+corrected to take the proof-carrying carrier and establish that same real
+validity predicate. The root `binary_fit_aux_correct` likewise now combines
+the existing private validity proof with its finite/overflow semantic proof,
+instead of exporting the always-true compatibility predicate as its first
+conjunct. Both proofs are closed; explicit typed consumers prevent regression
+to the weaker signatures.
 
 The paired `SingleNaNValidity.lean` / `SingleNaNValidity.v` fixtures check
 five finite representations at precision 3 and maximum exponent 4. The
@@ -115,6 +115,29 @@ The Lean fixture consumes the proof-carrying source theorem explicitly.
 
 This is a validity-contract check, not a claim that every historical raw
 `B754` or `Binary754` wrapper has been migrated to the source carrier.
+
+The next differential slice caught two further raw-carrier errors. The old
+root `SF2B'` used the range-only `bounded` helper, so it accepted `(1,0)`
+instead of returning NaN as the source total converter does. The separate
+`validB754` predicate used `m < 2^(prec-1)`, rejecting canonical `(4,-2)` at
+precision three while accepting some noncanonical mantissas. Both errors
+predate upstream `158263e9`, hence also predate the 23 Sol commits.
+
+The converter and its roundtrip-domain predicate now require positivity
+and `specFloat_bounded`; `validB754` uses the actual validity test on the raw
+carrier's standard-float view. The four original counterexamples pass in
+compiled Lean, kernel reduction, and pinned Rocq after failing in both Lean
+paths before the patch. Seed `860213` yields **1,180 cases**: the old snapshot
+has **240 mismatches**, and the repaired snapshot has none, with all 1,180
+generated kernel equalities checked. This includes raw validation/conversion
+with nonpositive precision or `emax <= prec`; those are total-function
+observations, not applications of arithmetic theorems outside their domains.
+
+The permanent paired fixture records canonical/noncanonical one and minimum
+subnormal/overflow boundaries. Lean additionally checks that zero Nat
+mantissas are rejected and proves agreement of the raw and proof-carrying
+total converters for every `StandardFloat`. The bridge rejects zero mantissas
+as a shared input because Rocq's `positive` constructor cannot represent one.
 
 ## Relative-error statements and executable boundary
 

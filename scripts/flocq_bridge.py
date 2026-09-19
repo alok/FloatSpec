@@ -31,9 +31,9 @@ LEAN_LOC = [".loc_Exact", ".loc_Inexact .lt", ".loc_Inexact .eq", ".loc_Inexact 
 COQ_LOC = ["loc_Exact", "loc_Inexact Lt", "loc_Inexact Eq", "loc_Inexact Gt"]
 OPS = ("power", "div_eucl", "location", "round", "truncate", "div", "plus", "sqrt",
        "formats", "digits", "operations", "format_calc", "overflow", "bits32", "bits64",
-       "bit_fields", "order32", "order64")
-ARITIES = dict(zip(OPS, (2, 2, 3, 3, 5, 6, 6, 4, 3, 2, 5, 8, 4, 1, 1, 6, 2, 2), strict=True))
-WIDTHS = dict(zip(OPS, (1, 2, 3, 6, 3, 2, 2, 2, 4, 1, 13, 12, 5, 9, 9, 8, 9, 9), strict=True))
+       "bit_fields", "order32", "order64", "validity")
+ARITIES = dict(zip(OPS, (2, 2, 3, 3, 5, 6, 6, 4, 3, 2, 5, 8, 4, 1, 1, 6, 2, 2, 5), strict=True))
+WIDTHS = dict(zip(OPS, (1, 2, 3, 6, 3, 2, 2, 2, 4, 1, 13, 12, 5, 9, 9, 8, 9, 9, 14), strict=True))
 RADIX_OPS = {"truncate", "div", "plus", "sqrt", "digits", "operations", "format_calc"}
 
 
@@ -62,6 +62,8 @@ class Case:
                 raise ValueError("overflow requires 0 < prec < emax, mode 0..4, sign 0..1")
         if self.op == "bit_fields" and self.args[2] not in (0, 1):
             raise ValueError("bit-field sign must be 0 or 1")
+        if self.op == "validity" and (self.args[2] not in (0, 1) or self.args[3] <= 0):
+            raise ValueError("validity requires sign 0/1 and a positive source mantissa")
 
 
 def corpus(seed: int, samples: int) -> list[Case]:
@@ -114,6 +116,14 @@ def corpus(seed: int, samples: int) -> list[Case]:
                 for mantissa, exponent, word in ((0, 0, 0), (-3, -2, -1), (7, 5, 257)):
                     cases.append(Case("bit_fields", (mw, ew, sign, mantissa, exponent, word)))
     rng = random.Random(seed)
+    # Raw validation and total conversion exist even when precision/exponent
+    # parameters violate the hypotheses of subsequent arithmetic theorems.
+    for prec in (-1, 0, 1, 3, 5):
+        for emax in (1, 4, 8):
+            for sign in (0, 1):
+                for mantissa in (1, 3, 4, 7, 8, 16):
+                    for exponent in (-5, -4, -2, 0, 1, 4):
+                        cases.append(Case("validity", (prec, emax, sign, mantissa, exponent)))
     for width, fraction_width, exponent_width in ((32, 23, 8), (64, 52, 11)):
         inf = ((1 << exponent_width) - 1) << fraction_width
         one = ((1 << (exponent_width - 1)) - 1) << fraction_width
@@ -183,6 +193,9 @@ def corpus(seed: int, samples: int) -> list[Case]:
                 right = rng.choice((rng.getrandbits(width), left,
                                     (left + 1) % (1 << width), left ^ (1 << (width - 1))))
                 args = (left, right)
+            elif op == "validity":
+                args = (rng.randint(-2, 12), rng.randint(-2, 16), rng.randrange(2),
+                        rng.randint(1, 1 << 14), rng.randint(-32, 20))
             else:
                 args = (base, m1, e1, m2, e2, target, rng.randint(1, 5), rng.randrange(4))
             cases.append(Case(op, args))
@@ -193,6 +206,22 @@ def expressions(case: Case) -> tuple[str, str]:
     """Translate inputs only; all arithmetic is performed by imported APIs."""
     a = [f"({n})" for n in case.args]
     op = case.op
+    if op == "validity":
+        prec, emax, _, mantissa, exponent = a
+        sign = "true" if case.args[2] else "false"
+        lean = f"let x := StandardFloat.S754_finite {sign} {mantissa} {exponent}; "
+        lean += (f"[boolean (validBinarySingleNaNStandardFloat (prec := {prec}) (emax := {emax}) x), "
+                 f"boolean (rawValidity {prec} {emax} {sign} {mantissa} {exponent})] ++ "
+                 f"standard (B2SF_BSN (_root_.SF2B' (prec := {prec}) (emax := {emax}) x)) ++ "
+                 f"standard (BinarySingleNaN.B2SF (BinarySingleNaN.SF2B' "
+                 f"(prec := {prec}) (emax := {emax}) x)) ++ "
+                 f"standard (B2SF_BSN (SF2BSpec' (prec := {prec}) (emax := {emax}) x))")
+        rocq = f"let x := SpecFloat.S754_finite {sign} {mantissa}%positive {exponent} in "
+        rocq += (f"let valid := boolean (SpecFloat.valid_binary {prec} {emax} x) in "
+                 f"let converted := standard (@BinarySingleNaN.B2SF {prec} {emax} "
+                 f"(@BinarySingleNaN.SF2B' {prec} {emax} x)) in "
+                 "[valid; valid] ++ converted ++ converted ++ converted")
+        return lean, rocq
     if op in ("bits32", "bits64"):
         width = op[4:]
         return (f"FloatSpec.Test.BitsExecution.observation{width} {a[0]}",
@@ -315,6 +344,8 @@ private def location : Location → Int
   | .loc_Inexact .eq => 2
   | .loc_Inexact .gt => 3
 private def boolean (b : Bool) : Int := if b then 1 else 0
+private def rawValidity (prec emax : Int) (s : Bool) (m : Nat) (e : Int) : Bool :=
+  @decide (validB754 prec emax (.B754_finite s m e)) (by unfold validB754; infer_instance)
 private def pair (p : Int × Int) : List Int := [p.1, p.2]
 private def located (p : Int × Location) : List Int := [p.1, location p.2]
 private def triple (p : Int × Int × Location) : List Int := [p.1, p.2.1, location p.2.2]

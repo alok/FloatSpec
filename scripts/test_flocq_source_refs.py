@@ -10,6 +10,15 @@ import validate_flocq_source_refs as validator
 
 
 class ReferenceTests(unittest.TestCase):
+    def test_apostrophes_are_part_of_the_declaration_name(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "src").mkdir()
+            (root / "src/Probe.v").write_text("Definition SF2B' x := x.\n")
+            reference = {"lean_name": "probe", "path": "src/Probe.v", "line": 1, "name": "SF2B'"}
+            self.assertEqual(validator.validate_references([reference], root), [])
+            self.assertTrue(validator.validate_references([{**reference, "name": "SF2B"}], root))
+
     def test_paths_lines_and_names(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

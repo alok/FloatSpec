@@ -57,13 +57,14 @@ def SF2B (x : StandardFloat) : B754 :=
   | StandardFloat.S754_nan => B754.B754_nan
 
 -- Total bridge from StandardFloat to BinarySingleNaN (Coq: SF2B')
+@[flocq_source "src/IEEE754/BinarySingleNaN.v" 73 "SF2B'"]
 def SF2B' {prec emax : Int} (x : StandardFloat) : B754 :=
   match x with
   | StandardFloat.S754_zero s => B754.B754_zero s
   | StandardFloat.S754_infinity s => B754.B754_infinity s
   | StandardFloat.S754_nan => B754.B754_nan
   | StandardFloat.S754_finite s m e =>
-      if bounded (prec:=prec) (emax:=emax) m e then
+      if decide (0 < m) && specFloat_bounded (prec:=prec) (emax:=emax) m e then
         B754.B754_finite s m e
       else
         B754.B754_nan
@@ -72,7 +73,8 @@ def SF2B' {prec emax : Int} (x : StandardFloat) : B754 :=
 -- type is permissive, so exact `SF2B'` roundtrips must quantify over this view.
 def B754_bounded {prec emax : Int} (x : B754) : Prop :=
   match x with
-  | B754.B754_finite _ m e => bounded (prec:=prec) (emax:=emax) m e = true
+  | B754.B754_finite _ m e =>
+      (decide (0 < m) && specFloat_bounded (prec:=prec) (emax:=emax) m e) = true
   | B754.B754_zero _ => Unit = Unit
   | B754.B754_infinity _ => Unit = Unit
   | B754.B754_nan => Unit = Unit
@@ -218,8 +220,8 @@ def binarySingleNaNFloatToB754 {prec emax : Int}
   | BinarySingleNaNFloat.B754_zero s => B754.B754_zero s
   | BinarySingleNaNFloat.B754_nan => B754.B754_nan
 
--- Raw erasure of the Coq-shaped total `SF2B'` path. This intentionally does
--- not replace the historical range-only `SF2B'` compatibility API above.
+-- Raw erasure of the Coq-shaped total `SF2B'` path. The root `SF2B'` above
+-- now applies the same positivity and canonical/bounded validity checks.
 def SF2BSpec' {prec emax : Int} (x : StandardFloat) : B754 :=
   binarySingleNaNFloatToB754 (prec:=prec) (emax:=emax)
     (standardFloatToBinarySingleNaNFloat' (prec:=prec) (emax:=emax) x)
@@ -296,8 +298,7 @@ theorem B754_bounded_binarySingleNaNFloatToB754 {prec emax : Int}
   | B754_infinity s => rfl
   | B754_nan => rfl
   | B754_finite s m e hPos hBounded =>
-      simpa [binarySingleNaNFloatToB754, B754_bounded] using
-        range_bounded_of_specFloat_bounded (prec:=prec) (emax:=emax) m e hPos hBounded
+      simp [binarySingleNaNFloatToB754, B754_bounded, hPos, hBounded]
 
 theorem B2SF_BSN_binarySingleNaNFloatToB754 {prec emax : Int}
     (x : BinarySingleNaNFloat prec emax) :
@@ -1017,19 +1018,13 @@ theorem SF2B_B2SF (x : B754) :
   unfold SF2B_B2SF_check SF2B B2SF_BSN
   cases x <;> rfl
 
--- Coq: valid_binary_B2SF — validity of `B2SF` image
-def valid_binary_B2SF_check {prec emax : Int} (x : B754) : Bool :=
-  (valid_binary_SF (prec:=prec) (emax:=emax) (B2SF_BSN x))
-
-theorem valid_binary_B2SF {prec emax} (x : B754) :
-  ⦃⌜True⌝⦄
-  (pure (valid_binary_B2SF_check (prec:=prec) (emax:=emax) x) : Id Bool)
-  ⦃⇓result => ⌜result = true⌝⦄ := by
-  intro _
-  simp only [wp, PostCond.noThrow, pure]
-  -- Holds by the current definition of valid_binary_SF.
-  unfold valid_binary_B2SF_check
-  rfl
+/-- The source theorem requires the proof-carrying carrier and establishes
+actual canonical/bounded validity, not the always-true legacy predicate. -/
+@[flocq_source "src/IEEE754/BinarySingleNaN.v" 113 "valid_binary_B2SF"]
+theorem valid_binary_B2SF {prec emax : Int} (x : BinarySingleNaNFloat prec emax) :
+    validBinarySingleNaNStandardFloat (prec:=prec) (emax:=emax)
+      (binarySingleNaNFloatToStandardFloat x) = true :=
+  validBinarySingleNaNStandardFloat_binarySingleNaNFloatToStandardFloat x
 
 -- Coq: SF2B_B2SF_valid — roundtrip with validity argument
 def SF2B_B2SF_valid_check (x : B754) : B754 :=
@@ -1380,14 +1375,11 @@ theorem is_nan_BSN2B (s : Bool) (payload : Nat) (x : B754) :
   unfold is_nan_BSN2B_check is_nan_FF BSN2B BSN_is_nan
   cases x <;> rfl
 
--- Valid B754 predicate
+/-- Validity of the raw SingleNaN carrier: positivity, canonical mantissa,
+and exponent bounds are checked by the same predicate as the source carrier. -/
+@[flocq_local "Propositional validity adapter for the raw B754 compatibility carrier"]
 def validB754 (x : B754) : Prop :=
-  match x with
-  | B754.B754_finite s m e =>
-    -- Mantissa in range and exponent constraints
-    (1 ≤ m : Prop) ∧ (m < 2^(Int.natAbs (prec - 1) : Nat) : Prop) ∧
-    (3 - emax - prec ≤ e : Prop) ∧ (e ≤ emax - prec : Prop)
-  | _ => True
+  validBinarySingleNaNStandardFloat (prec:=prec) (emax:=emax) (B2SF_BSN x) = true
 
 -- Coq: shr_m_shr_record_of_loc
 theorem shr_m_shr_record_of_loc (m : Int) (l : Loc) :
@@ -2432,15 +2424,14 @@ private theorem abs_SF2R_finite_eq_unsigned (sx : Bool) (mx : Nat) (ex : Int) :
     simp [SF2R, F2R, FloatSpec.Core.Defs.F2R, abs_mul, hpow_nonneg, hmx_nonneg,
       abs_of_nonneg hpow_nonneg, abs_of_nonneg hmx_nonneg]
 
--- Coq: binary_fit_aux_correct
-theorem binary_fit_aux_correct
+-- Semantic component of the source theorem, paired with real validity below.
+private theorem binary_fit_aux_semantics
     (mode : RoundingMode) (sx : Bool) (mx : Nat) (ex : Int)
     (hmx_pos : 0 < mx)
     (hcanon : canonical_mantissa (prec:=prec) (emax:=emax) mx ex = true) :
     let x := SF2R 2 (StandardFloat.S754_finite sx mx ex)
     let z := binary_fit_aux (prec:=prec) (emax:=emax) mode sx mx ex
-    valid_binary_SF (prec:=prec) (emax:=emax) z = true ∧
-      if FloatSpec.Core.Raux.Rlt_bool |x| (FloatSpec.Core.Raux.bpow 2 emax) then
+    if FloatSpec.Core.Raux.Rlt_bool |x| (FloatSpec.Core.Raux.bpow 2 emax) then
         SF2R 2 z = x ∧ is_finite_SF z = true ∧ sign_SF z = sx
       else
         z = bsn_binary_overflow (prec:=prec) (emax:=emax) mode sx := by
@@ -2465,10 +2456,8 @@ theorem binary_fit_aux_correct
           (FloatSpec.Core.Raux.bpow 2 emax) = true := by
       simp [FloatSpec.Core.Raux.Rlt_bool, hlt]
     simp only [binary_fit_aux, hex_le, ↓reduceIte]
-    constructor
-    · rfl
-    · rw [hlt_bool]
-      simp [SF2R, is_finite_SF, sign_SF]
+    rw [hlt_bool]
+    simp [SF2R, is_finite_SF, sign_SF]
   · have hnot_lt :
         ¬ |SF2R 2 (StandardFloat.S754_finite sx mx ex)| <
           FloatSpec.Core.Raux.bpow 2 emax := by
@@ -2498,10 +2487,8 @@ theorem binary_fit_aux_correct
           (FloatSpec.Core.Raux.bpow 2 emax) = false := by
       simp [FloatSpec.Core.Raux.Rlt_bool, hnot_lt]
     simp only [binary_fit_aux, hex_le, ↓reduceIte]
-    constructor
-    · rfl
-    · rw [hlt_bool]
-      simp
+    rw [hlt_bool]
+    simp
 
 -- Coq: `shr_fexp`, specialized to the SingleNaN `FLT_exp` exponent function.
 -- This local helper keeps the precision-dependent BSN payload explicit.
@@ -3402,6 +3389,24 @@ private theorem validBinarySingleNaNStandardFloat_binary_fit_aux
   · simpa [binary_fit_aux, hex_le] using
       validBinarySingleNaNStandardFloat_bsn_binary_overflow
         (prec:=prec) (emax:=emax) mode sx
+
+/-- Fitting a canonical mantissa produces an actually valid source float,
+with the source's finite/overflow semantic alternatives. -/
+@[flocq_source "src/IEEE754/BinarySingleNaN.v" 1233 "binary_fit_aux_correct"]
+theorem _root_.binary_fit_aux_correct
+    (mode : RoundingMode) (sx : Bool) (mx : Nat) (ex : Int)
+    (hmx_pos : 0 < mx)
+    (hcanon : canonical_mantissa (prec:=prec) (emax:=emax) mx ex = true) :
+    let x := SF2R 2 (StandardFloat.S754_finite sx mx ex)
+    let z := binary_fit_aux (prec:=prec) (emax:=emax) mode sx mx ex
+    validBinarySingleNaNStandardFloat (prec:=prec) (emax:=emax) z = true ∧
+      if FloatSpec.Core.Raux.Rlt_bool |x| (FloatSpec.Core.Raux.bpow 2 emax) then
+        SF2R 2 z = x ∧ is_finite_SF z = true ∧ sign_SF z = sx
+      else
+        z = bsn_binary_overflow (prec:=prec) (emax:=emax) mode sx := by
+  exact ⟨validBinarySingleNaNStandardFloat_binary_fit_aux
+      (prec:=prec) (emax:=emax) mode sx mx ex hmx_pos hcanon,
+    binary_fit_aux_semantics (prec:=prec) (emax:=emax) mode sx mx ex hmx_pos hcanon⟩
 
 private theorem binary_round_aux_correct_proof
     [FloatSpec.Core.Generic_fmt.Monotone_exp
@@ -6952,7 +6957,7 @@ theorem Bnormfr_mantissa_correct {prec emax : Int}
       simpa [Bnormfr_mantissa, B2BSN, binaryFloatToBinarySingleNaNFloat]
         using hs
 
-noncomputable def BldexpSingle {prec emax : Int}
+def BldexpSingle {prec emax : Int}
     [Prec_gt_0 prec] [Prec_lt_emax prec emax]
     (mode : RoundingMode) (x : BinarySingleNaNFloat prec emax) (k : Int) :
     BinarySingleNaNFloat prec emax :=
@@ -6984,7 +6989,8 @@ theorem is_nan_BldexpSingle {prec emax : Int}
       exact hn
 
 -- Coq `Binary.v:Bldexp`, preserving the original Binary NaN payload.
-noncomputable def Bldexp {prec emax : Int}
+@[flocq_source "src/IEEE754/Binary.v" 1291 "Bldexp"]
+def Bldexp {prec emax : Int}
     [Prec_gt_0 prec] [Prec_lt_emax prec emax]
     (mode : RoundingMode) (x : binary_float prec emax) (k : Int) :
     binary_float prec emax :=
@@ -7082,7 +7088,7 @@ theorem Bldexp_correct {prec emax : Int}
         rw [hfull, hbz]
         rfl
 
-noncomputable def BfrexpSingle {prec emax : Int}
+def BfrexpSingle {prec emax : Int}
     [Prec_gt_0 prec] (x : BinarySingleNaNFloat prec emax) :
     BinarySingleNaNFloat prec emax × Int :=
   match x with
@@ -7117,7 +7123,8 @@ theorem is_nan_BfrexpSingle {prec emax : Int}
 -- Coq `Binary.v:Bfrexp`, using the source three-branch decomposition and
 -- preserving a Binary NaN's sign and payload through `lift`.
 -- Source ID: IEEE754/Binary.v:Bfrexp:34504
-noncomputable def Bfrexp {prec emax : Int}
+@[flocq_source "src/IEEE754/Binary.v" 1334 "Bfrexp"]
+def Bfrexp {prec emax : Int}
     [Prec_gt_0 prec] (x : binary_float prec emax) :
     binary_float prec emax × Int :=
   let y := BfrexpSingle (B2BSN x)

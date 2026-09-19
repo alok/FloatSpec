@@ -76,6 +76,9 @@ class ParserTests(unittest.TestCase):
         self.assertIn(bridge.Case("bits64", (-1,)), first)
         self.assertIn(bridge.Case("bits32", (1 << 32,)), first)
         self.assertIn(bridge.Case("bit_fields", (-3, -2, 1, -3, -2, -1)), first)
+        self.assertIn(bridge.Case("validity", (3, 4, 0, 1, 0)), first)
+        self.assertIn(bridge.Case("validity", (3, 4, 0, 4, -2)), first)
+        self.assertIn(bridge.Case("validity", (-1, 1, 1, 1, -5)), first)
 
     def test_replay_input_validation(self):
         for op, args in (("no_such_function", ()), ("power", (2,)),
@@ -83,13 +86,53 @@ class ParserTests(unittest.TestCase):
                          ("location", (4, 2, -1)), ("round", (2, 0, 1)),
                          ("sqrt", (1, 4, 0, 0)), ("overflow", (0, 4, 0, 0)),
                          ("overflow", (4, 4, 0, 0)), ("overflow", (3, 4, 5, 0)),
-                         ("bit_fields", (0, 0, 2, 0, 0, 0))):
+                         ("bit_fields", (0, 0, 2, 0, 0, 0)),
+                         ("validity", (3, 4, 0, 0, 0)),
+                         ("validity", (3, 4, 2, 1, 0))):
             with self.subTest(op=op, args=args), self.assertRaises(ValueError):
                 bridge.Case(op, args)
 
 
 @unittest.skipUnless(os.environ.get("FLOCQ_AUDIT_DIR"), "live test requires FLOCQ_AUDIT_DIR")
 class LiveTests(unittest.TestCase):
+    def test_raw_and_proof_carrying_validity_agree_with_source(self):
+        flocq = Path(os.environ["FLOCQ_AUDIT_DIR"]).resolve()
+        cases = [bridge.Case("validity", (3, 4, 0, 1, 0)),
+                 bridge.Case("validity", (3, 4, 0, 4, -2)),
+                 bridge.Case("validity", (3, 4, 1, 1, -4)),
+                 bridge.Case("validity", (-1, 1, 0, 1, 0))]
+        with tempfile.TemporaryDirectory(prefix="floatspec-validity-") as directory:
+            observations = bridge.execute(cases, flocq, bridge.configured_coqc(flocq), Path(directory))
+            bridge.bootstrap_lean(cases, observations["rocq"], Path(directory))
+        self.assertEqual(bridge.compare(cases, observations), [])
+        self.assertEqual(observations["lean"][0], [0, 0] + [2, 0, 0, 0] * 3)
+        self.assertEqual(observations["lean"][1], [1, 1] + [3, 0, 4, -2] * 3)
+        self.assertEqual(observations["lean"][2], [1, 1] + [3, 1, 1, -4] * 3)
+        self.assertEqual(observations["lean"][3], [0, 0] + [2, 0, 0, 0] * 3)
+
+    def test_range_only_conversion_mutation_is_rejected(self):
+        original = bridge.expressions
+        def mutated(case):
+            lean, rocq = original(case)
+            if case.op == "validity":
+                # Restore the old bug: raw conversion accepts any in-range
+                # finite representation without checking canonicality.
+                lean = lean.replace("_root_.SF2B' (prec := (3)) (emax := (4)) x", "SF2B x")
+            return lean, rocq
+        with tempfile.TemporaryDirectory(prefix="floatspec-validity-mutation-") as directory:
+            output, replay = Path(directory) / "output", Path(directory) / "cases.json"
+            case = {"op": "validity", "args": [3, 4, 0, 1, 0]}
+            replay.write_text(json.dumps([case]))
+            argv = ["flocq_bridge", "--flocq-dir", os.environ["FLOCQ_AUDIT_DIR"],
+                    "--skip-build", "--replay", str(replay), "--output", str(output)]
+            with (patch("sys.argv", argv), patch.object(bridge, "expressions", mutated),
+                  contextlib.redirect_stdout(io.StringIO()), self.assertRaises(SystemExit)):
+                bridge.main()
+            report = json.loads((output / "report.json").read_text())
+            self.assertEqual(report["status"], "mismatch")
+            self.assertEqual(report["mismatches"][0]["paths"], ["lean", "compiled"])
+            self.assertEqual(json.loads((output / "replay.json").read_text()), [case])
+
     def test_concurrent_source_change_marks_run_error(self):
         with tempfile.TemporaryDirectory(prefix="floatspec-source-change-") as directory:
             output, replay = Path(directory) / "output", Path(directory) / "cases.json"

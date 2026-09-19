@@ -333,6 +333,43 @@ HEAD. Executions use a separate detached reference checkout.
     (`-14` observed versus nearest-even `-12`). These fixtures were run
     separately after the preceding aggregate receipt, not retroactively
     counted as part of it.
+27. **Scale/decompose now runs in four paths:** removing four unnecessary
+    `noncomputable` markers enables the integer-only `Binary.Bldexp` and
+    `Binary.Bfrexp` chain without changing computation bodies or public types.
+    Seed `604719` passes 2,360 exact compiled/kernel/Rocq cases and 2,360
+    generated kernel regressions, with native Float/Float32 observations
+    checked only in the stated mode/finite-input scope. Runtime: 408.335 s;
+    source SHA-256
+    `f5db09e6d0e537474ceb0d2d02e391d8646ed86e9588e43d0103728de8f790cd`.
+    All seven harness tests pass, including independently mutated paths and
+    error handling. The later raw-validity changes postdate this receipt.
+28. **Two strong root validity statements restored:** `valid_binary_B2SF`
+    now consumes the proof-carrying SingleNaN carrier and establishes actual
+    canonical/bounded validity. `binary_fit_aux_correct` now exports that
+    same predicate in its validity conjunct. Existing closed proofs supply
+    both corrections; no new sorry is needed. Typed consumers reject the old
+    weaker signatures. The full 6,215-job macOS build and LSP checks passed
+    for this slice before the further raw-boundary repair below.
+29. **Raw validity/conversion counterexamples found and repaired:** the new
+    bridge family sends the same precision, exponent limit, sign, positive
+    mantissa, and exponent through actual validators and three converter
+    views. On seed `860213`, 240 of 1,180 cases disagreed before the patch;
+    the same 1,180 cases now agree and yield 1,180 passing kernel regressions.
+    Root `SF2B'` admitted noncanonical one `(1,0)`; `validB754` rejected
+    canonical one `(4,-2)` due to its wrong mantissa bound. These defects
+    predate the Sol audit range. The paired fixture preserves the witnesses,
+    and the raw/proof-carrying converter equality is proved for all inputs.
+    Adding the source link also exposed the anchor validator's mishandling
+    of apostrophes in Coq names: its new failing test now passes after the
+    identifier-boundary correction.
+    The repaired validity grid took 80.249 s at source SHA-256
+    `98afa4bd627ef35e5aa492f714004382e19d63bd2ad803205e5650ebcb1b2790`.
+    Nineteen core-bridge tests, seven scale-harness tests, and three source-link
+    tests pass, including live deliberate mismatches. Fresh compiler metadata
+    validates 105 anchors; the trust audit still reports 13,564 source
+    declarations in 58 modules with exactly four manifest debts. The later
+    complete 6,215-job macOS build also includes comment-only corrections to
+    outdated ceiling-of-log descriptions in Raux.
 
 See [the three-loop guide](THREE_VERIFICATION_LOOPS.md) for commands, output
 artifacts, and current coverage. Repairs include the source-link/trust gates,
@@ -383,15 +420,14 @@ snapshot; the new order bridge has also completed successfully. The native
 arithmetic bridge still decodes through Float.Model; the new core bit families
 exercise the distinct source-shaped decoder directly and retain NaN payloads.
 
-The integer-only IEEE arithmetic chain, compiled all-mode bridge, and extended
-combined run are complete at their recorded snapshots. The next prepared
-slice enables the genuinely integer-only `Bldexp`/`Bfrexp` paths and compares
-compiled Lean, kernel reduction, Rocq, and the applicable native observations.
-Two remaining root SingleNaN validity exports also need their strong source
-predicate restored. Generic real-valued comparisons and further theorem
-contract audits remain separate slices. Do not replace mathematical reals
-with machine floats or bypass proof obligations merely to make a declaration
-compile.
+The integer-only IEEE arithmetic and scale/decompose chains, compiled bridges,
+two root validity exports, and raw validation/conversion repairs are now
+implemented with the slice-specific receipts above. A new aggregate run is
+still needed to include all the later fixtures and scale/validity additions;
+the earlier completed aggregate cannot be relabeled. Generic real-valued
+comparisons and further theorem-contract audits remain separate slices.
+Do not replace mathematical reals with machine floats or bypass proof
+obligations merely to make a declaration compile.
 
 Maintain three separate loops: independent Lean tests, independent pinned
 Flocq/Rocq tests, and a differential bridge that sends identical inputs to both.
