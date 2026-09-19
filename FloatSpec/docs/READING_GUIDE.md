@@ -33,9 +33,22 @@ That separation is the architecture of the port:
 - **Prop** proves relationships and error properties on top of those
   definitions. **Pff** connects an older floating-point presentation.
 
-The example is explanatory, not an extra executed test receipt. The runnable
-boundary corpora exercise real binary32/binary64 halfway cases and all five
-rounding modes.
+This example is executed and proved in both
+[`RoundingWalkthrough.lean`](../Test/RoundingWalkthrough.lean) and
+[`RoundingWalkthrough.v`](../../scripts/fixtures/RoundingWalkthrough.v).
+The same test also rounds the negative halfway point:
+
+| Mode | 1.125 rounds to | -1.125 rounds to |
+|---|---:|---:|
+| Nearest-even | 1 | -1 |
+| Toward zero | 1 | -1 |
+| Downward | 1 | -1.25 |
+| Upward | 1.25 | -1 |
+| Nearest-away | 1.25 | -1.25 |
+
+Run `lake env lean FloatSpec/Test/RoundingWalkthrough.lean` to see the actual
+sign/mantissa/exponent rows. Mantissa 4 or 5 at exponent -2 is 1 or 1.25.
+Larger boundary corpora separately exercise real binary32/binary64 inputs.
 
 ## 2. Know what a value is before reading its arithmetic
 
@@ -160,8 +173,13 @@ and reported separately.
 
 A separate IEEE source-API bridge covers binary32/binary64 in all five
 rounding modes, including fused multiply-add and exact NaN payloads.
-That bridge currently checks kernel/Rocq execution, not native directed
-rounding. Fixed-width comparison now executes the source's constructor/sign/
+That bridge checks compiled integer-only Lean, kernel reduction, and Rocq,
+not native hardware directed rounding. Enabling the compiled path required
+removing unnecessary `noncomputable` markers and moving square root's
+real-valued witness inside its erased validity proof; the arithmetic itself
+still uses integers. A separate 100,100-comparison runtime grid checks the
+port's own binary32/binary64 arithmetic against native Float/Float32.
+Fixed-width comparison now executes the source's constructor/sign/
 exponent/mantissa algorithm with result type `Option Ordering`, not arbitrary
 integer codes or noncomputable real comparison. It is also checked against
 native Float/Float32 comparisons. The direct decoder and integer-width packing families avoid
@@ -203,7 +221,7 @@ changed surfaces have been checked.
 Source links make that review navigable. `@[flocq_source]` records a pinned
 Coq path, line, and name; `@[flocq_local]` explains a Lean-only helper.
 Eleven modules currently enforce strict public-definition classification.
-The compiler-backed validator checks all 62 registered anchors, including
+The compiler-backed validator checks all 74 registered anchors, including
 combined attributes and later attribute commands. These links are metadata,
 not a proof that bodies or theorem signatures correspond.
 

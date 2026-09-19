@@ -10,6 +10,8 @@ import FloatSpec.Test.NativeIEEE
 import FloatSpec.Test.NativeArithmetic
 import FloatSpec.Test.BitsExecution
 import FloatSpec.Test.BitOrderExecution
+import FloatSpec.Test.NativeSourceArithmetic
+import FloatSpec.Test.RoundingWalkthrough
 import FloatSpec.Test.CoqSourceLinks
 import FloatSpec.Test.ZauxSource
 import FloatSpec.Test.MagSource

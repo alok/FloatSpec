@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Cross-test source IEEE arithmetic in every rounding mode, retaining NaN payloads.
 
-This compares the port's own bit decoders/operations with pinned Rocq. It does
+This compares compiled Lean and kernel reduction of the port's own bit
+decoders/operations with pinned Rocq. It does
 not claim native hardware execution of directed rounding. Inputs and complete
 generated prover programs are retained, with per-case kernel regression proofs.
 """
@@ -85,12 +86,21 @@ def expression(case, language):
     return result + "[" + separator.join(f"{prefix}bits_of_b{width} ({value})" for value in values) + "]"
 
 
+def compiled_source(cases):
+    return (LEAN_HEADER + "def main : IO Unit := IO.println ([\n" +
+            ",\n".join(expression(c, "lean") for c in cases) +
+            "\n] : List (List Int))\n")
+
+
 def execute(cases, flocq, coqc, folder):
     lean, rocq = folder / "Modes.lean", folder / "Modes.v"
+    compiled = folder / "Compiled.lean"
     lean.write_text(LEAN_HEADER + "#reduce ([\n" + ",\n".join(expression(c, "lean") for c in cases) +
                     "\n] : List (List Int))\n")
     rocq.write_text(COQ_HEADER + "Eval vm_compute in [\n" + ";\n".join(expression(c, "rocq") for c in cases) + "\n].\n")
+    compiled.write_text(compiled_source(cases))
     commands = {"lean": ["lake", "env", "lean", str(lean)],
+                "compiled": ["lake", "env", "lean", "--run", str(compiled)],
                 "rocq": [coqc, "-q", "-R", str(flocq / "src"), "Flocq", str(rocq)]}
 
     def observe(name):
@@ -101,9 +111,27 @@ def execute(cases, flocq, coqc, folder):
             raise ValueError(f"{name}: incomplete IEEE observation columns")
         return rows
 
-    with ThreadPoolExecutor(max_workers=2) as pool:
+    with ThreadPoolExecutor(max_workers=3) as pool:
         futures = {name: pool.submit(observe, name) for name in commands}
         return {name: future.result() for name, future in futures.items()}
+
+
+def compare(cases, results):
+    if set(results) != {"lean", "compiled", "rocq"}:
+        raise ValueError("all three IEEE execution paths are required")
+    for name, rows in results.items():
+        if len(rows) != len(cases) or any(len(row) != len(COLUMNS) for row in rows):
+            raise ValueError(f"{name}: incomplete IEEE observations")
+    mismatches = []
+    for index, case in enumerate(cases):
+        paths = [name for name in ("lean", "compiled") if results[name][index] != results["rocq"][index]]
+        if paths:
+            mismatches.append({"case": case, "paths": paths,
+                **{name: rows[index] for name, rows in results.items()},
+                "columns": [column for offset, column in enumerate(COLUMNS)
+                            if any(results[name][index][offset] != results["rocq"][index][offset]
+                                   for name in paths)]})
+    return mismatches
 
 
 def bootstrap(cases, rows, folder):
@@ -120,6 +148,7 @@ def bootstrap(cases, rows, folder):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--flocq-dir", type=Path, required=True)
+    parser.add_argument("--coqc", help="override the compiler recorded by the reference build")
     parser.add_argument("--seed", type=int, default=923451)
     parser.add_argument("--samples", type=int, default=10, help="random triples per mode and format")
     parser.add_argument("--batch-size", type=int, default=10)
@@ -134,7 +163,7 @@ def main():
     if not cases:
         parser.error("an empty corpus is not a pass")
     flocq = args.flocq_dir.resolve()
-    pin, coqc = verify_reference(flocq), configured_coqc(flocq)
+    pin, coqc = verify_reference(flocq), args.coqc or configured_coqc(flocq)
     output = (args.output or Path(tempfile.mkdtemp(prefix="floatspec-ieee-modes-"))).resolve()
     output.mkdir(parents=True, exist_ok=True)
     if any(output.iterdir()):
@@ -145,10 +174,10 @@ def main():
               "worktree_status": run(["git", "status", "--porcelain"]).strip(),
               "lean_version": run(["lake", "env", "lean", "--version"]).strip(),
               "rocq_version": run([coqc, "--version"]).strip(), "host": run(["uname", "-sm"]).strip(),
-              "method": "Lean kernel reduction versus pinned Rocq, all 5 rounding modes, exact NaN payloads",
+              "method": "Compiled Lean and kernel reduction versus pinned Rocq, all 5 rounding modes, exact NaN payloads",
               "groups": dict(Counter(f"binary{c[0]}:{LEAN_MODES[c[1]]}" for c in cases)),
               "fresh_build": not args.skip_build, "status": "running", "compared_cases": 0,
-              "bootstrapped_lean_cases": 0, "mismatches": []}
+              "compiled_cases": 0, "bootstrapped_lean_cases": 0, "mismatches": []}
 
     def save():
         (output / "report.json").write_text(json.dumps(report, indent=2) + "\n")
@@ -167,11 +196,9 @@ def main():
             folder = output / f"batch_{offset:06d}"
             folder.mkdir()
             results = execute(batch, flocq, coqc, folder)
-            for case, lean, rocq in zip(batch, results["lean"], results["rocq"], strict=True):
-                if lean != rocq:
-                    report["mismatches"].append({"case": case, "lean": lean, "rocq": rocq,
-                        "columns": [name for name, a, b in zip(COLUMNS, lean, rocq, strict=True) if a != b]})
+            report["mismatches"].extend(compare(batch, results))
             report["compared_cases"] += len(batch)
+            report["compiled_cases"] += len(batch)
             save()
             if results["lean"] == results["rocq"]:
                 bootstrap(batch, results["rocq"], folder)

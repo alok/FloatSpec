@@ -281,6 +281,30 @@ HEAD. Executions use a separate detached reference checkout.
     `Binary.Bcompare` and primitive comparison implementations are unchanged,
     and no universal equivalence theorem connecting these implementations is
     claimed. Six more source anchors bring the registered count to **62**.
+23. **The source-shaped IEEE arithmetic itself now compiles:** twelve
+    integer-rounding/core/arithmetic declarations and twelve fixed-width
+    wrappers no longer carry unnecessary `noncomputable` markers. The first
+    build correctly failed on `Binary.Bsqrt`'s real-valued `input` let-binding.
+    That witness was only needed by the validity proof; moving it and its
+    supporting proof steps inside `hvalid` removed the runtime `F2R`
+    dependency without replacing real mathematics or changing the integer
+    result/type. A fresh **6,215-job** macOS build passes. The actual source
+    APIs pass **100,100** native Float/Float32 arithmetic comparisons (seed
+    `489231`, boundary and random cases, NaNs explicitly quotiented).
+    The all-mode/exact-payload bridge now runs compiled Lean as a third path.
+    Source review also caught that the newly integrated runner supplied a
+    `--coqc` argument missing from that bridge's CLI; the option is now
+    implemented and exercised by a live compiled-only rounding mutation test.
+    All **eight** bridge-harness tests pass, including both-implementation and
+    compiled-only deliberate rounding mutations, all ten format/mode groups,
+    strict output validation, and error handling for interruption/timeouts.
+    The compiler trust audit reports **13,566 declarations**, all 58 source
+    modules, and only the original four direct/transitive manifest debts.
+    The fresh anchor validator checks **74** references. The reading guide's
+    three-bit rounding walkthrough now executes and has closed equality
+    proofs in both Lean and Rocq for all five modes and both signs.
+    Extended all-mode differential and combined-suite runs remain to be
+    recorded for this new compiled arithmetic snapshot.
 
 See [the three-loop guide](THREE_VERIFICATION_LOOPS.md) for commands, output
 artifacts, and current coverage. Repairs include the source-link/trust gates,
@@ -331,15 +355,12 @@ snapshot; the new order bridge has also completed successfully. The native
 arithmetic bridge still decodes through Float.Model; the new core bit families
 exercise the distinct source-shaped decoder directly and retain NaN payloads.
 
-Next execution slice: enable compiled execution of the integer-only IEEE
-rounding/arithmetic path, preserving bodies and theorem types. The candidate
-chain is `bsn_shr_fexp`, `binary_round_aux`, `binary_round`, the specialized
-division/square-root cores, `Binary.normalize`, the six proof-carrying
-arithmetic operations, and their fixed-width wrappers. Let compiler feedback
-identify genuinely noncomputable dependencies; do not replace mathematical
-reals by machine floats or bypass proof obligations. Extend the all-mode
-bridge with compiled Lean only after the actual APIs compile. The generic
-real-valued comparisons remain a separate source-contract review.
+The integer-only IEEE arithmetic chain and compiled all-mode bridge are now
+enabled. Finish the extended differential and combined-suite execution on a
+stable snapshot before further product edits. The generic real-valued
+comparisons and further Prop/theorem contract audits remain separate review
+slices. Do not replace mathematical reals with machine floats or bypass proof
+obligations merely to make a declaration compile.
 
 Maintain three separate loops: independent Lean tests, independent pinned
 Flocq/Rocq tests, and a differential bridge that sends identical inputs to both.

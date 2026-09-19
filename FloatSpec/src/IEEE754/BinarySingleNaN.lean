@@ -2505,7 +2505,7 @@ theorem binary_fit_aux_correct
 
 -- Coq: `shr_fexp`, specialized to the SingleNaN `FLT_exp` exponent function.
 -- This local helper keeps the precision-dependent BSN payload explicit.
-noncomputable def bsn_shr_fexp (m e : Int) (l : Loc) : ShrRecord × Int :=
+def bsn_shr_fexp (m e : Int) (l : Loc) : ShrRecord × Int :=
   let r := FloatSpec.Calc.Round.truncate_triple
     (beta := 2) (fexp := FLT_exp (3 - emax - prec) prec) (m, e, l)
   let m' := r.1
@@ -2568,7 +2568,7 @@ private theorem choice_mode_nonneg_of_nonneg
   omega
 
 -- Coq: `binary_round_aux`.
-noncomputable def binary_round_aux (mode : RoundingMode) (sx : Bool)
+def binary_round_aux (mode : RoundingMode) (sx : Bool)
     (mx ex : Int) (lx : Loc) : StandardFloat :=
   let first := bsn_shr_fexp (prec:=prec) (emax:=emax) mx ex lx
   let roundedMant := choice_mode mode sx first.1.shr_m (loc_of_shr_record first.1)
@@ -2623,7 +2623,7 @@ theorem binarySingleNaNFloatToB754_binaryRoundAuxToBinarySingleNaNFloat
       (binary_round_aux (prec:=prec) (emax:=emax) mode sx mx ex lx) hvalid
 
 -- Coq: `binary_round`.
-noncomputable def binary_round (mode : RoundingMode) (sx : Bool)
+def binary_round (mode : RoundingMode) (sx : Bool)
     (mx : Nat) (ex : Int) : StandardFloat :=
   let aligned := shl_align_fexp (prec:=prec) (emax:=emax) mx ex
   binary_round_aux (prec:=prec) (emax:=emax) mode sx (aligned.1 : Int)
@@ -4122,7 +4122,7 @@ theorem Bsqrt_correct_aux_from_assumed_rounding {prec emax : Int}
 end ExperimentalSingleNaNArithmetic
 
 -- Coq: `SFdiv_core_binary`.
-noncomputable def SFdiv_core_binary (prec emax : Int)
+def SFdiv_core_binary (prec emax : Int)
     (mx ex my ey : Int) : Int × Int × Loc :=
   FloatSpec.Calc.Div.Fdiv 2 (FLT_exp (3 - emax - prec) prec)
     (FloatSpec.Core.Defs.FlocqFloat.mk mx ex :
@@ -4208,7 +4208,7 @@ private theorem SFdiv_core_binary_correct_data {prec emax : Int}
 -- Specialize the generic square-root core to the binary FLT exponent used by
 -- the IEEE layer.  Keeping the full location result is essential: it is the
 -- rounding information consumed by `binary_round_aux`.
-noncomputable def SFsqrt_core_binary (prec emax : Int) (mx ex : Int) :
+def SFsqrt_core_binary (prec emax : Int) (mx ex : Int) :
     Int × Int × Loc :=
   FloatSpec.Calc.Sqrt.Fsqrt 2 (FLT_exp (3 - emax - prec) prec)
     (FloatSpec.Core.Defs.FlocqFloat.mk mx ex :
@@ -6309,7 +6309,7 @@ def standardFloatToBinaryFloatOfNotNaN {prec emax : Int}
         simpa [hp] using h'.2)
 
 -- Coq: `Binary.v:Bsqrt`.
-noncomputable def Bsqrt {prec emax : Int}
+def Bsqrt {prec emax : Int}
     [Prec_gt_0 prec] [Prec_lt_emax prec emax]
     (sqrt_nan : BsqrtNaNHandler prec emax)
     (mode : RoundingMode) (x : binary_float prec emax) :
@@ -6322,9 +6322,6 @@ noncomputable def Bsqrt {prec emax : Int}
   | binary_float.B754_finite true _ _ _ => (sqrt_nan x).1
   | binary_float.B754_finite false mx ex _ =>
       let mxn := FloatSpec.Core.Zaux.positiveToNat mx
-      let input := F2R
-        (FloatSpec.Core.Defs.FlocqFloat.mk (mxn : Int) ex :
-          FloatSpec.Core.Defs.FlocqFloat 2)
       let result := SFsqrt_core_binary prec emax (mxn : Int) ex
       have hdata := SFsqrt_core_binary_correct_data
         (prec:=prec) (emax:=emax) (mxn : Int) ex
@@ -6337,22 +6334,27 @@ noncomputable def Bsqrt {prec emax : Int}
         Int.toNat_of_nonneg (le_of_lt hresult_pos)
       let z := binary_round_aux (prec:=prec) (emax:=emax) mode false
         (mzn : Int) result.2.1 result.2.2
-      have hbetween :
-          FloatSpec.Calc.Bracket.inbetween_float 2 (mzn : Int) result.2.1
-            |Real.sqrt input| result.2.2 := by
-        simpa [input, result, hmzn_cast, abs_of_nonneg (Real.sqrt_nonneg _)] using
-          hdata.2.1
-      have hexp :
-          result.2.1 ≤
-            FLT_exp (3 - emax - prec) prec
-              (FloatSpec.Core.Digits.Zdigits 2 (mzn : Int) + result.2.1) := by
-        simpa [result, hmzn_cast] using hdata.2.2
-      have haux := binary_round_aux_correct (prec:=prec) (emax:=emax)
-        mode (Real.sqrt input) mzn result.2.1 result.2.2 hmzn_pos hbetween hexp
-      have hsqrt_sign : FloatSpec.Core.Raux.Rlt_bool (Real.sqrt input) 0 = false := by
-        simp [FloatSpec.Core.Raux.Rlt_bool, Real.sqrt_nonneg]
       have hvalid :
           validBinarySingleNaNStandardFloat (prec:=prec) (emax:=emax) z = true := by
+        -- Real-valued witnesses belong inside the erased proof, not in the
+        -- executable let-chain. The returned integer computation is unchanged.
+        let input := F2R
+          (FloatSpec.Core.Defs.FlocqFloat.mk (mxn : Int) ex :
+            FloatSpec.Core.Defs.FlocqFloat 2)
+        have hbetween :
+            FloatSpec.Calc.Bracket.inbetween_float 2 (mzn : Int) result.2.1
+              |Real.sqrt input| result.2.2 := by
+          simpa [input, result, hmzn_cast, abs_of_nonneg (Real.sqrt_nonneg _)] using
+            hdata.2.1
+        have hexp :
+            result.2.1 ≤
+              FLT_exp (3 - emax - prec) prec
+                (FloatSpec.Core.Digits.Zdigits 2 (mzn : Int) + result.2.1) := by
+          simpa [result, hmzn_cast] using hdata.2.2
+        have haux := binary_round_aux_correct (prec:=prec) (emax:=emax)
+          mode (Real.sqrt input) mzn result.2.1 result.2.2 hmzn_pos hbetween hexp
+        have hsqrt_sign : FloatSpec.Core.Raux.Rlt_bool (Real.sqrt input) 0 = false := by
+          simp [FloatSpec.Core.Raux.Rlt_bool, Real.sqrt_nonneg]
         simpa [z, hsqrt_sign] using haux.1
       have hnotnan : is_nan_SF z = false := by
         have hmzn_nonneg : (0 : Int) ≤ (mzn : Int) := by exact_mod_cast Nat.zero_le mzn
@@ -7306,7 +7308,7 @@ private theorem binarySingleNaNFloatToB754_of_is_nan {prec emax : Int}
     simp [is_nan, binaryFloatToBinarySingleNaNFloat,
       binarySingleNaNFloatToB754] at hx ⊢
 
-noncomputable def Bplus {prec emax : Int}
+def Bplus {prec emax : Int}
     [Prec_gt_0 prec] [Prec_lt_emax prec emax]
     (plus_nan : BplusNaNHandler prec emax)
     (mode : RoundingMode) (x y : binary_float prec emax) :
@@ -7545,7 +7547,7 @@ theorem binarySingleNaNFloatToB754_Bplus {prec emax : Int}
 -- Coq: Binary.v:Bminus
 -- Upstream defines this by subtracting through the SingleNaN operation and
 -- lifting NaN results with the original `(x, y)` payload handler.
-noncomputable def Bminus {prec emax : Int}
+def Bminus {prec emax : Int}
     [Prec_gt_0 prec] [Prec_lt_emax prec emax]
     (minus_nan : BminusNaNHandler prec emax)
     (mode : RoundingMode) (x y : binary_float prec emax) :
@@ -7610,7 +7612,7 @@ theorem Bminus_eq_Bplus_Bopp {prec emax : Int}
   cases x <;> cases y <;> cases mode <;>
     simp [Bminus, Bplus, Bopp_preserve_nan, Bool.xor]
 
-noncomputable def Bmult {prec emax : Int}
+def Bmult {prec emax : Int}
     [Prec_gt_0 prec] [Prec_lt_emax prec emax]
     (mult_nan : BmultNaNHandler prec emax)
     (mode : RoundingMode) (x y : binary_float prec emax) :
@@ -7672,7 +7674,7 @@ noncomputable def Bmult {prec emax : Int}
       standardFloatToBinaryFloatOfNotNaN (prec:=prec) (emax:=emax) z haux.1 hnotnan
 
 -- Coq: `Binary.v:Bdiv`.
-noncomputable def Bdiv {prec emax : Int}
+def Bdiv {prec emax : Int}
     [Prec_gt_0 prec] [Prec_lt_emax prec emax]
     (div_nan : BdivNaNHandler prec emax)
     (mode : RoundingMode) (x y : binary_float prec emax) :
@@ -7745,7 +7747,7 @@ def Bfma_szero {prec emax : Int} (mode : RoundingMode)
     | RoundingMode.RTN => true
     | _ => false
 
-noncomputable def normalize {prec emax : Int}
+def normalize {prec emax : Int}
     [Prec_gt_0 prec] [Prec_lt_emax prec emax]
     (mode : RoundingMode) (m e : Int) (szero : Bool) :
     binary_float prec emax :=
@@ -8007,7 +8009,7 @@ theorem normalize_correct {prec emax : Int}
               FloatSpec.Core.Defs.F2R, hinputNegRaw]
 
 -- Coq: `Binary.v:Bfma`.
-noncomputable def Bfma {prec emax : Int}
+def Bfma {prec emax : Int}
     [Prec_gt_0 prec] [Prec_lt_emax prec emax]
     (fma_nan : BfmaNaNHandler prec emax)
     (mode : RoundingMode) (x y z : binary_float prec emax) :

@@ -213,15 +213,21 @@ echo 'Pure Rocq bit loop passed: 20,000 binary32/binary64 roundtrip checks'
 "$coqc_bin" -q -R "$flocq_dir/src" Flocq -o "$scratch/BitOrderProperties.vo" \
   "$repo_root/scripts/fixtures/BitOrderProperties.v"
 echo 'Pure Rocq order loop passed: 2,000 ordering-law checks and boundary examples'
+"$coqc_bin" -q -R "$flocq_dir/src" Flocq -o "$scratch/RoundingWalkthrough.vo" \
+  "$repo_root/scripts/fixtures/RoundingWalkthrough.v"
 
 run_lake build FloatSpec.Test.FlocqConformance FloatSpec.Test.ArithmeticProperties \
-  FloatSpec.Test.BitsExecution FloatSpec.Test.BitOrderExecution
+  FloatSpec.Test.BitsExecution FloatSpec.Test.BitOrderExecution FloatSpec.Test.NativeSourceArithmetic \
+  FloatSpec.Test.RoundingWalkthrough
 # Re-execute the checks, even when Lake already has their compiled modules.
 run_lake env lean "$repo_root/FloatSpec/Test/ArithmeticProperties.lean"
 run_lake env lean "$repo_root/FloatSpec/Test/BitsExecution.lean"
 run_lake env lean "$repo_root/FloatSpec/Test/BitOrderExecution.lean"
+run_lake env lean "$repo_root/FloatSpec/Test/NativeSourceArithmetic.lean"
+run_lake env lean "$repo_root/FloatSpec/Test/RoundingWalkthrough.lean"
 echo 'Pure Lean loop passed: examples and 10,734 kernel-checked arithmetic invariant cases'
 echo 'Lean bit/order loops passed: 20,000 roundtrips, 2,000 pure laws, 200,000 native comparisons'
+echo 'Native source-arithmetic loop passed: 100,100 binary32/binary64 comparisons'
 
 uv run "$repo_root/scripts/flocq_bridge.py" --flocq-dir "$flocq_dir" --coqc "$coqc_bin" \
   --seed "${FLOCQ_BRIDGE_SEED:-20260919}" --samples "${FLOCQ_BRIDGE_SAMPLES:-100}" \

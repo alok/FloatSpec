@@ -14,6 +14,20 @@ import ieee_modes_bridge as bridge
 
 
 class CorpusTests(unittest.TestCase):
+    def test_all_paths_and_columns_are_required(self):
+        case = (32, 0, 1, 2, 3)
+        for path in ("lean", "compiled"):
+            for offset, column in enumerate(bridge.COLUMNS):
+                results = {name: [[0] * 9] for name in ("lean", "compiled", "rocq")}
+                results[path][0][offset] = 1
+                mismatch = bridge.compare([case], results)[0]
+                self.assertEqual(mismatch["paths"], [path])
+                self.assertEqual(mismatch["columns"], [column])
+        with self.assertRaises(ValueError):
+            bridge.compare([case], {"lean": [[0] * 9], "rocq": [[0] * 9]})
+        with self.assertRaises(ValueError):
+            bridge.compare([case], {name: [[0] * 8] for name in ("lean", "compiled", "rocq")})
+
     def test_modes_formats_replay_and_nan_priority(self):
         cases = bridge.corpus(17, 2)
         self.assertEqual(cases, bridge.corpus(17, 2))
@@ -40,6 +54,19 @@ class CorpusTests(unittest.TestCase):
 
 @unittest.skipUnless(os.environ.get("FLOCQ_AUDIT_DIR"), "live test requires FLOCQ_AUDIT_DIR")
 class LiveTests(unittest.TestCase):
+    def test_each_format_and_rounding_mode_executes_all_operations(self):
+        flocq = Path(os.environ["FLOCQ_AUDIT_DIR"]).resolve()
+        cases = [(width, mode, one, half_ulp, negative_one)
+                 for width, one, half_ulp, negative_one in
+                 ((32, 0x3f800000, 0x33800000, 0xbf800000),
+                  (64, 0x3ff0000000000000, 0x3ca0000000000000, 0xbff0000000000000))
+                 for mode in range(5)]
+        with tempfile.TemporaryDirectory(prefix="floatspec-all-compiled-modes-") as directory:
+            folder = Path(directory)
+            results = bridge.execute(cases, flocq, bridge.configured_coqc(flocq), folder)
+            self.assertEqual(bridge.compare(cases, results), [])
+            bridge.bootstrap(cases, results["rocq"], folder)
+
     def test_actual_directed_rounding_and_kernel_regressions(self):
         flocq = Path(os.environ["FLOCQ_AUDIT_DIR"]).resolve()
         cases = [(32, 3, 0x3f800000, 0x33800000, 0), (32, 0, 0x3f800000, 0x33800000, 0),
@@ -48,6 +75,7 @@ class LiveTests(unittest.TestCase):
             folder = Path(directory)
             results = bridge.execute(cases, flocq, bridge.configured_coqc(flocq), folder)
             self.assertEqual(results["lean"], results["rocq"])
+            self.assertEqual(bridge.compare(cases, results), [])
             self.assertEqual(results["lean"][0][3], 0x3f800001)
             self.assertEqual(results["lean"][1][3], 0x3f800000)
             self.assertEqual(results["lean"][2][8], 0x7ff0000000000001)
@@ -73,6 +101,26 @@ class LiveTests(unittest.TestCase):
             self.assertEqual(report["status"], "mismatch")
             self.assertIn("add", report["mismatches"][0]["columns"])
             self.assertEqual(report["bootstrapped_lean_cases"], 0)
+            self.assertEqual(json.loads((output / "replay.json").read_text()), [case])
+
+    def test_compiled_mode_mutation_and_explicit_compiler(self):
+        original = bridge.compiled_source
+        with tempfile.TemporaryDirectory(prefix="floatspec-compiled-mode-mutation-") as directory:
+            output, replay = Path(directory) / "output", Path(directory) / "cases.json"
+            case = [32, 3, 0x3f800000, 0x33800000, 0]
+            replay.write_text(json.dumps([case]))
+            coqc = bridge.configured_coqc(Path(os.environ["FLOCQ_AUDIT_DIR"]))
+            argv = ["ieee_modes_bridge", "--flocq-dir", os.environ["FLOCQ_AUDIT_DIR"],
+                    "--coqc", coqc, "--skip-build", "--replay", str(replay), "--output", str(output)]
+            with (patch("sys.argv", argv), patch.object(bridge, "compiled_source",
+                  side_effect=lambda cases: original(cases).replace(".RTP", ".RNE")),
+                  contextlib.redirect_stdout(io.StringIO()), self.assertRaises(SystemExit)):
+                bridge.main()
+            report = json.loads((output / "report.json").read_text())
+            self.assertEqual(report["status"], "mismatch")
+            self.assertEqual(report["mismatches"][0]["paths"], ["compiled"])
+            self.assertIn("add", report["mismatches"][0]["columns"])
+            self.assertEqual(report["bootstrapped_lean_cases"], 1)
             self.assertEqual(json.loads((output / "replay.json").read_text()), [case])
 
     def test_errors_never_become_passes(self):

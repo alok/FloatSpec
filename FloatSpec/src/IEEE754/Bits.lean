@@ -1277,7 +1277,8 @@ def b32_succ (x : binary32) : binary32 :=
 
 -- Coq: `Definition b32_sqrt : mode -> binary32 -> binary32 :=
 -- Bsqrt _ _ Hprec Hprec_emax unop_nan_pl32.`
-noncomputable def b32_sqrt (mode : RoundingMode) (x : binary32) : binary32 := by
+@[flocq_source "src/IEEE754/Bits.v" 667 "b32_sqrt"]
+def b32_sqrt (mode : RoundingMode) (x : binary32) : binary32 := by
   letI : Prec_gt_0 (24 : Int) := ⟨by norm_num⟩
   letI : Prec_lt_emax (24 : Int) (128 : Int) := ⟨by norm_num⟩
   letI :
@@ -1291,7 +1292,8 @@ noncomputable def b32_sqrt (mode : RoundingMode) (x : binary32) : binary32 := by
 
 -- Coq: `Definition b32_plus : mode -> binary32 -> binary32 -> binary32 :=
 -- Bplus _ _ Hprec Hprec_emax binop_nan_pl32.`
-noncomputable def b32_plus (mode : RoundingMode) (x y : binary32) : binary32 := by
+@[flocq_source "src/IEEE754/Bits.v" 669 "b32_plus"]
+def b32_plus (mode : RoundingMode) (x y : binary32) : binary32 := by
   letI : Prec_gt_0 (24 : Int) := ⟨by norm_num⟩
   letI : Prec_lt_emax (24 : Int) (128 : Int) := ⟨by norm_num⟩
   letI :
@@ -1306,7 +1308,8 @@ noncomputable def b32_plus (mode : RoundingMode) (x y : binary32) : binary32 := 
 
 -- Coq: `Definition b32_minus : mode -> binary32 -> binary32 -> binary32 :=
 -- Bminus _ _ Hprec Hprec_emax binop_nan_pl32.`
-noncomputable def b32_minus (mode : RoundingMode) (x y : binary32) : binary32 := by
+@[flocq_source "src/IEEE754/Bits.v" 670 "b32_minus"]
+def b32_minus (mode : RoundingMode) (x y : binary32) : binary32 := by
   letI : Prec_gt_0 (24 : Int) := ⟨by norm_num⟩
   letI : Prec_lt_emax (24 : Int) (128 : Int) := ⟨by norm_num⟩
   letI :
@@ -1321,7 +1324,8 @@ noncomputable def b32_minus (mode : RoundingMode) (x y : binary32) : binary32 :=
 
 -- Coq: `Definition b32_mult : mode -> binary32 -> binary32 -> binary32 :=
 -- Bmult _ _ Hprec Hprec_emax binop_nan_pl32.`
-noncomputable def b32_mult (mode : RoundingMode) (x y : binary32) : binary32 := by
+@[flocq_source "src/IEEE754/Bits.v" 671 "b32_mult"]
+def b32_mult (mode : RoundingMode) (x y : binary32) : binary32 := by
   letI : Prec_gt_0 (24 : Int) := ⟨by norm_num⟩
   letI : Prec_lt_emax (24 : Int) (128 : Int) := ⟨by norm_num⟩
   letI :
@@ -1336,7 +1340,8 @@ noncomputable def b32_mult (mode : RoundingMode) (x y : binary32) : binary32 := 
 
 -- Coq: `Definition b32_div : mode -> binary32 -> binary32 -> binary32 :=
 -- Bdiv _ _ Hprec Hprec_emax binop_nan_pl32.`
-noncomputable def b32_div (mode : RoundingMode) (x y : binary32) : binary32 := by
+@[flocq_source "src/IEEE754/Bits.v" 672 "b32_div"]
+def b32_div (mode : RoundingMode) (x y : binary32) : binary32 := by
   letI : Prec_gt_0 (24 : Int) := ⟨by norm_num⟩
   letI : Prec_lt_emax (24 : Int) (128 : Int) := ⟨by norm_num⟩
   letI :
@@ -1350,7 +1355,8 @@ noncomputable def b32_div (mode : RoundingMode) (x y : binary32) : binary32 := b
 
 -- Coq: `Definition b32_fma : mode -> binary32 -> binary32 -> binary32 -> binary32 :=
 -- Bfma _ _ Hprec Hprec_emax ternop_nan_pl32.`
-noncomputable def b32_fma (mode : RoundingMode) (x y z : binary32) : binary32 := by
+@[flocq_source "src/IEEE754/Bits.v" 674 "b32_fma"]
+def b32_fma (mode : RoundingMode) (x y z : binary32) : binary32 := by
   letI : Prec_gt_0 (24 : Int) := ⟨by norm_num⟩
   letI : Prec_lt_emax (24 : Int) (128 : Int) := ⟨by norm_num⟩
   letI :
@@ -1488,7 +1494,8 @@ def b64_succ (x : binary64) : binary64 :=
 
 -- Coq: `Definition b64_sqrt : mode -> binary64 -> binary64 :=
 -- Bsqrt _ _ Hprec Hprec_emax unop_nan_pl64.`
-noncomputable def b64_sqrt (mode : RoundingMode) (x : binary64) : binary64 := by
+@[flocq_source "src/IEEE754/Bits.v" 734 "b64_sqrt"]
+def b64_sqrt (mode : RoundingMode) (x : binary64) : binary64 := by
   letI : Prec_gt_0 (53 : Int) := ⟨by norm_num⟩
   letI : Prec_lt_emax (53 : Int) (1024 : Int) := ⟨by norm_num⟩
   letI :
@@ -1502,7 +1509,8 @@ noncomputable def b64_sqrt (mode : RoundingMode) (x : binary64) : binary64 := by
 
 -- Coq: `Definition b64_plus : mode -> binary64 -> binary64 -> binary64 :=
 -- Bplus _ _ Hprec Hprec_emax binop_nan_pl64.`
-noncomputable def b64_plus (mode : RoundingMode) (x y : binary64) : binary64 := by
+@[flocq_source "src/IEEE754/Bits.v" 736 "b64_plus"]
+def b64_plus (mode : RoundingMode) (x y : binary64) : binary64 := by
   letI : Prec_gt_0 (53 : Int) := ⟨by norm_num⟩
   letI : Prec_lt_emax (53 : Int) (1024 : Int) := ⟨by norm_num⟩
   letI :
@@ -1517,7 +1525,8 @@ noncomputable def b64_plus (mode : RoundingMode) (x y : binary64) : binary64 := 
 
 -- Coq: `Definition b64_minus : mode -> binary64 -> binary64 -> binary64 :=
 -- Bminus _ _ Hprec Hprec_emax binop_nan_pl64.`
-noncomputable def b64_minus (mode : RoundingMode) (x y : binary64) : binary64 := by
+@[flocq_source "src/IEEE754/Bits.v" 737 "b64_minus"]
+def b64_minus (mode : RoundingMode) (x y : binary64) : binary64 := by
   letI : Prec_gt_0 (53 : Int) := ⟨by norm_num⟩
   letI : Prec_lt_emax (53 : Int) (1024 : Int) := ⟨by norm_num⟩
   letI :
@@ -1532,7 +1541,8 @@ noncomputable def b64_minus (mode : RoundingMode) (x y : binary64) : binary64 :=
 
 -- Coq: `Definition b64_mult : mode -> binary64 -> binary64 -> binary64 :=
 -- Bmult _ _ Hprec Hprec_emax binop_nan_pl64.`
-noncomputable def b64_mult (mode : RoundingMode) (x y : binary64) : binary64 := by
+@[flocq_source "src/IEEE754/Bits.v" 738 "b64_mult"]
+def b64_mult (mode : RoundingMode) (x y : binary64) : binary64 := by
   letI : Prec_gt_0 (53 : Int) := ⟨by norm_num⟩
   letI : Prec_lt_emax (53 : Int) (1024 : Int) := ⟨by norm_num⟩
   letI :
@@ -1547,7 +1557,8 @@ noncomputable def b64_mult (mode : RoundingMode) (x y : binary64) : binary64 := 
 
 -- Coq: `Definition b64_div : mode -> binary64 -> binary64 -> binary64 :=
 -- Bdiv _ _ Hprec Hprec_emax binop_nan_pl64.`
-noncomputable def b64_div (mode : RoundingMode) (x y : binary64) : binary64 := by
+@[flocq_source "src/IEEE754/Bits.v" 739 "b64_div"]
+def b64_div (mode : RoundingMode) (x y : binary64) : binary64 := by
   letI : Prec_gt_0 (53 : Int) := ⟨by norm_num⟩
   letI : Prec_lt_emax (53 : Int) (1024 : Int) := ⟨by norm_num⟩
   letI :
@@ -1561,7 +1572,8 @@ noncomputable def b64_div (mode : RoundingMode) (x y : binary64) : binary64 := b
 
 -- Coq: `Definition b64_fma : mode -> binary64 -> binary64 -> binary64 -> binary64 :=
 -- Bfma _ _ Hprec Hprec_emax ternop_nan_pl64.`
-noncomputable def b64_fma (mode : RoundingMode) (x y z : binary64) : binary64 := by
+@[flocq_source "src/IEEE754/Bits.v" 741 "b64_fma"]
+def b64_fma (mode : RoundingMode) (x y z : binary64) : binary64 := by
   letI : Prec_gt_0 (53 : Int) := ⟨by norm_num⟩
   letI : Prec_lt_emax (53 : Int) (1024 : Int) := ⟨by norm_num⟩
   letI :

@@ -38,6 +38,15 @@ minimum subnormal. `BitOrderProperties.v` checks the same 2,000 independent
 ordering-law cases in Rocq. The combined runner directly re-executes the Lean
 test files, so an already cached test module does not skip these runtime loops.
 
+`Test/NativeSourceArithmetic.lean` adds 100,100 comparisons of the port's
+compiled binary32/binary64 add/subtract/multiply/divide/sqrt operations with
+native Float32/Float. Twenty explicit input pairs cover exceptional values,
+ties, underflow and overflow; 20,000 additional pairs come from seed `489231`.
+This native grid quotients NaNs explicitly, retains signed zero, and reports a
+replayable `[width, mode, left, right, third]` input if any column disagrees.
+`RoundingWalkthrough.lean` and its Rocq fixture execute and prove the reading
+guide's three-bit halfway example in all five modes, for both signs.
+
 The current `floatspec` executable's `main` does nothing. Running it is a
 launch smoke test only, not an arithmetic regression; the checks described here
 execute inside the test modules and bridges. Native execution is covered by
@@ -265,7 +274,12 @@ six results: add, subtract, multiply, divide, square root, and fused
 multiply-add. Unlike the native arithmetic bridge, it preserves NaN signs and
 payloads and checks the source's first-NaN propagation policy.
 
-This is a Lean-kernel/Rocq comparison, **not** native hardware directed rounding.
+This runs compiled integer-only Lean, Lean kernel reduction, and Rocq,
+**not** native hardware directed rounding. The fixed-width source operations
+now compile directly. Most of that repair only removed unnecessary
+`noncomputable` markers. Square root additionally needed its real-valued input
+witness moved inside the erased validity proof; its integer computation and
+public type were preserved.
 Its cases include half-ULP ties, tiny subnormal products, cancellation after an
 overflowing intermediate product, signed zeros, infinities, negative square
 roots, and NaNs in each of the three operand positions. Random triples are
@@ -279,7 +293,9 @@ FLOCQ_AUDIT_DIR=/path/to/pinned-flocq uv run scripts/test_ieee_modes_bridge.py -
 ```
 
 The live harness replaces upward rounding with nearest-even in only the Lean
-adapter and requires a failed comparison with the exact replay input. Timeout
+adapter and requires a failed comparison with the exact replay input. A second
+mutation changes only compiled Lean and must fail even when kernel/Rocq agree.
+All nine columns and all three execution paths are mandatory. Timeout
 and interruption tests must report errors, never successful zero-case runs.
 The combined shell suite includes this bridge and its live harness; use
 `FLOCQ_MODES_SAMPLES` and `FLOCQ_MODES_BATCH_SIZE` to size this phase. It also
