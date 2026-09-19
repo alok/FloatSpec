@@ -4,7 +4,7 @@ Generated from the current workspace by `scripts/status_report.sh`.
 
 ## Summary
 
-- Lean files: 91
+- Lean files: 92
 - `sorry`: 4
 - `axiom`: 0
 - `admit`: 0
@@ -21,7 +21,7 @@ Generated from the current workspace by `scripts/status_report.sh`.
 | Pff | 6 | 0 | 0 | 0 | 0 |
 | IEEE754 | 10 | 4 | 0 | 0 | 0 |
 | ErrorBound | 7 | 0 | 0 | 0 | 0 |
-| Other | 36 | 0 | 0 | 0 | 0 |
+| Other | 37 | 0 | 0 | 0 | 0 |
 
 ## Interpretation
 

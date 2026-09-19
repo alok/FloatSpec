@@ -26,6 +26,9 @@ jobs:
         run: |
           lake build FloatSpecTests
           lake build FloatSpec.Test
+          for fixture in DoubleRoundingWitness SingleNaNValidity RelativeErrorGrid ExactArithmeticLaws RoundingOracle; do
+            lake env lean "scripts/fixtures/$fixture.lean"
+          done
 
       - name: Build executable
         run: lake build floatspec

@@ -126,6 +126,15 @@ than silently replacing every NaN by one canonical bit pattern.
 A Lean proof establishes **the Lean proposition actually written down**.
 It does not tell us that this proposition is the one intended by Flocq.
 
+Read the **elaborated type**, including implicit assumptions. Coq can erase
+an unused section parameter from an exported theorem, while Lean may retain
+a section instance. This audit found 31 such unwanted premises across 26
+exports. For example, representing a rounded value at the input exponent
+does not require a valid exponent function, and multiplication by a radix
+power preserves FLX format without assuming positive precision. Typed
+consumers and compiler-backed premise guards now enforce these corrected
+interfaces; merely printing a name with `#check` would not do that.
+
 For example, the old `valid_binary_SF2FF` statement compared validity after
 a conversion with a wrapper defined to be that same expression. It was
 provable but missed the intended relationship. The repaired theorem compares
@@ -141,6 +150,14 @@ magnitude, an absolute error term is needed instead. The paired
 nearest-rounding cases using exact integer arithmetic, including this
 counterexample to dropping the normal-magnitude premise. Their finite grid
 is separate from the universal real-valued theorems.
+
+Sterbenz's theorem gives another useful boundary: subtraction is exact when
+two positive representable operands are within a factor of two. The premise
+is essential. In our three-bit example, both `1` and `1/16` are representable,
+but their difference `15/16` rounds to `1`. The paired
+[exact-arithmetic fixtures](../../scripts/fixtures/ExactArithmeticLaws.lean)
+check the premise-respecting cases in all five modes and prove this
+counterexample to removing it.
 
 FTZ had a similar issue at the definition level. Its old predicate was simply
 generic-format membership, so conversion theorems concealed the intended
@@ -177,6 +194,14 @@ classification, quotient/remainder invariants, integer-square-root bounds,
 and bit roundtrips. The second checks the corresponding properties in
 pinned Flocq using Rocq. The third gives identical inputs to both ports
 and compares the observable results.
+
+One particularly readable independent check is the
+[finite rounding oracle](../../scripts/fixtures/RoundingOracle.lean): enumerate
+all 55 finite values of the small format, discard candidates on the wrong side
+for directed rounding, and choose by exact distance and the selected tie rule.
+It executes 35,845 inputs/modes on each side without reusing the rounder's
+shift, digit-count, or rounding-decision algorithm. Its claim excludes
+overflow and exceptional encodings, which have separate IEEE tests.
 
 The core bridge now runs **compiled Lean, Lean kernel reduction, and Rocq
 computation**. It includes ordinary inputs and explicitly labeled inputs
@@ -241,7 +266,7 @@ changed surfaces have been checked.
 Source links make that review navigable. `@[flocq_source]` records a pinned
 Coq path, line, and name; `@[flocq_local]` explains a Lean-only helper.
 Eleven modules currently enforce strict public-definition classification.
-The compiler-backed validator checks all 74 registered anchors, including
+The compiler-backed validator checks all 100 registered anchors, including
 combined attributes and later attribute commands. These links are metadata,
 not a proof that bodies or theorem signatures correspond.
 

@@ -20,11 +20,13 @@ variable (beta : Int) [ValidRadix beta]
 variable (prec : Int)
 variable [Prec_gt_0 prec]
 
+omit [Prec_gt_0 prec] in
 /-- Generic format plus with precision bound.
 
 This mirrors Flocq `Div_sqrt_error.v` `generic_format_plus_prec`: the
 two magnitude bounds are over signed `bpow` exponents, not `natAbs`
 exponents. -/
+@[flocq_source "src/Prop/Div_sqrt_error.v" 33 "generic_format_plus_prec"]
 lemma generic_format_plus_prec (fexp : Int → Int)
   (h_bound : ∀ e, fexp e ≤ e - prec)
   (hβ : 1 < beta)
@@ -709,8 +711,10 @@ theorem sqrt_error_FLX_N (h_gt1 : 1 < prec) (x : ℝ)
         ring
       simpa [sub_eq_add_neg, r, fexp, pow_two] using hfmt
 
+omit [Prec_gt_0 prec] in
 /-- Auxiliary decomposition for sqrt error in FLX: represent x as mu · β^(2e)
     with mu between 1 and β^2. -/
+@[flocq_source "src/Prop/Div_sqrt_error.v" 290 "sqrt_error_N_FLX_aux1"]
 lemma sqrt_error_N_FLX_aux1 (x : ℝ)
   (hβ : 1 < beta)
   (hx : generic_format beta (FLX_exp prec) x) (px : 0 < x) :

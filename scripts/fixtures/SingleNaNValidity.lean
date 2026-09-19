@@ -16,6 +16,15 @@ theorem boundaries :
     valid 1 (-4) = true ∧ valid 1 (-5) = false ∧ valid 0 (-4) = false := by
   decide +kernel
 
+/-- Fitting only checks the upper exponent. Its validity theorem therefore
+needs the canonical-mantissa premise; it is not unconditional validity. -/
+theorem fit_requires_canonical_input :
+    validBinarySingleNaNStandardFloat (prec := 3) (emax := 4)
+      (binary_fit_aux (prec := 3) (emax := 4) .RNE false 1 0) = false ∧
+    validBinarySingleNaNStandardFloat (prec := 3) (emax := 4)
+      (binary_fit_aux (prec := 3) (emax := 4) .RNE false 4 (-2)) = true := by
+  decide +kernel
+
 /-- This is the proof-carrying source theorem, not the raw-carrier legacy claim. -/
 example (x : BinarySingleNaN.binary_float 3 4) :
     validBinarySingleNaNStandardFloat (prec := 3) (emax := 4)

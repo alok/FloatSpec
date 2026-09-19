@@ -215,19 +215,30 @@ echo 'Pure Rocq bit loop passed: 20,000 binary32/binary64 roundtrip checks'
 echo 'Pure Rocq order loop passed: 2,000 ordering-law checks and boundary examples'
 "$coqc_bin" -q -R "$flocq_dir/src" Flocq -o "$scratch/RoundingWalkthrough.vo" \
   "$repo_root/scripts/fixtures/RoundingWalkthrough.v"
+for fixture in DoubleRoundingWitness SingleNaNValidity RelativeErrorGrid \
+    SourcePremiseContracts ExactArithmeticLaws RoundingOracle; do
+  "$coqc_bin" -q -R "$flocq_dir/src" Flocq -o "$scratch/$fixture.vo" \
+    "$repo_root/scripts/fixtures/$fixture.v"
+done
+echo 'Pure Rocq contract loop passed: typed premises, counterexamples, finite error laws, 35,845 rounding-oracle cases'
 
 run_lake build FloatSpec.Test.FlocqConformance FloatSpec.Test.ArithmeticProperties \
   FloatSpec.Test.BitsExecution FloatSpec.Test.BitOrderExecution FloatSpec.Test.NativeSourceArithmetic \
-  FloatSpec.Test.RoundingWalkthrough
+  FloatSpec.Test.RoundingWalkthrough FloatSpec.Test.SourcePremiseContracts
 # Re-execute the checks, even when Lake already has their compiled modules.
 run_lake env lean "$repo_root/FloatSpec/Test/ArithmeticProperties.lean"
 run_lake env lean "$repo_root/FloatSpec/Test/BitsExecution.lean"
 run_lake env lean "$repo_root/FloatSpec/Test/BitOrderExecution.lean"
 run_lake env lean "$repo_root/FloatSpec/Test/NativeSourceArithmetic.lean"
 run_lake env lean "$repo_root/FloatSpec/Test/RoundingWalkthrough.lean"
+run_lake env lean "$repo_root/FloatSpec/Test/SourcePremiseContracts.lean"
+for fixture in DoubleRoundingWitness SingleNaNValidity RelativeErrorGrid ExactArithmeticLaws RoundingOracle; do
+  run_lake env lean "$repo_root/scripts/fixtures/$fixture.lean"
+done
 echo 'Pure Lean loop passed: examples and 10,734 kernel-checked arithmetic invariant cases'
 echo 'Lean bit/order loops passed: 20,000 roundtrips, 2,000 pure laws, 200,000 native comparisons'
 echo 'Native source-arithmetic loop passed: 100,100 binary32/binary64 comparisons'
+echo 'Lean contract loop passed: 31 premise guards, six typed consumers, finite error laws, 35,845 rounding-oracle cases'
 
 uv run "$repo_root/scripts/flocq_bridge.py" --flocq-dir "$flocq_dir" --coqc "$coqc_bin" \
   --seed "${FLOCQ_BRIDGE_SEED:-20260919}" --samples "${FLOCQ_BRIDGE_SAMPLES:-100}" \

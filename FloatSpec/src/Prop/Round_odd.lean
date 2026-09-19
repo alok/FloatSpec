@@ -395,8 +395,10 @@ lemma Zrnd_odd_plus (x y : ℝ)
       rw [hzxy, hzy, hfloor_xy, hx']
       simp [m, Int.cast_add]
 
+omit [FloatSpec.Core.Generic_fmt.Valid_exp fexp] in
 /-- Negation invariance for the `Rnd_odd_pt` predicate.
     Coq counterpart: `Rnd_odd_pt_opp_inv`. -/
+@[flocq_source "src/Prop/Round_odd.v" 184 "Rnd_odd_pt_opp_inv"]
 theorem Rnd_odd_pt_opp_inv (x f : ℝ) :
   Rnd_odd_pt (beta := beta) (fexp := fexp) (-x) (-f) →
   Rnd_odd_pt (beta := beta) (fexp := fexp) x f := by
@@ -573,9 +575,11 @@ theorem generic_format_round_odd (x : ℝ) (hβ : 1 < beta) :
 variable (fexpe : Int → Int)
 variable [FloatSpec.Core.Generic_fmt.Valid_exp fexpe]
 
+omit [FloatSpec.Core.Generic_fmt.Valid_exp fexp] [FloatSpec.Core.Generic_fmt.Valid_exp fexpe] in
 /-- If the auxiliary exponent `fexpe` is pointwise below `fexp - 2`,
     then any `fexp`-generic number is also `fexpe`-generic.
     Coq counterpart: `generic_format_fexpe_fexp`. -/
+@[flocq_source "src/Prop/Round_odd.v" 501 "generic_format_fexpe_fexp"]
 lemma generic_format_fexpe_fexp
   (hβ : 1 < beta)
   (hrel : ∀ e, fexpe e ≤ fexp e - 2)
@@ -1513,6 +1517,7 @@ lemma format_bpow_d (d : FloatSpec.Core.Defs.FlocqFloat beta)
 noncomputable def m (d u : FloatSpec.Core.Defs.FlocqFloat beta) : ℝ :=
   (F2R d + F2R u) / 2
 
+omit [FloatSpec.Core.Generic_fmt.Valid_exp fexp] in
 /-- Coq: `d_le_m`. The down-rounded value is below the midpoint `m`. -/
 lemma d_le_m_from_full_section_payload (x : ℝ)
   (d u : FloatSpec.Core.Defs.FlocqFloat beta)
@@ -1526,6 +1531,8 @@ lemma d_le_m_from_full_section_payload (x : ℝ)
   unfold m
   linarith
 
+omit [FloatSpec.Core.Generic_fmt.Valid_exp fexp] in
+@[flocq_source "src/Prop/Round_odd.v" 627 "d_le_m"]
 lemma d_le_m (x : ℝ) (d u : FloatSpec.Core.Defs.FlocqFloat beta)
     (Hd : FloatSpec.Core.Defs.Rnd_DN_pt (generic_format beta fexp) x (F2R d))
     (Hu : FloatSpec.Core.Defs.Rnd_UP_pt (generic_format beta fexp) x (F2R u)) :
@@ -1534,6 +1541,7 @@ lemma d_le_m (x : ℝ) (d u : FloatSpec.Core.Defs.FlocqFloat beta)
   unfold m
   linarith
 
+omit [FloatSpec.Core.Generic_fmt.Valid_exp fexp] in
 /-- Coq: `m_le_u`. The midpoint `m` is below the up-rounded value. -/
 lemma m_le_u_from_full_section_payload (x : ℝ)
   (d u : FloatSpec.Core.Defs.FlocqFloat beta)
@@ -1547,6 +1555,8 @@ lemma m_le_u_from_full_section_payload (x : ℝ)
   unfold m
   linarith
 
+omit [FloatSpec.Core.Generic_fmt.Valid_exp fexp] in
+@[flocq_source "src/Prop/Round_odd.v" 637 "m_le_u"]
 lemma m_le_u (x : ℝ) (d u : FloatSpec.Core.Defs.FlocqFloat beta)
     (Hd : FloatSpec.Core.Defs.Rnd_DN_pt (generic_format beta fexp) x (F2R d))
     (Hu : FloatSpec.Core.Defs.Rnd_UP_pt (generic_format beta fexp) x (F2R u)) :
@@ -1770,9 +1780,11 @@ lemma m_eq_from_full_section_payload (x : ℝ)
         f.Fexp = fexp (FloatSpec.Core.Raux.mag beta x) - 1 :=
   m_eq (beta := beta) (fexp := fexp) x d u Hd Cd Hu hβ Ebeta hd_pos
 
+omit [FloatSpec.Core.Generic_fmt.Valid_exp fexp] in
 /-- Coq: `m_eq_0`.
     In the zero-DN branch, the midpoint is representable one exponent below
     the UP witness's canonical exponent. -/
+@[flocq_source "src/Prop/Round_odd.v" 773 "m_eq_0"]
 lemma m_eq_0 (x : ℝ)
   (d u : FloatSpec.Core.Defs.FlocqFloat beta)
   (Hu : FloatSpec.Core.Defs.Rnd_UP_pt (generic_format beta fexp) x (F2R u))
@@ -2097,8 +2109,10 @@ lemma mag_m_0_from_full_section_payload (x : ℝ)
       FloatSpec.Core.Raux.mag beta (F2R u) - 1 :=
   mag_m_0 (beta := beta) (fexp := fexp) x d u Hd Hu xPos hβ hd_zero
 
+omit [FloatSpec.Core.Generic_fmt.Valid_exp fexpe] in
 /-- Coq: `Fm`.
     The midpoint belongs to the auxiliary generic format. -/
+@[flocq_source "src/Prop/Round_odd.v" 820 "Fm"]
 lemma Fm (x : ℝ)
   (d u : FloatSpec.Core.Defs.FlocqFloat beta)
   (Hd : FloatSpec.Core.Defs.Rnd_DN_pt (generic_format beta fexp) x (F2R d))
@@ -2167,8 +2181,10 @@ lemma Fm (x : ℝ)
         using hfmt ⟨hβ, hg_val, hbound⟩
     exact hrun
 
+omit [FloatSpec.Core.Generic_fmt.Valid_exp fexpe] in
 /-- Coq: `Zm`.
     The midpoint has an even canonical representative in the auxiliary format. -/
+@[flocq_source "src/Prop/Round_odd.v" 847 "Zm"]
 lemma Zm (x : ℝ)
   (d u : FloatSpec.Core.Defs.FlocqFloat beta)
   (Hd : FloatSpec.Core.Defs.Rnd_DN_pt (generic_format beta fexp) x (F2R d))

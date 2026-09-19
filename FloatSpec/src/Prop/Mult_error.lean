@@ -308,7 +308,9 @@ theorem mult_error_FLX (x y : ℝ)
         (x := FloatSpec.Core.Generic_fmt.roundR beta (FLX_exp prec) rnd (x * y) - (x * y))
         (f := f)) ⟨hβ, hf_eq, fun _ => hcexp_le'⟩
 
+omit [Prec_gt_0 prec] in
 /-- Multiplication by power of beta is exact in FLX -/
+@[flocq_source "src/Prop/Mult_error.v" 154 "mult_bpow_exact_FLX"]
 lemma mult_bpow_exact_FLX (x : ℝ) (e : Int)
   (hβ : 1 < beta) (hx : generic_format beta (FLX_exp prec) x) :
   generic_format beta (FLX_exp prec) (x * FloatSpec.Core.Raux.bpow beta e) := by
@@ -769,7 +771,9 @@ theorem mult_error_FLT_ge_bpow (x y : ℝ) (e : Int)
     _ = |FloatSpec.Core.Generic_fmt.roundR beta (FLT_exp emin prec) rnd (x * y) - (x * y)| := by
           rw [herr_repr]
 
+omit [Prec_gt_0 prec] in
 /-- Multiplication by power of beta is exact in FLT -/
+@[flocq_source "src/Prop/Mult_error.v" 316 "mult_bpow_exact_FLT"]
 lemma mult_bpow_exact_FLT (x : ℝ) (e : Int)
   (hβ : 1 < beta)
   (hx : generic_format beta (FLT_exp emin prec) x)
@@ -858,7 +862,9 @@ lemma mult_bpow_exact_FLT (x : ℝ) (e : Int)
         simpa [f] using hcexp⟩
     simpa [fexp] using hfmt
 
+omit [Prec_gt_0 prec] in
 /-- Multiplication by positive power of beta is exact in FLT -/
+@[flocq_source "src/Prop/Mult_error.v" 337 "mult_bpow_pos_exact_FLT"]
 lemma mult_bpow_pos_exact_FLT (x : ℝ) (e : Int)
   (hβ : 1 < beta)
   (hx : generic_format beta (FLT_exp emin prec) x)

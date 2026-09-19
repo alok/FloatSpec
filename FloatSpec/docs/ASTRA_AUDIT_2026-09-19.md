@@ -303,8 +303,36 @@ HEAD. Executions use a separate detached reference checkout.
     The fresh anchor validator checks **74** references. The reading guide's
     three-bit rounding walkthrough now executes and has closed equality
     proofs in both Lean and Rocq for all five modes and both signs.
-    Extended all-mode differential and combined-suite runs remain to be
-    recorded for this new compiled arithmetic snapshot.
+    The later complete combined run is recorded below.
+24. **The new compiled snapshot passed the complete combined suite:** seed
+    `709541`, source SHA-256
+    `541bfc055e147a800162233e5b08d920f28b595340f739d971caaa80993ea3c3`,
+    8,684 core cases (577.203 s), 622 native unary cases (169.157 s), 1,424
+    native arithmetic cases (1,154.532 s), and 590 all-mode IEEE cases
+    (914.289 s). All corresponding generated kernel statements pass, as do
+    all four bridges' live harness tests. The complete shell process exited
+    zero. No imported product source or build output was changed mid-run.
+25. **Implicit premise drift repaired in 26 public exports:** comparing
+    compiled Rocq and Lean types, not just displayed theorem headers, exposed
+    31 unwanted section-instance premises. The new 31 guards and six typed
+    consumers all failed against the old snapshot and now pass. Corrections
+    span Plus_error, Mult_error, Div_sqrt_error, Relative, and Round_odd.
+    The defects predate the 23 Sol commits under review; they are not being
+    attributed to that later work. A fresh 6,215-job macOS build and LSP
+    diagnostics pass. The compiler trust audit reports 13,564 declarations,
+    58 modules, and the same four manifest debts. No new sorry was introduced.
+    The selected exports and retained source premises are listed in
+    [the focused contract review](SOURCE_CONTRACT_REVIEW.md).
+26. **Independent small-format arithmetic checks now go beyond agreement:**
+    both assistants pass 275 exact-input, 1,055 Sterbenz, and 5,714 nearest
+    addition-error representability checks. A separately enumerated rounding
+    oracle checks 35,845 finite cases in all five modes. Lean proves 95
+    boundary cases in the kernel; Rocq closes the full finite oracle grid.
+    Deliberately forcing nearest-away instead of the requested mode fails in
+    both assistants, with Lean retaining the `-13` tie as a replayable witness
+    (`-14` observed versus nearest-even `-12`). These fixtures were run
+    separately after the preceding aggregate receipt, not retroactively
+    counted as part of it.
 
 See [the three-loop guide](THREE_VERIFICATION_LOOPS.md) for commands, output
 artifacts, and current coverage. Repairs include the source-link/trust gates,
@@ -355,12 +383,15 @@ snapshot; the new order bridge has also completed successfully. The native
 arithmetic bridge still decodes through Float.Model; the new core bit families
 exercise the distinct source-shaped decoder directly and retain NaN payloads.
 
-The integer-only IEEE arithmetic chain and compiled all-mode bridge are now
-enabled. Finish the extended differential and combined-suite execution on a
-stable snapshot before further product edits. The generic real-valued
-comparisons and further Prop/theorem contract audits remain separate review
-slices. Do not replace mathematical reals with machine floats or bypass proof
-obligations merely to make a declaration compile.
+The integer-only IEEE arithmetic chain, compiled all-mode bridge, and extended
+combined run are complete at their recorded snapshots. The next prepared
+slice enables the genuinely integer-only `Bldexp`/`Bfrexp` paths and compares
+compiled Lean, kernel reduction, Rocq, and the applicable native observations.
+Two remaining root SingleNaN validity exports also need their strong source
+predicate restored. Generic real-valued comparisons and further theorem
+contract audits remain separate slices. Do not replace mathematical reals
+with machine floats or bypass proof obligations merely to make a declaration
+compile.
 
 Maintain three separate loops: independent Lean tests, independent pinned
 Flocq/Rocq tests, and a differential bridge that sends identical inputs to both.

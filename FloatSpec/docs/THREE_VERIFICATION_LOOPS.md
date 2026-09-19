@@ -47,6 +47,29 @@ replayable `[width, mode, left, right, third]` input if any column disagrees.
 `RoundingWalkthrough.lean` and its Rocq fixture execute and prove the reading
 guide's three-bit halfway example in all five modes, for both signs.
 
+The standalone paired fixtures add independent contract and error checks:
+
+- `DoubleRoundingWitness`: `73/64` rounded directly to three bits differs from
+  rounding through four bits; both signs have closed equality proofs.
+- `SingleNaNValidity`: canonical, subnormal, overflow, and invalid raw-carrier
+  boundaries, including why `binary_fit_aux` requires canonical input.
+- `RelativeErrorGrid`: 4,092 nearest-error bounds and an underflow counterexample
+  to using an unconditional relative bound.
+- `ExactArithmeticLaws`: 275 exact-input checks, 1,055 Sterbenz checks, and
+  5,714 nearest-addition-error representability checks.
+- `RoundingOracle`: 35,845 finite rounding cases in all five modes, selected
+  independently by enumerating candidates and comparing exact distances.
+  Lean executes the full grid and proves 95 boundary cases in the kernel;
+  Rocq closes its full grid with `vm_compute`.
+
+`Test/SourcePremiseContracts.lean` additionally has 31 elaborated-type guards,
+six typed theorem consumers, and four deliberate negative guard examples.
+The corresponding Rocq fixture checks those six consumer signatures. These
+checks caught real section-instance leakage that the former bare `#check`
+regressions did not detect. The combined runner re-executes all these fixtures;
+the CI workflow also runs their Lean side. Local success is not a claim that
+hosted CI has run.
+
 The current `floatspec` executable's `main` does nothing. Running it is a
 launch smoke test only, not an arithmetic regression; the checks described here
 execute inside the test modules and bridges. Native execution is covered by
@@ -301,7 +324,13 @@ The combined shell suite includes this bridge and its live harness; use
 `FLOCQ_MODES_SAMPLES` and `FLOCQ_MODES_BATCH_SIZE` to size this phase. It also
 runs the compiled trust gate and its adversarial fixtures. These additions
 postdate the completed seed-8491 aggregate receipt in the audit ledger; that
-receipt must not be relabeled as a run of later additions.
+receipt must not be relabeled as a run of later additions. A later complete
+run with seed `709541` passed 8,684 core, 622 native unary, 1,424 native
+arithmetic, and 590 all-mode cases, with all generated kernel regressions and
+live harness tests. Its source fingerprint is
+`541bfc055e147a800162233e5b08d920f28b595340f739d971caaa80993ea3c3`.
+The newly added premise/error/oracle fixtures were executed separately after
+that frozen run; do not retroactively include them in that aggregate receipt.
 
 ## 8. What this still does not establish
 

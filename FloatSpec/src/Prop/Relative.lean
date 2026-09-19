@@ -15,7 +15,9 @@ variable (beta : Int) [ValidRadix beta]
 variable (fexp : Int → Int)
 variable [FloatSpec.Core.Generic_fmt.Valid_exp fexp]
 
+omit [FloatSpec.Core.Generic_fmt.Valid_exp fexp] in
 /-- Relative error less than conversion -/
+@[flocq_source "src/Prop/Relative.v" 41 "relative_error_lt_conversion"]
 lemma relative_error_lt_conversion (rnd : ℝ → Int) [FloatSpec.Core.Generic_fmt.Valid_rnd rnd] (x b : ℝ)
   (h_pos : 0 < b)
   (h_bound : x ≠ 0 → |FloatSpec.Calc.Round.round beta fexp (FloatSpec.Calc.Round.Mode.ofRnd rnd) x - x| < b * |x|) :
@@ -44,7 +46,9 @@ lemma relative_error_lt_conversion (rnd : ℝ → Int) [FloatSpec.Core.Generic_f
     · field_simp [hx]
       ring
 
+omit [FloatSpec.Core.Generic_fmt.Valid_exp fexp] in
 /-- Relative error less than or equal conversion -/
+@[flocq_source "src/Prop/Relative.v" 68 "relative_error_le_conversion"]
 lemma relative_error_le_conversion (rnd : ℝ → Int) [FloatSpec.Core.Generic_fmt.Valid_rnd rnd] (x b : ℝ)
   (h_nonneg : 0 ≤ b)
   (h_bound : |FloatSpec.Calc.Round.round beta fexp (FloatSpec.Calc.Round.Mode.ofRnd rnd) x - x| ≤ b * |x|) :
@@ -84,8 +88,10 @@ lemma relative_error_le_conversion_inv_from_valid_rnd_payload
   rw [abs_mul]
   exact mul_le_mul_of_nonneg_right heps (abs_nonneg x)
 
+omit [FloatSpec.Core.Generic_fmt.Valid_exp fexp] in
 /-- Exact Coq contract: the converse is algebraic and accepts an arbitrary
 integer rounding function. -/
+@[flocq_source "src/Prop/Relative.v" 94 "relative_error_le_conversion_inv"]
 lemma relative_error_le_conversion_inv (rnd : ℝ → Int) (x b : ℝ)
   (h_exists : ∃ eps, |eps| ≤ b ∧
     FloatSpec.Core.Generic_fmt.roundR beta fexp rnd x = x * (1 + eps)) :
@@ -112,7 +118,9 @@ lemma relative_error_le_conversion_round_inv_from_valid_rnd_payload
   simpa [mul_comm, mul_left_comm, mul_assoc] using
     mul_le_mul_of_nonneg_right heps (abs_nonneg rx)
 
+omit [FloatSpec.Core.Generic_fmt.Valid_exp fexp] in
 /-- Exact Coq contract: no `Valid_rnd` premise is exported. -/
+@[flocq_source "src/Prop/Relative.v" 106 "relative_error_le_conversion_round_inv"]
 lemma relative_error_le_conversion_round_inv (rnd : ℝ → Int) (x b : ℝ)
   (h_exists : ∃ eps, |eps| ≤ b ∧
     x = FloatSpec.Core.Generic_fmt.roundR beta fexp rnd x * (1 + eps)) :
@@ -1040,7 +1048,9 @@ theorem relative_error_N_FLX (hβ : 1 < beta) (x : ℝ) :
 /-- Unit roundoff -/
 noncomputable def u_ro : ℝ := (1/2) * (beta : ℝ) ^ (-prec + 1)
 
+omit [Prec_gt_0 prec] in
 /-- Unit roundoff is positive -/
+@[flocq_source "src/Prop/Relative.v" 502 "u_ro_pos"]
 lemma u_ro_pos (hβ : 1 < beta) : 0 ≤ u_ro beta prec := by
   unfold u_ro
   have hbposℤ : (0 : Int) < beta := lt_trans Int.zero_lt_one hβ

@@ -18,71 +18,10 @@ variable [FloatSpec.Core.Generic_fmt.Valid_exp fexp]
 
 -- Section: Plus error representability
 
-/-- Round representation with same exponent.
-
-Upstream Flocq states this under `beta : radix`; in this Lean port that
-radix invariant is the explicit hypothesis `hβ`. -/
-theorem round_repr_same_exp_from_valid_exp_payload
-    (rnd : ℝ → Int) [FloatSpec.Core.Generic_fmt.Valid_rnd rnd]
-    (hβ : 1 < beta) (m e : Int) :
-  ∃ m', FloatSpec.Core.Generic_fmt.roundR beta fexp rnd (_root_.F2R (FloatSpec.Core.Defs.FlocqFloat.mk m e : FloatSpec.Core.Defs.FlocqFloat beta)) =
-        _root_.F2R (FloatSpec.Core.Defs.FlocqFloat.mk m' e : FloatSpec.Core.Defs.FlocqFloat beta) := by
-  classical
-  let x : ℝ :=
-    _root_.F2R (FloatSpec.Core.Defs.FlocqFloat.mk m e : FloatSpec.Core.Defs.FlocqFloat beta)
-  set c : Int := cexp beta fexp x with hc
-  by_cases hce : c ≤ e
-  · refine ⟨m, ?_⟩
-    have hfmt : generic_format beta fexp x := by
-      have htrip :=
-        FloatSpec.Core.Generic_fmt.generic_format_F2R (beta := beta) (fexp := fexp)
-          (m := m) (e := e)
-      exact htrip ⟨hβ, by
-        intro _hm
-        simpa [x, c, hc] using hce⟩
-    have hround :
-        FloatSpec.Core.Generic_fmt.roundR beta fexp rnd x = x :=
-      FloatSpec.Core.Generic_fmt.roundR_generic (beta := beta) (fexp := fexp)
-        (rnd := rnd) (x := x) hβ hfmt
-    simpa [x] using hround
-  · have hec : e ≤ c := le_of_lt (lt_of_not_ge hce)
-    let n : Int := rnd (FloatSpec.Core.Generic_fmt.scaled_mantissa beta fexp x)
-    refine ⟨n * beta ^ Int.toNat (c - e), ?_⟩
-    have hroundF :
-        FloatSpec.Core.Generic_fmt.roundR beta fexp rnd x =
-          _root_.F2R (FloatSpec.Core.Defs.FlocqFloat.mk n c : FloatSpec.Core.Defs.FlocqFloat beta) := by
-      change FloatSpec.Core.Generic_fmt.roundR beta fexp rnd x =
-        FloatSpec.Core.Defs.F2R
-          (FloatSpec.Core.Defs.FlocqFloat.mk n c : FloatSpec.Core.Defs.FlocqFloat beta)
-      change
-        (((rnd (FloatSpec.Core.Generic_fmt.scaled_mantissa beta fexp x) : Int) : ℝ) *
-            (beta : ℝ) ^ (cexp beta fexp x)) =
-          (((n : Int) : ℝ) * (beta : ℝ) ^ c)
-      rw [show n = rnd (FloatSpec.Core.Generic_fmt.scaled_mantissa beta fexp x) from rfl]
-    have hchange :=
-      FloatSpec.Core.Float_prop.F2R_change_exp
-        (beta := beta)
-        (f := FloatSpec.Core.Defs.FlocqFloat.mk n c)
-        (e' := e) hβ hec
-    have hnat : (c - e).natAbs = Int.toNat (c - e) := by
-      grind
-    have hchange' :
-        FloatSpec.Core.Defs.F2R
-            (FloatSpec.Core.Defs.FlocqFloat.mk n c : FloatSpec.Core.Defs.FlocqFloat beta) =
-          FloatSpec.Core.Defs.F2R
-            (FloatSpec.Core.Defs.FlocqFloat.mk (n * beta ^ Int.toNat (c - e)) e :
-              FloatSpec.Core.Defs.FlocqFloat beta) := by
-      simpa [hnat] using hchange
-    calc
-      FloatSpec.Core.Generic_fmt.roundR beta fexp rnd x
-          = _root_.F2R (FloatSpec.Core.Defs.FlocqFloat.mk n c : FloatSpec.Core.Defs.FlocqFloat beta) := hroundF
-      _ = _root_.F2R
-            (FloatSpec.Core.Defs.FlocqFloat.mk (n * beta ^ Int.toNat (c - e)) e :
-              FloatSpec.Core.Defs.FlocqFloat beta) := by
-              simpa [_root_.F2R] using hchange'
-
+omit [FloatSpec.Core.Generic_fmt.Valid_exp fexp] in
 /-- Exact source contract: representing the rounded value at the input
-exponent is purely arithmetic and does not require `Valid_exp fexp`. -/
+exponent does not require `Valid_exp fexp`. -/
+@[flocq_source "src/Prop/Plus_error.v" 39 "round_repr_same_exp"]
 theorem round_repr_same_exp
     (rnd : ℝ → Int) [FloatSpec.Core.Generic_fmt.Valid_rnd rnd]
     (hβ : 1 < beta) (m e : Int) :
@@ -91,8 +30,30 @@ theorem round_repr_same_exp
           FloatSpec.Core.Defs.FlocqFloat beta)) =
       _root_.F2R (FloatSpec.Core.Defs.FlocqFloat.mk m' e :
         FloatSpec.Core.Defs.FlocqFloat beta) := by
-  exact round_repr_same_exp_from_valid_exp_payload
-    (beta := beta) (fexp := fexp) rnd hβ m e
+  let x := _root_.F2R (FloatSpec.Core.Defs.FlocqFloat.mk m e : FloatSpec.Core.Defs.FlocqFloat beta)
+  let c := FloatSpec.Core.Generic_fmt.cexp beta fexp x
+  have hb : (beta : ℝ) ≠ 0 := by
+    have hpos : (0 : Int) < beta := lt_trans Int.zero_lt_one hβ
+    exact ne_of_gt (by exact_mod_cast hpos)
+  by_cases hce : c ≤ e
+  · refine ⟨m, ?_⟩
+    let n := m * beta ^ (e - c).natAbs
+    have hx : x = (n : ℝ) * (beta : ℝ) ^ c := by
+      simpa [x, n, _root_.F2R, FloatSpec.Core.Defs.F2R] using
+        FloatSpec.Core.Float_prop.F2R_change_exp (beta := beta)
+          (FloatSpec.Core.Defs.FlocqFloat.mk m e) c hβ hce
+    have hscaled : FloatSpec.Core.Generic_fmt.scaled_mantissa beta fexp x = (n : ℝ) := by
+      change x * (beta : ℝ) ^ (-c) = (n : ℝ)
+      rw [hx, mul_assoc, ← zpow_add₀ hb]
+      simp
+    change (rnd (FloatSpec.Core.Generic_fmt.scaled_mantissa beta fexp x) : ℝ) * (beta : ℝ) ^ c = x
+    rw [hscaled, FloatSpec.Core.Generic_fmt.Valid_rnd.Zrnd_IZR (rnd := rnd) n]
+    exact hx.symm
+  · let n := rnd (FloatSpec.Core.Generic_fmt.scaled_mantissa beta fexp x)
+    refine ⟨n * beta ^ (c - e).natAbs, ?_⟩
+    have hec : e ≤ c := le_of_lt (lt_of_not_ge hce)
+    exact FloatSpec.Core.Float_prop.F2R_change_exp (beta := beta)
+      (FloatSpec.Core.Defs.FlocqFloat.mk n c) e hβ hec
 
 variable [FloatSpec.Core.Generic_fmt.Monotone_exp fexp]
 variable (hβ : 1 < beta)
@@ -264,6 +225,7 @@ private lemma znearest_abs_sub_le_ceil_gap (choice : Int → Bool) (s : ℝ) :
         sub_nonneg.mpr hceil_ge
       simpa [hz, abs_of_nonneg hnonneg]
 
+omit [FloatSpec.Core.Generic_fmt.Monotone_exp fexp] in
 theorem roundR_Znearest_N_pt (x : ℝ) (hβ : 1 < beta) :
     FloatSpec.Core.Defs.Rnd_N_pt
       (fun y => generic_format beta fexp y) x
@@ -541,7 +503,9 @@ theorem plus_error (x y : ℝ)
 
 variable [FloatSpec.Core.Ulp.Exp_not_FTZ fexp]
 
+omit [FloatSpec.Core.Generic_fmt.Monotone_exp fexp] in
 /-- Round plus not equal to zero auxiliary -/
+@[flocq_source "src/Prop/Plus_error.v" 149 "round_plus_neq_0_aux"]
 lemma round_plus_neq_0_aux (rnd : ℝ → Int) [FloatSpec.Core.Generic_fmt.Valid_rnd rnd] (x y : ℝ)
   (hβ : 1 < beta)
   (h_exp : cexp beta fexp x ≤ cexp beta fexp y)
@@ -594,7 +558,9 @@ lemma round_plus_neq_0_aux (rnd : ℝ → Int) [FloatSpec.Core.Generic_fmt.Valid
   have : (beta : ℝ) ^ e ≤ 0 := by simpa [hzero] using hround_ge
   exact (not_lt_of_ge this) hpow_pos
 
+omit [FloatSpec.Core.Generic_fmt.Monotone_exp fexp] in
 /-- rnd(x+y)=0 → x+y ≠ 0 (provided this is not a FTZ format) -/
+@[flocq_source "src/Prop/Plus_error.v" 195 "round_plus_neq_0"]
 theorem round_plus_neq_0 (rnd : ℝ → Int) [FloatSpec.Core.Generic_fmt.Valid_rnd rnd] (x y : ℝ)
   (hβ : 1 < beta)
   (hx : generic_format beta fexp x) (hy : generic_format beta fexp y)
@@ -665,7 +631,9 @@ theorem round_plus_neq_0 (rnd : ℝ → Int) [FloatSpec.Core.Generic_fmt.Valid_r
     rw [hrewrite, hzero]
     simp
 
+omit [FloatSpec.Core.Generic_fmt.Monotone_exp fexp] in
 /-- rnd(x+y)=0 → x+y = 0 -/
+@[flocq_source "src/Prop/Plus_error.v" 224 "round_plus_eq_0"]
 theorem round_plus_eq_0 (rnd : ℝ → Int) [FloatSpec.Core.Generic_fmt.Valid_rnd rnd] (x y : ℝ)
   (hβ : 1 < beta)
   (hx : generic_format beta fexp x) (hy : generic_format beta fexp y)
@@ -808,7 +776,9 @@ lemma FLT_plus_error_N_round_ex (x y : ℝ)
 variable (rnd : ℝ → Int)
 variable [FloatSpec.Core.Generic_fmt.Valid_rnd rnd]
 
+omit [FloatSpec.Core.Generic_fmt.Valid_exp fexp] [FloatSpec.Core.Generic_fmt.Monotone_exp fexp] [FloatSpec.Core.Ulp.Exp_not_FTZ fexp] in
 /-- Existence of shift representation -/
+@[flocq_source "src/Prop/Plus_error.v" 318 "ex_shift"]
 lemma ex_shift (x : ℝ) (e : Int)
   (hβ : 1 < beta)
   (hx : generic_format beta fexp x) (h_exp : e ≤ cexp beta fexp x) :
@@ -876,7 +846,9 @@ lemma mag_minus1 (z : ℝ) (hβ : 1 < beta) (h_nonzero : z ≠ 0) :
   rw [hscaled, hfloor_sub, hfloor_L]
   omega
 
+omit [FloatSpec.Core.Ulp.Exp_not_FTZ fexp] in
 /-- Round plus F2R representation -/
+@[flocq_source "src/Prop/Plus_error.v" 341 "round_plus_F2R"]
 theorem round_plus_F2R (x y : ℝ)
   (hβ : 1 < beta)
   (hx : generic_format beta fexp x) (hy : generic_format beta fexp y) (h_nonzero : x ≠ 0) :
@@ -958,7 +930,9 @@ theorem round_plus_F2R (x y : ℝ)
       simpa [_root_.F2R, FloatSpec.Core.Defs.F2R] using h
     exact hround_c.trans hchange
 
+omit [FloatSpec.Core.Ulp.Exp_not_FTZ fexp] in
 /-- Round plus greater equal ulp -/
+@[flocq_source "src/Prop/Plus_error.v" 437 "round_plus_ge_ulp"]
 theorem round_plus_ge_ulp (x y : ℝ)
   (hβ : 1 < beta)
   (hx : generic_format beta fexp x) (hy : generic_format beta fexp y)
@@ -1196,7 +1170,9 @@ theorem round_FLX_plus_ge (x y : ℝ) (e : Int)
 
 -- Section: Plus error bounds
 
+omit [FloatSpec.Core.Generic_fmt.Monotone_exp fexp] [FloatSpec.Core.Ulp.Exp_not_FTZ fexp] in
 /-- Plus error bounded by left operand -/
+@[flocq_source "src/Prop/Plus_error.v" 587 "plus_error_le_l"]
 lemma plus_error_le_l (x y : ℝ)
   (hβ : 1 < beta)
   (hx : generic_format beta fexp x) (hy : generic_format beta fexp y) :
@@ -1217,7 +1193,9 @@ lemma plus_error_le_l (x y : ℝ)
   simpa [FloatSpec.Calc.Round.round, FloatSpec.Compat.Scaffold.ZnearestMode,
     Znearest, s, r, hy_dist] using hdist0
 
+omit [FloatSpec.Core.Generic_fmt.Monotone_exp fexp] [FloatSpec.Core.Ulp.Exp_not_FTZ fexp] in
 /-- Plus error bounded by right operand -/
+@[flocq_source "src/Prop/Plus_error.v" 597 "plus_error_le_r"]
 lemma plus_error_le_r (x y : ℝ)
   (hβ : 1 < beta)
   (hx : generic_format beta fexp x) (hy : generic_format beta fexp y) :
