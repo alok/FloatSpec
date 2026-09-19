@@ -105,14 +105,17 @@ register_option linter.coqSource : Bool := {
   descr := "warn when a public def/abbrev lacks @[flocq_source] or @[flocq_local]"
 }
 
-private def definitionId? (stx : Syntax) : Option Syntax := do
-  let declaration ← stx.find? (·.isOfKind ``Lean.Parser.Command.declaration)
-  if (declaration.find? (·.isOfKind ``Lean.Parser.Command.private)).isSome then none
-  let body := declaration[1]
-  if body.isOfKind ``Lean.Parser.Command.definition ||
-      body.isOfKind ``Lean.Parser.Command.abbrev then
-    return body[1][0]
-  none
+/-- Collect all written definitions, including each member of a mutual block.
+Do not descend into declaration bodies: quoted commands are data, not declarations. -/
+private partial def definitionIds (stx : Syntax) : Array Syntax := Id.run do
+  if stx.isOfKind ``Lean.Parser.Command.declaration then
+    if (stx[0].find? (·.isOfKind ``Lean.Parser.Command.private)).isSome then return #[]
+    let body := stx[1]
+    if body.isOfKind ``Lean.Parser.Command.definition ||
+        body.isOfKind ``Lean.Parser.Command.abbrev then
+      return #[body[1][0]]
+    return #[]
+  return stx.getArgs.foldl (fun ids child => ids ++ definitionIds child) #[]
 
 /-- The source-link coverage linter. Enable it in a source-facing file once
 that file's local helpers have been separated or explicitly classified. -/
@@ -120,15 +123,18 @@ def coqSourceLinter : Linter where run := withSetOptionIn fun stx => do
   unless linter.coqSource.get (← getOptions) && (← getInfoState).enabled do return
   if (← get).messages.hasErrors then return
   let env ← getEnv
-  let some id := definitionId? stx | return
-  if id.isMissing then return
-  let name := (← getCurrNamespace) ++ id.getId
-  if isPrivateName name then return
-  unless hasSourceRef env name || (localRef? env name).isSome do
-    logLint linter.coqSource id
-      s!"public definition {name} is unclassified; add \
-        @[flocq_source \"src/Module.v\" LINE \"coq_name\"] \
-        or @[flocq_local \"reason\"]"
+  let currNamespace ← getCurrNamespace
+  for id in definitionIds stx do
+    if id.isMissing then continue
+    let name := if (`_root_).isPrefixOf id.getId then
+        id.getId.replacePrefix `_root_ .anonymous
+      else currNamespace ++ id.getId
+    if isPrivateName name then continue
+    unless hasSourceRef env name || (localRef? env name).isSome do
+      logLint linter.coqSource id
+        s!"public definition {name} is unclassified; add \
+          @[flocq_source \"src/Module.v\" LINE \"coq_name\"] \
+          or @[flocq_local \"reason\"]"
 
 initialize addLinter coqSourceLinter
 

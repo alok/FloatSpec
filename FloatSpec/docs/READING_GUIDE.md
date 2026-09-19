@@ -233,12 +233,12 @@ requires a float witness with a normalized mantissa and a minimum exponent.
 The old Lean definition was simply `generic_format` at `FTZ_exp`, which made
 its two conversion theorems reflexive and hid those representation conditions.
 Lean now states the source-shaped witness contract; the conversion theorems
-have direct implication types. Their common equivalence proof is a named
-`sorry` in [`proof_debts.json`](proof_debts.json). The explicit zero-witness
-regression is proved without that debt. The downstream double-rounding
-theorems still typecheck by using the conversion, but therefore inherit the
-unproved equivalence until the proof is supplied. The direct projection
-`FLXN_format_FTZ` is proved from the structural witness without that debt.
+have direct implication types. Their common equivalence proof was initially
+deferred, then proved in commit `d4c44d9b`. An independent axiom check on
+19 September found only Lean's standard `propext`, `Classical.choice`, and
+`Quot.sound`, with no `sorryAx`. The zero-witness regression and direct
+projection `FLXN_format_FTZ` are also proved. This closes that particular
+proof debt; it does not certify all downstream double-rounding statements.
 
 For gradual underflow, [`Core/FLT.lean`](../src/Core/FLT.lean) keeps an explicit
 bounded-mantissa, minimum-exponent witness, matching pinned Flocq
@@ -262,3 +262,7 @@ mistakes found, paired observations, and boundaries. Then take one
 each constructor or branch, test a boundary case on both sides, and only then
 judge its proof. That sequence is the remaining work more accurately than a
 single percent-complete number.
+
+The [independent continuation audit](ASTRA_AUDIT_2026-09-19.md) records fresh
+checks of the previous work, including a reproduced gap in the source-link
+linter and the distinction between paired examples and differential execution.
