@@ -5,6 +5,7 @@ import io
 import json
 import os
 from pathlib import Path
+import subprocess
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -13,6 +14,23 @@ import flocq_bridge as bridge
 
 
 class ParserTests(unittest.TestCase):
+    def test_source_snapshot_changes_with_inputs_not_documentation(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for name in ("FloatSpec.lean", "lakefile.lean", "lean-toolchain", "lake-manifest.json"):
+                (root / name).write_text(name)
+            (root / "FloatSpec").mkdir()
+            source = root / "FloatSpec/Test.lean"
+            source.write_text("def x := 1")
+            before = bridge.lean_source_fingerprint(root)
+            (root / "FloatSpec/guide.md").write_text("A reading guide")
+            self.assertEqual(before, bridge.lean_source_fingerprint(root))
+            source.write_text("def x := 2")
+            self.assertNotEqual(before, bridge.lean_source_fingerprint(root))
+        with patch.object(bridge, "lean_source_fingerprint", return_value="changed"):
+            with self.assertRaisesRegex(RuntimeError, "changed during verification"):
+                bridge.require_lean_source_snapshot("original")
+
     def test_signed_lean_constructors(self):
         self.assertEqual(bridge.parse_result("[[Int.ofNat 0, Int.negSucc 2]]", "lean", 1), [[0, -3]])
 
@@ -53,6 +71,37 @@ class ParserTests(unittest.TestCase):
 
 @unittest.skipUnless(os.environ.get("FLOCQ_AUDIT_DIR"), "live test requires FLOCQ_AUDIT_DIR")
 class LiveTests(unittest.TestCase):
+    def test_concurrent_source_change_marks_run_error(self):
+        with tempfile.TemporaryDirectory(prefix="floatspec-source-change-") as directory:
+            output, replay = Path(directory) / "output", Path(directory) / "cases.json"
+            replay.write_text('[{"op": "power", "args": [2, 0]}]')
+            argv = ["flocq_bridge", "--flocq-dir", os.environ["FLOCQ_AUDIT_DIR"],
+                    "--replay", str(replay), "--output", str(output)]
+            with (patch("sys.argv", argv), patch.object(bridge, "lean_source_fingerprint",
+                  side_effect=["original", "changed"]), contextlib.redirect_stdout(io.StringIO()),
+                  self.assertRaisesRegex(RuntimeError, "changed during verification")):
+                bridge.main()
+            report = json.loads((output / "report.json").read_text())
+            self.assertEqual(report["status"], "error")
+            self.assertEqual(report["compared_cases"], 0)
+            self.assertEqual(report["bootstrapped_lean_cases"], 0)
+
+    def test_timeout_and_interrupt_are_errors_not_passes(self):
+        for error in (subprocess.TimeoutExpired("lean", 0.1), KeyboardInterrupt()):
+            with (self.subTest(error=type(error).__name__),
+                  tempfile.TemporaryDirectory(prefix="floatspec-bridge-error-") as directory):
+                output, replay = Path(directory) / "output", Path(directory) / "cases.json"
+                replay.write_text('[{"op": "power", "args": [2, 0]}]')
+                argv = ["flocq_bridge", "--flocq-dir", os.environ["FLOCQ_AUDIT_DIR"],
+                        "--replay", str(replay), "--output", str(output)]
+                with (patch("sys.argv", argv), patch.object(bridge, "execute", side_effect=error),
+                      contextlib.redirect_stdout(io.StringIO()), self.assertRaises(type(error))):
+                    bridge.main()
+                report = json.loads((output / "report.json").read_text())
+                self.assertEqual(report["status"], "error")
+                self.assertEqual(report["compared_cases"], 0)
+                self.assertEqual(report["bootstrapped_lean_cases"], 0)
+
     def test_all_adapters_execute(self):
         flocq = Path(os.environ["FLOCQ_AUDIT_DIR"]).resolve()
         cases = [bridge.Case("power", (2, -1)), bridge.Case("div_eucl", (7, -3)),

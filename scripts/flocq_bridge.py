@@ -15,6 +15,7 @@ import ast
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import asdict, dataclass
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -325,6 +326,29 @@ def configured_coqc(flocq: Path) -> str:
     return match[1]
 
 
+def lean_source_fingerprint(root: Path = ROOT) -> str:
+    """Bind a run to stable project Lean sources and dependency configuration.
+
+    This is a concurrent-edit guard, not attestation of compiler binaries or
+    external build artifacts. A normal Lake build still precedes execution.
+    """
+    digest = hashlib.sha256()
+    paths = sorted((root / "FloatSpec").rglob("*.lean"))
+    paths.extend(root / name for name in
+                 ("FloatSpec.lean", "lakefile.lean", "lean-toolchain", "lake-manifest.json"))
+    for path in paths:
+        digest.update(str(path.relative_to(root)).encode())
+        digest.update(b"\0")
+        digest.update(path.read_bytes())
+        digest.update(b"\0")
+    return digest.hexdigest()
+
+
+def require_lean_source_snapshot(expected: str) -> None:
+    if lean_source_fingerprint() != expected:
+        raise RuntimeError("Lean sources/configuration changed during verification; rebuild and rerun")
+
+
 def verify_reference(flocq: Path) -> str:
     """Reject a different or modified reference, even if its build succeeds."""
     pin = run(["git", "rev-parse", "HEAD:Deps/flocq"]).strip()
@@ -405,6 +429,7 @@ def main() -> None:
         parser.error("output directory must be empty; previous evidence is not overwritten")
     (output / "cases.json").write_text(json.dumps([asdict(case) for case in cases], indent=2) + "\n")
     report = {"seed": args.seed, "reference": pin, "lean_head": run(["git", "rev-parse", "HEAD"]).strip(),
+              "lean_source_sha256": lean_source_fingerprint(),
               "worktree_status": run(["git", "status", "--porcelain"]).strip(),
               "lean_version": run(["lake", "env", "lean", "--version"]).strip(),
               "rocq_version": run([coqc, "--version"]).strip(), "cases": len(cases),
@@ -421,6 +446,7 @@ def main() -> None:
                      "FloatSpec.src.Calc.Sqrt", "FloatSpec.src.Core.FTZ",
                      "FloatSpec.src.IEEE754.BinarySingleNaNSourceFacade"], timeout=600)
         (output / "lean_build.out").write_text(build)
+        require_lean_source_snapshot(report["lean_source_sha256"])
         for offset in range(0, len(cases), args.batch_size):
             batch = cases[offset:offset + args.batch_size]
             folder = output / f"batch_{offset:06d}"
@@ -442,11 +468,12 @@ def main() -> None:
                 report_path.write_text(json.dumps(report, indent=2) + "\n")
             print(f"{min(offset + args.batch_size, len(cases))}/{len(cases)}; "
                   f"mismatches={len(mismatches)}", flush=True)
+            require_lean_source_snapshot(report["lean_source_sha256"])
         report["mismatches"] = mismatches
         report["status"] = "mismatch" if mismatches else "passed"
-    except Exception as error:
+    except BaseException as error:
         report["status"] = "error"
-        report["error"] = str(error)
+        report["error"] = f"{type(error).__name__}: {error}"
         raise
     finally:
         report["elapsed_seconds"] = round(time.monotonic() - started, 3)

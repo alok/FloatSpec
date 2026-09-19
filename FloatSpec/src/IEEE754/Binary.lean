@@ -6,6 +6,7 @@ import FloatSpec.src.Compat
 import FloatSpec.src.Calc
 import FloatSpec.Linter.CoqSourceLinter
 import Mathlib.Data.Real.Basic
+import Mathlib.Data.Nat.BinaryRec
 import Std.Do.Triple
 import FloatSpec.src.SimprocWP
 
@@ -506,45 +507,28 @@ noncomputable def B2R {prec emax} (x : Binary754 prec emax) : ℝ :=
 def B2SF {prec emax} (x : Binary754 prec emax) : StandardFloat :=
   FF2SF x.val
 
-private def binaryPositiveSucc : FloatSpec.Core.Zaux.Positive → FloatSpec.Core.Zaux.Positive
-  | FloatSpec.Core.Zaux.Positive.xH =>
-      FloatSpec.Core.Zaux.Positive.xO FloatSpec.Core.Zaux.Positive.xH
-  | FloatSpec.Core.Zaux.Positive.xO p =>
-      FloatSpec.Core.Zaux.Positive.xI p
-  | FloatSpec.Core.Zaux.Positive.xI p =>
-      FloatSpec.Core.Zaux.Positive.xO (binaryPositiveSucc p)
+-- Recurse over bits, not the numeric value: a binary64 mantissa can exceed
+-- 2^52. The zero branch is unreachable through the public positive API.
+private def binaryPositiveOfNatBits : Nat → FloatSpec.Core.Zaux.Positive :=
+  Nat.binaryRecFromOne .xH .xH (fun bit _ _ tail => if bit then .xI tail else .xO tail)
 
-private theorem binaryPositiveSucc_spec (p : FloatSpec.Core.Zaux.Positive) :
-    FloatSpec.Core.Zaux.positiveToNat (binaryPositiveSucc p) =
-      FloatSpec.Core.Zaux.positiveToNat p + 1 := by
-  induction p with
-  | xH =>
-      simp [binaryPositiveSucc, FloatSpec.Core.Zaux.positiveToNat]
-  | xO p ih =>
-      simp [binaryPositiveSucc, FloatSpec.Core.Zaux.positiveToNat]
-  | xI p ih =>
-      simp [binaryPositiveSucc, FloatSpec.Core.Zaux.positiveToNat, ih]
-      grind
-
-private def binaryPositiveOfNatSucc : Nat → FloatSpec.Core.Zaux.Positive
-  | 0 => FloatSpec.Core.Zaux.Positive.xH
-  | n + 1 => binaryPositiveSucc (binaryPositiveOfNatSucc n)
-
-private theorem binaryPositiveOfNatSucc_spec (n : Nat) :
-    FloatSpec.Core.Zaux.positiveToNat (binaryPositiveOfNatSucc n) = n + 1 := by
-  induction n with
-  | zero =>
-      simp [binaryPositiveOfNatSucc, FloatSpec.Core.Zaux.positiveToNat]
-  | succ n ih =>
-      simp [binaryPositiveOfNatSucc, binaryPositiveSucc_spec, ih]
+private theorem binaryPositiveOfNatBits_spec (n : Nat) (h : 0 < n) :
+    FloatSpec.Core.Zaux.positiveToNat (binaryPositiveOfNatBits n) = n := by
+  induction n using Nat.binaryRecFromOne with
+  | zero => omega
+  | one => simp [binaryPositiveOfNatBits, FloatSpec.Core.Zaux.positiveToNat]
+  | bit bit n hn ih =>
+      have ih' := ih (Nat.pos_of_ne_zero hn)
+      simp only [binaryPositiveOfNatBits, Nat.binaryRecFromOne_eq bit n hn]
+      cases bit <;>
+        simp_all [FloatSpec.Core.Zaux.positiveToNat, Nat.bit, binaryPositiveOfNatBits]
 
 def binaryPositiveOfNat (n : Nat) (_h : 0 < n) : FloatSpec.Core.Zaux.Positive :=
-  binaryPositiveOfNatSucc (n - 1)
+  binaryPositiveOfNatBits n
 
 theorem binaryPositiveOfNat_spec (n : Nat) (h : 0 < n) :
     FloatSpec.Core.Zaux.positiveToNat (binaryPositiveOfNat n h) = n := by
-  have hpred : n - 1 + 1 = n := by grind
-  simp [binaryPositiveOfNat, binaryPositiveOfNatSucc_spec, hpred]
+  exact binaryPositiveOfNatBits_spec n h
 
 -- Coq `Binary.v:valid_binary`, stated on the exact `full_float` carrier whose
 -- finite and NaN payloads are already positive.

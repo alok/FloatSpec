@@ -117,11 +117,58 @@ HEAD. Executions use a separate detached reference checkout.
     theorem quantifies over every `f : R -> Z`. Removing the premise preserves
     its existing proof. The regression now works for arbitrary `f` and for the
     deliberately invalid rounding function `fun _ => 7`.
+12. **Ordinary binary64 arithmetic could not practically execute:**
+    `binaryPositiveOfNat` used `n-1` successor calls to construct a binary
+    positive integer. Reducing even `1.0 + 1.0` or `sqrt 1.0` exhausted the
+    recursion limit at actual 53-bit mantissas. Binary recursion now replaces
+    unary counting; the public signature and `binaryPositiveOfNat_spec` remain
+    unchanged and proved, with only standard axioms. The closed 53-bit
+    conversion and the `1.0`/`2.0` arithmetic row now check in the kernel.
+    This defect predates the reviewed Sol commits (`c55f38059`, August 27).
+    A new persistent three-way arithmetic bridge and paired Lean/Rocq fixtures
+    cover all five basic arithmetic operations at native binary64 sizes.
+    Its first complete run passed **1,424 operand pairs** (seed `526913`,
+    1,024 fixed boundary pairs plus 400 random/cancellation/adjacent pairs).
+    All seven fields agreed, and all 1,424 model rows became kernel-checked
+    equalities. The run includes every exceptional-operand combination, both
+    signs of zero, normal/subnormal boundaries, underflow, overflow, and ties.
+    Seven arithmetic-harness tests pass, including a live operand-swap mutation.
+    The original Rocq fixture omitted the mode module import and failed its
+    first harness run; that setup error was corrected before the passing run.
+    A fresh compiled-environment check of 13,595 product declarations found no
+    axiom or unsafe declarations and exactly the four named direct sorry
+    dependencies. The scan includes theorem/opaque bodies (`value? true`);
+    the default `value?` omits them and is not a valid proof-debt check.
+    The aggregate macOS Lean 4.34.0 build (`FloatSpec.Test`, `FloatSpecTests`,
+    and `floatspec`) subsequently passed all 6,210 jobs. The arithmetic
+    harness was rerun after the source-snapshot guard was integrated.
+13. **A concurrent rebuild invalidated an audit run:** the seed-8491
+    9,145-case combined run stopped after 8,100 completed comparisons when a
+    rebuilt `Binary.olean` was temporarily unavailable. The artifact
+    `floatspec-bridge-cdil8tim/report.json` records `error`; it is not a full
+    pass. Future evidence runs must hold imported Lean sources/build outputs
+    stable. Simulated timeout and interruption tests now also explicitly
+    require `error` in the arithmetic and core bridge reports.
+    All bridges now fingerprint Lean sources and dependency configuration
+    before building and check that fingerprint after the build and each batch.
+    A simulated concurrent source change is rejected before any completed case.
+    This guards edits, not arbitrary external replacement of compiled files.
+14. **Textual source-anchor validation missed real attributes:** a compiled
+    fixture with `@[inline, flocq_source ...]` and a subsequent
+    `attribute [flocq_source ...] name` command was invisible to the old regex,
+    while a commented-out annotation was counted. The default gate now builds
+    the root import and exports Lean's persistent source-reference extension.
+    It validates all **55** compiled references and checks the extension's
+    pinned commit against the parent gitlink. The regression rejects a real
+    missing Coq source while ignoring the comment. The optional `--lean-dir`
+    mode remains explicitly labeled a legacy textual heuristic. None of these
+    anchor checks establish body/type equivalence or require classification
+    outside modules that opt into the linter.
 
 See [the three-loop guide](THREE_VERIFICATION_LOOPS.md) for commands, output
-artifacts, and current coverage. No arithmetic algorithm was changed to make
-these new tests pass. Repairs include the source-link/trust gates and the two
-source-facing theorem signatures above.
+artifacts, and current coverage. Repairs include the source-link/trust gates,
+the two source-facing theorem signatures above, and the value-preserving
+binary-positive conversion. No rounding rule was changed to force agreement.
 
 ## Prior-commit review ledger
 
@@ -138,7 +185,7 @@ compatibility boundaries have more surface than the focused later changes.
 | `c50fdb3a` | FullFloat validity against Binary.v; source-link metadata; native bit operations and four explicit proof obligations | Partial broad review; mutual-block linter bypass repaired; raw sign-bit proof still open. |
 | `0de3c3bf` | Toolchain changed from 4.34 RC2 to stable 4.34.0 | Actual arm64 macOS builds pass; dependency pins were not silently upgraded. |
 | `e500d138` | Removal of unused mvcgen/Hoare lint surface; direct FIX contracts | Unnecessary `Valid_rnd` premise found and removed; no new proof framework required. |
-| `0fdc837d` | Defs predicates and source-anchor validation | Defs predicates match the source forms read; anchor validator remains textual/heuristic. |
+| `0fdc837d` | Defs predicates and source-anchor validation | Defs predicates match the source forms read; textual anchor bypass repaired with compiler metadata. |
 | `4800ce00` | FLX generic/structural format conversions | Hypotheses and implications checked; generic-format equivalence is not merely renamed identity. |
 | `5447ff8a` | FLX/FLXN source links and explicitly local helper labels | Metadata classification is not a proof of correspondence. |
 | `653175ac` | FTZ normalized witness and exponent lower bound | Matches FTZ.v:36; the temporary proof debt was closed later by Claude. |
@@ -161,6 +208,26 @@ compatibility boundaries have more surface than the focused later changes.
 
 ## Execution priorities
 
+Current queued repair (do not rebuild during an active bridge): the root
+`valid_binary_SF2FF` theorem still compares with `valid_binary_SF_payload`,
+which is defined by applying the same full-float validity check to `SF2FF x`.
+The pinned `Binary.v:173` compares with the independently defined SingleNaN
+validity predicate. A scratch Lean proof of that stronger equality against
+`validBinarySingleNaNStandardFloat` passed by constructor cases, retaining
+the source's non-NaN premise and requiring no additional validity premise.
+Move the old wrapper to an explicit compatibility name and export the direct
+source statement where the independent predicate is available, then add a
+typed consumer regression. This paragraph records a finding, not an applied fix.
+
+A second execution repair is queued in `IEEE754/Bits.lean`: its private
+`positiveOfNatSucc` duplicates the unary-counting converter fixed in `Binary`.
+`#reduce bits_of_b64 (b64_of_bits 4607182418800017408)` still exhausts the
+recursion depth. Replace that private duplicate with the shared, proved
+`binaryPositiveOfNat` and exercise the port's own bit decoders directly.
+The current arithmetic bridge decodes through Lean's `Float.Model` before
+entering the port's arithmetic, so it does not establish execution of this
+separate source-shaped bit-decoder path.
+
 Maintain three separate loops: independent Lean tests, independent pinned
 Flocq/Rocq tests, and a differential bridge that sends identical inputs to both.
 Record concrete cases and seeds; promote disagreements to permanent regression
@@ -173,7 +240,7 @@ or skipped command cannot silently produce a green result.
 The bulk of the complete theorem-by-theorem port remains unreviewed. In
 particular, root compatibility predicates such as `valid_binary_SF := true`
 still exist: the repaired overflow export does not certify every legacy user
-of that predicate. The source-anchor scanner is textual, the linter is opt-in,
+of that predicate. Source anchors now use compiler metadata, but the linter is opt-in,
 and many public declarations are outside its current gate. Next work includes
 native execution of integer-only algorithms, more IEEE arithmetic cross-tests,
 and further source-signature checks. Passing compilation, finite agreement,

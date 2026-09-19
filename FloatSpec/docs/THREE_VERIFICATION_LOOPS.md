@@ -91,9 +91,10 @@ bash scripts/test_flocq_conformance.sh
 ```
 
 This creates and builds a detached reference worktree, runs the standalone
-Rocq and Lean checks, runs both differential bridges, and executes their own
+Rocq and Lean checks, runs all three differential bridges, and executes their own
 tests. Live mutations recreate the historical negative-exponent bug and replace
-native successor by predecessor. Each mutation must cause a failed comparison
+native successor by predecessor, and swap native arithmetic operands. Each
+mutation must cause a failed comparison
 and emit a replay case. The temporary reference worktree is removed; bridge
 artifacts are retained at the paths printed by the runners.
 
@@ -122,6 +123,9 @@ uv run scripts/flocq_bridge.py --flocq-dir /path/to/pinned-flocq \
 The bridge rebuilds its Lean imports before executing, records compiler
 versions, source commit and worktree status, and retains a `report.json` with
 the seed, per-family counts, completed regression count, and final status.
+It also hashes project Lean sources and dependency configuration, rejecting a
+change observed after the build or any batch. This prevents a successful run
+from silently mixing edited source snapshots; it is not binary attestation.
 An interrupted or errored run is not a pass. CI currently runs the Lean grids
 and fast harness-unit tests; the live Rocq bridge is separately executed on
 this Mac and is not yet installed as a hosted-CI job.
@@ -164,7 +168,45 @@ uv run scripts/native_ieee_bridge.py --flocq-dir /path/to/pinned-flocq \
 The combined shell runner accepts `FLOCQ_NATIVE_SAMPLES` and
 `FLOCQ_NATIVE_BATCH_SIZE` for this additional loop.
 
-## 6. What this still does not establish
+## 6. Arithmetic at real binary64 sizes
+
+`scripts/native_arithmetic_bridge.py` sends each pair of raw binary64 words
+through native Lean arithmetic, the port's `FaithfulPrimFloat` operations, and
+Flocq's `b64_plus`, `b64_minus`, `b64_mult`, `b64_div`, and `b64_sqrt`. All use
+round-to-nearest, ties-to-even. Each row contains seven fields: both canonical
+inputs, sum, difference, product, quotient, and square root of the left operand.
+Unlike `frExp`, these comparisons include every exceptional case: signed zero,
+infinity, NaN, zero divisors, and negative square-root inputs. NaN payloads are
+still quotiented out explicitly, not accidentally treated as preserved.
+
+The fixed grid crosses 32 boundary words with each other. Random pairs are
+augmented with equal operands, opposite signs (cancellation), and adjacent bit
+patterns. Particular boundaries include half an ULP at one, half the smallest
+subnormal, the normal/subnormal transition, and maximum finite overflow.
+Every model/Rocq agreement is again checked as a separate kernel theorem.
+
+Running this exposed a practical defect hidden by the old small grids:
+`binaryPositiveOfNat` constructed its answer using `n-1` successor operations.
+It was provably correct but could not reduce ordinary 53-bit mantissas. The
+replacement recurses over binary digits, retains the same public type and
+proved value theorem, and now supports the actual arithmetic tests. This is
+an execution repair, not a change to the mathematical rounding algorithm.
+
+```sh
+uv run scripts/native_arithmetic_bridge.py --flocq-dir /path/to/pinned-flocq \
+  --seed 526913 --samples 100 --batch-size 20
+# Replay uses a JSON array of [left_bits, right_bits] pairs.
+```
+
+The combined runner accepts `FLOCQ_ARITHMETIC_SAMPLES` and
+`FLOCQ_ARITHMETIC_BATCH_SIZE`. Its harness tests each output column, deliberately
+swaps native operands, and verifies that timeout/interruption records are
+errors with zero completed cases, never passes. Do not rebuild dependencies
+or edit imported Lean source during an active run: rebuilding can temporarily
+remove `.olean` files that another evaluator is reading. Finish or explicitly
+stop the run, rebuild, and then start a fresh evidence run.
+
+## 7. What this still does not establish
 
 No finite grid or random corpus proves universal source equivalence. The bridge
 does not yet exercise all of IEEE arithmetic, every native primitive,

@@ -49,8 +49,8 @@ if git -C "$flocq_dir" ls-files --others --exclude-standard src | rg -q '\.v$'; 
   exit 1
 fi
 
-python3 "$repo_root/scripts/validate_flocq_source_refs.py" "$flocq_dir" \
-  --lean-dir "$repo_root/FloatSpec/src"
+uv run "$repo_root/scripts/validate_flocq_source_refs.py" "$flocq_dir"
+uv run "$repo_root/scripts/test_flocq_source_refs.py" -v
 
 if [[ "${FLOCQ_SKIP_BUILD:-0}" != "1" ]]; then
   (
@@ -215,5 +215,10 @@ uv run "$repo_root/scripts/native_ieee_bridge.py" --flocq-dir "$flocq_dir" --coq
   --seed "${FLOCQ_BRIDGE_SEED:-20260919}" --samples "${FLOCQ_NATIVE_SAMPLES:-200}" \
   --batch-size "${FLOCQ_NATIVE_BATCH_SIZE:-25}"
 FLOCQ_AUDIT_DIR="$flocq_dir" uv run "$repo_root/scripts/test_native_ieee_bridge.py" -v
+
+uv run "$repo_root/scripts/native_arithmetic_bridge.py" --flocq-dir "$flocq_dir" --coqc "$coqc_bin" \
+  --seed "${FLOCQ_BRIDGE_SEED:-20260919}" --samples "${FLOCQ_ARITHMETIC_SAMPLES:-100}" \
+  --batch-size "${FLOCQ_ARITHMETIC_BATCH_SIZE:-20}"
+FLOCQ_AUDIT_DIR="$flocq_dir" uv run "$repo_root/scripts/test_native_arithmetic_bridge.py" -v
 
 echo "Three finite-test loops passed against pinned Flocq $gitlink_commit"

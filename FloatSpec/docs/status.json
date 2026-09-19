@@ -33,7 +33,7 @@
     "Other": {
       "admit": 0,
       "axiom": 0,
-      "lean_files": 31,
+      "lean_files": 32,
       "placeholder": 0,
       "sorry": 0
     },
@@ -52,7 +52,7 @@
       "sorry": 0
     }
   },
-  "lean_files": 86,
+  "lean_files": 87,
   "placeholder_semantics_count": 0,
   "sorry_count": 4,
   "spec_weakened_count": 0

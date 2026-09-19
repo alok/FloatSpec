@@ -60,7 +60,9 @@ whole-file strict coverage. Ordinary `Source:` URL comments beside the
 `Defs.lean` attributes can be opened from an editor; the attribute string
 itself is not yet a special go-to-source action. The paired conformance command
 checks all 55 annotated path/line/name anchors against the pinned Flocq
-checkout. A correct anchor does not establish that the Lean type, body, or
+checkout using Lean's compiled metadata, not a regular expression over comments
+and source text. Combined attributes and later `attribute` commands therefore
+participate in the same gate. A correct anchor does not establish that the Lean type, body, or
 proof matches Coq; those require source review and paired tests or proofs.
 
 [`Core/FLX.lean`](../src/Core/FLX.lean) is the second strict-gated module.
@@ -273,6 +275,13 @@ The native extension feeds the same binary64 words into actual Lean runtime
 calls, the logical Lean carrier, and pinned Rocq. Read its five output columns
 as input bits → next-up → next-down → `frExp` significand → exponent. It keeps
 NaN canonicalization and the nonzero-finite `frExp` precondition explicit.
+
+The arithmetic extension takes two input words and follows them through
+addition, subtraction, multiplication, division, and square root in all three
+implementations. Read its seven columns as left input → right input → sum →
+difference → product → quotient → square root of the left input. Signed zero
+is preserved; NaN payloads are deliberately collapsed. Boundary cases include
+cancellation, ties-to-even, underflow, overflow, and exceptional operands.
 
 The [three-loop testing guide](THREE_VERIFICATION_LOOPS.md) explains the runnable
 checks in order: independent finite arithmetic invariants in Lean, those same

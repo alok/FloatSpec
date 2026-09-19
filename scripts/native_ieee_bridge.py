@@ -19,7 +19,8 @@ import random
 import tempfile
 import time
 
-from flocq_bridge import ROOT, configured_coqc, parse_result, run, verify_reference
+from flocq_bridge import (ROOT, configured_coqc, lean_source_fingerprint, parse_result,
+                          require_lean_source_snapshot, run, verify_reference)
 
 
 LEAN_HEADER = """import FloatSpec.Test.NativeIEEE
@@ -158,6 +159,7 @@ def main() -> None:
         parser.error("output directory must be empty; previous evidence is not overwritten")
     (output / "cases.json").write_text(json.dumps(words, indent=2) + "\n")
     report = {"seed": args.seed, "reference": pin, "cases": len(words),
+              "lean_source_sha256": lean_source_fingerprint(),
               "categories": dict(Counter(map(category, words))), "status": "running",
               "lean_head": run(["git", "rev-parse", "HEAD"]).strip(),
               "worktree_status": run(["git", "status", "--porcelain"]).strip(),
@@ -182,6 +184,7 @@ def main() -> None:
     try:
         build = run(["lake", "build", "FloatSpec.Test.NativeIEEE"], timeout=600)
         (output / "lean_build.out").write_text(build)
+        require_lean_source_snapshot(report["lean_source_sha256"])
         for offset in range(0, len(words), args.batch_size):
             batch = words[offset:offset + args.batch_size]
             folder = output / f"batch_{offset:06d}"
@@ -198,6 +201,7 @@ def main() -> None:
                 save()
             print(f"{report['compared_cases']}/{len(words)}; "
                   f"mismatches={len(report['mismatches'])}", flush=True)
+            require_lean_source_snapshot(report["lean_source_sha256"])
         report["status"] = "mismatch" if report["mismatches"] else "passed"
     except BaseException as error:
         report["status"] = "error"
