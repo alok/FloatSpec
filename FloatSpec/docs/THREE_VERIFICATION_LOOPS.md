@@ -297,6 +297,15 @@ or edit imported Lean source during an active run: rebuilding can temporarily
 remove `.olean` files that another evaluator is reading. Finish or explicitly
 stop the run, rebuild, and then start a fresh evidence run.
 
+On macOS/Linux each prover command now runs in its own process group. A
+timeout or interruption kills that group and reaps the immediate child;
+the regression suite checks that a spawned descendant cannot continue writing
+after the timeout. The old runner killed only its immediate process and failed
+that test. The result parser also accepts Lean's line-wrapped integer
+constructors, including the 309-digit maximum finite binary64 integer.
+Neither repair changes what counts as a pass: errors, incomplete output,
+or missing observations still fail closed.
+
 ## 7. All five IEEE rounding modes, including fused multiply-add
 
 The standalone `scripts/ieee_modes_bridge.py` directly exercises the port's
@@ -376,6 +385,13 @@ enormous integer shifts. The combined runner now includes this phase through
 `FLOCQ_SCALE_SAMPLES` and `FLOCQ_SCALE_BATCH_SIZE`.
 
 ## 9. What this still does not establish
+
+The expanded combined runner completed at commit `ba3e2a8b`, seed `961703`,
+with 10,788 core cases, 672 native unary cases, 1,624 arithmetic pairs,
+690 all-mode IEEE cases, and 2,560 scale/decomposition cases. All generated
+kernel regressions, independent fixtures, and 48 live bridge-harness tests
+passed. The exact source fingerprint and per-phase times are recorded in the
+audit ledger; this is a receipt for that snapshot, not later changes.
 
 No finite grid or random corpus proves universal source equivalence. The bridge
 does not yet exercise all of IEEE arithmetic, every native primitive,

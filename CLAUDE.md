@@ -28,16 +28,19 @@ Favor statically typed functional programming but use mutability where it makes 
 
 ## Development Commands
 
-**`just` is our main program runner.** It provides a unified interface for all common development tasks. Run `just` without arguments to see all available commands.
+The current checkout has no `justfile` or `pyproject.toml`; earlier instructions
+for `just build`, `just test`, and `pytest` described an older setup. Use the
+commands actually maintained here:
 
-Key commands:
-- `just build` - Build Lean project
-- `just test` - Run the Python test suite  
-- `just bootstrap` - Bootstrap developer environment (Rust, Elan, UV)
+- `lake build FloatSpec.Test FloatSpecTests floatspec` — full library/test/executable build.
+- `uv run scripts/test_flocq_bridge.py -v` — core harness tests; live prover
+  tests require `FLOCQ_AUDIT_DIR` at the pinned, built reference checkout.
+- `bash scripts/test_flocq_conformance.sh` — independent Lean and Rocq loops,
+  shared-input bridges, generated kernel regressions, and live mutations.
 
-You can also run underlying tools directly:
-- `lake build` - Build Lean project (use frequently for constant feedback)
-- `uv run -m pytest` - Run Python tests directly
+See `FloatSpec/docs/THREE_VERIFICATION_LOOPS.md` for reproducible commands,
+reference compiler selection, scoped native checks, seeds, and replay artifacts.
+Do not rebuild or edit imported sources while a frozen-snapshot bridge is running.
 
 ## Commit Logging Process
 
@@ -146,13 +149,14 @@ h_neq : ¬P.card = 2 ^ (Fintype.card S - 1)
 ### Building and Testing
 
 ```bash
-# Build using just (recommended)
-just build        # Build Lean project
-just test         # Run Python tests
+# Full local build (macOS Lean 4.34.0 is verified on the audit branch)
+lake build FloatSpec.Test FloatSpecTests floatspec
 
-# Or use direct commands:
-lake build        # Full Lean build (slower; use as a cross-check)
-uv run -m pytest -q  # Run tests directly
+# Standalone Python harness checks; set FLOCQ_AUDIT_DIR for live mutation tests
+uv run scripts/test_flocq_bridge.py -v
+
+# All three verification loops; may build a clean pinned Flocq checkout
+bash scripts/test_flocq_conformance.sh
 
 # Check Lean syntax and types
 lake build --verbose
@@ -311,9 +315,16 @@ algorithm actually needs monadic state, errors, loops, or early return.
 - Category theory wiring diagram style for complex systems
 - Apply the scientific method for debugging
 
-## FloatSpec Implementation Progress
+## Historical port plan (2025; not current coverage)
 
-### Current Status
+This dependency-order checklist is historical. Do not restart an already
+implemented module from its old “next priority” labels. For current reviewed
+scope, execution receipts, and open proof obligations, read
+`FloatSpec/docs/READING_GUIDE.md`, `FloatSpec/docs/ASTRA_AUDIT_2026-09-19.md`,
+and `FloatSpec/docs/proof_debts.json`, and verify the live build. File presence
+or this checklist does not establish source equivalence.
+
+### Status at the time of the original plan
 
 - ✓ **Project Setup**: Basic Lean 4 project structure with lakefile.lean
 - ✓ **Build System**: Lake configuration for Lean 4 development
@@ -369,7 +380,7 @@ Based on the dependency analysis in `Deps/flocq_dependency_graph.dot`, the prope
 19. **IEEE754/** modules - Full IEEE 754 implementation
 20. **Pff/** modules - Legacy compatibility
 
-### Current Next Steps
+### Original next steps (superseded by the live audit ledger)
 
 **Immediate Priority: Raux.lean**
 - 169 definitions covering real number auxiliary functions

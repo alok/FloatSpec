@@ -21,6 +21,7 @@ import os
 from pathlib import Path
 import random
 import re
+import signal
 import subprocess
 import tempfile
 import time
@@ -430,8 +431,8 @@ def parse_result(output: str, language: str, expected_count: int) -> list[list[i
             raise ValueError(f"unexpected Rocq output: {output[:500]}")
         output = match[1].replace(";", ",")
     else:
-        output = re.sub(r"Int\.ofNat (\d+)", r"\1", output)
-        output = re.sub(r"Int\.negSucc (\d+)", lambda m: str(-int(m[1]) - 1), output)
+        output = re.sub(r"Int\.ofNat\s+(\d+)", r"\1", output)
+        output = re.sub(r"Int\.negSucc\s+(\d+)", lambda m: str(-int(m[1]) - 1), output)
     if not re.fullmatch(r"[\s\[\],\-0-9]+", output):
         raise ValueError(f"unexpected {language} output: {output[:500]}")
     result = ast.literal_eval(output.strip())
@@ -445,15 +446,28 @@ def parse_result(output: str, language: str, expected_count: int) -> list[list[i
 def run(command: list[str], timeout: int = 120) -> str:
     if command[0] == "lake" and os.environ.get("LEAN_TOOLCHAIN_OVERRIDE"):
         command = ["elan", "run", os.environ["LEAN_TOOLCHAIN_OVERRIDE"], *command]
-    completed = subprocess.run(command, cwd=ROOT, text=True, capture_output=True, timeout=timeout)
-    if completed.returncode:
-        raise RuntimeError(f"command failed ({completed.returncode}): {command}\n"
-                           f"{completed.stdout[:8000]}\n{completed.stderr[:8000]}")
-    # Warnings are retained separately by the caller's artifact files; the two
-    # reduction commands should not emit any warnings with these imports.
-    if completed.stderr.strip():
-        raise RuntimeError(f"unexpected stderr from {command}: {completed.stderr[:8000]}")
-    return completed.stdout
+    with subprocess.Popen(command, cwd=ROOT, text=True, stdout=subprocess.PIPE,
+                          stderr=subprocess.PIPE, start_new_session=(os.name == "posix")) as process:
+        try:
+            stdout, stderr = process.communicate(timeout=timeout)
+        except BaseException:
+            # Lake and its Lean child must stop together. Terminating only the
+            # immediate process can leave a prover running after a timeout.
+            try:
+                if os.name == "posix":
+                    os.killpg(process.pid, signal.SIGKILL)
+                else:
+                    process.kill()
+            except ProcessLookupError:
+                pass
+            process.communicate()
+            raise
+        if process.returncode:
+            raise RuntimeError(f"command failed ({process.returncode}): {command}\n"
+                               f"{stdout[:8000]}\n{stderr[:8000]}")
+        if stderr.strip():
+            raise RuntimeError(f"unexpected stderr from {command}: {stderr[:8000]}")
+        return stdout
 
 
 def configured_coqc(flocq: Path) -> str:

@@ -376,6 +376,26 @@ artifacts, and current coverage. Repairs include the source-link/trust gates,
 the two source-facing theorem signatures above, and the value-preserving
 binary-positive conversion. No rounding rule was changed to force agreement.
 
+### Expanded frozen-snapshot receipt
+
+The complete five-bridge suite at `ba3e2a8b` exited zero on 19 September,
+23:45 UTC. Seed `961703`, source SHA-256
+`b736791a1fa66312a60c3e033108120dfbbd65c1914fb68674773b56bbdc7cc4`:
+
+| Bridge | Cases and generated kernel regressions | Seconds |
+|---|---:|---:|
+| Core, 19 families | 10,788 | 729.964 |
+| Native unary | 672 | 184.428 |
+| Native arithmetic | 1,624 | 1,305.483 |
+| IEEE all-mode arithmetic | 690 | 1,083.949 |
+| Scale/decomposition | 2,560 | 438.611 |
+
+All independent Lean/Rocq fixtures and all 48 live bridge harness tests also
+pass. Native comparisons retain their documented domain/mode restrictions.
+The imported Lean sources, harnesses, and build outputs stayed fixed throughout
+the run; only audit prose and out-of-tree diagnostic probes changed. This
+receipt must not be relabeled as verification of subsequent source repairs.
+
 ## Prior-commit review ledger
 
 The table tracks the **changed surfaces**, not certification of all declarations
@@ -414,6 +434,101 @@ compatibility boundaries have more surface than the focused later changes.
 
 ## Execution priorities
 
+### Slice prepared during the completed aggregate run
+
+The committed `ba3e2a8b` sources stayed fixed during the expanded aggregate
+run (seed `961703`), which has now completed successfully as recorded above.
+The following probes were prepared out of tree while that run was active.
+
+Separate temporary probes have identified the next source-facing slice:
+
+- `Binary.Btrunc` and `BinarySingleNaN.Btrunc` currently define the operation
+  through noncomputable real-valued `Ztrunc`. Pinned SingleNaN source line
+  2680 supplies an integer algorithm. An out-of-tree replacement follows that
+  algorithm and has a closed correctness proof under the source
+  `Prec_lt_emax` premise. This is not yet a change to the public APIs.
+- The compiled Rocq type of `Binary.Bnearbyint` requires `Prec_lt_emax`, but
+  not `Prec_gt_0`; the Lean export currently asks for both. A computable
+  out-of-tree implementation with the smaller source premise is
+  definitionally equal to the existing body when the latter is applicable.
+- An exploratory 3,020-case test of the actual `SFnearbyint_binary_aux` and
+  `SFnearbyint_binary` functions agrees in compiled Lean, kernel reduction,
+  and Rocq, including raw out-of-format inputs. All 3,020 generated kernel
+  equalities pass. Artifact: `/private/tmp/floatspec-nearby-audit-20260919`.
+- The replacement prototype passes 1,560 bit-level cases in compiled Lean,
+  kernel reduction, and Rocq, with scoped native rounding/conversion checks.
+  This receipt tests temporary definitions, not the unchanged public
+  `Btrunc` APIs. Artifact:
+  `/private/tmp/floatspec-integer-prototype-wrapped-parser-20260919`.
+- Independent eighth-integer selection and idempotence tests cover 5,125
+  cases in each assistant; Lean additionally checks the whole grid in its
+  kernel. The Lean test currently uses the temporary replacement; Rocq uses
+  actual pinned definitions. Both need a permanent public-API regression.
+  Deliberately replacing every requested mode with nearest-away is rejected
+  by the Rocq theorem and Lean runtime oracle; the latter reports the concrete
+  nearest-even counterexample `-500/8`. Lean's kernel rejects that same
+  individual counterexample. A whole-grid negative diagnostic was terminated
+  after excessive evaluation time and remains an error; only the bounded
+  counterexample is counted as a successful kernel mutation test.
+- A separate 952-case probe of actual generic SingleNaN successor,
+  predecessor, and ULP definitions agrees in Lean kernel reduction and Rocq.
+  It covers precisions 1, 2, 3, 4, 24, and 53, exceptional constructors,
+  normal/subnormal/overflow boundaries, and rejected raw representations.
+  No compiled path is claimed: these public implementations still carry
+  `noncomputable` markers. Artifact:
+  `/private/tmp/floatspec-neighbors-kernel-audit-20260919`.
+- Large binary64 truncation results exposed two harness limits: the default
+  kernel exponentiation threshold and a parser that accepts only a literal
+  space after `Int.ofNat` / `Int.negSucc`. Lean legitimately wraps very long
+  integers onto the next line. The failed prototype runs remain errors; the
+  successful probe uses an explicit threshold and a temporary whitespace
+  parser correction. The shared parser still needs its tested repair after
+  the frozen aggregate run finishes.
+
+The noncomputable truncation definitions originate in `3d6126a8`, an ancestor
+of upstream `158263e9`; they are not a regression introduced by the 23 Sol
+commits. No new proof debt is needed for the prepared replacement.
+
+Further inspection of the first two broad Sol commits compared all their
+changed mathematical surfaces: the three-field `satisfies_any` contract,
+signed integer powers, format predicates, FullFloat finite/NaN validity,
+source-link metadata, and explicit native proof debts. These comparisons do
+not certify every unchanged theorem in the affected modules. A separate
+324-case kernel/Rocq grid of actual `Pff2FlocqAux.make_bound` covers radices
+2, 3, and 10, precisions -3 through 8, and both signs of exponent bounds.
+It agrees with pinned Rocq, including negative-power conversion through
+`Z.to_pos`; compiled execution is not claimed. The Rocq-compiled
+`make_bound_Emin` signature confirms that only the nonpositive exponent-bound
+premise is needed, while `make_bound_p` retains positive precision.
+Receipts: `/private/tmp/PffBoundsProbe.lean`, `/private/tmp/PffBoundsProbe.v`,
+and `/private/tmp/PffBoundsProbe.receipt.json`.
+
+The remaining legacy `valid_binary_SF := true` is now also reproduced as an
+executable discrepancy: precision 3, maximum exponent 4, positive mantissa 1,
+exponent 0 returns `true`, while both the repaired source-shaped predicate and
+Rocq return `false`. The issue is already disclosed above, but these probes
+confirm its exact observable behavior. Its two experimental payload theorems
+have no callers elsewhere in this repository; repairing their input validity premises
+would allow the vacuous definition to be removed without admitting proofs.
+Probe files: `/private/tmp/LegacyValidityProbe.lean` and `.v`.
+`git show 158263e9:FloatSpec/src/IEEE754/Binary.lean` confirms the same
+always-true definition at upstream; its introduction is `e9746f40` from
+October 2025, not one of the 23 later Sol audit commits.
+
+The subprocess cancellation defect is now repaired: on macOS/Linux the runner
+owns a process group and kills/reaps it on timeout or interruption, rather than
+leaving a prover child alive. The scoped `/private/tmp/FloatSpecTimeoutProbe.py`
+reproduced the old failure and cleaned up its own child. The permanent sentinel-
+writing descendant test fails before the change and passes afterwards, alongside
+success, nonzero-exit, strict-stderr, and interruption controls. The shared
+integer parser also now accepts legitimate whitespace after `Int.ofNat` and
+`Int.negSucc`; a permanent 309-digit maximum-binary64 regression reproduces its
+old failure. All 23 core harness tests pass after integration (49.813 seconds).
+The other four bridge harnesses also pass: 7 unary, 7 arithmetic, 8 all-mode,
+and 7 scale tests, for 52 harness tests altogether after this change. The
+complete cached macOS Lean build also passes (6,215 jobs); no product Lean source changed in this
+tooling slice. Existing timeout/error records remain errors, not relabeled passes.
+
 The queued validity, duplicate-converter, and fixed-width comparison repairs
 are now applied. The prior complete combined suite passed at its documented
 snapshot; the new order bridge has also completed successfully. The native
@@ -422,9 +537,10 @@ exercise the distinct source-shaped decoder directly and retain NaN payloads.
 
 The integer-only IEEE arithmetic and scale/decompose chains, compiled bridges,
 two root validity exports, and raw validation/conversion repairs are now
-implemented with the slice-specific receipts above. A new aggregate run is
-still needed to include all the later fixtures and scale/validity additions;
-the earlier completed aggregate cannot be relabeled. Generic real-valued
+implemented with the slice-specific receipts above. The expanded aggregate
+has now verified all those later fixtures and scale/validity additions at
+`ba3e2a8b`; it does not include the prepared integer-truncation and legacy
+validity repairs. Generic real-valued
 comparisons and further theorem-contract audits remain separate slices.
 Do not replace mathematical reals with machine floats or bypass proof
 obligations merely to make a declaration compile.

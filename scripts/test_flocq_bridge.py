@@ -6,11 +6,46 @@ import json
 import os
 from pathlib import Path
 import subprocess
+import sys
 import tempfile
+import time
 import unittest
 from unittest.mock import patch
 
 import flocq_bridge as bridge
+
+
+class RunnerTests(unittest.TestCase):
+    def test_success_exit_code_and_stderr(self):
+        self.assertEqual(bridge.run([sys.executable, '-c', 'print("ok")']), 'ok\n')
+        with self.assertRaisesRegex(RuntimeError, 'command failed \\(7\\)'):
+            bridge.run([sys.executable, '-c', 'raise SystemExit(7)'])
+        with self.assertRaisesRegex(RuntimeError, 'unexpected stderr'):
+            bridge.run([sys.executable, '-c', 'import sys; print("warning",file=sys.stderr)'])
+
+    @unittest.skipUnless(os.name == "posix", "process-group cleanup is a POSIX contract")
+    def test_timeout_stops_descendants(self):
+        with tempfile.TemporaryDirectory() as directory:
+            marker = Path(directory) / 'orphan-ran'
+            child = f'import time,pathlib; time.sleep(1.5); pathlib.Path({str(marker)!r}).touch()'
+            parent = f'import subprocess,sys,time; subprocess.Popen([sys.executable,"-c",{child!r}]); print("ready",flush=True); time.sleep(10)'
+            with self.assertRaises(subprocess.TimeoutExpired) as caught:
+                bridge.run([sys.executable, '-c', parent], timeout=1.0)
+            self.assertIn(b'ready', caught.exception.output)
+            time.sleep(1.8)
+            self.assertFalse(marker.exists(), 'descendant survived the runner timeout')
+
+    def test_interrupt_stops_process_group_and_is_reraised(self):
+        original = subprocess.Popen.communicate
+        interrupted = set()
+        def interrupt_once(process, *args, **kwargs):
+            if process.pid not in interrupted:
+                interrupted.add(process.pid)
+                raise KeyboardInterrupt()
+            return original(process, *args, **kwargs)
+        with patch.object(subprocess.Popen, 'communicate', interrupt_once), self.assertRaises(KeyboardInterrupt):
+            bridge.run([sys.executable, '-c', 'import time; time.sleep(10)'])
+        self.assertEqual(len(interrupted), 1)
 
 
 class ParserTests(unittest.TestCase):
@@ -33,6 +68,12 @@ class ParserTests(unittest.TestCase):
 
     def test_signed_lean_constructors(self):
         self.assertEqual(bridge.parse_result("[[Int.ofNat 0, Int.negSucc 2]]", "lean", 1), [[0, -3]])
+
+    def test_wrapped_maximum_binary64_integer(self):
+        # Lean wraps the 309-digit truncation result after its constructor.
+        largest = ((1 << 53) - 1) << 971
+        output = f"[[Int.ofNat\n  {largest}, Int.negSucc\n  {largest - 1}]]"
+        self.assertEqual(bridge.parse_result(output, "lean", 1), [[largest, -largest]])
 
     def test_rocq_signed_output(self):
         self.assertEqual(bridge.parse_result(" = [[0; -3]]\n : list (list Z)", "rocq", 1), [[0, -3]])
