@@ -59,9 +59,16 @@ as a build error. The six public definitions in
 whole-file strict coverage. Ordinary `Source:` URL comments beside the
 `Defs.lean` attributes can be opened from an editor; the attribute string
 itself is not yet a special go-to-source action. The paired conformance command
-checks all 18 annotated path/line/name anchors against the pinned Flocq
+checks all 21 annotated path/line/name anchors against the pinned Flocq
 checkout. A correct anchor does not establish that the Lean type, body, or
 proof matches Coq; those require source review and paired tests or proofs.
+
+[`Core/FLX.lean`](../src/Core/FLX.lean) is the second strict-gated module.
+Its three source-shaped definitions have pinned links; six public Lean-only
+definitions or aliases have explicit reasons. This includes the three
+`*_check` definitions, which are arithmetic regressions rather than Flocq
+format-membership declarations. Instances and theorem statements are not
+covered by this definition-only gate.
 
 ## 4. What the checks establish
 

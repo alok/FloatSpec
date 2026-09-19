@@ -86,8 +86,14 @@ itself is not yet a go-to-source LSP action. This is an incremental coverage
 gate, not a whole-repository map or proof of source equivalence. No Rocq
 compiler or coinduction translation is attempted.
 
-The current paired run validated all 18 pinned source anchors. This confirms
+The current paired run validated all 21 pinned source anchors. This confirms
 their locations and names, not equivalence of the Lean types or bodies.
+
+`Core/FLX.lean` now has whole-file strict coverage for public definitions:
+`FLX_exp`, `FLX_format`, and `FLXN_format` link to pinned source lines, while
+six Lean-local checks, payloads, or aliases are explicitly classified. The
+source-shaped predicates were manually compared at their declarations; the
+gate itself checks only coverage and source-anchor location, not their meaning.
 
 The `Std.Do`/Hoare layer was separately reviewed: sampled float modules use
 `Id` wrappers for pure operations, and no actual `mvcgen` tactic call was

@@ -36,6 +36,9 @@ open Real
 open Std.Do
 open FloatSpec.Core.Defs FloatSpec.Core.Generic_fmt FloatSpec.Core.Raux
 
+set_option linter.coqSource true
+set_option warningAsError true
+
 namespace FloatSpec.Core.FLX
 
 variable (prec : Int)
@@ -46,6 +49,8 @@ variable (prec : Int)
     a constant precision. The exponent function returns e - prec,
     which ensures that mantissas have exactly 'prec' significant digits.
 -/
+-- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Core/FLX.v#L43
+@[flocq_source "src/Core/FLX.v" 43 "FLX_exp"]
 def FLX_exp (e : Int) : Int :=
   e - prec
 
@@ -55,6 +60,7 @@ def FLX_exp (e : Int) : Int :=
     correctly for any input e. This validates the precision
     adjustment mechanism.
 -/
+@[flocq_local "Boolean arithmetic regression for the Lean FLX_exp implementation"]
 def FLX_exp_correct_check (e : Int) : Bool :=
   (FLX_exp prec e = e - prec)
 
@@ -78,15 +84,20 @@ theorem FLX_exp_spec (e : Int) :
     using the generic format with the fixed-precision exponent
     function. This gives x = m × β^(e-prec) where m has bounded magnitude.
 -/
+@[flocq_local "Lean compatibility payload; Flocq uses the bounded-mantissa FLX_format"]
 def FLX_format_from_generic_payload (beta : Int) [ValidRadix beta] (x : ℝ) : Prop :=
   0 ≤ prec ∧ FloatSpec.Core.Generic_fmt.generic_format beta (FLX_exp prec) x
 
 /-- Exact FLoCq `FLX_format`: existence of a bounded-mantissa representation. -/
+-- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Core/FLX.v#L39
+@[flocq_source "src/Core/FLX.v" 39 "FLX_format"]
 def FLX_format (beta : Int) [ValidRadix beta] (x : ℝ) : Prop :=
   ∃ f : FlocqFloat beta,
     x = F2R f ∧ |f.Fnum| < FloatSpec.Core.Zaux.Zpower beta prec
 
 /-- Exact FLoCq `FLXN_format`: a normalized bounded-mantissa representation. -/
+-- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Core/FLX.v#L136
+@[flocq_source "src/Core/FLX.v" 136 "FLXN_format"]
 def FLXN_format (beta : Int) [ValidRadix beta] (x : ℝ) : Prop :=
   ∃ f : FlocqFloat beta,
     x = F2R f ∧
@@ -126,6 +137,7 @@ theorem FLX_exp_correct_spec (e : Int) :
     This does not decide `FLX_format` membership.  The translated Flocq
     structural contract is `FLX_format_satisfies_any`.
 -/
+@[flocq_local "Ztrunc-zero regression, not a Flocq FLX_format declaration"]
 noncomputable def FLX_format_0_check (beta : Int) [ValidRadix beta] : Bool :=
   -- Concrete arithmetic check: Ztrunc 0 = 0
   ((FloatSpec.Core.Raux.Ztrunc (0 : ℝ))) == (0 : Int)
@@ -149,6 +161,7 @@ theorem FLX_format_0_spec (beta : Int) [ValidRadix beta] :
 
     This Boolean does not inspect `FLX_format` membership.
 -/
+@[flocq_local "Ztrunc-negation regression, not a Flocq FLX_format declaration"]
 noncomputable def FLX_format_opp_check (beta : Int) [ValidRadix beta] (x : ℝ) : Bool :=
   -- Concrete arithmetic check leveraging Ztrunc_opp: Ztrunc(-x) + Ztrunc(x) = 0
   ((FloatSpec.Core.Raux.Ztrunc (-x)) + (FloatSpec.Core.Raux.Ztrunc x)) == (0 : Int)
@@ -175,6 +188,7 @@ theorem FLX_format_opp_spec (beta : Int) [ValidRadix beta] (x : ℝ) :
 
     This Boolean does not inspect `FLX_format` membership.
 -/
+@[flocq_local "Ztrunc-absolute-value regression, not a Flocq FLX_format declaration"]
 noncomputable def FLX_format_abs_check (beta : Int) [ValidRadix beta] (x : ℝ) : Bool :=
   -- Concrete arithmetic check: Ztrunc(|x|) matches natAbs of Ztrunc(x)
   ((FloatSpec.Core.Raux.Ztrunc (abs x)))
@@ -289,6 +303,7 @@ instance FLX_exp_monotone :
     simpa [FLX_exp, sub_eq_add_neg] using sub_le_sub_right hab prec⟩
 
 /-- Compatibility name retained for existing FloatSpec clients. -/
+@[flocq_local "Lean alias for the FLX_exp_monotone instance"]
 abbrev FLX_exp_mono := FLX_exp_monotone
 
 /-
