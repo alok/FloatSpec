@@ -59,10 +59,10 @@ trap 'rm -f "$pattern_file" "$scan_file"' EXIT
 
 cat >"$pattern_file" <<'PATTERNS'
 sorry	^\s*sorry\b|\bsorry\b
-axiom	^\s*((private|protected|noncomputable|unsafe)\s+)*axiom\b
-opaque	^\s*((private|protected|noncomputable|unsafe)\s+)*opaque\b
-extern	^\s*((private|protected|noncomputable|unsafe)\s+)*extern\b
-unsafe_declaration	^\s*((private|protected|noncomputable)\s+)*unsafe\s+(def|theorem|lemma|instance)\b
+axiom	^\s*(@\[[^\n]*\]\s*)*((public|private|protected|noncomputable|unsafe|meta)\s+)*axiom\b
+opaque	^\s*(@\[[^\n]*\]\s*)*((public|private|protected|noncomputable|unsafe|meta)\s+)*opaque\b
+extern	@\[[^\n]*\bextern\b
+unsafe_declaration	^\s*(@\[[^\n]*\]\s*)*((public|private|protected|noncomputable|meta)\s+)*unsafe\s+(nonrec\s+)?(def|theorem|lemma|instance)\b
 implemented_by	\bimplemented_by\b
 native_decide	\bnative_decide\b
 admit	^\s*admit\b|\badmit\b
@@ -88,7 +88,7 @@ if "$diff_only"; then
         sub(/^b\//, "", file)
       }
       /^@@ / {
-        if (match($0, /\+([0-9]+)/, m)) line=m[1]; else line=0
+        if (match($0, /\+[0-9]+/)) line=substr($0, RSTART+1, RLENGTH-1); else line=0
         next
       }
       /^\+/ && $0 !~ /^\+\+\+/ {
@@ -113,7 +113,8 @@ awk -F: '
 ' "$scan_file" >"$filtered_scan_file"
 mv "$filtered_scan_file" "$scan_file"
 
-# Scan Lean syntax, not prose in line or nested block comments.  Keeping the
+# Heuristically scan source lines, omitting line and nested block comments.
+# This is not a Lean parser or a complete environment-level trust audit. Keeping the
 # original path and line number makes findings stable while preventing words
 # such as "temporarily" or "admit" in audit explanations from becoming trust
 # failures.  String contents are retained because placeholder code can occur in

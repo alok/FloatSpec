@@ -63,6 +63,15 @@ HEAD. Executions use a separate detached reference checkout.
    pass. Live mutation testing changes the historical `2^(-1)` case to use
    `natAbs` in the generated Lean input; the runner detects Lean `[2]` versus
    Rocq `[0]`, exits unsuccessfully, and writes an exact replay corpus.
+7. **A second trust-gate bypass is repaired:** valid Lean declarations written
+   as `@[simp] public axiom ...` or `public axiom ...` compiled, yet the old
+   scanner returned zero findings. The declaration prefixes now cover public
+   and meta modifiers and inline attributes; actual `@[extern ...]` attributes
+   are recognized too. Compiled negative fixtures verify both cases. No such
+   active axioms were found in the port during this check. Separately,
+   `--diff --json` failed on macOS because it used a GNU-only three-argument
+   `awk match`; the portable form now executes successfully. The scan remains
+   an explicitly documented heuristic, not a full Lean environment audit.
 
 See [the three-loop guide](THREE_VERIFICATION_LOOPS.md) for commands, output
 artifacts, and current coverage. No source algorithm was changed to make these
