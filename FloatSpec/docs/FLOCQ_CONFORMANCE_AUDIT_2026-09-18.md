@@ -89,7 +89,7 @@ itself is not yet a go-to-source LSP action. This is an incremental coverage
 gate, not a whole-repository map or proof of source equivalence. No Rocq
 compiler or coinduction translation is attempted.
 
-The current paired run validated all 38 pinned source anchors. This confirms
+The current paired run validated all 46 pinned source anchors. This confirms
 their locations and names, not equivalence of the Lean types or bodies.
 
 `Core/FLX.lean` now has whole-file strict coverage for public definitions:
@@ -136,6 +136,23 @@ The former's `1 < beta` premise is carried by Lean's `ValidRadix beta` type,
 not an additional unproved assumption. The same-exponent results at
 `Operations.v:111,143` now have direct equality types too. Other operation
 theorem interfaces remain legacy triples with downstream callers.
+
+`Calc/Round.lean` is now the eighth whole-file strict-gated module for public
+definitions. Ten source-shaped definitions link to pinned Flocq lines; its
+eight Lean-only adapters or duplicate names have explicit local reasons.
+`inbetween_int` links to `Bracket.v:622`, where Flocq actually defines it,
+although the Lean port locally placed its copy in `Round.lean`. The paired
+examples check sign-aware upward rounding, a nearest tie choice, and a
+positive FIX truncation in both languages. The `Mode` structure and the
+file's theorem statements are outside this definition-only gate. Matching
+anchors and finite examples do not certify all rounding behavior.
+`truncate_FIX` requires a valid radix and uses source `Zpower` instead of a
+natural absolute-value power; the positive-branch Lean proof still typechecks.
+Also,
+the `inbetween_int_DN_sign`, `inbetween_float_DN_sign`, `inbetween_int_UP`,
+and `inbetween_float_UP` statement types now reference source-named choice
+definitions instead of their duplicate primed helpers; their existing Lean
+proofs close after explicit unfolding of the identical match branches.
 
 `Core/FTZ.lean` is the third strict-gated public-definition module: three
 source-shaped definitions link to `FTZ.v`, while four Lean-local Boolean

@@ -76,6 +76,21 @@ example :
   rfl
 
 example :
+    FloatSpec.Calc.Round.round_sign_UP true
+      (Location.loc_Inexact Ordering.gt) = false := by
+  rfl
+
+example :
+    FloatSpec.Calc.Round.round_N true
+      (Location.loc_Inexact Ordering.eq) = true := by
+  rfl
+
+example :
+    FloatSpec.Calc.Round.truncate_FIX (beta := 2) 1
+      (4, 0, Location.loc_Exact) = (2, 1, Location.loc_Exact) := by
+  rfl
+
+example :
     valid_binary_payload (prec := 3) (emax := 4)
       (.F754_nan false 0) = false := by
   rfl

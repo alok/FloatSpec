@@ -59,7 +59,7 @@ as a build error. The six public definitions in
 whole-file strict coverage. Ordinary `Source:` URL comments beside the
 `Defs.lean` attributes can be opened from an editor; the attribute string
 itself is not yet a special go-to-source action. The paired conformance command
-checks all 36 annotated path/line/name anchors against the pinned Flocq
+checks all 46 annotated path/line/name anchors against the pinned Flocq
 checkout. A correct anchor does not establish that the Lean type, body, or
 proof matches Coq; those require source review and paired tests or proofs.
 
@@ -104,7 +104,18 @@ accepted a float and an already-chosen exponent, so it could not implement
 that contract. The source-facing `truncate` now names the existing
 `truncate_triple` implementation; the old utility is `truncate_at_exp`.
 A paired test shifts `(4, 0, Exact)` to `(2, 1, Exact)` with fixed exponent 1.
-These two links and the example do not certify the rest of `Round.lean`.
+`Round.lean` is the eighth strict-gated public-definition module: its ten
+source-shaped definitions have pinned links (including `inbetween_int`,
+defined in Flocq's `Bracket.v`), and eight Lean-only adapters or duplicates
+are explicitly classified. Paired examples also exercise upward rounding
+for a negative sign, a nearest tie choice, and positive FIX truncation.
+`truncate_FIX` now explicitly requires a valid radix and spells its integer
+scaling as Flocq's `Zpower`; the existing positive-shift proof identifies that
+with the natural power it needs for the bracketing lemma.
+Four older downward/upward theorem statements now mention the source-named
+`round_sign_DN` or `round_UP` instead of duplicate Lean-only primed helpers.
+The source links and examples do not certify the rest of `Round.lean`;
+the gate does not inspect theorem statements, `Mode`'s structure, or bodies.
 The `Binary.shr_fexp` re-export in `BinarySingleNaN.lean` now uses the
 precision-dependent truncation and its theorem refers to source-shaped
 `truncate`. An unrelated root compatibility helper of the same name had

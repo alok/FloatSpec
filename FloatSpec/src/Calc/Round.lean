@@ -21,6 +21,9 @@ import FloatSpec.src.SimprocWP
 open Real FloatSpec.Calc.Bracket FloatSpec.Core.Defs
 open Std.Do
 
+set_option linter.coqSource true
+set_option warningAsError true
+
 namespace FloatSpec.Calc.Round
 
 variable (beta : Int) [ValidRadix beta]
@@ -37,6 +40,7 @@ structure Mode where
   rnd_zero : rnd 0 = 0
 
 /-- Nearest rounding with an even-mantissa tie break. -/
+@[flocq_local "Lean-only Mode value; Flocq passes an integer rounding function directly"]
 noncomputable def nearestEvenMode : Mode where
   rnd := FloatSpec.Core.Generic_fmt.Znearest (fun t => !(decide (2 ∣ t)))
   rnd_zero := by
@@ -45,6 +49,7 @@ noncomputable def nearestEvenMode : Mode where
       FloatSpec.Core.Raux.Rcompare]
 
 /-- Preserve a source integer-rounding function at the `Calc.Round` boundary. -/
+@[flocq_local "Lean-only adapter from Flocq integer rounding functions to Mode"]
 noncomputable def Mode.ofRnd (rnd : ℝ → Int)
     [FloatSpec.Core.Generic_fmt.Valid_rnd rnd] : Mode where
   rnd := rnd
@@ -53,6 +58,7 @@ noncomputable def Mode.ofRnd (rnd : ℝ → Int)
       (FloatSpec.Core.Generic_fmt.Valid_rnd.Zrnd_IZR (rnd := rnd) 0)
 
 /-- Bridge Calc.round to Core's concrete mode-sensitive rounding operator. -/
+@[flocq_local "Lean-only Mode bridge to the Core generic rounding operation"]
 noncomputable def round (beta : Int) [ValidRadix beta] (fexp : Int → Int)
     (mode : Mode) (x : ℝ) : ℝ :=
   FloatSpec.Core.Generic_fmt.roundR beta fexp mode.rnd x
@@ -77,6 +83,7 @@ noncomputable def truncate_aux (beta : Int) [ValidRadix beta] (f : Int × Int ×
     Unlike Flocq's `truncate`, this does not compute a canonical exponent from
     `fexp` and the digits of the mantissa.
 -/
+@[flocq_local "Caller-chosen exponent utility, unlike source Round.truncate"]
 noncomputable def truncate_at_exp (beta : Int) [ValidRadix beta]
     (f : FlocqFloat beta) (e : Int) (l : Location) : Int × Int × Location :=
   let k := e - f.Fexp
@@ -134,10 +141,12 @@ variable (fexp : Int → Int)
 -- Coq uses `Zeven`/`Zodd`; mathlib has a generic `Even` predicate,
 -- but we provide `Int.Even` here to match existing notation.
 namespace Int
+@[flocq_local "Lean parity notation for source Zeven; not a Round.v definition"]
 abbrev Even (t : Int) : Prop := t % 2 = 0
 end Int
 
 -- Coq-style truncate on a triple (m,e,l) using fexp and Zdigits
+@[flocq_local "Legacy name for the source-facing Round.truncate operation"]
 noncomputable def truncate_triple (beta : Int) [ValidRadix beta] (fexp : Int → Int)
     (t : Int × Int × Location) : (Int × Int × Location) :=
   let m := t.1
@@ -163,17 +172,25 @@ lemma truncate_triple_eq_def (m e : Int) (l : Location) :
   rfl
 
 -- Integer bracketing specialization
+-- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Calc/Bracket.v#L622
+@[flocq_source "src/Calc/Bracket.v" 622 "inbetween_int"]
 def inbetween_int (m : Int) (x : ℝ) (l : Location) : Prop :=
   inbetween (m : ℝ) ((m + 1 : Int) : ℝ) x l
 
 -- Helpers used in rounding theorems
+-- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Calc/Round.v#L115
+@[flocq_source "src/Calc/Round.v" 115 "cond_incr"]
 def cond_incr (b : Bool) (m : Int) : Int := if b then m + 1 else m
 
+-- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Calc/Round.v#L234
+@[flocq_source "src/Calc/Round.v" 234 "round_UP"]
 def round_UP (l : Location) : Bool :=
   match l with
   | Location.loc_Exact => false
   | _ => true
 
+-- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Calc/Round.v#L180
+@[flocq_source "src/Calc/Round.v" 180 "round_sign_DN"]
 def round_sign_DN (s : Bool) (l : Location) : Bool :=
   match l with
   | Location.loc_Exact => false
@@ -714,6 +731,7 @@ theorem inbetween_float_DN (x : ℝ) (m e : Int) (l : Location)
   simp only [FloatSpec.Core.Defs.F2R, Id.run] at hr' ⊢
   exact hr'
 
+@[flocq_local "Legacy duplicate of source-facing round_sign_DN within early proof ports"]
 def round_sign_DN' (s : Bool) (l : Location) : Bool :=
   match l with
   | Location.loc_Exact => false
@@ -723,7 +741,7 @@ theorem inbetween_int_DN_sign (x : ℝ) (m : Int) (l : Location)
     (Hl : inbetween_int m (|x|) l) :
     (FloatSpec.Core.Raux.Zfloor x) =
       (FloatSpec.Core.Zaux.cond_Zopp (FloatSpec.Core.Raux.Rlt_bool x 0)
-        (cond_incr (round_sign_DN' (FloatSpec.Core.Raux.Rlt_bool x 0) l) m)) := by
+        (cond_incr (round_sign_DN (FloatSpec.Core.Raux.Rlt_bool x 0) l) m)) := by
   classical
   by_cases hxlt : x < 0
   · -- Negative case
@@ -743,7 +761,7 @@ theorem inbetween_int_DN_sign (x : ℝ) (m : Int) (l : Location)
           simpa [FloatSpec.Core.Raux.Zfloor, hx_eq'] using (Int.floor_intCast (-m))
         -- Use hb directly since Rlt_bool returns Bool
         -- Conclude by simplifying the RHS to `-m` and rewriting by `hL`.
-        simp only [FloatSpec.Core.Zaux.cond_Zopp, hb, round_sign_DN', cond_incr,
+        simp only [FloatSpec.Core.Zaux.cond_Zopp, hb, round_sign_DN, cond_incr,
                    ite_true, Bool.cond_true]
         exact hL
     | inbetween_Inexact ord hbounds _ =>
@@ -768,7 +786,7 @@ theorem inbetween_int_DN_sign (x : ℝ) (m : Int) (l : Location)
         have hL : (FloatSpec.Core.Raux.Zfloor x) = -(m + 1) := by
           simpa [FloatSpec.Core.Raux.Zfloor] using hfloor
         -- Conclude by simplifying the RHS to `-(m+1)` and rewriting by `hL`.
-        simp only [FloatSpec.Core.Zaux.cond_Zopp, FloatSpec.Core.Raux.Zfloor, hb, round_sign_DN',
+        simp only [FloatSpec.Core.Zaux.cond_Zopp, FloatSpec.Core.Raux.Zfloor, hb, round_sign_DN,
                    cond_incr, ite_true, Bool.cond_true, hfloor]
   · -- Nonnegative case: |x| = x and ⌊x⌋ = m by DN
     have hx0 : 0 ≤ x := le_of_not_gt hxlt
@@ -797,7 +815,7 @@ theorem inbetween_float_DN_sign (x : ℝ) (m e : Int) (l : Location)
       = (FloatSpec.Core.Defs.F2R
             (FloatSpec.Core.Defs.FlocqFloat.mk
               (FloatSpec.Core.Zaux.cond_Zopp (FloatSpec.Core.Raux.Rlt_bool x 0)
-                 (cond_incr (round_sign_DN' (FloatSpec.Core.Raux.Rlt_bool x 0) l) m))
+                 (cond_incr (round_sign_DN (FloatSpec.Core.Raux.Rlt_bool x 0) l) m))
               e : FloatSpec.Core.Defs.FlocqFloat beta)) := by
   classical
   -- Align exponent and introduce the scaled mantissa
@@ -880,7 +898,8 @@ theorem inbetween_float_DN_sign (x : ℝ) (m e : Int) (l : Location)
   have hZfloor_sm : (FloatSpec.Core.Raux.Zfloor sm)
         = FloatSpec.Core.Zaux.cond_Zopp (FloatSpec.Core.Raux.Rlt_bool sm 0)
              (cond_incr (round_sign_DN' (FloatSpec.Core.Raux.Rlt_bool sm 0) l) m) := by
-    simpa using (inbetween_int_DN_sign (x := sm) (m := m) (l := l) HxSm)
+    simpa [round_sign_DN, round_sign_DN'] using
+      (inbetween_int_DN_sign (x := sm) (m := m) (l := l) HxSm)
   -- Signs of x and sm coincide since sm = x * β^(−e0) with β^(−e0) > 0
   have hsign_eq : (FloatSpec.Core.Raux.Rlt_bool sm 0)
                     = (FloatSpec.Core.Raux.Rlt_bool x 0) := by
@@ -917,6 +936,7 @@ theorem inbetween_float_DN_sign (x : ℝ) (m e : Int) (l : Location)
   exact hr'
 
 -- Rounding up (UP)
+@[flocq_local "Legacy duplicate of source-facing round_UP within early proof ports"]
 def round_UP' (l : Location) : Bool :=
   match l with
   | Location.loc_Exact => false
@@ -924,15 +944,15 @@ def round_UP' (l : Location) : Bool :=
 
 theorem inbetween_int_UP (x : ℝ) (m : Int) (l : Location)
     (Hl : inbetween_int m x l) :
-    (FloatSpec.Core.Raux.Zceil x) = cond_incr (round_UP' l) m := by
+    (FloatSpec.Core.Raux.Zceil x) = cond_incr (round_UP l) m := by
   -- Expand the integer bracketing and analyze cases
   unfold inbetween_int at Hl
   cases Hl with
   | inbetween_Exact hxeq =>
-      -- Exact at the lower bound: ⌈m⌉ = m and round_UP' loc_Exact = false
-      simp [FloatSpec.Core.Raux.Zceil, hxeq, round_UP', cond_incr, Int.ceil_intCast]
+      -- Exact at the lower bound: ⌈m⌉ = m and round_UP loc_Exact = false
+      simp [FloatSpec.Core.Raux.Zceil, hxeq, round_UP, cond_incr, Int.ceil_intCast]
   | inbetween_Inexact _ hbounds _ =>
-      -- Interior point: m < x < m+1 ⇒ ⌈x⌉ = m+1 and round_UP' _ = true
+      -- Interior point: m < x < m+1 ⇒ ⌈x⌉ = m+1 and round_UP _ = true
       have hxlo : (m : ℝ) < x := hbounds.1
       have hxhi : x ≤ ((m + 1 : Int) : ℝ) := by
         -- From strict upper bound to non-strict
@@ -952,7 +972,7 @@ theorem inbetween_int_UP (x : ℝ) (m : Int) (l : Location)
         · -- x ≤ m+1
           simpa [Int.cast_add, Int.cast_one] using hxhi
       -- Conclude: cond_incr true m = m+1
-      simp [FloatSpec.Core.Raux.Zceil, this, round_UP', cond_incr]
+      simp [FloatSpec.Core.Raux.Zceil, this, round_UP, cond_incr]
 
 theorem inbetween_float_UP (x : ℝ) (m e : Int) (l : Location)
     (He : e = cexp beta fexp x)
@@ -960,7 +980,8 @@ theorem inbetween_float_UP (x : ℝ) (m e : Int) (l : Location)
     (Hβ : 1 < beta) :
     (FloatSpec.Core.Generic_fmt.roundR beta fexp (fun y => (FloatSpec.Core.Raux.Zceil y)) x)
       = (FloatSpec.Core.Defs.F2R
-             (FloatSpec.Core.Defs.FlocqFloat.mk (cond_incr (round_UP' l) m) e : FloatSpec.Core.Defs.FlocqFloat beta)) := by
+             (FloatSpec.Core.Defs.FlocqFloat.mk
+               (cond_incr (round_UP l) m) e : FloatSpec.Core.Defs.FlocqFloat beta)) := by
   classical
   -- Align exponent to the canonical one and name the scaled mantissa
   set e0 : Int := FloatSpec.Core.Generic_fmt.cexp beta fexp x with he0
@@ -1020,8 +1041,8 @@ theorem inbetween_float_UP (x : ℝ) (m e : Int) (l : Location)
         = (((FloatSpec.Core.Raux.Zceil sm) : Int) : ℝ) := by
     simpa [hsm]
   -- Use the integer-level lemma to evaluate ⌈sm⌉
-  have hceil_run : (FloatSpec.Core.Raux.Zceil sm) = cond_incr (round_UP' l) m :=
-    inbetween_int_UP (x := sm) (m := m) (l := l) HxSm
+  have hceil_run : (FloatSpec.Core.Raux.Zceil sm) = cond_incr (round_UP' l) m := by
+    simpa [round_UP, round_UP'] using inbetween_int_UP (x := sm) (m := m) (l := l) HxSm
   -- Finish by rewriting the integer factor and packaging as F2R
   have hr' :
       (FloatSpec.Core.Generic_fmt.roundR beta fexp (fun y => (FloatSpec.Core.Raux.Zceil y)) x)
@@ -1031,9 +1052,11 @@ theorem inbetween_float_UP (x : ℝ) (m e : Int) (l : Location)
                 = (FloatSpec.Core.Raux.Zceil sm) := by simp only [hsm]
     rw [hr]
     simp only [heq1, hceil_run]
-  simpa [FloatSpec.Core.Defs.F2R]
+  simpa [FloatSpec.Core.Defs.F2R, round_UP, round_UP']
     using hr'
 
+-- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Calc/Round.v#L273
+@[flocq_source "src/Calc/Round.v" 273 "round_sign_UP"]
 def round_sign_UP (s : Bool) (l : Location) : Bool :=
   match l with
   | Location.loc_Exact => false
@@ -1085,10 +1108,12 @@ theorem inbetween_int_UP_sign (x : ℝ) (m : Int) (l : Location)
       simpa [inbetween_int, abs_of_nonneg hx0] using Hl
     have hceil := inbetween_int_UP (x := x) (m := m) (l := l) Hl'
     cases l <;>
-      simpa [FloatSpec.Core.Zaux.cond_Zopp, hb, round_sign_UP, round_UP', cond_incr]
+      simpa [FloatSpec.Core.Zaux.cond_Zopp, hb, round_sign_UP, round_UP, cond_incr]
         using hceil
 
 -- Zero Round (ZR)
+-- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Calc/Round.v#L325
+@[flocq_source "src/Calc/Round.v" 325 "round_ZR"]
 def round_ZR (s : Bool) (l : Location) : Bool :=
   match l with
   | Location.loc_Exact => false
@@ -1290,6 +1315,8 @@ theorem inbetween_int_ZR_sign (x : ℝ) (m : Int) (l : Location)
     simp [FloatSpec.Core.Raux.Ztrunc, hxlt, FloatSpec.Core.Zaux.cond_Zopp, hb, hfloor_int]
 
 -- Nearest (N), Nearest Even (NE), Nearest Away (NA) rounding families.
+-- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Calc/Round.v#L415
+@[flocq_source "src/Calc/Round.v" 415 "round_N"]
 def round_N (p : Bool) (l : Location) : Bool :=
   match l with
   | Location.loc_Exact => false
@@ -3781,11 +3808,14 @@ theorem round_trunc_sign_NA_correct'
 
 variable (emin : Int)
 
-noncomputable def truncate_FIX (t : Int × Int × Location) : (Int × Int × Location) :=
+-- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Calc/Round.v#L1141
+@[flocq_source "src/Calc/Round.v" 1141 "truncate_FIX"]
+noncomputable def truncate_FIX (beta : Int) [ValidRadix beta] (emin : Int)
+    (t : Int × Int × Location) : Int × Int × Location :=
   let m := t.1; let e := t.2.1; let l := t.2.2
   let k := emin - e
   if 0 < k then
-    let p := beta ^ Int.natAbs k
+    let p := FloatSpec.Core.Zaux.Zpower beta k
     (m / p, e + k, FloatSpec.Calc.Bracket.new_location (nb_steps := p) (k := (m % p)) l)
   else
     t
@@ -3811,11 +3841,14 @@ theorem truncate_FIX_correct
   · -- Positive shift: apply new_location-based refinement
     -- Show 0 < emin - e directly
     have hcond : 0 < emin - e := by simpa [hkdef] using hkpos
+    have hpow : FloatSpec.Core.Zaux.Zpower beta (emin - e) =
+        beta ^ Int.natAbs (emin - e) :=
+      FloatSpec.Core.Zaux.Zpower_Zpower_nat beta (emin - e) (le_of_lt hcond)
     -- Compute truncate_FIX result using hcond
     have hr : (truncate_FIX (beta := beta) (emin := emin) (m, e, l))
         = (let p := beta ^ Int.natAbs (emin - e);
            (m / p, e + (emin - e), (FloatSpec.Calc.Bracket.new_location (nb_steps := p) (k := (m % p)) l))) := by
-      simp only [truncate_FIX, hcond, ite_true, pure]
+      simp only [truncate_FIX, hcond, ite_true, hpow, pure]
     -- Inbetween after stepping
     have Hinb : inbetween_float beta (m / (beta ^ Int.natAbs (emin - e))) (e + (emin - e))
                     x (FloatSpec.Calc.Bracket.new_location (nb_steps := beta ^ Int.natAbs (emin - e))

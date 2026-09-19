@@ -101,6 +101,20 @@ Example truncate_source_exponent :
     (2, 1, SpecFloat.loc_Exact).
 Proof. vm_compute. reflexivity. Qed.
 
+Example round_sign_up_negative :
+    Round.round_sign_UP true (SpecFloat.loc_Inexact Gt) = false.
+Proof. vm_compute. reflexivity. Qed.
+
+Example round_nearest_tie_choice :
+    Round.round_N true (SpecFloat.loc_Inexact Eq) = true.
+Proof. vm_compute. reflexivity. Qed.
+
+Example truncate_fix_positive_shift :
+    (let beta := Build_radix 2 eq_refl in
+      Round.truncate_FIX beta 1 (4, 0, SpecFloat.loc_Exact)) =
+    (2, 1, SpecFloat.loc_Exact).
+Proof. vm_compute. reflexivity. Qed.
+
 Example nan_payload_bitlength_boundary :
     Zlt_bool (Zpos (SpecFloat.digits2_pos 4)) 3 = false.
 Proof. vm_compute. reflexivity. Qed.
