@@ -17,7 +17,12 @@ square root uses squared midpoint comparisons. Run
 always run, and two live Lean/Rocq tests run when `FLOCQ_AUDIT_DIR` is set.
 The live tests cover 40 all-mode cases plus seven native arithmetic pairs,
 produce 47 kernel regression proofs, and check 6,738 expected fields.
-This standalone suite is not yet part of the already-running frozen aggregate.
+The next aggregate now includes this suite. It was not part of the already
+running frozen aggregate, whose scripts remain unchanged. Both the native
+arithmetic and all-mode bridge runners now apply these expectations to every
+batch and retain independent assertion counts and oracle failures in their
+reports. Shared wrong answers fail even when pairwise comparisons agree.
+Logical outputs rejected by the oracle are not bootstrapped into regressions.
 
 To audit **saved** observations independently, use
 `uv run scripts/check_ieee_exact_oracle.py --profile modes /path/report.json`
@@ -35,8 +40,9 @@ provides six checked declarations explaining a genuine source premise:
 contains every power of two, and has `ulp(1/2)=1/2 > 1/4=ulp(1)`.
 All six Lean axiom lists exclude `sorryAx`; Rocq prints its classical-real
 assumptions. This is proof-level testing of real definitions, not a native
-real-arithmetic execution claim. It is separate from the already-running
-frozen aggregate until the next runner integration.
+real-arithmetic execution claim. The next aggregate runs this paired fixture,
+along with the 27-client `CorePremiseBoundary` fixture; the preceding frozen
+aggregate does not include them.
 
 ## 1. Lean checks itself
 

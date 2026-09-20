@@ -20,6 +20,7 @@ import time
 
 from flocq_bridge import (configured_coqc, lean_source_fingerprint, parse_result,
                           require_lean_source_snapshot, run, verify_reference)
+import ieee_exact_oracle as exact_oracle
 
 
 LEAN_MODES = (".RNE", ".RTZ", ".RTN", ".RTP", ".RNA")
@@ -220,12 +221,16 @@ def main():
               "method": "Compiled Lean and kernel reduction versus pinned Rocq, all 5 modes; full-payload bits plus direct/source-mode SingleNaN constructors",
               "groups": dict(Counter(f"binary{c[0]}:{LEAN_MODES[c[1]]}" for c in cases)),
               "fresh_build": not args.skip_build, "status": "running", "compared_cases": 0,
-              "compiled_cases": 0, "bootstrapped_lean_cases": 0, "mismatches": []}
+              "compiled_cases": 0, "bootstrapped_lean_cases": 0,
+              "oracle_scope": exact_oracle.SCOPE, "oracle_assertions": 0,
+              "oracle_mismatches": [], "mismatches": []}
 
     def save():
         (output / "report.json").write_text(json.dumps(report, indent=2) + "\n")
-        if report["mismatches"]:
-            (output / "replay.json").write_text(json.dumps([m["case"] for m in report["mismatches"]], indent=2) + "\n")
+        failures = report["mismatches"] + report["oracle_mismatches"]
+        if failures:
+            replay = list(dict.fromkeys(tuple(row["case"]) for row in failures))
+            (output / "replay.json").write_text(json.dumps(replay, indent=2) + "\n")
 
     save()
     print(f"Executing {len(cases)} IEEE mode cases; artifacts={output}", flush=True)
@@ -241,24 +246,32 @@ def main():
             folder.mkdir()
             results = execute(batch, flocq, coqc, folder)
             report["mismatches"].extend(compare(batch, results))
+            oracle_failures, assertions = exact_oracle.compare_columns(
+                batch, results, COLUMNS, exact_oracle.mode_columns)
+            report["oracle_mismatches"].extend(oracle_failures)
+            report["oracle_assertions"] += assertions
             report["compared_cases"] += len(batch)
             report["compiled_cases"] += len(batch)
             save()
-            if results["lean"] == results["rocq"]:
+            logical_oracle_failure = any(
+                failure["path"] in ("lean-versus-exact-oracle", "rocq-versus-exact-oracle")
+                for failure in oracle_failures)
+            if results["lean"] == results["rocq"] and not logical_oracle_failure:
                 bootstrap(batch, results["rocq"], folder)
                 report["bootstrapped_lean_cases"] += len(batch)
             require_lean_source_snapshot(report["lean_source_sha256"])
             save()
-            print(f"{report['compared_cases']}/{len(cases)}; mismatches={len(report['mismatches'])}", flush=True)
-        report["status"] = "mismatch" if report["mismatches"] else "passed"
+            print(f"{report['compared_cases']}/{len(cases)}; mismatches={len(report['mismatches'])}; "
+                  f"oracle_mismatches={len(report['oracle_mismatches'])}", flush=True)
+        report["status"] = "mismatch" if report["mismatches"] or report["oracle_mismatches"] else "passed"
     except BaseException as error:
         report["status"], report["error"] = "error", f"{type(error).__name__}: {error}"
         raise
     finally:
         report["elapsed_seconds"] = round(time.monotonic() - started, 3)
         save()
-    if report["mismatches"]:
-        raise SystemExit(f"IEEE mode mismatches; see {output / 'report.json'}")
+    if report["mismatches"] or report["oracle_mismatches"]:
+        raise SystemExit(f"IEEE mode or exact-oracle mismatches; see {output / 'report.json'}")
     print(f"PASS: {len(cases)} IEEE mode cases; see {output / 'report.json'}")
 
 

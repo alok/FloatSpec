@@ -19,6 +19,7 @@ import time
 from flocq_bridge import (ROOT, configured_coqc, lean_source_fingerprint, parse_result,
                           require_lean_source_snapshot, run, verify_reference)
 from native_ieee_bridge import category, validate_word
+import ieee_exact_oracle as exact_oracle
 
 
 LEAN_HEADER = """import FloatSpec.Test.NativeArithmetic
@@ -160,13 +161,16 @@ def main() -> None:
               "method": "Native FFI execution, compiled Lean model, Lean kernel reduction, Rocq vm_compute",
               "rounding": "nearest, ties to even", "columns": COLUMNS,
               "nan_observation": "single canonical NaN; payload identity not claimed",
-              "compared_cases": 0, "compiled_model_cases": 0, "bootstrapped_lean_cases": 0, "mismatches": []}
+              "compared_cases": 0, "compiled_model_cases": 0, "bootstrapped_lean_cases": 0,
+              "oracle_scope": exact_oracle.SCOPE, "oracle_assertions": 0,
+              "oracle_mismatches": [], "mismatches": []}
     report_path = output / "report.json"
 
     def save() -> None:
         report_path.write_text(json.dumps(report, indent=2) + "\n")
-        if report["mismatches"]:
-            replay = list(dict.fromkeys(tuple(row["case"]) for row in report["mismatches"]))
+        failures = report["mismatches"] + report["oracle_mismatches"]
+        if failures:
+            replay = list(dict.fromkeys(tuple(row["case"]) for row in failures))
             (output / "replay.json").write_text(json.dumps(replay, indent=2) + "\n")
 
     save()
@@ -182,25 +186,33 @@ def main() -> None:
             folder.mkdir()
             observations = execute(batch, flocq, coqc, folder)
             report["mismatches"].extend(compare(batch, observations))
+            oracle_failures, assertions = exact_oracle.compare_columns(
+                batch, observations, COLUMNS, exact_oracle.native_columns)
+            report["oracle_mismatches"].extend(oracle_failures)
+            report["oracle_assertions"] += assertions
             report["compared_cases"] += len(batch)
             report["compiled_model_cases"] += len(batch)
             save()
-            if observations["model"] == observations["rocq"]:
+            logical_oracle_failure = any(
+                failure["path"] in ("model-versus-exact-oracle", "rocq-versus-exact-oracle")
+                for failure in oracle_failures)
+            if observations["model"] == observations["rocq"] and not logical_oracle_failure:
                 bootstrap_lean(batch, observations["rocq"], folder)
                 report["bootstrapped_lean_cases"] += len(batch)
                 save()
             print(f"{report['compared_cases']}/{len(cases)}; "
-                  f"mismatches={len(report['mismatches'])}", flush=True)
+                  f"mismatches={len(report['mismatches'])}; "
+                  f"oracle_mismatches={len(report['oracle_mismatches'])}", flush=True)
             require_lean_source_snapshot(report["lean_source_sha256"])
-        report["status"] = "mismatch" if report["mismatches"] else "passed"
+        report["status"] = "mismatch" if report["mismatches"] or report["oracle_mismatches"] else "passed"
     except BaseException as error:
         report["status"], report["error"] = "error", f"{type(error).__name__}: {error}"
         raise
     finally:
         report["elapsed_seconds"] = round(time.monotonic() - started, 3)
         save()
-    if report["mismatches"]:
-        raise SystemExit(f"{len(report['mismatches'])} mismatches; see {report_path}")
+    if report["mismatches"] or report["oracle_mismatches"]:
+        raise SystemExit(f"Arithmetic or exact-oracle mismatches; see {report_path}")
     print(f"PASS: {len(cases)} four-path arithmetic pairs; see {report_path}")
 
 

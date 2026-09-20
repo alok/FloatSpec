@@ -216,7 +216,7 @@ echo 'Pure Rocq order loop passed: 2,000 ordering-law checks and boundary exampl
 "$coqc_bin" -q -R "$flocq_dir/src" Flocq -o "$scratch/RoundingWalkthrough.vo" \
   "$repo_root/scripts/fixtures/RoundingWalkthrough.v"
 for fixture in BooleanComparison PrimitiveComparison PrimitiveConversion PrimitiveExecution RawIEEERounding RawOverflow SingleNaNArithmetic SingleNaNHelpers FrexpLaws Normalization MultiplicationErrorGrid DoubleRoundingWitness SingleNaNValidity RelativeErrorGrid \
-    SourcePremiseContracts DoubleRoundingContracts LpoSourceContracts UlpSourceChoice PffLogTotality PffExecution PffAuxExecution PffRoundingSource NativeModelAdapters CalcBrackets ExactArithmeticLaws RoundingOracle IntegerRounding; do
+    SourcePremiseContracts CorePremiseBoundary ExponentValidityBoundary DoubleRoundingContracts LpoSourceContracts UlpSourceChoice PffLogTotality PffExecution PffAuxExecution PffRoundingSource NativeModelAdapters CalcBrackets ExactArithmeticLaws RoundingOracle IntegerRounding; do
   "$coqc_bin" -q -R "$flocq_dir/src" Flocq -o "$scratch/$fixture.vo" \
     "$repo_root/scripts/fixtures/$fixture.v"
 done
@@ -240,7 +240,7 @@ run_lake env lean "$repo_root/FloatSpec/Test/DoubleRoundingContracts.lean"
 run_lake env lean "$repo_root/FloatSpec/Test/NativeModelAdapters.lean"
 run_lake env lean "$repo_root/FloatSpec/Test/LpoSourceContracts.lean"
 run_lake env lean "$repo_root/FloatSpec/Test/UlpSourceChoice.lean"
-for fixture in BooleanComparison PrimitiveComparison PrimitiveConversion PrimitiveExecution RawIEEERounding RawOverflow SingleNaNArithmetic SingleNaNHelpers FrexpLaws Normalization CalcBrackets NativeSingleNaNArithmetic MultiplicationErrorGrid DoubleRoundingWitness SingleNaNValidity RelativeErrorGrid ExactArithmeticLaws RoundingOracle IntegerRounding; do
+for fixture in BooleanComparison PrimitiveComparison PrimitiveConversion PrimitiveExecution RawIEEERounding RawOverflow SingleNaNArithmetic SingleNaNHelpers FrexpLaws Normalization CalcBrackets NativeSingleNaNArithmetic MultiplicationErrorGrid DoubleRoundingWitness SingleNaNValidity RelativeErrorGrid ExactArithmeticLaws RoundingOracle IntegerRounding CorePremiseBoundary ExponentValidityBoundary; do
   run_lake env lean "$repo_root/scripts/fixtures/$fixture.lean"
 done
 run_lake env lean --run "$repo_root/scripts/fixtures/GuidedDemo.lean"
@@ -252,7 +252,7 @@ echo 'Boolean ordering passed: eight boundary assertions and 600,000 native Bool
 echo 'Native source-arithmetic loop passed: 100,100 binary32/binary64 comparisons'
 echo 'Native SingleNaN arithmetic loop passed: 200,200 direct/source-mode comparisons'
 echo 'Multiplication-error loop passed: 5,385 conditional cases and a required-underflow-premise counterexample'
-echo 'Lean contract loop passed: 120 premise guards, typed consumers, finite error laws, 35,845 format-rounding and 5,125 integer-rounding oracle cases'
+echo 'Lean contract loop passed: 147 premise guards, typed consumers, finite error laws, 35,845 format-rounding and 5,125 integer-rounding oracle cases'
 echo 'Independent Calc loop passed: 8,640 division brackets, 2,496 square-root brackets, and a required-exponent-premise counterexample'
 
 uv run "$repo_root/scripts/flocq_bridge.py" --flocq-dir "$flocq_dir" --coqc "$coqc_bin" \
@@ -279,6 +279,7 @@ uv run "$repo_root/scripts/ieee_modes_bridge.py" --flocq-dir "$flocq_dir" --coqc
   --seed "${FLOCQ_BRIDGE_SEED:-20260919}" --samples "${FLOCQ_MODES_SAMPLES:-10}" \
   --batch-size "${FLOCQ_MODES_BATCH_SIZE:-5}"
 FLOCQ_AUDIT_DIR="$flocq_dir" uv run "$repo_root/scripts/test_ieee_modes_bridge.py" -v
+FLOCQ_AUDIT_DIR="$flocq_dir" uv run "$repo_root/scripts/test_ieee_exact_oracle.py" -v
 
 uv run "$repo_root/scripts/ieee_scale_bridge.py" --flocq-dir "$flocq_dir" --coqc "$coqc_bin" \
   --seed "${FLOCQ_BRIDGE_SEED:-20260919}" --samples "${FLOCQ_SCALE_SAMPLES:-20}" \

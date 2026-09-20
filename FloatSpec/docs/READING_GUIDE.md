@@ -91,6 +91,13 @@ not yet a pass. Its source hash begins `5d241916`; the new contract
 snapshot begins `eb306bb5`. Keeping these separate prevents a long test
 from silently changing its subject while edits continue.
 
+The independent expectations now gate the ordinary native-arithmetic and
+all-mode bridge runners, not just a standalone test. All **20 integrated
+harness tests** pass, including real programs deliberately given the same
+wrong operand order or the same wrong rounding mode. Those runs are rejected,
+their inputs are retained, and rejected logical outputs are not accepted as
+new regression expectations. A larger fresh-seed rerun is in progress.
+
 A second [small paired example](DEMO_EXEMPLARS.md#a-valid-format-can-have-decreasing-ulp)
 explains why assumption removal must be selective: a valid format can have
 ULP `1/2` at input `1/2` but ULP `1/4` at input `1`. Both inputs are representable.

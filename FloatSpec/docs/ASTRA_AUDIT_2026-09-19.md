@@ -3479,6 +3479,40 @@ Receipts: `/private/tmp/floatspec-core-premise-full-build-20260920.log`,
 were corrected before the final successful builds; they are not passes.
 Hosted CI's cache-policy change remains approval-pending.
 
+### September 20, 19:50 UTC — independent expectations become bridge gates
+
+The native-arithmetic and all-rounding-mode runners now check every observed
+path against the independent exact IEEE oracle. Reports keep
+`oracle_assertions`, `oracle_mismatches` and a precise finite-input scope,
+separately from pairwise mismatches. Either failure class rejects the run and
+retains deduplicated replay inputs. Kernel bootstrapping is withheld when the
+logical observation itself fails the oracle; an isolated native/compiled
+failure can still retain a sound logical regression.
+
+All **20 integrated harness tests pass** with the live pinned Rocq source:
+10 native tests in 36.538 seconds, 10 mode tests in 39.660 seconds.
+Two new deliberate shared bugs execute actual programs: swapping operands
+before every native/model/Rocq path, and replacing upward rounding with
+nearest-even in every Lean/Rocq mode expression. Pairwise mismatches are empty
+in both controls, but the new independent gate rejects them, preserves the
+inputs, and generates no misleading kernel regression. Existing single-path
+mutation, interrupted-process and timeout controls still pass.
+
+The standalone oracle unit refresh passes twelve controls (two live tests
+explicitly skipped); the preceding same-source live refresh already passed
+all fourteen. The full macOS build and shell syntax check pass. The aggregate
+runner now includes the oracle suite and both new paired Core/exponent
+fixtures. Its previous frozen copy is intentionally unchanged, so this is
+not a claim that the older aggregate ran these newly integrated commands.
+Fresh seed-861047 native and all-mode executions are now running on
+`eb306bb5…722eb6`; neither is yet counted as complete.
+
+Logs: `/private/tmp/floatspec-integrated-native-oracle-tests-20260920.log`,
+`floatspec-integrated-modes-oracle-tests-20260920.log`,
+`floatspec-integrated-oracle-unit-20260920.log` and
+`floatspec-integrated-oracle-build-20260920.log`.
+No Lean definition, theorem or proof debt changes in this integration.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In

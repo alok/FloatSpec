@@ -60,6 +60,36 @@ class CorpusTests(unittest.TestCase):
 
 @unittest.skipUnless(os.environ.get("FLOCQ_AUDIT_DIR"), "live test requires FLOCQ_AUDIT_DIR")
 class LiveTests(unittest.TestCase):
+    def test_shared_wrong_mode_is_rejected_before_bootstrap(self):
+        original = bridge.expression
+
+        def wrong_mode(case, language):
+            # Mutate the actual Lean and Rocq programs, including both SingleNaN routes.
+            return original(case, language).replace(".RTP", ".RNE").replace("mode_UP", "mode_NE")
+
+        with tempfile.TemporaryDirectory(prefix="floatspec-shared-mode-mutation-") as directory:
+            output, replay = Path(directory) / "output", Path(directory) / "cases.json"
+            case = [32, 3, 0x3f800000, 0x33800000, 0]
+            replay.write_text(json.dumps([case]))
+            argv = ["ieee_modes_bridge", "--flocq-dir", os.environ["FLOCQ_AUDIT_DIR"],
+                    "--skip-build", "--replay", str(replay), "--output", str(output)]
+            with (patch("sys.argv", argv), patch.object(bridge, "expression", wrong_mode),
+                  patch.object(bridge, "bootstrap") as bootstrap,
+                  contextlib.redirect_stdout(io.StringIO()), self.assertRaises(SystemExit)):
+                bridge.main()
+            report = json.loads((output / "report.json").read_text())
+            self.assertEqual(report["status"], "mismatch")
+            self.assertEqual(report["mismatches"], [])  # Every implementation agrees.
+            self.assertEqual(len(report["oracle_mismatches"]), 3)
+            self.assertGreater(report["oracle_assertions"], 0)
+            self.assertEqual(report["bootstrapped_lean_cases"], 0)
+            bootstrap.assert_not_called()
+            for failure in report["oracle_mismatches"]:
+                self.assertIn("add", failure["columns"])
+                self.assertIn("single_add_mantissa", failure["columns"])
+                self.assertIn("source_single_add_mantissa", failure["columns"])
+            self.assertEqual(json.loads((output / "replay.json").read_text()), [case])
+
     def test_each_format_and_rounding_mode_executes_all_operations(self):
         flocq = Path(os.environ["FLOCQ_AUDIT_DIR"]).resolve()
         cases = [(width, mode, one, half_ulp, negative_one)

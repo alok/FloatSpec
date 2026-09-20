@@ -55,6 +55,36 @@ class CorpusTests(unittest.TestCase):
 
 @unittest.skipUnless(os.environ.get("FLOCQ_AUDIT_DIR"), "live test requires FLOCQ_AUDIT_DIR")
 class LiveTests(unittest.TestCase):
+    def test_shared_operand_routing_bug_is_rejected_by_exact_oracle(self):
+        original = bridge.execute
+
+        def wrong_inputs(cases, flocq, coqc, folder):
+            # All four real programs receive the same wrongly reordered input.
+            return original([(right, left) for left, right in cases], flocq, coqc, folder)
+
+        with tempfile.TemporaryDirectory(prefix="floatspec-shared-input-mutation-") as directory:
+            output, replay = Path(directory) / "output", Path(directory) / "cases.json"
+            case = [0x3ff0000000000000, 0x4000000000000000]
+            replay.write_text(json.dumps([case]))
+            argv = ["native_arithmetic_bridge", "--flocq-dir", os.environ["FLOCQ_AUDIT_DIR"],
+                    "--replay", str(replay), "--output", str(output)]
+            with (patch("sys.argv", argv), patch.object(bridge, "execute", wrong_inputs),
+                  patch.object(bridge, "bootstrap_lean") as bootstrap,
+                  contextlib.redirect_stdout(io.StringIO()), self.assertRaises(SystemExit)):
+                bridge.main()
+            report = json.loads((output / "report.json").read_text())
+            self.assertEqual(report["status"], "mismatch")
+            self.assertEqual(report["mismatches"], [])  # Pairwise agreement is not enough.
+            self.assertEqual(len(report["oracle_mismatches"]), 4)
+            self.assertGreater(report["oracle_assertions"], 0)
+            self.assertEqual(report["bootstrapped_lean_cases"], 0)
+            bootstrap.assert_not_called()
+            for failure in report["oracle_mismatches"]:
+                self.assertIn("left", failure["columns"])
+                self.assertIn("sub", failure["columns"])
+                self.assertIn("div", failure["columns"])
+            self.assertEqual(json.loads((output / "replay.json").read_text()), [case])
+
     def test_arithmetic_paths_and_kernel_bootstrap(self):
         flocq = Path(os.environ["FLOCQ_AUDIT_DIR"]).resolve()
         cases = [(0x3ff0000000000000, 0x4000000000000000), (0, 1 << 63),

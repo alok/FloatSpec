@@ -10,6 +10,12 @@ from fractions import Fraction
 from math import isqrt
 
 
+SCOPE = ("Exact rational/grid expectations for finite-input IEEE arithmetic; "
+         "square root uses squared midpoints. NaN/infinite-input arithmetic, "
+         "zero divisors and negative square roots are excluded. Input echoes, "
+         "finite overflow/underflow and signed zero are included.")
+
+
 @dataclass(frozen=True)
 class Format:
     fraction_bits: int
