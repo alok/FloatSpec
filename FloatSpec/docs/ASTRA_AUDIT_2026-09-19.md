@@ -3350,6 +3350,27 @@ and `.v`, and the post-fix client output is
 No arithmetic definition body changed. Finite replay of earlier snapshots
 must not be relabeled as execution of this new fingerprint.
 
+### September 20, 18:40 UTC — concurrent comparison commits are not source-equivalent
+
+Read-only review of the original checkout found three unmerged Claude commits
+(`ff02ad28`, `f5d01e1d`, `8b81a532`) based on older ancestor `f95c7407`.
+Their new dyadic comparison backend is proved equal to the old real-valued
+Lean specification, but that is not the raw Rocq comparison contract.
+The exact copied backend returns equality on positive `(3,-1)` versus `(6,-2)`;
+both the current source-facing Lean API and actual Rocq `SpecFloat.SFcompare`
+return greater-than. All three results were executed and the concrete
+inequality was kernel-checked in Lean. The paired source regression already
+retains this case. These commits were not merged, and the original worktree
+and modified dependency were not edited.
+
+The [focused review](CLAUDE_COMPARISON_REVIEW_2026-09-20.md) records the inspected
+definitions, exact probe scope, counterexample, documentation corrections,
+and possible distinct use for the arbitrary-dyadic-value helpers. It does not
+claim the internal dyadic-value equivalence proofs are invalid. The mistake
+is identifying their old Lean target with the actual raw source API.
+The fresh full three-loop run remains in progress on `5d241916…974cfe`;
+this review changes documentation only and does not disturb that snapshot.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In

@@ -74,6 +74,13 @@ even if all three language observations agree on the wrong answer.
 The [small explanatory example](DEMO_EXEMPLARS.md#nearest-is-stronger-than-larger)
 shows why this matters.
 
+A [review of the three concurrent Claude comparison commits](CLAUDE_COMPARISON_REVIEW_2026-09-20.md)
+finds another important distinction: proving an executable backend equal to
+an older Lean specification does not show that specification matches Rocq.
+The copied backend and actual Rocq code were run on the same noncanonical
+encodings and disagree. Those commits remain unmerged; the current audit
+branch already preserves Rocq's raw comparison and retains that regression.
+
 Read [the demo/exemplar guide](DEMO_EXEMPLARS.md) for small runnable examples,
 [the three-loop guide](THREE_VERIFICATION_LOOPS.md) for reproduction, and
 [the audit ledger](ASTRA_AUDIT_2026-09-19.md) for detailed receipts and historical
