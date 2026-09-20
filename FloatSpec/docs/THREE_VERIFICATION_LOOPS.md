@@ -449,6 +449,44 @@ existing roundtrip proofs, but these finite observations do not constitute
 a universal cross-prover equivalence theorem. Run the slice with
 `--operations prim_conversion`.
 
+The thirtieth through thirty-second families observe every remaining primitive
+execution entry point at its public name:
+
+- `prim_arithmetic` has 70 columns: three raw algorithms, two input-validity
+  flags, five primitive operations, four arithmetic notation instances, and
+  five proof-carrying arithmetic operations. Only the final group varies with
+  the selected rounding mode; the primitive contract is nearest-even.
+- `prim_helpers` has 68 columns: input validity, raw scaling, uint63 conversion,
+  the two named primitive scaling exports, unsigned shifted scaling, ulp,
+  neighbors, the constant two, and three decompositions including their
+  exponents, plus the proof-carrying scaling/ulp/neighbor exports.
+- `prim_round` has 16 columns: primitive-specialized raw rounding auxiliary,
+  positive-mantissa rounding, signed normalization, and proof-carrying
+  normalization under the selected mode. It includes negative auxiliary
+  mantissas and noncanonical positive inputs, without claiming that the
+  real-value theorems hold outside their premises.
+
+These adapters call raw operations before conversion. Their primitive and
+proof-carrying groups use actual numeric `SF2Prim`, not the rejecting
+`SF2B'` adapter. Thus invalid encodings can become ordinary numeric values,
+and raw and converted results need not have the same encoding. The corpus
+keeps raw addition exponents bounded to avoid enormous exact alignments;
+this is a resource bound on testing, not a new API precondition.
+
+The paired `PrimitiveExecution` fixtures independently check 33 public
+definitions and four notation instances against literal values, and separately
+check three returned decomposition exponents. A closed example in both
+provers distinguishes raw `(9,-2)` from canonical 2.25 after squaring raw
+`(3,-1)`. The fixture executes actual clients, so reintroducing a
+`noncomputable` dependency makes it fail even when logical reductions remain
+possible. Fourteen deliberate API/exponent mutations test the bridge's
+independent observation columns.
+
+Run only these families with
+`--operations prim_arithmetic,prim_helpers,prim_round`. Exact run counts,
+seeds, source hashes, and completion status belong in the audit ledger,
+not in an assumption that merely launching this command is success.
+
 ## 4. One command runs all three
 
 From the repository root:

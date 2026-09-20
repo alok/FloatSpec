@@ -122,6 +122,47 @@ Testing only that final conversion missed the earlier discrepancy. The
 expanded bridge compares every exported stage and retains 87 replay inputs
 from this separate finding.
 
+
+## One operation, three interfaces
+
+Run `lake env lean scripts/fixtures/PrimitiveExecution.lean` and read the paired
+[Lean](../../scripts/fixtures/PrimitiveExecution.lean) and
+[Rocq](../../scripts/fixtures/PrimitiveExecution.v) fixtures. They deliberately
+observe each entry point instead of treating similarly named functions as
+interchangeable.
+
+Start with the raw encoding `(mantissa = 3, exponent = -1)`, which denotes 1.5
+but is not canonical binary64. Squaring it exposes three different jobs:
+
+| Step | Actual API | Observed encoding |
+|---|---|---|
+| Compute on the supplied raw encodings | `SFmul raw raw` | `(9,-2)`, noncanonical 2.25 |
+| Convert the input numerically | `SF2Prim raw` | `(6755399441055744,-52)`, canonical 1.5 |
+| Multiply those primitive values | `x * x` | `(5066549580791808,-51)`, canonical 2.25 |
+
+All three results are intentional. The raw helper's valid-output theorem
+requires valid inputs; the supplied raw 1.5 does not satisfy that premise.
+Its total source behavior is still observable and must still match Rocq.
+Conversely, testing only the primitive result would conceal a mistake in the
+raw helper. The fixture proves these literal results in both assistants and
+executes the Lean ones. No real-number approximation is used as an oracle.
+
+The broader `prim_arithmetic` bridge follows this separation: raw algorithms
+first, explicit input validity, numeric primitive operations, arithmetic
+notation, and proof-carrying operations under each rounding mode. The
+`prim_helpers` family checks scaling, neighbors, ulp, and decomposition,
+including the returned exponents. The `prim_round` family separately checks
+raw rounding and normalization—including signed mantissas outside the
+real-value theorem's hypotheses.
+
+Why did these functions need work if the formulas were already present?
+Lean's `noncomputable` marker prevented compiled clients from using them,
+even though the algorithms now operate on integers and finite constructors.
+Removing the unnecessary markers exposes the existing code to execution;
+it does not by itself prove that code agrees with the source. The 37-entry
+fixture checks every newly executable definition/instance, and the seeded
+bridge supplies broader, explicitly finite tests.
+
 ## A small follow-on: why fused multiply-add is a separate operation
 
 Run `lake env lean scripts/fixtures/SingleNaNArithmetic.lean` and read the paired

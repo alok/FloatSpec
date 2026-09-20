@@ -33,9 +33,10 @@ COQ_LOC = ["loc_Exact", "loc_Inexact Lt", "loc_Inexact Eq", "loc_Inexact Gt"]
 OPS = ("power", "div_eucl", "location", "round", "truncate", "div", "plus", "sqrt",
        "formats", "digits", "operations", "format_calc", "overflow", "bits32", "bits64",
        "bit_fields", "order32", "order64", "validity", "nearby", "neighbors", "comparison", "small_ieee",
-       "ieee_round", "single_helpers", "single_frexp", "normalize", "prim_comparison", "prim_conversion")
-ARITIES = dict(zip(OPS, (2, 2, 3, 3, 5, 6, 6, 4, 3, 2, 5, 8, 4, 1, 1, 6, 2, 2, 5, 6, 6, 10, 15, 8, 9, 6, 6, 8, 4), strict=True))
-WIDTHS = dict(zip(OPS, (1, 2, 3, 6, 3, 2, 2, 2, 4, 1, 13, 12, 21, 9, 9, 8, 14, 14, 15, 7, 17, 14, 87, 21, 46, 11, 12, 14, 14), strict=True))
+       "ieee_round", "single_helpers", "single_frexp", "normalize", "prim_comparison", "prim_conversion",
+       "prim_arithmetic", "prim_helpers", "prim_round")
+ARITIES = dict(zip(OPS, (2, 2, 3, 3, 5, 6, 6, 4, 3, 2, 5, 8, 4, 1, 1, 6, 2, 2, 5, 6, 6, 10, 15, 8, 9, 6, 6, 8, 4, 9, 7, 6), strict=True))
+WIDTHS = dict(zip(OPS, (1, 2, 3, 6, 3, 2, 2, 2, 4, 1, 13, 12, 21, 9, 9, 8, 14, 14, 15, 7, 17, 14, 87, 21, 46, 11, 12, 14, 14, 70, 68, 16), strict=True))
 RADIX_OPS = {"truncate", "div", "plus", "sqrt", "digits", "operations", "format_calc"}
 
 
@@ -49,6 +50,19 @@ class Case:
             raise ValueError(f"unknown operation or wrong arity: {self.op}")
         if not all(type(n) is int for n in self.args):
             raise ValueError("case arguments must be integers, not source text or Booleans")
+        if self.op in ("prim_arithmetic", "prim_helpers", "prim_round"):
+            if self.args[0] not in range(5):
+                raise ValueError("primitive execution requires mode 0..4")
+            if self.op == "prim_round":
+                if self.args[1] not in (0, 1) or self.args[4] not in range(4) or self.args[5] <= 0:
+                    raise ValueError("prim_round requires sign 0/1, location 0..3, positive round mantissa")
+            else:
+                for offset in ((1, 5) if self.op == "prim_arithmetic" else (1,)):
+                    kind, sign, mantissa, _ = self.args[offset:offset+4]
+                    if kind not in range(4) or sign not in (0, 1) or mantissa <= 0:
+                        raise ValueError("primitive execution requires kind 0..3, sign 0/1, positive source mantissa")
+                if self.op == "prim_helpers" and not 0 <= self.args[6] < (1 << 63):
+                    raise ValueError("primitive execution uint63 must be in [0, 2^63)")
         if self.op in RADIX_OPS and self.args[0] < 2:
             raise ValueError("Flocq radix requires beta >= 2")
         loc_index = {"location": 2, "round": 1, "truncate": 3}.get(self.op)
@@ -155,6 +169,154 @@ def small_ieee_raw(value, coq=False):
             f'{prefix}S754_nan',
             f'{prefix}S754_finite {s} ({mantissa})' + ('%positive' if coq else '') +
             f' ({exponent})')[kind]
+
+
+
+def prim_arithmetic_expressions(case: Case) -> tuple[str, str]:
+    """Observe raw algorithms, native/logical primitives, notation, and all modes."""
+    mode, *operands = case.args
+    lm = ('.RNE', '.RTZ', '.RTN', '.RTP', '.RNA')[mode]
+    cm = ('mode_NE', 'mode_ZR', 'mode_DN', 'mode_UP', 'mode_NA')[mode]
+    lean, coq = '', ''
+    for name, raw in zip(('x', 'y'), (operands[:4], operands[4:]), strict=True):
+        lean += (f'let raw_{name} : StandardFloat := {small_ieee_raw(raw)}; '
+                 f'let prim_{name} := FaithfulPrimFloat.SF2Prim raw_{name}; '
+                 f'let {name} := FaithfulPrimFloat.Prim2B prim_{name}; ')
+        coq += (f'let raw_{name} := {small_ieee_raw(raw, True)} in '
+                f'let prim_{name} := FloatOps.SF2Prim raw_{name} in '
+                f'let {name} := Flocq.IEEE754.PrimFloat.Prim2B prim_{name} in ')
+    ls, cs = [], []
+    for name in ('SFmul', 'SFdiv', 'SFadd'):
+        ls.append(f'standard (FaithfulPrimFloat.{name} raw_x raw_y)')
+        cs.append(f'standard (SpecFloat.{name} 53 1024 raw_x raw_y)')
+    ls.append('[boolean (validBinarySingleNaNStandardFloat (prec := 53) (emax := 1024) raw_x), '
+              'boolean (validBinarySingleNaNStandardFloat (prec := 53) (emax := 1024) raw_y)]')
+    cs.append('[boolean (SpecFloat.valid_binary 53 1024 raw_x); boolean (SpecFloat.valid_binary 53 1024 raw_y)]')
+    for name in ('mul', 'div', 'sqrt', 'add', 'sub'):
+        args = 'prim_x' if name == 'sqrt' else 'prim_x prim_y'
+        ls.append(f'standard (FaithfulPrimFloat.Prim2SF (FaithfulPrimFloat.{name} {args}))')
+        cs.append(f'standard (FloatOps.Prim2SF (PrimFloat.{name} {args}))')
+    for symbol, name in (('*', 'mul'), ('/', 'div'), ('+', 'add'), ('-', 'sub')):
+        ls.append(f'standard (FaithfulPrimFloat.Prim2SF (prim_x {symbol} prim_y))')
+        cs.append(f'standard (FloatOps.Prim2SF (PrimFloat.{name} prim_x prim_y))')
+    for name in ('Bmult', 'Bdiv', 'Bsqrt', 'Bplus', 'Bminus'):
+        args = 'x' if name == 'Bsqrt' else 'x y'
+        ls.append(f'standard (FaithfulPrimFloat.B2SF (FaithfulPrimFloat.{name} {lm} {args}))')
+        cs.append(f'standard (@BinarySingleNaN.B2SF 53 1024 '
+                  f'(@BinarySingleNaN.{name} 53 1024 eq_refl eq_refl {cm} {args}))')
+    return lean + ' ++ '.join(ls), coq + ' ++ '.join(cs)
+
+
+def primitive_operands() -> list[tuple[int, ...]]:
+    specials = [(k, s, 1, 0) for k in (0, 1) for s in (0, 1)] + [(2, 0, 1, 0)]
+    finite = [(1, -1075), (1, -1074), ((1 << 52) - 1, -1074), (1 << 52, -1074),
+              (1 << 52, -53), (1 << 52, -52), ((1 << 52) + 1, -52),
+              ((1 << 53) - 1, -52), ((1 << 53) - 1, 971),
+              (3, -1), (6, -2), (1 << 63, 0), ((1 << 63) + 1, 0),
+              ((1 << 53) + 5, -1077)]
+    return specials + [(3, s, m, e) for s in (0, 1) for m, e in finite]
+
+
+def prim_arithmetic_corpus(seed: int, samples: int) -> list[Case]:
+    rng, values = random.Random(seed), primitive_operands()
+    cases = [Case('prim_arithmetic', (mode, *x, *y))
+             for mode in range(5) for x in values
+             for y in (x, values[0], values[1], values[2], values[10], values[13])]
+    for _ in range(samples):
+        pair = [(3, rng.randrange(2), rng.randint(1, (1 << rng.choice((53, 54, 64))) - 1),
+                 rng.randint(-1080, 1025)) for _ in range(2)]
+        cases.append(Case('prim_arithmetic', (rng.randrange(5), *pair[0], *pair[1])))
+    return list(dict.fromkeys(cases))
+
+
+def prim_helpers_expressions(case: Case) -> tuple[str, str]:
+    mode, kind, sign, mantissa, exponent, shift, uint = case.args
+    raw = (kind, sign, mantissa, exponent)
+    lm = ('.RNE', '.RTZ', '.RTN', '.RTP', '.RNA')[mode]
+    cm = ('mode_NE', 'mode_ZR', 'mode_DN', 'mode_UP', 'mode_NA')[mode]
+    lean = (f'let raw : StandardFloat := {small_ieee_raw(raw)}; '
+            'let prim := FaithfulPrimFloat.SF2Prim raw; let x := FaithfulPrimFloat.Prim2B prim; '
+            f'let u := FaithfulPrimFloat.Uint63.ofInt {uint} (by decide) (by decide); '
+            'let f := FaithfulPrimFloat.Z.frexp prim; '
+            'let fs := FaithfulPrimFloat.frshiftexp prim; '
+            'let fb := FaithfulPrimFloat.Bfrexp x; ')
+    coq = (f'let raw := {small_ieee_raw(raw, True)} in '
+           'let prim := FloatOps.SF2Prim raw in let x := Flocq.IEEE754.PrimFloat.Prim2B prim in '
+           f'let u := Uint63.of_Z {uint} in let f := FloatOps.Z.frexp prim in '
+           'let fs := PrimFloat.frshiftexp prim in '
+           'let fb := @BinarySingleNaN.Bfrexp 53 1024 eq_refl x in ')
+    ls = ['[boolean (validBinarySingleNaNStandardFloat (prec := 53) (emax := 1024) raw)]',
+          f'standard (FaithfulPrimFloat.SFldexp raw ({shift}))']
+    cs = ['[boolean (SpecFloat.valid_binary 53 1024 raw)]',
+          f'standard (SpecFloat.SFldexp 53 1024 raw ({shift}))']
+    for lcall, ccall in (
+        ('of_uint63 u', 'PrimFloat.of_uint63 u'),
+        (f'ldexp prim ({shift})', f'FloatOps.Z.ldexp prim ({shift})'),
+        (f'Z.ldexp prim ({shift})', f'FloatOps.Z.ldexp prim ({shift})'),
+        ('ldshiftexp prim u', 'PrimFloat.ldshiftexp prim u'),
+        ('ulp prim', 'FloatOps.ulp prim'),
+        ('next_up prim', 'Corelib.Floats.PrimFloat.next_up prim'),
+        ('next_down prim', 'Corelib.Floats.PrimFloat.next_down prim'),
+        ('two', 'PrimFloat.two')):
+        ls.append(f'standard (FaithfulPrimFloat.Prim2SF (FaithfulPrimFloat.{lcall}))')
+        cs.append(f'standard (FloatOps.Prim2SF ({ccall}))')
+    ls += ['standard (FaithfulPrimFloat.Prim2SF f.1) ++ [f.2]',
+           'standard (FaithfulPrimFloat.Prim2SF fs.1) ++ [FaithfulPrimFloat.Uint63.to_Z fs.2]']
+    cs += ['standard (FloatOps.Prim2SF (fst f)) ++ [snd f]',
+           'standard (FloatOps.Prim2SF (fst fs)) ++ [Uint63.to_Z (snd fs)]']
+    for name, args in (('Bldexp', f'{lm} x ({shift})'), ("Bulp'", 'x'), ('Bsucc', 'x'), ('Bpred', 'x')):
+        ls.append(f'standard (FaithfulPrimFloat.B2SF (FaithfulPrimFloat.{name} {args}))')
+        source_args = f'{cm} x ({shift})' if name == 'Bldexp' else 'x'
+        cs.append(f'standard (@BinarySingleNaN.B2SF 53 1024 '
+                  f'(@BinarySingleNaN.{name} 53 1024 eq_refl eq_refl {source_args}))')
+    ls.append('standard (FaithfulPrimFloat.B2SF fb.1) ++ [fb.2]')
+    cs.append('standard (@BinarySingleNaN.B2SF 53 1024 (fst fb)) ++ [snd fb]')
+    return lean + ' ++ '.join(ls), coq + ' ++ '.join(cs)
+
+
+def prim_helpers_corpus(seed: int, samples: int) -> list[Case]:
+    rng, values = random.Random(seed), primitive_operands()
+    cases = [Case('prim_helpers', (mode, *raw, shift, uint))
+             for mode in range(5) for raw in values
+             for shift, uint in ((-2100, 0), (-1, 2100), (0, 2101), (1, 2102),
+                                 (2100, (1 << 63) - 1))]
+    for _ in range(samples):
+        raw = (3, rng.randrange(2), rng.randint(1, (1 << rng.choice((53, 54, 64))) - 1),
+               rng.randint(-1080, 1025))
+        cases.append(Case('prim_helpers', (rng.randrange(5), *raw, rng.randint(-2200, 2200),
+                                           rng.randrange(1 << 63))))
+    return list(dict.fromkeys(cases))
+
+
+def prim_round_expressions(case: Case) -> tuple[str, str]:
+    mode, sign, mantissa, exponent, loc, positive = case.args
+    lm = ('.RNE', '.RTZ', '.RTN', '.RTP', '.RNA')[mode]
+    cm = ('mode_NE', 'mode_ZR', 'mode_DN', 'mode_UP', 'mode_NA')[mode]
+    s = 'true' if sign else 'false'
+    lean = [
+        f'standard (FaithfulPrimFloat.binary_round_aux {s} ({mantissa}) ({exponent}) ({LEAN_LOC[loc]}))',
+        f'standard (FaithfulPrimFloat.binary_round {s} (binaryPositiveOfNat {positive} (by decide)) ({exponent}))',
+        f'standard (FaithfulPrimFloat.binary_normalize ({mantissa}) ({exponent}) {s})',
+        f'standard (FaithfulPrimFloat.B2SF (FaithfulPrimFloat.binary_normalize_bsn {lm} ({mantissa}) ({exponent}) {s}))']
+    coq = [
+        f'standard (SpecFloat.binary_round_aux 53 1024 {s} ({mantissa}) ({exponent}) ({COQ_LOC[loc]}))',
+        f'standard (SpecFloat.binary_round 53 1024 {s} ({positive})%positive ({exponent}))',
+        f'standard (SpecFloat.binary_normalize 53 1024 ({mantissa}) ({exponent}) {s})',
+        f'standard (@BinarySingleNaN.B2SF 53 1024 (@BinarySingleNaN.binary_normalize 53 1024 eq_refl eq_refl {cm} ({mantissa}) ({exponent}) {s}))']
+    return ' ++ '.join(lean), ' ++ '.join(coq)
+
+
+def prim_round_corpus(seed: int, samples: int) -> list[Case]:
+    rng = random.Random(seed)
+    boundaries = [(m, e) for m in (-1, 0, 1, 3, (1 << 53) + 1, (1 << 53) + 3)
+                  for e in (-1076, -1075, -1074, -53, 971, 972, 1024)]
+    cases = [Case('prim_round', (mode, s, m, e, loc, max(1, abs(m))))
+             for mode in range(5) for s in (0, 1) for m, e in boundaries for loc in range(4)]
+    for _ in range(samples):
+        m = rng.randint(-(1 << 65), 1 << 65)
+        cases.append(Case('prim_round', (rng.randrange(5), rng.randrange(2), m,
+            rng.randint(-1080, 1030), rng.randrange(4), rng.randint(1, 1 << 65))))
+    return list(dict.fromkeys(cases))
 
 
 def prim_conversion_expressions(case: Case) -> tuple[str, str]:
@@ -611,8 +773,11 @@ def corpus(seed: int, samples: int) -> list[Case]:
     cases.extend(normalize_corpus(seed, samples))
     cases.extend(prim_comparison_corpus(seed, samples))
     cases.extend(prim_conversion_corpus(seed, samples))
+    cases.extend(prim_arithmetic_corpus(seed, samples))
+    cases.extend(prim_helpers_corpus(seed, samples))
+    cases.extend(prim_round_corpus(seed, samples))
     for op in OPS:
-        if op in ("comparison", "small_ieee", "ieee_round", "single_helpers", "single_frexp", "normalize", "prim_comparison", "prim_conversion"):
+        if op in ("comparison", "small_ieee", "ieee_round", "single_helpers", "single_frexp", "normalize", "prim_comparison", "prim_conversion", "prim_arithmetic", "prim_helpers", "prim_round"):
             continue
         for _ in range(samples):
             base = rng.choice((2, 3, 10, 16))
@@ -720,6 +885,12 @@ def expressions(case: Case) -> tuple[str, str]:
         return prim_comparison_expressions(case)
     if op == "prim_conversion":
         return prim_conversion_expressions(case)
+    if op == "prim_arithmetic":
+        return prim_arithmetic_expressions(case)
+    if op == "prim_helpers":
+        return prim_helpers_expressions(case)
+    if op == "prim_round":
+        return prim_round_expressions(case)
     if op == "comparison":
         p, emax, *words = case.args
         operands = [words[:4], words[4:]]

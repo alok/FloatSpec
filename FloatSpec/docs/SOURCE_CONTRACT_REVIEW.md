@@ -6,6 +6,43 @@ all declarations in the named modules. See the
 [running audit](ASTRA_AUDIT_2026-09-19.md) for execution receipts and the
 [reading guide](READING_GUIDE.md) for the mathematical story.
 
+## Executable primitive entry points: keep the three interfaces separate
+
+The remaining 33 definitions and four arithmetic instances in
+`FaithfulPrimFloat` now compile without `noncomputable` markers. The diff
+changes only those markers: bodies, binders, result types, validity evidence,
+and correctness theorems are unchanged. A baseline client file fails at all
+37 names before the change and the permanent paired fixture executes all 37
+afterward. This is an execution repair, not a newly proved source equivalence.
+
+Seven raw helpers correspond to binary64-specialized Rocq Corelib
+`SpecFloat` algorithms. Fifteen primitive entry points correspond to Corelib
+native operations or its `FloatOps` wrappers. Eleven proof-carrying helpers
+correspond to binary64 specializations of pinned Flocq `BinarySingleNaN`;
+four Lean arithmetic instances supply local notation. These are distinct
+interfaces, not 37 separately owned Flocq declarations. Existing source
+classification is not upgraded merely by making a body executable.
+
+The three new bridge families observe each interface separately. Raw finite
+inputs retain the source's positive mantissa domain. Primitive inputs are
+produced by the corrected total numeric `SF2Prim`, and proof-carrying inputs
+are projected from those converted values. The raw group is evaluated first,
+without a rejecting adapter or normalization that could hide its behavior.
+
+A paired closed example squares raw `(3,-1)`: Corelib's raw multiplication
+returns noncanonical `(9,-2)`; converting first and multiplying primitive
+values returns canonical `(5066549580791808,-51)`. Both denote 2.25.
+This does not violate raw multiplication's validity theorem: its premise
+requires canonical inputs. The fixture also checks all three decomposition
+exponents, rather than accepting a correct fraction with a wrong exponent.
+
+Fourteen deliberate replacements independently corrupt raw operations,
+primitive operations, notation, proof-carrying operations, or decomposition
+exponents. Each is detected in both Lean execution paths while unrelated
+columns stay equal. A separate test restores a noncomputable client and
+requires compilation failure. Counts and the running/completed distinction
+for the broad seeded grid are recorded in the audit ledger.
+
 ## Total primitive conversion: wrapping and two rounding stages
 
 `FaithfulPrimFloat.SF2Prim` previously treated all noncanonical encodings as

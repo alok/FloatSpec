@@ -49,6 +49,29 @@ class RunnerTests(unittest.TestCase):
 
 
 class ParserTests(unittest.TestCase):
+
+    def test_primitive_execution_domains_and_replayable_corpora(self):
+        for family, width in (('prim_arithmetic', 70), ('prim_helpers', 68), ('prim_round', 16)):
+            generate = getattr(bridge, family + '_corpus')
+            cases = generate(844763, 3)
+            self.assertEqual(cases, generate(844763, 3))
+            self.assertNotEqual(cases, generate(844769, 3))
+            self.assertEqual(len(cases), len(set(cases)))
+            self.assertEqual({case.args[0] for case in cases}, set(range(5)))
+            self.assertEqual(bridge.WIDTHS[family], width)
+        for family, args in (
+            ('prim_arithmetic', (5, 3, 0, 1, 0, 3, 0, 1, 0)),
+            ('prim_arithmetic', (0, 4, 0, 1, 0, 3, 0, 1, 0)),
+            ('prim_arithmetic', (0, 3, 0, 1, 0, 3, 2, 1, 0)),
+            ('prim_arithmetic', (0, 3, 0, 1, 0, 3, 0, 0, 0)),
+            ('prim_helpers', (0, 3, 0, 1, 0, 0, -1)),
+            ('prim_helpers', (0, 3, 0, 1, 0, 0, 1 << 63)),
+            ('prim_helpers', (0, 3, 0, -1, 0, 0, 0)),
+            ('prim_round', (0, 2, -1, 0, 0, 1)),
+            ('prim_round', (0, 0, -1, 0, 4, 1)),
+            ('prim_round', (0, 0, -1, 0, 0, 0))):
+            with self.subTest(family=family, args=args), self.assertRaises(ValueError):
+                bridge.Case(family, args)
     def test_primitive_conversion_domain_wrapping_and_seed(self):
         cases = bridge.prim_conversion_corpus(843751, 7)
         self.assertEqual(cases, bridge.prim_conversion_corpus(843751, 7))
@@ -281,6 +304,80 @@ class ParserTests(unittest.TestCase):
 
 @unittest.skipUnless(os.environ.get("FLOCQ_AUDIT_DIR"), "live test requires FLOCQ_AUDIT_DIR")
 class LiveTests(unittest.TestCase):
+
+    def test_primitive_execution_literal_columns(self):
+        flocq = Path(os.environ['FLOCQ_AUDIT_DIR']).resolve()
+        one = [3, 0, 4503599627370496, -52]
+        two = [3, 0, 4503599627370496, -51]
+        zero = [0, 0, 0, 0]
+        half = [3, 0, 4503599627370496, -53]
+        ulp = [3, 0, 4503599627370496, -104]
+        up = [3, 0, 4503599627370497, -52]
+        down = [3, 0, 9007199254740991, -53]
+        cases = [
+            bridge.Case('prim_arithmetic', (0, *one, *one)),
+            bridge.Case('prim_helpers', (0, *one, 1, 2102)),
+            bridge.Case('prim_round', (0, 0, 1, 0, 0, 1))]
+        expected = [
+            one + one + two + [1, 1] + one + one + one + two + zero +
+                one + one + two + zero + one + one + one + two + zero,
+            [1] + two + [3, 0, 4622346883170304, -41] + two + two + two +
+                ulp + up + down + two + half + [1] + half + [2102] +
+                two + ulp + up + down + half + [1],
+            [3, 0, 1, 0] + one + one + one]
+        with tempfile.TemporaryDirectory(prefix='floatspec-primitive-execution-literal-') as directory:
+            folder = Path(directory)
+            rows = bridge.execute(cases, flocq, bridge.configured_coqc(flocq), folder)
+            self.assertEqual(bridge.compare(cases, rows), [])
+            self.assertEqual(rows['rocq'], expected)
+            bridge.bootstrap_lean(cases, expected, folder)
+
+    def test_primitive_execution_independent_mutations(self):
+        flocq = Path(os.environ['FLOCQ_AUDIT_DIR']).resolve()
+        one = (3, 0, 4503599627370496, -52)
+        arithmetic = bridge.Case('prim_arithmetic', (0, *one, *one))
+        helpers = bridge.Case('prim_helpers', (0, *one, 1, 2102))
+        rounding = bridge.Case('prim_round', (0, 0, 1, 0, 0, 1))
+        original = bridge.expressions
+        changes = [
+            (arithmetic, 'SFmul raw_x raw_y', 'SFadd raw_x raw_y', 0, 4),
+            (arithmetic, 'mul prim_x prim_y', 'add prim_x prim_y', 14, 18),
+            (arithmetic, '(prim_x * prim_y)', '(prim_x + prim_y)', 34, 38),
+            (arithmetic, 'Bmult .RNE x y', 'Bplus .RNE x y', 50, 54),
+            (helpers, 'SFldexp raw (1)', 'SFldexp raw (0)', 1, 5),
+            (helpers, 'FaithfulPrimFloat.ldexp prim (1)', 'FaithfulPrimFloat.ldexp prim (0)', 9, 13),
+            (helpers, 'FaithfulPrimFloat.next_up prim', 'FaithfulPrimFloat.next_down prim', 25, 29),
+            (helpers, ' ++ [f.2]', ' ++ [f.2 + 1]', 41, 42),
+            (helpers, 'Uint63.to_Z fs.2]', 'Uint63.to_Z fs.2 + 1]', 46, 47),
+            (helpers, ' ++ [fb.2]', ' ++ [fb.2 + 1]', 67, 68),
+            (rounding, 'binary_round_aux false (1) (0)', 'binary_round_aux true (1) (0)', 0, 4),
+            (rounding, 'binary_round false (binaryPositiveOfNat 1', 'binary_round true (binaryPositiveOfNat 1', 4, 8),
+            (rounding, 'binary_normalize (1) (0)', 'binary_normalize (-1) (0)', 8, 12),
+            (rounding, 'binary_normalize_bsn .RNE (1)', 'binary_normalize_bsn .RNE (-1)', 12, 16)]
+        for case, before, after, start, end in changes:
+            def mutation(current):
+                lean, rocq = original(current)
+                self.assertEqual(lean.count(before), 1)
+                return lean.replace(before, after), rocq
+            with (self.subTest(mutation=before),
+                  tempfile.TemporaryDirectory(prefix='floatspec-primitive-execution-mutation-') as directory,
+                  patch.object(bridge, 'expressions', mutation)):
+                rows = bridge.execute([case], flocq, bridge.configured_coqc(flocq), Path(directory))
+                self.assertEqual(bridge.compare([case], rows)[0]['paths'], ['lean', 'compiled'])
+                for path in ('lean', 'compiled'):
+                    self.assertNotEqual(rows[path][0][start:end], rows['rocq'][0][start:end])
+                    self.assertEqual(rows[path][0][:start], rows['rocq'][0][:start])
+                    self.assertEqual(rows[path][0][end:], rows['rocq'][0][end:])
+
+    def test_primitive_execution_fixture_rejects_noncomputable_client(self):
+        source = (Path(__file__).parent / 'fixtures/PrimitiveExecution.lean').read_text()
+        before = 'private def check_mul : StandardFloat'
+        self.assertEqual(source.count(before), 1)
+        with tempfile.TemporaryDirectory(prefix='floatspec-primitive-execution-marker-') as directory:
+            path = Path(directory) / 'PrimitiveExecutionMutation.lean'
+            path.write_text(source.replace(before, 'private noncomputable def check_mul : StandardFloat'))
+            with self.assertRaisesRegex(RuntimeError, 'dependsOnNoncomputable'):
+                bridge.run(['lake', 'env', 'lean', str(path)])
     def test_total_primitive_conversion_replays_and_valid_controls(self):
         flocq = Path(os.environ['FLOCQ_AUDIT_DIR']).resolve()
         data = json.loads((Path(__file__).parent / 'fixtures/PrimitiveConversionReplay.json').read_text())

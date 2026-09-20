@@ -2112,6 +2112,86 @@ This changes the total raw conversion contract, not the behavior of already
 valid binary64 values. The fresh counterexamples and the documented two-stage
 algorithm correct a source mismatch; they do not certify the whole port.
 
+### September 20, 12:43 UTC — primitive execution checkpoint; broad grid running
+
+Removed only `noncomputable` from 33 definitions and four arithmetic instances
+in `IEEE754/PrimFloat.lean`. No body, type, proof, or source-conversion stage
+changes. The fresh baseline
+`/private/tmp/PrimitiveExecutionClients-before-c4f0d85f-20260920.out`
+records 37 `dependsOnNoncomputable` failures; the new permanent
+`PrimitiveExecution.lean/.v` fixtures pass all 37 literal observations.
+Three decomposition exponents and the raw-versus-canonical square of 1.5
+are checked separately. Printed Lean axiom sets contain no sorry.
+
+New bridge families `prim_arithmetic`, `prim_helpers`, and `prim_round`
+have 70, 68, and 16 columns respectively. They call the actual public
+primitive-specialized entry points, and arithmetic notation independently.
+The raw group runs before conversion; the other groups use total numeric
+`SF2Prim` and its proof-carrying projection. Finite shared mantissas are
+positive, uint63 inputs are range checked, all five modes are generated,
+and the auxiliary rounder admits signed integers exactly as the source does.
+Raw addition's random exponents are bounded for test resource use, not by
+silently adding a mathematical precondition.
+
+Completed receipts on library SHA-256
+`4ad5cb5325f15839c048fc2655e483f084a2ba395d2c556269e5c56144b35ba3`:
+
+- macOS arm64 Lean 4.34 full library/test/executable build: **6,216 jobs**.
+  `/private/tmp/floatspec-primitive-execution-all-targets-20260920.log`.
+- Pure Lean and Rocq literal fixtures: passing logs
+  `...-pure-lean-v3-20260920.log` and `...-pure-rocq-v2-20260920.log`
+  under the same prefix. The initial 37-entry fixtures also passed before
+  adding the explanatory multiplication example.
+- A six-case three-family bridge probe passes both Lean paths, Rocq, and six
+  generated kernel equalities:
+  `/private/tmp/floatspec-primitive-execution-probe-20260920/report.json`.
+- Full core harness: **67 tests in 333.556 seconds**,
+  `...-full-harness-20260920.log`. Fourteen independent API/exponent
+  mutations are detected in both Lean paths while the other columns remain
+  unchanged. Restoring a noncomputable client causes the executable fixture
+  to fail. The four targeted new tests separately passed in 45.346 seconds.
+- Compiled trust: **13,534 source declarations / 58 modules / four unchanged
+  named debts**, no unexpected axioms, unsafe definitions, or runtime
+  overrides. `...-trust-20260920.json` and matching log. This used
+  `--skip-build` after the successful current full build.
+- **218 source anchors** checked against pinned Flocq using metadata freshly
+  exported from that build, `...-source-metadata-20260920.json` and
+  `...-anchors-20260920.log`. The validator's supplied-manifest mode does
+  not itself establish freshness; the preceding full build/export does.
+  Complete clean LSP diagnostics for production and fixture, shell syntax,
+  and `git diff --check` also pass.
+
+**Still running, not a passing receipt:** the wider **4,970-case** grid,
+seed `844763`, 500 seeded supplements per new family, batches of 25:
+`/private/tmp/floatspec-primitive-execution-grid-20260920/report.json`.
+Imported library sources and the bridge are frozen for this run.
+Do not count its planned cases as passed until its final status and generated
+kernel-equality count have been checked. The checkpoint can be reviewed while
+this larger verification continues.
+
+One fixture revision failed because dotted constructor notation lacked enough
+type context inside a compiled Boolean expression. That failure is preserved
+in `...-pure-lean-v2-20260920.log`; fully qualifying the constructor makes
+the v3 fixture pass. The initial helper CLI lookup used an obsolete script
+name and failed; no validation was inferred from that attempt.
+
+#### Next confirmed interface finding: predicate witness constructors
+
+Pinned `Round_pred.v:51,78` returns dependent pairs: a real satisfying the
+rounding predicate, or a function with its pointwise proof. Both constructors
+take `round_pred rnd` as an input. The current Lean exports instead return
+bare values/functions, and select zero when no witness exists. Their separate
+Hoare specifications cover only the valid-predicate case. This is an interface
+fidelity issue, not a counterexample to those conditional specifications.
+
+Two exact source-shaped clients fail in Lean and pass in Rocq:
+`/private/tmp/RoundPredicateWitnessClients20260920-lean-before.out` and
+`...-rocq-v2.out`. The first Rocq client attempt omitted the `Defs`
+qualification and is retained as an error. A scratch proof-carrying repair
+passes, with identity-relation examples and an impossible empty relation:
+`/private/tmp/RoundPredicateWitnessDraft20260920.lean/.out`.
+No production change is applied during the frozen arithmetic run.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In

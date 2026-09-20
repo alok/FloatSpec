@@ -15,7 +15,7 @@ This guide follows those jobs in order. The detailed
 [independent continuation audit](ASTRA_AUDIT_2026-09-19.md) retain the
 declaration-by-declaration findings and historical milestones.
 
-## Wake-up summary — September 20, 2026, 12:20 UTC
+## Wake-up summary — September 20, 2026, 12:42 UTC
 
 **Where to start:** run the seven-part demo above, then read sections 1–6 below.
 The [exemplar guide](DEMO_EXEMPLARS.md) adds small examples explaining why a
@@ -23,7 +23,23 @@ theorem needs its hypotheses. This summary records the current milestone;
 the [audit ledger](ASTRA_AUDIT_2026-09-19.md) keeps the detailed history,
 including failed runs and the exact source hashes tested.
 
-**Newest checked change:** total primitive conversion now follows Rocq's
+**Newest checked change:** all 33 remaining primitive definitions and four
+arithmetic notation instances now execute at their existing names. Only
+unnecessary `noncomputable` markers changed; the numerical bodies and theorem
+types did not. Paired Lean/Rocq fixtures check 37 literal entry-point results,
+three decomposition exponents, and a raw-versus-canonical multiplication
+example. The full **67-test harness** and **6,216-job macOS build** pass.
+Fourteen deliberate API/exponent mutations are rejected in both Lean paths,
+and a restored noncomputable dependency is rejected by the executable fixture.
+
+Read [one operation, three interfaces](DEMO_EXEMPLARS.md#one-operation-three-interfaces)
+to understand why raw `1.5 × 1.5` returns `(9,-2)`, while converting first
+and multiplying primitive values returns a canonical encoding of 2.25.
+The three new bridge families observe all these layers separately.
+The wider **4,970-case**, seed `844763` run is still **in progress** at this
+checkpoint—not a claimed pass. Its eventual receipt will be added to the ledger.
+
+**The preceding conversion repair:** total primitive conversion now follows Rocq's
 unsigned wrapping and two rounding stages. Previously `SF2Prim` rejected a
 noncanonical encoding such as `3 × 2^-1` as NaN; it now produces canonical
 `1.5`, matching the source. This conversion is deliberately different from
@@ -127,7 +143,8 @@ failures of ordinary valid binary32/binary64 arithmetic.
 
 | Slice | Observed result |
 |---|---|
-| Full library, test library, and executable | Lean 4.34.0 on macOS arm64: 6,216 build jobs pass after the total primitive-conversion repair |
+| Full library, test library, and executable | Lean 4.34.0 on macOS arm64: 6,216 build jobs pass after enabling the remaining primitive entry points |
+| Primitive execution entry points | 33 definitions and four notation instances execute; paired literal fixtures and 14 mutation controls pass; broader 4,970-case grid running |
 | Total primitive conversion | 31 paired literal cases; 866 broad cases plus 576 targeted rounding-boundary executions, with kernel equalities; four saved failures now pass |
 | FLT format relationships | Eleven unrestricted clients in each prover, a closed reverse-inclusion counterexample, and 1,813 fresh differential cases/kernel equalities |
 | Primitive/raw and neighboring comparison APIs | 6,116 differential cases and kernel equalities; 1,425 observe twelve primitive/raw exports separately |
@@ -137,7 +154,7 @@ failures of ordinary valid binary32/binary64 arithmetic.
 | Independent Calc brackets | Lean and Rocq each check 8,640 division and 2,496 square-root cases, including exact midpoint locations |
 | Remaining normalization entry points | 3,004 three-way cases; paired fixtures separately check 150 literal observations |
 | Raw rounding plus validity adapter | 6,342 three-way cases; rejection and an actual valid NaN have distinct observations |
-| Test-harness checks | Latest full core-harness run: 63 tests pass, including rejected-conversion, missing-wrap, and collapsed-rounding mutations |
+| Test-harness checks | Latest full core-harness run: 67 tests pass, including independent primitive API/exponent mutations and noncomputable-client rejection |
 | Compiled trust/source metadata | 13,534 source declarations in 58 modules; four unchanged named proof debts; 218 checked source anchors |
 
 These are separate, snapshot-bound receipts, **not** a claim that every row
@@ -157,13 +174,14 @@ explain the finite-input condition on alternate ulp and the positive-input
 condition on the specialized predecessor.
 
 
-**Prepared execution work:** a scratch compile removes unnecessary
-`noncomputable` markers from 33 primitive definitions and four arithmetic
-instances without changing their bodies or types. All 37 ordinary clients
-currently fail compilation, giving a concrete before-state for the next
-execution checkpoint. These are prepared changes, not completed production
-repairs. The separate Claude comparison branch remains preserved; its
-real-value `*C` APIs are not merged because they preserve the raw mismatch.
+**Next confirmed interface finding:** Flocq's predicate-to-rounding constructors
+return a value/function together with a proof that it satisfies the predicate.
+The Lean exports currently return bare values and supply a default zero if
+the relation has no witness. Two paired source-shaped clients compile in Rocq
+but fail in Lean. A proof-carrying scratch repair typechecks, but is not yet
+applied to production while the arithmetic snapshot is under test.
+The separate Claude comparison branch remains preserved; its real-value
+`*C` APIs are not merged because they preserve the raw mismatch.
 
 **What remains overall:** whole-library source-signature review is incomplete, and
 the four native/decoder proof obligations remain. The 86 premise guards and
