@@ -22,6 +22,11 @@ Five Raux source names previously denoted numeric wrappers solely for
 documentation links: `Rcompare_Lt`, `Rcompare_Eq`, `Rcompare_Gt`,
 `Rcompare_not_Lt`, and `Rcompare_not_Gt`. They now denote the corresponding
 ordinary propositions, with closed proofs and paired typed consumers.
+The same repair now covers `Rcompare_IZR` (Raux.v:468): its public name
+denotes equality between real-cast comparison and integer comparison codes,
+not a bare integer result. The old triple uses `Rcompare_IZR_check` and its
+proof delegates to the closed proposition. The pre-repair typed Lean client
+failed where the paired Rocq client succeeded; both pass after the repair.
 The legacy `Raux.Rcompare` representation still encodes Lt/Eq/Gt as -1/0/1;
 this change does **not** claim a whole-Raux migration to `Ordering`.
 The old `_spec` triples remain compatibility interfaces. A source link

@@ -3,6 +3,9 @@ open Lake DSL
 
 /-- Main FloatSpec package -/
 package FloatSpec where
+  -- Standalone fixtures use `lake env lean`, which expects local import files.
+  -- Keep those files available even when the user's artifact cache is enabled.
+  restoreAllArtifacts := true
   -- Lean options (typechecked!)
   leanOptions := #[
     ⟨`pp.unicode.fun, true⟩,

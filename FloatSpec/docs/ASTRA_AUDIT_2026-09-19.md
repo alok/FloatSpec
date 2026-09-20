@@ -639,7 +639,285 @@ trust audit covers 13,574 source declarations across 58 modules and finds
 only the four existing manifest debts. No new proof debt is introduced.
 Finite agreement is not a universal source-equivalence proof.
 
-## Still unreviewed
+## Contract corrections developed during the frozen aggregate
+
+The aggregate begun at 00:24 UTC on September 20 freezes the implementation
+and harness at `957b5f40`. That checkout remains unchanged until the run
+finishes, so each result has an unambiguous source snapshot. Corrections were
+developed and verified in an isolated managed worktree with its own cloned
+build artifacts; no build output was shared with the running aggregate.
+
+The following discrepancies were reproduced before repair:
+
+- Full-payload `Binary.Bcompare` returns `Option Int`, while pinned
+  `Binary.v:773` returns `option comparison`. A Rocq consumer demanding
+  `option comparison` compiles, while its Lean `Option Ordering` counterpart
+  fails with a type mismatch. The SingleNaN façade has the correct result type
+  already; both generic comparisons used non-executable real comparison.
+  The distinct fixed-width comparisons are executable and covered by the
+  permanent bridge. Probe files: `/private/tmp/GenericComparisonContract.lean`
+  and `/private/tmp/GenericComparisonContract.v`. An isolated executable
+  integer implementation now has closed SingleNaN/full-payload correctness
+  and reversal proofs, without precision instances or new axioms:
+  `/private/tmp/GenericComparisonRepair.lean`. These are draft results until
+  the actual public endpoints and their consumers are rebuilt and exercised.
+- `Generic_fmt.lt_cexp_pos` and `lt_cexp` demand `Valid_exp fexp`, but their
+  pinned exports (lines 1583 and 1596) need only `Monotone_exp fexp`.
+  Paired consumers reproduce the extra Lean premise. An isolated closed proof
+  compiles without validity, including a consumer with the monotone, invalid
+  exponent function `e ↦ e + 1`; its reported axioms are only `propext`,
+  `Classical.choice`, and `Quot.sound`. Typed pinned-Rocq consumers also
+  confirm the adjacent `cexp_le_bpow` and `cexp_ge_bpow` exports omit
+  validity; all four Lean exports added it unnecessarily.
+  Probe files: `/private/tmp/CanonicalExponentContract.lean`,
+  `/private/tmp/CanonicalExponentContract.v`, and
+  `/private/tmp/CanonicalExponentRepair.lean`.
+- Five Raux source theorem names (`Rcompare_Lt`, `Rcompare_Eq`, `Rcompare_Gt`,
+  `Rcompare_not_Lt`, `Rcompare_not_Gt`) denoted integer-returning
+  wrappers instead of propositions. Their comment explicitly says they were
+  introduced for documentation cross-references. All five typed Lean
+  consumers fail, while the paired source consumers compile against Raux
+  lines 371, 411, 428, 392, and 449. Closed replacement propositions compile
+  in `/private/tmp/RealComparisonContracts.lean`. This correction alone does
+  not migrate the broader Raux `Rcompare` API from integer codes to
+  `Ordering`; that representation boundary must remain explicit. Failure
+  probes: `/private/tmp/RealComparisonCurrent.lean` and `.v`.
+
+An isolated small-format arithmetic run completed all 6,160 shared inputs
+at precisions 2, 3, 4, and 8, two exponent ranges per precision, all five
+rounding modes, and six arithmetic operations per row. It compares actual
+compiled full-payload Lean operations (with a fixed valid NaN handler), Lean
+kernel reduction, and pinned Rocq SingleNaN operations. Payloads are erased
+deliberately in this probe, not claimed tested by it. Every boundary pair is
+included; FMA's third operand is rotated rather than exhaustive. The driver
+is `/private/tmp/floatspec-small-format-audit.py`; this is not yet a permanent
+repository test. All 6,160 rows agreed and all 6,160 generated kernel
+regressions checked (seed `491731`, 1,463.536 seconds), at the frozen source
+SHA-256 `8b72c2224acb46bd7fcaf2bac6fc132bb4bba8e956001351ec3ee1d9eee6de8d`.
+Artifacts: `/private/tmp/floatspec-small-format-arithmetic-20260920`.
+Driver SHA-256: `387bf90fa552eecc3e8c891938cefd48861b14710fa3d168550f1d491030ec4d`.
+
+The isolated comparison draft also passed 1,518 shared rows and all 1,518
+generated kernel regressions (seed `668013`, 147.877 seconds), including
+negative/zero precision, precision equal to the exponent bound, exceptional
+values, and malformed finite representations. Artifacts:
+`/private/tmp/floatspec-comparison-draft-qualified-20260920`.
+Because its implementation is embedded from a draft outside the repository,
+the repository fingerprint alone does not identify this experiment. The
+draft implementation SHA-256 is
+`595c3f24fc5a7744ea1b89960bd2a813cea5580f7b27b069f56471ba5419b962`;
+driver `/private/tmp/floatspec-comparison-audit.py` has SHA-256
+`8ae4335451c3b89210ae35aed526b72a618ba765640d8655e5f9944c30d70398`.
+Generated programs retain the embedded implementation. The first draft run
+failed because an opened Bracket namespace made `compare` ambiguous; explicit
+`Ord.compare` fixed that elaboration failure before the passing run. Fresh
+axiom reports for both correctness and reversal theorems contain no `sorryAx`.
+
+Two verified integration commits now repair these discrepancies:
+
+- `2eb81443` removes the four extra canonical-exponent validity premises and
+  restores the five Raux comparison propositions. Full macOS Lean 4.34.0
+  build: 6,215 jobs; paired Rocq consumers and previously failing Lean
+  consumers now pass. The invalid monotone exponent control is proved invalid,
+  rather than merely described that way. The source SHA-256 is
+  `f090bf1b61a88787880f7f091255bc7307fa803b0c2d645edadaa18587d1bcd1`.
+- `ec3b630f` restores executable `Option Ordering` at both generic public IEEE
+  comparison endpoints, with closed value/reversal proofs and no new precision
+  premises. Binary32/64 comparison delegates to that same proved primitive,
+  so these Lean endpoints are not independent implementations. Pinned Rocq
+  and native Float/Float32 remain independent checks. Seed `668019` passes
+  3,567 shared cases and all 3,567 kernel regressions in 359.999 seconds;
+  all 29 core harness tests pass, including operand-swap mutations.
+  Artifact: `/private/tmp/floatspec-comparison-public-20260920`.
+  Full build: 6,215 jobs; complete LSP error diagnostics are clean in the
+  five changed implementation/contract test modules. Paired Rocq consumers
+  and the independent ordering fixture compile. Source SHA-256:
+  `ef0fbd7b679679ce0bccc073d2b732fd31741f101f7067887c3b4b69e10fbb1a`.
+
+The latter compiled trust audit checks 13,591 source declarations in 58 modules,
+with four unchanged manifest debts, no new project axioms, and no runtime
+overrides. Source metadata validates 142 pinned anchors; the premise regression
+has 45 source guards. The initial Rocq output-basename and explicit-argument
+setup errors were corrected before the passing consumers and are not semantic
+counterexamples. Logs for both integration commits are retained in both
+worktrees. These slice results are separate from the frozen aggregate below.
+
+## Final verification and handoff
+
+### Complete frozen aggregate
+
+The complete six-bridge runner exited **0 at 01:53 UTC on 20 September**,
+after running continuously against commit `957b5f40` and source SHA-256
+`8b72c2224acb46bd7fcaf2bac6fc132bb4bba8e956001351ec3ee1d9eee6de8d`.
+Its source/build directory was not changed during the run; later repairs
+used a separate worktree with independent APFS-copied build artifacts.
+
+| Differential slice | Shared cases | Kernel regressions |
+|---|---:|---:|
+| Core and generic IEEE boundary families | 15,036 | 15,036 |
+| Native binary64 unary / decomposition / neighbors | 672 | 672 |
+| Native arithmetic pairs | 1,624 | 1,624 |
+| Binary32/64 rounding modes and payloads | 690 | 690 |
+| Scale/decomposition | 2,560 | 2,560 |
+| Integer rounding | 1,660 | 1,660 |
+| Total rows across the six bridges | **22,242** | **22,242** |
+
+All 64 bridge-harness tests passed (27 + 7 + 7 + 8 + 7 + 8), including
+deliberate semantic mutations, malformed/truncated output, source drift,
+timeouts, and interruption. Independent pure Lean and pure Rocq suites also
+passed, including 10,734 arithmetic invariant cases each, 20,000 bit
+roundtrips, 35,845 independent rounding-selection cases each, and 5,125
+integer-rounding oracle cases each. The aggregate additionally executes
+100,100 native arithmetic comparisons. These categories overlap and must
+not be summed into a claimed count of distinct floating-point inputs.
+
+The exact command, progress, and report-directory paths are in
+`/private/tmp/floatspec-complete-three-loops-20260920.log`. Seed `741193`
+was used throughout, with sample sizes 150 core, 250 native unary,
+150 arithmetic, and 40 each for modes/scaling/integer rounding.
+This is a successful **finite** aggregate on the frozen snapshot, not
+universal source equivalence and not an aggregate run of later changes.
+The newer comparison and small-format families have separate passing runs
+below; the final source also receives a cross-family replay and full harness
+rerun.
+
+### Persistent small-format bridge and last contract repair
+
+Commit `4183a790` adds the twenty-third core bridge family, `small_ieee`.
+Seed `491733`, ten supplemental cases per format/mode, passed all 6,160
+shared-input cases and 6,160 Lean kernel regressions in 911.384 seconds.
+The 32-test core harness passed in 87.006 seconds, including deliberately
+changing addition into subtraction and rejecting it in both Lean paths.
+Artifact: `/private/tmp/floatspec-small-format-permanent-20260920`.
+This run used source SHA-256
+`ef0fbd7b679679ce0bccc073d2b732fd31741f101f7067887c3b4b69e10fbb1a`.
+
+Commit `0f3f2550` restores `Raux.Rcompare_IZR` as an actual proposition,
+retaining its old carrier under the explicit `_check` compatibility name.
+The previously failing Lean client and paired Rocq consumer now compile.
+Its proof is closed; it adds no proof debt. Full library build: 3,101 jobs;
+test/executable build: 6,215 jobs. Complete LSP error diagnostics are clean
+for Raux and the premise test. The compiled audit checks 13,591 declarations
+in 58 modules and the same four debts; 143 source anchors validate.
+
+One source-validator invocation overlapped the first build and failed with
+an artifact-write permission error in `Pff2Flocq.ilean`. It is recorded as a
+failed invocation, not a successful gate. After the initial build completed,
+the sequential regression build, source validator, compiled trust audit,
+scanner/linter regressions, unused-mvcgen check, and proof-debt check all
+exited successfully. Logs: `/private/tmp/floatspec-izr-final-build-20260920.log`
+and `/private/tmp/floatspec-izr-final-regressions-20260920.log`.
+
+A final-source replay selects the first, middle, and last case from each of
+23 families in the corpus generated with seed `903117` and three supplemental
+samples. All 69 shared cases and 69 kernel regressions passed in 17.636
+seconds. This is a small integration check, not a rerun of every large corpus.
+Its replay JSON is `/private/tmp/floatspec-final-replay-20260920.json`, report
+directory `/private/tmp/floatspec-final-source-replay-20260920`, and source
+SHA-256 `1d72b9702518a1ac333eb7ba568f6d0be3775dc70b9d22f3f51d00998c63071d`.
+The report's default seed field is unused for replay; the input JSON is the
+authority for this run.
+
+The final-source rerun of all six bridge harnesses also exited 0: **69 tests**
+(32 + 7 + 7 + 8 + 7 + 8), with the live pinned reference enabled. Respective
+suite times were 84.914, 12.967, 19.087, 24.734, 25.253, and 31.965 seconds.
+These include actual Lean/Rocq/native invocations and deliberate mutations,
+not merely parser-unit tests. The implementation snapshot was unchanged
+throughout this rerun.
+
+### Final original-checkout build and artifact-cache correction
+
+After the frozen aggregate exited, the original branch fast-forwarded to the
+verified integration commits without changing `Deps/flocq`. A plain Lake build
+reported success, but immediately executing the demo failed: the user's global
+`LAKE_ARTIFACT_CACHE=true` allowed cached imports to remain outside the usual
+`.lake/build` paths. Missing `Bits.olean`, `Raux.olean`, and `FloatSpec.olean`
+were directly observed. That build-only result is not a working-checkout pass.
+
+A sequential build with artifact caching disabled for that command rebuilt
+the affected modules and passed all 6,215 jobs. The project now sets
+`restoreAllArtifacts := true`, the Lake 4.34 package option documented in
+`Lake/Config/PackageConfig.lean`, so external fixture consumers receive local
+imports even with the global cache still enabled. No user environment setting
+was changed. With the ordinary environment restored, a further 6,215-job
+build, the actual five-part demo, the integer-comparison consumer, compiled
+trust audit, and all 69 replay cases/kernel assertions passed. The lakefile's
+complete LSP error diagnostics are clean. This build-configuration repair
+does not change any mathematical definition or theorem statement.
+
+The rebuild log is
+`/private/tmp/floatspec-final-materialized-macos-build-20260920.log`; the final
+replay report is `/private/tmp/floatspec-final-materialized-replay-20260920/report.json`.
+This last replay records the new configuration fingerprint separately from
+the earlier implementation-only verification receipts: all 69 cases passed
+in 17.767 seconds with SHA-256
+`a582d3e7d26c8a2df150424f298b5bb0e4c0e71a61b9c7a958b0713ab300aa10`.
+
+### Reviewable fork and executable introduction
+
+The user authorized creating `alok/FloatSpec` after the BAIF push returned
+403. The fork exists, and verified integration commits are pushed to
+`origin/codex/astra-flocq-audit`. `origin`, `remote.pushDefault`, the branch's
+tracking remote, and the GitHub CLI default now use the user's fork. BAIF
+remains named `upstream`; no history was force-pushed and no account changed.
+
+Fork CI is **not green**: runs `35482067588` and `35482293729` fail in the
+Lean action's automatic mathlib-cache step, before project compilation.
+The cache refuses the project toolchain `4.34.0` because the retained mathlib
+pin declares `4.34.0-rc2`. This is not a Lean source diagnostic or a passing
+Linux build. The proposed narrow fix is disabling that incompatible cache
+and building the reviewed dependency sources; user approval was requested
+under the CI skill's approval rule. No dependency or toolchain pins were
+changed to conceal the mismatch.
+
+The five-part `scripts/fixtures/GuidedDemo.lean` executes exact addition,
+all rounding modes, double rounding, signed zero/NaN ordering, and canonical
+raw validity. Every example has a closed kernel assertion plus a compiled
+runtime check. It ran successfully and is included in CI and the aggregate
+runner. The linear guide links to `DEMO_EXEMPLARS.md`, which explains the
+code-reading route and records precisely which external examples were read
+versus built. Pinned Flocq `Compute.v` and `Average.v` both compiled with
+Rocq 9.2 (deprecation warnings only). FloatLib's presentation was inspected,
+not built or certified here.
+
+### Independent pinned Rocq proof-object check
+
+Rocq 9.2's standalone checker completed successfully over every built source
+module and its recursive dependencies:
+
+```sh
+rg --files src -g '*.v' | sed 's#^src/#Flocq/#; s#\.v$##; s#/#.#g' |
+  xargs /opt/homebrew/bin/coqchk -silent -o -Q src Flocq
+```
+
+This ran in `/private/tmp/flocq-audit-pinned-7aab8f55`, with no `-admit` or
+`-norec` option. The checkout remained clean at the pinned commit. Its 34
+tracked `.v` files plus generated `Version.v` give 35 built modules, all
+matched to existing Lean files (Core/Core maps to the Core umbrella).
+The reading guide's older count of 36 is corrected, not turned into a
+completion percentage. Log:
+`/private/tmp/floatspec-pinned-rocq-kernel-check-20260920.log`.
+
+The context report lists classical real/function-extensionality assumptions
+and standard Rocq primitive integer/float axioms; it does not claim native
+hardware is proved axiom-free. It reports no type-in-type, unsafe (co)fixpoint,
+or assumed-positivity dependencies. This is reference proof-object checking,
+not a proof that the Lean port is equivalent to that reference.
+
+### Remaining adjacent API gaps reproduced
+
+The integer-cast comparison mismatch was reproduced before the repair above:
+`/private/tmp/RcompareIZRContract.lean` failed with `Int` versus `Prop` while
+the paired Rocq consumer passed. The same Lean client passes after `0f3f2550`.
+
+`BinarySingleNaN.Beqb`, `Bltb`, and `Bleb` still use real-valued decisions.
+`/private/tmp/BooleanComparisonExecutionGap.lean` confirms even a compiled
+signed-zero equality client fails on `noncomputable`. Their inspected finite
+correctness statements agree with the source Boolean contracts, but the new
+executable `Bcompare` does not by itself make those separate APIs executable.
+This is an execution gap, not a demonstrated incorrect Boolean result.
+
+### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In
 particular, repairing `valid_binary_SF` and its consumers does not certify

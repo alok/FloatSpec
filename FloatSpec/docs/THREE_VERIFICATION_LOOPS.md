@@ -1,5 +1,11 @@
 # Run the three verification loops
 
+The package sets `restoreAllArtifacts := true`: standalone `lake env lean`
+fixtures require import artifacts in the normal build directory. With a global
+`LAKE_ARTIFACT_CACHE=true` and restoration disabled, Lake can report a successful
+build while those fixtures fail on missing `.olean` files. This setting keeps
+the user's cache enabled while making its outputs available to the fixtures.
+
 The aim is not to trust two matching programs blindly. We check mathematical
 invariants on each side, then compare the implementations on identical inputs,
 then turn the reference observations into checked Lean regression statements.
