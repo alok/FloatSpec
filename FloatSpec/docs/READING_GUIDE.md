@@ -15,190 +15,68 @@ This guide follows those jobs in order. The detailed
 [independent continuation audit](ASTRA_AUDIT_2026-09-19.md) retain the
 declaration-by-declaration findings and historical milestones.
 
-## Wake-up summary — September 20, 2026, 12:42 UTC
+## Wake-up summary — September 20, 2026, 12:48 UTC
 
-**Where to start:** run the seven-part demo above, then read sections 1–6 below.
-The [exemplar guide](DEMO_EXEMPLARS.md) adds small examples explaining why a
-theorem needs its hypotheses. This summary records the current milestone;
-the [audit ledger](ASTRA_AUDIT_2026-09-19.md) keeps the detailed history,
-including failed runs and the exact source hashes tested.
+**The port builds and runs on macOS with Lean 4.34.0, but it is not yet a
+fully source-audited port.** All 35 built Flocq module names have Lean
+counterparts. The remaining work is largely checking that the existing
+definitions and theorem statements really match Flocq, exercising their
+boundaries, and closing four explicit native/decoder proof obligations.
+A file-count or successful build is not a completion percentage.
 
-**Newest checked change:** all 33 remaining primitive definitions and four
-arithmetic notation instances now execute at their existing names. Only
-unnecessary `noncomputable` markers changed; the numerical bodies and theorem
-types did not. Paired Lean/Rocq fixtures check 37 literal entry-point results,
-three decomposition exponents, and a raw-versus-canonical multiplication
-example. The full **67-test harness** and **6,216-job macOS build** pass.
-Fourteen deliberate API/exponent mutations are rejected in both Lean paths,
-and a restored noncomputable dependency is rejected by the executable fixture.
+**Latest pushed checkpoint:**
+[`e18434ad`](https://github.com/alok/FloatSpec/commit/e18434ad).
+All 33 remaining primitive definitions and four arithmetic notation instances
+now execute at their original names. Their formulas, types, and proofs are
+unchanged; only unnecessary `noncomputable` markers were removed.
+The full **6,216-job macOS build**, **67-test harness**, paired Lean/Rocq
+37-entry fixture, three decomposition-exponent checks, and fourteen deliberate
+API/exponent mutations pass. Compiled trust still finds exactly four named
+proof debts; 218 pinned source anchors validate.
 
-Read [one operation, three interfaces](DEMO_EXEMPLARS.md#one-operation-three-interfaces)
-to understand why raw `1.5 × 1.5` returns `(9,-2)`, while converting first
-and multiplying primitive values returns a canonical encoding of 2.25.
-The three new bridge families observe all these layers separately.
-The wider **4,970-case**, seed `844763` run is still **in progress** at this
-checkpoint—not a claimed pass. Its eventual receipt will be added to the ledger.
+**The idea that makes the latest work understandable:** a raw encoding, a
+canonical floating-point value, and a native machine float are different
+interfaces. Raw `(3,-1)` denotes 1.5 but is not canonical binary64. Squaring
+it with the raw helper gives `(9,-2)`; converting first and using the primitive
+API gives canonical 2.25. Both are intentional source behavior. Read
+[one operation, three interfaces](DEMO_EXEMPLARS.md#one-operation-three-interfaces)
+for the paired, executable example.
 
-**The preceding conversion repair:** total primitive conversion now follows Rocq's
-unsigned wrapping and two rounding stages. Previously `SF2Prim` rejected a
-noncanonical encoding such as `3 × 2^-1` as NaN; it now produces canonical
-`1.5`, matching the source. This conversion is deliberately different from
-the rejecting validity adapter. Existing valid-input roundtrip proofs stay
-closed, and no new proof debt is introduced.
+That distinction has caught real bugs. The previous raw comparator treated
+two numerically equal noncanonical encodings as equal, unlike the source's
+encoding order. The previous numeric converter rejected them as NaN instead
+of performing unsigned wrapping and two rounding stages. Both repairs are
+pushed, with saved failing inputs and passing reruns. The seven-part demo
+includes the conversion and double-rounding examples.
 
-The [new walkthrough](DEMO_EXEMPLARS.md#converting-a-raw-encoding-is-not-the-same-as-validating-it)
-explains why `(2^53+5) × 2^-1077` converts differently from one-shot rounding.
-The runnable demo now prints this as its seventh example. Paired Lean/Rocq
-fixtures check **31 literal conversions**. A fresh **866-case** three-path
-grid includes 689 invalid raw inputs converted to valid numeric outputs;
-a separate **576-case** deterministic replay focuses on rounding/underflow
-boundaries. Both runs generate passing kernel equalities. The full **63-test
-harness**, including three deliberately wrong conversion implementations,
-and **6,216-job macOS build** pass. The four original failures are permanently
-replayable; finite agreement is still not a universal source-equivalence proof.
+**Currently running, not yet passed:** a frozen-snapshot **4,970-case**
+cross-test, seed `844763`, through the three new primitive test families.
+The [audit ledger](ASTRA_AUDIT_2026-09-19.md) records its source hash,
+completion status, earlier broad tests, and failed attempts. Counts from
+different snapshots must not be silently added into a claim that every
+test ran on the latest commit.
 
-**The preceding FLT checkpoint:** eleven theorem signatures no longer demand
-positive precision where Flocq does not. Ten now state ordinary mathematical
-propositions instead of wrapping pure values in Hoare triples. Their proofs
-remain closed, callers are migrated, and the numerical definitions are
-unchanged. The source's genuinely restricted reverse inclusions stay restricted.
+**Next confirmed interface finding:** Flocq's predicate-to-rounding
+constructors return a value/function *with its proof*. The current Lean
+exports return bare values and fall back to zero if no witness exists.
+Two source-shaped clients pass in Rocq and fail in Lean. A closed scratch
+repair is ready, but production is frozen while the arithmetic run finishes.
+This is a source-interface discrepancy, not a disproof of the old
+conditional theorem.
 
-The [new explanation](DEMO_EXEMPLARS.md#when-a-precision-assumption-mattersand-when-it-does-not)
-works through a tiny counterexample: at base two and precision zero, one is
-in FIX but not FLT, even though the reverse theorem's size bound holds.
-Both Lean and Rocq prove it. Eleven unrestricted typed clients compile in
-both languages, and the selected premise checker now has **86 guards**.
-A fresh frozen-snapshot run passes **1,813 differential cases and 1,813
-generated kernel equalities**, seed `842729`, including 127 format cases
-with nonpositive precision. The **6,216-job macOS build**, 218 pinned source
-anchors, and compiled trust gate pass with the same four named proof debts.
-The full 60-test harness also passes on this checkpoint.
-This repairs theorem-interface fidelity; it is not a new numerical algorithm.
+To understand the system rather than just the status, continue with
+sections 1–6 below. The [demo guide](DEMO_EXEMPLARS.md) supplies small
+runnable examples; [the three-loop guide](THREE_VERIFICATION_LOOPS.md)
+explains the larger tests. Whole-library theorem review remains incomplete.
+Local macOS success is not a green hosted-CI claim: fork CI has a separate
+known dependency-cache/toolchain mismatch.
 
-**The preceding primitive checkpoint:** raw primitive comparison now matches Rocq's
-encoding order. The encodings `3 × 2^-1` and `6 × 2^-2` are both 1.5,
-but the raw source comparator says greater-than because it compares exponent
-then mantissa. The old Lean helper compared their real values instead.
-All twelve existing comparison APIs now execute at their original names;
-the native-model comparison proofs remain closed and their public statements
-are unchanged. The
-[new walkthrough](DEMO_EXEMPLARS.md#two-equal-values-that-the-raw-source-api-compares-differently)
-shows why this is not a failure on valid binary64 operands and why converting
-invalid encodings into NaN can hide a raw-interface bug.
-
-The fresh run passes **6,116 differential cases and 6,116 generated kernel
-equalities**, seed `841709`. It includes 1,425 raw/primitive cases with
-separate validity observations: 416 valid input pairs and 1,009 pairs with
-a rejected operand. Paired Lean/Rocq fixtures check 24 literal cases, and
-twelve deliberate mutations verify that each comparison export is observed
-independently. The full 60-test harness and 6,216-job macOS build pass.
-There are still four named proof debts, with none added by this change.
-
-**The preceding normalization checkpoint:** the remaining entry points run
-without changing their bodies or types. The bridge observes the full-payload,
-SingleNaN, and legacy raw APIs separately, plus the explicit validity adapter.
-All **9,346 differential cases and generated kernel equalities** pass, seed
-`840691`; the paired pure fixtures also pass 150 literal normalization
-observations and six validity-boundary cases. The new
-[walkthrough](DEMO_EXEMPLARS.md#the-same-number-through-three-normalization-entry-points)
-explains halfway rounding and why an invalid format parameter can still
-produce a valid zero.
-
-**The preceding FTZ checkpoint:** two inclusion theorems now have the same
-unrestricted precision parameter as Flocq. Their former extra
-`Fact (0 < prec)` premise was unnecessary. The existing forward proofs remain
-closed, while the source's stronger assumptions on the reverse direction are
-preserved. Paired Lean/Rocq clients and universal zero examples pass; the
-premise checker now explicitly tests this legacy `Fact` form. A fresh run
-passes **1,724 differential cases and 1,724 kernel equalities**, seed `839681`.
-The executable definitions are unchanged.
-
-**The preceding Calc milestone:** square root's bracket theorem no longer requires
-an extra valid-format premise absent from Flocq. Its existing proof still
-closes. The important exponent restriction on the *core* routine remains:
-the new independent tests demonstrate that dropping it gives a false bracket.
-Pure Lean and Rocq each pass **8,640 division and 2,496 square-root bracket
-checks**, using integer inequalities instead of another divider or square-root
-algorithm as the oracle. Deliberately corrupting either the returned mantissa
-or location breaks the checks. A fresh serial run passes **1,565 differential
-cases and 1,565 kernel equalities**, seed `838673`.
-
-The preceding division repair exposes the source's digit-count magnitude
-bounds and direct quotient-location proposition, without a dummy computation
-or redundant radix argument. Its **1,994-case** differential run and ten-case
-all-mode IEEE replay passed on that checkpoint. Neither repair changes the
-numerical algorithms or adds a proof hole.
-
-**Two actual numerical bugs were found and repaired earlier.** First, signed
-shifting and floor division were conflated on negative raw mantissas:
-`shift(-1) = 0`, but `(-1) / 2 = -1`. That produced wrong raw-rounding
-results. Second, at precision zero an overflow helper returned mantissa zero
-where Flocq's positive conversion returns one; a later conversion hid the
-difference. All **197** saved rounding counterexamples and **87** saved
-overflow counterexamples replay successfully. These findings concern total
-raw interfaces outside their real-value theorem hypotheses, not demonstrated
-failures of ordinary valid binary32/binary64 arithmetic.
-
-**Recent execution coverage:**
-
-| Slice | Observed result |
-|---|---|
-| Full library, test library, and executable | Lean 4.34.0 on macOS arm64: 6,216 build jobs pass after enabling the remaining primitive entry points |
-| Primitive execution entry points | 33 definitions and four notation instances execute; paired literal fixtures and 14 mutation controls pass; broader 4,970-case grid running |
-| Total primitive conversion | 31 paired literal cases; 866 broad cases plus 576 targeted rounding-boundary executions, with kernel equalities; four saved failures now pass |
-| FLT format relationships | Eleven unrestricted clients in each prover, a closed reverse-inclusion counterexample, and 1,813 fresh differential cases/kernel equalities |
-| Primitive/raw and neighboring comparison APIs | 6,116 differential cases and kernel equalities; 1,425 observe twelve primitive/raw exports separately |
-| SingleNaN helper exports | 1,900 differential cases and kernel equalities; every exported helper observed separately |
-| `frexp`'s wider parameter domain | 4,169 differential cases and kernel equalities, including 3,455 with `prec ≥ emax` |
-| Independent decomposition laws | Lean and Rocq each check 6,772 encodings: 2,086 valid finite cases and 4,686 rejected raw encodings |
-| Independent Calc brackets | Lean and Rocq each check 8,640 division and 2,496 square-root cases, including exact midpoint locations |
-| Remaining normalization entry points | 3,004 three-way cases; paired fixtures separately check 150 literal observations |
-| Raw rounding plus validity adapter | 6,342 three-way cases; rejection and an actual valid NaN have distinct observations |
-| Test-harness checks | Latest full core-harness run: 67 tests pass, including independent primitive API/exponent mutations and noncomputable-client rejection |
-| Compiled trust/source metadata | 13,534 source declarations in 58 modules; four unchanged named proof debts; 218 checked source anchors |
-
-These are separate, snapshot-bound receipts, **not** a claim that every row
-was rerun after every subsequent type-only change. Earlier broad runs cover
-27,771 core cases, 490 all-mode IEEE cases, 200,200 native SingleNaN arithmetic
-observations, and 5,385 independent multiplication-error cases. Their source
-hashes and seeds remain in the ledger. An initial helper run that stopped at
-Lean's exponentiation limit is still recorded as an error, despite its
-1,650 agreeing cases; a bounded test-only adjustment and regression enabled
-the successful complete rerun.
-
-**A useful example to understand:** one-bit precision with `emax = 2` can
-represent one but not one-half. Its `frexp(1)` is therefore `(1, 0)`, not
-`(1/2, 1)`. Flocq only promises a fraction in `[1/2, 1)` when `2 < emax`.
-The exact reconstruction property still holds. Paired runnable examples also
-explain the finite-input condition on alternate ulp and the positive-input
-condition on the specialized predecessor.
-
-
-**Next confirmed interface finding:** Flocq's predicate-to-rounding constructors
-return a value/function together with a proof that it satisfies the predicate.
-The Lean exports currently return bare values and supply a default zero if
-the relation has no witness. Two paired source-shaped clients compile in Rocq
-but fail in Lean. A proof-carrying scratch repair typechecks, but is not yet
-applied to production while the arithmetic snapshot is under test.
-The separate Claude comparison branch remains preserved; its real-value
-`*C` APIs are not merged because they preserve the raw mismatch.
-
-**What remains overall:** whole-library source-signature review is incomplete, and
-the four native/decoder proof obligations remain. The 86 premise guards and
-paired typed clients catch selected interface regressions, not every possible
-deviation. Fork CI has a separate known dependency-cache/toolchain mismatch;
-a local macOS pass is not a green-CI claim. Compilation, finite agreement,
-closed Lean proofs, and universal source equivalence remain distinct claims.
-
-Reviewable milestones are pushed to
-[`alok/FloatSpec`, branch `codex/astra-flocq-audit`](https://github.com/alok/FloatSpec/tree/codex/astra-flocq-audit).
-Your fork is the default remote; BAIF remains available as `upstream`.
-The pre-existing `Deps/flocq` modification is preserved.
-Work now continues in an isolated worktree: a separate Claude daemon changed
-the shared checkout during a test. That interrupted run and the affected
-harness run remain errors; the isolated build, full harness, and final serial
-grid were rerun successfully. The daemon's separate changes were preserved,
-not silently included in these results.
+Reviewable work is on
+[`alok/FloatSpec:codex/astra-flocq-audit`](https://github.com/alok/FloatSpec/tree/codex/astra-flocq-audit).
+Your fork is the default remote and BAIF remains `upstream`.
+The original checkout, independent Claude changes, and modified
+`Deps/flocq` are preserved; current work uses an isolated worktree and a
+separate clean pinned Flocq reference.
 
 ## 1. Start with one small rounding problem
 
@@ -570,8 +448,9 @@ changed surfaces have been checked.
 
 Source links make that review navigable. `@[flocq_source]` records a pinned
 Coq path, line, and name; `@[flocq_local]` explains a Lean-only helper.
-Eleven modules currently enforce strict public-definition classification.
-The compiler-backed validator checks all 190 registered anchors, including
+Twelve source files enable strict public-definition classification; a targeted
+section of `Binary.lean` additionally enables the same check.
+The compiler-backed validator checks all 218 registered anchors, including
 combined attributes and later attribute commands. These links are metadata,
 not a proof that bodies or theorem signatures correspond.
 
