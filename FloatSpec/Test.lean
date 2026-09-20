@@ -18,6 +18,7 @@ import FloatSpec.Test.MagSource
 import FloatSpec.Test.PffTotality
 import FloatSpec.Test.PffLogTotality
 import FloatSpec.Test.PffExecution
+import FloatSpec.Test.PffAuxExecution
 import FloatSpec.Test.PffSourceContracts
 import FloatSpec.Test.PrimFloatSource
 import FloatSpec.Test.RoundingModeSource

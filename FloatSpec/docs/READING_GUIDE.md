@@ -15,7 +15,7 @@ This guide follows those jobs in order. The detailed
 [independent continuation audit](ASTRA_AUDIT_2026-09-19.md) retain the
 declaration-by-declaration findings and historical milestones.
 
-## Wake-up summary — September 20, 2026, 16:01 UTC
+## Wake-up summary — September 20, 2026, 16:16 UTC
 
 **The port builds and runs on macOS with Lean 4.34.0, but it is not yet a
 fully source-audited port.** All 35 built Flocq module names have Lean
@@ -26,9 +26,9 @@ File coverage is not a completion percentage.
 The latest verified library and tests are on the
 [review branch](https://github.com/alok/FloatSpec/tree/codex/astra-flocq-audit).
 Run `lake exe floatspec_demo` for the seven-part native executable.
-Its examples and the **6,221-job build** pass. Fresh compiled checks cover
+Its examples and the **6,222-job build** pass. Fresh compiled checks cover
 **13,553 declarations / 58 modules**, find exactly the four recorded proof
-debts, and validate **262 pinned source anchors**.
+debts, and validate **265 pinned source anchors**.
 
 The main conceptual repair is separating a **raw encoding**, a **canonical
 value**, and a **native machine float**. Raw `(3,-1)` denotes 1.5 but is not
@@ -117,6 +117,17 @@ All **16** harness tests pass: every deliberately corrupted observation
 column is detected in both Lean paths, compiled-only corruption is reported
 and replayed, matching wrong outputs fail the independent oracle, and a
 false generated Lean regression is rejected by the kernel.
+
+Seven more auxiliary integer helpers now execute too. A second profile
+passes **2,216** three-path cases and kernel equalities, with **11,872**
+independent assertions about bounds and normalization. Its source exports
+are `make_bound`, `bsingle`, and `bdouble`; the signed-precision normalizer is
+explicitly an adapter. Separately, **70,227** exact-rational cases check the
+Lean-only comparison/min/max helpers. The distinction matters: a legacy
+helper called `pff_normalize` is merely the identity, not normalization.
+Its old misleading comment is corrected, and a closed example shows that
+it leaves `(1,0)` unchanged where actual normalization yields `(4,-2)`.
+No proof about identity is counted as a normalization proof.
 
 Reviewable work is on
 [`alok/FloatSpec:codex/astra-flocq-audit`](https://github.com/alok/FloatSpec/tree/codex/astra-flocq-audit).

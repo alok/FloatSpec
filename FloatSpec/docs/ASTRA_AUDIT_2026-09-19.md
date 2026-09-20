@@ -2831,6 +2831,56 @@ proofs, source anchors, and whole-library source equivalence remain distinct
 claims. No complete Pff theorem audit or normalized-carrier equivalence is
 claimed.
 
+### September 20, 16:16 UTC — execute auxiliary bounds; separate identity from normalization
+
+Seven more integer-only auxiliary entry points now execute with unchanged
+bodies/types: `make_bound`, `bsingle`, `bdouble`, `PFnormalize`,
+`pff_compare`, `pff_max`, and `pff_min`. The pre-change native client failed
+at all seven and the identical client now returns the expected observations.
+Three actual source exports receive pinned anchors; the indexed normalizer
+and local numerical helpers are explicitly classified as adapters/local
+definitions. A misleading comment claiming lowercase `pff_normalize`
+matched normalization was false: it is the identity. Its documentation and
+classification are corrected without silently changing a compatibility API.
+A closed regression distinguishes identity `(1,0)` from actual normalized
+`(4,-2)`. Normality documentation now includes the mantissa requirement.
+
+Verified on source/configuration SHA-256
+`383e8d3ec6c31be1bb8fae93b3f04d531acb75274b260fd0c5a19e750b9ad51b`:
+
+- Full macOS Lean 4.34 build passes **6,222 jobs**;
+  `/private/tmp/floatspec-pff-aux-full-build-20260920.log`.
+- Source-bound/adapter profile passes **2,216** compared, compiled and
+  bootstrapped kernel cases, seed **852017**, ten columns, 252.078 seconds,
+  with **11,872** independent exact-rational/bound assertions. Complete
+  evidence: `/private/tmp/floatspec-pff-aux-integrated-20260920/`.
+- The pure Lean oracle passes **70,227** comparison/min/max cases at radices
+  two, three and ten. Its 225-case kernel grid, identity counterexample and
+  bound literals have printed axiom lists excluding `sorryAx`. Paired Rocq
+  bound and normalization fixtures pass. Receipts:
+  `/private/tmp/floatspec-pff-aux-lean-20260920.log` and
+  `floatspec-pff-aux-rocq-20260920.log`.
+- All **eight** auxiliary harness tests pass, including live corruption of
+  all ten differential columns, matching-wrong-output rejection, and
+  deliberate failure of Lean kernel/runtime and Rocq source-bound oracles.
+  Receipt: `/private/tmp/floatspec-pff-aux-harness-v2-20260920.log`.
+  The initial harness run failed because it expected different Lean error
+  wording; its log is retained. The repaired test also proves the mutated
+  finite claim is false, rather than treating any compiler failure as proof
+  of a valid negative control.
+- Fresh compiled trust is still **13,553 declarations / 58 modules / four
+  unchanged manifest-only debts**, with no runtime overrides. Fresh export
+  and validation cover **265** pinned anchors. Receipts use prefix
+  `/private/tmp/floatspec-pff-aux-{trust,source-metadata,anchors}-20260920`.
+- Changed source and finite-test files have complete zero-error LSP
+  diagnostics. Python compilation, shell syntax, generated status and
+  whitespace checks pass. The runnable seven-part demo passes again.
+
+These results distinguish source exports, explicitly converted compatibility
+arguments, and Lean-only exact-value helpers. They do not establish a whole
+auxiliary-module source equivalence. The separate older full runner is still
+active on its frozen snapshot; its aggregate result remains pending.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In

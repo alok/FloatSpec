@@ -4,6 +4,7 @@ import FloatSpec.src.Core.Round_NE
 import Mathlib.Data.Real.Basic
 import Std.Do.Triple
 import FloatSpec.src.SimprocWP
+import FloatSpec.Linter.CoqSourceLinter
 
 -- Auxiliary functions for Pff to Flocq conversion
 -- Translated from Coq file: flocq/src/Pff/Pff2FlocqAux.v
@@ -97,16 +98,17 @@ abbrev PFcanonic (beta : Int) [ValidRadix beta] (b : Fbound)
     (_p : Int) (f : PffFloat beta) : Prop :=
   Fcanonic (beta := beta) beta b f
 
-/-- Pff normality for this auxiliary bridge: the float is bounded and its
-    exponent is at or above the normal exponent threshold.  The strict form is
-    equivalent over integers to `-b.dExp ≤ f.Fexp`, but matches the
-    exponent lower-bound lemma `FloatFexp_gt`. -/
+/-- Pff normality: boundedness together with a sufficiently large absolute
+mantissa after multiplication by the radix. An exponent lower bound alone
+does not imply this predicate. -/
 abbrev PFnormal {beta : Int} [ValidRadix beta]
     (b : Fbound) (f : PffFloat beta) : Prop :=
   Fnormal (beta := beta) beta b f
 
--- Minimal `make_bound` used in Coq proofs
-noncomputable def make_bound (beta p E : Int)
+/-- Source bound construction, including the positive-carrier fallback at
+negative precision and the absolute exponent bound. -/
+@[flocq_source "src/Pff/Pff2FlocqAux.v" 156 "make_bound"]
+def make_bound (beta p E : Int)
     (hβ : 1 < beta := by omega) : Fbound :=
   let v := if p < 0 then 1 else Zpower_nat beta p.natAbs
   let de := if E ≤ 0 then -E else E
@@ -122,8 +124,10 @@ noncomputable def make_bound (beta p E : Int)
   Bound v de hv hd
 
 -- Predefined single/double bounds from Coq
-noncomputable def bsingle : Fbound := make_bound radix2 24 (-149) (by simp [radix2])
-noncomputable def bdouble : Fbound := make_bound radix2 53 1074 (by simp [radix2])
+@[flocq_source "src/Pff/Pff2FlocqAux.v" 193 "bsingle"]
+def bsingle : Fbound := make_bound radix2 24 (-149) (by simp [radix2])
+@[flocq_source "src/Pff/Pff2FlocqAux.v" 201 "bdouble"]
+def bdouble : Fbound := make_bound radix2 53 1074 (by simp [radix2])
 
 -- First missing theorem: make_bound_Emin
 noncomputable def make_bound_Emin_check (beta p E : Int) : Id Unit :=
@@ -288,9 +292,11 @@ noncomputable def mk_from_generic (beta : Int) [ValidRadix beta] (b : Fbound) (p
       Ztrunc (FloatSpec.Core.Generic_fmt.scaled_mantissa beta (FLT_exp (-b.dExp) p) r)
     , Fexp := cexp beta (FLT_exp (-b.dExp) p) r }
 
-/-- Auxiliary normalization used by this Pff/Flocq bridge. It keeps the real
-value and stores the canonical FLT exponent chosen by `mk_from_generic`. -/
-noncomputable def PFnormalize (beta : Int) [ValidRadix beta] (b : Fbound) (p : Int) (f : PffFloat beta) : PffFloat beta :=
+/-- Indexed compatibility normalization using the absolute integer precision.
+The source's natural precision is supplied by `p.natAbs`; canonical-output
+claims require the source format/boundedness premises. -/
+@[flocq_local "Indexed Pff normalization adapter with integer precision converted through natAbs"]
+def PFnormalize (beta : Int) [ValidRadix beta] (b : Fbound) (p : Int) (f : PffFloat beta) : PffFloat beta :=
   Fnormalize (beta := beta) beta b p.natAbs f
 
 /-- Pff-side ulp in the auxiliary `PffFloat beta` model. Zero uses the minimum
@@ -1971,8 +1977,10 @@ theorem format_is_pff_format_can (beta : Int) [ValidRadix beta] (b : Fbound) (p 
 variable (beta : Int) [ValidRadix beta]
 
 -- Auxiliary conversion functions
-/-- Pff normalization operator for this auxiliary compatibility leaf.
-    It matches the current `Fnormalize` behavior in Pff.lean. -/
+/-- Legacy identity adapter, retained for compatibility. Despite its historical
+name it does not normalize; use `PFnormalize` or the source-facing
+`FloatSpec.Pff.Source.Fnormalize` with an explicit bound and precision. -/
+@[flocq_local "Legacy identity adapter; not the source Fnormalize algorithm"]
 def pff_normalize (f : PffFloat beta) : PffFloat beta := f
 
 def pff_abs (f : PffFloat beta) : PffFloat beta :=
@@ -1987,7 +1995,8 @@ def pff_opp (f : PffFloat beta) : PffFloat beta :=
     - 0 if x = y
     - positive if x > y
     This comparison uses the effective signed mantissas scaled to a common exponent. -/
-noncomputable def pff_compare (x y : PffFloat beta) : Int :=
+@[flocq_local "Lean numerical comparison helper; not a separately exported Pff declaration"]
+def pff_compare (x y : PffFloat beta) : Int :=
   let min_exp := min x.Fexp y.Fexp
   -- Scale both to the minimum exponent
   let x_scaled := x.Fnum * Zpower_nat beta (Int.toNat (x.Fexp - min_exp))
@@ -1997,15 +2006,17 @@ noncomputable def pff_compare (x y : PffFloat beta) : Int :=
   else 0
 
 /-- Maximum of two PffFloats based on their real values. -/
-noncomputable def pff_max (x y : PffFloat beta) : PffFloat beta :=
+@[flocq_local "Lean numerical maximum with left-biased equal-value representation"]
+def pff_max (x y : PffFloat beta) : PffFloat beta :=
   if pff_compare beta x y ≥ 0 then x else y
 
 /-- Minimum of two PffFloats based on their real values. -/
-noncomputable def pff_min (x y : PffFloat beta) : PffFloat beta :=
+@[flocq_local "Lean numerical minimum with left-biased equal-value representation"]
+def pff_min (x y : PffFloat beta) : PffFloat beta :=
   if pff_compare beta x y ≤ 0 then x else y
 
 -- Auxiliary properties
-/-- Normalization is idempotent: normalizing twice is the same as normalizing once. -/
+/-- The legacy identity adapter is idempotent; this is not a normalization law. -/
 theorem pff_normalize_idempotent (f : PffFloat beta) :
   pff_normalize beta (pff_normalize beta f) = pff_normalize beta f := by
   rfl

@@ -863,6 +863,40 @@ reporting. Paired `PffExecution` fixtures exercise all eighteen newly
 computable existing APIs; separate `PffLogTotality` proofs cover the
 noncomputable real-logarithm convention.
 
+### Auxiliary Pff bounds and local numerical helpers
+
+`scripts/pff_aux_bridge.py` adds ten columns for actual `make_bound`,
+`bsingle`, `bdouble`, and two normalized records through `PFnormalize`.
+Unlike the unrestricted Pff record profile above, this profile rejects
+radices below two because `make_bound` exports a valid-radix carrier.
+Signed precision and exponent bounds remain unrestricted. The adapter's
+reference explicitly uses `Z.abs_nat precision`; the report distinguishes
+this mapping from the three source exports.
+
+```sh
+uv run scripts/pff_aux_bridge.py --flocq-dir /path/to/pinned-flocq \
+  --seed 852017 --samples 200 --batch-size 50
+FLOCQ_AUDIT_DIR=/path/to/pinned-flocq uv run scripts/test_pff_aux_bridge.py -v
+lake env lean FloatSpec/Test/PffAuxExecution.lean
+```
+
+The fixed corpus contains 2,016 boundary cases, followed by seeded samples.
+Negative/zero precisions, both signs of exponent bounds, exponent endpoints
+near subnormal limits, zero, and 192-bit random mantissas are retained.
+Independent exact-rational checks cover value preservation, bound fields,
+zero normalization and conditional canonical results. All ten differential
+columns have live mutation tests. The kernel/runtime local-helper oracle
+also rejects reversed comparisons; a separate closed kernel statement
+positively establishes that the corrupted finite claim is false. A failed
+compiler invocation alone is not that evidence.
+
+The pure Lean fixture independently checks 70,227 numerical comparison,
+maximum and minimum cases at radices two, three and ten, plus 225 smaller
+kernel cases and all seven newly executable entry points. Those local
+helpers are not separately invented Flocq exports. Paired Rocq fixtures
+check the source bounds and a nontrivial normalization. The legacy identity
+helper's idempotence theorem is explicitly not a normalization theorem.
+
 ## 11. What this still does not establish
 
 The expanded combined runner completed at commit `ba3e2a8b`, seed `961703`,

@@ -39,6 +39,33 @@ radices and invalid later-theorem preconditions, and checks exact-rational
 invariants under stated premises. See the running ledger for completed-run
 counts; the surrounding Pff theorem library remains unreviewed.
 
+## Pff auxiliary bounds and local helpers
+
+Three newly executable source exports have pinned anchors in
+`Pff2FlocqAux.v`: `make_bound` (156), `bsingle` (193), and `bdouble` (201).
+The constructor takes a valid radix but any signed precision and exponent
+bound. At negative precision, source integer exponentiation followed by
+positive-carrier conversion gives mantissa bound one, not radix-to-absolute-
+precision. Both signs of the exponent bound produce the same nonnegative
+`dExp`; the lower permitted exponent is its negation. The paired fixture
+pins these conventions and both predefined formats.
+
+The indexed `PFnormalize` remains a **local adapter**, converting integer
+precision through `natAbs`. Its cross-test reference explicitly applies
+`Z.abs_nat` before calling Pff's natural-precision normalizer. This is not a
+claim that the adapter and the source have identical signatures. The older
+lowercase `pff_normalize` is only identity; its documentation and local
+classification now say so. A kernel-checked counterexample distinguishes
+it from normalization of `(1,0)` to `(4,-2)`.
+
+Seven definitions lose only unnecessary execution markers: the three source
+bounds, `PFnormalize`, and the local numerical `pff_compare`, `pff_max`,
+`pff_min`. The last three have no separately claimed Flocq export; they are
+tested independently against exact rational values, including equal-valued
+unequal representations and the documented left-biased result on ties.
+All algorithm bodies and type signatures are unchanged. The broader
+auxiliary theorem library has not thereby been source-audited.
+
 ## Pff logarithm: total extensions are observable
 
 Pinned `Pff/Pff.v:27157` uses Rocq Stdlib's `Rpower.ln`, whose definition is
