@@ -937,6 +937,23 @@ FLOCQ_AUDIT_DIR=/path/to/pinned-flocq uv run scripts/test_double_rounding_contra
 These are persistent checks of the reviewed exports, not native real-valued
 execution, exhaustive theorem auditing, or a proof of whole-module equivalence.
 
+### Targeted Pff neighbor premises
+
+The Pff profile now adds one premise-respecting random case for each broad
+random case. Unrestricted random bounds almost never equal `radix ^ precision`,
+so increasing that corpus alone had not increased the conditional neighbor
+coverage. The new generator deliberately chooses that equality, positive
+precision, a bounded signed mantissa and an exponent above the minimum.
+It samples radices 2, 3, 10 and 16, both signs, zero, and the minimum-exponent
+boundary. Its current Nat-transport bound is capped at 4096.
+
+The seed-859111 targeted replay has **200** cases and **1,000** premise-gated
+normalization/neighbor assertions, with all compiled/kernel/Rocq observations
+and all generated Lean equalities passing. The independent assertions check
+canonicality and strict ordering; the exact returned records are compared
+with Flocq. They are not a universal adjacency proof. All **17** Pff harness
+tests pass, including a generator-domain check over 1,000 inputs.
+
 ### Logical-model adapters and integer bit inputs
 
 `model_adapter_bridge.py` observes five paths at both binary32/binary64:

@@ -3163,6 +3163,43 @@ conceptual chapters; detailed chronology stays here. The final seed-859003
 Pff/auxiliary/model-adapter stress pass is running against this frozen source
 hash. Its outcome will be recorded separately, not assumed.
 
+### September 20, 17:48 UTC — target the Pff neighbor premises
+
+The seed-859003 broad Pff run completed **3,472** cases, all three execution
+paths and all generated Lean equalities. It checked **55,012** independent
+arithmetic assertions, but its **3,510** conditional neighbor assertions
+were unchanged from the older smaller random run. Inspection found why:
+the unrestricted bound parameter almost never equals `radix ^ precision`.
+This was a coverage gap, not a source/Lean disagreement.
+
+The corpus now adds targeted valid-format samples alongside the unrestricted
+ones. A deterministic domain test verifies all premises, signs, zero and
+minimum-exponent coverage across 1,000 generated cases. Precision/radix
+choices keep the current Nat-transport bound at most 4096. Larger arbitrary
+integer mantissas remain in the unrestricted corpus.
+
+A separate **200-case**, seed-**859111** targeted replay passes compiled Lean,
+kernel reduction, pinned Rocq and all 200 generated kernel equalities, including
+**1,000** premise-gated canonicality/strict-neighbor checks. All **17** Pff
+harness tests pass (23.465 seconds). Evidence:
+`/private/tmp/floatspec-valid-neighbors-859111/report.json`,
+`/private/tmp/floatspec-valid-neighbors-859111.json`, and
+`/private/tmp/floatspec-final-pff-targeted-controls-20260920.log`.
+Both runs use the unchanged Lean source fingerprint `4295264c…a237`.
+The older 3,472-case receipt used the old generator; the new default adds
+`samples` additional targeted inputs and must not be assigned its old count.
+
+The preceding final rerun also passed all **41** Pff/aux/model/LPO/ULP/
+double-rounding harness tests; the added generator check makes the current
+total 42. Fresh direct execution additionally passed 200,200 SingleNaN and
+100,100 full-source native arithmetic comparisons, 70,227 Pff exact-rational
+helper cases and 60,032 model-adapter inputs / 300,160 observations.
+These use their fixtures' retained seeds and the same frozen Lean hash.
+Receipts have prefix `/private/tmp/floatspec-final-` and suffix
+`-20260920.log`: `pff-controls`, `model-controls`, `lpo-controls`,
+`double-controls`, `ulp-controls`, `native-single`, `native-source`,
+`pff-aux-oracle`, `model-oracle`, and `pff-walkthrough`.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In

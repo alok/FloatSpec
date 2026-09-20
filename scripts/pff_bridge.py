@@ -65,6 +65,30 @@ def expressions(case: Case):
             for index, value in enumerate(case.args)))
 
 
+def valid_neighbor_corpus(seed: int, samples: int):
+    """Sample the neighbor theorem domain, not just unrelated random bounds.
+
+    Keep the Nat transport bound at most 4096: the Rocq adapter currently
+    constructs its positive bound through nat. Large integer mantissas are
+    exercised separately by the unrestricted corpus.
+    """
+    rng = random.Random(seed ^ 0x504646)
+    cases = []
+    for index in range(samples):
+        radix = rng.choice((2, 3, 10, 16))
+        maximum_precision = {2: 12, 3: 7, 10: 3, 16: 3}[radix]
+        precision = rng.randint(1, maximum_precision)
+        bound_num = radix ** precision
+        bound_exp = rng.randint(0, 32)
+        mantissa = (0 if index % 17 == 0 else
+                    rng.choice((-1, 1)) * rng.randint(1, bound_num - 1))
+        exponent = rng.choice((-bound_exp, -bound_exp + 1, rng.randint(-bound_exp, 32)))
+        cases.append(Case(OPERATION, (
+            radix, mantissa, exponent, -mantissa, exponent + 1,
+            rng.randint(0, 16), bound_exp, precision, bound_num - 1)))
+    return cases
+
+
 def corpus(seed: int, samples: int):
     rng = random.Random(seed)
     cases = []
@@ -95,7 +119,7 @@ def corpus(seed: int, samples: int):
                         cases.append(Case(OPERATION, (
                             radix, mantissa, exponent, -mantissa, exponent+1,
                             1, bound_exp, precision, bound_num-1)))
-    return cases
+    return cases + valid_neighbor_corpus(seed, samples)
 
 
 def pair(row, name):

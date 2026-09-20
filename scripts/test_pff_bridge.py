@@ -29,7 +29,7 @@ class ProfileTests(unittest.TestCase):
         self.assertEqual(len(set(pff.COLUMNS)), 56)
         self.assertEqual(pff.corpus(850021, 300), pff.corpus(850021, 300))
         self.assertNotEqual(pff.corpus(850021, 3), pff.corpus(850022, 3))
-        self.assertEqual(len(pff.corpus(850021, 300)), 2772)
+        self.assertEqual(len(pff.corpus(850021, 300)), 3072)
         cases = pff.corpus(850021, 0)
         self.assertIn(CASE, cases)
         self.assertTrue({-3, -1, 0, 1, 2, 3, 10, 16} <= {case.args[0] for case in cases})
@@ -80,7 +80,7 @@ class ProfileTests(unittest.TestCase):
         with pff.profile():
             batches = list(core.case_batches(replay, 200))
         self.assertEqual([c for _, batch in batches for c in batch], cases)
-        self.assertEqual([offset for offset, _ in batches], list(range(0, 2772, 50)))
+        self.assertEqual([offset for offset, _ in batches], list(range(0, 3072, 50)))
         self.assertEqual(len(batches[-1][1]), 22)
 
     def test_all_paths_and_columns_are_checked(self):
@@ -94,6 +94,28 @@ class ProfileTests(unittest.TestCase):
                     self.assertEqual(len(mismatch), 1)
                     self.assertEqual(mismatch[0]["paths"], [path])
                     self.assertEqual(mismatch[0]["case"], pff.asdict(CASE))
+
+    def test_targeted_samples_satisfy_every_neighbor_premise(self):
+        cases = pff.valid_neighbor_corpus(859111, 1000)
+        self.assertEqual(cases, pff.valid_neighbor_corpus(859111, 1000))
+        self.assertNotEqual(cases, pff.valid_neighbor_corpus(859112, 1000))
+        self.assertEqual(pff.valid_neighbor_corpus(859111, 0), [])
+        self.assertEqual(len(cases), 1000)
+        self.assertEqual({case.args[0] for case in cases}, {2, 3, 10, 16})
+        self.assertTrue(any(case.args[1] == 0 for case in cases))
+        self.assertTrue(any(case.args[1] < 0 for case in cases))
+        self.assertTrue(any(case.args[1] > 0 for case in cases))
+        self.assertTrue(any(case.args[2] == -case.args[6] for case in cases))
+        self.assertTrue(any(case.args[2] > -case.args[6] for case in cases))
+        for case in cases:
+            radix, mantissa, exponent, _, _, _, bound_exp, precision, bound_pred = case.args
+            self.assertGreaterEqual(radix, 2)
+            self.assertGreater(precision, 0)
+            self.assertEqual(bound_pred + 1, radix ** precision)
+            self.assertLessEqual(bound_pred + 1, 4096)
+            self.assertLess(abs(mantissa), bound_pred + 1)
+            self.assertGreaterEqual(exponent, -bound_exp)
+        self.assertEqual(pff.corpus(859111, 10)[-10:], pff.valid_neighbor_corpus(859111, 10))
 
     def test_missing_path_truncation_and_boolean_are_errors(self):
         with pff.profile():
