@@ -174,4 +174,77 @@ def SFcompareC (x y : StandardFloat) : Option Ordering :=
 
 end StandardFloatBackend
 
+/-! ### Derived layers
+
+`eqb`/`ltb`/`leb`/`compare` on `PrimitiveFloat` and `Beqb`/`Bltb`/`Bleb`/
+`Bcompare` on `PrimBinaryFloat` are thin wrappers over the `StandardFloat`
+comparisons composed with the *already computable* projections `Prim2SF` and
+`B2SF`.  Substituting the executable backend therefore makes the whole
+comparison API evaluable, with equality to the specification inherited from
+the theorems above. -/
+
+section DerivedLayers
+
+open FaithfulPrimFloat
+
+/-- Computable counterpart of `FaithfulPrimFloat.eqb`. -/
+def eqbC (x y : PrimitiveFloat) : Bool := SFeqbC (Prim2SF x) (Prim2SF y)
+
+/-- Computable counterpart of `FaithfulPrimFloat.ltb`. -/
+def ltbC (x y : PrimitiveFloat) : Bool := SFltbC (Prim2SF x) (Prim2SF y)
+
+/-- Computable counterpart of `FaithfulPrimFloat.leb`. -/
+def lebC (x y : PrimitiveFloat) : Bool := SFlebC (Prim2SF x) (Prim2SF y)
+
+/-- Computable counterpart of `FaithfulPrimFloat.compare`. -/
+def compareC (x y : PrimitiveFloat) : float_comparison :=
+  flatten_cmp_opt (SFcompareC (Prim2SF x) (Prim2SF y))
+
+@[simp] theorem eqbC_eq (x y : PrimitiveFloat) :
+    eqbC x y = FaithfulPrimFloat.eqb x y := by
+  simp only [eqbC, FaithfulPrimFloat.eqb, SFeqbC_eq]
+
+@[simp] theorem ltbC_eq (x y : PrimitiveFloat) :
+    ltbC x y = FaithfulPrimFloat.ltb x y := by
+  simp only [ltbC, FaithfulPrimFloat.ltb, SFltbC_eq]
+
+@[simp] theorem lebC_eq (x y : PrimitiveFloat) :
+    lebC x y = FaithfulPrimFloat.leb x y := by
+  simp only [lebC, FaithfulPrimFloat.leb, SFlebC_eq]
+
+@[simp] theorem compareC_eq (x y : PrimitiveFloat) :
+    compareC x y = FaithfulPrimFloat.compare x y := by
+  simp only [compareC, FaithfulPrimFloat.compare, SFcompareC_eq]
+
+/-- Computable counterpart of `FaithfulPrimFloat.Beqb`. -/
+def BeqbC (x y : PrimBinaryFloat) : Bool := SFeqbC (B2SF x) (B2SF y)
+
+/-- Computable counterpart of `FaithfulPrimFloat.Bltb`. -/
+def BltbC (x y : PrimBinaryFloat) : Bool := SFltbC (B2SF x) (B2SF y)
+
+/-- Computable counterpart of `FaithfulPrimFloat.Bleb`. -/
+def BlebC (x y : PrimBinaryFloat) : Bool := SFlebC (B2SF x) (B2SF y)
+
+/-- Computable counterpart of `FaithfulPrimFloat.Bcompare`. -/
+def BcompareC (x y : PrimBinaryFloat) : Option Ordering :=
+  SFcompareC (B2SF x) (B2SF y)
+
+@[simp] theorem BeqbC_eq (x y : PrimBinaryFloat) :
+    BeqbC x y = FaithfulPrimFloat.Beqb x y := by
+  simp only [BeqbC, FaithfulPrimFloat.Beqb, SFeqbC_eq]
+
+@[simp] theorem BltbC_eq (x y : PrimBinaryFloat) :
+    BltbC x y = FaithfulPrimFloat.Bltb x y := by
+  simp only [BltbC, FaithfulPrimFloat.Bltb, SFltbC_eq]
+
+@[simp] theorem BlebC_eq (x y : PrimBinaryFloat) :
+    BlebC x y = FaithfulPrimFloat.Bleb x y := by
+  simp only [BlebC, FaithfulPrimFloat.Bleb, SFlebC_eq]
+
+@[simp] theorem BcompareC_eq (x y : PrimBinaryFloat) :
+    BcompareC x y = FaithfulPrimFloat.Bcompare x y := by
+  simp only [BcompareC, FaithfulPrimFloat.Bcompare, SFcompareC_eq]
+
+end DerivedLayers
+
 end FloatSpec.IEEE754.ComputableCompare
