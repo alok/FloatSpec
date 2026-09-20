@@ -6,6 +6,28 @@ all declarations in the named modules. See the
 [running audit](ASTRA_AUDIT_2026-09-19.md) for execution receipts and the
 [reading guide](READING_GUIDE.md) for the mathematical story.
 
+## Square root: bracket correctness does not require a valid format
+
+Compiled pinned `Calc/Sqrt.v:179` permits any exponent function in
+`Fsqrt_correct`. The Lean export had an extra `Valid_exp fexp` premise. That
+instance is now removed, with the existing proof unchanged except for its
+call to the magnitude lemma. `mag_sqrt_F2R` (line 53) now derives the radix
+inequality from the existing `ValidRadix` carrier rather than asking for a
+second explicit proof. Its expression `(Zdigits beta m + e + 1) / 2` matches
+Rocq's signed `Z.div2`, including negative odd exponents. Three theorem anchors
+record the inspected source; the two previously failing Lean clients now
+pass, as do paired Rocq clients and a new compiler premise guard (73 total).
+
+This does not justify discarding square root's other hypotheses. The core
+theorem (line 73) still requires a positive mantissa and `2 * target ≤ inputExponent`.
+The paired `CalcBrackets` fixtures check 8,640 division brackets and 2,496
+square-root brackets against independent integer inequalities. They also
+prove a counterexample outside the exponent premise: `Fsqrt_core 2 9 0 1`
+returns exact zero, which does not bracket the real square root three.
+The high-level `Fsqrt` routine chooses its exponent to enforce this premise,
+even for an arbitrary exponent function. It constructs a bracket; format
+closure and rounded-result properties are separate contracts.
+
 ## Division: computed bounds and direct result contracts
 
 Pinned `Calc/Div.v:48` bounds the quotient magnitude using the explicit integer

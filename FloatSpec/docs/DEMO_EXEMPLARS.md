@@ -157,6 +157,34 @@ instance. For the larger independent check, run
 against integer membership and exact dyadic arithmetic, without calling a
 real-valued correctness theorem as its oracle.
 
+## From an algorithm's answer to an independently checked bracket
+
+Run `lake env lean scripts/fixtures/CalcBrackets.lean` and read its paired
+[Lean](../../scripts/fixtures/CalcBrackets.lean) and
+[Rocq](../../scripts/fixtures/CalcBrackets.v) definitions. The oracle does not
+divide or take another square root to manufacture an expected answer.
+Instead, it checks integer inequalities after clearing positive denominators.
+It verifies both the enclosing interval and the location relative to its
+midpoint. The 8,640 division and 2,496 square-root cases cover bases 2, 3,
+and 10 with positive mantissas and mixed-sign exponents.
+
+For example, divide seven by three in base two. At output exponent minus one,
+the returned mantissa is four: the interval is `[2, 2.5)`, with midpoint 2.25,
+so seven-thirds is classified above the midpoint. At output exponent one,
+the mantissa is one: the interval is `[2, 4)`, with midpoint three, so the same
+quotient is below the midpoint. Both literal results are checked in Lean and
+Rocq. This is the purpose of the location field: it remembers enough discarded
+information to make a later rounding decision.
+
+Square root illustrates why the core algorithm requires
+`2 * outputExponent ≤ inputExponent`. On mantissa nine, input exponent zero,
+and requested output exponent one, that premise fails. The raw integer scaling
+uses a negative power, which is zero in this integer operation; the algorithm
+returns zero rather than a bracket for square root nine. Both fixtures prove
+that this is a counterexample to dropping the premise. The high-level routine
+always chooses a sufficiently fine exponent, and its bracket theorem does
+not additionally require that the exponent function describes a valid format.
+
 ## Exemplars inspected
 
 These are reading recommendations, not dependencies adopted by FloatSpec.

@@ -273,9 +273,12 @@ lemma mag_mult_bpow_eq (x : ℝ) (e : Int) (hx : x ≠ 0) (hβ : 1 < beta) :
   rw [Int.floor_add_intCast]
   ring
 
-lemma mag_sqrt_F2R (m1 e1 : Int) (Hm1 : 0 < m1) (Hβ : 1 < beta) :
+/-- Flocq's exact magnitude of the square root of a positive represented value. -/
+@[flocq_source "src/Calc/Sqrt.v" 53 "mag_sqrt_F2R"]
+lemma mag_sqrt_F2R (m1 e1 : Int) (Hm1 : 0 < m1) :
     FloatSpec.Core.Raux.mag beta (Real.sqrt (F2R (FlocqFloat.mk m1 e1 : FlocqFloat beta)))
       = (Zdigits beta m1 + e1 + 1) / 2 := by
+  have Hβ : 1 < beta := ValidRadix.valid
   -- Step 1: F2R is positive since m1 > 0
   have hF2R_pos : 0 < F2R (FlocqFloat.mk m1 e1 : FlocqFloat beta) := by
     exact FloatSpec.Core.Float_prop.F2R_gt_0 (beta := beta) (f := FlocqFloat.mk m1 e1) Hβ Hm1
@@ -320,6 +323,7 @@ def Fsqrt_core (m1 e1 e : Int) : (Int × Location) :=
     The core routine returns (m, l) such that `inbetween_float beta m e (sqrt (F2R f)) l`
     holds, matching the Coq theorem {name}`Fsqrt_core_correct`.
 -/
+@[flocq_source "src/Calc/Sqrt.v" 73 "Fsqrt_core_correct"]
 theorem Fsqrt_core_correct (m1 e1 e : Int) (Hm1 : 0 < m1) (He : 2 * e ≤ e1) :
     let (m, l) := Fsqrt_core beta m1 e1 e
     inbetween_float beta m e (Real.sqrt (F2R (FlocqFloat.mk m1 e1 : FlocqFloat beta))) l := by
@@ -649,8 +653,8 @@ def Fsqrt (x : FlocqFloat beta) : (Int × Int × Location) :=
     The result satisfies `e ≤ cexp beta fexp (sqrt (F2R x))` and the
     inbetween relation. This matches the Coq theorem {name}`Fsqrt_correct`.
 -/
-theorem Fsqrt_correct (x : FlocqFloat beta) (Hx : 0 < F2R x)
-    [Hfexp : Valid_exp fexp] :
+@[flocq_source "src/Calc/Sqrt.v" 179 "Fsqrt_correct"]
+theorem Fsqrt_correct (x : FlocqFloat beta) (Hx : 0 < F2R x) :
     let (m, e, l) := Fsqrt beta fexp x
     e ≤ cexp beta fexp (Real.sqrt (F2R x)) ∧
     inbetween_float beta m e (Real.sqrt (F2R x)) l := by
@@ -694,7 +698,7 @@ theorem Fsqrt_correct (x : FlocqFloat beta) (Hx : 0 < F2R x)
       simp only [hm1_def, he1_def]
     rw [hx_eq]
     -- mag beta (sqrt (F2R (FlocqFloat.mk m1 e1))) = (Zdigits beta m1 + e1 + 1) / 2 by mag_sqrt_F2R
-    have hmag := mag_sqrt_F2R beta m1 e1 Hm1 Hβ
+    have hmag := mag_sqrt_F2R beta m1 e1 Hm1
     -- (Zdigits beta m1 + e1 + 1) / 2 = e' / 2
     have he'_eq : (Zdigits beta m1 + e1 + 1) / 2 = e' / 2 := by
       simp only [he'_def, hd_def]

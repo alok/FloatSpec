@@ -216,7 +216,7 @@ echo 'Pure Rocq order loop passed: 2,000 ordering-law checks and boundary exampl
 "$coqc_bin" -q -R "$flocq_dir/src" Flocq -o "$scratch/RoundingWalkthrough.vo" \
   "$repo_root/scripts/fixtures/RoundingWalkthrough.v"
 for fixture in BooleanComparison RawIEEERounding RawOverflow SingleNaNArithmetic SingleNaNHelpers FrexpLaws MultiplicationErrorGrid DoubleRoundingWitness SingleNaNValidity RelativeErrorGrid \
-    SourcePremiseContracts ExactArithmeticLaws RoundingOracle IntegerRounding; do
+    SourcePremiseContracts CalcBrackets ExactArithmeticLaws RoundingOracle IntegerRounding; do
   "$coqc_bin" -q -R "$flocq_dir/src" Flocq -o "$scratch/$fixture.vo" \
     "$repo_root/scripts/fixtures/$fixture.v"
 done
@@ -232,7 +232,7 @@ run_lake env lean "$repo_root/FloatSpec/Test/BitOrderExecution.lean"
 run_lake env lean "$repo_root/FloatSpec/Test/NativeSourceArithmetic.lean"
 run_lake env lean "$repo_root/FloatSpec/Test/RoundingWalkthrough.lean"
 run_lake env lean "$repo_root/FloatSpec/Test/SourcePremiseContracts.lean"
-for fixture in BooleanComparison RawIEEERounding RawOverflow SingleNaNArithmetic SingleNaNHelpers FrexpLaws NativeSingleNaNArithmetic MultiplicationErrorGrid DoubleRoundingWitness SingleNaNValidity RelativeErrorGrid ExactArithmeticLaws RoundingOracle IntegerRounding; do
+for fixture in BooleanComparison RawIEEERounding RawOverflow SingleNaNArithmetic SingleNaNHelpers FrexpLaws CalcBrackets NativeSingleNaNArithmetic MultiplicationErrorGrid DoubleRoundingWitness SingleNaNValidity RelativeErrorGrid ExactArithmeticLaws RoundingOracle IntegerRounding; do
   run_lake env lean "$repo_root/scripts/fixtures/$fixture.lean"
 done
 run_lake env lean --run "$repo_root/scripts/fixtures/GuidedDemo.lean"
@@ -242,7 +242,8 @@ echo 'Boolean ordering passed: eight boundary assertions and 600,000 native Bool
 echo 'Native source-arithmetic loop passed: 100,100 binary32/binary64 comparisons'
 echo 'Native SingleNaN arithmetic loop passed: 200,200 direct/source-mode comparisons'
 echo 'Multiplication-error loop passed: 5,385 conditional cases and a required-underflow-premise counterexample'
-echo 'Lean contract loop passed: 72 premise guards, typed consumers, finite error laws, 35,845 format-rounding and 5,125 integer-rounding oracle cases'
+echo 'Lean contract loop passed: 73 premise guards, typed consumers, finite error laws, 35,845 format-rounding and 5,125 integer-rounding oracle cases'
+echo 'Independent Calc loop passed: 8,640 division brackets, 2,496 square-root brackets, and a required-exponent-premise counterexample'
 
 uv run "$repo_root/scripts/flocq_bridge.py" --flocq-dir "$flocq_dir" --coqc "$coqc_bin" \
   --seed "${FLOCQ_BRIDGE_SEED:-20260919}" --samples "${FLOCQ_BRIDGE_SAMPLES:-100}" \

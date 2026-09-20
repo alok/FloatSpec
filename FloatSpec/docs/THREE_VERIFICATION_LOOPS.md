@@ -115,9 +115,18 @@ word pair can be replayed through the fixture's public `observations32` or
 Rocq on those words, in addition to the full-payload baseline. This is finite native execution, not a hardware
 correctness proof or a native FMA/directed-rounding test.
 
-`Test/SourcePremiseContracts.lean` additionally has 72 source-premise guards,
+`CalcBrackets.lean` and its Rocq counterpart check **8,640 division** and
+**2,496 square-root** brackets in bases 2, 3, and 10. Expected conditions are
+integer inequalities obtained by clearing positive denominators; the oracle
+uses neither another divider/square-root algorithm nor a correctness theorem.
+It checks the midpoint location as well as the interval. A literal failure
+outside square root's exponent premise makes that domain boundary executable.
+Deliberately increasing the returned mantissa or replacing its location by
+exact must break both the closed finite assertions and compiled checks.
+
+`Test/SourcePremiseContracts.lean` additionally has 73 source-premise guards,
 paired typed consumers for the Prop, integer-rounding, canonical-exponent,
-real-comparison, division, and generic IEEE comparison exports, and four deliberate
+real-comparison, division, square-root, and generic IEEE comparison exports, and four deliberate
 negative guard examples. The corresponding Rocq fixture checks the paired
 consumer signatures. These
 checks caught real section-instance leakage that the former bare `#check`

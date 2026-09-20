@@ -15,7 +15,7 @@ This guide follows those jobs in order. The detailed
 [independent continuation audit](ASTRA_AUDIT_2026-09-19.md) retain the
 declaration-by-declaration findings and historical milestones.
 
-## Wake-up summary — September 20, 2026, 09:52 UTC
+## Wake-up summary — September 20, 2026, 10:13 UTC
 
 **Where to start:** run the six-part demo above, then read sections 1–6 below.
 The [exemplar guide](DEMO_EXEMPLARS.md) adds small examples explaining why a
@@ -23,17 +23,21 @@ theorem needs its hypotheses. This summary records the current milestone;
 the [audit ledger](ASTRA_AUDIT_2026-09-19.md) keeps the detailed history,
 including failed runs and the exact source hashes tested.
 
-**Newest checked change:** division now exposes Flocq's direct mathematical
-contracts. Its magnitude theorem gives bounds computed from the input digit
-counts and exponents; its core theorem directly states where the exact
-quotient lies relative to the returned mantissa. The old magnitude wrapper
-computed a number but ignored it in its postcondition. Both contracts now
-omit a redundant radix argument, and their callers are updated together.
-The numerical algorithms are unchanged, all proofs remain closed, and paired
-Lean/Rocq clients enforce the corrected interfaces. The fresh run passes
-**1,994 differential cases and 1,994 kernel equalities**, seed `837661`,
-plus a ten-case binary32/binary64 replay through all five modes and all three
-public arithmetic APIs.
+**Newest checked change:** square root's bracket theorem no longer requires
+an extra valid-format premise absent from Flocq. Its existing proof still
+closes. The important exponent restriction on the *core* routine remains:
+the new independent tests demonstrate that dropping it gives a false bracket.
+Pure Lean and Rocq each pass **8,640 division and 2,496 square-root bracket
+checks**, using integer inequalities instead of another divider or square-root
+algorithm as the oracle. Deliberately corrupting either the returned mantissa
+or location breaks the checks. A fresh serial run passes **1,565 differential
+cases and 1,565 kernel equalities**, seed `838673`.
+
+The preceding division repair exposes the source's digit-count magnitude
+bounds and direct quotient-location proposition, without a dummy computation
+or redundant radix argument. Its **1,994-case** differential run and ten-case
+all-mode IEEE replay passed on that checkpoint. Neither repair changes the
+numerical algorithms or adds a proof hole.
 
 **Two actual numerical bugs were found and repaired earlier.** First, signed
 shifting and floor division were conflated on negative raw mantissas:
@@ -49,12 +53,13 @@ failures of ordinary valid binary32/binary64 arithmetic.
 
 | Slice | Observed result |
 |---|---|
-| Full library, test library, and executable | Lean 4.34.0 on macOS arm64: 6,216 build jobs pass after the division change |
+| Full library, test library, and executable | Lean 4.34.0 on macOS arm64: 6,216 build jobs pass after the square-root change |
 | SingleNaN helper exports | 1,900 differential cases and kernel equalities; every exported helper observed separately |
 | `frexp`'s wider parameter domain | 4,169 differential cases and kernel equalities, including 3,455 with `prec ≥ emax` |
 | Independent decomposition laws | Lean and Rocq each check 6,772 encodings: 2,086 valid finite cases and 4,686 rejected raw encodings |
-| Test-harness checks | Latest full core-harness run: 50 tests pass, including deliberate output mutations and a resource-limit regression |
-| Compiled trust/source metadata | 13,588 source declarations in 58 modules; four unchanged named proof debts; 201 checked source anchors |
+| Independent Calc brackets | Lean and Rocq each check 8,640 division and 2,496 square-root cases, including exact midpoint locations |
+| Test-harness checks | Latest full core-harness run: 52 tests pass, including deliberate output mutations and a resource-limit regression |
+| Compiled trust/source metadata | 13,588 source declarations in 58 modules; four unchanged named proof debts; 204 checked source anchors |
 
 These are separate, snapshot-bound receipts, **not** a claim that every row
 was rerun after every subsequent type-only change. Earlier broad runs cover
@@ -73,7 +78,7 @@ explain the finite-input condition on alternate ulp and the positive-input
 condition on the specialized predecessor.
 
 **What remains:** whole-library source-signature review is incomplete, and
-the four native/decoder proof obligations remain. The 72 premise guards and
+the four native/decoder proof obligations remain. The 73 premise guards and
 paired typed clients catch selected interface regressions, not every possible
 deviation. Fork CI has a separate known dependency-cache/toolchain mismatch;
 a local macOS pass is not a green-CI claim. Compilation, finite agreement,
@@ -83,6 +88,11 @@ Reviewable milestones are pushed to
 [`alok/FloatSpec`, branch `codex/astra-flocq-audit`](https://github.com/alok/FloatSpec/tree/codex/astra-flocq-audit).
 Your fork is the default remote; BAIF remains available as `upstream`.
 The pre-existing `Deps/flocq` modification is preserved.
+Work now continues in an isolated worktree: a separate Claude daemon changed
+the shared checkout during a test. That interrupted run and the affected
+harness run remain errors; the isolated build, full harness, and final serial
+grid were rerun successfully. The daemon's separate changes were preserved,
+not silently included in these results.
 
 ## 1. Start with one small rounding problem
 
@@ -232,6 +242,15 @@ The corrected theorem says the useful thing directly. Its companion
 quotient without wrapping this pure mathematical claim in an `Id` computation.
 Both proofs are closed; making the contract easier to apply did not change
 the integer division algorithm.
+
+For square root, it matters which kind of assumption we are removing. The
+high-level bracket theorem now permits any exponent function, matching Flocq;
+its former extra validity premise was unused. The core algorithm still needs
+`2 * outputExponent ≤ inputExponent`. Without that condition, its integer
+scaling can zero the radicand: the paired bracket fixtures show a raw call on
+nine returning zero when asked for too coarse an exponent. The high-level
+routine avoids this by capping the chosen exponent. A checked bracket is not
+yet a theorem that a rounding format is valid or that a result belongs to it.
 
 Read the **elaborated type**, including implicit assumptions. Coq can erase
 an unused section parameter from an exported theorem, while Lean may retain

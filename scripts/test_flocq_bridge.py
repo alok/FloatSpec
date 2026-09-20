@@ -231,6 +231,36 @@ class ParserTests(unittest.TestCase):
 
 @unittest.skipUnless(os.environ.get("FLOCQ_AUDIT_DIR"), "live test requires FLOCQ_AUDIT_DIR")
 class LiveTests(unittest.TestCase):
+    def check_calc_mutation(self, operation, expression):
+        source = (Path(__file__).parent / 'fixtures/CalcBrackets.lean').read_text()
+        before = f'let (q, location) := {expression}'
+        self.assertEqual(source.count(before), 1)
+        mutations = {
+            'quotient': f'let result := {expression}\n  let q := result.1 + 1\n  let location := result.2',
+            'location': f'let result := {expression}\n  let q := result.1\n  let location := Location.loc_Exact',
+        }
+        for name, replacement in mutations.items():
+            with self.subTest(operation=operation, mutation=name):
+                with tempfile.TemporaryDirectory(prefix='floatspec-calc-law-mutation-') as directory:
+                    path = Path(directory) / 'CalcBracketsMutation.lean'
+                    path.write_text(source.replace(before, replacement))
+                    with self.assertRaises(RuntimeError) as caught:
+                        bridge.run(['lake', 'env', 'lean', str(path)])
+                    self.assertRegex(str(caught.exception),
+                        r'Tactic `decide` (proved that the proposition|failed for proposition)')
+                    witness = ('divisionLaw 2 1 0 3 0 0 = true' if operation == 'division'
+                               else 'sqrtLaw 2 2 0 0 = true')
+                    self.assertIn(witness, str(caught.exception))
+                    self.assertIn('independent Calc bracket law failed', str(caught.exception))
+
+    def test_independent_division_brackets_reject_mutations(self):
+        self.check_calc_mutation('division',
+            'FloatSpec.Calc.Div.Fdiv_core beta m1 e1 m2 e2 target')
+
+    def test_independent_sqrt_brackets_reject_mutations(self):
+        self.check_calc_mutation('square-root',
+            'FloatSpec.Calc.Sqrt.Fsqrt_core beta mantissa exponent target')
+
     def test_independent_frexp_laws_reject_exponent_mutation(self):
         source = (Path(__file__).parent / 'fixtures/FrexpLaws.lean').read_text()
         before = 'let f := BinarySingleNaN.Bfrexp x'

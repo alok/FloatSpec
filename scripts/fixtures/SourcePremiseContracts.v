@@ -2,7 +2,7 @@ From Stdlib Require Import ZArith Reals Lia.
 Require Import Flocq.Core.Core Flocq.Prop.Plus_error Flocq.Prop.Mult_error
   Flocq.Prop.Div_sqrt_error Flocq.IEEE754.Binary Flocq.IEEE754.BinarySingleNaN.
 Require Import Flocq.Pff.Pff2Flocq.
-Require Import Flocq.Calc.Bracket Flocq.Calc.Div.
+Require Import Flocq.Calc.Bracket Flocq.Calc.Div Flocq.Calc.Sqrt.
 Open Scope R_scope.
 
 Section Contracts.
@@ -20,6 +20,22 @@ Definition division_core_contract (m1 e1 m2 e2 e : Z)
     inbetween_float beta m e
       (F2R (Float beta m1 e1) / F2R (Float beta m2 e2)) l :=
   @Div.Fdiv_core_correct beta m1 e1 m2 e2 e Hm1 Hm2.
+
+Definition sqrt_magnitude_contract (m e : Z) (Hm : (0 < m)%Z) :
+    mag beta (sqrt (F2R (Float beta m e))) = Z.div2 (Zdigits beta m + e + 1) :> Z :=
+  @Sqrt.mag_sqrt_F2R beta m e Hm.
+
+Definition sqrt_core_contract (m e target : Z)
+    (Hm : (0 < m)%Z) (He : (2 * target <= e)%Z) :
+    let '(result, location) := Sqrt.Fsqrt_core beta m e target in
+    inbetween_float beta result target (sqrt (F2R (Float beta m e))) location :=
+  @Sqrt.Fsqrt_core_correct beta m e target Hm He.
+
+Definition sqrt_result_contract (fexp : Z -> Z) (x : float beta) (Hx : 0 < F2R x) :
+    let '(m, e, l) := @Sqrt.Fsqrt beta fexp x in
+    (e <= cexp beta fexp (sqrt (F2R x)))%Z /\
+    inbetween_float beta m e (sqrt (F2R x)) l :=
+  @Sqrt.Fsqrt_correct beta fexp x Hx.
 
 Definition canonical_positive_contract (fexp : Z -> Z) (Hmono : Monotone_exp fexp)
     (x y : R) (Hy : 0 < y) (Hexp : (cexp beta fexp x < cexp beta fexp y)%Z) :

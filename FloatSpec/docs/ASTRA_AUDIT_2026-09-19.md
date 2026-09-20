@@ -1594,6 +1594,77 @@ Both use the explicitly prebuilt snapshot (`fresh_build: false`); no library
 edits or overlapping builds occurred during execution. Earlier larger
 receipts retain their original hashes rather than being relabeled.
 
+### September 20 continuation: square-root premise and independent Calc brackets
+
+Compiled pinned Rocq `Fsqrt_correct` requires no `Valid_exp` instance. The Lean
+export now matches that domain; its existing closed proof is unchanged except
+for the magnitude lemma call. `mag_sqrt_F2R` now derives radix validity from
+the carrier. The core theorem retains positive-mantissa and exponent premises.
+Three source anchors and paired typed consumers cover all three statements;
+one new compiler guard brings the total to **73**. The two Lean clients fail
+before and pass after the correction (`/private/tmp/SqrtContractGuards-before.out`
+and `-after.out`). Compiled Rocq output is in `SqrtContractGuards-rocq-v3.out`;
+the earlier scratch attempts retain the missing magnitude coercion and explicit
+radix-argument errors. Persistent paired consumers compile successfully.
+
+New `CalcBrackets.lean` / `.v` fixtures close **8,640 division** and **2,496
+square-root** checks in bases 2, 3, and 10. Clearing positive denominators turns
+the interval and midpoint conditions into integer inequalities. No second
+divider/square-root implementation or correctness theorem provides the oracle.
+The paired literals check seven-thirds at two output exponents and demonstrate
+failure if square root's `2 * target <= inputExponent` premise is discarded.
+The complete grids are kernel-checked in Lean and proved by computation in
+Rocq; Lean also runs them. Isolated final logs:
+`/private/tmp/floatspec-calc-brackets-isolated-lean-20260920.log` and
+`/private/tmp/floatspec-calc-brackets-isolated-rocq-20260920.log`.
+Initial fixture attempts had an ambiguous Lean `compare` and a nonexistent
+Rocq comparison-equality helper; corrected qualified integer comparison and
+an explicit comparison match resolve them. Rocq's large-Nat notation warning
+is nonfatal. The first two mutation harness attempts over-specified Lean's
+diagnostic wording; the corrected gate requires a failed closed literal
+assertion and the compiled runtime failure. Both mantissa and location
+mutations are checked independently for both operations. These fixtures are
+now included in the standard runner and Lean CI fixture list; no hosted-CI
+success is claimed.
+
+**Concurrent checkout change, preserved rather than hidden:** a separate Claude
+daemon created `ComputableCompare.lean` and switched the original checkout to
+its own branch during verification. The seed-`838673` shared-checkout bridge
+correctly fails after **200 agreeing cases**, status **error**, because the
+source fingerprint changed:
+`/private/tmp/floatspec-sqrt-contract-grid-20260920/report.json`.
+The original 52-test harness run also fails with three errors in 240.448 seconds:
+one concurrent-source guard and two attempted builds of the daemon's incomplete
+new module. It remains a failed run:
+`/private/tmp/floatspec-calc-bracket-harness-v3-20260920.log`.
+
+The continuation now uses the managed worktree
+`/Users/alokbeniwal/.codex/worktrees/astra-flocq-continuation/FloatSpec`, on
+`codex/astra-flocq-audit`. Only this slice's own changes were transferred there;
+after exact-content checks, they were removed from the original checkout,
+leaving the daemon's files and pre-existing `Deps/flocq` state intact.
+Dependency/build files were copied using APFS copy-on-write cloning, not shared
+writable artifact paths. The isolated full build passes **6,216 jobs**;
+complete LSP diagnostics are clean for the changed source, contract clients,
+and bracket fixture. The isolated trust audit observes **13,588 declarations
+in 58 modules**, exactly four debts, and no new trust hazards:
+`/private/tmp/floatspec-sqrt-isolated-trust-20260920.json`.
+Fresh compiled metadata validates **204** source anchors.
+
+All **52** live core-harness tests pass in the isolated tree in **200.362 seconds**:
+`/private/tmp/floatspec-calc-bracket-isolated-harness-20260920.log`.
+An initial isolated grid also passed, but overlapped harness build checks;
+the authoritative final sequence is the full build followed by the serial
+bridge, with no overlapping builds or source edits. Build log:
+`/private/tmp/floatspec-sqrt-isolated-final-build-20260920.log`.
+On SHA-256 `0a4e035d923b1287b23b1483bb89e7883e9eddd9e3a55e1f86459864ef39b169`,
+seed `838673` passes **1,565 compared/compiled cases and 1,565 generated kernel
+equalities** in **64.296 seconds**: 265 core square-root and 1,300
+format-calculation cases. Receipt:
+`/private/tmp/floatspec-sqrt-isolated-serial-grid-20260920/report.json`.
+The guide now explains these brackets and premise distinctions linearly.
+Neither this finite evidence nor the source anchors certify all of Calc.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In

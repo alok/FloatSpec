@@ -1,5 +1,6 @@
 import Lean
 import FloatSpec.src.Calc.Div
+import FloatSpec.src.Calc.Sqrt
 import FloatSpec.src.Prop.Div_sqrt_error
 import FloatSpec.src.Prop.Round_odd
 import FloatSpec.src.IEEE754.BinarySingleNaNSourceFacade
@@ -140,6 +141,7 @@ end FloatSpec.Test.SourcePremiseGuard
 #guard_no_source_premise FloatSpec.Calc.Round.round_0 FloatSpec.Core.Generic_fmt.Valid_exp at fexp
 #guard_no_source_premise mult_error_FLT_ge_bpow Prec_gt_0 at prec
 #guard_no_source_premise mult_error_FLT_ge_bpow' Prec_gt_0 at prec
+#guard_no_source_premise FloatSpec.Calc.Sqrt.Fsqrt_correct FloatSpec.Core.Generic_fmt.Valid_exp at fexp
 
 /-! Typed consumers deliberately omit proof-only section assumptions.
 Unlike a bare `#check`, each example fails if a public theorem accidentally
@@ -410,3 +412,30 @@ example (beta : Int) [ValidRadix beta]
   FloatSpec.Calc.Div.Fdiv_core_correct beta m1 e1 m2 e2 e hm1 hm2
 
 end DivisionSourceContracts
+
+namespace SquareRootSourceContracts
+
+open FloatSpec.Core.Defs FloatSpec.Core.Digits FloatSpec.Calc.Bracket
+
+example (beta : Int) [ValidRadix beta] (m e : Int) (hm : 0 < m) :
+    FloatSpec.Core.Raux.mag beta
+        (Real.sqrt (FloatSpec.Core.Defs.F2R (FlocqFloat.mk m e : FlocqFloat beta))) =
+      (Zdigits beta m + e + 1) / 2 :=
+  FloatSpec.Calc.Sqrt.mag_sqrt_F2R beta m e hm
+
+theorem sqrt_core_contract (beta : Int) [ValidRadix beta] (m e target : Int)
+    (hm : 0 < m) (he : 2 * target ≤ e) :
+    let (result, location) := FloatSpec.Calc.Sqrt.Fsqrt_core beta m e target
+    inbetween_float beta result target
+      (Real.sqrt (FloatSpec.Core.Defs.F2R (FlocqFloat.mk m e : FlocqFloat beta))) location :=
+  FloatSpec.Calc.Sqrt.Fsqrt_core_correct beta m e target hm he
+
+-- No validity condition on the exponent function is needed to bracket sqrt.
+theorem sqrt_result_contract (beta : Int) [ValidRadix beta] (fexp : Int → Int)
+    (x : FlocqFloat beta) (hx : 0 < FloatSpec.Core.Defs.F2R x) :
+    let (m, e, l) := FloatSpec.Calc.Sqrt.Fsqrt beta fexp x
+    e ≤ FloatSpec.Core.Generic_fmt.cexp beta fexp (Real.sqrt (FloatSpec.Core.Defs.F2R x)) ∧
+    inbetween_float beta m e (Real.sqrt (FloatSpec.Core.Defs.F2R x)) l :=
+  FloatSpec.Calc.Sqrt.Fsqrt_correct beta fexp x hx
+
+end SquareRootSourceContracts
