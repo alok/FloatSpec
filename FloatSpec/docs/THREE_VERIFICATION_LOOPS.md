@@ -86,6 +86,19 @@ tests validate the protocol and reject shared actual-program mutations of
 signed division and the rounding stage. A failing compiler exit always wins,
 even if a later runtime command prints a success line.
 
+## Unindexed Pff sign-law boundary
+
+`PffBasicSourceContracts` now includes the four negation/absolute-value laws,
+with exact source types and a negative-radix counterexample in both assistants.
+Run `FLOCQ_AUDIT_DIR="$FLOCQ_AUDIT_DIR" uv run scripts/test_pff_basic_contracts.py -v`
+for four live mutation controls. The test deliberately removes the positive
+radix premise and replaces negation by identity; both checkers reject them.
+`scripts/fixtures/PffSignLawsReplay.json` retains 72 focused raw-record inputs
+across negative, zero, one and ordinary radices, both mantissa signs, zero,
+and positive/negative odd/even exponents. Replay it with `scripts/pff_bridge.py`
+to observe all 61 profile columns in all three paths. These executions do not
+replace the universal Lean observer proofs or certify the whole Pff facade.
+
 ## 1. Lean checks itself
 
 `lake build FloatSpec.Test FloatSpecTests floatspec` builds the port, its tests,

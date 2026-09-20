@@ -307,6 +307,7 @@ FLOCQ_AUDIT_DIR="$flocq_dir" uv run "$repo_root/scripts/test_ulp_choice_contract
 FLOCQ_AUDIT_DIR="$flocq_dir" uv run "$repo_root/scripts/test_ulp_nearest_contracts.py" -v
 FLOCQ_AUDIT_DIR="$flocq_dir" uv run "$repo_root/scripts/test_round_ne_point_contracts.py" -v
 FLOCQ_AUDIT_DIR="$flocq_dir" uv run "$repo_root/scripts/test_remainder_contracts.py" -v
+FLOCQ_AUDIT_DIR="$flocq_dir" uv run "$repo_root/scripts/test_pff_basic_contracts.py" -v
 
 uv run "$repo_root/scripts/remainder_bridge.py" --flocq-dir "$flocq_dir" --coqc "$coqc_bin" \
   --seed "${FLOCQ_BRIDGE_SEED:-20260919}" --samples 0 \

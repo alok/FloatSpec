@@ -141,9 +141,33 @@ theorem MinExList (radix : Int) (r : Real) (L : List float) :
 def Fopp (x : float) : float :=
   ⟨-x.Fnum, x.Fexp⟩
 
+/-- Source negation preserves the real interpretation at every integer radix. -/
+@[flocq_source "src/Pff/Pff.v" 1506 "Fopp_correct"]
+theorem Fopp_correct (radix : Int) (x : float) :
+    FtoR radix (Fopp x) = -FtoR radix x := by
+  simp [FtoR, Fopp]
+
+/-- Two source negations restore the complete raw record. -/
+@[flocq_source "src/Pff/Pff.v" 1512 "Fopp_Fopp"]
+theorem Fopp_Fopp (x : float) : Fopp (Fopp x) = x := by
+  cases x
+  simp [Fopp]
+
 @[flocq_source "src/Pff/Pff.v" 1524 "Fabs"]
 def Fabs (x : float) : float :=
   ⟨x.Fnum.natAbs, x.Fexp⟩
+
+/-- The source absolute-value observer law retains positivity, including radix one. -/
+@[flocq_source "src/Pff/Pff.v" 1567 "Fabs_correct"]
+theorem Fabs_correct (radix : Int) (hradix : 0 < radix) (x : float) :
+    FtoR radix (Fabs x) = |FtoR radix x| := by
+  have hradix_pos : (0 : Real) < radix := by exact_mod_cast hradix
+  simp [FtoR, Fabs, abs_mul, abs_of_pos (zpow_pos hradix_pos x.Fexp)]
+
+/-- Source absolute value cannot turn a nonzero mantissa into zero. -/
+@[flocq_source "src/Pff/Pff.v" 1593 "Fabs_Fzero"]
+theorem Fabs_Fzero (x : float) (hx : ¬ is_Fzero x) : ¬ is_Fzero (Fabs x) := by
+  simpa [is_Fzero, Fabs] using hx
 
 /-- Coq `Pff.boundNat`, including its total behavior at every integer radix. -/
 -- Source ID: Pff/Pff.v:boundNat:150939

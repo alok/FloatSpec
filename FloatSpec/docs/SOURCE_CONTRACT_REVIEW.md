@@ -6,6 +6,22 @@ all declarations in the named modules. See the
 [running audit](ASTRA_AUDIT_2026-09-19.md) for execution receipts and the
 [reading guide](READING_GUIDE.md) for the mathematical story.
 
+## Unindexed Pff negation and absolute value
+
+The source facade now also exports `Fopp_correct`, `Fopp_Fopp`, `Fabs_correct`
+and `Fabs_Fzero`, matching the compiled Rocq types at Pff.v lines 1506, 1512,
+1567 and 1593. Negation correctness takes an unrestricted integer radix;
+double negation and nonzero preservation do not mention radix at all.
+Absolute-value interpretation retains the source `0 < radix` premise,
+including radix one. A paired closed counterexample at radix -2 shows why
+dropping the premise entirely would be false. The existing executable
+negation and absolute-value bodies are unchanged.
+
+Paired typed clients and four live mutations reject an identity-negation
+conclusion and a premise-free absolute-value law in both assistants. Their
+source shapes are not silently strengthened to the Core carrier's `1 < radix`.
+The four production proofs are closed and introduce no debt.
+
 ## Exact remainder contracts
 
 Four exports in `Prop/Div_sqrt_error.v` are now paired with typed Lean/Rocq

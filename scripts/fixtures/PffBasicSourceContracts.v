@@ -14,6 +14,14 @@ Check (Pff.is_Fzero_rep2 : forall radix : Z, 1 < radix -> forall x : Pff.float,
 Check (Pff.Fmult_correct : forall radix : Z, 0 < radix -> forall x y : Pff.float,
   Pff.FtoR radix (Pff.Fmult x y) = (Pff.FtoR radix x * Pff.FtoR radix y)%R).
 
+Check (Pff.Fopp_correct : forall (radix : Z) (x : Pff.float),
+  Pff.FtoR radix (Pff.Fopp x) = (- Pff.FtoR radix x)%R).
+Check (Pff.Fopp_Fopp : forall x : Pff.float, Pff.Fopp (Pff.Fopp x) = x).
+Check (Pff.Fabs_correct : forall radix : Z, 0 < radix -> forall x : Pff.float,
+  Pff.FtoR radix (Pff.Fabs x) = Rabs (Pff.FtoR radix x)).
+Check (Pff.Fabs_Fzero : forall x : Pff.float,
+  ~ Pff.is_Fzero x -> ~ Pff.is_Fzero (Pff.Fabs x)).
+
 Example zero_retains_exponent : Pff.Fzero (-7) = Pff.Float 0 (-7).
 Proof. reflexivity. Qed.
 Example multiplication_fields :
@@ -27,3 +35,16 @@ Example zero_radix_is_not_a_multiplication_model :
   Pff.FtoR 0 (Pff.Fmult (Pff.Float 1 1) (Pff.Float 1 (-1))) <>
   (Pff.FtoR 0 (Pff.Float 1 1) * Pff.FtoR 0 (Pff.Float 1 (-1)))%R.
 Proof. unfold Pff.FtoR, Pff.Fmult; simpl. lra. Qed.
+
+Example negative_radix_is_not_an_absolute_value_model :
+  Pff.FtoR (-2) (Pff.Fabs (Pff.Float 1 1)) <>
+  Rabs (Pff.FtoR (-2) (Pff.Float 1 1)).
+Proof.
+  unfold Pff.FtoR, Pff.Fabs; simpl. rewrite Rabs_left by lra. lra.
+Qed.
+
+Print Assumptions negative_radix_is_not_an_absolute_value_model.
+Print Assumptions Pff.Fopp_correct.
+Print Assumptions Pff.Fopp_Fopp.
+Print Assumptions Pff.Fabs_correct.
+Print Assumptions Pff.Fabs_Fzero.

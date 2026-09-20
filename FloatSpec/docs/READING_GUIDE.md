@@ -15,7 +15,7 @@ This guide follows those jobs in order. The detailed
 [independent continuation audit](ASTRA_AUDIT_2026-09-19.md) retain the
 declaration-by-declaration findings and historical milestones.
 
-## Wake-up summary — September 20, 2026, 22:00 UTC
+## Wake-up summary — September 20, 2026, 22:08 UTC
 
 **The port builds and runs on macOS with Lean 4.34.0, but is not yet a fully
 source-audited port.** All 35 built Flocq module names have Lean counterparts.
@@ -62,12 +62,16 @@ The important recent changes are:
   `is_Fzero`, `Fmult` and four source-shaped laws. Multiplication correctness
   accepts radix one; zero's forward observer laws need no radix restriction.
   The new bridge observes complete records, not only real values.
+  Four further closed laws now cover negation, double negation, absolute-value
+  interpretation and nonzero preservation. Negation is unrestricted; absolute
+  value needs a positive radix, as a paired negative-radix counterexample shows.
 
 Current verification is deliberately separated by source snapshot:
 
 | Snapshot | Completed evidence |
 |---|---|
-| Current remainder audit, `3c5a913d` | Full 6,226-job build; 13,680 compiled source declarations / 59 modules; four manifest-only debts; 332 validated source anchors. Four paired remainder contracts; 12,100 three-way cases/kernel equalities and 84,182 independent assertions, seed 862513. Eight contract controls plus six bridge tests pass; eleven paired exponent-boundary declarations explain the necessary hypotheses. |
+| Current Pff sign laws, `d0ab66b2` | Full 6,226-job build; 13,687 compiled source declarations / 59 modules; four manifest-only debts; 336 validated source anchors. Four paired source laws and four live mutations; fresh 72-input three-way replay with generated kernel equalities, seed 862619. Only four closed theorem exports were added to the previous production snapshot; operation bodies are unchanged. |
+| Remainder audit, `3c5a913d` | Full build; 12,100 three-way cases/kernel equalities and 84,182 independent assertions, seed 862513. Eight contract controls plus six bridge tests pass; eleven paired exponent-boundary declarations explain the necessary hypotheses. Final standalone sweep re-executed 14 Lean modules, 26 Lean fixtures, 38 Rocq fixtures and all seven demo examples on this snapshot. |
 | Direct nearest-even API, `b9b5abb6` | Full build; four paired typed exports and four live mutation controls. Arithmetic bodies are unchanged from the Pff snapshot below. |
 | Pff addition, `21a75295` | Full build; paired basic Pff clients; all 20 expanded Pff harness tests. Fresh bridge: 3,072 cases/kernel equalities and 65,846 independent assertions, seed 862307. |
 | Integrated comparison API, `4b714ddb` | Full build and seven demos; 20,000 executable dyadic pairs; 24 paired raw-comparison fixture cases; 1,237 fresh raw-comparison bridge cases and kernel equalities, seed 862149. |

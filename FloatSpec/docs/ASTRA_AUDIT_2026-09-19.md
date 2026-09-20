@@ -3820,6 +3820,51 @@ The latest hosted main run, **35539977225** at `4f8e439f`, again fails at the
 Mathlib cache step (final Lean 4.34 versus pinned Mathlib rc2), before project
 source compilation. CI policy remains unmodified pending approval.
 
+### September 20, 22:08 UTC — four unindexed Pff sign laws and final checks
+
+The facade now exports `Fopp_correct`, `Fopp_Fopp`, `Fabs_correct` and
+`Fabs_Fzero`, with four pinned anchors and closed proofs. The existing numerical
+bodies are unchanged. Compiled Rocq client types confirm unrestricted-radix
+negation, radix-free involution and nonzero preservation, and positive-radix
+absolute-value interpretation (including radix one). Both assistants prove
+the latter cannot extend to all negative radices. The extended paired basic
+fixture checks all four types and axioms. Four live mutation controls pass in
+14.440 seconds, rejecting identity negation and deleting radix positivity.
+The source-shaped addition/subtraction observer laws remain a known facade
+gap; their source types require only positive radix, not the stronger Core
+valid-radix assumption. They are recorded as remaining work, not silently
+counted as covered by indexed theorems.
+
+The full macOS Lean 4.34 build passes **6,226 jobs**. Fresh trust checks
+**13,687 source declarations / 59 modules**, still exactly four manifest-only
+direct/transitive debts; **336 source anchors** validate. Complete production
+and fixture LSP diagnostics pass. Final production source fingerprint:
+`d0ab66b2bc31ba456e8e344f75cf4fbfafa4b29d89857bc153511599c1e429da`.
+A new persistent 72-input sign/radix replay passes all three execution paths,
+all generated kernel equalities and **1,272 independent assertions**, seed
+862619, in **17.638 seconds**. It deliberately has no conditional neighbor
+coverage and is not a replacement for the preceding broader Pff run.
+Report: `/private/tmp/floatspec-final-pff-sign-862619/report.json`.
+Logs: `/private/tmp/floatspec-final-pff-sign-{full-build,trust,anchors,bridge}-20260920.log`,
+`floatspec-pff-sign-contracts-{lean,rocq}-20260920.log`, and
+`floatspec-pff-sign-contract-mutations-20260920.log`.
+
+Immediately before these four theorem-only additions, the final standalone
+sweep on **3c5a913d** re-executed **14 Lean test modules, 26 standalone Lean
+fixtures, 38 pinned Rocq fixtures, and all seven demo examples**. Every command
+completed successfully; cached Lake artifacts did not skip the runtime loops.
+This includes integer/bit/order/native arithmetic checks, source premise
+guards, error-law grids and the new 12,100-case remainder grid. The old aggregate,
+this standalone sweep, and the final focused replay are separately fingerprinted
+in the receipt, not described as one universal test of final main.
+
+Verification-tool regressions also pass: two compiled-trust tests, three
+source-anchor tests, the protected/public-axiom/runtime-override textual
+controls, and strict source-linter controls for mutual/private/qualified
+definitions and abbreviations. The generated status matches a fresh scan.
+No existing noncomputable annotation was changed during the user's explanatory
+question or these final slices. No new proof debt was introduced.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In

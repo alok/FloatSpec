@@ -24,6 +24,17 @@ open FloatSpec.Pff
 #check Source.is_Fzero_rep1 (-3)
 #check Source.Fmult_correct 1 (by decide)
 
+#check (Source.Fopp_correct : ∀ (radix : Int) (x : Source.float),
+  Source.FtoR radix (Source.Fopp x) = -Source.FtoR radix x)
+#check (Source.Fopp_Fopp : ∀ x : Source.float, Source.Fopp (Source.Fopp x) = x)
+#check (Source.Fabs_correct : ∀ (radix : Int), 0 < radix → ∀ x : Source.float,
+  Source.FtoR radix (Source.Fabs x) = |Source.FtoR radix x|)
+#check (Source.Fabs_Fzero : ∀ x : Source.float,
+  ¬ Source.is_Fzero x → ¬ Source.is_Fzero (Source.Fabs x))
+
+#check Source.Fopp_correct (-2)
+#check Source.Fabs_correct 1 (by decide)
+
 #guard Source.Fzero (-7) == ⟨0, -7⟩
 #guard Source.Fmult ⟨-3, -7⟩ ⟨5, 9⟩ == ⟨-15, 2⟩
 #guard @decide (Source.is_Fzero (Source.Fzero (-7)))
@@ -42,5 +53,16 @@ theorem zero_radix_is_not_a_multiplication_model :
 #print axioms Source.is_Fzero_rep2
 #print axioms Source.Fmult
 #print axioms Source.Fzero
+
+/-- A negative radix invalidates the absolute-value observer law. -/
+theorem negative_radix_is_not_an_absolute_value_model :
+    Source.FtoR (-2) (Source.Fabs ⟨1, 1⟩) ≠ |Source.FtoR (-2) ⟨1, 1⟩| := by
+  norm_num [Source.FtoR, Source.Fabs]
+
+#print axioms negative_radix_is_not_an_absolute_value_model
+#print axioms Source.Fopp_correct
+#print axioms Source.Fopp_Fopp
+#print axioms Source.Fabs_correct
+#print axioms Source.Fabs_Fzero
 
 end PffBasicSourceContracts

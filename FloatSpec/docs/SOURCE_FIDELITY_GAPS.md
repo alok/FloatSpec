@@ -1,6 +1,6 @@
 # What still separates this from a faithful port
 
-Checked September 20, 2026, 21:50 UTC, against Flocq
+Checked September 20, 2026, 22:07 UTC, against Flocq
 `7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f`.
 
 The target is the same domain, result type, branches, and theorem hypotheses
@@ -35,6 +35,13 @@ which the indexed valid-radix carrier cannot express. Other source exports must
 still be compared individually; analogous indexed operations do not establish
 complete unindexed API coverage.
 
+Four further sign laws now cover negation, involution, absolute-value
+interpretation and nonzero preservation. The source-shaped `Fplus_correct`
+and `Fminus_correct` laws are still absent from the facade, although their
+operations exist and have finite cross-tests. Compiled Rocq types confirm
+those two laws need only `0 < radix`, not `1 < radix`; existing indexed
+theorems cannot simply be relabeled as complete substitutes.
+
 The existing Pdiv, oZ, oZ1 and Zquotient bodies use only integer/natural
 arithmetic but still carry noncomputable markers. maxDiv additionally selects
 a classical divisibility decision. Exposing execution and cross-testing signed
@@ -43,7 +50,7 @@ useful next slice. Do not infer arithmetic failure merely from those markers.
 
 ## Priority 3: make provenance coverage a gate everywhere
 
-The latest compiled metadata validates 332 source anchors. Strict public-definition
+The latest compiled metadata validates 336 source anchors. Strict public-definition
 classification is enabled in fourteen source files plus a section of Binary;
 unclassified definitions elsewhere are not yet rejected. The current linter
 checks public def/abbrev declarations, not every theorem. Expand classification
