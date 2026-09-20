@@ -32,9 +32,10 @@ LEAN_LOC = [".loc_Exact", ".loc_Inexact .lt", ".loc_Inexact .eq", ".loc_Inexact 
 COQ_LOC = ["loc_Exact", "loc_Inexact Lt", "loc_Inexact Eq", "loc_Inexact Gt"]
 OPS = ("power", "div_eucl", "location", "round", "truncate", "div", "plus", "sqrt",
        "formats", "digits", "operations", "format_calc", "overflow", "bits32", "bits64",
-       "bit_fields", "order32", "order64", "validity", "nearby", "neighbors", "comparison", "small_ieee")
-ARITIES = dict(zip(OPS, (2, 2, 3, 3, 5, 6, 6, 4, 3, 2, 5, 8, 4, 1, 1, 6, 2, 2, 5, 6, 6, 10, 15), strict=True))
-WIDTHS = dict(zip(OPS, (1, 2, 3, 6, 3, 2, 2, 2, 4, 1, 13, 12, 5, 9, 9, 8, 14, 14, 15, 7, 17, 14, 39), strict=True))
+       "bit_fields", "order32", "order64", "validity", "nearby", "neighbors", "comparison", "small_ieee",
+       "ieee_round")
+ARITIES = dict(zip(OPS, (2, 2, 3, 3, 5, 6, 6, 4, 3, 2, 5, 8, 4, 1, 1, 6, 2, 2, 5, 6, 6, 10, 15, 8), strict=True))
+WIDTHS = dict(zip(OPS, (1, 2, 3, 6, 3, 2, 2, 2, 4, 1, 13, 12, 5, 9, 9, 8, 14, 14, 15, 7, 17, 14, 39, 16), strict=True))
 RADIX_OPS = {"truncate", "div", "plus", "sqrt", "digits", "operations", "format_calc"}
 
 
@@ -85,6 +86,10 @@ class Case:
                 kind, sign, mantissa, _ = self.args[offset:offset+4]
                 if kind not in range(4) or sign not in (0, 1) or mantissa <= 0:
                     raise ValueError("small_ieee requires kind 0..3, sign 0/1, positive source mantissa")
+        if self.op == "ieee_round":
+            _, _, mode, sign, _, _, location, positive = self.args
+            if mode not in range(5) or sign not in (0, 1) or location not in range(4) or positive <= 0:
+                raise ValueError("ieee_round requires mode 0..4, sign 0/1, location 0..3, positive round mantissa")
 
 
 def small_ieee_raw(value, coq=False):
@@ -194,6 +199,32 @@ def comparison_corpus(seed: int, samples: int) -> list[Case]:
 
 
 
+def ieee_round_corpus(seed: int, samples: int) -> list[Case]:
+    """Total raw rounding functions, including inputs outside value-theorem premises."""
+    cases: list[Case] = []
+    rng = random.Random(seed)
+    for p, emax in ((-1, 1), (0, 1), (1, 1), (1, 2), (3, 3), (3, 4), (4, 9), (24, 128), (53, 1024)):
+        emin = 3 - emax - p
+        cut = 1 << max(1, p)
+        boundary = [(-2, emin-1), (-1, 0), (0, emin), (0, 0),
+                    (1, emin-1), (1, emin), (1, 0),
+                    (cut-1, emin), (cut, emin), (cut+1, emin),
+                    (cut-1, -p), (cut, -p), (cut+1, -p),
+                    (cut-1, emax-p), (cut, emax-p), (cut+1, emax-p+1)]
+        for mode in range(5):
+            for sign in range(2):
+                for loc in range(4):
+                    for mantissa, exponent in boundary:
+                        cases.append(Case("ieee_round", (p, emax, mode, sign, mantissa,
+                                                         exponent, loc, max(1, abs(mantissa)))))
+        for _ in range(samples):
+            cases.append(Case("ieee_round", (p, emax, rng.randrange(5), rng.randrange(2),
+                                             rng.randint(-2*cut, 2*cut),
+                                             rng.randint(min(emin, emax)-2, max(emin, emax)+2),
+                                             rng.randrange(4), rng.randint(1, 2*cut))))
+    return list(dict.fromkeys(cases))
+
+
 def corpus(seed: int, samples: int) -> list[Case]:
     """Small exhaustive boundary grids plus independent seeded samples per API."""
     cases: list[Case] = []
@@ -301,8 +332,9 @@ def corpus(seed: int, samples: int) -> list[Case]:
                         cases.append(Case("neighbors", (prec, emax, 3, sign, mantissa, exponent)))
     cases.extend(comparison_corpus(seed, samples))
     cases.extend(small_ieee_corpus(seed, samples))
+    cases.extend(ieee_round_corpus(seed, samples))
     for op in OPS:
-        if op in ("comparison", "small_ieee"):
+        if op in ("comparison", "small_ieee", "ieee_round"):
             continue
         for _ in range(samples):
             base = rng.choice((2, 3, 10, 16))
@@ -367,6 +399,23 @@ def expressions(case: Case) -> tuple[str, str]:
     """Translate inputs only; all arithmetic is performed by imported APIs."""
     a = [f"({n})" for n in case.args]
     op = case.op
+    if op == "ieee_round":
+        p, emax, mode, sign, mantissa, exponent, loc, positive = case.args
+        lm = ('.RNE', '.RTZ', '.RTN', '.RTP', '.RNA')[mode]
+        cm = ('mode_NE', 'mode_ZR', 'mode_DN', 'mode_UP', 'mode_NA')[mode]
+        s = 'true' if sign else 'false'
+        lean, rocq = [], []
+        for name, serialize in (("BinarySingleNaN", "standard"), ("Binary", "full")):
+            lean.append(f'{serialize} ({name}.binary_round_aux (prec := ({p})) (emax := ({emax})) '
+                        f'{lm} {s} ({mantissa}) ({exponent}) ({LEAN_LOC[loc]}))')
+            rocq.append(f'{serialize} (@{name}.binary_round_aux ({p}) ({emax}) '
+                        f'{cm} {s} ({mantissa}) ({exponent}) ({COQ_LOC[loc]}))')
+        for name, serialize in (("BinarySingleNaN", "standard"), ("Binary", "full")):
+            lean.append(f'{serialize} ({name}.binary_round (prec := ({p})) (emax := ({emax})) '
+                        f'{lm} {s} (binaryPositiveOfNat {positive} (by decide)) ({exponent}))')
+            rocq.append(f'{serialize} (@{name}.binary_round ({p}) ({emax}) '
+                        f'{cm} {s} ({positive})%positive ({exponent}))')
+        return ' ++ '.join(lean), ' ++ '.join(rocq)
     if op == "small_ieee":
         return small_ieee_expressions(case)
     if op == "comparison":
@@ -603,6 +652,11 @@ private def standard : StandardFloat → List Int
   | .S754_infinity s => [1, boolean s, 0, 0]
   | .S754_nan => [2, 0, 0, 0]
   | .S754_finite s m e => [3, boolean s, m, e]
+private def full : full_float → List Int
+  | .F754_zero s => [0, boolean s, 0, 0]
+  | .F754_infinity s => [1, boolean s, 0, 0]
+  | .F754_nan s payload => [2, boolean s, Zaux.positiveToNat payload, 0]
+  | .F754_finite s m e => [3, boolean s, Zaux.positiveToNat m, e]
 private def fields (p : Bool × Int × Int) : List Int := [boolean p.1, p.2.1, p.2.2]
 private def bitFields (mw ew : Int) (s : Bool) (m e word : Int) : List Int :=
   let joined := FloatSpec.IEEE754.Bits.Source.join_bits mw ew s m e

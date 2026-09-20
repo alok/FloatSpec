@@ -1012,6 +1012,96 @@ markers. Pinned full-payload `binary_round_aux` and `binary_round` also have no
 precision premises, unlike their current Lean wrappers. These are candidates
 for the next explicitly tested slice, not completed repairs in this receipt.
 
+### September 20 continuation: executable raw rounding exposes a signed-shift bug
+
+The full-payload `Binary.binary_round_aux` and `Binary.binary_round` wrappers
+no longer require `Prec_gt_0` / `Prec_lt_emax`, absent from the compiled pinned
+types at `Binary.v:893,991`. Those wrappers and their SingleNaN counterparts
+now execute without `noncomputable`; their wrapping bodies are unchanged.
+Four source anchors and two compiler guards bring the totals to 157 and 52.
+Paired typed consumers compile with arbitrary integer format parameters.
+
+The new `ieee_round` bridge family compares both raw operations through both
+carriers, retaining 16 output columns. Nine formats include ordinary binary32
+and binary64, small formats, nonpositive precision, and `emax <= prec`.
+Auxiliary mantissas are signed; `binary_round` retains the source's positive
+carrier. Modes, signs, discarded-part locations, boundaries, and seeded
+supplemental inputs are all explicit.
+
+**Actual semantic finding:** seed 826411, 150 supplemental samples per format,
+found **197 disagreements in 6,354 inputs**. Every difference involved a
+negative auxiliary mantissa; no nonnegative auxiliary or positive-input
+`binary_round` result differed in that run. The report remains a failure:
+`/private/tmp/floatspec-raw-round-v2-20260920/report.json`, 430.863 seconds,
+source SHA-256
+`9b6e210b8a5931d53334e47e2d7d52ad97095d179af4a431a243181fe5551e33`.
+Its 4,054 kernel assertions came only from agreeing batches and must not be
+reported as a successful overall run.
+
+For `(prec, emax, mode, sign, mantissa, exponent, location) =
+(3, 4, RNA, true, -7, -6, exact)`, Lean returned NaN and Rocq returned negative
+zero. There were also finite and infinite reference results among the
+disagreements. `bsn_shr_fexp` used Calc's Euclidean-division truncation for
+every signed mantissa. Pinned `SpecFloat.shr_fexp` instead uses the signed
+`shr`/`shr_1` algorithm, which truncates toward zero. Flocq's
+`BinarySingleNaN.v:1072 shr_fexp_truncate` explicitly requires `0 <= m`.
+The shortcut already existed in upstream `158263e9`; it was not introduced
+by the earlier 23-commit audit.
+
+**Correction:** use the existing truncation implementation when `0 <= m`,
+and the actual signed shift otherwise. The private shortcut-equality lemma
+now states its missing nonnegativity condition. A new closed Lean lemma
+connects the combined implementation to the source-shaped shift for every
+integer mantissa under the existing format assumptions. The real-value
+rounding proof obtains nonnegativity from its original `inbetween_float`
+hypothesis; no new public theorem premise or proof hole was added. Two
+facade proof steps required explicit unfolding/rewrite/exact instead of
+unbounded simplification to avoid deterministic heartbeat timeouts.
+
+Verification receipts on the corrected snapshot:
+
+- Full Lean 4.34.0 macOS library/test/executable build: **6,216 jobs**, exit 0,
+  `/private/tmp/floatspec-raw-round-fix-build-v2-20260920.log`.
+- Complete LSP error diagnostics clean for both edited implementation files,
+  the nine-case fixture, and the updated six-part guided demo.
+- Nine literal expected values checked independently in Lean and pinned Rocq;
+  Lean also executes them and checks their equality in the kernel. Typed
+  source-premise consumers pass in both languages. The six-part demo runs.
+- All **197 saved counterexamples** replay successfully in both Lean paths
+  and pinned Rocq, with 197 generated kernel assertions. They are committed
+  in `scripts/fixtures/RawIEEERoundingReplay.json`, and the aggregate runner
+  replays them independently of its chosen random seed. Receipt:
+  `/private/tmp/floatspec-raw-round-fixed-replay-20260920/report.json`,
+  14.613 seconds, source SHA-256
+  `266add04c6a2f15ff1209bf1b77c6f55e2d64c975f3aaef67b8a24ec9efebbd7`.
+- **38 live harness tests** pass in 114.787 seconds, including rounding-mode
+  mutation rejection and preserved replay input validation. Log:
+  `/private/tmp/floatspec-raw-round-fixed-harness-20260920.log`.
+- The compiled trust audit checks **13,589 declarations / 58 modules** and
+  exactly the same four named debts. The generated status is unchanged;
+  157 source anchors validate.
+- The complete repaired grid passes **6,354 shared cases and 6,354 kernel
+  assertions**, seed 826411, 150 supplemental samples per format, in 513.270
+  seconds. Receipt:
+  `/private/tmp/floatspec-raw-round-fixed-grid-20260920/report.json`.
+  Its source SHA-256 matches the successful counterexample replay above.
+
+Failed setup/check attempts remain failures: the initial generator emitted
+an unparenthesized inexact-location argument; its report has status `error`
+with no completed comparisons. The overlapping first harness invocation was
+interrupted (exit 130), then rerun after the generator correction. The first
+post-fix project build failed on the two proof heartbeat timeouts noted
+above; neither timeout was hidden by increasing the budget or adding sorries.
+One Rocq fixture invocation used a different output basename, which Rocq
+rejects; the corrected same-basename invocation passed.
+
+Next independently reproduced finding, not yet corrected here: direct raw
+overflow at precision 0 or -1 produces finite mantissa 0 in Lean, whereas
+pinned Rocq's `Z.to_pos` fallback produces 1. Read-only paired probes are
+`/private/tmp/RawOverflowProbe.lean` and `.v`. This is outside the overflow
+validity theorem's positive-precision hypotheses, but still a total-function
+discrepancy. It is kept separate from the signed-shift correction.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In

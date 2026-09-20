@@ -118,6 +118,14 @@ Definition binary_injection_contract (prec emax : Z)
     (Hr : Binary.B2R prec emax x = Binary.B2R prec emax y) : x = y :=
   @Binary.B2R_inj prec emax x y Hx Hy Hr.
 
+Definition binary_round_aux_contract (prec emax : Z) (md : mode) (sign : bool)
+    (mantissa exponent : Z) (location : SpecFloat.location) : Binary.full_float :=
+  @Binary.binary_round_aux prec emax md sign mantissa exponent location.
+
+Definition binary_round_contract (prec emax : Z) (md : mode) (sign : bool)
+    (mantissa : positive) (exponent : Z) : Binary.full_float :=
+  @Binary.binary_round prec emax md sign mantissa exponent.
+
 Definition binary_signed_injection_contract (prec emax : Z)
     (x y : Binary.binary_float prec emax)
     (Hx : Binary.is_finite prec emax x = true)

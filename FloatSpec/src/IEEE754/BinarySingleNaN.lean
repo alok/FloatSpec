@@ -2424,15 +2424,22 @@ private theorem binary_fit_aux_semantics
 
 -- Coq: `shr_fexp`, specialized to the SingleNaN `FLT_exp` exponent function.
 -- This local helper keeps the precision-dependent BSN payload explicit.
+-- The truncate shortcut agrees with signed shifting only for nonnegative
+-- mantissas (see `shr_truncate`). Negative raw inputs must use the source
+-- shift, which truncates toward zero rather than taking Euclidean division.
 def bsn_shr_fexp (m e : Int) (l : Loc) : ShrRecord × Int :=
-  let r := FloatSpec.Calc.Round.truncate_triple
-    (beta := 2) (fexp := FLT_exp (3 - emax - prec) prec) (m, e, l)
-  let m' := r.1
-  let e' := r.2.1
-  let l' := r.2.2
-  (shr_record_of_loc m' l', e')
+  if 0 ≤ m then
+    let r := FloatSpec.Calc.Round.truncate_triple
+      (beta := 2) (fexp := FLT_exp (3 - emax - prec) prec) (m, e, l)
+    let m' := r.1
+    let e' := r.2.1
+    let l' := r.2.2
+    (shr_record_of_loc m' l', e')
+  else
+    shr (shr_record_of_loc m l) e
+      (FLT_exp (3 - emax - prec) prec (FloatSpec.Core.Digits.Zdigits 2 m + e) - e)
 
-private theorem bsn_shr_fexp_truncate_eq (m e : Int) (l : Loc) :
+private theorem bsn_shr_fexp_truncate_eq (m e : Int) (l : Loc) (hm : 0 ≤ m) :
     bsn_shr_fexp (prec:=prec) (emax:=emax) m e l =
       let r := FloatSpec.Calc.Round.truncate_triple
         (beta := 2) (fexp := FLT_exp (3 - emax - prec) prec) (m, e, l)
@@ -2440,7 +2447,19 @@ private theorem bsn_shr_fexp_truncate_eq (m e : Int) (l : Loc) :
       let e' := r.2.1
       let l' := r.2.2
       (shr_record_of_loc m' l', e') := by
-  rfl
+  simp only [bsn_shr_fexp, ite_eq_left hm]
+
+-- The executable shortcut and signed fallback implement the same source
+-- shift at every integer mantissa; the existing format instance supplies the
+-- validity hypothesis needed for the nonnegative truncation theorem.
+private theorem bsn_shr_fexp_eq_shr (m e : Int) (l : Loc) :
+    bsn_shr_fexp (prec := prec) (emax := emax) m e l =
+      shr (shr_record_of_loc m l) e
+        (FLT_exp (3 - emax - prec) prec (FloatSpec.Core.Digits.Zdigits 2 m + e) - e) := by
+  by_cases hm : 0 ≤ m
+  · exact (bsn_shr_fexp_truncate_eq (prec := prec) (emax := emax) m e l hm).trans
+      (shr_truncate (FLT_exp (3 - emax - prec) prec) m e l hm).symm
+  · simp only [bsn_shr_fexp, ite_eq_right hm]
 
 private theorem shr_record_of_loc_shr_m (m : Int) (l : Loc) :
     (shr_record_of_loc m l).shr_m = m := by
@@ -2452,6 +2471,7 @@ private theorem shr_record_of_loc_shr_m (m : Int) (l : Loc) :
 private theorem bsn_shr_fexp_nonneg (m e : Int) (l : Loc) (hm : 0 ≤ m) :
     0 ≤ (bsn_shr_fexp (prec:=prec) (emax:=emax) m e l).1.shr_m := by
   unfold bsn_shr_fexp
+  simp only [ite_eq_left hm]
   set r := FloatSpec.Calc.Round.truncate_triple
     (beta := 2) (fexp := FLT_exp (3 - emax - prec) prec) (m, e, l)
   change 0 ≤ (shr_record_of_loc r.1 r.2.2).shr_m
@@ -3376,6 +3396,16 @@ private theorem binary_round_aux_correct_proof
   let l1 := r1.2.2
   let m1' := choice_mode mode sx m1 l1
   have hx_abs_pos : 0 < |x| := abs_pos.mpr hx_ne
+  have hmx_nonneg : 0 ≤ mx := by
+    have hbounds := FloatSpec.Calc.Bracket.inbetween_float_bounds
+      (beta := 2) (x := |x|) (m := mx) (e := ex) (l := lx)
+      Bx (by norm_num : (1 : Int) < 2)
+    have hupper_pos := lt_of_le_of_lt (abs_nonneg x) hbounds.2
+    have hm_add_pos := FloatSpec.Core.Float_prop.gt_0_F2R
+      (beta := 2) (f := FloatSpec.Core.Defs.FlocqFloat.mk (mx + 1) ex)
+      (by norm_num : (1 : Int) < 2) hupper_pos
+    change 0 < mx + 1 at hm_add_pos
+    omega
   have hround_repr :
       rounded =
         F2R (FloatSpec.Core.Defs.FlocqFloat.mk
@@ -3473,11 +3503,11 @@ private theorem binary_round_aux_correct_proof
         simpa [wp, PostCond.noThrow, pure] using hbpow_trip trivial
       simp [FloatSpec.Core.Raux.Rlt_bool, hrounded_zero, hbpow_pos]
     constructor
-    · simp [binary_round_aux, bsn_shr_fexp, fexp, sx, r1, m1, e1, l1, m1',
+    · simp [binary_round_aux, bsn_shr_fexp, hmx_nonneg, fexp, sx, r1, m1, e1, l1, m1',
         hm1'_zero, hsecond_zero, hsecond_zero_raw, loc_of_shr_record_of_loc,
         shr_m_shr_record_of_loc, validBinarySingleNaNStandardFloat]
     · rw [hlt]
-      simp [binary_round_aux, bsn_shr_fexp, fexp, sx, r1, m1, e1, l1, m1',
+      simp [binary_round_aux, bsn_shr_fexp, hmx_nonneg, fexp, sx, r1, m1, e1, l1, m1',
         hm1'_zero, hsecond_zero, hsecond_zero_raw, hrounded_zero, loc_of_shr_record_of_loc,
         shr_m_shr_record_of_loc, SF2R, is_finite_SF, sign_SF]
       simpa [rounded, fexp] using hrounded_zero.symm
@@ -3615,19 +3645,20 @@ private theorem binary_round_aux_correct_proof
         (bsn_shr_fexp (prec:=prec) (emax:=emax) m1' e1
           FloatSpec.Calc.Bracket.Location.loc_Exact).1.shr_m = m2 := by
       unfold bsn_shr_fexp
+      simp only [ite_eq_left hm1'_nonneg]
       change (shr_record_of_loc r2.1 r2.2.2).shr_m = m2
       simp [r2, m2, shr_m_shr_record_of_loc]
     have hsecond_exp :
         (bsn_shr_fexp (prec:=prec) (emax:=emax) m1' e1
           FloatSpec.Calc.Bracket.Location.loc_Exact).2 = e2 := by
       unfold bsn_shr_fexp
-      simp [fexp, r2, e2]
+      simp [hm1'_nonneg, fexp, r2, e2]
     have hnot_zero : ¬m2 = 0 := by omega
     have hpos_bool : 0 < m2 := hm2_pos
     have hresult_eq :
         binary_round_aux (prec:=prec) (emax:=emax) mode sx mx ex lx =
           binary_fit_aux (prec:=prec) (emax:=emax) mode sx m2.toNat e2 := by
-      simp [binary_round_aux, bsn_shr_fexp, fexp, sx, r1, m1, e1, l1, m1',
+      simp [binary_round_aux, bsn_shr_fexp, hmx_nonneg, hm1'_nonneg, fexp, sx, r1, m1, e1, l1, m1',
         r2, m2, e2, hm1'_zero, hsecond_shr, hsecond_exp, hm2_toNat_cast,
         hnot_zero, hpos_bool, loc_of_shr_record_of_loc, shr_m_shr_record_of_loc]
     have hresult_eq' :
@@ -5821,7 +5852,7 @@ theorem shr_fexp_truncate (m e : Int) (l : Loc) (hm : 0 ≤ m) :
       let r := FloatSpec.Calc.Round.truncate 2
         (FLT_exp (3 - emax - prec) prec) (m, e, l)
       (_root_.shr_record_of_loc r.1 r.2.2, r.2.1) := by
-  rfl
+  exact bsn_shr_fexp_truncate_eq (prec := prec) (emax := emax) m e l hm
 
 def erase {prec emax : Int} (x : binary_float prec emax) : binary_float prec emax := x
 
@@ -14108,15 +14139,15 @@ private theorem is_nan_bsn_binary_overflow_false {prec emax : Int}
   cases mode <;> cases s <;> simp [overflow_to_inf, is_nan_SF]
 
 -- Coq `Binary.v:binary_round_aux` on the exact full-float carrier.
-noncomputable def binary_round_aux {prec emax : Int}
-    [Prec_gt_0 prec] [Prec_lt_emax prec emax]
+@[flocq_source "src/IEEE754/Binary.v" 893 "binary_round_aux"]
+def binary_round_aux {prec emax : Int}
     (mode : RoundingMode) (sx : Bool) (mx ex : Int) (lx : Loc) : full_float :=
   SF2FF_exact (_root_.binary_round_aux (prec:=prec) (emax:=emax)
     mode sx mx ex lx)
 
 -- Coq `Binary.v:binary_round`; the source mantissa is Positive.
-noncomputable def binary_round {prec emax : Int}
-    [Prec_gt_0 prec] [Prec_lt_emax prec emax]
+@[flocq_source "src/IEEE754/Binary.v" 991 "binary_round"]
+def binary_round {prec emax : Int}
     (mode : RoundingMode) (sx : Bool)
     (mx : FloatSpec.Core.Zaux.Positive) (ex : Int) : full_float :=
   SF2FF_exact (_root_.binary_round (prec:=prec) (emax:=emax) mode sx

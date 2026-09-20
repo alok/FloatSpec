@@ -62,6 +62,23 @@ input; accepting a noncanonical carrier was a semantic bug, not missing proof
 automation. The exact regression is useful when explaining why a green build
 cannot certify a port.
 
+## 6. Watch cross-testing discover a missing precondition
+
+The source shift sends integer `-1` to `0`; Euclidean division sends
+`-1 / 2` to `-1`. They agree on nonnegative mantissas, which is precisely
+the hypothesis of Flocq's `shr_truncate` theorem. The former raw-rounding
+implementation used that shortcut for every integer. The demo now executes
+the distinction and one saved input that previously produced NaN rather
+than the source's negative zero.
+
+This is not a claim that a negative raw mantissa denotes a valid float.
+It separates two contracts: a total exported function's behavior, and the
+conditional theorem explaining its real value. The paired
+[Lean](../../scripts/fixtures/RawIEEERounding.lean) and
+[Rocq](../../scripts/fixtures/RawIEEERounding.v) fixtures retain literal
+expectations; the [197-case replay](../../scripts/fixtures/RawIEEERoundingReplay.json)
+preserves every disagreement from the original seeded run.
+
 ## Exemplars inspected
 
 These are reading recommendations, not dependencies adopted by FloatSpec.

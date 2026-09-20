@@ -49,6 +49,27 @@ class RunnerTests(unittest.TestCase):
 
 
 class ParserTests(unittest.TestCase):
+    def test_saved_raw_round_counterexamples_remain_replayable(self):
+        path = Path(__file__).parent / 'fixtures/RawIEEERoundingReplay.json'
+        cases = [bridge.Case(row['op'], tuple(row['args']))
+                 for row in json.loads(path.read_text())]
+        self.assertEqual(len(cases), 197)
+        self.assertEqual(len(set(cases)), 197)
+        self.assertTrue(all(case.op == 'ieee_round' and case.args[4] < 0 for case in cases))
+        self.assertIn(bridge.Case('ieee_round', (3, 4, 4, 1, -7, -6, 0, 10)), cases)
+
+    def test_raw_ieee_round_corpus_and_carrier_validation(self):
+        cases = bridge.ieee_round_corpus(49241, 4)
+        self.assertEqual(cases, bridge.ieee_round_corpus(49241, 4))
+        self.assertNotEqual(cases, bridge.ieee_round_corpus(49242, 4))
+        self.assertIn(bridge.Case('ieee_round', (-1, 1, 0, 0, -1, 0, 0, 1)), cases)
+        self.assertIn(bridge.Case('ieee_round', (3, 3, 4, 1, 8, -3, 2, 8)), cases)
+        for position, bad in ((2, 5), (3, 2), (6, 4), (7, 0), (7, -1)):
+            args = [3, 4, 0, 0, -1, 0, 0, 1]
+            args[position] = bad
+            with self.assertRaises(ValueError):
+                bridge.Case('ieee_round', tuple(args))
+
     def test_small_format_corpus_and_preconditions(self):
         cases = bridge.small_ieee_corpus(491731, 1)
         self.assertEqual(cases, bridge.small_ieee_corpus(491731, 1))
@@ -166,6 +187,47 @@ class ParserTests(unittest.TestCase):
 
 @unittest.skipUnless(os.environ.get("FLOCQ_AUDIT_DIR"), "live test requires FLOCQ_AUDIT_DIR")
 class LiveTests(unittest.TestCase):
+    def test_raw_ieee_round_boundaries_and_degenerate_parameters(self):
+        flocq = Path(os.environ['FLOCQ_AUDIT_DIR']).resolve()
+        cases = [bridge.Case('ieee_round', args) for args in
+                 ((3, 4, 0, 0, 9, -3, 0, 9),
+                  (3, 4, 4, 0, 9, -3, 0, 9),
+                  (3, 4, 0, 1, 0, -4, 0, 1),
+                  (3, 4, 0, 0, -1, -4, 0, 1),
+                  (0, 1, 0, 0, 1, 0, 0, 1),
+                  (-1, 1, 2, 1, -2, 0, 2, 1),
+                  (3, 3, 0, 0, 4, -2, 0, 4),
+                  (-1, 1, 1, 0, -2, 2, 0, 2),
+                  (3, 4, 4, 1, -7, -6, 0, 10),
+                  (3, 3, 1, 1, -2, -5, 1, 2))]
+        with tempfile.TemporaryDirectory(prefix='floatspec-ieee-round-') as directory:
+            rows = bridge.execute(cases, flocq, bridge.configured_coqc(flocq), Path(directory))
+            bridge.bootstrap_lean(cases, rows['rocq'], Path(directory))
+        self.assertEqual(bridge.compare(cases, rows), [])
+        self.assertEqual(rows['rocq'][0], [3, 0, 4, -2] * 4)
+        self.assertEqual(rows['rocq'][1], [3, 0, 5, -2] * 4)
+        self.assertEqual(rows['rocq'][2][:8], [0, 1, 0, 0] * 2)
+        self.assertEqual(rows['rocq'][3][:8], [2, 0, 0, 0, 2, 0, 1, 0])
+        self.assertEqual(rows['rocq'][6], [3, 0, 4, -2] * 4)
+        self.assertEqual(rows['rocq'][7][:8], [0, 0, 0, 0] * 2)
+        self.assertEqual(rows['rocq'][8][:8], [0, 1, 0, 0] * 2)
+        self.assertEqual(rows['rocq'][9][:8], [0, 1, 0, 0] * 2)
+
+    def test_raw_ieee_round_mode_mutation_is_rejected(self):
+        flocq = Path(os.environ['FLOCQ_AUDIT_DIR']).resolve()
+        original = bridge.expressions
+        def mutated(case):
+            lean, rocq = original(case)
+            self.assertIn('.RNE', lean)
+            return lean.replace('.RNE', '.RNA'), rocq
+        case = bridge.Case('ieee_round', (3, 4, 0, 0, 9, -3, 0, 9))
+        with (tempfile.TemporaryDirectory(prefix='floatspec-ieee-round-mutation-') as directory,
+              patch.object(bridge, 'expressions', mutated)):
+            rows = bridge.execute([case], flocq, bridge.configured_coqc(flocq), Path(directory))
+        failures = bridge.compare([case], rows)
+        self.assertEqual(len(failures), 1)
+        self.assertEqual(failures[0]['paths'], ['lean', 'compiled'])
+
     def test_small_format_arithmetic_and_invalid_conversion(self):
         flocq = Path(os.environ['FLOCQ_AUDIT_DIR']).resolve()
         one, half, invalid = (3, 0, 4, -2), (3, 0, 4, -3), (3, 0, 1, 5)

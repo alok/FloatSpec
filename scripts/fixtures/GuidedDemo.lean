@@ -60,7 +60,18 @@ private def rawValidity : List Bool :=
 
 example : rawValidity = [false, true] := by decide +kernel
 
-/-- Print five examples and fail if compiled execution disagrees with their assertions. -/
+private def signedShiftAndFloor : List Int :=
+  [(shr_1 ⟨-1, false, false⟩).shr_m, (-1 : Int) / 2]
+
+private def rawRoundIsNegativeZero : Bool :=
+  match binary_round_aux (prec := 3) (emax := 4) .RNA true (-7) (-6) .loc_Exact with
+  | .S754_zero true => true
+  | _ => false
+
+example : signedShiftAndFloor = [0, -1] ∧ rawRoundIsNegativeZero = true := by
+  decide +kernel
+
+/-- Print six examples and fail if compiled execution disagrees with their assertions. -/
 def run : IO Unit := do
   IO.println "1. Exact arithmetic: binary32 1.5 + 2.25 = 3.75."
   IO.println s!"   Result word: {sumBits} (expected 0x40700000 = 1081081856)."
@@ -86,7 +97,13 @@ def run : IO Unit := do
   IO.println "5. Same real value does not mean canonical representation."
   IO.println s!"   (mantissa 1, exponent 0) versus (4, -2): validity = {rawValidity}."
   unless rawValidity == [false, true] do throw (IO.userError "raw validity failed")
-  IO.println "PASS: all five compiled examples agree with their finite kernel assertions."
+  IO.println "6. Signed shifting is not floor division: shift(-1) = 0, but (-1)/2 = -1."
+  IO.println s!"   [source shift, floor division] = {signedShiftAndFloor}."
+  IO.println s!"   Saved raw-rounding counterexample now returns negative zero: {rawRoundIsNegativeZero}."
+  IO.println "   Negative raw mantissas are outside the value theorem; the total API still follows Flocq."
+  unless signedShiftAndFloor == [0, -1] && rawRoundIsNegativeZero do
+    throw (IO.userError "signed raw rounding regression failed")
+  IO.println "PASS: all six compiled examples agree with their finite kernel assertions."
 
 end GuidedDemo
 

@@ -6,7 +6,7 @@ version is: **describe the right values, compute the right answers, prove the
 right statements, and check that “right” still means what Flocq means.**
 Those are separate jobs. A program can compile while its specification is wrong.
 
-For a five-part runnable introduction, start with
+For a six-part runnable introduction, start with
 [the guided demo and exemplar reading list](DEMO_EXEMPLARS.md):
 `lake env lean --run scripts/fixtures/GuidedDemo.lean`.
 
@@ -15,31 +15,44 @@ This guide follows those jobs in order. The detailed
 [independent continuation audit](ASTRA_AUDIT_2026-09-19.md) retain the
 declaration-by-declaration findings and historical milestones.
 
-## Wake-up summary — updated September 20, 2026
+## Wake-up summary — September 20, 2026, 07:16 UTC
 
-**What changed most recently:** the public SingleNaN Boolean operations
-`Beqb`, `Bltb`, and `Bleb` now execute. Previously even comparing two zeros
-failed in a compiled client because these definitions went through mathematical
-reals. They now inspect the source-shaped integer comparator's result. Their
-finite real-value correctness theorems and NaN-aware reflexivity theorem are
-still closed proofs; this change introduced no proof holes.
+**What changed most recently:** actually running the raw IEEE rounding APIs
+found a semantic bug. A helper replaced signed shifting with floor division
+without checking the nonnegative-mantissa condition that makes them agree.
+For example, shifting `-1` right once gives `0` in Flocq, whereas Lean's
+integer `(-1) / 2` is `-1`. That difference propagated into rounding results:
+some raw inputs returned NaN instead of the source's signed zero, and others
+disagreed on finite or infinite results. The bug existed before the recent
+audit work; making the wrappers executable exposed it.
 
-**Why it matters:** a theorem can correctly describe a noncomputable value
-without giving you a program you can run. This repair connects the actual
-Boolean API to executable code while retaining that mathematical contract.
-The demo now prints equality, less-than, and less-or-equal for signed zeros
-and NaN. Section 5 below explains the tests without treating them as proofs
-of universal source equivalence.
+**The repair:** keep the existing truncation shortcut for nonnegative
+mantissas and use the actual signed shift for negative ones. Existing
+real-value correctness proofs remain closed. A new closed lemma connects the
+combined helper to the source-shaped shift for all integer mantissas under
+the existing format assumptions. Negative raw mantissas are outside the
+real-value theorem's hypotheses, but the exported total function still has
+source behavior worth preserving. The demo's sixth example makes this
+difference visible.
 
-**Verified in this continuation:** the full Lean 4.34.0 macOS build (6,216
-jobs), the five-part demo, and the same eight boundary cases independently in
-Lean and pinned Rocq pass. All 4,210 differential comparison cases agree;
-Rocq's outputs also became 4,210 kernel-checked Lean assertions. The 34 live
-harness tests, including deliberate mutations, pass. A separate run checked
-600,000 Boolean observations against native Float/Float32. The compiled trust
-audit still finds exactly four named proof debts. The
-[ledger](ASTRA_AUDIT_2026-09-19.md#september-20-continuation-executable-boolean-comparison)
-records the replay seed, source fingerprint, and local receipts.
+**Verified:** the full Lean 4.34.0 macOS build (6,216 jobs), nine
+literal raw-rounding cases independently in Lean and pinned Rocq, and the
+six-part executable demo pass. The original 6,354-case run found **197
+disagreements**; all 197 saved counterexamples now agree in compiled Lean,
+kernel reduction, and pinned Rocq, and their generated Lean assertions pass.
+The full repaired grid now passes all **6,354 cases and 6,354 kernel
+assertions**, and all **38 harness tests**, including deliberate mutations,
+pass. The compiled trust audit still finds exactly four existing named proof
+debts. The
+[ledger](ASTRA_AUDIT_2026-09-19.md) retains failed runs as failures rather than
+replacing their receipts with a later green result.
+
+Earlier in this continuation, Boolean equality/order became executable
+(4,210 differential cases plus 600,000 native Boolean observations), and
+full-payload injectivity/canonical-mantissa theorems lost two precision
+premises absent from pinned Rocq. The raw rounding wrappers now also execute
+without those source-absent premises. There are 52 premise guards with paired
+typed consumers. None of these repairs added proof holes.
 
 **What is not done:** whole-library source-signature review remains incomplete,
 and the four native/decoder proof obligations remain. Fork CI has a separate
@@ -48,16 +61,10 @@ CI claim. Reviewable work is on
 [`alok/FloatSpec`, branch `codex/astra-flocq-audit`](https://github.com/alok/FloatSpec/tree/codex/astra-flocq-audit),
 with BAIF retained as the optional `upstream` remote.
 
-**The next correction is now implemented:** full-payload real-value injectivity
-and canonical-mantissa conversion no longer require the two precision
-assumptions absent from pinned Rocq. The equivalent SingleNaN theorems already
-had the right interface. The previously failing typed consumers now pass;
-the finite/nonzero and sign hypotheses that matter remain in place. The
-existing proofs remain closed, and the full macOS build passed again.
-The 50 premise guards, paired typed consumers, and a 69-case cross-family
-integration replay pass. Next I am examining the still-noncomputable SingleNaN
-arithmetic entry points and rounding wrappers; this does not mean the
-already-tested full-payload arithmetic stopped working.
+**Next:** correct the separately reproduced raw-overflow discrepancy at
+nonpositive precision, then examine remaining noncomputable SingleNaN arithmetic entry
+points. Successful finite tests do not settle every theorem signature or
+every total-function input.
 
 ## 1. Start with one small rounding problem
 
@@ -393,7 +400,7 @@ changed surfaces have been checked.
 Source links make that review navigable. `@[flocq_source]` records a pinned
 Coq path, line, and name; `@[flocq_local]` explains a Lean-only helper.
 Eleven modules currently enforce strict public-definition classification.
-The compiler-backed validator checks all 153 registered anchors, including
+The compiler-backed validator checks all 157 registered anchors, including
 combined attributes and later attribute commands. These links are metadata,
 not a proof that bodies or theorem signatures correspond.
 

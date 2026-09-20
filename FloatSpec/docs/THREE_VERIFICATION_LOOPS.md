@@ -67,8 +67,11 @@ The standalone paired fixtures add independent contract and error checks:
   independently by enumerating candidates and comparing exact distances.
   Lean executes the full grid and proves 95 boundary cases in the kernel;
   Rocq closes its full grid with `vm_compute`.
+- `RawIEEERounding`: nine literal rounding and invalid-precondition cases,
+  including signed-zero results mined from the differential bridge. Both
+  languages check the same expected values, independently of the adapter.
 
-`Test/SourcePremiseContracts.lean` additionally has 50 source-premise guards,
+`Test/SourcePremiseContracts.lean` additionally has 52 source-premise guards,
 paired typed consumers for the Prop, integer-rounding, canonical-exponent,
 real-comparison, and generic IEEE comparison exports, and four deliberate
 negative guard examples. The corresponding Rocq fixture checks the paired
@@ -217,6 +220,29 @@ carriers are visibly converted to NaN rather than silently treated as valid
 arithmetic operands. A live addition-to-subtraction mutation must fail in both
 Lean paths. It is included automatically in the combined runner, or run it
 alone with `--operations small_ieee --seed 491733 --samples 10`.
+
+The twenty-fourth family, `ieee_round`, executes `binary_round_aux` and
+`binary_round` through both SingleNaN and full-payload wrappers. Sixteen
+columns retain all four results, including full NaN sign/payload. Its nine
+formats deliberately include nonpositive precision and `emax <= prec`:
+these raw functions have no precision premises in the pinned source.
+Only the source carrier's positive argument to `binary_round` is enforced;
+the auxiliary mantissa is signed. All five modes, both signs, and all four
+discarded-part locations are exercised. Negative raw mantissas are tests
+of the total API, not witnesses satisfying its real-value theorem.
+
+Seed `826411` with 150 supplemental samples per format found 197 differences
+in 6,354 cases. All involved negative auxiliary mantissas; the ordinary
+positive-mantissa `binary_round` outputs agreed in that run. The cause was
+using the nonnegative-only `shr_truncate` equivalence without its condition.
+The correction uses signed shifting for negative inputs. Every discovered
+input is retained in `scripts/fixtures/RawIEEERoundingReplay.json`; the
+combined runner replays that file independently of its random seed:
+
+```sh
+uv run scripts/flocq_bridge.py --flocq-dir /path/to/pinned-flocq \
+  --replay scripts/fixtures/RawIEEERoundingReplay.json
+```
 
 Lean both executes compiled calls with `--run` and reduces them with `#reduce`;
 Rocq uses `vm_compute`. Enabling compiled execution required removing

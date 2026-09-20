@@ -510,10 +510,12 @@ noncomputable abbrev shr_fexp {prec emax : Int} := @Binary.shr_fexp prec emax
 
 abbrev shr_fexp_truncate {prec emax : Int} := @Binary.shr_fexp_truncate prec emax
 
-noncomputable abbrev binary_round_aux {prec emax : Int} :=
+@[flocq_source "src/IEEE754/BinarySingleNaN.v" 1270 "binary_round_aux"]
+abbrev binary_round_aux {prec emax : Int} :=
   @_root_.binary_round_aux prec emax
 
-noncomputable def binary_round {prec emax : Int}
+@[flocq_source "src/IEEE754/BinarySingleNaN.v" 1701 "binary_round"]
+def binary_round {prec emax : Int}
     (mode : RoundingMode) (s : Bool) (m : FloatSpec.Core.Zaux.Positive)
     (e : Int) : StandardFloat :=
   _root_.binary_round (prec:=prec) (emax:=emax) mode s
@@ -1309,9 +1311,6 @@ theorem Bulp'_correct {prec emax : Int}
         apply max_eq_right
         have hp := (inferInstance : Prec_gt_0 prec).pos
         omega
-      have hsentinel' : FLT_exp (3 - emax - prec) prec (-(2 * emax) - prec) =
-          3 - emax - prec := by
-        convert hsentinel using 1 <;> ring
       have heminmax : 3 - emax - prec < emax := by
         have hp := (inferInstance : Prec_gt_0 prec).pos
         omega
@@ -1324,7 +1323,9 @@ theorem Bulp'_correct {prec emax : Int}
             (BinarySingleNaNFloat.B754_zero (prec:=prec) (emax:=emax) s)) = true ∧
           Bsign (Bulp'
             (BinarySingleNaNFloat.B754_zero (prec:=prec) (emax:=emax) s)) = false := by
-        simpa [Bulp', Bfrexp, hsentinel, hsentinel'] using hb
+        dsimp only [Bulp', Bfrexp]
+        rw [hsentinel]
+        exact hb
       have hulp0Trip := FloatSpec.Core.FLT.ulp_FLT_0
         (prec:=prec) (emin:=3 - emax - prec) (beta:=2)
       have hulp0 : FloatSpec.Core.Ulp.ulp 2 (FLT_exp (3 - emax - prec) prec) 0 =
@@ -1366,7 +1367,7 @@ theorem Bulp'_correct {prec emax : Int}
         k hkmin hkmax
       have hbprime' : B2R (Bulp' xf) = FloatSpec.Core.Raux.bpow 2 k ∧
           is_finite (Bulp' xf) = true ∧ Bsign (Bulp' xf) = false := by
-        simpa [Bulp', k] using hbprime
+        exact hbprime
       have hulpEq : FloatSpec.Core.Ulp.ulp 2
           (FLT_exp (3 - emax - prec) prec) (B2R xf) =
           FloatSpec.Core.Raux.bpow 2 k := by

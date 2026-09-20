@@ -114,12 +114,23 @@ end FloatSpec.Test.SourcePremiseGuard
 #guard_no_source_premise Binary.canonical_canonical_mantissa Prec_gt_0 at prec
 #guard_no_source_premise Binary.B2R_inj Prec_gt_0 at prec
 #guard_no_source_premise Binary.B2R_Bsign_inj Prec_gt_0 at prec
+#guard_no_source_premise Binary.binary_round_aux Prec_gt_0 at prec
+#guard_no_source_premise Binary.binary_round Prec_gt_0 at prec
 
 /-! Typed consumers deliberately omit proof-only section assumptions.
 Unlike a bare `#check`, each example fails if a public theorem accidentally
 inherits a stronger premise than its pinned Rocq counterpart. -/
 
 namespace SourcePremiseContracts
+
+example {prec emax : Int} (mode : RoundingMode) (sign : Bool)
+    (mantissa exponent : Int) (location : FloatSpec.Calc.Bracket.Location) : full_float :=
+  Binary.binary_round_aux (prec := prec) (emax := emax)
+    mode sign mantissa exponent location
+
+example {prec emax : Int} (mode : RoundingMode) (sign : Bool)
+    (mantissa : FloatSpec.Core.Zaux.Positive) (exponent : Int) : full_float :=
+  Binary.binary_round (prec := prec) (emax := emax) mode sign mantissa exponent
 
 example {prec emax : Int} (x y : binary_float prec emax)
     (hx : Binary.is_finite_strict x = true) (hy : Binary.is_finite_strict y = true)
