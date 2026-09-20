@@ -68,7 +68,7 @@ The standalone paired fixtures add independent contract and error checks:
   Lean executes the full grid and proves 95 boundary cases in the kernel;
   Rocq closes its full grid with `vm_compute`.
 
-`Test/SourcePremiseContracts.lean` additionally has 45 source-premise guards,
+`Test/SourcePremiseContracts.lean` additionally has 50 source-premise guards,
 paired typed consumers for the Prop, integer-rounding, canonical-exponent,
 real-comparison, and generic IEEE comparison exports, and four deliberate
 negative guard examples. The corresponding Rocq fixture checks the paired

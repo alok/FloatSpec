@@ -110,3 +110,25 @@ Definition single_trunc_value_contract (prec emax : Z) (Hlt : Prec_lt_emax prec 
 Definition real_integer_comparison_contract (left right : Z) :
     Rcompare (IZR left) (IZR right) = Z.compare left right :=
   Rcompare_IZR left right.
+
+Definition binary_injection_contract (prec emax : Z)
+    (x y : Binary.binary_float prec emax)
+    (Hx : Binary.is_finite_strict prec emax x = true)
+    (Hy : Binary.is_finite_strict prec emax y = true)
+    (Hr : Binary.B2R prec emax x = Binary.B2R prec emax y) : x = y :=
+  @Binary.B2R_inj prec emax x y Hx Hy Hr.
+
+Definition binary_signed_injection_contract (prec emax : Z)
+    (x y : Binary.binary_float prec emax)
+    (Hx : Binary.is_finite prec emax x = true)
+    (Hy : Binary.is_finite prec emax y = true)
+    (Hr : Binary.B2R prec emax x = Binary.B2R prec emax y)
+    (Hs : Binary.Bsign prec emax x = Binary.Bsign prec emax y) : x = y :=
+  @Binary.B2R_Bsign_inj prec emax x y Hx Hy Hr Hs.
+
+Definition binary_canonical_contract (prec emax : Z) (sign : bool)
+    (mantissa : positive) (exponent : Z)
+    (Hc : SpecFloat.canonical_mantissa prec emax mantissa exponent = true) :
+    canonical radix2 (SpecFloat.fexp prec emax)
+      (Float radix2 (SpecFloat.cond_Zopp sign (Zpos mantissa)) exponent) :=
+  @Binary.canonical_canonical_mantissa prec emax sign mantissa exponent Hc.

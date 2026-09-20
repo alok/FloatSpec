@@ -107,11 +107,40 @@ end FloatSpec.Test.SourcePremiseGuard
 #guard_no_source_premise BinarySingleNaN.Bcompare Prec_gt_0 at prec
 #guard_no_source_premise BinarySingleNaN.Bcompare_correct Prec_gt_0 at prec
 
+-- Injectivity comes from constructor validity and canonical representation,
+-- not positivity or a precision/exponent separation assumption.
+#guard_no_source_premise canonical_canonical_mantissa_compat Prec_gt_0 at prec
+#guard_no_source_premise _root_.B2R_inj Prec_gt_0 at prec
+#guard_no_source_premise Binary.canonical_canonical_mantissa Prec_gt_0 at prec
+#guard_no_source_premise Binary.B2R_inj Prec_gt_0 at prec
+#guard_no_source_premise Binary.B2R_Bsign_inj Prec_gt_0 at prec
+
 /-! Typed consumers deliberately omit proof-only section assumptions.
 Unlike a bare `#check`, each example fails if a public theorem accidentally
 inherits a stronger premise than its pinned Rocq counterpart. -/
 
 namespace SourcePremiseContracts
+
+example {prec emax : Int} (x y : binary_float prec emax)
+    (hx : Binary.is_finite_strict x = true) (hy : Binary.is_finite_strict y = true)
+    (hR : Binary.B2R x = Binary.B2R y) : x = y :=
+  Binary.B2R_inj x y hx hy hR
+
+example {prec emax : Int} (x y : binary_float prec emax)
+    (hx : Binary.is_finite x = true) (hy : Binary.is_finite y = true)
+    (hR : Binary.B2R x = Binary.B2R y) (hs : Binary.Bsign x = Binary.Bsign y) : x = y :=
+  Binary.B2R_Bsign_inj x y hx hy hR hs
+
+example {prec emax : Int} (sign : Bool) (mantissa : FloatSpec.Core.Zaux.Positive)
+    (exponent : Int)
+    (hc : canonical_mantissa (prec := prec) (emax := emax)
+      (FloatSpec.Core.Zaux.positiveToNat mantissa) exponent = true) :
+    FloatSpec.Core.Generic_fmt.canonical 2
+      (FloatSpec.Core.FLT.FLT_exp prec (3 - emax - prec))
+      (FloatSpec.Core.Defs.FlocqFloat.mk
+        (if sign then -(FloatSpec.Core.Zaux.positiveToNat mantissa : Int)
+         else (FloatSpec.Core.Zaux.positiveToNat mantissa : Int)) exponent) :=
+  Binary.canonical_canonical_mantissa sign mantissa exponent hc
 
 variable (beta : Int) [ValidRadix beta] (hβ : 1 < beta)
 

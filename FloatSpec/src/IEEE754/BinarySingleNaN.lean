@@ -5622,8 +5622,8 @@ private theorem B2R_finite_ne_zero {prec emax : Int}
         (-(FloatSpec.Core.Zaux.positiveToNat m : Int)) e) (by norm_num)
           (neg_neg_of_pos hm))
 
+@[flocq_source "src/IEEE754/Binary.v" 473 "B2R_Bsign_inj"]
 theorem B2R_Bsign_inj {prec emax : Int}
-    [Prec_gt_0 prec] [Prec_lt_emax prec emax]
     (x y : binary_float prec emax)
     (hx : is_finite x = true) (hy : is_finite y = true)
     (hR : B2R x = B2R y) (hs : Bsign x = Bsign y) : x = y := by
@@ -5649,8 +5649,8 @@ theorem B2R_Bsign_inj {prec emax : Int}
           · rfl
           · simpa [B2R, binary_float.B2R] using hR
 
+@[flocq_source "src/IEEE754/Binary.v" 321 "canonical_canonical_mantissa"]
 theorem canonical_canonical_mantissa {prec emax : Int}
-    [Prec_gt_0 prec] [Prec_lt_emax prec emax]
     (sx : Bool) (mx : FloatSpec.Core.Zaux.Positive) (ex : Int)
     (hcanon : canonical_mantissa (prec:=prec) (emax:=emax)
       (FloatSpec.Core.Zaux.positiveToNat mx) ex = true) :
@@ -5831,8 +5831,8 @@ theorem erase_correct {prec emax : Int} (x : binary_float prec emax) :
 def is_finite_strict {prec emax : Int} (x : binary_float prec emax) : Bool :=
   binary_float.is_finite_strict x
 
+@[flocq_source "src/IEEE754/Binary.v" 392 "B2R_inj"]
 theorem B2R_inj {prec emax : Int}
-    [Prec_gt_0 prec] [Prec_lt_emax prec emax]
     (x y : binary_float prec emax)
     (hx : is_finite_strict x = true)
     (hy : is_finite_strict y = true)

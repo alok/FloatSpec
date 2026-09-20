@@ -975,6 +975,43 @@ synthesize `Prec_gt_0`; the Rocq inspection client succeeds. The SingleNaN
 counterparts already omit both. This finding remains pending correction at
 this milestone.
 
+### September 20 continuation: full-payload injectivity premises
+
+The next slice corrects the just-recorded mismatch in `Binary.B2R_inj`,
+`Binary.B2R_Bsign_inj`, and `Binary.canonical_canonical_mantissa` against
+pinned `Binary.v:392,473,321`. The root injectivity implementation and its
+canonical-mantissa compatibility helper are corrected alongside them. The
+helper's unused section instances were the reason a simple removal at the
+public theorem initially failed. Omitting them lets all existing proof
+bodies close without new assumptions or sorries. Finite-strictness and sign
+equality are retained exactly where the source requires them.
+
+Five new compiler guards bring the total to **50**, and three paired typed
+Lean/Rocq consumers compile without either precision premise. The original
+`/private/tmp/IEEEInjectionContract.lean` failing client now compiles. All five
+affected proof axiom reports contain only standard Lean/mathlib axioms.
+Full macOS Lean 4.34.0 build: **6,216 jobs**, exit 0; log:
+`/private/tmp/floatspec-injection-full-build-20260920.log`. Complete LSP error
+diagnostics are clean for Binary, BinarySingleNaN, and SourcePremiseContracts.
+The initial canonical consumer draft used the internal FLT exponent arguments
+in source order and correctly failed; the test was corrected, not the API.
+
+The changed slice alters theorem interfaces, not runtime algorithms. A small
+integration replay across all 23 families passed **69 shared cases and 69
+kernel assertions**, not a repeat of the earlier full comparison corpus.
+Report: `/private/tmp/floatspec-injection-replay-20260920/report.json`, elapsed
+17.192 seconds; exact inputs are in its `cases.json` (the report seed is unused
+when replaying). Source SHA-256:
+`a88f1b225dfea923c5062755bdd748877938682ff7f47a6254631506062e23f2`.
+The trust audit remains **13,594 declarations / 58 modules / four named
+debts**; **153** source anchors validate. The generated status is unchanged.
+
+Next inspected execution gaps are in the separate SingleNaN arithmetic exports
+and source-shaped rounding wrappers, which still carry `noncomputable`
+markers. Pinned full-payload `binary_round_aux` and `binary_round` also have no
+precision premises, unlike their current Lean wrappers. These are candidates
+for the next explicitly tested slice, not completed repairs in this receipt.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In

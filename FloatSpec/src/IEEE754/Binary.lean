@@ -3630,6 +3630,7 @@ def canonical_canonical_mantissa_check {prec emax : Int}
   (sx : Bool) (mx : Nat) (ex : Int) : Unit :=
   ()
 
+omit [Prec_gt_0 prec] [Prec_lt_emax prec emax] in
 theorem canonical_canonical_mantissa_compat (sx : Bool) (mx : Nat) (ex : Int)
   (hmx_pos : 0 < mx)  -- IEEE 754: finite floats have positive mantissa; zero is F754_zero
   (h : canonical_mantissa (prec:=prec) (emax:=emax) mx ex = true) :
@@ -4320,7 +4321,8 @@ theorem toBinary754_bounded {prec emax : Int} [Prec_gt_0 prec]
 end binary_float
 
 /-- FLoCq `B2R_inj`, on the proof-carrying `binary_float`. -/
-theorem B2R_inj {prec emax : Int} [Prec_gt_0 prec] [Prec_lt_emax prec emax]
+@[flocq_source "src/IEEE754/Binary.v" 392 "B2R_inj"]
+theorem B2R_inj {prec emax : Int}
     (x y : binary_float prec emax)
     (hx : binary_float.is_finite_strict x = true)
     (hy : binary_float.is_finite_strict y = true)

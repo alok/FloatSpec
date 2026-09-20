@@ -112,6 +112,36 @@ review and finite execution evidence, not whole-library semantic certification.
 
 ## Elaborated premises, not just displayed theorem text
 
+### Full-payload injectivity and canonical mantissas
+
+Pinned `Binary.v:321,392,473` exports `canonical_canonical_mantissa`,
+`B2R_inj`, and `B2R_Bsign_inj` without `Prec_gt_0` or `Prec_lt_emax`.
+Rocq's compiled types confirm the absence; the corresponding SingleNaN Lean
+interfaces already match. Full-payload typed Lean clients reproduced the
+failure with no positive-precision instance. The root compatibility helper
+had retained both section instances and propagated them into the full-payload
+proofs. Removing that helper's unused instances allows the unchanged proof
+bodies to close under the source hypotheses.
+
+The fix covers three source-facing Binary exports, the root `B2R_inj`
+implementation, and its canonical-mantissa helper. Finite-strictness remains
+required for the first injectivity statement; finiteness plus sign equality
+remains required for the signed version. No value/body semantics changed and
+no proof debt was added. Five additional compiler guards bring the total to
+50; three paired typed Lean/Rocq consumers enforce the full no-extra-premises
+signatures. The first draft of the new canonical consumer accidentally used
+the internal `FLT_exp` arguments in source order; the typechecker rejected
+it. The corrected consumer uses internal precision/minimum-exponent order.
+
+All five affected proofs have no `sorryAx`. The full macOS Lean 4.34.0 build
+passes 6,216 jobs; complete LSP diagnostics are clean for both edited source
+modules and SourcePremiseContracts. The compiled trust audit remains at
+13,594 declarations in 58 modules with four manifest debts. The source-link
+validator now checks 153 anchors. The formerly failing standalone injectivity
+client and the paired Rocq consumers pass.
+
+### Earlier Prop and exponent-function premise repairs
+
 An additional compiler-assisted review found **31 unwanted premises across
 26 public exports**. These problems predate the 23-commit Sol audit range:
 the old `round_repr_same_exp` comment claimed its `Valid_exp` premise was

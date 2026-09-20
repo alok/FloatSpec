@@ -48,11 +48,16 @@ CI claim. Reviewable work is on
 [`alok/FloatSpec`, branch `codex/astra-flocq-audit`](https://github.com/alok/FloatSpec/tree/codex/astra-flocq-audit),
 with BAIF retained as the optional `upstream` remote.
 
-**Next active correction:** the full-payload real-value injectivity theorems
-still require two precision assumptions absent from pinned Rocq. The equivalent
-SingleNaN theorems already have the right interface. A typed consumer reproduced
-the full-payload mismatch; the next patch will remove only those unsupported
-premises and retain the finite/nonzero and sign hypotheses that matter.
+**The next correction is now implemented:** full-payload real-value injectivity
+and canonical-mantissa conversion no longer require the two precision
+assumptions absent from pinned Rocq. The equivalent SingleNaN theorems already
+had the right interface. The previously failing typed consumers now pass;
+the finite/nonzero and sign hypotheses that matter remain in place. The
+existing proofs remain closed, and the full macOS build passed again.
+The 50 premise guards, paired typed consumers, and a 69-case cross-family
+integration replay pass. Next I am examining the still-noncomputable SingleNaN
+arithmetic entry points and rounding wrappers; this does not mean the
+already-tested full-payload arithmetic stopped working.
 
 ## 1. Start with one small rounding problem
 
@@ -207,6 +212,16 @@ deliberately use `e ↦ e + 1`, which is monotone but invalid as a rounding
 exponent. Five real-comparison theorem names also used to be numeric wrappers
 introduced just for documentation links. They now state actual propositions;
 the older integer encoding of real comparison is still called out explicitly.
+
+Full-payload injectivity supplies another useful example. Nonzero finite
+canonical values with the same real interpretation must be equal. If zeros
+are allowed, their signs must also agree: `+0` and `-0` have the same real
+value but are distinct float data. Neither statement needs a global positive-
+precision or `prec < emax` assumption; the constructors already supply the
+relevant representation validity. The old Lean exports required both anyway.
+Those extra assumptions are removed from `Binary.B2R_inj`,
+`Binary.B2R_Bsign_inj`, and the canonical-mantissa theorem they depend on.
+Typed Lean/Rocq consumers now enforce their premise boundary.
 
 For example, the old `valid_binary_SF2FF` statement compared validity after
 a conversion with a wrapper defined to be that same expression. It was
@@ -378,7 +393,7 @@ changed surfaces have been checked.
 Source links make that review navigable. `@[flocq_source]` records a pinned
 Coq path, line, and name; `@[flocq_local]` explains a Lean-only helper.
 Eleven modules currently enforce strict public-definition classification.
-The compiler-backed validator checks all 149 registered anchors, including
+The compiler-backed validator checks all 153 registered anchors, including
 combined attributes and later attribute commands. These links are metadata,
 not a proof that bodies or theorem signatures correspond.
 

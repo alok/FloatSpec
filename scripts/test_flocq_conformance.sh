@@ -240,7 +240,7 @@ echo 'Pure Lean loop passed: examples and 10,734 kernel-checked arithmetic invar
 echo 'Lean bit/order loops passed: 20,000 roundtrips, 2,000 pure laws, 200,000 native comparisons'
 echo 'Boolean ordering passed: eight boundary assertions and 600,000 native Boolean comparisons'
 echo 'Native source-arithmetic loop passed: 100,100 binary32/binary64 comparisons'
-echo 'Lean contract loop passed: 45 premise guards, typed consumers, finite error laws, 35,845 format-rounding and 5,125 integer-rounding oracle cases'
+echo 'Lean contract loop passed: 50 premise guards, typed consumers, finite error laws, 35,845 format-rounding and 5,125 integer-rounding oracle cases'
 
 uv run "$repo_root/scripts/flocq_bridge.py" --flocq-dir "$flocq_dir" --coqc "$coqc_bin" \
   --seed "${FLOCQ_BRIDGE_SEED:-20260919}" --samples "${FLOCQ_BRIDGE_SAMPLES:-100}" \
