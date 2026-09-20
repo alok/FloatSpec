@@ -15,7 +15,7 @@ This guide follows those jobs in order. The detailed
 [independent continuation audit](ASTRA_AUDIT_2026-09-19.md) retain the
 declaration-by-declaration findings and historical milestones.
 
-## Wake-up summary — September 20, 2026, 16:44 UTC
+## Wake-up summary — September 20, 2026, 16:58 UTC
 
 **The port builds and runs on macOS with Lean 4.34.0, but it is not yet a
 fully source-audited port.** All 35 built Flocq module names have Lean
@@ -26,7 +26,7 @@ File coverage is not a completion percentage.
 The latest verified library and tests are on the
 [review branch](https://github.com/alok/FloatSpec/tree/codex/astra-flocq-audit).
 Run `lake exe floatspec_demo` for the seven-part native executable.
-Its examples and the **6,224-job build** pass. Fresh compiled checks cover
+Its examples and the **6,225-job build** pass. Fresh compiled checks cover
 **13,557 declarations / 58 modules**, find exactly the four recorded proof
 debts, and validate **269 pinned source anchors**.
 
@@ -62,8 +62,9 @@ separate evidence on the older snapshot.
 14:38 UTC on pushed commit `5a6d16df`. The source/trust gates, pure Rocq
 suites, pure Lean suites, and seven-part demo have passed on this snapshot;
 the **48,614-case core corpus and all 48,614 generated kernel equalities**
-have now passed, as have all **76 core-harness tests**. Native IEEE and the
-remaining differential/harness stages are still in progress.
+have now passed, as have all **76 core-harness tests**. The native unary and
+arithmetic stages have passed too; the remaining all-mode, scaling and integer
+differential/harness stages are still in progress.
 The 13:57 run
 on `2282a69b` passed source/trust gates, pure Rocq suites, Lean fixed fixtures,
 and the demo, but was explicitly interrupted after a scheduling bottleneck
@@ -149,6 +150,17 @@ one radix digit of intermediate precision; changing its offset makes both
 contract checkers fail. Reintroducing unnecessary exponent-validity premises
 also breaks the multiplication client. These protect the reviewed interfaces,
 not every theorem in the large double-rounding module.
+
+Two more model adapters now execute, with unchanged bodies/types. Their
+**1,140-case** three-path bridge and all seven harness tests pass, and the
+pure Lean oracle separately executes **60,032 inputs / 300,160 observations**.
+The instructive surprise was in the test oracle: Flocq's integer bit decoder
+does not wrap out-of-range integers like UInt32/UInt64. At `2^32 + 1`, source
+decoding gives the negative minimum subnormal; wrapping first gives the
+positive minimum subnormal. Both assistants agree. The paired examples now
+keep this domain distinction, signed zero, and NaN canonicalization explicit.
+The model-adapter profile runs integer algorithms; it is not a native float
+FFI test or a universal equivalence proof.
 
 Reviewable work is on
 [`alok/FloatSpec:codex/astra-flocq-audit`](https://github.com/alok/FloatSpec/tree/codex/astra-flocq-audit).
@@ -565,9 +577,9 @@ changed surfaces have been checked.
 
 Source links make that review navigable. `@[flocq_source]` records a pinned
 Coq path, line, and name; `@[flocq_local]` explains a Lean-only helper.
-Twelve source files enable strict public-definition classification; a targeted
+Thirteen source files enable strict public-definition classification; a targeted
 section of `Binary.lean` additionally enables the same check.
-The compiler-backed validator checks all 222 registered anchors, including
+The compiler-backed validator checks all 269 registered anchors, including
 combined attributes and later attribute commands. These links are metadata,
 not a proof that bodies or theorem signatures correspond.
 

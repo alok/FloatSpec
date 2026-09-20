@@ -6,6 +6,33 @@ all declarations in the named modules. See the
 [running audit](ASTRA_AUDIT_2026-09-19.md) for execution receipts and the
 [reading guide](READING_GUIDE.md) for the mathematical story.
 
+## Logical-model adapters and the integer bit-decoder domain
+
+`binary32OfModel` and `binary64OfModel` now execute after removal of two
+unnecessary `noncomputable` markers; their bodies and types are unchanged.
+They are explicitly Lean-model adapters, not standalone Flocq exports.
+The model canonicalizes NaNs before source decoding. Raw source decoding
+still preserves NaN sign and payload.
+
+The first independent oracle incorrectly assumed every integer input wrapped
+modulo the word width. Both actual assistants rejected that assumption:
+pinned `Bits.v:77` uses `2^(mw+ew) <= x` for the sign, not the wrapped sign
+bit. Mantissa/exponent fields use quotient/modulo. At binary32, source decode
+then encode of `2^32 + 1` yields `0x80000001`; a UInt32-model route yields
+`1`. At binary64, source decoding `-2^63` yields positive zero while the
+UInt64-model route yields negative zero. These are out-of-bounded-word-domain
+behaviors of two different interfaces, not port bugs. Paired closed fixtures
+preserve both distinctions and the signed signaling-NaN distinction.
+
+The five-column adapter bridge compares compiled Lean, kernel Lean and
+pinned Rocq with explicit route-specific wrapping/canonicalization policies,
+then bootstraps Lean kernel equalities. Independent arithmetic classification
+checks every column; there is no native float FFI in this profile. The
+1,140-case run includes 827 out-of-range inputs and 445 observations where
+the two model routes differ. All seven harness tests pass, including live
+mutations of all five columns at both widths and rejection of the original
+wrong wrapping oracle. No universal model-adapter equivalence is claimed.
+
 ## Pff operational radix and native integer execution
 
 Pinned Pff exports an unindexed integer record. Its normalized neighbors

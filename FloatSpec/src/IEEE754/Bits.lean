@@ -1816,11 +1816,13 @@ def model64OfBinary (x : _root_.binary64) : Float.Model :=
   Float.Model.ofBits (UInt64.ofInt (_root_.bits_of_b64 x))
 
 /-- Decode a canonical Lean binary32 model through FLoCq's bit decoder. -/
-noncomputable def binary32OfModel (x : Float32.Model) : _root_.binary32 :=
+@[flocq_local "Lean logical-model adapter through source b32_of_bits; NaNs are already canonicalized by the model"]
+def binary32OfModel (x : Float32.Model) : _root_.binary32 :=
   _root_.b32_of_bits (x.toBits.toNat : Int)
 
 /-- Decode a canonical Lean binary64 model through FLoCq's bit decoder. -/
-noncomputable def binary64OfModel (x : Float.Model) : _root_.binary64 :=
+@[flocq_local "Lean logical-model adapter through source b64_of_bits; NaNs are already canonicalized by the model"]
+def binary64OfModel (x : Float.Model) : _root_.binary64 :=
   _root_.b64_of_bits (x.toBits.toNat : Int)
 
 /-- Native `Float32` view of a FLoCq binary32 value. -/

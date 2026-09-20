@@ -2957,6 +2957,59 @@ This protects the bounded source review already documented; it does not
 upgrade it into an exhaustive audit of every double-rounding theorem.
 The separate frozen broad runner remains active in its native stages.
 
+### September 20, 16:58 UTC — execute model adapters; correct the out-of-domain oracle
+
+Removed only two unnecessary execution markers from `binary32OfModel` and
+`binary64OfModel`, keeping bodies/types unchanged and classifying them as
+Lean-model adapters. The identical pre-change native client failed at both
+entry points; it now executes and returns canonical NaN words. Baseline
+receipts: `/private/tmp/NativeAdaptersBaseline20260920-{before,after}.out`.
+
+Running the independent oracle exposed its incorrect wrap-everywhere
+assumption. Pinned `Bits.v:77` sets the sign using an integer threshold;
+outside `0 <= x < 2^width`, source decoding differs from a UInt conversion.
+Direct Rocq evaluation confirmed the same behavior as Lean. The initial
+oracle failure is retained in
+`/private/tmp/floatspec-native-adapters-invalid-oracle-20260920.log`.
+This was a harness/domain error, not a newly discovered port mismatch.
+Paired closed regressions now distinguish signed NaN canonicalization,
+`2^32 + 1` finite decoding, and signed zero from input `-2^63`.
+
+Verified on source/configuration SHA-256
+`129ab2f68a56238920363d578449ca24ba922a101a09e131e038d140c749559b`:
+
+- Integrated three-path profile: **1,140 compared/compiled/generated-kernel
+  cases**, seed **854033**, **5,700** independent column assertions,
+  **827** out-of-range inputs and **445** distinct source/model routes,
+  292.027 seconds. Complete report/corpus/generated proofs:
+  `/private/tmp/floatspec-model-adapter-integrated-20260920/`.
+- Pure Lean: **60,032 inputs / 300,160 observations**, plus 32 boundary
+  inputs checked by kernel reduction. All four named regression axiom lists
+  exclude `sorryAx`. Paired Rocq examples pass. Receipts:
+  `/private/tmp/floatspec-native-adapters-lean-20260920.log` and
+  `floatspec-native-adapters-rocq-v2-20260920.log`.
+- All **seven** adapter harness tests pass, including live corruption of
+  every column at both widths, matching-wrong-output rejection, and a false
+  wrapping bootstrap followed by successful correct bootstrap; 13.547 seconds.
+  Receipt: `/private/tmp/floatspec-model-adapter-harness-live-20260920.log`.
+  The earlier unit-only invocation explicitly skipped its three live tests.
+- Full macOS Lean 4.34 build **6,225 jobs**; fresh compiled trust
+  **13,557 declarations / 58 modules / four unchanged debts**; freshly
+  exported metadata validates **269** pinned source anchors. Receipts use
+  `/private/tmp/floatspec-model-adapter-{full-build,trust,source-metadata,anchors}-20260920`.
+- Complete zero-error LSP diagnostics for the changed source and fixture;
+  demo, Python compilation, shell syntax, generated status and whitespace
+  checks pass. Status: 98 Lean files, four sorries, no explicit axioms/admit.
+
+The profile explicitly states that it has no native float FFI. Its Rocq
+mapping applies NaN canonicalization and wrapping only on the corresponding
+adapter routes; it does not invent a source export for Lean's logical model.
+The first Rocq fixture draft lacked explicit precision/exponent parameters
+on `Binary.is_nan`; it failed and was corrected. The first bridge invocation
+used an unsupported output flag and exited before testing; only the corrected
+invocation above is counted. The frozen broad run has now passed native unary
+and arithmetic stages and their harnesses; its remaining stages are active.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In

@@ -423,6 +423,21 @@ There is no claim that a runtime computes arbitrary real logarithms.
 replace nearest-even with downward rounding, observe rejection, and prove
 the mutant's actual different answer.
 
+## A boundary example: source integers are not machine words
+
+Run `lake env lean FloatSpec/Test/NativeModelAdapters.lean`. First read
+`signed_nan_distinction`: the raw source decoder preserves a signed NaN
+payload, while the logical-model route canonicalizes it. Then read
+`wider_integer_distinction`: source decoding of `2^32 + 1` gives the negative
+minimum subnormal, but wrapping into UInt32 first gives the positive minimum
+subnormal. Finally, `negative_integer_distinction` separates positive and
+negative zero at input `-2^63`.
+
+All three are paired with pinned Rocq examples. Their purpose is to make
+the domain visible: exact word-sized inputs and arbitrary integer inputs
+are different interfaces. The test initially assumed wrapping everywhere;
+running both assistants exposed and corrected that oracle mistake.
+
 ## After the demo
 
 Read [the linear guide](READING_GUIDE.md), then

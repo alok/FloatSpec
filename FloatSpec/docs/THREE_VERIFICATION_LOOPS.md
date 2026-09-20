@@ -937,6 +937,30 @@ FLOCQ_AUDIT_DIR=/path/to/pinned-flocq uv run scripts/test_double_rounding_contra
 These are persistent checks of the reviewed exports, not native real-valued
 execution, exhaustive theorem auditing, or a proof of whole-module equivalence.
 
+### Logical-model adapters and integer bit inputs
+
+`model_adapter_bridge.py` observes five paths at both binary32/binary64:
+raw source decode/encode, source-to-model, UInt-model-to-source, its model
+roundtrip, and source/model/source roundtrip. The model paths explicitly
+canonicalize NaNs. Only routes entering through UInt wrap arbitrary integers;
+the source total integer decoder uses its sign threshold even out of range.
+This is an adapter-policy comparison, not a claim that Flocq exports Lean's
+logical model and not a native float FFI test.
+
+```sh
+uv run scripts/model_adapter_bridge.py --flocq-dir /path/to/pinned-flocq \
+  --seed 854033 --samples 500 --batch-size 25
+FLOCQ_AUDIT_DIR=/path/to/pinned-flocq uv run scripts/test_model_adapter_bridge.py -v
+lake env lean FloatSpec/Test/NativeModelAdapters.lean
+```
+
+The pure Lean oracle separately executes 60,032 inputs / 300,160 observations
+and closes a 32-input kernel grid. Paired Rocq examples pin signed NaN,
+wider-than-word finite input and negative-integer signed zero. The bridge
+retains full corpus, seed, generated kernel equalities and oracle counts;
+all columns have live mutation controls in both widths. Matching corrupted
+answers are rejected by an independent arithmetic field classifier.
+
 ## 11. What this still does not establish
 
 The expanded combined runner completed at commit `ba3e2a8b`, seed `961703`,
