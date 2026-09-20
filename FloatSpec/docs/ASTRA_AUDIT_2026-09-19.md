@@ -2380,6 +2380,56 @@ identifies that copied body with the actual model. It uses the earlier frozen
 `4ad5cb53…` fingerprint, not the new rounding-constructor snapshot. Persistent
 four-path integration is still pending.
 
+### September 20, 13:52 UTC — unrestricted FLX unit laws and explicit boundary meaning
+
+Compiled pinned Flocq `ulp_FLX_1` and `succ_FLX_1` (`Core/FLX.v:240,246`)
+have no positive-precision premise. Their former Lean counterparts added
+`Prec_gt_0 prec`, a redundant radix precondition, and an `Id` triple around
+the pure result. Source-shaped arbitrary-precision clients therefore compiled
+in Rocq but failed to synthesize the extra Lean precision instance.
+
+Both Lean laws now state direct equalities under the existing `ValidRadix`
+typeclass, for any integer precision. Their proofs are closed; the two callers
+in `Prop/Div_sqrt_error.lean` now consume those equalities directly. Pinned
+source anchors were added. Paired clients and four premise guards reject
+either `Prec_gt_0` or a hidden legacy positivity `Fact` on these laws.
+
+Both provers prove `ulp 1 = 2` / `succ 1 = 3` at binary precision zero, and
+`ulp 1 = 4` / `succ 1 = 5` at precision -1. These concern total mathematical
+definitions, not adjacent values in a valid format. Positive precision remains
+required for genuinely restricted results such as `negligible_exp_FLX` and
+the ULP-at-zero theorem. Two obsolete comments claiming a simplified global
+`none`/zero-ULP model were corrected to describe the actual definitions.
+
+Verification:
+
+- Full macOS Lean 4.34 build passes **6,216 jobs**; paired Rocq fixture passes.
+  Logs: `/private/tmp/floatspec-flx-unit-full-build-20260920.log` and
+  `/private/tmp/floatspec-flx-unit-rocq-20260920.log`.
+- Changed FLX laws and the production caller have complete zero-error LSP
+  diagnostics. The combined client file's LSP check timed out, then reported
+  unavailable dependency diagnostics; neither attempt is counted as clean.
+  The full build and a separate direct client typecheck both pass, the latter
+  with empty output in `...-flx-unit-direct-clients-20260920.log`.
+- Printed axioms for both laws and the boundary theorem contain only
+  `propext`, `Classical.choice`, `Quot.sound`:
+  `/private/tmp/floatspec-flx-unit-axioms-20260920.log`.
+- Fresh metadata validates **222** anchors. Compiled trust checks **13,537
+  declarations / 58 modules**, precisely four unchanged manifest-only debts.
+  Metadata, anchor receipt, and trust reports use the
+  `/private/tmp/floatspec-flx-unit-` prefix. Source SHA-256:
+  `df96665572a99065e3c61087085cb2bd159498862bbf9e9ec5252c202cae0375`.
+- There are now **90 positive premise guards**, plus five deliberate negative
+  guard examples and one guard self-test. Generated textual status, shell
+  syntax, and whitespace checks pass; no new proof debt.
+
+A preliminary whole-file scratch copy was accidentally truncated, and a second
+attempt lacked the package's style-linter options. Those failed drafts are not
+passes. The complete copy with the actual package-style options passed with
+empty output before production integration (`FLXWholeModuleUnitDraft20260920-v4.out`).
+Neither this type repair nor its finite examples certify the remaining FLX
+theorems or the rest of the port.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In

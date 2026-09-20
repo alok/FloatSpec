@@ -343,3 +343,21 @@ Definition witness_function_client (rnd : R -> R -> Prop) (h : round_pred rnd)
     : {f : R -> R | forall x, rnd x (f x)} := round_fun_of_pred rnd h.
 
 End RoundingWitnessSourceContracts.
+
+Module FLXUnitSourceContracts.
+Definition ulp_one_client (beta : radix) (prec : Z) :
+    ulp beta (FLX_exp prec) 1 = bpow beta (1 - prec).
+Proof. replace (1 - prec)%Z with (-prec + 1)%Z by ring. apply ulp_FLX_1. Qed.
+Definition succ_one_client (beta : radix) (prec : Z) :
+    succ beta (FLX_exp prec) 1 = 1 + bpow beta (1 - prec).
+Proof. replace (1 - prec)%Z with (-prec + 1)%Z by ring. apply succ_FLX_1. Qed.
+
+Example nonpositive_precision_examples :
+    ulp radix2 (FLX_exp 0) 1 = 2 /\
+    succ radix2 (FLX_exp 0) 1 = 3 /\
+    ulp radix2 (FLX_exp (-1)) 1 = 4 /\
+    succ radix2 (FLX_exp (-1)) 1 = 5.
+Proof.
+  repeat split; rewrite ?ulp_FLX_1, ?succ_FLX_1; cbn; ring.
+Qed.
+End FLXUnitSourceContracts.

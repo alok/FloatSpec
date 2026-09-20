@@ -601,3 +601,31 @@ theorem preserves_legacy_function (rnd : ℝ → ℝ → Prop)
   simp [legacy_value, round_fun_of_pred, round_val_of_pred, h.1 x]
 
 end RoundingWitnessSourceContracts
+
+-- These unit-value laws have no positive-precision premise in compiled Flocq.
+#guard_no_source_premise FloatSpec.Core.FLX.ulp_FLX_1 Prec_gt_0 at prec
+#guard_no_source_premise FloatSpec.Core.FLX.succ_FLX_1 Prec_gt_0 at prec
+#guard_no_source_premise FloatSpec.Core.FLX.ulp_FLX_1 FloatSpec.Test.SourcePremiseGuard.PositivePrecisionFact at prec
+#guard_no_source_premise FloatSpec.Core.FLX.succ_FLX_1 FloatSpec.Test.SourcePremiseGuard.PositivePrecisionFact at prec
+
+namespace FLXUnitSourceContracts
+
+example (beta prec : Int) [ValidRadix beta] :
+    FloatSpec.Core.Ulp.ulp beta (FloatSpec.Core.FLX.FLX_exp prec) 1 =
+      (beta : ℝ) ^ (1 - prec) :=
+  FloatSpec.Core.FLX.ulp_FLX_1 prec beta
+
+example (beta prec : Int) [ValidRadix beta] :
+    FloatSpec.Core.Ulp.succ beta (FloatSpec.Core.FLX.FLX_exp prec) 1 =
+      1 + (beta : ℝ) ^ (1 - prec) :=
+  FloatSpec.Core.FLX.succ_FLX_1 prec beta
+
+-- These are total-definition laws, not adjacency claims for a valid format.
+theorem nonpositive_precision_examples :
+    FloatSpec.Core.Ulp.ulp 2 (FloatSpec.Core.FLX.FLX_exp 0) 1 = 2 ∧
+    FloatSpec.Core.Ulp.succ 2 (FloatSpec.Core.FLX.FLX_exp 0) 1 = 3 ∧
+    FloatSpec.Core.Ulp.ulp 2 (FloatSpec.Core.FLX.FLX_exp (-1)) 1 = 4 ∧
+    FloatSpec.Core.Ulp.succ 2 (FloatSpec.Core.FLX.FLX_exp (-1)) 1 = 5 := by
+  norm_num [FloatSpec.Core.FLX.ulp_FLX_1, FloatSpec.Core.FLX.succ_FLX_1]
+
+end FLXUnitSourceContracts

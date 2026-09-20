@@ -129,10 +129,10 @@ outside square root's exponent premise makes that domain boundary executable.
 Deliberately increasing the returned mantissa or replacing its location by
 exact must break both the closed finite assertions and compiled checks.
 
-`Test/SourcePremiseContracts.lean` additionally has 86 source-premise guards,
+`Test/SourcePremiseContracts.lean` additionally has 90 source-premise guards,
 paired typed consumers for the Prop, integer-rounding, canonical-exponent,
 real-comparison, division, square-root, FTZ inclusion, eleven FLT relationships,
-and generic IEEE comparison exports, and five deliberate negative guard
+two unrestricted FLX unit laws, and generic IEEE comparison exports, and five deliberate negative guard
 examples. The corresponding Rocq fixture checks the paired
 consumer signatures. These
 checks caught real section-instance leakage that the former bare `#check`
@@ -151,6 +151,14 @@ normal-range exponent/ulp/shift statements from genuinely restricted reverse
 inclusions. Each language proves a precision-zero counterexample satisfying
 all the reverse FIX-to-FLT theorem's other premises. This prevents the wider
 interfaces from being mistaken for permission to remove every assumption.
+
+The FLX unit laws are also unrestricted in the source: at radix two,
+precision zero gives `ulp 1 = 2` and `succ 1 = 3`, while precision -1 gives
+`ulp 1 = 4` and `succ 1 = 5`. Both provers close these examples without a
+positive-precision premise. They are statements about total mathematical
+definitions, not claims that a valid format of that precision exists or that
+its successor is an adjacent representable number. Four guards prevent either
+the named precision class or a legacy positivity `Fact` from leaking back.
 
 The rounding-predicate clients require the exact proof-carrying result shapes:
 `{f : ℝ // rnd x f}` for a value and `{f : ℝ → ℝ // ∀ x, rnd x (f x)}`

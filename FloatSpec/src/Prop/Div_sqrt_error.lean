@@ -834,11 +834,7 @@ lemma sqrt_error_N_FLX_aux2_without_prec_gt_one_payload (x : ℝ)
     have hsucc1 :
         FloatSpec.Core.Ulp.succ beta (FLX_exp prec) 1 =
           1 + 2 * u_ro beta prec := by
-      have htrip := FloatSpec.Core.FLX.succ_FLX_1 (prec := prec) (beta := beta)
-      have hrun : FloatSpec.Core.Ulp.succ beta (FLX_exp prec) 1 =
-          1 + (beta : ℝ) ^ (1 - prec) := by
-        simpa [wp, Std.Do.PostCond.noThrow, Id.run, pure] using htrip hβ
-      simpa [h2u] using hrun
+      simpa [h2u] using FloatSpec.Core.FLX.succ_FLX_1 (prec := prec) (beta := beta)
     have hfirst_lower : 1 + 2 * u_ro beta prec ≤ x := by
       have htrip := FloatSpec.Core.Ulp.succ_le_lt
         (beta := beta) (fexp := FLX_exp prec) (x := 1) (y := x)
@@ -864,11 +860,7 @@ lemma sqrt_error_N_FLX_aux2_without_prec_gt_one_payload (x : ℝ)
         simpa [wp, Std.Do.PostCond.noThrow, Id.run, pure] using htrip hβ
       have hulp1 : FloatSpec.Core.Ulp.ulp beta (FLX_exp prec) 1 =
           2 * u_ro beta prec := by
-        have htrip := FloatSpec.Core.FLX.ulp_FLX_1 (prec := prec) (beta := beta)
-        have hrun : FloatSpec.Core.Ulp.ulp beta (FLX_exp prec) 1 =
-            (beta : ℝ) ^ (1 - prec) := by
-          simpa [wp, Std.Do.PostCond.noThrow, Id.run, pure] using htrip hβ
-        simpa [h2u] using hrun
+        simpa [h2u] using FloatSpec.Core.FLX.ulp_FLX_1 (prec := prec) (beta := beta)
       have hulp_le_mid :
           2 * u_ro beta prec ≤
             FloatSpec.Core.Ulp.ulp beta (FLX_exp prec) (1 + 2 * u_ro beta prec) := by

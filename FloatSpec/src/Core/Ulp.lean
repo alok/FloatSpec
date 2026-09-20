@@ -101,7 +101,8 @@ Definition ulp x := match Req_bool x 0 with
   | false  => bpow (cexp beta fexp x)
 end.
 ```
-Note: We use a simplified zero case: {lit}`bpow (fexp 1)`.
+At zero, a negligible-exponent witness determines the smallest spacing;
+when no such witness exists, the ULP is zero, as in the source definition.
 -/
 noncomputable def ulp (x : ℝ) : ℝ :=
   if x = 0 then

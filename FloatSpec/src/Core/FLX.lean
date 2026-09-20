@@ -642,52 +642,16 @@ theorem ulp_FLX_0 (beta : Int) [ValidRadix beta] [Prec_gt_0 prec] :
   unfold FloatSpec.Core.Ulp.ulp
   simp [Id.run, bind, pure, hnone]
 
-/-- Coq ({lit}`FLX.v`):
-Lemma {lit}`ulp_FLX_1`: {lit}`ulp beta FLX_exp 1 = bpow (-prec + 1)`.
-
-Lean (spec): The ULP under FLX at 1 equals {lit}`β^(1 - prec)`.
--/
-theorem ulp_FLX_1 (beta : Int) [ValidRadix beta] [Prec_gt_0 prec] :
-    ⦃⌜1 < beta⌝⦄
-    (pure (FloatSpec.Core.Ulp.ulp beta (FLX_exp prec) 1) : Id ℝ)
-    ⦃⇓r => ⌜r = (beta : ℝ) ^ (1 - prec)⌝⦄ := by
-  intro hβ; classical
-  simp only [wp, PostCond.noThrow, pure]
-  -- Provide the bridge from `[Prec_gt_0 prec]` to `Fact (0 < prec)` for `Valid_exp`.
-  have _instPrec : Fact (0 < prec) := ⟨(Prec_gt_0.pos : 0 < prec)⟩
-  -- Evaluate `ulp` at a nonzero input: `1 ≠ 0`.
-  have h1ne : (1 : ℝ) ≠ 0 := one_ne_zero
-  unfold FloatSpec.Core.Ulp.ulp
-  -- Nonzero branch of `ulp` reduces to `β ^ (cexp … 1)`.
-  simp [h1ne, wp, PostCond.noThrow, Id.run, bind, pure]
-  -- Compute the canonical exponent at `x = 1`.
-  have hcexp_run :
-      (FloatSpec.Core.Generic_fmt.cexp (beta := beta) (fexp := FLX_exp prec) 1)
-        = FLX_exp prec ((FloatSpec.Core.Raux.mag beta 1)) := by
-    simpa [wp, PostCond.noThrow, Id.run]
-      using (FloatSpec.Core.Generic_fmt.cexp_spec (beta := beta) (fexp := FLX_exp prec) (x := 1)) hβ
-  -- Since `1 = β^0`, we have `mag beta 1 = 1` (mag(β^e) = e + 1).
-  have hmag1 : (FloatSpec.Core.Raux.mag beta 1) = 1 := by
-    have hmag_pow0 := FloatSpec.Core.Raux.mag_bpow (beta := beta) (e := 0)
-    have hrun : (FloatSpec.Core.Raux.mag beta ((beta : ℝ) ^ 0)) = 0 + 1 := by
-      simpa [wp, PostCond.noThrow, Id.run, pure] using (hmag_pow0 hβ) True.intro
-    simp only [zpow_zero, zero_add] at hrun
-    exact hrun
-  -- Hence `cexp … 1 = FLX_exp prec 1 = 1 - prec`.
-  have hcexp_eq : (FloatSpec.Core.Generic_fmt.cexp (beta := beta) (fexp := FLX_exp prec) 1)
-            = 1 - prec := by
-    rw [hcexp_run, hmag1, FLX_exp]
-  -- Finish: `ulp 1 = β ^ (cexp 1) = β ^ (1 - prec)`.
-  have hpow_eq :
-      (beta : ℝ) ^ ((FloatSpec.Core.Generic_fmt.cexp (beta := beta) (fexp := FLX_exp prec) 1))
-        = (beta : ℝ) ^ (1 - prec) := by
-    rw [hcexp_eq]
-  -- Goal: β ^ cexp beta (FLX_exp prec) 1 = β ^ (1 - prec)
-  -- Use that cexp ... 1 = 1 - prec
-  have hcexp_Id : FloatSpec.Core.Generic_fmt.cexp (beta := beta) (fexp := FLX_exp prec) 1
-                = (1 - prec : Int) := by
-    exact hcexp_eq
-  rw [hcexp_Id]
+/-- The FLX ULP at one, for any integer precision as in the source.
+The formula is a law of the total definitions; validity of a floating-point
+format is a separate contract. -/
+@[flocq_source "src/Core/FLX.v" 240 "ulp_FLX_1"]
+theorem ulp_FLX_1 (beta : Int) [ValidRadix beta] :
+    FloatSpec.Core.Ulp.ulp beta (FLX_exp prec) 1 = (beta : ℝ) ^ (1 - prec) := by
+  have hmag : FloatSpec.Core.Raux.mag beta (1 : ℝ) = 1 := by
+    simpa [wp, PostCond.noThrow, pure] using
+      (FloatSpec.Core.Raux.mag_1 beta ValidRadix.valid) trivial
+  simp [FloatSpec.Core.Ulp.ulp, FloatSpec.Core.Generic_fmt.cexp, FLX_exp, hmag]
 
 /-- Coq ({lit}`FLX.v`):
 Theorem {lit}`ulp_FLX_le`:
@@ -1119,8 +1083,8 @@ variable (prec : Int)
 /-- Coq ({lit}`FLX.v`):
 Lemma {lit}`negligible_exp_FLX`: {lit}`negligible_exp FLX_exp = None`.
 
-Lean (spec): In our simplified model, {lean}`Ulp.negligible_exp` is always {lit}`none`,
-so for FLX it is {lit}`none` as well.
+Positive precision makes {lean}`FLX_exp` strictly smaller than its input,
+so no negligible-exponent witness exists and the result is {lit}`none`.
 -/
 theorem negligible_exp_FLX (beta : Int) [ValidRadix beta] [Prec_gt_0 prec] :
     ⦃⌜True⌝⦄
@@ -1176,23 +1140,12 @@ namespace FloatSpec.Core.FLX
 
 variable (prec : Int)
 
-/-
-Coq (FLX.v):
-Lemma succ_FLX_1 : (succ beta FLX_exp 1 = 1 + bpow (-prec + 1))%R.
-
-Lean (spec): The successor at 1 under FLX equals `1 + β^(1 - prec)`.
--/
-theorem succ_FLX_1 (beta : Int) [ValidRadix beta] [Prec_gt_0 prec] :
-    ⦃⌜1 < beta⌝⦄
-    (pure (FloatSpec.Core.Ulp.succ beta (FLX_exp prec) 1) : Id ℝ)
-    ⦃⇓r => ⌜r = 1 + (beta : ℝ) ^ (1 - prec)⌝⦄ := by
-  intro hβ; classical
-  simp only [wp, PostCond.noThrow, pure]
-  -- Evaluate `succ` at a nonnegative input (here 0 ≤ 1)
-  simp [FloatSpec.Core.Ulp.succ, Id.run, bind, pure]
-  -- Reduce to rewriting `ulp` at x = 1 using `ulp_FLX_1`.
-  have hulp := (ulp_FLX_1 (prec := prec) (beta := beta)) hβ
-  simpa [wp, PostCond.noThrow] using hulp
+/-- The total FLX successor formula at one does not require positive precision. -/
+@[flocq_source "src/Core/FLX.v" 246 "succ_FLX_1"]
+theorem succ_FLX_1 (beta : Int) [ValidRadix beta] :
+    FloatSpec.Core.Ulp.succ beta (FLX_exp prec) 1 =
+      1 + (beta : ℝ) ^ (1 - prec) := by
+  simp [FloatSpec.Core.Ulp.succ, ulp_FLX_1]
 
 /-
 Coq (FLX.v):

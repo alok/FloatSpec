@@ -15,7 +15,7 @@ This guide follows those jobs in order. The detailed
 [independent continuation audit](ASTRA_AUDIT_2026-09-19.md) retain the
 declaration-by-declaration findings and historical milestones.
 
-## Wake-up summary — September 20, 2026, 13:44 UTC
+## Wake-up summary — September 20, 2026, 13:52 UTC
 
 **The port builds and runs on macOS with Lean 4.34.0, but it is not yet a
 fully source-audited port.** All 35 built Flocq module names have Lean
@@ -78,12 +78,16 @@ rounding-predicate evidence instead of inventing a zero default. Paired source
 clients pass, the full **6,216-job macOS build** passes, and five new regression
 theorems have no `sorry` dependency. They include universal preservation of
 the old selected values/functions on valid inputs. Compiled trust still finds
-only the four named debts; **220** pinned anchors validate. Section 3 explains
+only the four named debts. Section 3 explains
 this proof-carrying interface in ordinary terms.
 
-Next are two FLX unit laws whose positive-precision assumptions are stricter
-than the source. Paired scratch proofs already cover precision zero and -1;
-production integration and the next broad combined run remain to be done.
+The two FLX unit laws are now repaired too: their source does not require
+positive precision. Paired proofs cover precision zero and -1; the migrated
+callers, full **6,216-job build**, and direct client check pass. There are now
+**90** premise guards and **222** validated pinned anchors, with the same four
+proof debts. Section 4 explains why these total-definition laws say nothing
+about the existence of a valid format at those precisions.
+Persistent four-path bridge integration and a fresh broad combined run are next.
 
 To understand the system rather than just the status, continue with
 sections 1–6 below. The [demo guide](DEMO_EXEMPLARS.md) supplies small
@@ -237,6 +241,14 @@ policy again. The exact-payload bridge checks the first-NaN policy rather
 than silently replacing every NaN by one canonical bit pattern.
 
 ## 4. Read a theorem as a contract, not as a badge
+
+Check which assumptions a particular law actually needs. For example,
+`ulp_FLX_1` and `succ_FLX_1` state formulas at the number one for **every
+integer precision**, not just positive precision. With radix two and precision
+zero they give `ulp 1 = 2` and `succ 1 = 3`; with precision -1 they give 4 and
+5. These are legitimate equalities of the total definitions, not assertions
+that such a precision describes a valid floating-point format. The repaired
+Lean signatures and paired boundary proofs preserve that distinction.
 
 Integer rounding gives a compact example of the executable/mathematical
 boundary. `Binary.Bnearbyint` returns another float; `Binary.Btrunc` returns
@@ -491,7 +503,7 @@ Source links make that review navigable. `@[flocq_source]` records a pinned
 Coq path, line, and name; `@[flocq_local]` explains a Lean-only helper.
 Twelve source files enable strict public-definition classification; a targeted
 section of `Binary.lean` additionally enables the same check.
-The compiler-backed validator checks all 220 registered anchors, including
+The compiler-backed validator checks all 222 registered anchors, including
 combined attributes and later attribute commands. These links are metadata,
 not a proof that bodies or theorem signatures correspond.
 
