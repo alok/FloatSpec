@@ -15,7 +15,7 @@ This guide follows those jobs in order. The detailed
 [independent continuation audit](ASTRA_AUDIT_2026-09-19.md) retain the
 declaration-by-declaration findings and historical milestones.
 
-## Wake-up summary — September 20, 2026, 17:08 UTC
+## Wake-up summary — September 20, 2026, 17:17 UTC
 
 **The port builds and runs on macOS with Lean 4.34.0, but it is not yet a
 fully source-audited port.** All 35 built Flocq module names have Lean
@@ -58,19 +58,24 @@ Those are four executions inside the three verification loops, not four
 independent proofs. Earlier 522-word and 1,224-pair scratch runs remain
 separate evidence on the older snapshot.
 
-**The broad rerun is running, not counted as passed.** It started at
-14:38 UTC on pushed commit `5a6d16df`. The source/trust gates, pure Rocq
-suites, pure Lean suites, and seven-part demo have passed on this snapshot;
-the **48,614-case core corpus and all 48,614 generated kernel equalities**
-have now passed, as have all **76 core-harness tests**. The native unary and
-arithmetic stages have passed too; the remaining all-mode, scaling and integer
-differential/harness stages are still in progress.
+**The broad rerun has completed successfully.** It started at 14:38 UTC
+on pushed commit `5a6d16df` and finished around 17:17 UTC. All ten retained
+reports agree on the frozen source fingerprint. Source/trust gates, pure
+Rocq suites, pure Lean suites, the seven-part demo, **55,162 differential
+case executions and generated kernel equalities**, and **119 bridge-harness
+tests** pass. The total includes 48,614 core cases, 292 saved replay cases,
+622 native unary inputs, 1,424 arithmetic pairs, 390 all-mode cases,
+2,360 scaling/decomposition cases, and 1,460 integer-rounding cases.
+Native comparisons respect each bridge's documented scope; not every native
+operation supports every directed mode or exceptional-value convention.
+This is a complete receipt for the frozen snapshot, not a relabeling of the
+newer Pff, model-adapter and LPO changes. Those have their separate checks below.
 The 13:57 run
 on `2282a69b` passed source/trust gates, pure Rocq suites, Lean fixed fixtures,
 and the demo, but was explicitly interrupted after a scheduling bottleneck
 was identified. It retains an error result: 1,755 compared cases and 1,754
 completed generated proofs, not a successful full run.
-That exact seed-`848933` corpus completed with 378 batches instead of 2,502;
+The exact seed-`848933` core corpus completed with 378 batches instead of 2,502;
 no inputs were removed or reordered. The integrated
 87-case mixed-family pilot already passes in all three paths with all
 87 generated proofs. Timeouts and interruptions remain errors.

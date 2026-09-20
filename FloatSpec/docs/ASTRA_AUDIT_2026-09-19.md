@@ -3056,6 +3056,56 @@ constructors are not native decision procedures. No universal integer witness
 identity across old/new choices or assistants is claimed. The frozen older
 broad runner remains active in scaling and integer stages.
 
+### September 20, 17:17 UTC — complete frozen three-loop rerun
+
+The combined `scripts/test_flocq_conformance.sh` process exited **zero** and
+emitted its final three-loop success marker. All ten retained bridge reports
+have `status: passed`, no mismatches, all requested comparisons and generated
+kernel equalities complete, and the same source/configuration fingerprint:
+`32ec11b5b0ac7fb6cba5d58635307df2857568f7228c9554e8343d498305dfbf`.
+The frozen worktree remains clean and its live hash was checked again after
+completion. The run started at `5a6d16df`; later documentation-only commits
+through `2e3ea2d1` did not change this source hash. Seed **848933** was used
+for the main corpora; replay inputs came from their saved files.
+
+| Stage | Cases / generated kernel equalities | Seconds |
+|---|---:|---:|
+| Core | 48,614 | 6,122.028 |
+| Four saved replays | 197 + 87 + 4 + 4 | Retained per replay |
+| Native unary | 622 | 160.299 |
+| Native arithmetic | 1,424 | 1,134.211 |
+| All-mode IEEE arithmetic | 390 | 551.361 |
+| Scale/decomposition | 2,360 | 375.196 |
+| Integer rounding/truncation | 1,460 | 247.958 |
+
+Total: **55,162** compared case executions and generated kernel equalities.
+All **119** core/native/IEEE bridge-harness tests pass (76 + 10 + 9 + 9 + 7 + 8),
+including deliberate mutations, replay, source drift, timeout and interruption
+controls. The earlier source-reference and compiled-trust harnesses pass too.
+Frozen-snapshot gates validate **228 source anchors** and compiled trust for
+**13,537 declarations / 58 modules / four recorded debts**. Pure Lean, pure
+pinned Rocq, all fixed fixtures and the seven-part executable demo pass.
+
+Native scope is intentionally bounded. The scale report records 2,032 cases
+with fewer native columns (directed modes and exceptional frexp behavior),
+and the integer report records 537 such cases. The source compiled/kernel/Rocq
+columns are still compared exactly; native exclusions are not agreement
+claims. Their explicit checked-column lists remain in each report.
+
+Main log: `/private/tmp/floatspec-full-three-loop-5a6d16df-20260920.log`.
+Artifact directories share prefix
+`/private/var/folders/gn/1hqqc7pn3nz5s_p0dxnn9h300000gp/T/`:
+`floatspec-bridge-1vtmvy__`, replay directories `floatspec-bridge-y_304h67`,
+`floatspec-bridge-7e4c1yh5`, `floatspec-bridge-zklr1lvn`,
+`floatspec-bridge-9xip4ng4`, `floatspec-native-ieee-7ygru4gb`,
+`floatspec-native-arithmetic-gv_j9s4i`, `floatspec-ieee-modes-s8i1men6`,
+`floatspec-ieee-scale-h7lmroyh`, and `floatspec-ieee-integer-cxxvjrri`.
+
+This completes the previously pending broad run. It does not cover later
+Pff/model-adapter/LPO changes, whose separate receipts are recorded above,
+and it does not prove universal source equivalence. The interrupted older run
+and earlier timeouts remain errors rather than being overwritten as passes.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In

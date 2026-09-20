@@ -995,3 +995,15 @@ does not yet exercise all of IEEE arithmetic, every native primitive,
 real-valued noncomputable mathematics, or all theorem hypotheses/conclusions.
 The four named native/bit proof debts remain separate. Read the
 [audit ledger](ASTRA_AUDIT_2026-09-19.md) for observed results and unreviewed scope.
+
+The larger frozen September 20 rerun also completed: **55,162 differential
+case executions and generated kernel equalities**, including 292 saved replay
+cases, plus **119** core/native/IEEE bridge-harness tests. Every one of its
+ten reports records source fingerprint
+`32ec11b5b0ac7fb6cba5d58635307df2857568f7228c9554e8343d498305dfbf`.
+The final process exited zero and emitted the combined success marker.
+Its core-only corpus has 48,614 cases; the remainder covers native unary,
+arithmetic, all modes, scale/decomposition and integer rounding. Native scope
+exceptions remain explicit in the reports, not silently treated as universal
+four-way agreement. Later Pff/model/LPO changes have separate newer-snapshot
+receipts and must not be conflated with this frozen full-run result.
