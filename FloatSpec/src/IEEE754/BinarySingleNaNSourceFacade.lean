@@ -571,6 +571,7 @@ theorem binary_round_correct {prec emax : Int}
     mode s (FloatSpec.Core.Zaux.positiveToNat m) e
       (FloatSpec.Core.Zaux.positiveToNat_pos m)
 
+@[flocq_source "src/IEEE754/BinarySingleNaN.v" 1182 "binary_overflow"]
 abbrev binary_overflow {prec emax : Int} :=
   @bsn_binary_overflow prec emax
 

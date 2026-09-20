@@ -15,7 +15,7 @@ This guide follows those jobs in order. The detailed
 [independent continuation audit](ASTRA_AUDIT_2026-09-19.md) retain the
 declaration-by-declaration findings and historical milestones.
 
-## Wake-up summary — September 20, 2026, 07:16 UTC
+## Wake-up summary — September 20, 2026, 07:35 UTC
 
 **What changed most recently:** actually running the raw IEEE rounding APIs
 found a semantic bug. A helper replaced signed shifting with floor division
@@ -35,15 +35,28 @@ real-value theorem's hypotheses, but the exported total function still has
 source behavior worth preserving. The demo's sixth example makes this
 difference visible.
 
+**A second bug, now repaired:** at precision zero, the source's conversion
+to a positive mantissa returns `1`; the raw Lean overflow helper returned
+`0`. A later full-float conversion hid that difference by restoring positivity.
+The tests now retain each intermediate/exported result, and both Lean helpers
+use the correct fallback. Their shared mantissa is proved positive for every
+integer precision. These two findings concern raw source interfaces outside
+their real-value theorems' hypotheses; they are not evidence of a failure in
+ordinary valid binary32/binary64 arithmetic.
+
 **Verified:** the full Lean 4.34.0 macOS build (6,216 jobs), nine
 literal raw-rounding cases independently in Lean and pinned Rocq, and the
 six-part executable demo pass. The original 6,354-case run found **197
 disagreements**; all 197 saved counterexamples now agree in compiled Lean,
 kernel reduction, and pinned Rocq, and their generated Lean assertions pass.
-The full repaired grid now passes all **6,354 cases and 6,354 kernel
-assertions**, and all **38 harness tests**, including deliberate mutations,
-pass. The compiled trust audit still finds exactly four existing named proof
-debts. The
+That repaired grid passed all **6,354 cases and 6,354 kernel assertions**.
+After the overflow fix, a fresh-seed run passes **7,079 cases and 7,079
+kernel assertions**: 730 overflow cases and 6,349 raw-rounding cases.
+All **87 saved overflow failures** and all 197 earlier signed-rounding
+failures also replay successfully. Seven additional pure Lean/Rocq overflow
+examples and **42 harness tests**, including mutations of each exported
+mantissa column, pass. The compiled trust audit still finds exactly four
+existing named proof debts. The
 [ledger](ASTRA_AUDIT_2026-09-19.md) retains failed runs as failures rather than
 replacing their receipts with a later green result.
 
@@ -61,9 +74,11 @@ CI claim. Reviewable work is on
 [`alok/FloatSpec`, branch `codex/astra-flocq-audit`](https://github.com/alok/FloatSpec/tree/codex/astra-flocq-audit),
 with BAIF retained as the optional `upstream` remote.
 
-**Next:** correct the separately reproduced raw-overflow discrepancy at
-nonpositive precision, then examine remaining noncomputable SingleNaN arithmetic entry
-points. Successful finite tests do not settle every theorem signature or
+**Next:** enable and cross-test the separate SingleNaN arithmetic entry
+points. Their add/multiply/divide/square-root clients currently fail on
+`noncomputable` markers even for zero inputs; inspecting their integer bodies
+and six correctness signatures found no additional source mismatch in this
+slice. Successful finite tests do not settle every theorem signature or
 every total-function input.
 
 ## 1. Start with one small rounding problem
@@ -400,7 +415,7 @@ changed surfaces have been checked.
 Source links make that review navigable. `@[flocq_source]` records a pinned
 Coq path, line, and name; `@[flocq_local]` explains a Lean-only helper.
 Eleven modules currently enforce strict public-definition classification.
-The compiler-backed validator checks all 157 registered anchors, including
+The compiler-backed validator checks all 160 registered anchors, including
 combined attributes and later attribute commands. These links are metadata,
 not a proof that bodies or theorem signatures correspond.
 

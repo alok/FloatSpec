@@ -1,0 +1,785 @@
+[
+  {
+    "op": "overflow",
+    "args": [
+      -3,
+      -6,
+      1,
+      0
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      -3,
+      -6,
+      1,
+      1
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      -3,
+      -6,
+      2,
+      0
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      -3,
+      -6,
+      3,
+      1
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      -3,
+      -4,
+      1,
+      0
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      -3,
+      -4,
+      1,
+      1
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      -3,
+      -4,
+      2,
+      0
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      -3,
+      -4,
+      3,
+      1
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      -3,
+      -3,
+      1,
+      0
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      -3,
+      -3,
+      1,
+      1
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      -3,
+      -3,
+      2,
+      0
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      -3,
+      -3,
+      3,
+      1
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      -3,
+      -2,
+      1,
+      0
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      -3,
+      -2,
+      1,
+      1
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      -3,
+      -2,
+      2,
+      0
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      -3,
+      -2,
+      3,
+      1
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      -3,
+      0,
+      1,
+      0
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      -3,
+      0,
+      1,
+      1
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      -3,
+      0,
+      2,
+      0
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      -3,
+      0,
+      3,
+      1
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      -3,
+      1,
+      1,
+      0
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      -3,
+      1,
+      1,
+      1
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      -3,
+      1,
+      2,
+      0
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      -3,
+      1,
+      3,
+      1
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      -3,
+      128,
+      1,
+      0
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      -3,
+      128,
+      1,
+      1
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      -3,
+      128,
+      2,
+      0
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      -3,
+      128,
+      3,
+      1
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      -3,
+      1024,
+      1,
+      0
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      -3,
+      1024,
+      1,
+      1
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      -3,
+      1024,
+      2,
+      0
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      -3,
+      1024,
+      3,
+      1
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      -1,
+      -4,
+      1,
+      0
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      -1,
+      -4,
+      1,
+      1
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      -1,
+      -4,
+      2,
+      0
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      -1,
+      -4,
+      3,
+      1
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      -1,
+      -2,
+      1,
+      0
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      -1,
+      -2,
+      1,
+      1
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      -1,
+      -2,
+      2,
+      0
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      -1,
+      -2,
+      3,
+      1
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      -1,
+      -1,
+      1,
+      0
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      -1,
+      -1,
+      1,
+      1
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      -1,
+      -1,
+      2,
+      0
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      -1,
+      -1,
+      3,
+      1
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      -1,
+      0,
+      1,
+      0
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      -1,
+      0,
+      1,
+      1
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      -1,
+      0,
+      2,
+      0
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      -1,
+      0,
+      3,
+      1
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      -1,
+      1,
+      1,
+      0
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      -1,
+      1,
+      1,
+      1
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      -1,
+      1,
+      2,
+      0
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      -1,
+      1,
+      3,
+      1
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      -1,
+      128,
+      1,
+      0
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      -1,
+      128,
+      1,
+      1
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      -1,
+      128,
+      2,
+      0
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      -1,
+      128,
+      3,
+      1
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      -1,
+      1024,
+      1,
+      0
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      -1,
+      1024,
+      1,
+      1
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      -1,
+      1024,
+      2,
+      0
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      -1,
+      1024,
+      3,
+      1
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      0,
+      -4,
+      1,
+      0
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      0,
+      -4,
+      1,
+      1
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      0,
+      -4,
+      2,
+      0
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      0,
+      -4,
+      3,
+      1
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      0,
+      0,
+      1,
+      0
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      0,
+      0,
+      1,
+      1
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      0,
+      0,
+      2,
+      0
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      0,
+      0,
+      3,
+      1
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      0,
+      1,
+      1,
+      0
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      0,
+      1,
+      1,
+      1
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      0,
+      1,
+      2,
+      0
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      0,
+      1,
+      3,
+      1
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      0,
+      128,
+      1,
+      0
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      0,
+      128,
+      1,
+      1
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      0,
+      128,
+      2,
+      0
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      0,
+      128,
+      3,
+      1
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      0,
+      1024,
+      1,
+      0
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      0,
+      1024,
+      1,
+      1
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      0,
+      1024,
+      2,
+      0
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      0,
+      1024,
+      3,
+      1
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      -8,
+      512,
+      2,
+      0
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      -9,
+      882,
+      1,
+      0
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      -9,
+      1523,
+      1,
+      0
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      -12,
+      202,
+      1,
+      1
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      -5,
+      941,
+      1,
+      1
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      -4,
+      -16,
+      3,
+      1
+    ]
+  },
+  {
+    "op": "overflow",
+    "args": [
+      -9,
+      571,
+      2,
+      0
+    ]
+  }
+]

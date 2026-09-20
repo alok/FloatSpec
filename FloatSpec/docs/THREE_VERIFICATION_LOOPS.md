@@ -70,6 +70,10 @@ The standalone paired fixtures add independent contract and error checks:
 - `RawIEEERounding`: nine literal rounding and invalid-precondition cases,
   including signed-zero results mined from the differential bridge. Both
   languages check the same expected values, independently of the adapter.
+- `RawOverflow`: seven literal constructor/mantissa/exponent expectations,
+  including the positive-carrier fallback at nonpositive precision. A Lean
+  theorem separately proves that the shared helper is positive at every
+  integer precision, without a format-validity instance.
 
 `Test/SourcePremiseContracts.lean` additionally has 52 source-premise guards,
 paired typed consumers for the Prop, integer-rounding, canonical-exponent,
@@ -129,11 +133,26 @@ negation, absolute value, addition, subtraction, multiplication), and combined
 format-dependent addition/division/square root/truncation. The adapters account
 explicitly for parameter-order differences between the Lean and Coq APIs.
 
-A thirteenth family tests IEEE overflow in all five rounding modes: result
-constructor, sign, mantissa, exponent, and actual canonical/bounded validity.
-It enforces `0 < prec < emax`, the source contract's precision premises. The
-real validity predicate is essential here; the legacy always-true predicate
-would provide no evidence about whether an overflow result is representable.
+A thirteenth family tests IEEE overflow in all five rounding modes. Its 21
+columns retain the source-facing SingleNaN result, actual canonical/bounded
+validity, both legacy full-float routes, the standard helper, and the exact
+positive-mantissa full-float result. Constructor, sign, mantissa, and exponent
+are compared for every route. The total source function accepts arbitrary
+integer precision/exponent bounds; only its validity theorem requires
+`0 < prec < emax`. The former harness incorrectly imposed those theorem
+premises on runtime inputs and therefore missed a real difference.
+
+At nonpositive precision, Rocq's `Z.to_pos (2^prec - 1)` defaults to 1, whereas
+the old Lean raw result had mantissa 0. Expanding the domain found 87
+disagreements in 680 cases (seed `827419`). The exact full-float embedding
+already enforced positivity, so its output agreed even when earlier raw
+stages did not. This is why the expanded test retains each stage rather than
+checking only the last conversion. The shared corrected helper is positive
+for every integer precision; its ordinary positive-precision formula is
+unchanged. All 87 inputs are retained in `RawOverflowReplay.json` and replayed
+by the aggregate runner. A separate mutation of each of the five mantissa
+columns must be detected in both Lean paths. The real validity predicate is
+still observed; nonpositive-precision finite outputs are not declared valid.
 
 Two more families directly test binary32/binary64 bit decoding, re-encoding,
 field splitting, and validity. They preserve NaN payloads and signs instead of

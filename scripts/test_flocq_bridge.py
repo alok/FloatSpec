@@ -49,6 +49,20 @@ class RunnerTests(unittest.TestCase):
 
 
 class ParserTests(unittest.TestCase):
+    def test_raw_overflow_accepts_source_total_domain(self):
+        cases = bridge.corpus(827419, 0)
+        for args in ((-3, -4, 1, 0), (0, 1, 1, 1), (3, 3, 4, 0)):
+            self.assertIn(bridge.Case('overflow', args), cases)
+        self.assertEqual(bridge.WIDTHS['overflow'], 21)
+
+    def test_saved_raw_overflow_counterexamples_remain_replayable(self):
+        path = Path(__file__).parent / 'fixtures/RawOverflowReplay.json'
+        cases = [bridge.Case(row['op'], tuple(row['args']))
+                 for row in json.loads(path.read_text())]
+        self.assertEqual(len(cases), 87)
+        self.assertEqual(len(set(cases)), 87)
+        self.assertTrue(all(case.op == 'overflow' and case.args[0] <= 0 for case in cases))
+
     def test_saved_raw_round_counterexamples_remain_replayable(self):
         path = Path(__file__).parent / 'fixtures/RawIEEERoundingReplay.json'
         cases = [bridge.Case(row['op'], tuple(row['args']))
@@ -165,8 +179,8 @@ class ParserTests(unittest.TestCase):
         for op, args in (("no_such_function", ()), ("power", (2,)),
                          ("power", (2, "sorry")), ("power", (2, True)),
                          ("location", (4, 2, -1)), ("round", (2, 0, 1)),
-                         ("sqrt", (1, 4, 0, 0)), ("overflow", (0, 4, 0, 0)),
-                         ("overflow", (4, 4, 0, 0)), ("overflow", (3, 4, 5, 0)),
+                         ("sqrt", (1, 4, 0, 0)), ("overflow", (3, 4, 5, 0)),
+                         ("overflow", (3, 4, 0, 2)),
                          ("bit_fields", (0, 0, 2, 0, 0, 0)),
                          ("validity", (3, 4, 0, 0, 0)),
                          ("validity", (3, 4, 2, 1, 0)),
@@ -187,6 +201,36 @@ class ParserTests(unittest.TestCase):
 
 @unittest.skipUnless(os.environ.get("FLOCQ_AUDIT_DIR"), "live test requires FLOCQ_AUDIT_DIR")
 class LiveTests(unittest.TestCase):
+    def test_raw_overflow_positive_fallback_and_all_exports(self):
+        flocq = Path(os.environ['FLOCQ_AUDIT_DIR']).resolve()
+        cases = [bridge.Case('overflow', args) for args in
+                 ((0, 1, 1, 0), (-1, 1, 1, 1), (0, -4, 0, 1),
+                  (3, 3, 1, 0), (3, 4, 1, 1))]
+        with tempfile.TemporaryDirectory(prefix='floatspec-raw-overflow-') as directory:
+            rows = bridge.execute(cases, flocq, bridge.configured_coqc(flocq), Path(directory))
+            bridge.bootstrap_lean(cases, rows['rocq'], Path(directory))
+        self.assertEqual(bridge.compare(cases, rows), [])
+        for index, result, valid in ((0, [3, 0, 1, 1], 0), (1, [3, 1, 1, 2], 0),
+                                      (2, [1, 1, 0, 0], 1), (3, [3, 0, 7, 0], 1),
+                                      (4, [3, 1, 7, 1], 1)):
+            self.assertEqual(rows['rocq'][index], result + [valid] + result * 4)
+
+    def test_raw_overflow_each_mantissa_column_is_checked(self):
+        flocq = Path(os.environ['FLOCQ_AUDIT_DIR']).resolve()
+        original = bridge.expressions
+        case = bridge.Case('overflow', (0, 1, 1, 0))
+        for column in (2, 7, 11, 15, 19):
+            def mutated(case):
+                lean, rocq = original(case)
+                return f'({lean}).set {column} 0', rocq
+            with (self.subTest(column=column),
+                  tempfile.TemporaryDirectory(prefix='floatspec-overflow-mutation-') as directory,
+                  patch.object(bridge, 'expressions', mutated)):
+                rows = bridge.execute([case], flocq, bridge.configured_coqc(flocq), Path(directory))
+            failures = bridge.compare([case], rows)
+            self.assertEqual(len(failures), 1)
+            self.assertEqual(failures[0]['paths'], ['lean', 'compiled'])
+
     def test_raw_ieee_round_boundaries_and_degenerate_parameters(self):
         flocq = Path(os.environ['FLOCQ_AUDIT_DIR']).resolve()
         cases = [bridge.Case('ieee_round', args) for args in
@@ -491,7 +535,7 @@ class LiveTests(unittest.TestCase):
         self.assertEqual(lean[0], [0])
         self.assertEqual(lean[1], [-3, -2])
         self.assertEqual(lean[7], [0, 0])
-        self.assertEqual(lean[-3], [3, 0, 7, 1, 1])
+        self.assertEqual(lean[-3], [3, 0, 7, 1, 1] + [3, 0, 7, 1] * 4)
         self.assertEqual(lean[-2], [2, 1, 1, 0, 0xfff0000000000001, 1, 1, 2047, 1])
         self.assertEqual(lean[-1], [2, 0, (1 << 23) - 1, 0, (1 << 31) - 1,
                                    0, (1 << 23) - 1, 255, 1])

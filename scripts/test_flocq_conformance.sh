@@ -215,7 +215,7 @@ echo 'Pure Rocq bit loop passed: 20,000 binary32/binary64 roundtrip checks'
 echo 'Pure Rocq order loop passed: 2,000 ordering-law checks and boundary examples'
 "$coqc_bin" -q -R "$flocq_dir/src" Flocq -o "$scratch/RoundingWalkthrough.vo" \
   "$repo_root/scripts/fixtures/RoundingWalkthrough.v"
-for fixture in BooleanComparison RawIEEERounding DoubleRoundingWitness SingleNaNValidity RelativeErrorGrid \
+for fixture in BooleanComparison RawIEEERounding RawOverflow DoubleRoundingWitness SingleNaNValidity RelativeErrorGrid \
     SourcePremiseContracts ExactArithmeticLaws RoundingOracle IntegerRounding; do
   "$coqc_bin" -q -R "$flocq_dir/src" Flocq -o "$scratch/$fixture.vo" \
     "$repo_root/scripts/fixtures/$fixture.v"
@@ -232,7 +232,7 @@ run_lake env lean "$repo_root/FloatSpec/Test/BitOrderExecution.lean"
 run_lake env lean "$repo_root/FloatSpec/Test/NativeSourceArithmetic.lean"
 run_lake env lean "$repo_root/FloatSpec/Test/RoundingWalkthrough.lean"
 run_lake env lean "$repo_root/FloatSpec/Test/SourcePremiseContracts.lean"
-for fixture in BooleanComparison RawIEEERounding DoubleRoundingWitness SingleNaNValidity RelativeErrorGrid ExactArithmeticLaws RoundingOracle IntegerRounding; do
+for fixture in BooleanComparison RawIEEERounding RawOverflow DoubleRoundingWitness SingleNaNValidity RelativeErrorGrid ExactArithmeticLaws RoundingOracle IntegerRounding; do
   run_lake env lean "$repo_root/scripts/fixtures/$fixture.lean"
 done
 run_lake env lean --run "$repo_root/scripts/fixtures/GuidedDemo.lean"
@@ -245,10 +245,11 @@ echo 'Lean contract loop passed: 52 premise guards, typed consumers, finite erro
 uv run "$repo_root/scripts/flocq_bridge.py" --flocq-dir "$flocq_dir" --coqc "$coqc_bin" \
   --seed "${FLOCQ_BRIDGE_SEED:-20260919}" --samples "${FLOCQ_BRIDGE_SAMPLES:-100}" \
   --batch-size "${FLOCQ_BRIDGE_BATCH_SIZE:-200}"
-# Preserve all counterexamples from the signed-shift audit independently of
-# whichever random seed is selected for the new corpus above.
-uv run "$repo_root/scripts/flocq_bridge.py" --flocq-dir "$flocq_dir" --coqc "$coqc_bin" \
-  --replay "$repo_root/scripts/fixtures/RawIEEERoundingReplay.json" --skip-build
+# Preserve all counterexamples independently of the new corpus's random seed.
+for replay in RawIEEERoundingReplay RawOverflowReplay; do
+  uv run "$repo_root/scripts/flocq_bridge.py" --flocq-dir "$flocq_dir" --coqc "$coqc_bin" \
+    --replay "$repo_root/scripts/fixtures/$replay.json" --skip-build
+done
 FLOCQ_AUDIT_DIR="$flocq_dir" uv run "$repo_root/scripts/test_flocq_bridge.py" -v
 
 uv run "$repo_root/scripts/native_ieee_bridge.py" --flocq-dir "$flocq_dir" --coqc "$coqc_bin" \

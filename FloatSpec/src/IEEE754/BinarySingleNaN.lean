@@ -2277,11 +2277,12 @@ def overflow_to_inf (mode : RoundingMode) (s : Bool) : Bool :=
 -- The root name `binary_overflow` is already used by the Binary.v port for the
 -- FullFloat variant, so the SingleNaN operation is kept under a BSN-qualified
 -- helper name while the public theorems below keep the upstream names.
+@[flocq_source "src/IEEE754/BinarySingleNaN.v" 1182 "binary_overflow"]
 def bsn_binary_overflow (mode : RoundingMode) (s : Bool) : StandardFloat :=
   if overflow_to_inf mode s then
     StandardFloat.S754_infinity s
   else
-    StandardFloat.S754_finite s ((2 : Nat) ^ prec.toNat - 1) (emax - prec)
+    StandardFloat.S754_finite s (rawOverflowMantissa prec) (emax - prec)
 
 -- Coq: is_nan_binary_overflow
 omit [Prec_gt_0 prec] [Prec_lt_emax prec emax] in
@@ -14097,6 +14098,7 @@ private theorem B2FF_exact_standardFloatToBinaryFloatOfNotNaN
         binaryFloatToFullFloat, SF2FF_exact, hm, binaryPositiveOfNat_spec]
 
 -- Exact FLoCq full-float image of the SingleNaN overflow algorithm.
+@[flocq_source "src/IEEE754/Binary.v" 877 "binary_overflow"]
 def binary_overflow_exact {prec emax : Int}
     (mode : RoundingMode) (s : Bool) : full_float :=
   SF2FF_exact (bsn_binary_overflow (prec:=prec) (emax:=emax) mode s)

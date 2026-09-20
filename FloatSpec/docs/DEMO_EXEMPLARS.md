@@ -79,6 +79,15 @@ conditional theorem explaining its real value. The paired
 expectations; the [197-case replay](../../scripts/fixtures/RawIEEERoundingReplay.json)
 preserves every disagreement from the original seeded run.
 
+The related [raw-overflow Lean](../../scripts/fixtures/RawOverflow.lean) and
+[Rocq](../../scripts/fixtures/RawOverflow.v) examples show why we observe more
+than the final output. At precision zero, the source converts its mantissa
+expression to a positive integer and obtains 1. The former raw Lean helper
+returned 0, but a later positive-carrier conversion silently restored 1.
+Testing only that final conversion missed the earlier discrepancy. The
+expanded bridge compares every exported stage and retains 87 replay inputs
+from this separate finding.
+
 ## Exemplars inspected
 
 These are reading recommendations, not dependencies adopted by FloatSpec.

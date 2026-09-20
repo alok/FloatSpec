@@ -35,7 +35,7 @@ OPS = ("power", "div_eucl", "location", "round", "truncate", "div", "plus", "sqr
        "bit_fields", "order32", "order64", "validity", "nearby", "neighbors", "comparison", "small_ieee",
        "ieee_round")
 ARITIES = dict(zip(OPS, (2, 2, 3, 3, 5, 6, 6, 4, 3, 2, 5, 8, 4, 1, 1, 6, 2, 2, 5, 6, 6, 10, 15, 8), strict=True))
-WIDTHS = dict(zip(OPS, (1, 2, 3, 6, 3, 2, 2, 2, 4, 1, 13, 12, 5, 9, 9, 8, 14, 14, 15, 7, 17, 14, 39, 16), strict=True))
+WIDTHS = dict(zip(OPS, (1, 2, 3, 6, 3, 2, 2, 2, 4, 1, 13, 12, 21, 9, 9, 8, 14, 14, 15, 7, 17, 14, 39, 16), strict=True))
 RADIX_OPS = {"truncate", "div", "plus", "sqrt", "digits", "operations", "format_calc"}
 
 
@@ -59,9 +59,9 @@ class Case:
         if self.op == "format_calc" and self.args[7] not in range(4):
             raise ValueError("format selector must be FIX=0, FLX=1, FLT=2, or FTZ=3")
         if self.op == "overflow":
-            prec, emax, mode, sign = self.args
-            if not 0 < prec < emax or mode not in range(5) or sign not in (0, 1):
-                raise ValueError("overflow requires 0 < prec < emax, mode 0..4, sign 0..1")
+            _, _, mode, sign = self.args
+            if mode not in range(5) or sign not in (0, 1):
+                raise ValueError("overflow requires mode 0..4 and sign 0..1")
         if self.op == "bit_fields" and self.args[2] not in (0, 1):
             raise ValueError("bit-field sign must be 0 or 1")
         if self.op == "validity" and (self.args[2] not in (0, 1) or self.args[3] <= 0):
@@ -306,8 +306,8 @@ def corpus(seed: int, samples: int) -> list[Case]:
         for word in (-(1 << (width + 2)), -(1 << width), -2, -1,
                      1 << width, (1 << width) + 1, (1 << (width + 2)) - 1):
             cases.append(Case(f"bits{width}", (word,)))
-    for prec in (1, 2, 3, 24, 53):
-        for emax in sorted({prec + 1, 2 * prec, 128, 1024}):
+    for prec in (-3, -1, 0, 1, 2, 3, 24, 53):
+        for emax in sorted({-4, 0, 1, prec, prec + 1, 2 * prec, 128, 1024}):
             for mode in range(5):
                 for sign in range(2):
                     cases.append(Case("overflow", (prec, emax, mode, sign)))
@@ -362,8 +362,7 @@ def corpus(seed: int, samples: int) -> list[Case]:
             elif op == "operations":
                 args = (base, m1, e1, m2, e2)
             elif op == "overflow":
-                prec = rng.randint(1, 64)
-                args = (prec, rng.randint(prec + 1, 2048), rng.randrange(5), rng.randrange(2))
+                args = (rng.randint(-16, 64), rng.randint(-32, 2048), rng.randrange(5), rng.randrange(2))
             elif op in ("bits32", "bits64"):
                 width = int(op[4:])
                 args = (rng.randrange(-(1 << width), 1 << (width + 1)),)
@@ -550,11 +549,19 @@ def expressions(case: Case) -> tuple[str, str]:
         lean_mode = (".RNE", ".RTZ", ".RTN", ".RTP", ".RNA")[mode]
         coq_mode = ("mode_NE", "mode_ZR", "mode_DN", "mode_UP", "mode_NA")[mode]
         s = "true" if sign else "false"
-        lean = f"bsn_binary_overflow (prec := {prec}) (emax := {emax}) {lean_mode} {s}"
-        coq = f"BinarySingleNaN.binary_overflow {prec} {emax} {coq_mode} {s}"
+        p, top = f"({prec})", f"({emax})"
+        lean = f"BinarySingleNaN.binary_overflow (prec := {p}) (emax := {top}) {lean_mode} {s}"
+        coq = f"BinarySingleNaN.binary_overflow {p} {top} {coq_mode} {s}"
+        coq_full = f"@Binary.binary_overflow {p} {top} {coq_mode} {s}"
         return (f"let x := {lean}; standard x ++ "
-                f"[boolean (validBinarySingleNaNStandardFloat (prec := {prec}) (emax := {emax}) x)]",
-                f"let x := {coq} in standard x ++ [boolean (SpecFloat.valid_binary {prec} {emax} x)]")
+                f"[boolean (validBinarySingleNaNStandardFloat (prec := {p}) (emax := {top}) x)] ++ "
+                f"standard (standard_binary_overflow {p} {top} {lean_mode} {s}) ++ "
+                f"standard (FF2SF (Binary.binary_overflow (prec := {p}) (emax := {top}) {lean_mode} {s})) ++ "
+                f"full (Binary.binary_overflow_exact (prec := {p}) (emax := {top}) {lean_mode} {s}) ++ "
+                f"standard (FF2SF (_root_.binary_overflow {p} {top} {lean_mode} {s}))",
+                f"let x := {coq} in standard x ++ [boolean (SpecFloat.valid_binary {p} {top} x)] ++ "
+                f"standard x ++ standard (Binary.FF2SF ({coq_full})) ++ full ({coq_full}) ++ "
+                f"standard (Binary.FF2SF ({coq_full}))")
     if op == "formats":
         emin, prec, exponent = a
         return (f"[FIX.FIX_exp {emin} {exponent}, FLX.FLX_exp {prec} {exponent}, "

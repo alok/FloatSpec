@@ -1102,6 +1102,79 @@ pinned Rocq's `Z.to_pos` fallback produces 1. Read-only paired probes are
 validity theorem's positive-precision hypotheses, but still a total-function
 discrepancy. It is kept separate from the signed-shift correction.
 
+### September 20 continuation: preserve raw overflow's positive carrier
+
+The separately recorded raw-overflow discrepancy is now corrected in both
+`standard_binary_overflow` and `bsn_binary_overflow`. Pinned
+`BinarySingleNaN.v:1182` uses `Z.to_pos (Zpower 2 prec - 1)`, which falls back
+to positive 1 when its input is nonpositive. Lean had computed a natural
+mantissa of 0 at precision 0 or below. A shared, explicitly Lean-local
+`rawOverflowMantissa` now returns the ordinary `2^prec - 1` for positive
+precision and 1 otherwise. Its positivity is proved for every integer
+precision; a simp lemma preserves all existing positive-precision proofs.
+No old theorem statement was weakened and no new sorry was introduced.
+
+**Harness finding:** the previous overflow adapter enforced `0 < prec < emax`
+on every input, although those are the validity theorem's hypotheses, not
+the raw definition's domain. The broadened family accepts arbitrary integer
+format parameters and retains 21 columns: SingleNaN output and validity,
+the standard helper, two legacy full-float routes, and the exact positive-
+mantissa full-float result. It deliberately observes all stages.
+
+Before correction, seed 827419 with 100 supplemental samples found **87
+disagreements in 680 cases**, all at nonpositive precision. The exact
+`Binary.binary_overflow_exact` route already agreed because `SF2FF_exact`
+itself restores a positive mantissa. Inspecting only that final conversion
+would therefore have concealed the earlier mismatch. The failed report is
+`/private/tmp/floatspec-raw-overflow-before-20260920/report.json`, 33.822
+seconds, source SHA-256
+`266add04c6a2f15ff1209bf1b77c6f55e2d64c975f3aaef67b8a24ec9efebbd7`.
+Only 300 assertions from agreeing batches were generated in that failed run.
+
+Verification on the corrected snapshot:
+
+- Full macOS Lean 4.34.0 library/test/executable build: **6,216 jobs**, exit 0;
+  `/private/tmp/floatspec-overflow-full-build-20260920.log`.
+- Complete LSP error diagnostics clean for Binary, BinarySingleNaN, the
+  source facade, and the new pure Lean fixture. Existing proofs stayed closed.
+- Seven literal expected results in `RawOverflow.lean` and `.v` pass
+  independently; the Lean side executes them and proves them by kernel
+  reduction. The original four-row paired probe now prints identical results.
+- All **87 original counterexamples** pass both Lean paths, pinned Rocq,
+  and generated kernel assertions. They are retained in
+  `scripts/fixtures/RawOverflowReplay.json`; receipt:
+  `/private/tmp/floatspec-overflow-fixed-replay-20260920/report.json`,
+  7.608 seconds. All **197 signed-rounding counterexamples** also replay
+  successfully after this change, with 197 kernel assertions; receipt:
+  `/private/tmp/floatspec-overflow-rounding-replay-20260920/report.json`,
+  16.106 seconds. Both have source SHA-256
+  `044d41ec21afcdbc8f8e396b932f22f1d7a539644046a76d62cc3f83fb6093f7`.
+- **42 live harness tests** pass in 136.188 seconds. Five separate mutations
+  replace each exported mantissa column with zero in turn; each is rejected
+  in compiled Lean and kernel reduction. Log:
+  `/private/tmp/floatspec-overflow-fixed-harness-20260920.log`.
+- **160 source anchors** validate. The compiled trust audit checks
+  **13,594 declarations / 58 modules / four existing named debts**.
+- The fresh-seed combined grid passes **7,079 cases and 7,079 kernel
+  assertions**: 730 overflow cases and 6,349 raw-rounding cases, seed 827421
+  with 150 supplemental samples, in 564.272 seconds. Receipt:
+  `/private/tmp/floatspec-overflow-round-fixed-grid-20260920/report.json`.
+  Its source SHA-256 matches the two successful replays above.
+
+The next independently reproduced execution gap is the proof-carrying
+SingleNaN arithmetic API. `/private/tmp/SingleNaNExecutionGap.lean` fails
+compiled calls to `Bplus`, `Bmult`, `Bdiv`, and `Bsqrt` solely on their
+`noncomputable` declarations. Inspection of all six operation bodies against
+pinned `BinarySingleNaN.v:1578,1940,2042,2094,2307,2466` shows source-shaped
+integer branches and proof-only uses of reals. Enabling and cross-testing
+these exports is next; the already-executable full-payload arithmetic tests
+do not substitute for testing this separate SingleNaN API.
+The six main correctness signatures were also compared with the compiled
+Rocq types, including finite-input hypotheses for addition/subtraction/FMA,
+the nonzero-real denominator premise for division, and signed-zero clauses.
+No additional signature mismatch was found in this inspection; the real-sign
+helper definitions were checked as part of that comparison.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In

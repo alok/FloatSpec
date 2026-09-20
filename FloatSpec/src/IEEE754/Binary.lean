@@ -1119,11 +1119,29 @@ def overflow_to_inf_FF (mode : RoundingMode) (s : Bool) : Bool :=
   | RoundingMode.RTP => !s
   | RoundingMode.RTN => s
 
+/-- The positive mantissa of a raw overflow result, including the source's
+fallback to one at nonpositive precision. -/
+@[flocq_local "Extracts Z.to_pos (Zpower 2 prec - 1) from BinarySingleNaN.binary_overflow"]
+def rawOverflowMantissa (prec : Int) : Nat :=
+  if 0 < prec then (2 : Nat) ^ prec.toNat - 1 else 1
+
+@[simp] theorem rawOverflowMantissa_of_pos {prec : Int} [Prec_gt_0 prec] :
+    rawOverflowMantissa prec = (2 : Nat) ^ prec.toNat - 1 := by
+  simp [rawOverflowMantissa, (inferInstance : Prec_gt_0 prec).pos]
+
+/-- The source positive carrier remains inhabited even outside format premises. -/
+theorem rawOverflowMantissa_pos (prec : Int) : 0 < rawOverflowMantissa prec := by
+  unfold rawOverflowMantissa
+  split_ifs with hprec
+  · have hnat : prec.toNat ≠ 0 := by omega
+    exact Nat.sub_pos_of_lt (Nat.one_lt_two_pow hnat)
+  · decide
+
 def standard_binary_overflow (prec emax : Int) (mode : RoundingMode) (s : Bool) : StandardFloat :=
   if overflow_to_inf_FF mode s then
     StandardFloat.S754_infinity s
   else
-    StandardFloat.S754_finite s ((2 : Nat) ^ prec.toNat - 1) (emax - prec)
+    StandardFloat.S754_finite s (rawOverflowMantissa prec) (emax - prec)
 
 def binary_overflow (prec emax : Int) (mode : RoundingMode) (s : Bool) : FullFloat :=
   SF2FF (standard_binary_overflow prec emax mode s)
