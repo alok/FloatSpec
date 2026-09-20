@@ -32,9 +32,13 @@ class LeanControls(unittest.TestCase):
 
     def test_preservation_proof_requires_valid_exponent(self):
         source = (ROOT / "FloatSpec/Test/UlpSourceChoice.lean").read_text()
+        start = source.index("theorem valid_exp_ulp_preserved")
+        stop = source.index("theorem negligible_choice_contract", start)
+        section = source[start:stop]
         expected = "[Valid_exp fexp]"
-        self.assertEqual(source.count(expected), 1)
-        self.check_rejection(source, source.replace(expected, ""),
+        self.assertEqual(section.count(expected), 1)
+        wrong = source[:start] + section.replace(expected, "") + source[stop:]
+        self.check_rejection(source, wrong,
                              "failed to synthesize[\\s\\S]*Valid_exp")
 
 

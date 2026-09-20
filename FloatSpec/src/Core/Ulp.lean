@@ -154,8 +154,9 @@ lemma negligible_exp_spec' :
           -- `m` is definitionally the same as `n`; transport `hm` and expose the witness
           exact Or.inr ⟨n, by simpa [hopt], by simpa using hm⟩
 
+omit [ValidRadix beta] in
 /-- Coq (Ulp.v): {coq}`fexp_negligible_exp_eq`. -/
-lemma fexp_negligible_exp_eq (beta : Int) [ValidRadix beta] (fexp : Int → Int) [FloatSpec.Core.Generic_fmt.Valid_exp fexp] (n m : Int)
+lemma fexp_negligible_exp_eq (fexp : Int → Int) [FloatSpec.Core.Generic_fmt.Valid_exp fexp] (n m : Int)
     (hn : n ≤ fexp n) (hm : m ≤ fexp m) :
     fexp n = fexp m := by
   -- Use the "small-regime" constancy of `fexp` provided by `Valid_exp`.
@@ -958,7 +959,7 @@ private theorem ulp0_ge_pow_cexp_round0_neg_theorem
         -- Convert `ex0 ≤ e` to `ex0 ≤ fexp ex0` using `he' : e = fexp ex0`.
         have hm_ex0 : ex0 ≤ fexp ex0 := by simpa [he'] using hex0_le_e
         have hconst : fexp n = fexp ex0 :=
-          (fexp_negligible_exp_eq (beta := beta) (fexp := fexp)
+          (fexp_negligible_exp_eq (fexp := fexp)
             (n := n) (m := ex0) hn_small hm_ex0)
         simpa [eq_comm] using hconst
       -- Conclude: B = β^(fexp ex0) = β^(fexp n) = (ulp 0).run (in the `some` branch)
@@ -1916,7 +1917,7 @@ private theorem ulp_round_pos_ZR_theorem
     · exact False.elim ((not_lt_of_ge hsmall) (hnone.2 _))
     · rcases hsome with ⟨n, hnopt, hnsmall⟩
       have hfexp_eq : fexp n = fexp (FloatSpec.Core.Raux.mag beta x) :=
-        fexp_negligible_exp_eq (beta := beta) (fexp := fexp)
+        fexp_negligible_exp_eq (fexp := fexp)
           (n := n) (m := FloatSpec.Core.Raux.mag beta x) hnsmall hsmall
       simp [ulp, r, hr0, hxne, FloatSpec.Core.Generic_fmt.cexp,
         hnopt, hfexp_eq]
@@ -2024,7 +2025,7 @@ private theorem succ_round_ge_id_theorem
                   have hmn : m = n := Option.some.inj (by simpa [hm_eq] using hopt)
                   simpa [hmn] using hm_small
               have hconst : fexp n = fexp ex :=
-                fexp_negligible_exp_eq (beta := beta) (fexp := fexp)
+                fexp_negligible_exp_eq (fexp := fexp)
                   (n := n) (m := ex) hn_small hex_le
               have hpow_eq : B = (beta : ℝ) ^ (fexp n) := by
                 simpa [hB, he', hconst]
@@ -2119,7 +2120,7 @@ private theorem ulp_round_pos_theorem
       · exact False.elim ((not_lt_of_ge hsmall) (hnone.2 e))
       · rcases hsome with ⟨n, hnopt, hnsmall⟩
         have hfexp_eq : fexp n = fexp e :=
-          fexp_negligible_exp_eq (beta := beta) (fexp := fexp)
+          fexp_negligible_exp_eq (fexp := fexp)
             (n := n) (m := e) hnsmall hsmall
         have hulp0 : ulp beta fexp 0 = (beta : ℝ) ^ (fexp n) := by
           simp [ulp, hnopt]
@@ -2600,7 +2601,7 @@ theorem error_lt_ulp_round
       · exact False.elim ((not_lt_of_ge hsmall) (hnone.2 _))
       · rcases hsome with ⟨n, hnopt, hnsmall⟩
         have hfexp_eq : fexp n = fexp (FloatSpec.Core.Raux.mag beta x) :=
-          fexp_negligible_exp_eq (beta := beta) (fexp := fexp)
+          fexp_negligible_exp_eq (fexp := fexp)
             (n := n) (m := FloatSpec.Core.Raux.mag beta x) hnsmall hsmall
         have heq : ulp beta fexp x = ulp beta fexp r := by
           simp [ulp, r, hr0, hx, FloatSpec.Core.Generic_fmt.cexp,
@@ -3664,7 +3665,7 @@ private theorem pred_pos_plus_ulp_aux3_zero_bridge_early
     exact zpow_int_inj_of_gt_one_early (beta := beta) hβ (a := fexp e) (b := e) hpow_eq
   have he_le_fe : e ≤ fexp e := by simpa [hfe_eq_e] using (le_of_eq (rfl : e = e))
   have hfn_eq : fexp n = fexp e :=
-    fexp_negligible_exp_eq (beta := beta) (fexp := fexp) n e hnle he_le_fe
+    fexp_negligible_exp_eq (fexp := fexp) n e hnle he_le_fe
   have hulprun : (ulp beta fexp 0) = (beta : ℝ) ^ (fexp n) := by
     simp [ulp, hnopt]
   have hpow_eq2 : (beta : ℝ) ^ (fexp n) = (beta : ℝ) ^ e := by
@@ -3718,6 +3719,7 @@ private theorem pred_pos_plus_ulp_core
       simpa [wp, PostCond.noThrow, Id.run, bind, pure, hu] using (htrip hβ)
     simpa [hpred_run] using hsum
 
+omit [Valid_exp fexp] in
 /-- Coq (Ulp.v): Theorem {coq}`succ_opp`: {lit}`forall x, succ (-x) = (- pred x)`. -/
 theorem succ_opp (x : ℝ) :
     ⦃⌜True⌝⦄
@@ -3731,6 +3733,7 @@ theorem succ_opp (x : ℝ) :
   -- `pred x` is defined as `- (succ (-x))`, hence `succ (-x) = - pred x`.
   simp [wp, PostCond.noThrow, Id.run, bind, pure, pred]
 
+omit [Valid_exp fexp] in
 /-- Coq (Ulp.v): Theorem {coq}`pred_opp`: {lit}`forall x, pred (-x) = (- succ x)`. -/
 theorem pred_opp (x : ℝ) :
     ⦃⌜True⌝⦄
@@ -3744,6 +3747,7 @@ theorem pred_opp (x : ℝ) :
   -- `pred (-x)` is definitionally `- (succ x)`.
   simp [wp, PostCond.noThrow, Id.run, bind, pure, pred]
 
+omit [Valid_exp fexp] in
 /-- Coq (Ulp.v): Theorem {coq}`ulp_opp`: {lit}`forall x, ulp (-x) = ulp x`. -/
 theorem ulp_opp (x : ℝ) :
     ⦃⌜True⌝⦄
@@ -3767,6 +3771,7 @@ theorem ulp_opp (x : ℝ) :
       simp [FloatSpec.Core.Generic_fmt.cexp, FloatSpec.Core.Raux.mag, abs_neg]
     simp [ulp, hx, hneg, hcexp]
 
+omit [Valid_exp fexp] in
 /-- Coq (Ulp.v): Theorem {coq}`ulp_abs`: {lit}`forall x, ulp (Rabs x) = ulp x`. -/
 theorem ulp_abs (x : ℝ) :
     ⦃⌜True⌝⦄
@@ -3873,6 +3878,7 @@ private theorem ulp_at_pos_boundary_theorem
   exact ulp_at_pos_boundary_aligned (beta := beta) (fexp := fexp) (x := x) hxeq
 
 --
+omit [Valid_exp fexp] in
 /-- Coq (Ulp.v): Theorem `pred_eq_pos`: `0 ≤ x -> pred x = pred_pos x`. -/
 theorem pred_eq_pos_flocq (x : ℝ) (hx : 0 ≤ x) :
     ⦃⌜1 < beta⌝⦄
@@ -3895,6 +3901,7 @@ theorem pred_eq_pos_flocq (x : ℝ) (hx : 0 ≤ x) :
     simp [pred, succ, pred_pos, hx0, hboundary_false, Id.run, bind, pure]
   · simp [pred, succ, hneg, Id.run, bind, pure]
 
+omit [Valid_exp fexp] in
 /-- Coq (Ulp.v): Theorem `pred_eq_pos`: `0 ≤ x -> pred x = pred_pos x`. -/
 theorem pred_eq_pos (x : ℝ) (hx : 0 ≤ x) :
     ⦃⌜1 < beta⌝⦄
@@ -3905,6 +3912,7 @@ theorem pred_eq_pos (x : ℝ) (hx : 0 ≤ x) :
     ⦃⇓r => ⌜r.1 = r.2⌝⦄ := by
   exact pred_eq_pos_flocq (beta := beta) (fexp := fexp) (x := x) hx
 
+omit [Valid_exp fexp] in
 /-- Coq (Ulp.v): Theorem succ_eq_pos: forall x, 0 <= x -> succ x = x + ulp x. -/
 theorem succ_eq_pos (x : ℝ) (hx : 0 ≤ x) :
     ⦃⌜True⌝⦄
@@ -3918,6 +3926,7 @@ theorem succ_eq_pos (x : ℝ) (hx : 0 ≤ x) :
   -- and unfold `succ` in the nonnegative branch.
   simp [wp, PostCond.noThrow, Id.run, bind, pure, succ, hx]
 
+omit [Valid_exp fexp] in
 /-- Coq (Ulp.v): Theorem ulp_ge_0: forall x, (0 <= ulp x)%R. -/
 theorem ulp_ge_0 (x : ℝ) :
     ⦃⌜1 < beta⌝⦄ (pure (ulp beta fexp x) : Id ℝ) ⦃⇓r => ⌜0 ≤ r⌝⦄ := by
@@ -7787,7 +7796,7 @@ private theorem pred_pos_plus_ulp_aux3_zero_bridge
     exact zpow_int_inj_of_gt_one (beta := beta) hβ (a := fexp e) (b := e) hpow_eq
   -- Use small‑regime constancy to show fexp n = fexp e = e
   have he_le_fe : e ≤ fexp e := by simpa [hfe_eq_e] using (le_of_eq (rfl : e = e))
-  have hfn_eq : fexp n = fexp e := fexp_negligible_exp_eq (beta := beta) (fexp := fexp) n e hnle he_le_fe
+  have hfn_eq : fexp n = fexp e := fexp_negligible_exp_eq (fexp := fexp) n e hnle he_le_fe
   -- Evaluate ulp 0 and rewrite exponents to reach x
   have hulprun : (ulp beta fexp 0) = (beta : ℝ) ^ (fexp n) := by simp [ulp, hnopt]
   have hpow_eq2 : (beta : ℝ) ^ (fexp n) = (beta : ℝ) ^ e := by
@@ -9321,6 +9330,7 @@ theorem ulp_le
     _ ≤ (ulp beta fexp |y|) := hpos_run
     _ = (ulp beta fexp y) := by simpa [h_eq_absy]
 
+omit [Valid_exp fexp] in
 /-- Coq (Ulp.v):
 Theorem ulp_le_id:
   forall x, (0 < x)%R -> F x -> (ulp x <= x)%R.
@@ -9410,6 +9420,7 @@ theorem ulp_le_id (x : ℝ) (hx : 0 < x)
   -- Reduce the Hoare triple to the pure inequality on `.run` and close.
   simpa [wp, PostCond.noThrow, Id.run, bind, pure] using hulp_le_x
 
+omit [Valid_exp fexp] in
 /-- Coq (Ulp.v):
 Theorem `ulp_le_abs`:
   forall x, (x <> 0)%R -> F x -> (ulp x <= Rabs x)%R.
@@ -9504,6 +9515,7 @@ theorem ulp_le_abs (x : ℝ) (hx : x ≠ 0)
     _ ≤ |(n : ℝ)| * |(beta : ℝ) ^ c| := hle_pow
     _ = |x| := habs_prod
 
+omit [Valid_exp fexp] in
 /-- Coq (Ulp.v): Theorem `ulp_canonical`
     `forall m e, m ≠ 0 -> canonical (m,e) -> ulp(F2R(m,e)) = bpow e`-/
 theorem ulp_canonical (m e : Int)
@@ -9549,6 +9561,7 @@ theorem ulp_canonical (m e : Int)
   change (ulp beta fexp x) = (beta : ℝ) ^ e
   simpa [h_ulp, hcexp_eq]
 
+omit [Valid_exp fexp] in
 /-- Coq (Ulp.v):
 Theorem `ulp_bpow` : `forall e, ulp (bpow e) = bpow (fexp (e + 1)).`
 
@@ -9587,6 +9600,7 @@ theorem ulp_bpow (e : Int) :
     simpa [hcexp_bpow] using hrun_cexp
   simpa [wp, PostCond.noThrow, Id.run] using hrun
 
+omit [Valid_exp fexp] in
 /-- Coq (Ulp.v): Theorem `pred_bpow`: forall e, pred (bpow e) = bpow e - bpow (fexp e). -/
 theorem pred_bpow (e : Int) (hβ : 1 < beta) :
     ⦃⌜True⌝⦄

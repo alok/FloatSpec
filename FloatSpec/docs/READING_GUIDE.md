@@ -15,7 +15,7 @@ This guide follows those jobs in order. The detailed
 [independent continuation audit](ASTRA_AUDIT_2026-09-19.md) retain the
 declaration-by-declaration findings and historical milestones.
 
-## Wake-up summary — September 20, 2026, 17:33 UTC
+## Wake-up summary — September 20, 2026, 18:05 UTC
 
 **The port builds and runs on macOS with Lean 4.34.0; it is not yet a fully
 source-audited port.** All 35 built Flocq module names have Lean counterparts,
@@ -51,11 +51,20 @@ The repairs preserve four distinctions worth carrying through the story:
 **What actually ran:** a complete frozen-snapshot three-loop run passed
 **55,162 differential case executions and generated kernel equalities**, plus
 **119 bridge-harness tests**, independent Lean/Rocq fixtures, source/trust
-gates and the demo. Newer Pff, model-adapter, LPO and ULP changes have separate
-fresh builds, paired fixtures and mutation controls. A larger fresh-seed pass
-over the newer executable interfaces is running now; it is not yet a result.
+gates and the demo. The newer Pff/auxiliary/model-adapter stress pass also
+completed: **8,128 cases**, seed `859003`, plus a **200-case** targeted
+neighbor replay, with every three-path comparison and generated kernel
+equality passing. The targeted generator closes a real coverage gap: broad
+random bounds rarely satisfy the neighbor theorems' premises.
+The latest subsequent change removes spurious assumptions from 15 source
+theorem interfaces and one compatibility helper; their arithmetic bodies
+are unchanged. It passes the full build, **113 source-premise guards** and
+15 paired typed clients. Its final-snapshot **360-case** runtime replay also
+passes all three paths and every generated kernel equality.
 Each run retains its exact source fingerprint. Earlier interruptions and
 timeouts remain errors, not retroactive passes.
+The [machine-readable receipt](VERIFICATION_RECEIPT_2026-09-20.json) records
+the three snapshot groups separately, including their exact seeds and hashes.
 
 Read [the demo/exemplar guide](DEMO_EXEMPLARS.md) for small runnable examples,
 [the three-loop guide](THREE_VERIFICATION_LOOPS.md) for reproduction, and
@@ -259,6 +268,15 @@ and one, producing binary spacings one and two. The
 [ULP choice fixture](../Test/UlpSourceChoice.lean) proves the preservation law,
 the invalidity of that example, and the differing powers. This is why witness
 construction and choice independence are reviewed separately.
+
+That does **not** mean every ULP law needs exponent validity. Negation and
+absolute value preserve the magnitude used by ULP; their symmetry laws work
+for any exponent function. So do the reviewed positive-branch, positivity,
+canonical-value and radix-power formulas under their stated value premises.
+Fourteen source laws had inherited unnecessary validity assumptions, and the
+pure integer witness-equality lemma even required an irrelevant radix.
+Those assumptions are now removed, with 15 paired typed clients and compiler
+guards. The stronger witness-independence proof above retains validity.
 
 Similarly, a symmetry of a rounding *function* is not the same contract as
 a theorem that its output satisfies a nearest-even *predicate*. Flocq's
@@ -483,6 +501,8 @@ across small and IEEE precisions. Negative minimum subnormal stepping to
 negative zero, maximum finite stepping to infinity, and NaN payload retention
 are explicit regression cases. The pure ordering loop checks the generic
 algorithms as well as their agreement with the bit-level neighbors.
+These are the IEEE integer algorithms; `Core.Ulp.ulp` on arbitrary real
+numbers is still a noncomputable mathematical definition.
 
 For agreeing batches, Rocq's output becomes the expected value of generated
 Lean equality statements. Lean checks each with `decide +kernel`.

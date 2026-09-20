@@ -175,6 +175,23 @@ end FloatSpec.Test.SourcePremiseGuard
 #guard_no_source_premise FloatSpec.Core.FTZ.FLXN_format_FTZ FloatSpec.Test.SourcePremiseGuard.PositivePrecisionFact at prec
 #guard_no_source_premise FloatSpec.Core.FTZ.generic_format_FTZ FloatSpec.Test.SourcePremiseGuard.PositivePrecisionFact at prec
 
+-- ULP shape/symmetry and absolute-value closure work for arbitrary exponents.
+#guard_no_source_premise FloatSpec.Core.Ulp.succ_opp FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.Ulp.pred_opp FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.Ulp.ulp_opp FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.Ulp.ulp_abs FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.Ulp.succ_eq_pos FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.Ulp.ulp_ge_0 FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.Ulp.pred_eq_pos_flocq FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.Ulp.pred_eq_pos FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.Ulp.ulp_le_id FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.Ulp.ulp_le_abs FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.Ulp.ulp_canonical FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.Ulp.ulp_bpow FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.Ulp.pred_bpow FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.Generic_fmt.generic_format_abs FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.Generic_fmt.generic_format_abs_inv FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+
 /-! Typed consumers deliberately omit proof-only section assumptions.
 Unlike a bare `#check`, each example fails if a public theorem accidentally
 inherits a stronger premise than its pinned Rocq counterpart. -/

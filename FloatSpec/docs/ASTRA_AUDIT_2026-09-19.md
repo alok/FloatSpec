@@ -3200,6 +3200,66 @@ Receipts have prefix `/private/tmp/floatspec-final-` and suffix
 `double-controls`, `ulp-controls`, `native-single`, `native-source`,
 `pff-aux-oracle`, `model-oracle`, and `pff-walkthrough`.
 
+### September 20, 18:05 UTC — close ULP premise leaks; final snapshot verified
+
+Compiled Rocq types showed twelve ULP laws do not require `Valid_exp`:
+`succ_opp`, `pred_opp`, `ulp_opp`, `ulp_abs`, `succ_eq_pos`, `ulp_ge_0`,
+`pred_eq_pos`, `ulp_le_id`, `ulp_le_abs`, `ulp_canonical`, `ulp_bpow`
+and `pred_bpow`. Two generic-format absolute-value closure laws had the same
+extra assumption. The Lean exports and the `pred_eq_pos_flocq` compatibility
+wrapper now omit it. The purely integer `fexp_negligible_exp_eq` loses its
+unused radix parameter/instance; all repository callers are migrated.
+The existing proof bodies remain closed. No arithmetic definition is changed.
+
+Six identical baseline clients failed only with missing `Valid_exp` in Lean
+but compiled in pinned Rocq; they now compile in both. The permanent fixture
+adds **15 paired typed clients**. All **23** printed Lean fixture axiom lists
+exclude `sorryAx`. The shared compiler guard now has **113** source-premise
+checks, plus its separate self-tests. The ULP preservation theorem still
+requires validity, and its live negative control still rejects removing it.
+
+Final source/configuration SHA-256:
+`d53fa1077ac3e66a70bbafd753b9566986a679478866046208fe3ce3901b1f00`.
+
+- Full macOS Lean 4.34 build passes **6,227 jobs**, plus all seven compiled
+  demo examples. Logs: `/private/tmp/floatspec-ulp-premise-full-build-20260920.log`
+  and `floatspec-ulp-premise-demo-20260920.log`.
+- Every added Lean client was checked separately before adding the next.
+  Paired Rocq clients, the identical formerly failing Lean clients, and all
+  compiled guards pass. Receipts use `floatspec-ulp-premise-clients-final`,
+  `floatspec-ulp-premise-clients-rocq`, `floatspec-ulp-symmetry-clients-after`
+  and `floatspec-final-premise-guards` under `/private/tmp`.
+- All **three** live ULP controls pass again (10.484 seconds). Fresh exported
+  metadata validates **277 anchors**; fresh compiled trust checks **13,568
+  declarations / 58 modules / four unchanged debts**. Generated status stays
+  at 100 Lean files, four sorries, no explicit axioms/admit.
+- A final-snapshot replay passes **360 cases and generated kernel equalities**:
+  200 targeted Pff cases, 64 seeded auxiliary cases, and 96 model-adapter
+  boundary/seeded cases. Each report binds to the final hash above.
+  Artifacts: `/private/tmp/floatspec-final-premise-{pff,aux,model}/report.json`.
+
+The immediately preceding stress snapshot `4295264c…a237` separately passed
+**8,328** cases: Pff 3,472 (621.806 seconds), auxiliary 3,016 (337.998),
+model adapters 1,640 (385.993), and targeted neighbors 200 (58.342).
+Their independent assertion counts are 55,012; 15,438; 8,200; and 4,212.
+The model run includes 1,161 out-of-range integers and 648 cases where the
+source-integer and UInt-model routes differ as expected. These are three-path
+finite agreement and policy checks, not native FFI or universal equivalence.
+
+The committed [verification receipt](VERIFICATION_RECEIPT_2026-09-20.json)
+keeps the older 55,162-case full run, the newer 8,328-case stress group, and
+the final 360-case replay separate, with their complete counts, seeds and
+source hashes. Every included report was checked for `status: passed` and
+equal requested/comparison/kernel-proof counts before export.
+
+Failed attempts remain explicit. A scratch proof copy omitted its last line;
+the complete copied proof passed. The first product patch placed `omit`
+after docstrings, which Lean rejects; moving it before the docstrings fixed
+the parser errors. Editor diagnostics repeatedly timed out for the large
+source modules; those partial responses are not passes. Direct per-client
+compilation and the full build supply the source verification. The final
+fixture LSP request did complete cleanly. No new sorry was introduced.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In

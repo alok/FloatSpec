@@ -955,7 +955,7 @@ theorem ulp_FTZ_0 (beta : Int) [ValidRadix beta] :
   have hfexp_eq : FTZ_exp prec emin n = FTZ_exp prec emin e0 := by
     simpa using
       (FloatSpec.Core.Ulp.fexp_negligible_exp_eq
-        (beta := beta) (fexp := FTZ_exp prec emin) (n := n) (m := e0)
+        (fexp := FTZ_exp prec emin) (n := n) (m := e0)
         hnle h_le_wit)
   -- Compute ulp at 0 using the `some` branch and rewrite the exponent.
   have : FloatSpec.Core.Ulp.ulp beta (FTZ_exp prec emin) 0 = ((beta : ℝ) ^ e0) := by

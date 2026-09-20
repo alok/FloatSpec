@@ -990,7 +990,7 @@ theorem generic_format_opp (beta : Int) [ValidRadix beta]
     If x is in generic format, then |x| is also in generic format.
 -/
 theorem generic_format_abs (beta : Int) [ValidRadix beta]
-    (fexp : Int → Int) [Valid_exp fexp] (x : ℝ) :
+    (fexp : Int → Int) (x : ℝ) :
     ⦃⌜(generic_format beta fexp x)⌝⦄
     (pure (generic_format beta fexp (abs x)) : Id Prop)
     ⦃⇓result => ⌜result⌝⦄ := by
@@ -1013,7 +1013,7 @@ theorem generic_format_abs (beta : Int) [ValidRadix beta]
     If |x| is in generic format, then x is also in generic format.
 -/
 theorem generic_format_abs_inv (beta : Int) [ValidRadix beta]
-    (fexp : Int → Int) [Valid_exp fexp] (x : ℝ) :
+    (fexp : Int → Int) (x : ℝ) :
     ⦃⌜(generic_format beta fexp (abs x))⌝⦄
     (pure (generic_format beta fexp x) : Id Prop)
     ⦃⇓result => ⌜result⌝⦄ := by

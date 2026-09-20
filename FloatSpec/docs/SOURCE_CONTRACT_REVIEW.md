@@ -936,6 +936,21 @@ independence. No equality of old/new witness integers is claimed.
 The fixed-point caller now reasons through the witness predicate rather
 than the old implementation body. No proof debt was added.
 
+The follow-up compared actual exported Rocq types, not merely source section
+contexts. Twelve ULP exports have no `Valid_exp` premise:
+`succ_opp`, `pred_opp`, `ulp_opp`, `ulp_abs`, `succ_eq_pos`, `ulp_ge_0`,
+`pred_eq_pos`, `ulp_le_id`, `ulp_le_abs`, `ulp_canonical`, `ulp_bpow`
+and `pred_bpow`. The two `Generic_fmt.generic_format_abs` directions also
+have no such premise. Lean now matches that premise boundary, including its
+`pred_eq_pos_flocq` compatibility wrapper. The existing proofs remain closed;
+the total definition bodies are unchanged. The legacy Hoare presentation and
+redundant radix facts in some wrappers remain explicit adaptation details.
+
+`fexp_negligible_exp_eq` at pinned `Ulp.v:76` is purely an integer law:
+it needs `Valid_exp`, but no radix. Its unused Lean radix parameter/instance
+are removed and all repository callers migrated. Fifteen paired typed
+clients and 15 added compiled-type guards protect these reviewed boundaries.
+
 ## Pff source-facing signed rounding family
 
 `Source.RND_Max_Pos`, `RND_Min`, `RND_Max` and `RND_EvenClosest` now match

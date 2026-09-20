@@ -40,3 +40,51 @@ Example invalid_choice_difference :
   (1 <= (fun exponent : Z => exponent) 1)%Z /\
   bpow radix2 0 <> bpow radix2 1.
 Proof. repeat split; try lia. simpl. lra. Qed.
+
+Section SourcePremises.
+Variable beta : radix.
+Variable fexp : Z -> Z.
+Variable x : R.
+Example succ_opp_unrestricted : succ beta fexp (-x) = -pred beta fexp x.
+Proof. apply succ_opp. Qed.
+Example pred_opp_unrestricted : pred beta fexp (-x) = -succ beta fexp x.
+Proof. apply pred_opp. Qed.
+Example ulp_opp_unrestricted : ulp beta fexp (-x) = ulp beta fexp x.
+Proof. apply ulp_opp. Qed.
+Example ulp_abs_unrestricted : ulp beta fexp (Rabs x) = ulp beta fexp x.
+Proof. apply ulp_abs. Qed.
+Example succ_eq_pos_unrestricted (Hx : 0 <= x) :
+  succ beta fexp x = x + ulp beta fexp x.
+Proof. apply succ_eq_pos. exact Hx. Qed.
+Example ulp_ge_0_unrestricted : 0 <= ulp beta fexp x.
+Proof. apply ulp_ge_0. Qed.
+Example pred_eq_pos_unrestricted (Hx : 0 <= x) :
+  pred beta fexp x = pred_pos beta fexp x.
+Proof. apply pred_eq_pos. exact Hx. Qed.
+Example ulp_le_id_unrestricted (Hx : 0 < x) (Hf : generic_format beta fexp x) :
+  ulp beta fexp x <= x.
+Proof. apply ulp_le_id; assumption. Qed.
+Example ulp_le_abs_unrestricted (Hx : x <> 0) (Hf : generic_format beta fexp x) :
+  ulp beta fexp x <= Rabs x.
+Proof. apply ulp_le_abs; assumption. Qed.
+Example ulp_canonical_unrestricted (m e : Z) (Hm : m <> 0%Z)
+  (Hc : canonical beta fexp (Float beta m e)) :
+  ulp beta fexp (F2R (Float beta m e)) = bpow beta e.
+Proof. apply ulp_canonical; assumption. Qed.
+Example ulp_bpow_unrestricted (e : Z) :
+  ulp beta fexp (bpow beta e) = bpow beta (fexp (e + 1)%Z).
+Proof. apply ulp_bpow. Qed.
+Example pred_bpow_unrestricted (e : Z) :
+  pred beta fexp (bpow beta e) = bpow beta e - bpow beta (fexp e).
+Proof. apply pred_bpow. Qed.
+Example generic_abs_unrestricted (Hf : generic_format beta fexp x) :
+  generic_format beta fexp (Rabs x).
+Proof. apply generic_format_abs. exact Hf. Qed.
+Example generic_abs_inv_unrestricted (Hf : generic_format beta fexp (Rabs x)) :
+  generic_format beta fexp x.
+Proof. apply generic_format_abs_inv. exact Hf. Qed.
+End SourcePremises.
+
+Example witness_exponents_agree (fexp : Z -> Z) (Hvalid : Valid_exp fexp)
+  (n m : Z) (Hn : (n <= fexp n)%Z) (Hm : (m <= fexp m)%Z) : fexp n = fexp m.
+Proof. exact (@fexp_negligible_exp_eq fexp Hvalid n m Hn Hm). Qed.

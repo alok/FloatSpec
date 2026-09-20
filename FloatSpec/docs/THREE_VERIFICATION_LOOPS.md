@@ -134,7 +134,7 @@ outside square root's exponent premise makes that domain boundary executable.
 Deliberately increasing the returned mantissa or replacing its location by
 exact must break both the closed finite assertions and compiled checks.
 
-`Test/SourcePremiseContracts.lean` additionally has 98 source-premise guards,
+`Test/SourcePremiseContracts.lean` additionally has 113 source-premise guards,
 paired typed consumers for the Prop, integer-rounding, canonical-exponent,
 real-comparison, division, square-root, FTZ inclusion, eleven FLT relationships,
 two unrestricted FLX unit laws, parity/symmetry contracts, and generic IEEE comparison exports, and seven deliberate negative guard
@@ -1016,6 +1016,13 @@ zero-spacing body drift in both assistants and the removed validity premise
 in Lean. These are kernel-checked mathematical contracts, not native
 execution of the real-valued ULP function or arbitrary-predicate choice.
 
+Fifteen paired typed clients additionally consume the reviewed ULP/absolute-
+value laws without irrelevant exponent-validity premises, and the integer
+witness-equality lemma without a radix. The shared compiled-type guard covers
+the 14 widened source laws and one compatibility wrapper. All 23 printed
+Lean fixture axiom lists exclude `sorryAx`. The preservation theorem still
+requires valid exponents; its negative control targets that theorem specifically.
+
 ## 11. What this still does not establish
 
 The expanded combined runner completed at commit `ba3e2a8b`, seed `961703`,
@@ -1042,3 +1049,11 @@ arithmetic, all modes, scale/decomposition and integer rounding. Native scope
 exceptions remain explicit in the reports, not silently treated as universal
 four-way agreement. Later Pff/model/LPO changes have separate newer-snapshot
 receipts and must not be conflated with this frozen full-run result.
+
+The September 20 final receipt is available as
+[`VERIFICATION_RECEIPT_2026-09-20.json`](VERIFICATION_RECEIPT_2026-09-20.json).
+It separately records the newer **8,328-case** Pff/aux/model stress group and
+the **360-case** replay after theorem-signature corrections. All requested
+cases, comparisons and generated kernel equalities are complete in each
+included report. Snapshot separation is deliberate: the larger old run was
+not rerun wholesale after the final theorem-only changes.
