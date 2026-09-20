@@ -49,6 +49,22 @@ class RunnerTests(unittest.TestCase):
 
 
 class ParserTests(unittest.TestCase):
+    def test_primitive_comparison_raw_domain_and_replay(self):
+        cases = bridge.prim_comparison_corpus(841709, 5)
+        self.assertEqual(cases, bridge.prim_comparison_corpus(841709, 5))
+        self.assertNotEqual(cases, bridge.prim_comparison_corpus(841710, 5))
+        self.assertEqual(len(cases), len(set(cases)))
+        for args in ((3, 0, 3, -1, 3, 0, 6, -2),
+                     (3, 1, 1, -1000000, 3, 0, 1, 1000000),
+                     (0, 0, 1, 0, 0, 1, 1, 0)):
+            self.assertIn(bridge.Case('prim_comparison', args), cases)
+        for position, value in ((0, 4), (1, 2), (2, 0), (4, -1), (5, -1), (6, -2)):
+            args = [3, 0, 3, -1, 3, 0, 6, -2]
+            args[position] = value
+            with self.assertRaises(ValueError):
+                bridge.Case('prim_comparison', tuple(args))
+        self.assertEqual(bridge.WIDTHS['prim_comparison'], 14)
+
     def test_normalization_domains_and_replayable_boundaries(self):
         cases = bridge.normalize_corpus(840691, 3)
         self.assertEqual(cases, bridge.normalize_corpus(840691, 3))
@@ -248,6 +264,62 @@ class ParserTests(unittest.TestCase):
 
 @unittest.skipUnless(os.environ.get("FLOCQ_AUDIT_DIR"), "live test requires FLOCQ_AUDIT_DIR")
 class LiveTests(unittest.TestCase):
+    def test_primitive_comparison_raw_and_validated_boundaries(self):
+        flocq = Path(os.environ['FLOCQ_AUDIT_DIR']).resolve()
+        cases = [bridge.Case('prim_comparison', args) for args in
+                 ((3, 0, 3, -1, 3, 0, 6, -2),
+                  (3, 1, 3, -1, 3, 1, 6, -2),
+                  (3, 0, 1, 1, 3, 0, 16, 0),
+                  (3, 0, 4503599627370496, -52, 3, 0, 4503599627370496, -51),
+                  (0, 0, 1, 0, 0, 1, 1, 0),
+                  (2, 0, 1, 0, 0, 1, 1, 0))]
+        expected = [
+            [1, 0, 0, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0],
+            [-1, 0, 1, 1, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0],
+            [1, 0, 0, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0],
+            [-1, 0, 1, 1, 1, 1, -1, 0, 1, 1, -1, 0, 1, 1],
+            [0, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1],
+            [2, 0, 0, 0, 1, 1, 2, 0, 0, 0, 2, 0, 0, 0]]
+        with tempfile.TemporaryDirectory(prefix='floatspec-prim-comparison-') as directory:
+            folder = Path(directory)
+            rows = bridge.execute(cases, flocq, bridge.configured_coqc(flocq), folder)
+            self.assertEqual(bridge.compare(cases, rows), [])
+            self.assertEqual(rows['rocq'], expected)
+            bridge.bootstrap_lean(cases, rows['rocq'], folder)
+
+    def test_primitive_comparison_every_api_is_independently_observed(self):
+        flocq = Path(os.environ['FLOCQ_AUDIT_DIR']).resolve()
+        original = bridge.expressions
+        # Strictly ordered canonical finite values distinguish each boolean
+        # from its negation and each ordering from its reversed operands.
+        case = bridge.Case('prim_comparison',
+                           (3, 0, 4503599627370496, -52, 3, 0, 4503599627370496, -51))
+        mutations = []
+        for prefix, operands, start in (('SF', 'raw_x raw_y', 0),
+                                       ('', 'prim_x prim_y', 6), ('B', 'x y', 10)):
+            name = prefix + 'compare'
+            token = f'FaithfulPrimFloat.{name} {operands}'
+            mutations.append((token, f'FaithfulPrimFloat.{name} ' +
+                              ' '.join(reversed(operands.split())), start))
+            for delta, suffix in enumerate(('eqb', 'ltb', 'leb'), start=1):
+                token = f'boolean (FaithfulPrimFloat.{prefix + suffix} {operands})'
+                mutations.append((token, f'boolean (! (FaithfulPrimFloat.{prefix + suffix} {operands}))',
+                                  start + delta))
+        for before, after, column in mutations:
+            def mutated(case):
+                lean, rocq = original(case)
+                self.assertEqual(lean.count(before), 1)
+                return lean.replace(before, after), rocq
+            with (self.subTest(column=column),
+                  tempfile.TemporaryDirectory(prefix='floatspec-prim-comparison-mutation-') as directory,
+                  patch.object(bridge, 'expressions', mutated)):
+                rows = bridge.execute([case], flocq, bridge.configured_coqc(flocq), Path(directory))
+                self.assertEqual(bridge.compare([case], rows)[0]['paths'], ['lean', 'compiled'])
+                for path in ('lean', 'compiled'):
+                    changed = [n for n, (a, b) in enumerate(zip(rows[path][0], rows['rocq'][0], strict=True))
+                               if a != b]
+                    self.assertEqual(changed, [column])
+
     def check_calc_mutation(self, operation, expression):
         source = (Path(__file__).parent / 'fixtures/CalcBrackets.lean').read_text()
         before = f'let (q, location) := {expression}'

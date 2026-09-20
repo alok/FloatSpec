@@ -405,37 +405,50 @@ theorem get_sign_equiv (x : PrimitiveFloat) :
   rw [← B2SF_Prim2B x]
   cases Prim2B x <;> rfl
 
--- IEEE comparisons: NaN is unordered, infinities remain ordered, and the two
--- zero constructors compare equal through their common real value.
-noncomputable def SFeqb (x y : StandardFloat) : Bool :=
+/-- Rocq's raw encoding comparison. This matches
+[Corelib SpecFloat.SFcompare](https://github.com/rocq-prover/rocq/blob/adfbf1855c348766beb4b790dcc8ebc02f908f63/theories/Corelib/Floats/SpecFloat.v#L163), imported by pinned Flocq.
+Its exponent-first finite branch is a numerical ordering only on canonical
+representations; it is not a general comparator for arbitrary dyadic encodings.
+The source finite mantissa is positive; the Lean raw carrier also admits zero. -/
+@[flocq_local "Rocq Corelib.SpecFloat.SFcompare primitive; not defined in Flocq itself"]
+def SFcompare (x y : StandardFloat) : Option Ordering :=
   match x, y with
-  | StandardFloat.S754_nan, _ => false
-  | _, StandardFloat.S754_nan => false
-  | StandardFloat.S754_infinity sx, StandardFloat.S754_infinity sy => sx == sy
-  | StandardFloat.S754_infinity _, _ => false
-  | _, StandardFloat.S754_infinity _ => false
-  | x, y => decide (SF2R 2 x = SF2R 2 y)
+  | .S754_nan, _ | _, .S754_nan => none
+  | .S754_infinity sx, .S754_infinity sy =>
+      some (if sx == sy then .eq else if sx then .lt else .gt)
+  | .S754_infinity sx, _ => some (if sx then .lt else .gt)
+  | _, .S754_infinity sy => some (if sy then .gt else .lt)
+  | .S754_finite sx _ _, .S754_zero _ => some (if sx then .lt else .gt)
+  | .S754_zero _, .S754_finite sy _ _ => some (if sy then .gt else .lt)
+  | .S754_zero _, .S754_zero _ => some .eq
+  | .S754_finite sx mx ex, .S754_finite sy my ey =>
+      some (if sx != sy then (if sx then .lt else .gt) else
+        let c := (Ord.compare ex ey).then (Ord.compare mx my)
+        if sx then c.swap else c)
 
-noncomputable def SFltb (x y : StandardFloat) : Bool :=
-  match x, y with
-  | StandardFloat.S754_nan, _ => false
-  | _, StandardFloat.S754_nan => false
-  | StandardFloat.S754_infinity sx, StandardFloat.S754_infinity sy => sx && !sy
-  | StandardFloat.S754_infinity sx, _ => sx
-  | _, StandardFloat.S754_infinity sy => !sy
-  | x, y => decide (SF2R 2 x < SF2R 2 y)
+/-- [Rocq SpecFloat.SFeqb](https://github.com/rocq-prover/rocq/blob/adfbf1855c348766beb4b790dcc8ebc02f908f63/theories/Corelib/Floats/SpecFloat.v#L196):
+only an equal comparison result is true; NaN remains unordered. -/
+@[flocq_local "Rocq Corelib.SpecFloat.SFeqb primitive; not defined in Flocq itself"]
+def SFeqb (x y : StandardFloat) : Bool :=
+  match SFcompare x y with | some .eq => true | _ => false
 
-noncomputable def SFleb (x y : StandardFloat) : Bool :=
-  SFltb x y || SFeqb x y
+/-- [Rocq SpecFloat.SFltb](https://github.com/rocq-prover/rocq/blob/adfbf1855c348766beb4b790dcc8ebc02f908f63/theories/Corelib/Floats/SpecFloat.v#L202):
+only a less-than comparison result is true. -/
+@[flocq_local "Rocq Corelib.SpecFloat.SFltb primitive; not defined in Flocq itself"]
+def SFltb (x y : StandardFloat) : Bool :=
+  match SFcompare x y with | some .lt => true | _ => false
 
-noncomputable def SFcompare (x y : StandardFloat) : Option Ordering :=
-  match x, y with
-  | StandardFloat.S754_nan, _ => none
-  | _, StandardFloat.S754_nan => none
-  | x, y =>
-      if SFltb x y then some Ordering.lt
-      else if SFltb y x then some Ordering.gt
-      else some Ordering.eq
+/-- [Rocq SpecFloat.SFleb](https://github.com/rocq-prover/rocq/blob/adfbf1855c348766beb4b790dcc8ebc02f908f63/theories/Corelib/Floats/SpecFloat.v#L208):
+less-than or equal is true; an unordered result is false. -/
+@[flocq_local "Rocq Corelib.SpecFloat.SFleb primitive; not defined in Flocq itself"]
+def SFleb (x y : StandardFloat) : Bool :=
+  match SFcompare x y with | some .lt | some .eq => true | _ => false
+
+/-- The raw source comparison agrees with the proof-carrying generic API. -/
+theorem SFcompare_B2SF {prec emax : Int} (x y : BinarySingleNaNFloat prec emax) :
+    SFcompare (binarySingleNaNFloatToStandardFloat x)
+      (binarySingleNaNFloatToStandardFloat y) = BinarySingleNaN.Bcompare x y := by
+  cases x <;> cases y <;> rfl
 
 /-! Coq's primitive comparison has four observable outcomes.  In particular,
 NaN is `FNotComparable`; it must not be collapsed into ordinary equality. -/
@@ -466,28 +479,28 @@ def flatten_cmp_opt : Option Ordering → float_comparison
   | some Ordering.lt => FLt
   | some Ordering.gt => FGt
 
-noncomputable def eqb (x y : PrimitiveFloat) : Bool :=
+def eqb (x y : PrimitiveFloat) : Bool :=
   SFeqb (Prim2SF x) (Prim2SF y)
 
-noncomputable def ltb (x y : PrimitiveFloat) : Bool :=
+def ltb (x y : PrimitiveFloat) : Bool :=
   SFltb (Prim2SF x) (Prim2SF y)
 
-noncomputable def leb (x y : PrimitiveFloat) : Bool :=
+def leb (x y : PrimitiveFloat) : Bool :=
   SFleb (Prim2SF x) (Prim2SF y)
 
-noncomputable def compare (x y : PrimitiveFloat) : float_comparison :=
+def compare (x y : PrimitiveFloat) : float_comparison :=
   flatten_cmp_opt (SFcompare (Prim2SF x) (Prim2SF y))
 
-noncomputable def Beqb (x y : PrimBinaryFloat) : Bool :=
+def Beqb (x y : PrimBinaryFloat) : Bool :=
   SFeqb (B2SF x) (B2SF y)
 
-noncomputable def Bltb (x y : PrimBinaryFloat) : Bool :=
+def Bltb (x y : PrimBinaryFloat) : Bool :=
   SFltb (B2SF x) (B2SF y)
 
-noncomputable def Bleb (x y : PrimBinaryFloat) : Bool :=
+def Bleb (x y : PrimBinaryFloat) : Bool :=
   SFleb (B2SF x) (B2SF y)
 
-noncomputable def Bcompare (x y : PrimBinaryFloat) : Option Ordering :=
+def Bcompare (x y : PrimBinaryFloat) : Option Ordering :=
   SFcompare (B2SF x) (B2SF y)
 
 theorem compare_equiv (x y : PrimitiveFloat) :

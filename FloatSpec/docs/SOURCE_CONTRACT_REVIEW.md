@@ -6,6 +6,41 @@ all declarations in the named modules. See the
 [running audit](ASTRA_AUDIT_2026-09-19.md) for execution receipts and the
 [reading guide](READING_GUIDE.md) for the mathematical story.
 
+## Raw primitive comparison: preserve the source's encoding order
+
+`FaithfulPrimFloat.SFcompare` now follows Rocq 9.2 Corelib's constructor,
+sign, exponent, and mantissa cases. `SFeqb`, `SFltb`, and `SFleb`
+inspect that result. The previous implementation compared the real
+interpretations, which differs on noncanonical positive-mantissa encodings:
+`(3,-1)` and `(6,-2)` are equal as reals but the raw source comparison is
+greater-than. This is a total raw contract mismatch, not a demonstrated
+failure on valid binary64 operands.
+
+The exact source is
+[Corelib SpecFloat.v:163–213](https://github.com/rocq-prover/rocq/blob/adfbf1855c348766beb4b790dcc8ebc02f908f63/theories/Corelib/Floats/SpecFloat.v#L163),
+at the peeled Rocq 9.2.0 release commit, not a declaration owned by the
+pinned Flocq checkout. The Lean declarations carry explicit external links
+and a `flocq_local` classification explaining that provenance.
+Rocq's finite mantissa is positive; Lean's raw Nat carrier additionally admits
+zero. Shared tests require a positive mantissa rather than claiming a source
+equivalent for the extra constructor values.
+
+All twelve existing entry points are executable at their original names:
+the four raw operations, four `PrimitiveFloat` wrappers, and four
+`PrimBinaryFloat` wrappers. No parallel `*C` API is necessary. Wrapper
+bodies and signatures are unchanged. A closed structural theorem
+`SFcompare_B2SF` connects raw comparison to the generic proof-carrying
+comparator. The native model's matching proof is now structural too; its
+public binary32/64 statements are unchanged. No new proof debt is introduced.
+
+The paired `PrimitiveComparison` fixtures use literal expected results and
+separately prove the equal-real/unequal-encoding example. The bridge observes
+raw results before validation, retains each validity flag, and calls the two
+validated API surfaces separately. Its Rocq primitive group genuinely executes
+the native primitive, while its other groups run integer definitions.
+Twelve deliberate output mutations each alter exactly one independently
+observed API column.
+
 ## Executable normalization: source interfaces versus compatibility carriers
 
 Pinned `Binary.v:1019` and `BinarySingleNaN.v:1751` export normalizers with

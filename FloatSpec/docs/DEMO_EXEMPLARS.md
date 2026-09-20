@@ -55,6 +55,40 @@ had valid finite correctness proofs but could not run in compiled clients.
 
 ## 5. Reproduce an actual audit lesson
 
+### Two equal values that the raw source API compares differently
+
+`3 × 2^-1` and `6 × 2^-2` both equal 1.5. However, Rocq's raw
+`SpecFloat.SFcompare` compares exponents before mantissas: the first encoding
+compares **greater**, because `-1 > -2`. Its numerical-order guarantee relies
+on canonical representation. A total raw port must retain the source behavior
+even for noncanonical inputs; replacing it with real-value comparison changes
+that API.
+
+Run the paired [Lean fixture](../../scripts/fixtures/PrimitiveComparison.lean):
+
+```sh
+lake env lean scripts/fixtures/PrimitiveComparison.lean
+```
+
+It checks 24 literal cases through twelve actual entry points. In the first
+case, raw comparison returns greater-than, but validating either encoding as
+binary64 rejects it and produces NaN. Therefore the validated comparison is
+unordered. If the bridge only observed the final conversion, it would miss
+the raw mismatch. Separate validity bits make that distinction visible.
+The fixture also closes two proofs: the real values are equal, and the raw
+comparison is greater-than. They are consistent propositions about different
+interfaces, not a contradiction.
+
+This definition comes from
+[Rocq Corelib, not Flocq itself](https://github.com/rocq-prover/rocq/blob/adfbf1855c348766beb4b790dcc8ebc02f908f63/theories/Corelib/Floats/SpecFloat.v#L163).
+The matching [Rocq fixture](../../scripts/fixtures/PrimitiveComparison.v)
+calls that raw API, the native primitive, and Flocq's proof-carrying API
+separately. A closed structural Lean theorem connects the raw comparator to
+the generic proof-carrying comparator for every format; finite cross-tests
+remain a separate check against the other language.
+
+### Validity is not just a range check
+
 The raw pairs `(1,0)` and `(4,-2)` both denote one. Only the latter is canonical
 for this three-bit format. The demo checks `valid_binary_SF` returns
 `[false,true]`. A former compatibility implementation returned true for every

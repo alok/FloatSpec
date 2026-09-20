@@ -1798,8 +1798,8 @@ Counterexamples:
 
 Reading the separate Claude comparison branch exposed a more substantive
 raw-interface mismatch in the existing port. For positive finite encodings
-`(3,-1)` and `(6,-2)`, both mathematical values are 1.5. The current
-`FaithfulPrimFloat.SFeqb` says true, proved by a closed Lean calculation.
+`(3,-1)` and `(6,-2)`, both mathematical values are 1.5. At the normalization
+checkpoint, `FaithfulPrimFloat.SFeqb` said true, proved by a closed Lean calculation.
 Rocq 9.2's actual raw `SpecFloat.SFcompare` returns `Some Gt`, and
 `SFeqb` returns false: it compares exponent then mantissa and relies on
 canonicality for that order to mean numerical order. Its
@@ -1816,13 +1816,117 @@ the raw source mismatch. Their guide's claim that Rocq's raw comparison is
 defined through reals is incorrect. That branch remains preserved and is not
 integrated into this audit branch. A scratch source-shaped replacement
 already typechecks with a closed structural equality to the generic
-proof-carrying comparator, but the production fix and cross-test are pending.
+proof-carrying comparator. The production fix and cross-test were pending at
+that checkpoint; the completed comparison milestone follows below.
 Receipts: `/private/tmp/RawSpecFloatComparisonAudit-lean.out`,
 `/private/tmp/RawSpecFloatComparisonAudit-v2.out`,
 `/private/tmp/RawSourceComparisonDraft-v3.out`, and
 `/private/tmp/PrimitiveSourceComparisonDraft20260920.out`.
 The scratch primitive module has only the same three pre-existing native
 proof warnings; no new holes were added.
+
+### Raw primitive comparison correction — 2026-09-20 11:33 UTC
+
+The four raw `FaithfulPrimFloat` comparison definitions now use Rocq's
+constructor/sign/exponent/mantissa branches. Their external Corelib links pin
+the peeled Rocq 9.2.0 release commit, and the `flocq_local` reason explicitly
+distinguishes imported runtime-library definitions from Flocq-owned source.
+The source finite mantissa is positive; the shared corpus rejects the extra
+zero-mantissa values admitted by Lean's raw Nat carrier.
+
+The eight primitive/proof-carrying wrappers have unchanged bodies and types,
+but no longer need `noncomputable`. All twelve APIs execute at their original
+names. The new closed `SFcompare_B2SF` theorem relates raw comparison to the
+generic proof-carrying comparator for every format. The native-model proof is
+now structural; obsolete private real-ordering helpers are removed while the
+public binary32/64 statements stay unchanged. No new proof debt is introduced.
+
+The new `prim_comparison` bridge keeps fourteen columns: four raw results,
+two validity flags, four primitive results, and four proof-carrying results.
+Rocq's middle group executes actual native primitives; its raw and final
+groups execute integer definitions. Noncanonical inputs are observed before
+conversion, so their rejection into NaN cannot mask a raw discrepancy.
+Paired `PrimitiveComparison.lean/.v` fixtures check 24 literal cases through
+twelve independently called APIs and close both the equal-real-value and
+unequal-raw-comparison claims. Four persistent inputs in
+`PrimitiveComparisonReplay.json` retain the discovered source-contract boundary.
+
+Verified on library SHA-256
+`e7aaab7a915883488c73755254e6367454ee31d427be9d9771fa745ac88417c1`:
+
+- **6,116** cases agree in compiled Lean, kernel reduction, and pinned Rocq,
+  with **6,116** generated kernel equalities: 687 binary32 order cases,
+  687 binary64 order cases, 3,317 generic comparison cases, and 1,425 new
+  primitive/raw cases. The latter include 416 valid input pairs and 1,009
+  with at least one rejected operand. Seed `841709`, 200 supplemental samples,
+  batch size 50; **810.493 seconds**. All inputs and outputs are retained in
+  `/private/tmp/floatspec-primitive-comparison-grid-20260920/`.
+- The four permanent raw-interface replay inputs separately pass all three
+  paths and four generated kernel equalities:
+  `/private/tmp/floatspec-primitive-comparison-replay-20260920/report.json`.
+- The full core harness passes **60 tests in 257.369 seconds**, including
+  twelve deliberate mutations, each detected in both Lean paths and changing
+  exactly its own comparison column. Receipt:
+  `/private/tmp/floatspec-primitive-comparison-full-harness-20260920.log`.
+- The explicit library/test/executable build passes **6,216 jobs**:
+  `/private/tmp/floatspec-primitive-comparison-all-targets-20260920.log`.
+  Changed source files and the Lean fixture have complete, error-free LSP
+  diagnostics. The pure fixture receipts are
+  `/private/tmp/floatspec-primitive-comparison-pure-lean-20260920.log` and
+  `/private/tmp/floatspec-primitive-comparison-pure-rocq-final-20260920.log`.
+- The existing native order loop is re-executed, including 200,000 order
+  comparisons and 600,000 Boolean comparisons. The separate eight-case
+  Boolean fixture also passes; its printed axiom sets contain no sorry.
+  Receipts end in `native-order-20260920.log` and `booleans-20260920.log`
+  under the same `/private/tmp/floatspec-primitive-comparison-` prefix.
+- Fresh source metadata validates **207 anchors**. The compiled trust gate
+  sees **13,532 declarations in 58 modules**, exactly the same four direct
+  and transitive named proof debts, and no unexpected project axioms,
+  unsafe declarations, or runtime overrides. The lower declaration count
+  reflects deleted private proof machinery, not newly admitted proofs.
+  Receipts: `/private/tmp/floatspec-primitive-comparison-anchors-20260920.log`
+  and `/private/tmp/floatspec-primitive-comparison-trust-20260920.json`.
+
+No imported source edits or builds overlapped the authoritative bridge run.
+The first smoke attempt failed because unqualified Rocq comparison constructors
+were parsed ambiguously; fully qualified names fixed the serializer, and the
+second attempt passed all three paths and generated equalities. Initial pure
+Rocq attempts needed an explicit radix import and normalization of two integer
+powers before the real-field proof; only the final successful attempt is
+counted. Failed logs remain available beside the passing receipts.
+
+This corrects a total source API, not an observed hardware comparison failure.
+Finite agreement, structural Lean proofs, and whole-library source equivalence
+remain distinct claims.
+
+### Next prepared slices, not production changes
+
+The FLT inspection now identifies **eleven** unnecessary positive-precision
+premises: the six inclusion/exponent/rounding exports listed above, plus
+`ulp_FLT_le`, `ulp_FLT_exact_shift`, `succ_FLT_exact_shift_pos`,
+`succ_FLT_exact_shift`, and `pred_FLT_exact_shift`. The neighboring
+`ulp_FLT_gt`, `ulp_FLT_pred_pos`, and reverse format inclusion retain that
+premise in compiled Rocq. All eleven unrestricted Rocq clients compile,
+while the current Lean client set fails. A scratch module with direct
+propositions closes every proof without new holes. A private predecessor
+helper used a nonnegative-input lemma whose zero case required validity;
+its actual strictly positive branch can be discharged directly from the
+definition, avoiding that unnecessary dependency.
+
+Receipts: `/private/tmp/FLTRemainingContracts20260920-{lean,rocq}.out`,
+`/private/tmp/FLT11UnrestrictedClients20260920-{before,rocq}.out`, and
+`/private/tmp/FLTAllDirectDraft20260920.out`. Earlier scratch attempts that
+exposed the helper dependency remain recorded as failures.
+
+Separately, 33 remaining primitive definitions and four arithmetic instances
+compile in a scratch copy after removing only `noncomputable` markers.
+Thirty-seven independent clients fail in the current production module:
+`/private/tmp/PrimitiveExecutionClients-before-20260920.out`.
+The first scratch module still failed because the arithmetic instances
+retained their markers; the second passes with only the same three native
+proof warnings: `/private/tmp/PrimitiveExecutableDraftV2_20260920.out`.
+These changes need production integration and actual boundary/cross-tests
+before becoming a completed execution milestone.
 
 ### Unreviewed scope
 

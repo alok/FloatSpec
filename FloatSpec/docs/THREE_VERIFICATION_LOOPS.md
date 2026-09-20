@@ -55,6 +55,11 @@ guide's three-bit halfway example in all five modes, for both signs.
 
 The standalone paired fixtures add independent contract and error checks:
 
+- `PrimitiveComparison`: 24 literal cases through twelve comparison APIs,
+  with separate validity observations. Closed examples establish equal real
+  values but unequal raw encoding order; no normalization is inserted before
+  the raw observations. The Rocq primitive group executes native comparison,
+  while its raw and proof-carrying groups execute integer algorithms.
 - `DoubleRoundingWitness`: `73/64` rounded directly to three bits differs from
   rounding through four bits; both signs have closed equality proofs.
 - `SingleNaNValidity`: canonical, subnormal, overflow, and invalid raw-carrier
@@ -401,6 +406,24 @@ The adapter's result-validity check is intentionally weaker than a blanket
 assumption that format parameters describe an ordinary IEEE format: a
 malformed format can still produce a valid zero. Compilation does not justify
 discarding that distinction.
+
+The twenty-eighth family, `prim_comparison`, keeps fourteen columns:
+four raw comparisons, two input-validity flags, four primitive comparisons,
+and four proof-carrying comparisons. Raw encodings are observed before any
+validating conversion. The source mantissa is positive, so zero/negative
+mantissas are rejected by the shared corpus validator instead of silently
+coerced. Noncanonical positive encodings, extreme exponents, subnormal and
+normal boundaries, both signs of zero, NaNs, and infinities are included.
+Rocq's middle group executes its native primitive; the other two groups are
+integer algorithms. Run it with `--operations prim_comparison`.
+
+This family guards a distinction hidden by real-value equality:
+`(3,-1)` and `(6,-2)` both denote 1.5 but the raw source comparator returns
+greater-than. Both are invalid binary64 encodings; converting them first
+would merely compare NaNs and hide the raw mismatch. Four permanent inputs
+in `PrimitiveComparisonReplay.json` retain the source-contract regression.
+The paired fixture checks 24 literal cases; twelve separate mutations alter
+exactly one comparison column each and must fail in both Lean paths.
 
 ## 4. One command runs all three
 

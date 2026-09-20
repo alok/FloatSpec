@@ -33,9 +33,9 @@ COQ_LOC = ["loc_Exact", "loc_Inexact Lt", "loc_Inexact Eq", "loc_Inexact Gt"]
 OPS = ("power", "div_eucl", "location", "round", "truncate", "div", "plus", "sqrt",
        "formats", "digits", "operations", "format_calc", "overflow", "bits32", "bits64",
        "bit_fields", "order32", "order64", "validity", "nearby", "neighbors", "comparison", "small_ieee",
-       "ieee_round", "single_helpers", "single_frexp", "normalize")
-ARITIES = dict(zip(OPS, (2, 2, 3, 3, 5, 6, 6, 4, 3, 2, 5, 8, 4, 1, 1, 6, 2, 2, 5, 6, 6, 10, 15, 8, 9, 6, 6), strict=True))
-WIDTHS = dict(zip(OPS, (1, 2, 3, 6, 3, 2, 2, 2, 4, 1, 13, 12, 21, 9, 9, 8, 14, 14, 15, 7, 17, 14, 87, 21, 46, 11, 12), strict=True))
+       "ieee_round", "single_helpers", "single_frexp", "normalize", "prim_comparison")
+ARITIES = dict(zip(OPS, (2, 2, 3, 3, 5, 6, 6, 4, 3, 2, 5, 8, 4, 1, 1, 6, 2, 2, 5, 6, 6, 10, 15, 8, 9, 6, 6, 8), strict=True))
+WIDTHS = dict(zip(OPS, (1, 2, 3, 6, 3, 2, 2, 2, 4, 1, 13, 12, 21, 9, 9, 8, 14, 14, 15, 7, 17, 14, 87, 21, 46, 11, 12, 14), strict=True))
 RADIX_OPS = {"truncate", "div", "plus", "sqrt", "digits", "operations", "format_calc"}
 
 
@@ -73,8 +73,8 @@ class Case:
             prec, emax, kind, sign, mantissa, _ = self.args
             if not 0 < prec < emax or kind not in range(4) or sign not in (0, 1) or mantissa <= 0:
                 raise ValueError("neighbors requires 0 < prec < emax, kind 0..3, sign 0/1, positive mantissa")
-        if self.op == "comparison":
-            for offset in (2, 6):
+        if self.op in ("comparison", "prim_comparison"):
+            for offset in ((2, 6) if self.op == "comparison" else (0, 4)):
                 kind, sign, mantissa, _ = self.args[offset:offset+4]
                 if kind not in range(4) or sign not in (0, 1) or mantissa <= 0:
                     raise ValueError("comparison requires kind 0..3, sign 0/1, positive source mantissa")
@@ -151,6 +151,65 @@ def small_ieee_raw(value, coq=False):
             f'{prefix}S754_nan',
             f'{prefix}S754_finite {s} ({mantissa})' + ('%positive' if coq else '') +
             f' ({exponent})')[kind]
+
+
+def prim_comparison_expressions(case: Case) -> tuple[str, str]:
+    """Raw source encoding order, validity, then two validated API surfaces.
+
+    The raw observations must precede SF2B': conversion rejects noncanonical
+    values as NaN. Rocq's middle group executes its native primitive; its raw
+    and final groups are integer algorithms. No value-order oracle is substituted.
+    """
+    lean, coq = '', ''
+    for name, raw in zip(('x', 'y'), (case.args[:4], case.args[4:]), strict=True):
+        lean += (f'let raw_{name} : StandardFloat := {small_ieee_raw(raw)}; '
+                 f"let {name} := BinarySingleNaN.SF2B' (prec := 53) (emax := 1024) raw_{name}; "
+                 f'let prim_{name} := FaithfulPrimFloat.B2Prim {name}; ')
+        coq += (f'let raw_{name} := {small_ieee_raw(raw, True)} in '
+                f"let {name} := @BinarySingleNaN.SF2B' 53 1024 raw_{name} in "
+                f'let prim_{name} := Flocq.IEEE754.PrimFloat.B2Prim {name} in ')
+    ls = ['((FaithfulPrimFloat.SFcompare raw_x raw_y).map comparisonCode).getD 2']
+    cs = ['comparison_code (SpecFloat.SFcompare raw_x raw_y)']
+    for name in ('SFeqb', 'SFltb', 'SFleb'):
+        ls.append(f'boolean (FaithfulPrimFloat.{name} raw_x raw_y)')
+        cs.append(f'boolean (SpecFloat.{name} raw_x raw_y)')
+    for name in ('x', 'y'):
+        ls.append(f'boolean (validBinarySingleNaNStandardFloat (prec := 53) (emax := 1024) raw_{name})')
+        cs.append(f'boolean (SpecFloat.valid_binary 53 1024 raw_{name})')
+    ls.append('(match FaithfulPrimFloat.compare prim_x prim_y with '
+              '| .FEq => 0 | .FLt => -1 | .FGt => 1 | .FNotComparable => 2)')
+    cs.append('(match PrimFloat.compare prim_x prim_y with '
+              '| PrimFloat.FEq => 0 | PrimFloat.FLt => -1 '
+              '| PrimFloat.FGt => 1 | PrimFloat.FNotComparable => 2 end)')
+    for name in ('eqb', 'ltb', 'leb'):
+        ls.append(f'boolean (FaithfulPrimFloat.{name} prim_x prim_y)')
+        cs.append(f'boolean (PrimFloat.{name} prim_x prim_y)')
+    ls.append('((FaithfulPrimFloat.Bcompare x y).map comparisonCode).getD 2')
+    cs.append('comparison_code (@BinarySingleNaN.Bcompare 53 1024 x y)')
+    for name in ('Beqb', 'Bltb', 'Bleb'):
+        ls.append(f'boolean (FaithfulPrimFloat.{name} x y)')
+        cs.append(f'boolean (@BinarySingleNaN.{name} 53 1024 x y)')
+    return lean + '[' + ', '.join(ls) + ']', coq + '[' + '; '.join(cs) + ']'
+
+
+def prim_comparison_corpus(seed: int, samples: int) -> list[Case]:
+    """Source-positive raw mantissas, including deliberately noncanonical inputs."""
+    rng = random.Random(seed)
+    operands = [(k, s, 1, 0) for k in (0, 1) for s in (0, 1)] + [(2, 0, 1, 0)]
+    finite = [(3, -1), (6, -2), (1, 1), (16, 0), (1, -1074),
+              ((1 << 52) - 1, -1074), (1 << 52, -1074), (1 << 52, -52),
+              ((1 << 53) - 1, -52), (1 << 52, -51), ((1 << 53) - 1, 971),
+              (1 << 53, 971), (1, -1075), (1, -1000000), (1, 1000000)]
+    operands += [(3, s, m, e) for s in (0, 1) for m, e in finite]
+    cases = [Case('prim_comparison', (*x, *y)) for x in operands for y in operands]
+    for _ in range(samples):
+        raw = []
+        for _ in range(2):
+            raw += [rng.choice((0, 1, 2, 3, 3, 3)), rng.randrange(2),
+                    rng.randint(1, (1 << rng.choice((4, 24, 53, 54))) - 1),
+                    rng.choice((rng.randint(-1100, 1100), -1000000, 1000000))]
+        cases.append(Case('prim_comparison', tuple(raw)))
+    return list(dict.fromkeys(cases))
 
 
 def single_frexp_expressions(case: Case) -> tuple[str, str]:
@@ -503,8 +562,9 @@ def corpus(seed: int, samples: int) -> list[Case]:
     cases.extend(single_helpers_corpus(seed, samples))
     cases.extend(single_frexp_corpus(seed, samples))
     cases.extend(normalize_corpus(seed, samples))
+    cases.extend(prim_comparison_corpus(seed, samples))
     for op in OPS:
-        if op in ("comparison", "small_ieee", "ieee_round", "single_helpers", "single_frexp", "normalize"):
+        if op in ("comparison", "small_ieee", "ieee_round", "single_helpers", "single_frexp", "normalize", "prim_comparison"):
             continue
         for _ in range(samples):
             base = rng.choice((2, 3, 10, 16))
@@ -608,6 +668,8 @@ def expressions(case: Case) -> tuple[str, str]:
         return single_frexp_expressions(case)
     if op == "normalize":
         return normalize_expressions(case)
+    if op == "prim_comparison":
+        return prim_comparison_expressions(case)
     if op == "comparison":
         p, emax, *words = case.args
         operands = [words[:4], words[4:]]
@@ -820,6 +882,7 @@ import FloatSpec.src.Calc.Sqrt
 import FloatSpec.src.Core.FTZ
 import FloatSpec.src.IEEE754.BinarySingleNaNSourceFacade
 import FloatSpec.src.IEEE754.BitsSourceFacade
+import FloatSpec.src.IEEE754.PrimFloat
 import FloatSpec.Test.BitsExecution
 open FloatSpec.Core FloatSpec.Calc FloatSpec.Calc.Bracket
 set_option maxRecDepth 100000
@@ -868,7 +931,7 @@ private def bitFields (mw ew : Int) (s : Bool) (m e word : Int) : List Int :=
 COQ_HEADER = """From Stdlib Require Import ZArith List.
 From Flocq Require Import Core.Zaux Core.Defs Core.Digits Core.FIX Core.FLX Core.FLT Core.FTZ
   Calc.Bracket Calc.Operations Calc.Round Calc.Plus Calc.Div Calc.Sqrt IEEE754.BinarySingleNaN
-  IEEE754.Bits.
+  IEEE754.Bits IEEE754.PrimFloat.
 Import ListNotations.
 Open Scope Z_scope.
 Definition location (l : SpecFloat.location) : Z :=
@@ -1129,6 +1192,7 @@ def main() -> None:
                          "FloatSpec.src.Calc.Sqrt", "FloatSpec.src.Core.FTZ",
                          "FloatSpec.src.IEEE754.BinarySingleNaNSourceFacade",
                          "FloatSpec.src.IEEE754.BitsSourceFacade",
+                         "FloatSpec.src.IEEE754.PrimFloat",
                          "FloatSpec.Test.BitsExecution"], timeout=600)
             (output / "lean_build.out").write_text(build)
         require_lean_source_snapshot(report["lean_source_sha256"])

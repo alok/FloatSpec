@@ -15,7 +15,7 @@ This guide follows those jobs in order. The detailed
 [independent continuation audit](ASTRA_AUDIT_2026-09-19.md) retain the
 declaration-by-declaration findings and historical milestones.
 
-## Wake-up summary — September 20, 2026, 11:01 UTC
+## Wake-up summary — September 20, 2026, 11:33 UTC
 
 **Where to start:** run the six-part demo above, then read sections 1–6 below.
 The [exemplar guide](DEMO_EXEMPLARS.md) adds small examples explaining why a
@@ -23,7 +23,26 @@ theorem needs its hypotheses. This summary records the current milestone;
 the [audit ledger](ASTRA_AUDIT_2026-09-19.md) keeps the detailed history,
 including failed runs and the exact source hashes tested.
 
-**Newest checked change:** the remaining normalization entry points now run
+**Newest checked change:** raw primitive comparison now matches Rocq's
+encoding order. The encodings `3 × 2^-1` and `6 × 2^-2` are both 1.5,
+but the raw source comparator says greater-than because it compares exponent
+then mantissa. The old Lean helper compared their real values instead.
+All twelve existing comparison APIs now execute at their original names;
+the native-model comparison proofs remain closed and their public statements
+are unchanged. The
+[new walkthrough](DEMO_EXEMPLARS.md#two-equal-values-that-the-raw-source-api-compares-differently)
+shows why this is not a failure on valid binary64 operands and why converting
+invalid encodings into NaN can hide a raw-interface bug.
+
+The fresh run passes **6,116 differential cases and 6,116 generated kernel
+equalities**, seed `841709`. It includes 1,425 raw/primitive cases with
+separate validity observations: 416 valid input pairs and 1,009 pairs with
+a rejected operand. Paired Lean/Rocq fixtures check 24 literal cases, and
+twelve deliberate mutations verify that each comparison export is observed
+independently. The full 60-test harness and 6,216-job macOS build pass.
+There are still four named proof debts, with none added by this change.
+
+**The preceding normalization checkpoint:** the remaining entry points run
 without changing their bodies or types. The bridge observes the full-payload,
 SingleNaN, and legacy raw APIs separately, plus the explicit validity adapter.
 All **9,346 differential cases and generated kernel equalities** pass, seed
@@ -72,15 +91,16 @@ failures of ordinary valid binary32/binary64 arithmetic.
 
 | Slice | Observed result |
 |---|---|
-| Full library, test library, and executable | Lean 4.34.0 on macOS arm64: 6,216 build jobs pass after the normalization execution change |
+| Full library, test library, and executable | Lean 4.34.0 on macOS arm64: 6,216 build jobs pass after the primitive comparison correction |
+| Primitive/raw and neighboring comparison APIs | 6,116 differential cases and kernel equalities; 1,425 observe twelve primitive/raw exports separately |
 | SingleNaN helper exports | 1,900 differential cases and kernel equalities; every exported helper observed separately |
 | `frexp`'s wider parameter domain | 4,169 differential cases and kernel equalities, including 3,455 with `prec ≥ emax` |
 | Independent decomposition laws | Lean and Rocq each check 6,772 encodings: 2,086 valid finite cases and 4,686 rejected raw encodings |
 | Independent Calc brackets | Lean and Rocq each check 8,640 division and 2,496 square-root cases, including exact midpoint locations |
 | Remaining normalization entry points | 3,004 three-way cases; paired fixtures separately check 150 literal observations |
 | Raw rounding plus validity adapter | 6,342 three-way cases; rejection and an actual valid NaN have distinct observations |
-| Test-harness checks | Latest full core-harness run: 57 tests pass, including independent export and adapter-column mutations |
-| Compiled trust/source metadata | 13,588 source declarations in 58 modules; four unchanged named proof debts; 207 checked source anchors |
+| Test-harness checks | Latest full core-harness run: 60 tests pass, including twelve independent primitive comparison mutations |
+| Compiled trust/source metadata | 13,532 source declarations in 58 modules; four unchanged named proof debts; 207 checked source anchors |
 
 These are separate, snapshot-bound receipts, **not** a claim that every row
 was rerun after every subsequent type-only change. Earlier broad runs cover
@@ -98,16 +118,16 @@ The exact reconstruction property still holds. Paired runnable examples also
 explain the finite-input condition on alternate ulp and the positive-input
 condition on the specialized predecessor.
 
-**Next concrete findings, not yet fixed in this checkpoint:** the raw
-`FaithfulPrimFloat.SFcompare/SFeqb` helpers compare real values where Rocq
-compares encoding fields. Two noncanonical encodings of 1.5 expose the
-difference. This does not demonstrate a failure on valid binary64 operands.
-A source-shaped scratch replacement already checks; the production change
-and cross-tests are next. Six additional FLT signatures also retain an
-unnecessary positive-precision premise. Their unrestricted source clients
-and scratch Lean repairs check; the nearby reverse inclusion really does
-need the premise. The audit ledger keeps these findings separate from
-completed changes and preserves the separate Claude branch.
+**Next concrete findings, not yet fixed in this checkpoint:** eleven FLT
+signatures retain an unnecessary positive-precision premise. Their unrestricted
+Rocq clients and scratch Lean repairs check; the nearby reverse inclusion
+really does need the premise. Separately, a scratch compile removes unnecessary
+`noncomputable` markers from 33 primitive definitions and four arithmetic
+instances without changing their bodies or types. All 37 ordinary clients
+currently fail compilation, giving a concrete before-state for the next
+execution checkpoint. These are prepared changes, not completed production
+repairs. The separate Claude comparison branch remains preserved; its
+real-value `*C` APIs are not merged because they preserve the raw mismatch.
 
 **What remains overall:** whole-library source-signature review is incomplete, and
 the four native/decoder proof obligations remain. The 75 premise guards and
