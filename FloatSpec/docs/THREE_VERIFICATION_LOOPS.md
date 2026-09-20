@@ -94,8 +94,8 @@ SingleNaN APIs. Seed `831557` supplies 10,000 pairs at each width, plus ten
 explicit boundary pairs per width; five operations are observed through each
 API. Signed zeros are preserved and NaNs are quotiented. A reported failing
 word pair can be replayed through the fixture's public `observations32` or
-`observations64`; the full-payload mode bridge supplies a separate Rocq
-baseline for those words. This is finite native execution, not a hardware
+`observations64`; the mode bridge now calls these same SingleNaN APIs against
+Rocq on those words, in addition to the full-payload baseline. This is finite native execution, not a hardware
 correctness proof or a native FMA/directed-rounding test.
 
 `Test/SourcePremiseContracts.lean` additionally has 52 source-premise guards,
@@ -456,9 +456,13 @@ or missing observations still fail closed.
 The standalone `scripts/ieee_modes_bridge.py` directly exercises the port's
 binary32 and binary64 APIs under nearest-even, toward-zero, downward, upward,
 and nearest-away rounding. Each row retains three exact input encodings and
-six results: add, subtract, multiply, divide, square root, and fused
-multiply-add. Unlike the native arithmetic bridge, it preserves NaN signs and
-payloads and checks the source's first-NaN propagation policy.
+six full-payload results: add, subtract, multiply, divide, square root, and fused
+multiply-add. These first nine columns preserve NaN signs and payloads and
+check the source's first-NaN propagation policy. Another 48 columns observe
+the six direct SingleNaN results and the six source-mode facade results,
+each as `(kind, sign, mantissa, exponent)`. NaN has one constructor in those
+two APIs; this does not erase the separate full-payload observations.
+The complete 57-column row is retained with its column names in the receipt.
 
 This runs compiled integer-only Lean, Lean kernel reduction, and Rocq,
 **not** native hardware directed rounding. The fixed-width source operations
@@ -481,7 +485,11 @@ FLOCQ_AUDIT_DIR=/path/to/pinned-flocq uv run scripts/test_ieee_modes_bridge.py -
 The live harness replaces upward rounding with nearest-even in only the Lean
 adapter and requires a failed comparison with the exact replay input. A second
 mutation changes only compiled Lean and must fail even when kernel/Rocq agree.
-All nine columns and all three execution paths are mandatory. Timeout
+Two further live mutations independently change direct and source-mode
+SingleNaN addition to subtraction. Both Lean execution paths must disagree
+only in the mutated API's result fields; every untouched field must still
+match pinned Rocq. Literal directed-tie and NaN-constructor checks additionally
+pin the serialization layout. All 57 columns and all three execution paths are mandatory. Timeout
 and interruption tests must report errors, never successful zero-case runs.
 The combined shell suite includes this bridge and its live harness; use
 `FLOCQ_MODES_SAMPLES` and `FLOCQ_MODES_BATCH_SIZE` to size this phase. It also
@@ -494,6 +502,14 @@ live harness tests. Its source fingerprint is
 `541bfc055e147a800162233e5b08d920f28b595340f739d971caaa80993ea3c3`.
 The newly added premise/error/oracle fixtures were executed separately after
 that frozen run; do not retroactively include them in that aggregate receipt.
+
+The later 57-column bridge passes **490 cases and 490 kernel equalities**,
+seed `832561`, in 529.655 seconds, with 49 cases per format/mode group. This
+tests all three public APIs, unlike the earlier nine-column receipt. It shares
+the unchanged library source SHA-256
+`17689e21deca9fc135815da4c8f10276cb6099dcc9c5b1568bc6b98d51e8ef66`
+with the passing 27,771-case all-family core run (seed `828431`, 3,081.590
+seconds). The audit ledger retains both separate reports and their scopes.
 
 ## 8. Scaling and decomposition: four execution paths
 

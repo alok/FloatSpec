@@ -18,15 +18,15 @@ class CorpusTests(unittest.TestCase):
         case = (32, 0, 1, 2, 3)
         for path in ("lean", "compiled"):
             for offset, column in enumerate(bridge.COLUMNS):
-                results = {name: [[0] * 9] for name in ("lean", "compiled", "rocq")}
+                results = {name: [[0] * len(bridge.COLUMNS)] for name in ("lean", "compiled", "rocq")}
                 results[path][0][offset] = 1
                 mismatch = bridge.compare([case], results)[0]
                 self.assertEqual(mismatch["paths"], [path])
                 self.assertEqual(mismatch["columns"], [column])
         with self.assertRaises(ValueError):
-            bridge.compare([case], {"lean": [[0] * 9], "rocq": [[0] * 9]})
+            bridge.compare([case], {"lean": [[0] * len(bridge.COLUMNS)], "rocq": [[0] * len(bridge.COLUMNS)]})
         with self.assertRaises(ValueError):
-            bridge.compare([case], {name: [[0] * 8] for name in ("lean", "compiled", "rocq")})
+            bridge.compare([case], {name: [[0] * (len(bridge.COLUMNS) - 1)] for name in ("lean", "compiled", "rocq")})
 
     def test_modes_formats_replay_and_nan_priority(self):
         cases = bridge.corpus(17, 2)
@@ -49,7 +49,13 @@ class CorpusTests(unittest.TestCase):
                 lean, rocq = bridge.expression(case, "lean"), bridge.expression(case, "rocq")
                 self.assertIn(f"b{width}_fma {bridge.LEAN_MODES[mode]} x y z", lean)
                 self.assertIn(f"b{width}_fma {bridge.COQ_MODES[mode]} x y z", rocq)
+                self.assertIn(f"BinarySingleNaN.Bfma {bridge.LEAN_MODES[mode]} single_x single_y single_z", lean)
+                self.assertIn(f"Source.Bfma .{bridge.COQ_MODES[mode]} single_x single_y single_z", lean)
                 self.assertNotIn("canonical", lean + rocq)
+        self.assertEqual(len(bridge.COLUMNS), 57)
+        self.assertEqual(len(set(bridge.COLUMNS)), 57)
+        with self.assertRaises(ValueError):
+            bridge.expression((32, 0, 0, 0, 0), "other")
 
 
 @unittest.skipUnless(os.environ.get("FLOCQ_AUDIT_DIR"), "live test requires FLOCQ_AUDIT_DIR")
@@ -79,7 +85,37 @@ class LiveTests(unittest.TestCase):
             self.assertEqual(results["lean"][0][3], 0x3f800001)
             self.assertEqual(results["lean"][1][3], 0x3f800000)
             self.assertEqual(results["lean"][2][8], 0x7ff0000000000001)
+            for start in (9, 33):
+                self.assertEqual(results["lean"][0][start:start + 4], [3, 0, 8388609, -23])
+                self.assertEqual(results["lean"][1][start:start + 4], [3, 0, 8388608, -23])
+                for op in range(6):
+                    offset = start + 4 * op
+                    self.assertEqual(results["lean"][2][offset:offset + 4], [2, 0, 0, 0])
             bridge.bootstrap(cases, results["rocq"], folder)
+
+    def test_single_nan_public_paths_are_independently_observed(self):
+        flocq = Path(os.environ["FLOCQ_AUDIT_DIR"]).resolve()
+        original = bridge.expression
+        case = (32, 0, 0x3f800000, 0x3e800000, 0)
+        for namespace, start in (("BinarySingleNaN", 9),
+                                 ("FloatSpec.IEEE754.BinarySingleNaN.Source", 33)):
+            def mutation(case, language):
+                result = original(case, language)
+                return (result.replace(f"{namespace}.Bplus ", f"{namespace}.Bminus ")
+                        if language == "lean" else result)
+
+            with (self.subTest(namespace=namespace),
+                  tempfile.TemporaryDirectory(prefix="floatspec-single-mode-mutation-") as directory,
+                  patch.object(bridge, "expression", mutation)):
+                results = bridge.execute([case], flocq, bridge.configured_coqc(flocq), Path(directory))
+                self.assertEqual(results["rocq"][0][start:start + 4], [3, 0, 10485760, -23])
+                mismatch = bridge.compare([case], results)[0]
+                self.assertEqual(mismatch["paths"], ["lean", "compiled"])
+                self.assertTrue(mismatch["columns"])
+                self.assertLessEqual(set(mismatch["columns"]), set(bridge.COLUMNS[start:start + 4]))
+                for path in ("lean", "compiled"):
+                    self.assertEqual(results[path][0][:start], results["rocq"][0][:start])
+                    self.assertEqual(results[path][0][start + 4:], results["rocq"][0][start + 4:])
 
     def test_wrong_rounding_mode_fails_with_replay(self):
         original = bridge.expression

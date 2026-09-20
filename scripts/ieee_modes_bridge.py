@@ -2,9 +2,11 @@
 """Cross-test source IEEE arithmetic in every rounding mode, retaining NaN payloads.
 
 This compares compiled Lean and kernel reduction of the port's own bit
-decoders/operations with pinned Rocq. It does
-not claim native hardware execution of directed rounding. Inputs and complete
-generated prover programs are retained, with per-case kernel regression proofs.
+decoders/operations with pinned Rocq. Full-payload results retain exact NaN
+bits; separate direct and source-mode SingleNaN results retain constructors,
+signs, mantissas, and exponents. It does not claim native hardware execution
+of directed rounding. Inputs and complete generated prover programs are
+retained, with per-case kernel regression proofs.
 """
 
 import argparse
@@ -22,18 +24,34 @@ from flocq_bridge import (configured_coqc, lean_source_fingerprint, parse_result
 
 LEAN_MODES = (".RNE", ".RTZ", ".RTN", ".RTP", ".RNA")
 COQ_MODES = ("mode_NE", "mode_ZR", "mode_DN", "mode_UP", "mode_NA")
-COLUMNS = ("left", "right", "third", "add", "sub", "mul", "div", "sqrt_left", "fma")
+OPERATIONS = ("add", "sub", "mul", "div", "sqrt_left", "fma")
+COLUMNS = ("left", "right", "third") + OPERATIONS + tuple(
+    f"{api}_{op}_{field}" for api in ("single", "source_single")
+    for op in OPERATIONS for field in ("kind", "sign", "mantissa", "exponent"))
 LEAN_HEADER = """import FloatSpec.src.IEEE754.Bits
+import FloatSpec.src.IEEE754.BinarySingleNaNSourceFacade
 set_option maxRecDepth 100000
 set_option maxHeartbeats 100000000
 set_option exponentiation.threshold 5000
 set_option pp.maxSteps 200000
 set_option pp.deepTerms true
+private def standard : StandardFloat → List Int
+  | .S754_zero s => [0, if s then 1 else 0, 0, 0]
+  | .S754_infinity s => [1, if s then 1 else 0, 0, 0]
+  | .S754_nan => [2, 0, 0, 0]
+  | .S754_finite s m e => [3, if s then 1 else 0, m, e]
 """
 COQ_HEADER = """From Stdlib Require Import ZArith List.
 From Flocq Require Import IEEE754.Bits IEEE754.Binary IEEE754.BinarySingleNaN.
 Import ListNotations.
 Open Scope Z_scope.
+Definition standard (x : SpecFloat.spec_float) : list Z :=
+  match x with
+  | SpecFloat.S754_zero s => [0; if s then 1 else 0; 0; 0]
+  | SpecFloat.S754_infinity s => [1; if s then 1 else 0; 0; 0]
+  | SpecFloat.S754_nan => [2; 0; 0; 0]
+  | SpecFloat.S754_finite s m e => [3; if s then 1 else 0; Zpos m; e]
+  end.
 """
 
 
@@ -74,7 +92,11 @@ def corpus(seed, samples):
 
 
 def expression(case, language):
+    case = validate_case(case)
+    if language not in ("lean", "rocq"):
+        raise ValueError("language must be lean or rocq")
     width, mode, left, right, third = case
+    prec, emax = (24, 128) if width == 32 else (53, 1024)
     mode_name = (LEAN_MODES if language == "lean" else COQ_MODES)[mode]
     prefix, separator = ("", ", ") if language == "lean" else ("Bits.", "; ")
     let = (lambda n, v: f"let {n} := {v}; ") if language == "lean" else (lambda n, v: f"let {n} := {v} in ")
@@ -83,7 +105,27 @@ def expression(case, language):
     values = ["x", "y", "z"]
     values += [f"{prefix}b{width}_{op} {mode_name} x y" for op in ("plus", "minus", "mult", "div")]
     values += [f"{prefix}b{width}_sqrt {mode_name} x", f"{prefix}b{width}_fma {mode_name} x y z"]
-    return result + "[" + separator.join(f"{prefix}bits_of_b{width} ({value})" for value in values) + "]"
+    if language == "lean":
+        result += (f"letI : Prec_gt_0 {prec} := ⟨by decide⟩; "
+                   f"letI : Prec_lt_emax {prec} {emax} := ⟨by decide⟩; ")
+    for name in ("x", "y", "z"):
+        converted = (f"Binary.B2BSN {name}" if language == "lean"
+                     else f"@Binary.B2BSN {prec} {emax} {name}")
+        result += let(f"single_{name}", converted)
+    result += "[" + separator.join(f"{prefix}bits_of_b{width} ({value})" for value in values) + "]"
+    for namespace, single_mode in (("BinarySingleNaN", LEAN_MODES[mode]),
+                                   ("FloatSpec.IEEE754.BinarySingleNaN.Source", f".{COQ_MODES[mode]}")):
+        for op in ("Bplus", "Bminus", "Bmult", "Bdiv", "Bsqrt", "Bfma"):
+            arity = 1 if op == "Bsqrt" else 3 if op == "Bfma" else 2
+            operands = " ".join(f"single_{name}" for name in ("x", "y", "z")[:arity])
+            if language == "lean":
+                result += (f" ++ standard (binarySingleNaNFloatToStandardFloat "
+                           f"({namespace}.{op} {single_mode} {operands}))")
+            else:
+                result += (f" ++ standard (@BinarySingleNaN.B2SF {prec} {emax} "
+                           f"(@BinarySingleNaN.{op} {prec} {emax} eq_refl eq_refl "
+                           f"{COQ_MODES[mode]} {operands}))")
+    return result
 
 
 def compiled_source(cases):
@@ -154,7 +196,7 @@ def main():
     parser.add_argument("--batch-size", type=int, default=10)
     parser.add_argument("--replay", type=Path)
     parser.add_argument("--output", type=Path)
-    parser.add_argument("--skip-build", action="store_true", help="caller must have built current Bits sources")
+    parser.add_argument("--skip-build", action="store_true", help="caller must have built current Bits and SingleNaN source facade")
     args = parser.parse_args()
     if args.samples < 0 or args.batch_size < 1:
         parser.error("samples must be nonnegative and batch-size positive")
@@ -174,7 +216,8 @@ def main():
               "worktree_status": run(["git", "status", "--porcelain"]).strip(),
               "lean_version": run(["lake", "env", "lean", "--version"]).strip(),
               "rocq_version": run([coqc, "--version"]).strip(), "host": run(["uname", "-sm"]).strip(),
-              "method": "Compiled Lean and kernel reduction versus pinned Rocq, all 5 rounding modes, exact NaN payloads",
+              "columns": COLUMNS,
+              "method": "Compiled Lean and kernel reduction versus pinned Rocq, all 5 modes; full-payload bits plus direct/source-mode SingleNaN constructors",
               "groups": dict(Counter(f"binary{c[0]}:{LEAN_MODES[c[1]]}" for c in cases)),
               "fresh_build": not args.skip_build, "status": "running", "compared_cases": 0,
               "compiled_cases": 0, "bootstrapped_lean_cases": 0, "mismatches": []}
@@ -189,7 +232,8 @@ def main():
     started = time.monotonic()
     try:
         if not args.skip_build:
-            (output / "lean_build.out").write_text(run(["lake", "build", "FloatSpec.src.IEEE754.Bits"], timeout=600))
+            (output / "lean_build.out").write_text(run(["lake", "build", "FloatSpec.src.IEEE754.Bits",
+                "FloatSpec.src.IEEE754.BinarySingleNaNSourceFacade"], timeout=600))
         require_lean_source_snapshot(report["lean_source_sha256"])
         for offset in range(0, len(cases), args.batch_size):
             batch = cases[offset:offset + args.batch_size]

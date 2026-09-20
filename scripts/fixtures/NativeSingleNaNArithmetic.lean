@@ -64,7 +64,8 @@ private def check (width : Nat) (left right : Nat) (rows : List Int × List Int)
   unless rows.1 == rows.2 do
     -- Reproduce the exact SingleNaN observations by calling observations32 or
     -- observations64 with these words. The same bit inputs can be given to
-    -- ieee_modes_bridge.py to compare the full-payload baseline with Rocq.
+    -- ieee_modes_bridge.py to compare both SingleNaN APIs and the full-payload
+    -- baseline with Rocq (the mode bridge observes constructors, not native bits).
     throw (IO.userError s!"source/native arithmetic mismatch; seed=831557; \
       replay=[{width},0,{left},{right},0]; source={rows.1}; native={rows.2}")
 

@@ -15,9 +15,9 @@ This guide follows those jobs in order. The detailed
 [independent continuation audit](ASTRA_AUDIT_2026-09-19.md) retain the
 declaration-by-declaration findings and historical milestones.
 
-## Wake-up summary — September 20, 2026, 08:18 UTC
+## Wake-up summary — September 20, 2026, 08:38 UTC
 
-**What changed most recently:** actually running the raw IEEE rounding APIs
+**Most important recent finding:** actually running the raw IEEE rounding APIs
 found a semantic bug. A helper replaced signed shifting with floor division
 without checking the nonnegative-mantissa condition that makes them agree.
 For example, shifting `-1` right once gives `0` in Flocq, whereas Lean's
@@ -74,18 +74,22 @@ CI claim. Reviewable work is on
 [`alok/FloatSpec`, branch `codex/astra-flocq-audit`](https://github.com/alok/FloatSpec/tree/codex/astra-flocq-audit),
 with BAIF retained as the optional `upstream` remote.
 
-**Current work under verification:** the separate SingleNaN arithmetic entry
+**Latest completed execution milestone:** the separate SingleNaN arithmetic entry
 points now execute after removing unnecessary `noncomputable` markers and
 moving square root's proof-only real temporary inside its proof. The six
 operation types and integer algorithms are unchanged. Both Lean and Rocq pass
 30 literal one-bit arithmetic boundaries, including `fma(2,2,-2) = 2` even
 though the separately rounded product overflows. Both SingleNaN entry points
 are tested, including the source-mode facade. The 6,215-job library/test/
-executable build has passed; an expanded fresh-seed, all-family differential
-run is in progress. Its arithmetic rows now observe all three public APIs
-separately. This paragraph is a work-in-progress status, not a claim that the
-ongoing run has passed. Successful finite tests do not settle every theorem
-signature or every total-function input.
+executable build has passed. The expanded all-24-family differential run now
+passes **27,771 cases and 27,771 kernel assertions**, seed `828431`.
+An additional **490 binary32/binary64 cases and 490 kernel assertions**, seed
+`832561`, pass all five rounding modes through all three public APIs
+separately. The large-format bridge now records 57 result/input fields,
+preserving full-payload NaNs and separately observing both SingleNaN APIs.
+Its nine live harness tests also pass, including independent mutations of
+each SingleNaN entry point. Successful finite tests do not settle every
+theorem signature or every total-function input.
 
 **New independent checks:** both SingleNaN APIs also pass **200,200 native
 binary32/binary64 comparisons**, seed `831557`, with signed zeros retained and
@@ -100,8 +104,12 @@ to subtraction breaks the native check on signed zero.
 valid-exponent premises on raw rounding and structural rounding laws, plus
 extra positive-precision premises on two multiplication-error bounds. An
 isolated copy of the complete generic-format module compiles with 17 such
-binders removed and all proof bodies unchanged. The library snapshot stays
-frozen until the ongoing 27,771-case run finishes.
+binders removed and all proof bodies unchanged. Twenty new compiler guards
+all fail on the current extra premises, while the paired pinned Rocq clients
+compile. Those are the next integration checks now that both frozen runs have
+finished. A subsequent helper slice will remove remaining execution blockers
+on normalization, decomposition, and alternate neighbor operations; that
+repair has only been tested in an isolated copy so far.
 
 ## 1. Start with one small rounding problem
 

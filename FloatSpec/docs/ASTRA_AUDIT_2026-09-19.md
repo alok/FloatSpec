@@ -1205,7 +1205,7 @@ The combined runner includes the new pair. CI's Lean fixture list now also
 includes Boolean comparisons and both raw-rounding regression fixtures;
 this does not repair the separately known hosted cache/toolchain issue.
 
-Verification completed before the broad integration run finishes:
+Verification completed before the broad integration run:
 
 - The original four-call failing client now prints `true, true, false, true`
   for finiteness of zero addition, multiplication, division, and square root.
@@ -1232,10 +1232,12 @@ attempt overlapped rebuilding the test artifacts and failed on a missing
 `BitsExecution.olean`; it is not counted as a pass. All build processes
 finished before the complete passing harness run and the frozen grid began.
 
-A **27,771-case**, fresh-seed all-24-family run is in progress, seed `828431`
-with 40 supplemental samples. It is not yet a passed milestone. Its retained
+A **27,771-case**, fresh-seed all-24-family run now passes, seed `828431`
+with 40 supplemental samples, in **3,081.590 seconds**. All 27,771 cases
+agree in compiled Lean, kernel reduction, and pinned Rocq, and all 27,771
+generated kernel assertions pass. The retained
 receipt is `/private/tmp/floatspec-single-nan-all-families-20260920/report.json`.
-No port/library source edits or builds will overlap that frozen run.
+No port/library source edit or build overlapped this completed frozen run.
 
 #### Independent tests added without changing the frozen library snapshot
 
@@ -1272,10 +1274,10 @@ on `-0 + +0`, returning negative rather than positive zero
 fixture's `observations32`, while `ieee_modes_bridge.py` can cross-check the
 full-payload baseline on the same words.
 
-These are standalone test fixtures and documentation edits. The ongoing
+These were standalone test fixtures and documentation edits. The completed
 all-family run's port/library source SHA-256 remains
 `17689e21deca9fc135815da4c8f10276cb6099dcc9c5b1568bc6b98d51e8ef66`;
-there is no overlapping rebuild or port-source edit.
+there was no overlapping rebuild or port-source edit.
 
 #### Contract repairs prepared outside the frozen snapshot
 
@@ -1305,7 +1307,7 @@ or `round_AW_DN`; their current Lean wrappers require it. This is not grounds
 for blanket premise deletion: the inspected source `round_ZR_abs`,
 `round_AW_abs`, and `round_abs_abs` **do** retain `Valid_exp`.
 The source snapshots are retained in `/private/tmp/GenericRoundContracts.*`.
-These contract repairs remain pending until the frozen run finishes.
+These contract repairs remain pending integration after the completed frozen run.
 An isolated copy of the complete 8,280-line `Generic_fmt` module now compiles
 after removing **17** unnecessary `Valid_exp` binders from the raw wrapper,
 its structural laws, and corresponding compatibility helpers. Proof bodies
@@ -1313,6 +1315,61 @@ are unchanged. This is a successful preparation check, not yet a repository
 integration build; the copy and diagnostics are
 `/private/tmp/GenericFmtNoPremises.lean` and `.out`. The source-required
 absolute-value and monotonicity premises are left intact.
+
+#### Large-format SingleNaN cross-tests and remaining execution gaps
+
+The independent native tests exposed a coverage gap, not an arithmetic
+counterexample: the prior binary32/binary64 mode bridge called only the
+full-payload API. It now has **57 columns**: the original nine exact input/
+full-payload result words plus 24 constructor fields for direct SingleNaN
+results and 24 for the source-mode facade. Each set calls the actual pinned
+Rocq SingleNaN operation; NaNs are one constructor only in these latter APIs.
+The full-payload NaN signs/payloads remain exact and separately observed.
+
+All **nine live harness tests** pass in **34.481 seconds**, including new
+independent add-to-subtract mutations of each SingleNaN API. Both compiled
+and kernel Lean must reject the changed fields while all other columns still
+match. Literal ties and NaN results check the serializer's layout. Log:
+`/private/tmp/floatspec-single-nan-modes-harness-v2-20260920.log`.
+A fresh **490-case** all-ten-format/mode-group run passes, seed `832561`,
+with 20 supplemental samples per group, in **529.655 seconds**. All 490
+compiled/kernel/Rocq rows agree, and all 490 generated kernel assertions pass:
+`/private/tmp/floatspec-three-api-ieee-modes-20260920/report.json`.
+Both completed bridges use the unchanged library snapshot recorded above.
+
+A separate compiled client now reproduces seven remaining helper execution
+gaps: `BinarySingleNaN.binary_normalize`, `Bone`, `Bldexp`, `Bfrexp`, `Bulp'`,
+`Bpred_pos'`, and `Bsucc'`. Receipt:
+`/private/tmp/SingleNaNRemainingExecutionGaps.out`. An isolated facade copy
+with eight marker removals enables normalization, ldexp and frexp, but its
+other branches still fail because the underlying `Binary.BoneSingle` and
+`Binary.shr_fexp` aliases remain noncomputable. That partial preparation is
+recorded as a failure, not a fix:
+`/private/tmp/SingleNaNFacadeExecutable.out`. No repository implementation
+change from this experiment was included in either frozen bridge snapshot.
+The second isolated attempt supplies an identical executable copy of
+`BoneSingle` and unfolds the shift alias to its already executable body.
+It now compiles the complete facade and executes all seven probe calls:
+`true, true, true, -11, true, true, true`. Log:
+`/private/tmp/SingleNaNFacadeExecutable-v2.out`. This establishes a viable
+marker-only repair path, not a repository integration result or a differential
+test of every input. The source bodies for frexp, alternate ulp, positive
+predecessor, and successor were compared with pinned lines 3042, 3173, 3453,
+and 3661; their conditional correctness premises remain in scope for the
+subsequent signature review.
+
+The prepared source-premise slice now has a reproduced before/after gate:
+all **20** guards in `/private/tmp/UpcomingPremiseGuards.lean` fail on the
+current extra premises (exit 1, `/private/tmp/UpcomingPremiseGuards-before.out`).
+The equivalent unrestricted Rocq clients in
+`/private/tmp/GenericRoundingPremiseClients.v` compile against the pinned
+reference. These failures are expected regression witnesses, not passing
+repository tests; the implementation repair has not yet been applied.
+
+After both bridges finished, a fresh explicit
+`lake build FloatSpec FloatSpecTests FloatSpec.Test floatspec` also passed
+**6,216 jobs**, exit 0, with no intervening library edits. Log:
+`/private/tmp/floatspec-three-api-milestone-build-20260920.log`.
 
 ### Unreviewed scope
 
