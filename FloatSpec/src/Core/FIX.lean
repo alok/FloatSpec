@@ -166,11 +166,11 @@ private lemma ulp_FIX_run_eq (beta : Int) [ValidRadix beta] (emin : Int) (x : �
   classical
   by_cases hx : x = 0
   · subst hx
-    -- First, expose the `if` in `negligible_exp` with the constant exponent
-    simp [FloatSpec.Core.Ulp.ulp, FloatSpec.Core.Ulp.negligible_exp, FIX_exp]
-    -- Now discharge the guard `∃ n, n ≤ emin` with the trivial witness `n = emin`
-    have hh : ∃ n : Int, n ≤ emin := ⟨emin, le_rfl⟩
-    simp [hh]
+    rcases FloatSpec.Core.Ulp.negligible_exp_spec' (fexp := FIX_exp emin) with
+      ⟨_hnone, hlt⟩ | ⟨n, hn, _hle⟩
+    · have impossible : emin < emin := by simpa [FIX_exp] using hlt emin
+      exact False.elim (lt_irrefl emin impossible)
+    · simp [FloatSpec.Core.Ulp.ulp, hn, FIX_exp]
   · simp [FloatSpec.Core.Ulp.ulp, FloatSpec.Core.Generic_fmt.cexp, FloatSpec.Core.Raux.mag,
           FIX_exp, hx]
 

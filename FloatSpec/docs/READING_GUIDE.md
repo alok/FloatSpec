@@ -15,175 +15,55 @@ This guide follows those jobs in order. The detailed
 [independent continuation audit](ASTRA_AUDIT_2026-09-19.md) retain the
 declaration-by-declaration findings and historical milestones.
 
-## Wake-up summary — September 20, 2026, 17:17 UTC
+## Wake-up summary — September 20, 2026, 17:33 UTC
 
-**The port builds and runs on macOS with Lean 4.34.0, but it is not yet a
-fully source-audited port.** All 35 built Flocq module names have Lean
-counterparts. Four native/decoder proof obligations remain explicit, and
-much of the existing theorem-by-theorem source comparison remains undone.
-File coverage is not a completion percentage.
+**The port builds and runs on macOS with Lean 4.34.0; it is not yet a fully
+source-audited port.** All 35 built Flocq module names have Lean counterparts,
+but much of the theorem-by-theorem comparison remains undone. Four named
+native/decoder proof obligations remain. File coverage is not a completion
+percentage.
 
-The latest verified library and tests are on the
-[review branch](https://github.com/alok/FloatSpec/tree/codex/astra-flocq-audit).
-Run `lake exe floatspec_demo` for the seven-part native executable.
-Its examples and the **6,226-job build** pass. Fresh compiled checks cover
-**13,571 declarations / 58 modules**, find exactly the four recorded proof
-debts, and validate **272 pinned source anchors**.
+Start with `lake exe floatspec_demo`, then read sections 1–6 below. The latest
+**6,227-job build and all seven demo examples pass**. Fresh compiled checks
+cover **13,568 declarations / 58 modules**, find exactly the four recorded
+debts, and validate **277 pinned source anchors**. Reviewable changes are on
+[your fork's audit branch](https://github.com/alok/FloatSpec/tree/codex/astra-flocq-audit);
+your fork is the default remote and BAIF remains `upstream`.
 
-The main conceptual repair is separating a **raw encoding**, a **canonical
-value**, and a **native machine float**. Raw `(3,-1)` denotes 1.5 but is not
-canonical binary64. Its raw square is `(9,-2)`; converting first and using
-the primitive API gives a canonical encoding of 2.25. Both are source
-behavior. Confusing these interfaces caused the old comparator and converter
-bugs, now repaired with saved counterexamples. The demo walks through them.
+The repairs preserve four distinctions worth carrying through the story:
 
-The newest type repairs preserve equally important distinctions. A
-predicate-to-rounding constructor now returns its value/function *with its
-proof*, as Flocq does. FLX's two unit-value laws now accept all integer
-precisions, also as Flocq does; this does not say an invalid precision
-describes a valid format. Paired Lean/Rocq clients and closed Lean proofs
-check these boundaries. Six more parity/symmetry interfaces now expose only
-the assumptions in their compiled Flocq counterparts. In particular,
-negation symmetry does not require the conditions used to prove
-nearest-even correctness. There are **98** compiled premise guards, with
-deliberate failures testing the guard itself. Sections 3 and 4 explain them.
+- A raw encoding, a canonical floating-point value, and a native machine
+  float are different interfaces. The same real number can have several
+  encodings; NaN payloads and signed zero make bit identity stricter still.
+- A source constructor can return a value **with its proof**. A theorem
+  asserting something about an optional value is not a substitute for that
+  dependent return type. The rounding and classical-witness APIs now expose
+  their source-shaped results.
+- A law about a total function can hold outside valid floating-point formats.
+  Conversely, validity premises cannot be removed just because small examples
+  pass. The newest ULP repair follows Flocq's integer witness construction and
+  has a closed proof preserving **every old ULP value for valid exponent
+  functions**, including at zero. Invalid exponents need not be choice-independent.
+- Classical real-number definitions are not executable integer algorithms.
+  Integer-only Pff/model adapters now execute; real logarithms and arbitrary
+  predicate choice remain explicitly noncomputable.
 
-**Execution evidence, with its limits:** the prior frozen primitive snapshot
-passes **4,970 cross-tests**, seed `844763`, with compiled Lean, kernel Lean,
-pinned Rocq, and 4,970 generated kernel equalities. The expanded harness
-detects **40** independently corrupted API/instance/exponent observations.
-The current persistent native bridges require four paths—native FFI,
-compiled model, kernel model, Rocq—and pass their **19-test** harness.
-Those are four executions inside the three verification loops, not four
-independent proofs. Earlier 522-word and 1,224-pair scratch runs remain
-separate evidence on the older snapshot.
+**What actually ran:** a complete frozen-snapshot three-loop run passed
+**55,162 differential case executions and generated kernel equalities**, plus
+**119 bridge-harness tests**, independent Lean/Rocq fixtures, source/trust
+gates and the demo. Newer Pff, model-adapter, LPO and ULP changes have separate
+fresh builds, paired fixtures and mutation controls. A larger fresh-seed pass
+over the newer executable interfaces is running now; it is not yet a result.
+Each run retains its exact source fingerprint. Earlier interruptions and
+timeouts remain errors, not retroactive passes.
 
-**The broad rerun has completed successfully.** It started at 14:38 UTC
-on pushed commit `5a6d16df` and finished around 17:17 UTC. All ten retained
-reports agree on the frozen source fingerprint. Source/trust gates, pure
-Rocq suites, pure Lean suites, the seven-part demo, **55,162 differential
-case executions and generated kernel equalities**, and **119 bridge-harness
-tests** pass. The total includes 48,614 core cases, 292 saved replay cases,
-622 native unary inputs, 1,424 arithmetic pairs, 390 all-mode cases,
-2,360 scaling/decomposition cases, and 1,460 integer-rounding cases.
-Native comparisons respect each bridge's documented scope; not every native
-operation supports every directed mode or exceptional-value convention.
-This is a complete receipt for the frozen snapshot, not a relabeling of the
-newer Pff, model-adapter and LPO changes. Those have their separate checks below.
-The 13:57 run
-on `2282a69b` passed source/trust gates, pure Rocq suites, Lean fixed fixtures,
-and the demo, but was explicitly interrupted after a scheduling bottleneck
-was identified. It retains an error result: 1,755 compared cases and 1,754
-completed generated proofs, not a successful full run.
-The exact seed-`848933` core corpus completed with 378 batches instead of 2,502;
-no inputs were removed or reordered. The integrated
-87-case mixed-family pilot already passes in all three paths with all
-87 generated proofs. Timeouts and interruptions remain errors.
-The earlier 200-case primitive timeout is also retained alongside its
-successful explicit smaller-batch replay. The
-[audit ledger](ASTRA_AUDIT_2026-09-19.md) keeps exact snapshots and receipts.
-
-Continue with sections 1–6 for the mathematical story.
-The [demo guide](DEMO_EXEMPLARS.md) gives runnable examples, the
-[three-loop guide](THREE_VERIFICATION_LOOPS.md) explains the tests, and the
-[focused review ledger](SOURCE_CONTRACT_REVIEW.md) names the reviewed
-contracts without certifying their surrounding modules.
-Local macOS success is not a green hosted-CI claim: fork CI has a separate
-known dependency-cache/toolchain mismatch.
-
-**Newest semantic repair:** Pff's source-facing rounding now uses Rocq's
-logarithm convention: `ln x = 0` when `x ≤ 0`. Lean's `Real.log` instead uses
-the absolute value there. At radix −2 and input 2, the old formula returned
-`(2,0)` while pinned Rocq returns `(-4,-1)`. Both records denote two, but they
-are not the same source result. Paired closed Lean/Rocq regressions pin the
-correct records for inputs 2 and −2. A closed Lean theorem proves that this
-repair leaves **every positive-radix result unchanged**, at every precision
-and real input. This is a mathematical definition repair, not a native
-execution claim about real-number logarithms.
-
-The old broad run remains frozen in its original worktree. This repair is
-built and checked in a separate isolated worktree, so that run's evidence is
-not silently relabeled as covering the new definition.
-
-**New executable Pff interface:** source-facing neighbors and parity now use
-one explicit integer radix, as pinned Flocq does. For a valid base-three
-bound, the normalized successor of one is `(4,-1)`, meaning four thirds.
-The older wrapper indexed by base two returns `(3,-1)` even when its extra
-argument is `3`; that argument is ignored. The two interfaces are now
-separately classified, not silently identified. Two closed carrier-bridge
-theorems cover the raw neighbors; no global normalization equivalence is
-claimed. Eighteen existing integer-only APIs now compile and run after
-removing unnecessary `noncomputable` markers, without body or type changes.
-
-Run `lake env lean --run scripts/fixtures/PffWalkthrough.lean` for this
-small, linear example. Paired permanent Lean/Rocq fixtures check its records
-and parity. The integrated **2,772-case / 56-column** profile now passes
-in compiled Lean, kernel Lean, and pinned Rocq, with all 2,772 generated
-kernel equalities. It also passes **45,368** independent exact-rational
-assertions, including **3,510** premise-gated canonical-neighbor checks.
-All **16** harness tests pass: every deliberately corrupted observation
-column is detected in both Lean paths, compiled-only corruption is reported
-and replayed, matching wrong outputs fail the independent oracle, and a
-false generated Lean regression is rejected by the kernel.
-
-Seven more auxiliary integer helpers now execute too. A second profile
-passes **2,216** three-path cases and kernel equalities, with **11,872**
-independent assertions about bounds and normalization. Its source exports
-are `make_bound`, `bsingle`, and `bdouble`; the signed-precision normalizer is
-explicitly an adapter. Separately, **70,227** exact-rational cases check the
-Lean-only comparison/min/max helpers. The distinction matters: a legacy
-helper called `pff_normalize` is merely the identity, not normalization.
-Its old misleading comment is corrected, and a closed example shows that
-it leaves `(1,0)` unchanged where actual normalization yields `(4,-2)`.
-No proof about identity is counted as a normalization proof.
-
-The source-facing real-rounding family now also includes upward, downward,
-and nearest-even rounding through **one explicit radix**. Ten paired closed
-Lean/Rocq examples check signed halfway ties, both strict-distance branches,
-exact inputs, zero, negative radix, and precision zero. For example, in the
-base-three example, `1.5` rounds down to one, up to two, and nearest-even to
-two; `-1.5` rounds down to minus two, up to minus one, and nearest-even to
-minus two. Deliberately replacing nearest-even with downward rounding makes
-both proof checkers reject the first result; both then prove the changed
-answer. These are kernel-checked mathematical examples, **not native
-execution of real logarithms or general rounding-correctness proofs**.
-
-Double-rounding review now has permanent paired guards too: nine exact
-definition bodies and six source-shaped theorem clients. A closed example
-shows that the radix-at-least-four square-root condition really differs by
-one radix digit of intermediate precision; changing its offset makes both
-contract checkers fail. Reintroducing unnecessary exponent-validity premises
-also breaks the multiplication client. These protect the reviewed interfaces,
-not every theorem in the large double-rounding module.
-
-Two more model adapters now execute, with unchanged bodies/types. Their
-**1,140-case** three-path bridge and all seven harness tests pass, and the
-pure Lean oracle separately executes **60,032 inputs / 300,160 observations**.
-The instructive surprise was in the test oracle: Flocq's integer bit decoder
-does not wrap out-of-range integers like UInt32/UInt64. At `2^32 + 1`, source
-decoding gives the negative minimum subnormal; wrapping first gives the
-positive minimum subnormal. Both assistants agree. The paired examples now
-keep this domain distinction, signed zero, and NaN canonicalization explicit.
-The model-adapter profile runs integer algorithms; it is not a native float
-FFI test or a universal equivalence proof.
-
-The same proof-carrying-interface issue appeared in three classical existence
-constructors: `LPO_min`, `LPO`, and `LPO_Z`. Flocq returns either a witness
-with its membership proof, or a proof of nonexistence; the old Lean names
-only asserted properties of optional values. The repaired APIs now return
-the alternatives directly. Paired typed clients, a negative integer witness,
-an empty predicate, and deliberate proof-erasure failures check that boundary.
-The old optional choices remain, with their specifications explicitly named
-`LPO_min_choice_spec`, `LPO_choice_spec`, and `LPO_Z_choice_spec`. These are
-classical mathematical constructors, not executable decision procedures for
-arbitrary predicates.
-
-Reviewable work is on
-[`alok/FloatSpec:codex/astra-flocq-audit`](https://github.com/alok/FloatSpec/tree/codex/astra-flocq-audit).
-Your fork is the default remote; BAIF remains `upstream`.
-The original checkout, independent Claude changes, and modified
-`Deps/flocq` are preserved. Current work uses an isolated worktree and a
-separate clean pinned Flocq reference.
+Read [the demo/exemplar guide](DEMO_EXEMPLARS.md) for small runnable examples,
+[the three-loop guide](THREE_VERIFICATION_LOOPS.md) for reproduction, and
+[the audit ledger](ASTRA_AUDIT_2026-09-19.md) for detailed receipts and historical
+failures. Finite agreement is not universal equivalence. Local macOS success
+is not a green hosted-CI claim: fork CI has a separate dependency-cache/toolchain
+mismatch. Your original checkout, Claude changes and modified `Deps/flocq`
+remain preserved in place; this work uses isolated Lean and pinned Rocq checkouts.
 
 ## 1. Start with one small rounding problem
 
@@ -259,6 +139,16 @@ Mapping a float to a real number loses distinctions. Positive and negative
 zero have the same real value; NaNs and infinities need separate treatment.
 Consequently, a theorem about `toReal` cannot prove equality of all raw bits.
 
+Input domains matter before decoding too. Flocq accepts arbitrary integers;
+Lean's UInt32/UInt64 wrappers first reduce modulo the word size. At `2^32 + 1`,
+the source decoder sees its sign threshold exceeded and returns the negative
+minimum subnormal; wrapping first leaves the word one, the positive minimum
+subnormal. Neither is a bug in that interface. The paired
+[model-adapter examples](../Test/NativeModelAdapters.lean) also separate signed
+zero, raw NaN payloads and the logical model's deliberate NaN canonicalization.
+The first test oracle had wrongly assumed every route wrapped; cross-testing
+both assistants exposed the oracle mistake.
+
 Magnitude is another boundary worth getting exactly right. For nonzero `x`
 and radix `β > 1`, Flocq's `mag x = e` means
 
@@ -309,6 +199,33 @@ not an integer rounding algorithm. Paired
 return types; closed Lean theorems also preserve the old selected value and
 function on every valid input.
 
+The same distinction applies to classical existence. `LPO_min`, `LPO` and
+`LPO_Z` return either a witness with its membership proof or a proof that no
+witness exists. The integer constructor searches the nonnegative side before
+the negated-natural side. These are classical constructions, not programs
+that decide arbitrary predicates. The old optional choices remain explicit
+compatibility helpers. [Paired typed clients](../Test/LpoSourceContracts.lean)
+check the return shapes, a negative-only predicate and an empty predicate.
+
+For a concrete executable Pff example, run
+`lake env lean --run scripts/fixtures/PffWalkthrough.lean`. Pff's source-facing
+neighbors use one explicit integer radix and an unindexed mantissa/exponent
+record. With base three, the normalized successor of one is `(4,-1)`, or four
+thirds. The old wrapper indexed by base two gives `(3,-1)` even if its extra
+argument says three, because that argument is ignored. Both interfaces are
+now separately classified. The real-valued Pff rounders remain mathematical:
+at base three and the demonstrated bound, `1.5` rounds down to one, up to two,
+and nearest-even to two; `-1.5` rounds down to minus two, up to minus one,
+and nearest-even to minus two. The paired
+[rounding fixtures](../Test/PffRoundingSource.lean) prove these exact records.
+
+Even a total logarithm convention matters outside normal radix assumptions.
+Rocq uses `ln x = 0` for `x ≤ 0`; Lean's `Real.log` uses the absolute value
+there. The repaired Pff formula follows Rocq, and a closed theorem preserves
+every result at positive radix. A negative-radix counterexample distinguishes
+records that denote the same real number. Equality of represented reals alone
+would have hidden that source mismatch.
+
 This explains one repaired interface mistake. Flocq's `truncate` accepts
 a mantissa/exponent/location triple **and an exponent function**. The
 function determines the target precision. An older Lean function with the
@@ -331,6 +248,17 @@ zero they give `ulp 1 = 2` and `succ 1 = 3`; with precision -1 they give 4 and
 5. These are legitimate equalities of the total definitions, not assertions
 that such a precision describes a valid floating-point format. The repaired
 Lean signatures and paired boundary proofs preserve that distinction.
+
+At zero, ULP is selected through a negligible-exponent witness. The repaired
+definition follows Flocq's `LPO_Z` construction, rather than choosing an
+arbitrary integer directly. Does changing a witness change the spacing? For
+**valid** exponent functions, no: a closed Lean theorem proves the entire ULP
+function unchanged, including zero. Without validity, two admissible witnesses
+can yield different powers: the identity exponent function admits both zero
+and one, producing binary spacings one and two. The
+[ULP choice fixture](../Test/UlpSourceChoice.lean) proves the preservation law,
+the invalidity of that example, and the differing powers. This is why witness
+construction and choice independence are reviewed separately.
 
 Similarly, a symmetry of a rounding *function* is not the same contract as
 a theorem that its output satisfies a nearest-even *predicate*. Flocq's
@@ -595,7 +523,7 @@ Source links make that review navigable. `@[flocq_source]` records a pinned
 Coq path, line, and name; `@[flocq_local]` explains a Lean-only helper.
 Thirteen source files enable strict public-definition classification; a targeted
 section of `Binary.lean` additionally enables the same check.
-The compiler-backed validator checks all 272 registered anchors, including
+The compiler-backed validator checks all 277 registered anchors, including
 combined attributes and later attribute commands. These links are metadata,
 not a proof that bodies or theorem signatures correspond.
 

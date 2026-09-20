@@ -3106,6 +3106,63 @@ Pff/model-adapter/LPO changes, whose separate receipts are recorded above,
 and it does not prove universal source equivalence. The interrupted older run
 and earlier timeouts remain errors rather than being overwritten as passes.
 
+### September 20, 17:36 UTC — source ULP witness and preservation boundary
+
+`Core.Ulp.negligible_exp` now projects the repaired `Raux.LPO_Z` result,
+following pinned `Core/Ulp.v:45` and the source's nonnegative-then-negated
+natural witness construction. The old arbitrary integer `Classical.choose`
+was only specification-equivalent; raw witness identity was not established.
+The proof of its witness predicate now consumes the carried evidence directly.
+The fixed-point zero-ULP proof uses that predicate instead of unfolding the
+previous choice implementation. Both proofs remain closed.
+
+A new closed theorem proves that **for every valid radix, valid exponent
+function and real input**, the entire new ULP value equals the previous one.
+This includes zero. It does not assert identity of arbitrary integer witnesses.
+Paired fixtures show the premise matters: the identity exponent function is
+invalid and two of its acceptable witnesses, zero and one, give different
+binary powers. Exact body guards cover the witness projection, ULP,
+positive predecessor, successor and predecessor in both assistants.
+Five inspected definition anchors bring the compiler metadata total to 277.
+
+Final source/configuration SHA-256:
+`4295264c770099973f8c633b0b0149cd3b7366703a70a85ff732fb1a4fc7a237`.
+
+- Full macOS Lean 4.34 build passes **6,227 jobs**, including the permanent
+  fixture; all seven compiled demo examples pass. Receipts:
+  `/private/tmp/floatspec-ulp-full-build-v2-20260920.log` and
+  `/private/tmp/floatspec-ulp-demo-20260920.log`.
+- Source, FIX and fixture LSP checks complete without errors. All eight
+  printed fixture axiom lists exclude `sorryAx`; the paired pinned Rocq
+  fixture closes without admissions. Receipts:
+  `floatspec-ulp-choice-lean-final-20260920.log` and
+  `floatspec-ulp-choice-rocq-v2-20260920.log`, under `/private/tmp`.
+- All **three live controls** pass (9.799 seconds): both checkers reject
+  erasing the zero-spacing branch, and Lean rejects removing the validity
+  premise from the preservation proof. Original fixtures compile first.
+  Receipt: `/private/tmp/floatspec-ulp-choice-controls-20260920.log`.
+- Fresh trust checks **13,568 declarations / 58 modules / four unchanged
+  debts**; fresh metadata export then validation checks **277 anchors**.
+  Receipts: `/private/tmp/floatspec-ulp-final-{trust,source-metadata,anchors}-20260920`.
+  Three fewer generated internal declarations than the previous snapshot
+  result from the simpler proof, not removed public exports.
+- Generated status: **100 Lean files, four sorries, zero explicit axioms/admit**.
+  Shell syntax, warning-as-error Python compilation and whitespace checks pass.
+
+The first proof draft lacked its required radix instance; its failed build
+and resulting error-generated sorry were not accepted as a proof. The fixed
+fixture has clean final axiom lists. The first Rocq draft needed an `Lra`
+import. A later source-validator command used a nonexistent script name;
+the fresh export was then validated successfully with the actual validator.
+Failed attempts remain in their receipts. No native execution of classical
+real ULP, equality of cross-assistant choices, or global source equivalence
+is claimed.
+
+The linear reading guide now has a short wake-up summary followed by the
+conceptual chapters; detailed chronology stays here. The final seed-859003
+Pff/auxiliary/model-adapter stress pass is running against this frozen source
+hash. Its outcome will be recorded separately, not assumed.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In

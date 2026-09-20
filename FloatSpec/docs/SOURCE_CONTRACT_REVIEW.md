@@ -919,6 +919,23 @@ remain explicit; these adapters are not upgraded into source theorems. A later
 addition proof had passed validity using `rfl` at two observer calls. It now
 uses the actual validity theorem of `binary_round`, with no new sorry.
 
+## ULP witness construction and choice independence
+
+`Core.Ulp.negligible_exp` now follows `Core/Ulp.v:45` by projecting
+`Raux.LPO_Z`, including its nonnegative-first witness construction. The
+source bodies of `ulp`, `pred_pos`, `succ` and `pred` were compared at
+lines 93, 391, 397 and 403 and retained. Their source anchors and paired
+definition-body guards are permanent.
+
+A closed Lean theorem compares against exact private copies of the previous
+choice and ULP definitions: every ULP result is preserved under
+`ValidRadix` and `Valid_exp`, for every real input, including zero.
+The paired invalid identity-exponent example admits witnesses zero and one
+with different powers; this rules out assuming unconditional choice
+independence. No equality of old/new witness integers is claimed.
+The fixed-point caller now reasons through the witness predicate rather
+than the old implementation body. No proof debt was added.
+
 ## Pff source-facing signed rounding family
 
 `Source.RND_Max_Pos`, `RND_Min`, `RND_Max` and `RND_EvenClosest` now match

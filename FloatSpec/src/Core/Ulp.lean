@@ -60,13 +60,9 @@ private lemma hoare_true {α : Type} (x : Id α) (Q : α → Prop) :
   intro h
   simpa [Std.Do.Triple, Std.Do.SPred.entails] using h
 
-/-- Non-FTZ exponent property (local, minimal theorem used in this file).
-
-In Flocq, {name}`Exp_not_FTZ` entails stability of the exponent function on the
-"small" regime. The following idempotence on {name}`fexp` is a lightweight
-abstraction sufficient for the {coq}`ulp_ulp_0` lemma and remains local to
-this file.
--/
+/-- Compatibility namespace alias for the source no-flush-to-zero exponent
+class from {name}`FloatSpec.Core.Generic_fmt.Exp_not_FTZ`. Its condition bounds
+the exponent selected immediately above an already selected exponent. -/
 -- Source classes live in `Generic_fmt`; keep the old namespace paths as aliases.
 abbrev Exp_not_FTZ := FloatSpec.Core.Generic_fmt.Exp_not_FTZ
 
@@ -80,14 +76,16 @@ abbrev Monotone_exp := FloatSpec.Core.Generic_fmt.Monotone_exp
 
 
 /-- Negligible exponent detection (Coq: {name}`negligible_exp`).
-We follow the classical (noncomputable) choice: if there exists {given}`n : Int` such that
-{lean}`n ≤ fexp n`, we return {lean}`some n` (choosing a witness); otherwise {name}`none`.
+Project the source-shaped classical integer-witness alternative: seek a
+nonnegative witness first, then a negated-natural witness, otherwise return
+{name}`none`. The returned witness is not an executable predicate search.
 -/
+@[flocq_source "src/Core/Ulp.v" 45 "negligible_exp"]
 noncomputable def negligible_exp (fexp : Int → Int) : Option Int := by
   classical
-  by_cases h : ∃ n : Int, n ≤ fexp n
-  · exact some (Classical.choose h)
-  · exact none
+  exact match FloatSpec.Core.Raux.LPO_Z (fun n => n ≤ fexp n) (fun _ => Classical.em _) with
+    | .inl witness => some witness.val
+    | .inr _ => none
 
 /-- Unit in the last place (ULP)
 
@@ -104,6 +102,7 @@ end.
 At zero, a negligible-exponent witness determines the smallest spacing;
 when no such witness exists, the ULP is zero, as in the source definition.
 -/
+@[flocq_source "src/Core/Ulp.v" 93 "ulp"]
 noncomputable def ulp (x : ℝ) : ℝ :=
   if x = 0 then
     -- Coq definition: use negligible_exp to choose a small-regime witness
@@ -129,23 +128,9 @@ inductive negligible_exp_prop (fexp : Int → Int) : Option Int → Prop where
 lemma negligible_exp_spec : negligible_exp_prop fexp (negligible_exp fexp) := by
   classical
   unfold negligible_exp
-  by_cases h : ∃ n : Int, n ≤ fexp n
-  · -- pick the classical witness when it exists
-    -- Reduce the goal to the `some` branch and use the witness
-    simpa [negligible_exp, h] using
-      negligible_exp_prop.negligible_Some (fexp := fexp)
-        (Classical.choose h) (Classical.choose_spec h)
-  · -- otherwise, no such witness exists; derive ∀ n, fexp n < n
-    have hforall : ∀ n : Int, fexp n < n := by
-      -- From ¬∃ n, n ≤ fexp n, get ∀ n, ¬ n ≤ fexp n, then strict < by linear order
-      have h' : ∀ n : Int, ¬ n ≤ fexp n := by
-        simpa [not_exists] using h
-      intro n
-      -- ¬ (n ≤ fexp n) implies fexp n < n in a linear order on `Int`
-      exact lt_of_not_ge (h' n)
-    -- Reduce the goal to the `none` branch
-    simpa [negligible_exp, h] using
-      negligible_exp_prop.negligible_None (fexp := fexp) hforall
+  cases FloatSpec.Core.Raux.LPO_Z (fun n => n ≤ fexp n) (fun _ => Classical.em _) with
+  | inl witness => exact .negligible_Some witness.val witness.property
+  | inr noWitness => exact .negligible_None (fun n => lt_of_not_ge (noWitness n))
 
 /-- Coq (Ulp.v): {name}`negligible_exp_spec'`. -/
 lemma negligible_exp_spec' :
@@ -194,6 +179,7 @@ lemma fexp_negligible_exp_eq (beta : Int) [ValidRadix beta] (fexp : Int → Int)
   simpa [h1] using h2
 
 /-- Positive predecessor used by {lit}`pred`/{lit}`succ` (mirrors Coq {coq}`pred_pos`). -/
+@[flocq_source "src/Core/Ulp.v" 391 "pred_pos"]
 noncomputable def pred_pos (x : ℝ) : ℝ :=
   if x = (beta : ℝ) ^ ((FloatSpec.Core.Raux.mag beta x) - 1) then
     x - (beta : ℝ) ^ (fexp ((FloatSpec.Core.Raux.mag beta x) - 1))
@@ -202,6 +188,7 @@ noncomputable def pred_pos (x : ℝ) : ℝ :=
     x - u
 
 /-- Successor at one ULP (mirrors Coq {coq}`succ`). -/
+@[flocq_source "src/Core/Ulp.v" 397 "succ"]
 noncomputable def succ (x : ℝ) : ℝ :=
   if 0 ≤ x then
     let u := ulp beta fexp x; x + u
@@ -209,10 +196,11 @@ noncomputable def succ (x : ℝ) : ℝ :=
     let px := pred_pos beta fexp (-x); -px
 
 /-- Predecessor defined from {name}`succ` (mirrors Coq {coq}`pred`). -/
+@[flocq_source "src/Core/Ulp.v" 403 "pred"]
 noncomputable def pred (x : ℝ) : ℝ :=
   let s := succ beta fexp (-x); -s
 
-/-- Defeq simproc: unfold {name}`pred` to its {name}`Id`/{name}`pure` form. -/
+/-- Defeq simproc: unfold the pure predecessor definition. -/
 dsimproc [simp] reducePred (FloatSpec.Core.Ulp.pred _ _ _) := fun e => do
   unless e.isAppOfArity ``FloatSpec.Core.Ulp.pred 3 do
     return .continue

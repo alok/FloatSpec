@@ -981,6 +981,24 @@ former property-only result shapes in Lean and an optional proof-erased result
 in Rocq. Arbitrary-predicate LPO is genuinely noncomputable here: a successful
 kernel/type check is not native execution of a predicate decision procedure.
 
+### ULP witness construction and its validity premise
+
+The permanent `UlpSourceChoice.lean` / `.v` pair checks exact bodies for
+the negligible-exponent projection, ULP and its neighbor functions. Lean
+additionally proves preservation of every previous ULP value under valid
+radix/exponent assumptions. Both assistants prove that identity exponents
+are invalid and that two admissible witnesses can give different powers.
+
+```sh
+lake env lean FloatSpec/Test/UlpSourceChoice.lean
+FLOCQ_AUDIT_DIR=/path/to/pinned-flocq uv run scripts/test_ulp_choice_contracts.py -v
+```
+
+Three live controls first compile the unchanged fixtures, then reject
+zero-spacing body drift in both assistants and the removed validity premise
+in Lean. These are kernel-checked mathematical contracts, not native
+execution of the real-valued ULP function or arbitrary-predicate choice.
+
 ## 11. What this still does not establish
 
 The expanded combined runner completed at commit `ba3e2a8b`, seed `961703`,
