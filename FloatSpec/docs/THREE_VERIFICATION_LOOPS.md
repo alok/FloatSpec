@@ -39,10 +39,14 @@ the addend, and swap NaN priority in addition. Pairwise agreement remains, but
 the independent oracle rejects both and prevents bootstrapping wrong expectations.
 
 The standalone paired `scripts/fixtures/ExponentValidityBoundary.lean` / `.v`
-provides six checked declarations explaining a genuine source premise:
+provides eleven checked declarations explaining genuine source premises:
 `Valid_exp` alone permits decreasing ULP. The alternate-binade format is valid,
 contains every power of two, and has `ulp(1/2)=1/2 > 1/4=ulp(1)`.
-All six Lean axiom lists exclude `sorryAx`; Rocq prints its classical-real
+It also represents `7/4` and `1`, but not their truncation remainder `3/4`,
+so exponent monotonicity cannot be dropped from the remainder theorem either.
+The ULP conclusion directly negates the overly broad monotonicity claim;
+its trivial numerical side conditions are inside the proof.
+All eleven Lean axiom lists exclude `sorryAx`; Rocq prints its classical-real
 assumptions. This is proof-level testing of real definitions, not a native
 real-arithmetic execution claim. The next aggregate runs this paired fixture,
 along with the 27-client `CorePremiseBoundary` fixture; the preceding frozen

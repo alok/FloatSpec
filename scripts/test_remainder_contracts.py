@@ -26,7 +26,7 @@ class LeanControls(unittest.TestCase):
             path.write_text(source)
             core.run(["lake", "env", "lean", str(path)])
             path.write_text(wrong)
-            with self.assertRaisesRegex(RuntimeError, "Type mismatch|Tactic .decide. proved"):
+            with self.assertRaisesRegex(RuntimeError, "Type mismatch|Tactic .decide. proved|failed to synthesize"):
                 core.run(["lake", "env", "lean", str(path)])
 
     def test_contract_requires_small_quotient_premise(self):
@@ -36,6 +36,9 @@ class LeanControls(unittest.TestCase):
     def test_grid_cannot_ignore_source_premise(self):
         self.reject("RemainderGrid", "!sourcePremise x y q || roundedUnits remainder",
                     "roundedUnits remainder")
+
+    def test_contract_requires_monotone_exponents(self):
+        self.reject("RemainderContracts", " [Generic_fmt.Monotone_exp fexp]", "")
 
     def test_identity_rounder_cannot_fool_counterexample(self):
         self.reject("RemainderGrid", "if value = 0 then some 0", "if True then some value")
@@ -63,6 +66,11 @@ class RocqControls(unittest.TestCase):
     def test_grid_cannot_ignore_source_premise(self):
         self.reject("RemainderGrid", "orb (negb (sourcePremise x y q)) (same (roundedUnits remainder) remainder)",
                     "same (roundedUnits remainder) remainder")
+
+    def test_contract_requires_monotone_exponents(self):
+        self.reject("RemainderContracts",
+                    "Valid_exp fexp -> Monotone_exp fexp ->\n    forall x y : R,",
+                    "Valid_exp fexp ->\n    forall x y : R,")
 
     def test_identity_rounder_cannot_fool_counterexample(self):
         self.reject("RemainderGrid", "if Z.eqb value 0 then Some 0", "if true then Some value")

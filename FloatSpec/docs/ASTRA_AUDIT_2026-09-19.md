@@ -3787,6 +3787,39 @@ The generated status report is refreshed to 102 Lean files and now explains
 that its textual placeholder heuristics are not a semantic source audit.
 No existing `noncomputable` marker was changed in this slice.
 
+### September 20, 22:00 UTC — why monotone exponents matter for remainders
+
+The paired `ExponentValidityBoundary` fixture now checks eleven declarations.
+Its valid but nonmonotone exponent function admits `7/4` and `1`, but excludes
+`3/4`. Both assistants prove that truncation remainder preservation therefore
+fails without exponent monotonicity. This is a genuine source premise, distinct
+from the small-quotient premise tested in the preceding slice. All eleven Lean
+axiom lists contain only standard axioms; no admitted proof was introduced.
+Complete fixture LSP diagnostics and direct Lean/Rocq compilation pass.
+
+The ULP theorem also addresses the user's diff comment: its conclusion now
+directly negates monotonicity on nonnegative inputs. The facts `0 ≤ 1/2 ≤ 1`
+are used internally to instantiate the overbroad claim, not conjoined with the
+interesting result. The matching Rocq statement has the same shape.
+
+The expanded remainder contract suite passes all **eight live controls** in
+**117.019 seconds**, including rejection of deleting `Monotone_exp` in either
+assistant. The full macOS Lean 4.34 build again passes **6,226 jobs**. This
+slice changes standalone fixtures, tests and explanations only; the production
+source fingerprint remains `3c5a913d` and the existing bridge receipt remains
+bound to that snapshot. Logs: `/private/tmp/floatspec-exponent-remainder-lean-20260920.log`,
+`floatspec-exponent-remainder-rocq-final-20260920.log`,
+`floatspec-remainder-monotone-controls-20260920.log`, and
+`floatspec-final-2214-full-build-20260920.log`.
+
+Two initial Rocq invocations failed before checking the fixture: the first
+used a different output basename, and the second resolved Rocq 9.1 on PATH
+against the pinned checkout's 9.2 artifacts. Explicit `/opt/homebrew/bin/coqc`
+with a matching basename succeeds. These rejected invocations are not passes.
+The latest hosted main run, **35539977225** at `4f8e439f`, again fails at the
+Mathlib cache step (final Lean 4.34 versus pinned Mathlib rc2), before project
+source compilation. CI policy remains unmodified pending approval.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In

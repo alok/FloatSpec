@@ -62,11 +62,62 @@ theorem zigzag_ulp_one : ulp 2 zigzag (1 : Real) = (1 / 4 : Real) := by
 
 /-- Removing the monotone-exponent hypothesis would make the ULP law false. -/
 theorem valid_format_can_have_decreasing_ulp :
-    (0 : Real) ≤ 1 / 2 ∧ (1 / 2 : Real) ≤ 1 ∧
-    ulp 2 zigzag (1 : Real) < ulp 2 zigzag (1 / 2 : Real) := by
-  rw [zigzag_ulp_one, zigzag_ulp_half]
-  norm_num
+    ¬ ∀ x y : Real, 0 ≤ x → x ≤ y → ulp 2 zigzag x ≤ ulp 2 zigzag y := by
+  intro claimed
+  have contradiction := claimed (1 / 2) 1 (by norm_num) (by norm_num)
+  rw [zigzag_ulp_one, zigzag_ulp_half] at contradiction
+  norm_num at contradiction
 
 #print axioms valid_format_can_have_decreasing_ulp
+
+/-- Seven quarters lies in the binade with finer spacing. -/
+theorem zigzag_magnitude_seven_quarters :
+    FloatSpec.Core.Raux.mag 2 (7 / 4 : Real) = 1 := by
+  simpa [wp, PostCond.noThrow, pure] using
+    (FloatSpec.Core.Raux.mag_unique 2 (7 / 4) 1
+      (by decide) (by norm_num) (by norm_num)) trivial
+
+#print axioms zigzag_magnitude_seven_quarters
+
+/-- Three quarters falls back into the binade with coarser spacing. -/
+theorem zigzag_magnitude_three_quarters :
+    FloatSpec.Core.Raux.mag 2 (3 / 4 : Real) = 0 := by
+  simpa [wp, PostCond.noThrow, pure] using
+    (FloatSpec.Core.Raux.mag_unique 2 (3 / 4) 0
+      (by decide) (by norm_num) (by norm_num)) trivial
+
+#print axioms zigzag_magnitude_three_quarters
+
+/-- Fine spacing above one admits seven quarters. -/
+theorem zigzag_seven_quarters_representable :
+    generic_format 2 zigzag (7 / 4 : Real) := by
+  norm_num [generic_format, scaled_mantissa, cexp, zigzag,
+    zigzag_magnitude_seven_quarters, FloatSpec.Core.Raux.Ztrunc,
+    FloatSpec.Core.Raux.Zfloor, FloatSpec.Core.Raux.Zceil]
+
+#print axioms zigzag_seven_quarters_representable
+
+/-- Coarse spacing below one excludes three quarters. -/
+theorem zigzag_three_quarters_not_representable :
+    ¬ generic_format 2 zigzag (3 / 4 : Real) := by
+  norm_num [generic_format, scaled_mantissa, cexp, zigzag,
+    zigzag_magnitude_three_quarters, FloatSpec.Core.Raux.Ztrunc,
+    FloatSpec.Core.Raux.Zfloor, FloatSpec.Core.Raux.Zceil]
+
+#print axioms zigzag_three_quarters_not_representable
+
+/-- Validity alone does not make even truncation remainders representable. -/
+theorem truncation_remainder_needs_monotone_exponents :
+    ¬ ∀ x y : Real, generic_format 2 zigzag x → generic_format 2 zigzag y →
+      generic_format 2 zigzag (x - (FloatSpec.Core.Raux.Ztrunc (x / y) : Real) * y) := by
+  intro claimed
+  have hone : generic_format 2 zigzag (1 : Real) := by
+    simpa using zigzag_contains_powers 0
+  have remainder := claimed (7 / 4) 1 zigzag_seven_quarters_representable hone
+  norm_num [FloatSpec.Core.Raux.Ztrunc, FloatSpec.Core.Raux.Zfloor,
+    FloatSpec.Core.Raux.Zceil] at remainder
+  exact zigzag_three_quarters_not_representable remainder
+
+#print axioms truncation_remainder_needs_monotone_exponents
 
 end FloatSpec.Test.ExponentValidityBoundary

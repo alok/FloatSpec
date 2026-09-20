@@ -22,6 +22,13 @@ the nonrepresentable remainder `-7`. Truncation and either nearest tie policy
 satisfy the premise; their source specializations need no nonzero-divisor
 assumption. Exponent validity and monotonicity remain explicit.
 
+The paired `ExponentValidityBoundary` fixture now proves monotonicity is
+necessary even for truncation: in its valid alternating-precision format,
+`7/4` and `1` are representable but their truncation remainder `3/4` is not.
+Thus validity cannot replace monotonicity here. The ULP witness now states the
+negation of nonnegative-input monotonicity directly; the simple ordering
+conditions are discharged inside the proof, not appended to its conclusion.
+
 An exhaustive three-bit bounded-format grid checks 12,100 inputs in kernel
 Lean, compiled Lean and pinned Rocq. Of these, 11,582 meet the pointwise
 small-quotient condition; 518 do not, with 380 actually inexact remainders.

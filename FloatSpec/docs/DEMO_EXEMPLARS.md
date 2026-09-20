@@ -59,6 +59,14 @@ are discharged inside the proof rather than put in the conclusion as clutter.
 lesson into a complete small finite test. These are additional standalone
 examples, not an eighth section silently added to the seven-part demo command.
 
+There is a second, independent premise: spacing must not get coarser as numbers
+get smaller. The alternating-precision format in
+[ExponentValidityBoundary.lean](../../scripts/fixtures/ExponentValidityBoundary.lean)
+is valid but represents quarter steps above one and only half steps just below
+one. Truncating the quotient `1.75 / 1` leaves remainder `0.75`, which it cannot
+represent. Both assistants prove this too. This explains why merely changing
+the integer rounding mode cannot remove the exponent-monotonicity assumption.
+
 ## 4. Separate bits, comparison, and real value
 
 Positive and negative zero have different words but compare equal. NaN is
