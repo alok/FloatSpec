@@ -6,6 +6,10 @@ version is: **describe the right values, compute the right answers, prove the
 right statements, and check that “right” still means what Flocq means.**
 Those are separate jobs. A program can compile while its specification is wrong.
 
+For a five-part runnable introduction, start with
+[the guided demo and exemplar reading list](DEMO_EXEMPLARS.md):
+`lake env lean --run scripts/fixtures/GuidedDemo.lean`.
+
 This guide follows those jobs in order. The detailed
 [original audit](FLOCQ_CONFORMANCE_AUDIT_2026-09-18.md) and
 [independent continuation audit](ASTRA_AUDIT_2026-09-19.md) retain the
@@ -317,7 +321,7 @@ changed surfaces have been checked.
 Source links make that review navigable. `@[flocq_source]` records a pinned
 Coq path, line, and name; `@[flocq_local]` explains a Lean-only helper.
 Eleven modules currently enforce strict public-definition classification.
-The compiler-backed validator checks all 142 registered anchors, including
+The compiler-backed validator checks all 143 registered anchors, including
 combined attributes and later attribute commands. These links are metadata,
 not a proof that bodies or theorem signatures correspond.
 

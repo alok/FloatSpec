@@ -1,0 +1,96 @@
+# A runnable introduction, and examples worth learning from
+
+Start here, then read [the linear guide](READING_GUIDE.md). From the repository root:
+
+```sh
+lake build
+lake env lean --run scripts/fixtures/GuidedDemo.lean
+```
+
+The [demo source](../../scripts/fixtures/GuidedDemo.lean) is short enough to read
+in execution order. It uses the port's actual integer algorithms, not decimal
+approximations as an oracle. Every section has both a `decide +kernel` assertion
+and a compiled runtime check that throws on disagreement.
+
+## 1. Compute something unsurprising
+
+Binary32 addition gives `1.5 + 2.25 = 3.75`, with result word `0x40700000`.
+Start with `b32_plus` in [Bits](../src/IEEE754/Bits.lean): it delegates to the
+generic IEEE operation in [Binary](../src/IEEE754/Binary.lean). Its finite path
+aligns integer mantissas, computes, and rounds. The theorem beside an operation
+states its interpretation; executing a particular input is a different check.
+
+## 2. Watch the policy change the answer
+
+With three significant bits, `1.125` is halfway between `1` and `1.25`.
+The demo prints all five modes for both signs. A row `[s,m,e]` means
+`(-1)^s * m * 2^e`, so `[0,4,-2]` is exactly one.
+This leads into `binary_round`, integer truncation, and the location of a
+discarded part relative to a midpoint. Direction and tie-breaking are separate
+choices, particularly for negative inputs.
+
+## 3. See why a theorem needs hypotheses
+
+Round `73/64` directly to three bits: the answer is `1.25`. First round it to
+four bits, then three: the answer is `1`. The intermediate result lands on a
+midpoint. This is a counterexample to *unconditional* equality of the two
+procedures, not to Flocq's conditional double-rounding theorems.
+Read the paired [Lean](../../scripts/fixtures/DoubleRoundingWitness.lean) and
+[Rocq](../../scripts/fixtures/DoubleRoundingWitness.v) witnesses before the
+larger `Prop/Double_rounding` development.
+
+## 4. Separate bits, comparison, and real value
+
+Positive and negative zero have different words but compare equal. NaN is
+unordered, represented by `none : Option Ordering`. The successor of the
+negative smallest subnormal is negative zero. These are examples where
+real-valued equality alone cannot describe the whole interface.
+
+## 5. Reproduce an actual audit lesson
+
+The raw pairs `(1,0)` and `(4,-2)` both denote one. Only the latter is canonical
+for this three-bit format. The demo checks `valid_binary_SF` returns
+`[false,true]`. A former compatibility implementation returned true for every
+input; accepting a noncanonical carrier was a semantic bug, not missing proof
+automation. The exact regression is useful when explaining why a green build
+cannot certify a port.
+
+## Exemplars inspected
+
+These are reading recommendations, not dependencies adopted by FloatSpec.
+
+| Exemplar | Best use | What was actually checked |
+|---|---|---|
+| [Flocq in a Nutshell](https://flocq.gitlabpages.inria.fr/theos.html) | The conceptual route from formats and rounding to exactness, error bounds, and algorithms | Official guide read; it is a conceptual map, not this port's completion report |
+| [Pinned `Compute.v`](https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/examples/Compute.v) | Follow addition from mantissa computation through truncation and rounding to its real interpretation | Compiled against the pinned source with Rocq 9.2; deprecation warnings only |
+| [Pinned `Average.v`](https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/examples/Average.v) | A second-stage algorithm case study: several averaging algorithms and their guarantees | Compiled against the pinned source with Rocq 9.2; a substantial file, not a first five-minute demo |
+| [FloatLib's first chapter](https://github.com/lean-dojo/FloatLib/blob/main/site/content/chapters/01-using-the-library.md) | Presentation pattern: one runnable operation, its exact stored result, and the corresponding proof/interface route | Chapter and README inspected; repository not built or independently audited here |
+| [Lean's float reference](https://lean-lang.org/doc/reference/latest/Basic-Types/Floating-Point-Numbers/) | Understand the logical model versus native execution and the need for refinement links | Official reference inspected; native execution is not itself a proof of refinement |
+
+The current unpinned FloatLib and Lean documentation links may evolve. The two
+Flocq example links deliberately use this audit's exact source commit.
+Flocq's `Triangle.v` is another attractive later numerical-analysis demo, but
+it uses the Interval tactic; it was inspected, not compiled in this session.
+
+To reproduce the two reference builds in a clean, already-built pinned Flocq
+checkout (not the user's modified `Deps/flocq`), run:
+
+```sh
+mkdir -p /tmp/floatspec-exemplars
+coqc -R src Flocq -o /tmp/floatspec-exemplars/Compute.vo examples/Compute.v
+coqc -R src Flocq -o /tmp/floatspec-exemplars/Average.vo examples/Average.v
+```
+
+Use the same Rocq version that built that checkout. This Mac used
+`/opt/homebrew/bin/coqc` (9.2), not the different project-local compiler.
+
+## After the demo
+
+Read [the linear guide](READING_GUIDE.md), then
+[the three verification loops](THREE_VERIFICATION_LOOPS.md), then
+[the review ledger](ASTRA_AUDIT_2026-09-19.md). The demo demonstrates five
+behaviors; the seeded bridge checks larger finite corpora; closed Lean proofs
+establish their stated propositions. None is interchangeable with a universal
+proof that the entire port matches pinned Flocq. Four explicitly recorded
+native/decoder proof obligations remain, and the source-signature audit is
+not complete.

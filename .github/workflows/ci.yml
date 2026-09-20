@@ -29,6 +29,7 @@ jobs:
           for fixture in DoubleRoundingWitness SingleNaNValidity RelativeErrorGrid ExactArithmeticLaws RoundingOracle IntegerRounding; do
             lake env lean "scripts/fixtures/$fixture.lean"
           done
+          lake env lean --run scripts/fixtures/GuidedDemo.lean
 
       - name: Build executable
         run: lake build floatspec
