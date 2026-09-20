@@ -1665,6 +1665,55 @@ format-calculation cases. Receipt:
 The guide now explains these brackets and premise distinctions linearly.
 Neither this finite evidence nor the source anchors certify all of Calc.
 
+### September 20 continuation: distinguish FTZ inclusion directions
+
+Compiled source inspection confirms that `FLXN_format_FTZ` (FTZ.v:71) and
+`generic_format_FTZ` (line 80) take no positive-precision premise. Both Lean
+exports inherited `Fact (0 < prec)`. The normalized projection now drops that
+section instance; the existing private generic-inclusion proof omits it too.
+The generic public theorem calls the unrestricted forward helper directly,
+rather than projecting it from the equivalence that also contains the
+restricted reverse direction. Mathematical proof bodies and executable
+definitions are unchanged. Reverse inclusion, FTZ-from-normalized membership,
+and the `satisfies_any` source contracts retain their precision premises.
+
+Paired compiled types are retained in `/private/tmp/FTZCompiledContracts-lean.out`
+and `-rocq.out`. Two exact Lean clients fail before and pass after the repair:
+`/private/tmp/FTZPremiseGuards-before.out` and `-after.out`; the matching Rocq
+clients compile. Persistent tests now include both clients and universal zero
+membership at arbitrary integer precision. The premise checker additionally
+tests the `Fact` encoding, including a deliberately leaking declaration.
+There are **75** production premise guards, five deliberate negative controls,
+and one selective-parameter positive control. The first target build failed
+because `omit` followed a docstring; moving the theorem into a section without
+the instance resolves that syntax issue. Initial paired fixture attempts
+also lacked the explicit FTZ imports. These failures are retained in the
+`floatspec-ftz-inclusion-target-20260920.log` and `-rocq-20260920.log` receipts.
+
+After correction, complete LSP error diagnostics are clean for FTZ,
+FTZSourceShape, and SourcePremiseContracts. The latter two files also execute
+as standalone Lean clients, exit 0. The Rocq client passes, exit 0:
+`/private/tmp/floatspec-ftz-inclusion-rocq-v2-20260920.log`.
+The explicit full macOS Lean 4.34 build passes **6,216 jobs**, exit 0:
+`/private/tmp/floatspec-ftz-inclusion-final-build-20260920.log`.
+Fresh metadata validates **206** anchors; the compiled trust audit still
+observes **13,588 declarations / 58 modules / four unchanged debts**, with
+no additional trust hazards. Its report is
+`/private/tmp/floatspec-ftz-inclusion-trust-20260920.json`.
+
+Frozen source SHA-256
+`a0f5d5b372d23304bb11b227e62ac1a18dd4c994fd51f9aa6a25f32dcd8c550d`
+passes **1,724 compared/compiled cases and 1,724 generated kernel equalities**
+in **70.556 seconds**, seed `839681`: 374 exponent-function cases and 1,350
+format-calculation cases, including nonpositive precision. Receipt:
+`/private/tmp/floatspec-ftz-inclusion-grid-20260920/report.json`.
+The build/metadata/trust steps completed before this serial bridge; no source
+edits or builds overlapped it. Runtime agreement is a regression check for
+this type-only change, not a proof of the real-valued inclusion theorem.
+The FTZ docstrings and linear guide now distinguish the witness predicate,
+its generic characterization, the actual small-magnitude exponent
+`emin + prec - 1`, and the separate integer-rounding policy.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In

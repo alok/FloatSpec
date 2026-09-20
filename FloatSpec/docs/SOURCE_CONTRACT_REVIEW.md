@@ -6,6 +6,31 @@ all declarations in the named modules. See the
 [running audit](ASTRA_AUDIT_2026-09-19.md) for execution receipts and the
 [reading guide](READING_GUIDE.md) for the mathematical story.
 
+## FTZ inclusion: preserve each direction's actual premises
+
+Compiled pinned Rocq `FLXN_format_FTZ` (FTZ.v:71) and `generic_format_FTZ`
+(line 80) have no positive-precision premise. Both Lean exports inherited
+`Fact (0 < prec)` from their sections. The normalized inclusion is merely a
+projection of the FTZ witness, and the existing generic inclusion proof also
+works without that fact. The two exports and the private forward helper now
+omit it, preserving the mathematical proof bodies. The generic export calls
+the existing forward helper directly instead of obtaining it through an
+equivalence that also includes the more restricted reverse direction.
+
+The source's reverse inclusion, FTZ-from-normalized inclusion, and
+`satisfies_any` theorem retain positive precision; no blanket removal is made.
+Paired typed clients fail in Lean before and pass after the repair, while the
+Rocq clients compile. Paired universal zero examples work at every integer
+precision. The regression guard now also recognizes `Fact (0 < prec)`, with
+a deliberate leaking declaration demonstrating rejection. Two new source
+guards bring the total to 75. This is a source-type repair, not an arithmetic
+algorithm change or a claim about hardware formats with nonpositive precision.
+
+The FTZ docstrings also now distinguish the actual witness predicate from its
+generic-format characterization. The small-magnitude exponent branch is
+`emin + prec - 1`, not simply `emin`; an integer rounding policy is a separate
+argument. The implementation already used the correct expression.
+
 ## Square root: bracket correctness does not require a valid format
 
 Compiled pinned `Calc/Sqrt.v:179` permits any exponent function in

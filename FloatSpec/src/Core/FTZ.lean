@@ -37,8 +37,10 @@ variable (prec emin : Int) [Fact (0 < prec)]
 
 /-- Flush-to-zero exponent function
 
-    Implements the FTZ policy: use the precision-based exponent `e - prec`
-    when it is at least `emin`; otherwise flush to the floor `emin` (no subnormals).
+    Use the precision-based exponent `e - prec` when it is at least `emin`;
+    otherwise use the fixed exponent `emin + prec - 1`. This describes the
+    abrupt-underflow format without subnormals. The integer rounder separately
+    determines how an unrepresentable input is rounded.
 -/
 -- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Core/FTZ.v#L43
 @[flocq_source "src/Core/FTZ.v" 43 "FTZ_exp"]
@@ -72,9 +74,10 @@ theorem FTZ_exp_spec (e : Int) :
 
 /-- Flush-to-zero format predicate
 
-    A real number x is in FTZ format if it can be represented
-    using the generic format with the FTZ exponent function.
-    This provides a floating-point format without subnormal numbers.
+    A real number has a witnessing float with exponent at least `emin`.
+    For nonzero values, its mantissa is normalized between the two precision
+    bounds. The source states this representation predicate directly;
+    equivalence with the generic-format characterization is a separate theorem.
 -/
 -- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Core/FTZ.v#L36
 @[flocq_source "src/Core/FTZ.v" 36 "FTZ_format"]
@@ -217,6 +220,7 @@ the normalized mantissa bound forces `prec ≤ mag beta (Fnum f)`, so
 `mag beta x`; there `FTZ_exp` and `FLX_exp` agree, and `generic_inclusion_mag`
 transfers membership.
 -/
+omit [Fact (0 < prec)] in
 private theorem FTZ_generic_format_run (beta : Int) [ValidRadix beta] (x : ℝ)
     (hx : FTZ_format prec emin beta x) :
     FloatSpec.Core.Generic_fmt.generic_format beta (FTZ_exp prec emin) x := by
@@ -494,7 +498,7 @@ end FloatSpec.Core.FTZ
 
 namespace FloatSpec.Core.FTZ
 
-variable (prec emin : Int) [Fact (0 < prec)]
+variable (prec emin : Int)
 
 /-- Coq ({lit}`FTZ.v`):
 Theorem {lit}`FLXN_format_FTZ`:
@@ -503,6 +507,7 @@ Theorem {lit}`FLXN_format_FTZ`:
 Lean (spec): Any FTZ-format number is in {lean}`FloatSpec.Core.FLX.FLXN_format` for the same
 base and precision.
 -/
+@[flocq_source "src/Core/FTZ.v" 71 "FLXN_format_FTZ"]
 theorem FLXN_format_FTZ (beta : Int) [ValidRadix beta] (x : ℝ) :
     FTZ_format prec emin beta x → FloatSpec.Core.FLX.FLXN_format prec beta x := by
   rintro ⟨f, hval, hbound, _⟩
@@ -866,10 +871,12 @@ Coq (FTZ.v):
 Theorem generic_format_FTZ :
   forall x, FTZ_format x -> generic_format beta FTZ_exp x.
 -/
+omit [Fact (0 < prec)] in
+@[flocq_source "src/Core/FTZ.v" 80 "generic_format_FTZ"]
 theorem generic_format_FTZ (beta : Int) [ValidRadix beta] (x : ℝ) :
     FTZ_format prec emin beta x →
       FloatSpec.Core.Generic_fmt.generic_format beta (FTZ_exp prec emin) x := by
-  exact (FTZ_format_iff_generic (prec := prec) (emin := emin) beta x).mp
+  exact FTZ_generic_format_run (prec := prec) (emin := emin) beta x
 
 /-
 Coq (FTZ.v):

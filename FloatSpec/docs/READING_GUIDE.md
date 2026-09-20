@@ -15,7 +15,7 @@ This guide follows those jobs in order. The detailed
 [independent continuation audit](ASTRA_AUDIT_2026-09-19.md) retain the
 declaration-by-declaration findings and historical milestones.
 
-## Wake-up summary — September 20, 2026, 10:13 UTC
+## Wake-up summary — September 20, 2026, 10:24 UTC
 
 **Where to start:** run the six-part demo above, then read sections 1–6 below.
 The [exemplar guide](DEMO_EXEMPLARS.md) adds small examples explaining why a
@@ -23,7 +23,16 @@ theorem needs its hypotheses. This summary records the current milestone;
 the [audit ledger](ASTRA_AUDIT_2026-09-19.md) keeps the detailed history,
 including failed runs and the exact source hashes tested.
 
-**Newest checked change:** square root's bracket theorem no longer requires
+**Newest checked change:** two FTZ inclusion theorems now have the same
+unrestricted precision parameter as Flocq. Their former extra
+`Fact (0 < prec)` premise was unnecessary. The existing forward proofs remain
+closed, while the source's stronger assumptions on the reverse direction are
+preserved. Paired Lean/Rocq clients and universal zero examples pass; the
+premise checker now explicitly tests this legacy `Fact` form. A fresh run
+passes **1,724 differential cases and 1,724 kernel equalities**, seed `839681`.
+The executable definitions are unchanged.
+
+**The preceding Calc milestone:** square root's bracket theorem no longer requires
 an extra valid-format premise absent from Flocq. Its existing proof still
 closes. The important exponent restriction on the *core* routine remains:
 the new independent tests demonstrate that dropping it gives a false bracket.
@@ -53,13 +62,13 @@ failures of ordinary valid binary32/binary64 arithmetic.
 
 | Slice | Observed result |
 |---|---|
-| Full library, test library, and executable | Lean 4.34.0 on macOS arm64: 6,216 build jobs pass after the square-root change |
+| Full library, test library, and executable | Lean 4.34.0 on macOS arm64: 6,216 build jobs pass after the FTZ inclusion change |
 | SingleNaN helper exports | 1,900 differential cases and kernel equalities; every exported helper observed separately |
 | `frexp`'s wider parameter domain | 4,169 differential cases and kernel equalities, including 3,455 with `prec ≥ emax` |
 | Independent decomposition laws | Lean and Rocq each check 6,772 encodings: 2,086 valid finite cases and 4,686 rejected raw encodings |
 | Independent Calc brackets | Lean and Rocq each check 8,640 division and 2,496 square-root cases, including exact midpoint locations |
 | Test-harness checks | Latest full core-harness run: 52 tests pass, including deliberate output mutations and a resource-limit regression |
-| Compiled trust/source metadata | 13,588 source declarations in 58 modules; four unchanged named proof debts; 204 checked source anchors |
+| Compiled trust/source metadata | 13,588 source declarations in 58 modules; four unchanged named proof debts; 206 checked source anchors |
 
 These are separate, snapshot-bound receipts, **not** a claim that every row
 was rerun after every subsequent type-only change. Earlier broad runs cover
@@ -78,7 +87,7 @@ explain the finite-input condition on alternate ulp and the positive-input
 condition on the specialized predecessor.
 
 **What remains:** whole-library source-signature review is incomplete, and
-the four native/decoder proof obligations remain. The 73 premise guards and
+the four native/decoder proof obligations remain. The 75 premise guards and
 paired typed clients catch selected interface regressions, not every possible
 deviation. Fork CI has a separate known dependency-cache/toolchain mismatch;
 a local macOS pass is not a green-CI claim. Compilation, finite agreement,
@@ -251,6 +260,16 @@ scaling can zero the radicand: the paired bracket fixtures show a raw call on
 nine returning zero when asked for too coarse an exponent. The high-level
 routine avoids this by capping the chosen exponent. A checked bracket is not
 yet a theorem that a rounding format is valid or that a result belongs to it.
+
+The FTZ layer makes a related distinction. Its source predicate gives an
+explicit representation witness, with a minimum exponent and normalized
+mantissa bounds for nonzero values. Membership implies membership in the
+normalized and generic formats at any integer precision; the source's reverse
+characterization includes positive precision. The Lean forward theorems used
+to inherit that stronger restriction unnecessarily. They now match the source,
+and paired proofs show that zero has a witness at every precision. A theorem
+and its converse must be audited separately, even when they are packaged as
+one convenient equivalence inside the implementation.
 
 Read the **elaborated type**, including implicit assumptions. Coq can erase
 an unused section parameter from an exported theorem, while Lean may retain

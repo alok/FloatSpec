@@ -3,10 +3,32 @@ Require Import Flocq.Core.Core Flocq.Prop.Plus_error Flocq.Prop.Mult_error
   Flocq.Prop.Div_sqrt_error Flocq.IEEE754.Binary Flocq.IEEE754.BinarySingleNaN.
 Require Import Flocq.Pff.Pff2Flocq.
 Require Import Flocq.Calc.Bracket Flocq.Calc.Div Flocq.Calc.Sqrt.
+Require Import Flocq.Core.FTZ.
 Open Scope R_scope.
 
 Section Contracts.
 Variable beta : radix.
+
+Definition ftz_normalized_contract (emin prec : Z) (x : R)
+    (Hx : FTZ.FTZ_format beta emin prec x) : FLX.FLXN_format beta prec x :=
+  @FTZ.FLXN_format_FTZ beta emin prec x Hx.
+
+Definition ftz_generic_contract (emin prec : Z) (x : R)
+    (Hx : FTZ.FTZ_format beta emin prec x) :
+    generic_format beta (FTZ.FTZ_exp emin prec) x :=
+  @FTZ.generic_format_FTZ beta emin prec x Hx.
+
+Definition ftz_zero_at_any_precision (emin prec : Z) : FTZ.FTZ_format beta emin prec 0.
+Proof.
+  exists (Float beta 0 emin).
+  - symmetry. apply F2R_0.
+  - intro H. exfalso. apply H. reflexivity.
+  - simpl. lia.
+Defined.
+
+Definition ftz_generic_zero_at_any_precision (emin prec : Z) :
+    generic_format beta (FTZ.FTZ_exp emin prec) 0 :=
+  @FTZ.generic_format_FTZ beta emin prec 0 (ftz_zero_at_any_precision emin prec).
 
 Definition division_magnitude_contract (m1 e1 m2 e2 : Z)
     (Hm1 : (0 < m1)%Z) (Hm2 : (0 < m2)%Z) :

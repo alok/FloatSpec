@@ -1,6 +1,7 @@
 import Lean
 import FloatSpec.src.Calc.Div
 import FloatSpec.src.Calc.Sqrt
+import FloatSpec.src.Core.FTZ
 import FloatSpec.src.Prop.Div_sqrt_error
 import FloatSpec.src.Prop.Round_odd
 import FloatSpec.src.IEEE754.BinarySingleNaNSourceFacade
@@ -37,6 +38,14 @@ theorem explicitLeak (fexp : Int → Int) (_h : FloatSpec.Core.Generic_fmt.Valid
 abbrev Alias (fexp : Int → Int) := FloatSpec.Core.Generic_fmt.Valid_exp fexp
 theorem aliasLeak (fexp : Int → Int) (_h : Alias fexp) : fexp 0 = fexp 0 := rfl
 theorem selective (fexp fexpe : Int → Int) [FloatSpec.Core.Generic_fmt.Valid_exp fexp] : fexpe 0 = fexpe 0 := rfl
+
+/-- Name the proposition used by legacy precision section instances. -/
+abbrev PositivePrecisionFact (prec : Int) : Prop := Fact (0 < prec)
+theorem factLeak (prec : Int) [Fact (0 < prec)] : prec = prec := rfl
+
+/-- error: unexpected premise PositivePrecisionFact on parameter prec of factLeak -/
+#guard_msgs in
+#guard_no_source_premise factLeak PositivePrecisionFact at prec
 
 /-- error: unexpected premise FloatSpec.Core.Generic_fmt.Valid_exp on parameter fexp of instanceLeak -/
 #guard_msgs in
@@ -142,6 +151,8 @@ end FloatSpec.Test.SourcePremiseGuard
 #guard_no_source_premise mult_error_FLT_ge_bpow Prec_gt_0 at prec
 #guard_no_source_premise mult_error_FLT_ge_bpow' Prec_gt_0 at prec
 #guard_no_source_premise FloatSpec.Calc.Sqrt.Fsqrt_correct FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.FTZ.FLXN_format_FTZ FloatSpec.Test.SourcePremiseGuard.PositivePrecisionFact at prec
+#guard_no_source_premise FloatSpec.Core.FTZ.generic_format_FTZ FloatSpec.Test.SourcePremiseGuard.PositivePrecisionFact at prec
 
 /-! Typed consumers deliberately omit proof-only section assumptions.
 Unlike a bare `#check`, each example fails if a public theorem accidentally
@@ -439,3 +450,17 @@ theorem sqrt_result_contract (beta : Int) [ValidRadix beta] (fexp : Int → Int)
   FloatSpec.Calc.Sqrt.Fsqrt_correct beta fexp x hx
 
 end SquareRootSourceContracts
+
+namespace FTZSourceContracts
+
+example (prec emin beta : Int) [ValidRadix beta] (x : ℝ)
+    (hx : FloatSpec.Core.FTZ.FTZ_format prec emin beta x) :
+    FloatSpec.Core.FLX.FLXN_format prec beta x :=
+  FloatSpec.Core.FTZ.FLXN_format_FTZ prec emin beta x hx
+
+example (prec emin beta : Int) [ValidRadix beta] (x : ℝ)
+    (hx : FloatSpec.Core.FTZ.FTZ_format prec emin beta x) :
+    FloatSpec.Core.Generic_fmt.generic_format beta (FloatSpec.Core.FTZ.FTZ_exp prec emin) x :=
+  FloatSpec.Core.FTZ.generic_format_FTZ prec emin beta x hx
+
+end FTZSourceContracts
