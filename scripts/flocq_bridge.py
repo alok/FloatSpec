@@ -33,9 +33,9 @@ COQ_LOC = ["loc_Exact", "loc_Inexact Lt", "loc_Inexact Eq", "loc_Inexact Gt"]
 OPS = ("power", "div_eucl", "location", "round", "truncate", "div", "plus", "sqrt",
        "formats", "digits", "operations", "format_calc", "overflow", "bits32", "bits64",
        "bit_fields", "order32", "order64", "validity", "nearby", "neighbors", "comparison", "small_ieee",
-       "ieee_round", "single_helpers", "single_frexp", "normalize", "prim_comparison")
-ARITIES = dict(zip(OPS, (2, 2, 3, 3, 5, 6, 6, 4, 3, 2, 5, 8, 4, 1, 1, 6, 2, 2, 5, 6, 6, 10, 15, 8, 9, 6, 6, 8), strict=True))
-WIDTHS = dict(zip(OPS, (1, 2, 3, 6, 3, 2, 2, 2, 4, 1, 13, 12, 21, 9, 9, 8, 14, 14, 15, 7, 17, 14, 87, 21, 46, 11, 12, 14), strict=True))
+       "ieee_round", "single_helpers", "single_frexp", "normalize", "prim_comparison", "prim_conversion")
+ARITIES = dict(zip(OPS, (2, 2, 3, 3, 5, 6, 6, 4, 3, 2, 5, 8, 4, 1, 1, 6, 2, 2, 5, 6, 6, 10, 15, 8, 9, 6, 6, 8, 4), strict=True))
+WIDTHS = dict(zip(OPS, (1, 2, 3, 6, 3, 2, 2, 2, 4, 1, 13, 12, 21, 9, 9, 8, 14, 14, 15, 7, 17, 14, 87, 21, 46, 11, 12, 14, 14), strict=True))
 RADIX_OPS = {"truncate", "div", "plus", "sqrt", "digits", "operations", "format_calc"}
 
 
@@ -78,6 +78,10 @@ class Case:
                 kind, sign, mantissa, _ = self.args[offset:offset+4]
                 if kind not in range(4) or sign not in (0, 1) or mantissa <= 0:
                     raise ValueError("comparison requires kind 0..3, sign 0/1, positive source mantissa")
+        if self.op == "prim_conversion":
+            kind, sign, mantissa, _ = self.args
+            if kind not in range(4) or sign not in (0, 1) or mantissa <= 0:
+                raise ValueError("prim_conversion requires kind 0..3, sign 0/1, positive source mantissa")
         if self.op == "small_ieee":
             prec, emax, mode = self.args[:3]
             if not 1 < prec < emax or mode not in range(5):
@@ -151,6 +155,49 @@ def small_ieee_raw(value, coq=False):
             f'{prefix}S754_nan',
             f'{prefix}S754_finite {s} ({mantissa})' + ('%positive' if coq else '') +
             f' ({exponent})')[kind]
+
+
+def prim_conversion_expressions(case: Case) -> tuple[str, str]:
+    """Observe total numeric conversion before a rejecting validity adapter.
+
+    SF2Prim wraps the mantissa through uint63, rounds it, then scales/rounds.
+    SF2B' instead rejects invalid encodings; they are not interchangeable.
+    """
+    lean = (f'let raw : StandardFloat := {small_ieee_raw(case.args)}; '
+            'let converted := FaithfulPrimFloat.SF2Prim raw; '
+            'let result := FaithfulPrimFloat.Prim2SF converted; '
+            '[boolean (validBinarySingleNaNStandardFloat (prec := 53) (emax := 1024) raw)]'
+            ' ++ standard result'
+            ' ++ standard (FaithfulPrimFloat.B2SF (FaithfulPrimFloat.Prim2B converted))'
+            ' ++ [boolean (validBinarySingleNaNStandardFloat (prec := 53) (emax := 1024) result)]'
+            " ++ standard (binarySingleNaNFloatToStandardFloat (BinarySingleNaN.SF2B' (prec := 53) (emax := 1024) raw))")
+    coq = (f'let raw := {small_ieee_raw(case.args, True)} in '
+           'let converted := FloatOps.SF2Prim raw in '
+           'let result := FloatOps.Prim2SF converted in '
+           '[boolean (SpecFloat.valid_binary 53 1024 raw)]'
+           ' ++ standard result'
+           ' ++ standard (@BinarySingleNaN.B2SF 53 1024 (Flocq.IEEE754.PrimFloat.Prim2B converted))'
+           ' ++ [boolean (SpecFloat.valid_binary 53 1024 result)]'
+           " ++ standard (@BinarySingleNaN.B2SF 53 1024 (@BinarySingleNaN.SF2B' 53 1024 raw))")
+    return lean, coq
+
+
+def prim_conversion_corpus(seed: int, samples: int) -> list[Case]:
+    rng = random.Random(seed)
+    raw = [(kind, sign, 1, 0) for kind in (0, 1, 2) for sign in (0, 1)]
+    mantissas = (1, 3, 6, (1 << 52) - 1, 1 << 52, (1 << 53) - 1,
+                1 << 53, (1 << 53) + 1, (1 << 53) + 5,
+                (1 << 63) - 1, 1 << 63, (1 << 63) + 1,
+                (1 << 64) + 3, (1 << 127) + 5)
+    exponents = (-1000000, -2100, -2099, -1078, -1077, -1076, -1075,
+                 -1074, -1073, -53, -52, -2, -1, 0, 1, 971, 972, 2098, 2099, 1000000)
+    raw += [(3, s, m, e) for s in (0, 1) for m in mantissas for e in exponents]
+    for _ in range(samples):
+        bits = rng.choice((4, 52, 53, 54, 63, 64, 127, 257))
+        m = rng.randint(1, (1 << bits) - 1)
+        e = rng.choice((rng.randint(-2200, 2200), -(10 ** 30), 10 ** 30))
+        raw.append((rng.choice((0, 1, 2, 3, 3, 3, 3)), rng.randrange(2), m, e))
+    return list(dict.fromkeys(Case('prim_conversion', value) for value in raw))
 
 
 def prim_comparison_expressions(case: Case) -> tuple[str, str]:
@@ -563,8 +610,9 @@ def corpus(seed: int, samples: int) -> list[Case]:
     cases.extend(single_frexp_corpus(seed, samples))
     cases.extend(normalize_corpus(seed, samples))
     cases.extend(prim_comparison_corpus(seed, samples))
+    cases.extend(prim_conversion_corpus(seed, samples))
     for op in OPS:
-        if op in ("comparison", "small_ieee", "ieee_round", "single_helpers", "single_frexp", "normalize", "prim_comparison"):
+        if op in ("comparison", "small_ieee", "ieee_round", "single_helpers", "single_frexp", "normalize", "prim_comparison", "prim_conversion"):
             continue
         for _ in range(samples):
             base = rng.choice((2, 3, 10, 16))
@@ -670,6 +718,8 @@ def expressions(case: Case) -> tuple[str, str]:
         return normalize_expressions(case)
     if op == "prim_comparison":
         return prim_comparison_expressions(case)
+    if op == "prim_conversion":
+        return prim_conversion_expressions(case)
     if op == "comparison":
         p, emax, *words = case.args
         operands = [words[:4], words[4:]]

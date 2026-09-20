@@ -219,6 +219,36 @@ that this is a counterexample to dropping the premise. The high-level routine
 always chooses a sufficiently fine exponent, and its bracket theorem does
 not additionally require that the exponent function describes a valid format.
 
+## Converting a raw encoding is not the same as validating it
+
+Run `lake env lean scripts/fixtures/PrimitiveConversion.lean` and follow the
+paired [Rocq example](../../scripts/fixtures/PrimitiveConversion.v).
+Start with the raw encoding `(positive, 3, -1)`: it denotes `3 × 2^-1 = 1.5`,
+but its mantissa/exponent pair is not the canonical binary64 encoding.
+The validity adapter rejects it. The source's `SF2Prim` conversion instead
+returns the canonical representation of `1.5`. The old Lean definition
+confused these two interfaces and returned NaN.
+
+The conversion has two less obvious details. Its mantissa passes through an
+unsigned 63-bit word, so `2^63` wraps to zero and `2^63+1` wraps to one.
+It then rounds the integer to binary64 **before** scaling by the input
+exponent. Scaling can round again when the result is subnormal.
+
+For a concrete double-rounding example, take mantissa `2^53+5` and exponent
+`-1077`. The first rounding maps the mantissa to `2^53+4`. In units of the
+smallest subnormal, scaling now asks for `(2^53+4)/8 = 2^50+1/2`; nearest-even
+chooses `2^50`. A single rounding of the original value instead asks for
+`(2^53+5)/8 = 2^50+5/8`, which chooses `2^50+1`. Both provers check this
+one-unit difference explicitly. Keeping both stages is necessary to match
+the source API, even though one-shot rounding might look more natural.
+
+The fixture checks 31 literal conversions, including both signs and special
+values. The differential corpus uses positive raw mantissas, as Rocq requires;
+it does not silently broaden the claimed source domain to Lean's extra
+Nat-zero constructor. This is another reason to read a definition's actual
+interface before trusting a nearby roundtrip theorem: that theorem may only
+cover already-valid encodings.
+
 ## When a precision assumption matters—and when it does not
 
 The format relationships are easier to read as implications than as programs.
@@ -309,7 +339,7 @@ Use the same Rocq version that built that checkout. This Mac used
 
 Read [the linear guide](READING_GUIDE.md), then
 [the three verification loops](THREE_VERIFICATION_LOOPS.md), then
-[the review ledger](ASTRA_AUDIT_2026-09-19.md). The demo demonstrates six
+[the review ledger](ASTRA_AUDIT_2026-09-19.md). The demo demonstrates seven
 behaviors; the seeded bridge checks larger finite corpora; closed Lean proofs
 establish their stated propositions. None is interchangeable with a universal
 proof that the entire port matches pinned Flocq. Four explicitly recorded

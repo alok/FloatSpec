@@ -2025,6 +2025,93 @@ to print a carrier without a `Repr` instance and failed; the successful
 rerun serializes its constructors explicitly. This finding is not repaired
 in the FLT checkpoint and takes priority over cosmetic execution-marker work.
 
+### September 20, 12:20 UTC — total SF2Prim conversion repaired
+
+The four confirmed failures above now pass. `SF2Prim` keeps its existing
+valid-input identity branch and uses an executable private helper for other
+finite encodings: reduce the mantissa modulo `2^63`, round the unsigned
+integer to binary64, apply the source's clamped exponent scaling, then apply
+the sign. The helper constructs its validity evidence from existing closed
+rounding operations. Public types and valid-input roundtrip proofs are
+unchanged; no new proof hole is added.
+
+The source is Rocq 9.2 Corelib `FloatOps.v:50`, not a declaration owned by
+Flocq. An external pinned link and explicit `flocq_local` classification
+record that provenance. Corelib states the valid-input roundtrip as the
+native-primitive axiom `FloatAxioms.Prim2SF_SF2Prim`; the Lean roundtrip
+remains closed by construction. Neither that axiom nor our finite bridge is
+a universal cross-prover equivalence proof. `git blame` traces the rejecting
+Lean body to `c55f38059d69193210dab282d9e3761297848108`, before the upstream
+baseline and earlier Sol audit, rather than to those audit commits.
+
+The new twenty-ninth bridge family `prim_conversion` observes fourteen
+columns: input validity, numeric conversion, its proof-carrying projection,
+output validity, and the rejecting adapter. It does not sanitize the raw
+input before calling the numeric conversion. Shared finite mantissas are
+positive, matching Rocq; Lean's additional Nat-zero constructor is excluded.
+
+Verified on library SHA-256
+`2df976e002d5e83af940e2f6568f0b6d282b84b8562fc8e9a9a23911c1c92de9`:
+
+- The original four-case bridge run exits with **mismatch** in both Lean
+  paths, retained at
+  `/private/tmp/floatspec-primitive-conversion-before-20260920/report.json`.
+  After the correction, all four cases agree in all three paths and generate four kernel
+  equalities in the separate `...-replay-20260920/` run.
+- **866** broad cases pass compiled Lean, kernel reduction, and Rocq primitive
+  execution, generating **866 kernel equalities**. Seed `843751`, 300 seeded
+  supplements, batch 50; **119.578 seconds**. There are 177 valid input
+  encodings and **689 invalid raw encodings**; all 866 converted outputs are
+  valid, and every invalid input here converts numerically rather than to NaN.
+  Receipt: `/private/tmp/floatspec-primitive-conversion-grid-20260920/report.json`.
+- A separate deterministic **576-case** replay targets mantissas around
+  `2^53`, `2^54`, `2^60`, and `2^63` with both signs and subnormal-scale
+  exponents. All three paths and **576 generated kernel equalities** pass in
+  **81.139 seconds**. The replay is explicitly provided, not random sampling
+  inferred from the report's seed field. Input:
+  `/private/tmp/PrimitiveConversionBoundaryGrid20260920.json`; receipt:
+  `/private/tmp/floatspec-primitive-conversion-rounding-grid-20260920/report.json`.
+  These two grids can overlap; their counts are executions, not a unique-input
+  coverage claim. No imported-source edits or library builds overlapped either.
+- Paired pure fixtures pass **31 literal cases**, including both signs,
+  uint63 wrapping, special values, valid controls, underflow, overflow, and
+  huge clamped exponents. Closed examples in each prover distinguish numeric
+  conversion from validation and two-stage rounding from one-shot rounding.
+  All three printed Lean axiom sets have no sorry. Receipts:
+  `/private/tmp/floatspec-primitive-conversion-pure-lean-v2-20260920.log` and
+  `/private/tmp/floatspec-primitive-conversion-pure-rocq-20260920.log`.
+- The full core harness passes **63 tests in 266.212 seconds**. Three new
+  deliberately wrong conversion implementations—reject invalid inputs, skip
+  uint63 wrapping, and collapse two rounding stages—are detected in both
+  Lean paths while validity/adapter columns stay unchanged.
+  Receipt: `/private/tmp/floatspec-primitive-conversion-full-harness-20260920.log`.
+- The full macOS Lean 4.34 library/test/executable build passes **6,216 jobs**,
+  with complete clean LSP diagnostics for production, fixture, and demo.
+  Fresh metadata validates **218 anchors**; compiled trust checks **13,534
+  declarations in 58 modules**, exactly four unchanged named debts, and no
+  unexpected axioms, unsafe definitions, or runtime overrides. Receipts use
+  the same `/private/tmp/floatspec-primitive-conversion-` prefix with
+  `all-targets-20260920.log`, `anchors-20260920.log`, and `trust-20260920.json`.
+  Generated status is unchanged and the combined runner passes shell syntax
+  checking.
+- The linear introduction now has a **seventh runnable example**, printing
+  both the corrected `1.5` conversion and the exact one-subnormal-unit
+  double-rounding difference. It passes its kernel assertion and compiled
+  checks: `/private/tmp/floatspec-primitive-conversion-guided-demo-20260920.log`.
+
+The first Lean fixture attempt lacked local binary64 precision instances;
+that failure included elaborator-generated sorry errors and is not a passing
+proof receipt. Adding the explicit local instances makes all three proofs
+close. A targeted harness attempt overlapped the broad rebuild and failed on
+a temporarily missing `BitsExecution.olean`; it remains an error at
+`...-harness-targeted-20260920.log`. The complete serial harness rerun above
+is the passing receipt. The earlier observation-printer and namespace-probe
+failures also remain available.
+
+This changes the total raw conversion contract, not the behavior of already
+valid binary64 values. The fresh counterexamples and the documented two-stage
+algorithm correct a source mismatch; they do not certify the whole port.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In

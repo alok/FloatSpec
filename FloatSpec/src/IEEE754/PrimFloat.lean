@@ -76,11 +76,34 @@ theorem Prim2SF_valid (x : PrimitiveFloat) :
 private def canonicalNaN : PrimitiveFloat :=
   ⟨StandardFloat.S754_nan, rfl⟩
 
+-- Corelib FloatOps.SF2Prim's finite branch first converts through uint63,
+-- rounds the integer to binary64, then performs the clamped Z.ldexp and
+-- applies the sign. A single normalization at exponent e is not equivalent:
+-- double rounding can change a subnormal result.
+private def convertRawFinite (s : Bool) (m : Nat) (e : Int) : PrimitiveFloat :=
+  let rounded := Binary.B2BSN (Binary.binary_normalize
+    (prec := primPrec) (emax := primEmax) .RNE ((m % 2 ^ 63 : Nat) : Int) 0 false)
+  let emin := 3 - primEmax - primPrec
+  let clamped := max (min e (primEmax - emin)) (emin - primEmax - 1)
+  let scaled := Binary.BldexpSingle .RNE rounded clamped
+  let signed := if s then BinarySingleNaN.Bopp scaled else scaled
+  ⟨binarySingleNaNFloatToStandardFloat signed,
+    validBinarySingleNaNStandardFloat_binarySingleNaNFloatToStandardFloat signed⟩
+
+/-- Total numeric conversion corresponding to
+[Rocq FloatOps.SF2Prim](https://github.com/rocq-prover/rocq/blob/adfbf1855c348766beb4b790dcc8ebc02f908f63/theories/Corelib/Floats/FloatOps.v#L50).
+Valid encodings use the identity fast path justified by the source's roundtrip
+law. Other finite encodings retain uint63 wrapping and both rounding stages;
+they are not rejected as NaN. The source's finite mantissa is positive, while
+the local Nat carrier also admits zero. -/
+@[flocq_local "Rocq Corelib.FloatOps.SF2Prim conversion; not defined in Flocq itself"]
 def SF2Prim (x : StandardFloat) : PrimitiveFloat :=
   if hx : validBinarySingleNaNStandardFloat (prec := primPrec) (emax := primEmax) x = true then
     ⟨x, hx⟩
   else
-    canonicalNaN
+    match x with
+    | .S754_finite s m e => convertRawFinite s m e
+    | _ => canonicalNaN
 
 def SF2B (x : StandardFloat)
     (hx : validBinarySingleNaNStandardFloat (prec := primPrec) (emax := primEmax) x = true) :

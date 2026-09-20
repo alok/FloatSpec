@@ -6,7 +6,7 @@ version is: **describe the right values, compute the right answers, prove the
 right statements, and check that “right” still means what Flocq means.**
 Those are separate jobs. A program can compile while its specification is wrong.
 
-For a six-part runnable introduction, start with
+For a seven-part runnable introduction, start with
 [the guided demo and exemplar reading list](DEMO_EXEMPLARS.md):
 `lake env lean --run scripts/fixtures/GuidedDemo.lean`.
 
@@ -15,15 +15,33 @@ This guide follows those jobs in order. The detailed
 [independent continuation audit](ASTRA_AUDIT_2026-09-19.md) retain the
 declaration-by-declaration findings and historical milestones.
 
-## Wake-up summary — September 20, 2026, 12:00 UTC
+## Wake-up summary — September 20, 2026, 12:20 UTC
 
-**Where to start:** run the six-part demo above, then read sections 1–6 below.
+**Where to start:** run the seven-part demo above, then read sections 1–6 below.
 The [exemplar guide](DEMO_EXEMPLARS.md) adds small examples explaining why a
 theorem needs its hypotheses. This summary records the current milestone;
 the [audit ledger](ASTRA_AUDIT_2026-09-19.md) keeps the detailed history,
 including failed runs and the exact source hashes tested.
 
-**Newest checked change:** eleven FLT theorem signatures no longer demand
+**Newest checked change:** total primitive conversion now follows Rocq's
+unsigned wrapping and two rounding stages. Previously `SF2Prim` rejected a
+noncanonical encoding such as `3 × 2^-1` as NaN; it now produces canonical
+`1.5`, matching the source. This conversion is deliberately different from
+the rejecting validity adapter. Existing valid-input roundtrip proofs stay
+closed, and no new proof debt is introduced.
+
+The [new walkthrough](DEMO_EXEMPLARS.md#converting-a-raw-encoding-is-not-the-same-as-validating-it)
+explains why `(2^53+5) × 2^-1077` converts differently from one-shot rounding.
+The runnable demo now prints this as its seventh example. Paired Lean/Rocq
+fixtures check **31 literal conversions**. A fresh **866-case** three-path
+grid includes 689 invalid raw inputs converted to valid numeric outputs;
+a separate **576-case** deterministic replay focuses on rounding/underflow
+boundaries. Both runs generate passing kernel equalities. The full **63-test
+harness**, including three deliberately wrong conversion implementations,
+and **6,216-job macOS build** pass. The four original failures are permanently
+replayable; finite agreement is still not a universal source-equivalence proof.
+
+**The preceding FLT checkpoint:** eleven theorem signatures no longer demand
 positive precision where Flocq does not. Ten now state ordinary mathematical
 propositions instead of wrapping pure values in Hoare triples. Their proofs
 remain closed, callers are migrated, and the numerical definitions are
@@ -109,7 +127,8 @@ failures of ordinary valid binary32/binary64 arithmetic.
 
 | Slice | Observed result |
 |---|---|
-| Full library, test library, and executable | Lean 4.34.0 on macOS arm64: 6,216 build jobs pass after the eleven FLT contract repairs |
+| Full library, test library, and executable | Lean 4.34.0 on macOS arm64: 6,216 build jobs pass after the total primitive-conversion repair |
+| Total primitive conversion | 31 paired literal cases; 866 broad cases plus 576 targeted rounding-boundary executions, with kernel equalities; four saved failures now pass |
 | FLT format relationships | Eleven unrestricted clients in each prover, a closed reverse-inclusion counterexample, and 1,813 fresh differential cases/kernel equalities |
 | Primitive/raw and neighboring comparison APIs | 6,116 differential cases and kernel equalities; 1,425 observe twelve primitive/raw exports separately |
 | SingleNaN helper exports | 1,900 differential cases and kernel equalities; every exported helper observed separately |
@@ -118,8 +137,8 @@ failures of ordinary valid binary32/binary64 arithmetic.
 | Independent Calc brackets | Lean and Rocq each check 8,640 division and 2,496 square-root cases, including exact midpoint locations |
 | Remaining normalization entry points | 3,004 three-way cases; paired fixtures separately check 150 literal observations |
 | Raw rounding plus validity adapter | 6,342 three-way cases; rejection and an actual valid NaN have distinct observations |
-| Test-harness checks | Latest full core-harness run: 60 tests pass, including twelve independent primitive comparison mutations |
-| Compiled trust/source metadata | 13,532 source declarations in 58 modules; four unchanged named proof debts; 218 checked source anchors |
+| Test-harness checks | Latest full core-harness run: 63 tests pass, including rejected-conversion, missing-wrap, and collapsed-rounding mutations |
+| Compiled trust/source metadata | 13,534 source declarations in 58 modules; four unchanged named proof debts; 218 checked source anchors |
 
 These are separate, snapshot-bound receipts, **not** a claim that every row
 was rerun after every subsequent type-only change. Earlier broad runs cover
@@ -137,15 +156,6 @@ The exact reconstruction property still holds. Paired runnable examples also
 explain the finite-input condition on alternate ulp and the positive-input
 condition on the specialized predecessor.
 
-**Next confirmed bug, not yet fixed:** raw `SF2Prim` conversion rejects
-noncanonical encodings as NaN, but Rocq converts them numerically. The raw
-encoding `3 × 2^-1` becomes `1.5` in Rocq and NaN in the current Lean code.
-The source also wraps the mantissa through an unsigned 63-bit word and rounds
-twice; a concrete subnormal case proves that replacing rejection with a
-single rounding step would still disagree. The existing roundtrip theorems
-assume valid encodings, so they cannot detect this total-interface bug.
-Four executed counterexamples are saved in the audit ledger; this repair
-takes priority next.
 
 **Prepared execution work:** a scratch compile removes unnecessary
 `noncomputable` markers from 33 primitive definitions and four arithmetic

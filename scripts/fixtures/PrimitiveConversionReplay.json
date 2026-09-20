@@ -1,0 +1,6 @@
+[
+  {"op": "prim_conversion", "args": [3, 0, 3, -1]},
+  {"op": "prim_conversion", "args": [3, 0, 9223372036854775808, 0]},
+  {"op": "prim_conversion", "args": [3, 0, 9223372036854775809, 0]},
+  {"op": "prim_conversion", "args": [3, 0, 9007199254740997, -1077]}
+]

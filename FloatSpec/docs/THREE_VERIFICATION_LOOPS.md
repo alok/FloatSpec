@@ -432,6 +432,23 @@ in `PrimitiveComparisonReplay.json` retain the source-contract regression.
 The paired fixture checks 24 literal cases; twelve separate mutations alter
 exactly one comparison column each and must fail in both Lean paths.
 
+The twenty-ninth family, `prim_conversion`, tests the total raw-to-primitive
+conversion in fourteen columns: input validity, converted result, its
+proof-carrying projection, output validity, and the rejecting `SF2B'` result.
+The numeric conversion is observed before any rejecting adapter. Both signs,
+special values, noncanonical encodings, mantissas crossing uint63 boundaries,
+subnormal double rounding, and enormous clamped exponents are included.
+`PrimitiveConversionReplay.json` retains four original mismatches. Paired
+pure fixtures check 31 literal results and prove that one-shot normalization
+differs from the source conversion. Three deliberate replacements test that
+rejection, omitted wrapping, and collapsed rounding stages are all detected.
+
+The source's finite mantissa is positive; zero is rejected by this shared
+corpus validator. The Lean definition's valid-input shortcut retains the
+existing roundtrip proofs, but these finite observations do not constitute
+a universal cross-prover equivalence theorem. Run the slice with
+`--operations prim_conversion`.
+
 ## 4. One command runs all three
 
 From the repository root:

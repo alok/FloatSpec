@@ -1,4 +1,5 @@
 import FloatSpec.src.IEEE754.Bits
+import FloatSpec.src.IEEE754.PrimFloat
 
 /-! Run with `lake env lean --run scripts/fixtures/GuidedDemo.lean`.
 Each section is a computation using the port, followed by a kernel-checked
@@ -71,7 +72,22 @@ private def rawRoundIsNegativeZero : Bool :=
 example : signedShiftAndFloor = [0, -1] ∧ rawRoundIsNegativeZero = true := by
   decide +kernel
 
-/-- Print six examples and fail if compiled execution disagrees with their assertions. -/
+private def numericConversion : List Int :=
+  observe (FaithfulPrimFloat.Prim2SF
+    (FaithfulPrimFloat.SF2Prim (.S754_finite false 3 (-1))))
+
+private def conversionDouble : List Int :=
+  observe (FaithfulPrimFloat.Prim2SF
+    (FaithfulPrimFloat.SF2Prim (.S754_finite false 9007199254740997 (-1077))))
+
+private def conversionSingle : List Int :=
+  observe (binary_round (prec := 53) (emax := 1024) .RNE false 9007199254740997 (-1077))
+
+example : numericConversion = [0,6755399441055744,-52] ∧
+    conversionDouble = [0,1125899906842624,-1074] ∧
+    conversionSingle = [0,1125899906842625,-1074] := by decide +kernel
+
+/-- Print seven examples and fail if compiled execution disagrees with their assertions. -/
 def run : IO Unit := do
   IO.println "1. Exact arithmetic: binary32 1.5 + 2.25 = 3.75."
   IO.println s!"   Result word: {sumBits} (expected 0x40700000 = 1081081856)."
@@ -103,7 +119,15 @@ def run : IO Unit := do
   IO.println "   Negative raw mantissas are outside the value theorem; the total API still follows Flocq."
   unless signedShiftAndFloor == [0, -1] && rawRoundIsNegativeZero do
     throw (IO.userError "signed raw rounding regression failed")
-  IO.println "PASS: all six compiled examples agree with their finite kernel assertions."
+  IO.println "7. Numeric conversion is not validation: raw (3, -1) converts to canonical 1.5."
+  IO.println s!"   Converted [sign, mantissa, exponent]: {numericConversion}."
+  IO.println "   Conversion rounds the integer first, then scales; one-shot rounding can differ."
+  IO.println s!"   (2^53+5)*2^-1077 converted: {conversionDouble}; one shot: {conversionSingle}."
+  unless numericConversion == [0,6755399441055744,-52] &&
+      conversionDouble == [0,1125899906842624,-1074] &&
+      conversionSingle == [0,1125899906842625,-1074] do
+    throw (IO.userError "numeric primitive conversion failed")
+  IO.println "PASS: all seven compiled examples agree with their finite kernel assertions."
 
 end GuidedDemo
 

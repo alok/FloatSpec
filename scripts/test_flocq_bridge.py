@@ -49,6 +49,23 @@ class RunnerTests(unittest.TestCase):
 
 
 class ParserTests(unittest.TestCase):
+    def test_primitive_conversion_domain_wrapping_and_seed(self):
+        cases = bridge.prim_conversion_corpus(843751, 7)
+        self.assertEqual(cases, bridge.prim_conversion_corpus(843751, 7))
+        self.assertNotEqual(cases, bridge.prim_conversion_corpus(843752, 7))
+        self.assertEqual(len(cases), len(set(cases)))
+        for args in ((3, 0, 3, -1), (3, 1, 1 << 63, 0),
+                     (3, 0, (1 << 63) + 1, 0), (3, 0, (1 << 53) + 5, -1077)):
+            self.assertIn(bridge.Case('prim_conversion', args), cases)
+        for args in ((4, 0, 1, 0), (3, 2, 1, 0), (3, 0, 0, 0), (3, 0, -1, 0)):
+            with self.assertRaises(ValueError):
+                bridge.Case('prim_conversion', args)
+        self.assertEqual(bridge.WIDTHS['prim_conversion'], 14)
+        replay = Path(__file__).parent / 'fixtures/PrimitiveConversionReplay.json'
+        self.assertEqual(len(json.loads(replay.read_text())), 4)
+        self.assertTrue(all(bridge.Case(row['op'], tuple(row['args'])) in cases
+                            for row in json.loads(replay.read_text())))
+
     def test_primitive_comparison_raw_domain_and_replay(self):
         cases = bridge.prim_comparison_corpus(841709, 5)
         self.assertEqual(cases, bridge.prim_comparison_corpus(841709, 5))
@@ -264,6 +281,59 @@ class ParserTests(unittest.TestCase):
 
 @unittest.skipUnless(os.environ.get("FLOCQ_AUDIT_DIR"), "live test requires FLOCQ_AUDIT_DIR")
 class LiveTests(unittest.TestCase):
+    def test_total_primitive_conversion_replays_and_valid_controls(self):
+        flocq = Path(os.environ['FLOCQ_AUDIT_DIR']).resolve()
+        data = json.loads((Path(__file__).parent / 'fixtures/PrimitiveConversionReplay.json').read_text())
+        cases = [bridge.Case(row['op'], tuple(row['args'])) for row in data]
+        cases += [bridge.Case('prim_conversion', args) for args in
+                  ((3, 0, 1 << 52, -52), (0, 1, 1, 0), (1, 1, 1, 0),
+                   (2, 0, 1, 0), (3, 1, 1, -1074), (3, 1, 1 << 63, 0))]
+        values = [[3, 0, 6755399441055744, -52], [0, 0, 0, 0],
+                  [3, 0, 1 << 52, -52], [3, 0, 1 << 50, -1074],
+                  [3, 0, 1 << 52, -52], [0, 1, 0, 0], [1, 1, 0, 0],
+                  [2, 0, 0, 0], [3, 1, 1, -1074], [0, 1, 0, 0]]
+        valid = [0, 0, 0, 0, 1, 1, 1, 1, 1, 0]
+        expected = [[v] + value + value + [1] + (value if v else [2, 0, 0, 0])
+                    for v, value in zip(valid, values, strict=True)]
+        with tempfile.TemporaryDirectory(prefix='floatspec-primitive-conversion-') as directory:
+            rows = bridge.execute(cases, flocq, bridge.configured_coqc(flocq), Path(directory))
+            self.assertEqual(bridge.compare(cases, rows), [])
+            self.assertEqual(rows['rocq'], expected)
+            bridge.bootstrap_lean(cases, rows['rocq'], Path(directory))
+
+    def test_primitive_conversion_rejects_validation_wrap_and_rounding_mutations(self):
+        flocq = Path(os.environ['FLOCQ_AUDIT_DIR']).resolve()
+        original = bridge.expressions
+        instances = ('letI : Prec_gt_0 (53 : Int) := ⟨by decide⟩; '
+                     'letI : Prec_lt_emax (53 : Int) (1024 : Int) := ⟨by decide⟩; ')
+        mutations = [
+            ('reject-instead-of-convert', (3, 0, 3, -1),
+             "FaithfulPrimFloat.B2Prim (BinarySingleNaN.SF2B' (prec := 53) (emax := 1024) raw)"),
+            ('skip-uint63-wrap', (3, 0, 1 << 63, 0),
+             'FaithfulPrimFloat.B2Prim (Binary.BldexpSingle .RNE '
+             '(Binary.B2BSN (Binary.binary_normalize (prec := 53) (emax := 1024) '
+             '.RNE 9223372036854775808 0 false)) 0)'),
+            ('collapse-two-roundings', (3, 0, (1 << 53) + 5, -1077),
+             'FaithfulPrimFloat.B2Prim (Binary.B2BSN '
+             '(Binary.binary_normalize (prec := 53) (emax := 1024) '
+             '.RNE 9007199254740997 (-1077) false))')]
+        for name, args, replacement in mutations:
+            case = bridge.Case('prim_conversion', args)
+            def mutate(case):
+                lean, rocq = original(case)
+                before = 'let converted := FaithfulPrimFloat.SF2Prim raw; '
+                self.assertEqual(lean.count(before), 1)
+                return instances + lean.replace(before, f'let converted := {replacement}; '), rocq
+            with (self.subTest(mutation=name),
+                  tempfile.TemporaryDirectory(prefix='floatspec-conversion-mutation-') as directory,
+                  patch.object(bridge, 'expressions', mutate)):
+                rows = bridge.execute([case], flocq, bridge.configured_coqc(flocq), Path(directory))
+                self.assertEqual(bridge.compare([case], rows)[0]['paths'], ['lean', 'compiled'])
+                for path in ('lean', 'compiled'):
+                    self.assertNotEqual(rows[path][0][1:9], rows['rocq'][0][1:9])
+                    self.assertEqual(rows[path][0][:1], rows['rocq'][0][:1])
+                    self.assertEqual(rows[path][0][9:], rows['rocq'][0][9:])
+
     def test_primitive_comparison_raw_and_validated_boundaries(self):
         flocq = Path(os.environ['FLOCQ_AUDIT_DIR']).resolve()
         cases = [bridge.Case('prim_comparison', args) for args in

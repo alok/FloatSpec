@@ -6,6 +6,34 @@ all declarations in the named modules. See the
 [running audit](ASTRA_AUDIT_2026-09-19.md) for execution receipts and the
 [reading guide](READING_GUIDE.md) for the mathematical story.
 
+## Total primitive conversion: wrapping and two rounding stages
+
+`FaithfulPrimFloat.SF2Prim` previously treated all noncanonical encodings as
+NaN. That is the rejecting `SF2B'` adapter's contract, not the total numeric
+conversion in [Rocq Corelib FloatOps.v:50](https://github.com/rocq-prover/rocq/blob/adfbf1855c348766beb4b790dcc8ebc02f908f63/theories/Corelib/Floats/FloatOps.v#L50).
+The source converts the positive mantissa through uint63, rounds that integer
+to binary64, scales with the source's clamped `Z.ldexp`, then applies the sign.
+The current valid-input roundtrip theorems do not constrain the other inputs.
+
+The repaired definition retains its valid-input identity branch and executes
+those stages for other finite encodings. The identity shortcut follows
+Rocq Corelib's stated valid-input roundtrip axiom for native primitives
+(`FloatAxioms.Prim2SF_SF2Prim`); this is not a claim that the two prover
+implementations have a universal equivalence theorem. Existing Lean roundtrip
+proofs remain unchanged and closed. The new helper constructs validity from
+the existing proof-carrying rounding operations, without a new admission.
+Lean's Nat finite carrier also admits zero; the source-positive differential
+corpus deliberately excludes that extra local value.
+
+The concrete cases distinguish three plausible but incorrect implementations:
+rejecting `(3,-1)` gives NaN instead of `1.5`; forgetting uint63 wrapping
+converts `(2^63,0)` to a large value instead of positive zero; replacing two
+rounding stages with one converts `(2^53+5,-1077)` to mantissa
+`1125899906842625` instead of `1125899906842624`, both at exponent `-1074`.
+The bridge separately observes input validity, converted result, its
+proof-carrying projection, output validity, and the rejecting adapter.
+Thus the sentinel cannot hide this numeric conversion discrepancy.
+
 ## FLT format relationships: eleven unrestricted precision contracts
 
 Compiled pinned `Core/FLT.v` omits positive precision from eleven exports:
