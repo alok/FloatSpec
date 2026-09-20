@@ -62,6 +62,11 @@ The standalone paired fixtures add independent contract and error checks:
   while its raw and proof-carrying groups execute integer algorithms.
 - `DoubleRoundingWitness`: `73/64` rounded directly to three bits differs from
   rounding through four bits; both signs have closed equality proofs.
+- `PffLogTotality`: paired closed counterexamples at negative radix retain
+  Rocq's zero extension of logarithm. Lean additionally proves that the
+  repaired source-facing definition preserves every positive-radix result,
+  for arbitrary natural precision and real input. These are noncomputable
+  real-number statements checked by the kernel, not native logarithm tests.
 - `SingleNaNValidity`: canonical, subnormal, overflow, and invalid raw-carrier
   boundaries, including why `binary_fit_aux` requires canonical input.
 - `RelativeErrorGrid`: 4,092 nearest-error bounds and an underflow counterexample

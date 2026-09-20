@@ -2709,6 +2709,60 @@ broad three-loop run. Earlier draft proof attempts and the unsupported
 scratch-file LSP query are errors, with direct `lake env lean` used as the
 fallback. No global normalization equivalence or complete Pff audit is claimed.
 
+### September 20, 15:30 UTC — repair Pff's total logarithm convention
+
+Independent inspection of the installed Rocq Stdlib `Reals/Rpower.v:216`
+showed that `ln x` is zero at nonpositive inputs, unlike Lean's absolute-value
+extension. Pinned `Pff.RND_Min_Pos` uses that function without exporting a
+radix-positivity premise. Paired closed probes established a concrete mismatch
+at `(bound=(4,0), radix=-2, precision=2, input=2)`: source `(-4,-1)`, old Lean
+`(2,0)`. Both represent two, but their source records differ.
+
+The source facade now has `rocqLn`, explicitly classified as a Stdlib boundary,
+and uses it in `RND_Min_Pos`, which receives a pinned Flocq anchor. The paired
+permanent `PffLogTotality` fixtures prove the source results for inputs two and
+minus two. A closed Lean theorem proves universal preservation of the old
+formula for every positive integer radix, natural precision, bound, and real
+input. All four printed regression axiom lists contain only `propext`,
+`Classical.choice`, and `Quot.sound`. Existing positive-radix fixtures remain
+closed after adding the helper to their unfolding lists.
+
+To preserve the original frozen run, changes moved to a new isolated worktree
+`/Users/alokbeniwal/.codex/worktrees/astra-pff-source-boundary/FloatSpec`, branch
+`codex/astra-pff-source-boundary`, based on `2e3ea2d1`. Its `.lake` is an APFS
+copy, not a symlink or hard-linked build directory. The original continuation
+worktree and its **48,614-case** run remain unchanged.
+
+Verification on this new slice:
+
+- Full build passes **6,220 jobs**, both before and after adding printed axiom
+  checks: `/private/tmp/floatspec-pff-log-full-build-v2-20260920.log`.
+- Source facade, old totality fixture, and new totality fixture have complete,
+  zero-error LSP diagnostics. Each new Lean proof was checked individually.
+- Both permanent Rocq counterexamples pass:
+  `/private/tmp/floatspec-pff-log-rocq-v2-20260920.log`.
+- Compiled trust: **13,538 source declarations / 58 modules / four unchanged
+  manifest-only debts**. Freshly exported metadata validates **229 anchors**.
+  Receipts: `/private/tmp/floatspec-pff-log-trust-20260920.json`,
+  `floatspec-pff-log-source-metadata-20260920.json`, and
+  `floatspec-pff-log-anchors-20260920.log` in the same directory.
+- The real Lake demo passes again. Shell syntax, generated status, and
+  whitespace checks pass; no new proof debt was added.
+
+New Lean/configuration fingerprint:
+`f5f06e6603af9bd059443ee574dd4e2ae5e73edc29ece56eca870e517854bd17`.
+The broad run on the earlier `32ec11b5…` snapshot is still running, not yet
+passed and not relabeled as checking this semantic change.
+
+Scratch Pff native work is separate: a full copied Pff module compiles after
+removing 18 `noncomputable` markers across root/source APIs, with bodies and
+types unchanged, and executes 24 entry-point checks. The expanded 56-column,
+2,772-case candidate run stopped after 2,600 compared/proved cases because
+Rocq emitted a large-natural-literal warning. Its status is **error**, not
+pass. A new run encodes natural arguments via binary `Z.to_nat` expressions;
+it preserves every input and keeps stderr checking enabled. It remains
+in progress, and none of those native/interface candidates is integrated yet.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In

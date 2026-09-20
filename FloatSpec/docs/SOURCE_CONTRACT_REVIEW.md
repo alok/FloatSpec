@@ -6,6 +6,28 @@ all declarations in the named modules. See the
 [running audit](ASTRA_AUDIT_2026-09-19.md) for execution receipts and the
 [reading guide](READING_GUIDE.md) for the mathematical story.
 
+## Pff logarithm: total extensions are observable
+
+Pinned `Pff/Pff.v:27157` uses Rocq Stdlib's `Rpower.ln`, whose definition is
+zero for nonpositive inputs. Lean's `Real.log` instead satisfies
+`log (-x) = log x`. Directly substituting the latter changed the total
+source-facing `RND_Min_Pos`, which exports no radix-positivity premise.
+
+With bound `(vNum=4,dExp=0)`, radix minus two, precision two, and real input
+two, pinned Rocq proves the result is `(-4,-1)`; the old Lean formula yields
+`(2,0)`. Both records denote the same real value, but their raw source results
+are different. The corrected source facade uses an explicit `rocqLn` helper.
+Paired closed fixtures check inputs two and minus two. A closed universal
+Lean theorem preserves the entire previous result at every positive radix,
+including precision zero and real inputs below the normal threshold.
+All four printed regression-theorem axiom lists exclude `sorryAx`.
+
+The helper is classified as a Rocq Stdlib boundary, not a Flocq-owned
+declaration; `RND_Min_Pos` has its own pinned Flocq anchor. This correction
+does not certify the separate, indexed legacy rounding API or all Pff
+theorems. Nonpositive radices remain outside ordinary floating-point
+correctness hypotheses even though the source definition is total there.
+
 ## Executable primitive entry points: keep the three interfaces separate
 
 The remaining 33 definitions and four arithmetic instances in

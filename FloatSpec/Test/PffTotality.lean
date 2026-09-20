@@ -95,7 +95,7 @@ example :
       ({ vNum := 4, dExp := 1, vNum_pos := by omega } : Source.Fbound)
       2 2 (1 / 2 : Real) =
       ({ Fnum := 1, Fexp := -1 } : Source.float) := by
-  norm_num [Source.RND_Min_Pos, Source.firstNormalPos, Source.nNormMin,
+  norm_num [Source.RND_Min_Pos, Source.rocqLn, Source.firstNormalPos, Source.nNormMin,
     Source.FtoR, Zpower_nat, IRNDD]
 
 /-- The same source definition remains total at zero and takes its subnormal
@@ -105,7 +105,7 @@ example :
       ({ vNum := 4, dExp := 1, vNum_pos := by omega } : Source.Fbound)
       2 2 0 =
       ({ Fnum := 0, Fexp := -1 } : Source.float) := by
-  norm_num [Source.RND_Min_Pos, Source.firstNormalPos, Source.nNormMin,
+  norm_num [Source.RND_Min_Pos, Source.rocqLn, Source.firstNormalPos, Source.nNormMin,
     Source.FtoR, Zpower_nat, IRNDD]
 
 /-- At the first normal value, the same radix controls both branch selection
@@ -115,7 +115,7 @@ example :
       ({ vNum := 4, dExp := 1, vNum_pos := by omega } : Source.Fbound)
       2 2 1 =
       ({ Fnum := 2, Fexp := -1 } : Source.float) := by
-  norm_num [Source.RND_Min_Pos, Source.firstNormalPos, Source.nNormMin,
+  norm_num [Source.RND_Min_Pos, Source.rocqLn, Source.firstNormalPos, Source.nNormMin,
     Source.FtoR, Zpower_nat, IRNDD]
 
 end FloatSpec.Test.PffSourceFacade

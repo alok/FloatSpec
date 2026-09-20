@@ -15,7 +15,7 @@ This guide follows those jobs in order. The detailed
 [independent continuation audit](ASTRA_AUDIT_2026-09-19.md) retain the
 declaration-by-declaration findings and historical milestones.
 
-## Wake-up summary — September 20, 2026, 15:02 UTC
+## Wake-up summary — September 20, 2026, 15:30 UTC
 
 **The port builds and runs on macOS with Lean 4.34.0, but it is not yet a
 fully source-audited port.** All 35 built Flocq module names have Lean
@@ -26,9 +26,9 @@ File coverage is not a completion percentage.
 The latest verified library and tests are on the
 [review branch](https://github.com/alok/FloatSpec/tree/codex/astra-flocq-audit).
 Run `lake exe floatspec_demo` for the seven-part native executable.
-Its examples and the **6,219-job build** pass. Fresh compiled checks cover
-**13,537 declarations / 58 modules**, find exactly the four recorded proof
-debts, and validate **228 pinned source anchors**.
+Its examples and the **6,220-job build** pass. Fresh compiled checks cover
+**13,538 declarations / 58 modules**, find exactly the four recorded proof
+debts, and validate **229 pinned source anchors**.
 
 The main conceptual repair is separating a **raw encoding**, a **canonical
 value**, and a **native machine float**. Raw `(3,-1)` denotes 1.5 but is not
@@ -83,7 +83,21 @@ contracts without certifying their surrounding modules.
 Local macOS success is not a green hosted-CI claim: fork CI has a separate
 known dependency-cache/toolchain mismatch.
 
-**Newest bounded finding:** a separate Pff probe passes 1,452 cross-tests
+**Newest semantic repair:** Pff's source-facing rounding now uses Rocq's
+logarithm convention: `ln x = 0` when `x ≤ 0`. Lean's `Real.log` instead uses
+the absolute value there. At radix −2 and input 2, the old formula returned
+`(2,0)` while pinned Rocq returns `(-4,-1)`. Both records denote two, but they
+are not the same source result. Paired closed Lean/Rocq regressions pin the
+correct records for inputs 2 and −2. A closed Lean theorem proves that this
+repair leaves **every positive-radix result unchanged**, at every precision
+and real input. This is a mathematical definition repair, not a native
+execution claim about real-number logarithms.
+
+The old broad run remains frozen in its original worktree. This repair is
+built and checked in a separate isolated worktree, so that run's evidence is
+not silently relabeled as covering the new definition.
+
+**Next bounded finding:** a separate Pff probe passes 1,452 cross-tests
 and 14,078 independent exact-value assertions, with all 14 deliberately
 corrupted output columns detected. A different, typed boundary probe exposes
 a missing source-shaped interface: the old normalized-neighbor/parity
@@ -91,8 +105,8 @@ wrappers ignore their extra radix argument and use the Core type's radix.
 For a valid base-3 bound, Flocq's normalized successor of one is `(4,-1)`;
 the wrapper indexed by base two returns `(3,-1)` even when passed `3`.
 This is an adapter restriction, not permission to identify those APIs.
-An explicit one-radix interface is scratch-checked but **not yet integrated**
-while the broad source snapshot is frozen. Its status will be updated here.
+An explicit one-radix interface is scratch-checked but **not yet integrated**.
+Its status will be updated here.
 
 Reviewable work is on
 [`alok/FloatSpec:codex/astra-flocq-audit`](https://github.com/alok/FloatSpec/tree/codex/astra-flocq-audit).

@@ -1,4 +1,5 @@
 import FloatSpec.src.Pff.Pff
+import FloatSpec.Linter.CoqSourceLinter
 
 /-!
 # Source-faithful Pff boundary
@@ -246,17 +247,27 @@ noncomputable def firstNormalPos (radix : Int) (b : Fbound)
     (precision : Nat) : float :=
   ⟨nNormMin radix precision, -(b.dExp : Int)⟩
 
+/-- Rocq Stdlib's natural logarithm is zero on nonpositive inputs.
+
+This differs from Lean's {name}`Real.log`, which is extended using absolute
+value. Pff's total source-facing definitions must retain the Rocq convention,
+even outside the positive-radix hypotheses of their correctness theorems. -/
+@[flocq_local "Rocq Stdlib Rpower.ln extension used by Pff; not a Flocq-owned declaration"]
+noncomputable def rocqLn (x : Real) : Real :=
+  if 0 < x then Real.log x else 0
+
 /-- Coq `Pff.RND_Min_Pos`.
 
 The source declaration has one explicit radix and a natural precision.  In
 particular, the threshold is observed with that same radix; there is no
 independent type-level `beta` that could select a different branch. -/
+@[flocq_source "src/Pff/Pff.v" 27157 "RND_Min_Pos"]
 noncomputable def RND_Min_Pos (b : Fbound) (radix : Int)
     (precision : Nat) (r : Real) : float :=
   let firstNormPosValue := FtoR radix (firstNormalPos radix b precision)
   if firstNormPosValue ≤ r then
     let e : Int :=
-      IRNDD (Real.log r / Real.log (radix : Real) +
+      IRNDD (rocqLn r / rocqLn (radix : Real) +
         (-(precision : Int) + 1 : Int))
     ⟨IRNDD (r * (radix : Real) ^ (-e)), e⟩
   else
