@@ -1,8 +1,9 @@
-"""Independent finite-input IEEE oracle using exact rational/integer arithmetic.
+"""Independent IEEE return-value oracle using exact rational/integer arithmetic.
 
 This is not a translation of Flocq's integer algorithms. It selects points on
-the representable grid, including midpoint and overflow boundaries. NaN and
-infinite-input arithmetic are deliberately outside this oracle's scope.
+the representable grid, including midpoint and overflow boundaries. Exceptional
+values use a separate classification table and the pinned Flocq payload policy.
+This oracle does not model hardware exception flags.
 """
 
 from dataclasses import dataclass
@@ -10,10 +11,11 @@ from fractions import Fraction
 from math import isqrt
 
 
-SCOPE = ("Exact rational/grid expectations for finite-input IEEE arithmetic; "
-         "square root uses squared midpoints. NaN/infinite-input arithmetic, "
-         "zero divisors and negative square roots are excluded. Input echoes, "
-         "finite overflow/underflow and signed zero are included.")
+SCOPE = ("Exact rational/grid return-value expectations for IEEE arithmetic; "
+         "square root uses squared midpoints. Includes signed zero, gradual "
+         "underflow, overflow, infinities, zero divisors, negative square roots "
+         "and pinned Flocq first-NaN payload selection. Native observations "
+         "canonicalize NaNs. Does not model hardware exception flags.")
 
 
 @dataclass(frozen=True)
@@ -135,14 +137,69 @@ def round_sqrt(fmt, mode, value, negative_zero=False):
     return encode_grid(fmt, False, exponent, lower + upper, mode)
 
 
-def expected_operations(width, mode, left, right, third=None):
-    """Expected words for operations whose operands are finite and in scope.
+def exceptional_operations(fmt, left, right, third=None):
+    """Classify exceptional return values independently of the numeric algorithm.
 
-    Division by zero and negative square root are excluded. Signed zeros,
-    overflow, gradual underflow, and all five rounding modes are included.
+    Full-payload Bits.b32/b64 operations preserve the first NaN operand as-is;
+    invalid operations without an input NaN use the positive quiet default.
+    In particular subtraction does not negate its right NaN's sign, and FMA
+    checks an exact finite product without prematurely overflowing it.
     """
+    mask = fmt.sign_bit - 1
+    default_nan = fmt.infinity | (1 << (fmt.fraction_bits - 1))
+    lx, ry = left & mask, right & mask
+    sx, sy = bool(left & fmt.sign_bit), bool(right & fmt.sign_bit)
+    signed_inf = fmt.infinity | (fmt.sign_bit if sx != sy else 0)
+    signed_zero = fmt.sign_bit if sx != sy else 0
+    result = {}
+    first_nan = next((word for word in (left, right) if word & mask > fmt.infinity), None)
+    if first_nan is not None:
+        result.update({name: first_nan for name in ("add", "sub", "mul", "div")})
+    else:
+        if lx == fmt.infinity or ry == fmt.infinity:
+            result["add"] = (default_nan if lx == ry and sx != sy else
+                             left if lx == fmt.infinity else right)
+            result["sub"] = (default_nan if lx == ry and sx == sy else
+                             left if lx == fmt.infinity else right ^ fmt.sign_bit)
+            result["mul"] = default_nan if lx == 0 or ry == 0 else signed_inf
+        if lx == ry == fmt.infinity or lx == ry == 0:
+            result["div"] = default_nan
+        elif lx == fmt.infinity or ry == 0:
+            result["div"] = signed_inf
+        elif ry == fmt.infinity:
+            result["div"] = signed_zero
+    if lx > fmt.infinity:
+        result["sqrt_left"] = left
+    elif sx and lx != 0:
+        result["sqrt_left"] = default_nan
+    elif lx == fmt.infinity:
+        result["sqrt_left"] = left
+    if third is not None:
+        tz = third & mask
+        first_nan = next((word for word in (left, right, third)
+                          if word & mask > fmt.infinity), None)
+        if first_nan is not None:
+            result["fma"] = first_nan
+        elif (lx == fmt.infinity and ry == 0) or (ry == fmt.infinity and lx == 0):
+            result["fma"] = default_nan
+        elif lx == fmt.infinity or ry == fmt.infinity:
+            result["fma"] = default_nan if tz == fmt.infinity and third != signed_inf else signed_inf
+        elif tz == fmt.infinity:
+            result["fma"] = third
+    return result
+
+
+def expected_operations(width, mode, left, right, third=None):
+    """Expected full-payload words, all input classes and five rounding modes.
+
+    Finite computations select exact neighboring grid points; exceptional
+    outcomes use an independent classification table. No exception flags.
+    """
+    if mode not in range(5):
+        raise ValueError("rounding mode must be in 0..4")
     fmt = FORMATS[width]
     x, y = decode(fmt, left), decode(fmt, right)
+    z = decode(fmt, third) if third is not None else None
     sx, sy = bool(left & fmt.sign_bit), bool(right & fmt.sign_bit)
     result = {}
     if x is not None and y is not None:
@@ -153,13 +210,13 @@ def expected_operations(width, mode, left, right, third=None):
         if y:
             result["div"] = round_rational(fmt, mode, x / y, sx != sy)
         if third is not None:
-            z = decode(fmt, third)
             if z is not None:
                 product_sign, sz = sx != sy, bool(third & fmt.sign_bit)
                 zero_sign = product_sign if x * y == 0 and z == 0 and product_sign == sz else mode == 2
                 result["fma"] = round_rational(fmt, mode, x * y + z, zero_sign)
     if x is not None and x >= 0:
         result["sqrt_left"] = round_sqrt(fmt, mode, x, sx)
+    result.update(exceptional_operations(fmt, left, right, third))
     return result
 
 
@@ -192,15 +249,15 @@ def mode_columns(case):
 
 
 def native_columns(case):
-    """Native adapter canonicalizes NaNs; expected finite arithmetic is exact."""
+    """Native adapter canonicalizes NaNs in input echoes and arithmetic results."""
     left, right = case
 
     def canonical(word):
         magnitude = word & ((1 << 63) - 1)
         return 0x7ff8000000000000 if magnitude > 0x7ff0000000000000 else word
 
-    return {"left": canonical(left), "right": canonical(right),
-            **expected_operations(64, 0, left, right)}
+    return {name: canonical(word) for name, word in
+            {"left": left, "right": right, **expected_operations(64, 0, left, right)}.items()}
 
 
 def compare_columns(cases, observations, columns, expected_columns):

@@ -84,7 +84,10 @@ def corpus(seed, samples):
                    (inf, two, sign | inf), (sign | one, two, one),
                    (nan1, one, two), (one, nan2, two), (one, two, nan3),
                    (nan1, nan2, nan3), (nan2, nan1, nan3), (0, inf, nan3),
-                   (nan1, inf, 0), (inf, nan2, 0), (sign, one, 0)]
+                   (nan1, inf, 0), (inf, nan2, 0), (sign, one, 0),
+                   (inf, inf, sign | inf), (sign | inf, sign | inf, inf),
+                   (inf, sign, nan3), (sign, inf, nan3), (max_finite, two, sign | inf),
+                   (sign | max_finite, two, inf), (one, sign, sign), (sign, sign, sign)]
         for mode in range(5):
             cases.extend((width, mode, *triple) for triple in triples)
             for _ in range(samples):

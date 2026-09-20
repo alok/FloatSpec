@@ -3567,6 +3567,44 @@ command failed and was rerun with the actual `SourcePremiseContracts.lean`.
 None of those failed attempts is counted as a pass. CI repair remains pending
 approval; the original checkout and modified Flocq dependency remain untouched.
 
+### September 20, 20:30 UTC — exceptional inputs enter the independent IEEE gate
+
+The exact rational/grid oracle now includes a separate exceptional-value
+classifier: infinities, zero divisors, negative square roots, and NaNs with
+pinned Flocq's first-input-payload policy. The native observation route
+canonicalizes NaNs in both inputs and results; full-payload source routes do
+not. FMA distinguishes an exact finite product from a prematurely overflowing
+rounded product. Hardware exception flags are not modeled.
+
+All **16 oracle tests pass** in 34.552 seconds: fourteen unit/receipt controls
+and two live tests with **47 fresh cases, 47 kernel equalities and 7,036
+independent expected-field checks**. All **22 bridge-harness tests pass**:
+twelve all-mode tests in 54.552 seconds and ten native tests in 37.697 seconds.
+Two new controls first execute an unmodified baseline, then mutate every actual
+Lean/Rocq expression to agree on a wrong exceptional answer: treating infinity
+times zero in FMA as zero, and reversing first-NaN payload priority in addition.
+The independent gate rejects both, retains replay inputs and generates no
+misleading kernel regressions. Baseline pairwise agreement is not treated as
+sufficient evidence.
+
+The saved seed-861047 reports also pass the expanded expectations: **30,912
+native fields plus 66,690 all-mode fields = 97,602 assertions**. Those are
+new audits of the preceding eb306bb5 execution, not fresh executions or
+687aa7a8 runtime claims. The fresh 470-case mode run on 687aa7a8, seed
+862073, subsequently passed in 735.288 seconds: 470 kernel equalities and
+80,370 independent assertions, no mismatches. The fresh 1,104-case native
+run, seed 862081, is still underway and is not yet a pass.
+The older 5d241916 full aggregate remains running and frozen.
+
+Logs: `/private/tmp/floatspec-exception-oracle-live-20260920.log`,
+`floatspec-exception-{modes,native}-harness-20260920.log` and
+`floatspec-exception-{native,modes}-retained-audit-861047.json`.
+No Lean definition, theorem, toolchain or proof debt changes in this slice.
+The final preceding full build remains applicable to the identical Lean
+source fingerprint. The reading guide now links an explicit fidelity gap list,
+distinguishing known interface gaps, unreviewed semantics, provenance coverage,
+test scope and native proof obligations.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In

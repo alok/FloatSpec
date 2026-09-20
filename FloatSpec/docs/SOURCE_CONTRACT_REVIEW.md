@@ -6,6 +6,20 @@ all declarations in the named modules. See the
 [running audit](ASTRA_AUDIT_2026-09-19.md) for execution receipts and the
 [reading guide](READING_GUIDE.md) for the mathematical story.
 
+## ULP nearest rounding: eight erased policy parameters
+
+Eight midpoint and neighbor exports accepted tie policies but stated their
+results with the fixed ties-up chooser. The two-policy agreement theorem even
+compared that same fixed value to itself. The repaired direct propositions
+mention the actual supplied choices through roundR/round_to_generic and
+Znearest. All eight proofs are closed; four obsolete private helpers are removed.
+
+The paired UlpNearestChoiceContracts fixtures consume the source-shaped types,
+prove the mathematical half-integer distinction, and execute the integer
+decision `[0, 1]`. Four live mutations reject an erased second policy and the
+wrong midpoint answer in both assistants. The local fixed-policy chooser's
+body/type remains unchanged and is explicitly classified as local.
+
 ## Generic rounding and ULP: 27 unnecessary validity assumptions
 
 A compiled-type survey of 266 same-named exports in Generic_fmt, Ulp,

@@ -15,7 +15,7 @@ This guide follows those jobs in order. The detailed
 [independent continuation audit](ASTRA_AUDIT_2026-09-19.md) retain the
 declaration-by-declaration findings and historical milestones.
 
-## Wake-up summary — September 20, 2026, 20:18 UTC
+## Wake-up summary — September 20, 2026, 20:30 UTC
 
 **The port builds and runs on macOS with Lean 4.34.0; it is not yet a fully
 source-audited port.** All 35 built Flocq module names have Lean counterparts,
@@ -110,6 +110,18 @@ a midpoint distinction, and an executable integer tie decision pass in both
 Lean and Rocq; four mutation tests reject the former mistake and a wrong tie
 answer. All corrected proofs are closed, and four obsolete private helpers
 are removed. Read [the small example](DEMO_EXEMPLARS.md#a-proved-statement-can-say-too-little).
+
+The independent IEEE oracle now covers exceptional inputs too: infinities,
+NaNs with the pinned first-payload rule, zero divisors and negative square
+roots. **Sixteen oracle tests and twenty-two integrated bridge-harness tests
+pass**, including real shared-bug mutations for invalid FMA and NaN priority.
+The 47 small fresh cases have 47 kernel proofs and 7,036 expected-field checks.
+Re-auditing the saved 1,494-case group with the expanded oracle passes **97,602
+checks**; that strengthens old observations, not their execution freshness.
+The fresh 470-case all-mode run (seed 862073, source `687aa7a8`) passes with
+470 kernel equalities and 80,370 independent checks. The fresh 1,104-case
+native run remains in progress and is not yet a pass.
+For the remaining work, read the explicit [fidelity gap list](SOURCE_FIDELITY_GAPS.md).
 
 A second [small paired example](DEMO_EXEMPLARS.md#a-valid-format-can-have-decreasing-ulp)
 explains why assumption removal must be selective: a valid format can have
@@ -604,7 +616,7 @@ Source links make that review navigable. `@[flocq_source]` records a pinned
 Coq path, line, and name; `@[flocq_local]` explains a Lean-only helper.
 Thirteen source files enable strict public-definition classification; a targeted
 section of `Binary.lean` additionally enables the same check.
-The compiler-backed validator checks all 311 registered anchors, including
+The compiler-backed validator checks all 319 registered anchors, including
 combined attributes and later attribute commands. These links are metadata,
 not a proof that bodies or theorem signatures correspond.
 

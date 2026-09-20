@@ -60,6 +60,69 @@ class CorpusTests(unittest.TestCase):
 
 @unittest.skipUnless(os.environ.get("FLOCQ_AUDIT_DIR"), "live test requires FLOCQ_AUDIT_DIR")
 class LiveTests(unittest.TestCase):
+    def assert_shared_exception_mutation_rejected(self, case, mutation, expected_columns):
+        import ieee_exact_oracle as oracle
+        flocq = Path(os.environ["FLOCQ_AUDIT_DIR"]).resolve()
+        with tempfile.TemporaryDirectory(prefix="floatspec-shared-exception-mutation-") as directory:
+            root = Path(directory)
+            baseline = root / "baseline"
+            baseline.mkdir()
+            observations = bridge.execute([case], flocq, bridge.configured_coqc(flocq), baseline)
+            self.assertEqual(bridge.compare([case], observations), [])
+            failures, _ = oracle.compare_columns([case], observations, bridge.COLUMNS, oracle.mode_columns)
+            self.assertEqual(failures, [])
+            output, replay = root / "output", root / "cases.json"
+            replay.write_text(json.dumps([case]))
+            argv = ["ieee_modes_bridge", "--flocq-dir", str(flocq), "--skip-build",
+                    "--replay", str(replay), "--output", str(output)]
+            with (patch("sys.argv", argv), patch.object(bridge, "expression", mutation),
+                  patch.object(bridge, "bootstrap") as bootstrap,
+                  contextlib.redirect_stdout(io.StringIO()), self.assertRaises(SystemExit)):
+                bridge.main()
+            report = json.loads((output / "report.json").read_text())
+            self.assertEqual(report["status"], "mismatch")
+            self.assertEqual(report["mismatches"], [])
+            self.assertEqual(len(report["oracle_mismatches"]), 3)
+            self.assertEqual(report["oracle_assertions"], 171)
+            self.assertEqual(report["bootstrapped_lean_cases"], 0)
+            bootstrap.assert_not_called()
+            for failure in report["oracle_mismatches"]:
+                self.assertEqual(set(failure["columns"]), expected_columns)
+            self.assertEqual(json.loads((output / "replay.json").read_text()), [list(case)])
+
+    def test_shared_wrong_infinity_times_zero_is_rejected(self):
+        original = bridge.expression
+
+        def wrong_fma(case, language):
+            result = original(case, language)
+            width, mode, *_ = case
+            spelling = (bridge.LEAN_MODES if language == "lean" else bridge.COQ_MODES)[mode]
+            result = result.replace(f"{'Bits.' if language == 'rocq' else ''}b{width}_fma {spelling} x y z", "z")
+            if language == "lean":
+                for namespace, single_mode in (("BinarySingleNaN", bridge.LEAN_MODES[mode]),
+                        ("FloatSpec.IEEE754.BinarySingleNaN.Source", f".{bridge.COQ_MODES[mode]}")):
+                    result = result.replace(f"{namespace}.Bfma {single_mode} single_x single_y single_z", "single_z")
+            else:
+                prec, emax = (24, 128) if width == 32 else (53, 1024)
+                result = result.replace(f"@BinarySingleNaN.Bfma {prec} {emax} eq_refl eq_refl "
+                    f"{spelling} single_x single_y single_z", "single_z")
+            return result
+
+        self.assert_shared_exception_mutation_rejected((32, 0, 0x7f800000, 0, 0x3f800000), wrong_fma,
+            {"fma", "single_fma_kind", "single_fma_mantissa", "single_fma_exponent",
+             "source_single_fma_kind", "source_single_fma_mantissa", "source_single_fma_exponent"})
+
+    def test_shared_wrong_nan_payload_priority_is_rejected(self):
+        original = bridge.expression
+
+        def wrong_priority(case, language):
+            width, mode, *_ = case
+            spelling = (bridge.LEAN_MODES if language == "lean" else bridge.COQ_MODES)[mode]
+            return original(case, language).replace(f"b{width}_plus {spelling} x y", f"b{width}_plus {spelling} y x")
+
+        self.assert_shared_exception_mutation_rejected(
+            (64, 0, 0x7ff0000000000001, 0xfff8000000000025, 0), wrong_priority, {"add"})
+
     def test_shared_wrong_mode_is_rejected_before_bootstrap(self):
         original = bridge.expression
 

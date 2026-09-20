@@ -10,13 +10,13 @@ The aim is not to trust two matching programs blindly. We check mathematical
 invariants on each side, then compare the implementations on identical inputs,
 then turn the reference observations into checked Lean regression statements.
 
-An additional independent IEEE grid oracle now audits finite-input arithmetic
+An additional independent IEEE grid oracle now audits IEEE return values
 without copying the Flocq algorithm. It selects adjacent exact rational points;
 square root uses squared midpoint comparisons. Run
-`uv run scripts/test_ieee_exact_oracle.py -v`: twelve oracle/receipt controls
+`uv run scripts/test_ieee_exact_oracle.py -v`: fourteen oracle/receipt controls
 always run, and two live Lean/Rocq tests run when `FLOCQ_AUDIT_DIR` is set.
 The live tests cover 40 all-mode cases plus seven native arithmetic pairs,
-produce 47 kernel regression proofs, and check 6,738 expected fields.
+produce 47 kernel regression proofs, and check 7,036 expected fields.
 The next aggregate now includes this suite. It was not part of the already
 running frozen aggregate, whose scripts remain unchanged. Both the native
 arithmetic and all-mode bridge runners now apply these expectations to every
@@ -29,10 +29,14 @@ To audit **saved** observations independently, use
 (or `--profile native`). It requires a completed report, exact case/proof counts,
 and every saved output path. It rejects common input/rounding corruption even
 if all paths agree. Its output retains the historical source hash and explicitly
-says it is not a fresh execution. Current scope excludes NaN/infinite-input
-arithmetic, zero divisors and negative square roots, while retaining finite
-overflow/underflow and signed-zero rules. The paired differential paths still
-cover the excluded exceptional cases; no universal equivalence is inferred.
+says it is not a fresh execution. Current scope includes NaN/infinite-input
+arithmetic, zero divisors and negative square roots, as well as finite
+overflow/underflow and signed-zero rules. The exceptional classifier retains
+pinned Flocq's first-NaN payload policy; native observations canonicalize NaNs.
+Hardware exception flags are not modeled, and no universal equivalence is inferred.
+Two live shared mutations additionally replace FMA of infinity times zero with
+the addend, and swap NaN priority in addition. Pairwise agreement remains, but
+the independent oracle rejects both and prevents bootstrapping wrong expectations.
 
 The standalone paired `scripts/fixtures/ExponentValidityBoundary.lean` / `.v`
 provides six checked declarations explaining a genuine source premise:

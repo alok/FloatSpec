@@ -32,7 +32,7 @@ class LiveOracleTests(unittest.TestCase):
             self.assertEqual(bridge.compare(cases, results), [])
             failures, assertions = oracle.compare_columns(cases, results, bridge.COLUMNS, oracle.mode_columns)
             self.assertEqual(failures, [])
-            self.assertEqual(assertions, 6570)
+            self.assertEqual(assertions, 6840)
             bridge.bootstrap(cases, results["rocq"], folder)
 
     def test_native_compiled_kernel_rocq_and_proofs(self):
@@ -49,7 +49,7 @@ class LiveOracleTests(unittest.TestCase):
             self.assertEqual(bridge.compare(cases, results), [])
             failures, assertions = oracle.compare_columns(cases, results, bridge.COLUMNS, oracle.native_columns)
             self.assertEqual(failures, [])
-            self.assertEqual(assertions, 168)
+            self.assertEqual(assertions, 196)
             bridge.bootstrap_lean(cases, results["rocq"], folder)
 
 
@@ -67,8 +67,8 @@ class SavedReportTests(unittest.TestCase):
         batch = folder / "batch_000000"
         batch.mkdir()
         for name in ("native", "model", "compiled_model"):
-            (batch / f"{name}.out").write_text("[[0, 0, 0, 0, 0, 0, 0]]")
-        (batch / "rocq.out").write_text("= [[0; 0; 0; 0; 0; 0; 0]] : list (list Z)")
+            (batch / f"{name}.out").write_text("[[0, 0, 0, 0, 0, 9221120237041090560, 0]]")
+        (batch / "rocq.out").write_text("= [[0; 0; 0; 0; 0; 9221120237041090560; 0]] : list (list Z)")
         return path, report
 
     def test_saved_report_and_correlated_corruption(self):
@@ -78,7 +78,7 @@ class SavedReportTests(unittest.TestCase):
             path, _ = self.fixture(folder)
             result = checker.check_report(path, "native")
             self.assertEqual(result["status"], "passed")
-            self.assertEqual(result["oracle_assertions"], 24)  # 0/0 is explicitly excluded
+            self.assertEqual(result["oracle_assertions"], 28)
             self.assertEqual(result["lean_source_sha256"], "historical-source")
             for name in ("native", "model", "compiled_model", "rocq"):
                 output = folder / "batch_000000" / f"{name}.out"
@@ -197,10 +197,69 @@ class ExactOracleTests(unittest.TestCase):
         result = oracle.expected_operations(32, 0, 0x3f800001, 0x3f7ffffe, 0xbf800000)
         self.assertEqual(result["fma"], 0xa8800000)
 
-    def test_excluded_inputs_are_explicit(self):
-        self.assertEqual(oracle.expected_operations(32, 0, 0x7f800001, 0x7f800000), {})
-        self.assertNotIn("div", oracle.expected_operations(32, 0, 0x3f800000, 0))
-        self.assertNotIn("sqrt_left", oracle.expected_operations(32, 0, 0xbf800000, 0x3f800000))
+    def test_exceptional_return_values_in_both_widths_and_all_modes(self):
+        for width, one, two, inf, nan, sign in (
+                (32, 0x3f800000, 0x40000000, 0x7f800000, 0x7fc00000, 0x80000000),
+                (64, 0x3ff0000000000000, 0x4000000000000000, 0x7ff0000000000000,
+                 0x7ff8000000000000, 0x8000000000000000)):
+            negative_inf = inf | sign
+            triples = [
+                (inf, negative_inf, 0, {"add": nan, "sub": inf, "mul": negative_inf,
+                                       "div": nan, "sqrt_left": inf, "fma": negative_inf}),
+                (negative_inf, negative_inf, inf, {"add": negative_inf, "sub": nan,
+                    "mul": inf, "div": nan, "sqrt_left": nan, "fma": inf}),
+                (one, sign, 0, {"add": one, "sub": one, "mul": sign, "div": negative_inf,
+                               "sqrt_left": one}),
+                (0, 0, one, {"add": 0, "mul": 0, "div": nan, "sqrt_left": 0, "fma": one}),
+                (inf, 0, one, {"add": inf, "sub": inf, "mul": nan, "div": inf,
+                               "sqrt_left": inf, "fma": nan}),
+                (one, negative_inf, 0, {"add": negative_inf, "sub": inf, "mul": negative_inf,
+                                        "div": sign, "sqrt_left": one, "fma": negative_inf}),
+                (inf, one, negative_inf, {"fma": nan}),
+                # A finite product can exceed the format without becoming an
+                # infinity before addition. FMA(maximum,2,-infinity) is -infinity.
+                (inf - 1, two, negative_inf, {"fma": negative_inf}),
+            ]
+            for mode in range(5):
+                for left, right, third, expected in triples:
+                    actual = oracle.expected_operations(width, mode, left, right, third)
+                    self.assertEqual(len(actual), 6)
+                    for name, value in expected.items():
+                        self.assertEqual(actual[name], value, (width, mode, left, right, third, name))
+
+    def test_nan_payload_order_arity_and_native_canonicalization(self):
+        for width, one, inf, sign in (
+                (32, 0x3f800000, 0x7f800000, 0x80000000),
+                (64, 0x3ff0000000000000, 0x7ff0000000000000, 0x8000000000000000)):
+            first, second, third = inf + 1, (inf + 25) | sign, inf + 37
+            for mode in range(5):
+                all_nan = oracle.expected_operations(width, mode, first, second, third)
+                self.assertTrue(all(value == first for value in all_nan.values()))
+                right_nan = oracle.expected_operations(width, mode, one, second, third)
+                self.assertEqual(right_nan["sqrt_left"], one)  # unary arity
+                self.assertTrue(all(value == second for name, value in right_nan.items()
+                                    if name != "sqrt_left"))
+                self.assertEqual(oracle.expected_operations(width, mode, inf, 0, third)["fma"], third)
+                self.assertEqual(oracle.expected_operations(width, mode, 0, inf, third)["fma"], third)
+            fields = oracle.mode_columns((width, 0, first, second, third))
+            self.assertEqual(fields["add"], first)
+            self.assertEqual([fields[f"single_add_{f}"] for f in ("kind", "sign", "mantissa", "exponent")],
+                             [2, 0, 0, 0])
+        native = oracle.native_columns((0xfff0000000000019, 0x7ff0000000000001))
+        self.assertEqual(len(native), 7)
+        self.assertEqual(set(native.values()), {0x7ff8000000000000})
+
+    def test_correlated_wrong_exceptional_result_is_rejected(self):
+        case = (32, 0, 0x7f800000, 0, 0x3f800000)
+        expected = oracle.mode_columns(case)
+        columns = tuple(expected)
+        row = list(expected.values())
+        row[columns.index("fma")] = 0x3f800000  # incorrectly replace infinity*0 by zero
+        observations = {path: [row.copy()] for path in ("lean", "compiled", "rocq")}
+        failures, assertions = oracle.compare_columns([case], observations, columns, oracle.mode_columns)
+        self.assertEqual(assertions, 171)
+        self.assertEqual(len(failures), 3)
+        self.assertTrue(all(failure["columns"] == ["fma"] for failure in failures))
 
     def test_all_paths_agreeing_on_wrong_rounding_is_rejected(self):
         case = (32, 3, 0x3f800000, 0x33800000, 0)

@@ -170,11 +170,22 @@ uv run scripts/check_ieee_exact_oracle.py --profile modes /path/to/report.json
 uv run scripts/check_ieee_exact_oracle.py --profile native /path/to/report.json
 ```
 
-The oracle covers finite-input arithmetic, signed zeros, gradual underflow,
-overflow, all five modes, and fused single-rounding semantics. NaN/infinite-input
-arithmetic, division by zero, and negative square root remain outside its
-numeric scope; the differential paths still observe them. Finite checks and
-an independent oracle are not universal conformance proofs.
+The oracle covers finite arithmetic, signed zeros, gradual underflow, overflow,
+all five modes, and fused single-rounding semantics. A separate classifier
+now covers infinities, NaNs, division by zero, and negative square roots too.
+It follows pinned Flocq's payload policy: the first NaN operand is preserved
+as-is; an invalid result without an input NaN gets the positive quiet default.
+This is a source-library policy, not a claim about every hardware NaN policy.
+The native adapter intentionally canonicalizes NaNs; source bit results do not.
+
+For example, `infinity * 0 + 1` is NaN even though replacing the product by
+zero would give one. A mutation changes every actual language expression to
+return the addend; they all agree, but the independent expectation rejects
+them. Another mutation reverses operand order in NaN addition, exposing the
+wrong first-payload selection despite mathematical addition's commutativity.
+FMA of `maximumFinite * 2 + negativeInfinity` is negative infinity: the exact
+finite product is not prematurely rounded to infinity before the addition.
+No hardware exception flags or universal conformance proof are claimed.
 
 ## A valid format can have decreasing ULP
 
