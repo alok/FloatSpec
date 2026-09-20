@@ -6,6 +6,42 @@ all declarations in the named modules. See the
 [running audit](ASTRA_AUDIT_2026-09-19.md) for execution receipts and the
 [reading guide](READING_GUIDE.md) for the mathematical story.
 
+## Raw rounding, structural laws, and multiplication-error bounds
+
+Compiled pinned Rocq permits arbitrary exponent functions in `Generic_fmt.round`
+and its structural zero, exactness, extensionality, and negation laws. The Lean
+`round_to_generic` wrapper and 16 associated laws/compatibility helpers had
+acquired an extra `Valid_exp` instance. The formula itself does not need that
+instance; all 17 binders are now removed with proof bodies unchanged.
+Public source counterparts have pinned links; the two purely Lean compatibility
+helpers are explicitly classified as local.
+
+This is deliberately not a blanket change. Source `round_ZR_abs`, `round_AW_abs`,
+`round_abs_abs`, and monotonicity/format-closure contracts retain their validity
+premises. Being able to apply the raw formula does not establish that an
+arbitrary exponent function defines a well-behaved floating-point format.
+The new paired examples prove that `fexp(e) = e + 1` is invalid and nevertheless
+apply the source zero-rounding theorem to it.
+
+The `Calc.Round` zero adapter also no longer requires `Valid_exp`. Its public
+contract is now the ordinary equality `round beta fexp mode 0 = 0`, with its
+three callers migrated together. Its `Mode` carrier already supplies the
+only needed fact, that integer rounding maps zero to zero.
+
+Pinned `Prop.Mult_error.v:274` and `Pff/Pff2Flocq.v:1277` additionally omit
+`Prec_gt_0` on `mult_error_FLT_ge_bpow` and its nearest-even specialization.
+Those two Lean signatures now match that boundary, preserving the format,
+product-size, nonzero-error, and valid-integer-rounder hypotheses where the
+source requires them. Existing proofs remain closed. The other seven reviewed
+`Mult_error` signatures and four reviewed Sterbenz signatures did not reveal
+additional premise/conclusion mismatches in this inspection.
+
+Twenty new compiler guards bring the total to **72**. All 20 failed before
+the correction; the paired pinned Rocq clients compiled. Typed Lean consumers
+also exercise the corrected interfaces without the extra instances. Build
+and execution receipts for this slice are recorded in the running audit.
+This remains a selected source-contract review, not whole-module certification.
+
 ## Canonical exponents and real comparison names
 
 Four further Generic_fmt exports now omit a source-absent `Valid_exp`

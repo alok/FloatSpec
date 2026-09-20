@@ -620,7 +620,9 @@ lemma F2R_ge (f : FloatSpec.Core.Defs.FlocqFloat beta) (h_nonzero : _root_.F2R f
     _ = |_root_.F2R f| := by
             simp [_root_.F2R, FloatSpec.Core.Defs.F2R]
 
+omit [Prec_gt_0 prec] in
 /-- FLT multiplication error greater than or equal to power bound -/
+@[flocq_source "src/Prop/Mult_error.v" 274 "mult_error_FLT_ge_bpow"]
 theorem mult_error_FLT_ge_bpow (x y : ℝ) (e : Int)
   (hβ : 1 < beta)
   (hx : generic_format beta (FLT_exp emin prec) x) (hy : generic_format beta (FLT_exp emin prec) y)

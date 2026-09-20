@@ -2,6 +2,7 @@ import Lean
 import FloatSpec.src.Prop.Div_sqrt_error
 import FloatSpec.src.Prop.Round_odd
 import FloatSpec.src.IEEE754.BinarySingleNaNSourceFacade
+import FloatSpec.src.Pff.Pff2Flocq
 
 open Lean Meta Elab Command
 
@@ -117,6 +118,28 @@ end FloatSpec.Test.SourcePremiseGuard
 #guard_no_source_premise Binary.binary_round_aux Prec_gt_0 at prec
 #guard_no_source_premise Binary.binary_round Prec_gt_0 at prec
 
+-- Raw rounding and structural laws do not require a valid exponent function.
+#guard_no_source_premise FloatSpec.Core.Generic_fmt.roundR_opp FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.Generic_fmt.round_to_generic FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.Generic_fmt.round_to_generic_int_eq_roundR FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.Generic_fmt.round_to_generic_spec FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.Generic_fmt.round_generic FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.Generic_fmt.round_generic_identity FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.Generic_fmt.round_ext FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.Generic_fmt.round_opp FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.Generic_fmt.round_0 FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.Generic_fmt.round_DN_opp FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.Generic_fmt.round_UP_opp FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.Generic_fmt.round_ZR_opp FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.Generic_fmt.round_AW_opp FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.Generic_fmt.round_ZR_DN FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.Generic_fmt.round_ZR_UP FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.Generic_fmt.round_AW_UP FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.Generic_fmt.round_AW_DN FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Calc.Round.round_0 FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise mult_error_FLT_ge_bpow Prec_gt_0 at prec
+#guard_no_source_premise mult_error_FLT_ge_bpow' Prec_gt_0 at prec
+
 /-! Typed consumers deliberately omit proof-only section assumptions.
 Unlike a bare `#check`, each example fails if a public theorem accidentally
 inherits a stronger premise than its pinned Rocq counterpart. -/
@@ -154,6 +177,68 @@ example {prec emax : Int} (sign : Bool) (mantissa : FloatSpec.Core.Zaux.Positive
   Binary.canonical_canonical_mantissa sign mantissa exponent hc
 
 variable (beta : Int) [ValidRadix beta] (hβ : 1 < beta)
+
+example (fexp : Int → Int) (rnd : ℝ → Int) (x : ℝ) :
+    FloatSpec.Core.Generic_fmt.round_to_generic beta fexp rnd x =
+      FloatSpec.Core.Generic_fmt.roundR beta fexp rnd x := rfl
+
+example (fexp : Int → Int) (rnd : ℝ → Int)
+    [FloatSpec.Core.Generic_fmt.Valid_rnd rnd] :
+    FloatSpec.Core.Generic_fmt.round_to_generic beta fexp rnd 0 = 0 :=
+  FloatSpec.Core.Generic_fmt.round_0 beta fexp rnd
+
+example (fexp : Int → Int) (rnd : ℝ → Int)
+    [FloatSpec.Core.Generic_fmt.Valid_rnd rnd] (x : ℝ)
+    (hx : FloatSpec.Core.Generic_fmt.generic_format beta fexp x) :
+    FloatSpec.Core.Generic_fmt.round_to_generic beta fexp rnd x = x :=
+  FloatSpec.Core.Generic_fmt.round_generic beta fexp rnd x hx
+
+example (fexp : Int → Int) (rnd1 rnd2 : ℝ → Int)
+    (h : ∀ x, rnd1 x = rnd2 x) (x : ℝ) :
+    FloatSpec.Core.Generic_fmt.round_to_generic beta fexp rnd1 x =
+      FloatSpec.Core.Generic_fmt.round_to_generic beta fexp rnd2 x :=
+  FloatSpec.Core.Generic_fmt.round_ext beta fexp rnd1 rnd2 h x
+
+example (fexp : Int → Int) (rnd : ℝ → Int) (x : ℝ) :
+    FloatSpec.Core.Generic_fmt.round_to_generic beta fexp rnd (-x) =
+      -FloatSpec.Core.Generic_fmt.round_to_generic beta fexp
+        (FloatSpec.Core.Generic_fmt.Zrnd_opp rnd) x :=
+  FloatSpec.Core.Generic_fmt.round_opp beta fexp rnd x
+
+example (fexp : Int → Int) (mode : FloatSpec.Calc.Round.Mode) :
+    FloatSpec.Calc.Round.round beta fexp mode 0 = 0 :=
+  FloatSpec.Calc.Round.round_0 (beta := beta) (fexp := fexp) mode
+
+-- This exponent is genuinely invalid, yet the source zero theorem still applies.
+example : ¬ FloatSpec.Core.Generic_fmt.Valid_exp (fun e : Int => e + 1) := by
+  intro h
+  have hbad := ((h.valid_exp 0).2 (by decide)).1
+  norm_num at hbad
+
+example (rnd : ℝ → Int) [FloatSpec.Core.Generic_fmt.Valid_rnd rnd] :
+    FloatSpec.Core.Generic_fmt.round_to_generic 2 (fun e => e + 1) rnd 0 = 0 :=
+  FloatSpec.Core.Generic_fmt.round_0 2 _ rnd
+
+example (emin prec : Int) (rnd : ℝ → Int)
+    [FloatSpec.Core.Generic_fmt.Valid_rnd rnd] (x y : ℝ) (e : Int)
+    (hx : generic_format beta (FLT_exp emin prec) x)
+    (hy : generic_format beta (FLT_exp emin prec) y)
+    (hb : FloatSpec.Core.Raux.bpow beta (e + 2 * prec - 1) ≤ |x * y|)
+    (hnz : FloatSpec.Core.Generic_fmt.roundR beta (FLT_exp emin prec) rnd (x * y) - x * y ≠ 0) :
+    FloatSpec.Core.Raux.bpow beta e ≤
+      |FloatSpec.Core.Generic_fmt.roundR beta (FLT_exp emin prec) rnd (x * y) - x * y| :=
+  mult_error_FLT_ge_bpow (beta := beta) (emin := emin) (prec := prec)
+    (rnd := rnd) x y e hβ hx hy hb hnz
+
+example (emin prec : Int) (x y : ℝ) (e : Int)
+    (hx : generic_format beta (FLT_exp emin prec) x)
+    (hy : generic_format beta (FLT_exp emin prec) y)
+    (hb : x * y = 0 ∨ FloatSpec.Core.Raux.bpow beta e ≤ |x * y|) :
+    let rnd := FloatSpec.Core.Generic_fmt.Znearest (fun t : Int => !(decide (2 ∣ t)))
+    x * y - FloatSpec.Core.Generic_fmt.roundR beta (FLT_exp emin prec) rnd (x * y) = 0 ∨
+      FloatSpec.Core.Raux.bpow beta (e + 1 - 2 * prec) ≤
+        |x * y - FloatSpec.Core.Generic_fmt.roundR beta (FLT_exp emin prec) rnd (x * y)| :=
+  mult_error_FLT_ge_bpow' beta emin prec x y e hβ hx hy hb
 
 example (fexp : Int → Int) [FloatSpec.Core.Generic_fmt.Monotone_exp fexp]
     (x y : ℝ) (hy : 0 < y)

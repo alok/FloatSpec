@@ -1494,13 +1494,12 @@ theorem sqrt_error_N_FLT_ex_without_prec_gt_one_payload
       have hround0 :
           FloatSpec.Calc.Round.round beta (FLT_exp emin prec)
             (Znearest choice) (Real.sqrt x) = 0 := by
-        have htrip := FloatSpec.Calc.Round.round_0
+        have hzero := FloatSpec.Calc.Round.round_0
           (beta := beta) (fexp := FLT_exp emin prec)
           (mode := ⟨FloatSpec.Core.Generic_fmt.Znearest choice, by
             unfold FloatSpec.Core.Generic_fmt.Znearest
             simp [FloatSpec.Core.Raux.Zfloor, FloatSpec.Core.Raux.Rcompare]⟩)
-        simpa [hsqrt0, FloatSpec.Calc.Round.round, wp, Std.Do.PostCond.noThrow,
-          Id.run, pure] using htrip trivial
+        simpa [hsqrt0, FloatSpec.Calc.Round.round] using hzero
       simpa [hsqrt0] using hround0
   · have hx_pos : 0 < x := lt_of_not_ge hx_nonpos
     have hx_flx : generic_format beta (FLX_exp prec) x := by

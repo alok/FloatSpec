@@ -1,6 +1,7 @@
-From Stdlib Require Import ZArith Reals.
+From Stdlib Require Import ZArith Reals Lia.
 Require Import Flocq.Core.Core Flocq.Prop.Plus_error Flocq.Prop.Mult_error
   Flocq.Prop.Div_sqrt_error Flocq.IEEE754.Binary Flocq.IEEE754.BinarySingleNaN.
+Require Import Flocq.Pff.Pff2Flocq.
 Open Scope R_scope.
 
 Section Contracts.
@@ -140,3 +141,54 @@ Definition binary_canonical_contract (prec emax : Z) (sign : bool)
     canonical radix2 (SpecFloat.fexp prec emax)
       (Float radix2 (SpecFloat.cond_Zopp sign (Zpos mantissa)) exponent) :=
   @Binary.canonical_canonical_mantissa prec emax sign mantissa exponent Hc.
+
+Section StructuralRounding.
+Variable beta : radix.
+Variable fexp : Z -> Z.
+
+Definition unrestricted_round (rnd : R -> Z) (x : R) : R := round beta fexp rnd x.
+Definition zero_contract (rnd : R -> Z) (H : Valid_rnd rnd) :
+  round beta fexp rnd 0 = 0 := @round_0 beta fexp rnd H.
+Definition exact_contract (rnd : R -> Z) (H : Valid_rnd rnd) (x : R)
+    (Hx : generic_format beta fexp x) : round beta fexp rnd x = x :=
+  @round_generic beta fexp rnd H x Hx.
+Definition ext_contract (rnd1 rnd2 : R -> Z) (H : forall x, rnd1 x = rnd2 x) (x : R) :
+  round beta fexp rnd1 x = round beta fexp rnd2 x := @round_ext beta fexp rnd1 rnd2 H x.
+Definition opposite_contract (rnd : R -> Z) (x : R) :
+  round beta fexp rnd (-x) = -round beta fexp (Zrnd_opp rnd) x := @round_opp beta fexp rnd x.
+Definition down_opposite_contract (x : R) := @round_DN_opp beta fexp x.
+Definition up_opposite_contract (x : R) := @round_UP_opp beta fexp x.
+Definition zero_opposite_contract (x : R) := @round_ZR_opp beta fexp x.
+Definition away_opposite_contract (x : R) := @round_AW_opp beta fexp x.
+Definition zero_down_contract (x : R) (Hx : 0 <= x) := @round_ZR_DN beta fexp x Hx.
+Definition zero_up_contract (x : R) (Hx : x <= 0) := @round_ZR_UP beta fexp x Hx.
+Definition away_up_contract (x : R) (Hx : 0 <= x) := @round_AW_UP beta fexp x Hx.
+Definition away_down_contract (x : R) (Hx : x <= 0) := @round_AW_DN beta fexp x Hx.
+End StructuralRounding.
+
+Definition badExponent (e : Z) := (e + 1)%Z.
+Example bad_exponent_really_invalid : ~ Valid_exp badExponent.
+Proof.
+  intro H.
+  pose proof (proj1 (proj2 (@valid_exp badExponent H 0%Z)
+    ltac:(unfold badExponent; lia))) as Hbad.
+  unfold badExponent in Hbad; lia.
+Qed.
+Definition zero_at_bad_exponent (beta : radix) (rnd : R -> Z) (H : Valid_rnd rnd) :
+  round beta badExponent rnd 0 = 0 := @round_0 beta badExponent rnd H.
+
+Definition mult_error_bound_contract (beta : radix) (emin prec : Z)
+    (rnd : R -> Z) (H : Valid_rnd rnd) (x y : R) (e : Z)
+    (Hx : generic_format beta (FLT_exp emin prec) x)
+    (Hy : generic_format beta (FLT_exp emin prec) y)
+    (Hb : bpow beta (e + 2 * prec - 1) <= Rabs (x * y))
+    (Hnz : round beta (FLT_exp emin prec) rnd (x * y) - x * y <> 0) :
+    bpow beta e <= Rabs (round beta (FLT_exp emin prec) rnd (x * y) - x * y) :=
+  @mult_error_FLT_ge_bpow beta emin prec rnd H x y e Hx Hy Hb Hnz.
+
+Definition nearest_mult_error_bound_contract (beta : radix) (emin prec : Z)
+    (x y : R) (e : Z)
+    (Hx : generic_format beta (FLT_exp emin prec) x)
+    (Hy : generic_format beta (FLT_exp emin prec) y)
+    (Hb : x * y = 0 \/ bpow beta e <= Rabs (x * y)) :=
+  @mult_error_FLT_ge_bpow' beta emin prec x y e Hx Hy Hb.

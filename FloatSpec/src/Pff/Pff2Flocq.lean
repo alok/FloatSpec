@@ -1106,8 +1106,8 @@ theorem V1_Und3' (beta emin prec : Int) [ValidRadix beta] [Prec_gt_0 prec]
   rcases V1_Und1 with hzero | hnonunder
   · left
     have hround0 :=
-      (FloatSpec.Calc.Round.round_0 (beta := beta) (fexp := FLT_exp emin prec)
-        (mode := FloatSpec.Compat.Scaffold.ZnearestMode choice)) True.intro
+      FloatSpec.Calc.Round.round_0 (beta := beta) (fexp := FLT_exp emin prec)
+        (mode := FloatSpec.Compat.Scaffold.ZnearestMode choice)
     simpa [FloatSpec.Calc.Round.round, FloatSpec.Compat.Scaffold.ZnearestMode, hzero]
       using hround0
   · right
@@ -3611,7 +3611,8 @@ theorem ErrFMA_correct_from_core_payload (emin prec : Int) [Prec_gt_0 prec]
 /-- Coq: `mult_error_FLT_ge_bpow'`.
 Nearest-even specialization of `Prop.Mult_error.mult_error_FLT_ge_bpow`, with
 the upstream zero-error disjunct and exponent weakening. -/
-theorem mult_error_FLT_ge_bpow' (beta emin prec : Int) [ValidRadix beta] [Prec_gt_0 prec]
+@[flocq_source "src/Pff/Pff2Flocq.v" 1277 "mult_error_FLT_ge_bpow'"]
+theorem mult_error_FLT_ge_bpow' (beta emin prec : Int) [ValidRadix beta]
     (a b : ℝ) (e : Int)
     (hβ : 1 < beta)
     (ha : generic_format beta (FLT_exp emin prec) a)
@@ -3632,8 +3633,8 @@ theorem mult_error_FLT_ge_bpow' (beta emin prec : Int) [ValidRadix beta] [Prec_g
   · right
     rcases hbound_or_zero with hprod_zero | hprod_bound
     · have hround0 :=
-        (FloatSpec.Calc.Round.round_0 (beta := beta) (fexp := FLT_exp emin prec)
-          (mode := FloatSpec.Calc.Round.nearestEvenMode)) True.intro
+        FloatSpec.Calc.Round.round_0 (beta := beta) (fexp := FLT_exp emin prec)
+          (mode := FloatSpec.Calc.Round.nearestEvenMode)
       have hround0R :
           FloatSpec.Core.Generic_fmt.roundR beta (FLT_exp emin prec) rnd 0 = 0 := by
         simpa [FloatSpec.Calc.Round.round, FloatSpec.Calc.Round.nearestEvenMode, rnd]

@@ -242,7 +242,7 @@ echo 'Boolean ordering passed: eight boundary assertions and 600,000 native Bool
 echo 'Native source-arithmetic loop passed: 100,100 binary32/binary64 comparisons'
 echo 'Native SingleNaN arithmetic loop passed: 200,200 direct/source-mode comparisons'
 echo 'Multiplication-error loop passed: 5,385 conditional cases and a required-underflow-premise counterexample'
-echo 'Lean contract loop passed: 52 premise guards, typed consumers, finite error laws, 35,845 format-rounding and 5,125 integer-rounding oracle cases'
+echo 'Lean contract loop passed: 72 premise guards, typed consumers, finite error laws, 35,845 format-rounding and 5,125 integer-rounding oracle cases'
 
 uv run "$repo_root/scripts/flocq_bridge.py" --flocq-dir "$flocq_dir" --coqc "$coqc_bin" \
   --seed "${FLOCQ_BRIDGE_SEED:-20260919}" --samples "${FLOCQ_BRIDGE_SAMPLES:-100}" \

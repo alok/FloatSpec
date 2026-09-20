@@ -15,7 +15,7 @@ This guide follows those jobs in order. The detailed
 [independent continuation audit](ASTRA_AUDIT_2026-09-19.md) retain the
 declaration-by-declaration findings and historical milestones.
 
-## Wake-up summary — September 20, 2026, 08:38 UTC
+## Wake-up summary — September 20, 2026, 08:50 UTC
 
 **Most important recent finding:** actually running the raw IEEE rounding APIs
 found a semantic bug. A helper replaced signed shifting with floor division
@@ -64,7 +64,7 @@ Earlier in this continuation, Boolean equality/order became executable
 (4,210 differential cases plus 600,000 native Boolean observations), and
 full-payload injectivity/canonical-mantissa theorems lost two precision
 premises absent from pinned Rocq. The raw rounding wrappers now also execute
-without those source-absent premises. There are 52 premise guards with paired
+without those source-absent premises. There are now 72 premise guards with paired
 typed consumers. None of these repairs added proof holes.
 
 **What is not done:** whole-library source-signature review remains incomplete,
@@ -100,14 +100,18 @@ theorem needs an underflow hypothesis. Deliberately changing multiplication
 to addition breaks the property fixture; changing the source-mode addition
 to subtraction breaks the native check on signed zero.
 
-**Next repair, prepared but not applied:** source inspection found extra
+**Latest contract repair:** source inspection found extra
 valid-exponent premises on raw rounding and structural rounding laws, plus
-extra positive-precision premises on two multiplication-error bounds. An
-isolated copy of the complete generic-format module compiles with 17 such
-binders removed and all proof bodies unchanged. Twenty new compiler guards
-all fail on the current extra premises, while the paired pinned Rocq clients
-compile. Those are the next integration checks now that both frozen runs have
-finished. A subsequent helper slice will remove remaining execution blockers
+extra positive-precision premises on two multiplication-error bounds. Twenty
+signatures now omit those source-absent restrictions; all 17 generic-format
+proof bodies are unchanged. The zero-rounding adapter is now a direct equality,
+with its three callers updated. All 20 new guards failed before the repair and
+now pass, as do the paired Rocq clients, complete LSP checks, and the 6,216-job
+macOS build. A ten-case replay covers both IEEE widths and all five modes on
+this new type-only snapshot. The larger receipts above retain their original
+source hash; they are not relabeled as fresh runs of changed code.
+
+**Next:** a separate helper slice will remove remaining execution blockers
 on normalization, decomposition, and alternate neighbor operations; that
 repair has only been tested in an isolated copy so far.
 
@@ -451,7 +455,7 @@ changed surfaces have been checked.
 Source links make that review navigable. `@[flocq_source]` records a pinned
 Coq path, line, and name; `@[flocq_local]` explains a Lean-only helper.
 Eleven modules currently enforce strict public-definition classification.
-The compiler-backed validator checks all 172 registered anchors, including
+The compiler-backed validator checks all 190 registered anchors, including
 combined attributes and later attribute commands. These links are metadata,
 not a proof that bodies or theorem signatures correspond.
 

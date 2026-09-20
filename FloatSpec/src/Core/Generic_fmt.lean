@@ -3473,8 +3473,9 @@ theorem roundR_nonpos_of_nonpos
   simpa [roundR] using mul_nonpos_of_nonpos_of_nonneg hrnd_nonpos (le_of_lt hpow_pos)
 
 /-- Coq (`Generic_fmt.v`): negation compatibility for concrete rounding. -/
+@[flocq_source "src/Core/Generic_fmt.v" 852 "round_opp"]
 theorem roundR_opp
-    (beta : Int) [ValidRadix beta] (fexp : Int → Int) [Valid_exp fexp]
+    (beta : Int) [ValidRadix beta] (fexp : Int → Int)
     (rnd : ℝ → Int) (x : ℝ) (hβ : 1 < beta) :
     roundR beta fexp rnd (-x) = - roundR beta fexp (Zrnd_opp rnd) x := by
   classical
@@ -3594,12 +3595,14 @@ theorem roundR_le_generic
 
 /-- Coq `Generic_fmt.round`: apply the supplied integer rounding function to
     the scaled mantissa, then interpret the resulting float. -/
+@[flocq_source "src/Core/Generic_fmt.v" 614 "round"]
 noncomputable def round_to_generic (beta : Int) [ValidRadix beta] (fexp : Int → Int)
-    [Valid_exp fexp] (mode : ℝ → Int) (x : ℝ) : ℝ :=
+    (mode : ℝ → Int) (x : ℝ) : ℝ :=
   roundR beta fexp mode x
 
+@[flocq_local "Definitional bridge between two Lean names for generic rounding"]
 theorem round_to_generic_int_eq_roundR
-    (beta : Int) [ValidRadix beta] (fexp : Int → Int) [Valid_exp fexp]
+    (beta : Int) [ValidRadix beta] (fexp : Int → Int)
     (rnd : ℝ → Int) (x : ℝ) :
     round_to_generic beta fexp rnd x = roundR beta fexp rnd x := rfl
 
@@ -6505,9 +6508,10 @@ theorem mag_roundR_ge
       simpa [hmag_x, hround_eq, hmag_r] using hpos
     · exact positive_case rnd x hx_gt hr_ne
 
+@[flocq_local "Legacy Hoare compatibility wrapper for the generic-rounding definition"]
 theorem round_to_generic_spec
     (beta : Int) [ValidRadix beta]
-    (fexp : Int → Int) [Valid_exp fexp]
+    (fexp : Int → Int)
     (mode : ℝ → Int) (x : ℝ) :
     ⦃⌜True⌝⦄
     (pure (round_to_generic beta fexp mode x) : Id ℝ)
@@ -6518,9 +6522,10 @@ theorem round_to_generic_spec
   simp [round_to_generic, roundR, F2R]
 
 /-- Coq Generic_fmt.round_generic. -/
+@[flocq_source "src/Core/Generic_fmt.v" 751 "round_generic"]
 theorem round_generic
     (beta : Int) [ValidRadix beta]
-    (fexp : Int → Int) [Valid_exp fexp]
+    (fexp : Int → Int)
     (rnd : ℝ → Int) [Valid_rnd rnd] (x : ℝ) :
     generic_format beta fexp x →
       round_to_generic beta fexp rnd x = x := by
@@ -6643,9 +6648,10 @@ theorem generic_round_generic
     simpa [hopp] using houtNeg
 
 /-- Coq Generic_fmt.round_ext. -/
+@[flocq_source "src/Core/Generic_fmt.v" 817 "round_ext"]
 theorem round_ext
     (beta : Int) [ValidRadix beta]
-    (fexp : Int → Int) [Valid_exp fexp]
+    (fexp : Int → Int)
     (rnd1 rnd2 : ℝ → Int)
     (hEq : ∀ x, rnd1 x = rnd2 x) (x : ℝ) :
     round_to_generic beta fexp rnd1 x =
@@ -6654,18 +6660,20 @@ theorem round_ext
   rw [hEq]
 
 /-- Compatibility name for the exact round_generic contract. -/
+@[flocq_source "src/Core/Generic_fmt.v" 751 "round_generic"]
 theorem round_generic_identity
     (beta : Int) [ValidRadix beta]
-    (fexp : Int → Int) [Valid_exp fexp]
+    (fexp : Int → Int)
     (rnd : ℝ → Int) [Valid_rnd rnd] (x : ℝ) :
     generic_format beta fexp x →
       round_to_generic beta fexp rnd x = x :=
   round_generic (beta := beta) (fexp := fexp) (rnd := rnd) (x := x)
 
 /-- Coq Generic_fmt.round_opp. -/
+@[flocq_source "src/Core/Generic_fmt.v" 852 "round_opp"]
 theorem round_opp
     (beta : Int) [ValidRadix beta]
-    (fexp : Int → Int) [Valid_exp fexp]
+    (fexp : Int → Int)
     (rnd : ℝ → Int) (x : ℝ) :
     round_to_generic beta fexp rnd (-x) =
       -round_to_generic beta fexp (Zrnd_opp rnd) x := by
@@ -6820,9 +6828,10 @@ theorem round_bounded_large
     P hP rnd x) hx
 
 /-- Coq Generic_fmt.round_0. -/
+@[flocq_source "src/Core/Generic_fmt.v" 763 "round_0"]
 theorem round_0
     (beta : Int) [ValidRadix beta]
-    (fexp : Int → Int) [Valid_exp fexp]
+    (fexp : Int → Int)
     (rnd : ℝ → Int) [Valid_rnd rnd] :
     round_to_generic beta fexp rnd 0 = 0 := by
   have hrnd0 : rnd (0 : ℝ) = (0 : Int) := by
@@ -7238,9 +7247,10 @@ noncomputable def round_N_to_format
 /-- Coq Generic_fmt.v: Theorem round_DN_opp.
     Statement: ∀ x, round Zfloor (-x) = - round Zceil x.
     Concrete floor rounding commutes with negation as ceiling rounding. -/
+@[flocq_source "src/Core/Generic_fmt.v" 1074 "round_DN_opp"]
 theorem round_DN_opp
     (beta : Int) [ValidRadix beta]
-    (fexp : Int → Int) [Valid_exp fexp] (x : ℝ) :
+    (fexp : Int → Int) (x : ℝ) :
     round_to_generic beta fexp rnd_floor (-x) =
       -round_to_generic beta fexp rnd_ceil x := by
   have hopp_fun : Zrnd_opp rnd_floor = rnd_ceil := by
@@ -7249,9 +7259,10 @@ theorem round_DN_opp
   simpa [hopp_fun] using
     (round_opp (beta := beta) (fexp := fexp) (rnd := rnd_floor) (x := x))
 
+@[flocq_source "src/Core/Generic_fmt.v" 1087 "round_UP_opp"]
 theorem round_UP_opp
     (beta : Int) [ValidRadix beta]
-    (fexp : Int → Int) [Valid_exp fexp] (x : ℝ) :
+    (fexp : Int → Int) (x : ℝ) :
     round_to_generic beta fexp rnd_ceil (-x) =
       -round_to_generic beta fexp rnd_floor x := by
   have hopp_fun : Zrnd_opp rnd_ceil = rnd_floor := by
@@ -7260,9 +7271,10 @@ theorem round_UP_opp
   simpa [hopp_fun] using
     (round_opp (beta := beta) (fexp := fexp) (rnd := rnd_ceil) (x := x))
 
+@[flocq_source "src/Core/Generic_fmt.v" 1100 "round_ZR_opp"]
 theorem round_ZR_opp
     (beta : Int) [ValidRadix beta]
-    (fexp : Int → Int) [Valid_exp fexp] (x : ℝ) :
+    (fexp : Int → Int) (x : ℝ) :
     round_to_generic beta fexp Ztrunc (-x) =
       -round_to_generic beta fexp Ztrunc x := by
   have hopp_fun : Zrnd_opp Ztrunc = Ztrunc := by
@@ -7292,9 +7304,10 @@ theorem round_ZR_abs
     simpa [abs_of_neg hxneg, abs_of_nonpos hr] using
       (round_ZR_opp (beta := beta) (fexp := fexp) (x := x))
 
+@[flocq_source "src/Core/Generic_fmt.v" 1129 "round_AW_opp"]
 theorem round_AW_opp
     (beta : Int) [ValidRadix beta]
-    (fexp : Int → Int) [Valid_exp fexp] (x : ℝ) :
+    (fexp : Int → Int) (x : ℝ) :
     round_to_generic beta fexp Zaway (-x) =
       -round_to_generic beta fexp Zaway x := by
   have hopp_fun : Zrnd_opp Zaway = Zaway := by
@@ -7324,9 +7337,10 @@ theorem round_AW_abs
     simpa [abs_of_neg hxneg, abs_of_nonpos hr] using
       (round_AW_opp (beta := beta) (fexp := fexp) (x := x))
 
+@[flocq_source "src/Core/Generic_fmt.v" 1158 "round_ZR_DN"]
 theorem round_ZR_DN
     (beta : Int) [ValidRadix beta]
-    (fexp : Int → Int) [Valid_exp fexp] (x : ℝ)
+    (fexp : Int → Int) (x : ℝ)
     (hx : 0 ≤ x) :
     round_to_generic beta fexp Ztrunc x =
       round_to_generic beta fexp rnd_floor x := by
@@ -7338,9 +7352,10 @@ theorem round_ZR_DN
   simp [round_to_generic, roundR, Ztrunc, rnd_floor, Zfloor,
     not_lt.mpr hsm]
 
+@[flocq_source "src/Core/Generic_fmt.v" 1174 "round_ZR_UP"]
 theorem round_ZR_UP
     (beta : Int) [ValidRadix beta]
-    (fexp : Int → Int) [Valid_exp fexp] (x : ℝ)
+    (fexp : Int → Int) (x : ℝ)
     (hx : x ≤ 0) :
     round_to_generic beta fexp Ztrunc x =
       round_to_generic beta fexp rnd_ceil x := by
@@ -7373,9 +7388,10 @@ theorem round_ZR_pt
       simpa [round_to_generic] using heq]
     exact round_UP_pt (beta := beta) (fexp := fexp) x ValidRadix.valid
 
+@[flocq_source "src/Core/Generic_fmt.v" 1192 "round_AW_UP"]
 theorem round_AW_UP
     (beta : Int) [ValidRadix beta]
-    (fexp : Int → Int) [Valid_exp fexp] (x : ℝ)
+    (fexp : Int → Int) (x : ℝ)
     (hx : 0 ≤ x) :
     round_to_generic beta fexp Zaway x =
       round_to_generic beta fexp rnd_ceil x := by
@@ -7386,9 +7402,10 @@ theorem round_AW_UP
   simp [round_to_generic, roundR, Zaway, rnd_ceil, Zceil,
     not_lt.mpr hsm]
 
+@[flocq_source "src/Core/Generic_fmt.v" 1208 "round_AW_DN"]
 theorem round_AW_DN
     (beta : Int) [ValidRadix beta]
-    (fexp : Int → Int) [Valid_exp fexp] (x : ℝ)
+    (fexp : Int → Int) (x : ℝ)
     (hx : x ≤ 0) :
     round_to_generic beta fexp Zaway x =
       round_to_generic beta fexp rnd_floor x := by

@@ -1371,6 +1371,53 @@ After both bridges finished, a fresh explicit
 **6,216 jobs**, exit 0, with no intervening library edits. Log:
 `/private/tmp/floatspec-three-api-milestone-build-20260920.log`.
 
+### September 20 continuation: integrate the structural rounding premise repairs
+
+The prepared **20** source-premise corrections are now integrated: 17 raw
+rounding/structural/helper signatures in `Core/Generic_fmt`, the zero adapter
+in `Calc/Round`, and the general plus nearest-even multiplication-error lower
+bounds in `Prop/Mult_error` and `Pff/Pff2Flocq`. All 17 generic proof bodies
+are unchanged. The Calc zero contract is now an ordinary equality, with its
+three callers migrated at the same time. No new proof hole is introduced.
+The source-required validity premises on absolute-value and monotonicity
+theorems remain intact; this is not blanket instance removal.
+
+Verification on source SHA-256
+`c84963297d71a2eb896c7cec2a59d3a7d2757f2a3817a7882fe089143e287ba2`:
+
+- All 20 previously failing guards now pass unchanged, and the persistent
+  test module has **72** production guards plus its five control invocations.
+  The paired Rocq clients compile, including the invalid-exponent zero
+  example and both unrestricted multiplication-error clients.
+- The explicit macOS Lean 4.34 library/test/executable build passes **6,216
+  jobs**, exit 0: `/private/tmp/floatspec-rounding-premises-build-v2-20260920.log`.
+  The first build failed only on a new test client's positional argument to
+  `Calc.Round.round_0`; giving `beta` and `fexp` by name fixed the client.
+  The failed first log remains `/private/tmp/floatspec-rounding-premises-build-20260920.log`.
+- Complete LSP error diagnostics are clean for all five changed production
+  modules and the test module. The test editor initially reported unavailable
+  diagnostics after import changes; it became clean only after the successful
+  build and LSP restart. A separate 3,101-job default build also passed.
+- **190 source anchors** validate. The compiled trust audit still covers
+  **13,590 declarations / 58 modules / four existing named debts**. Generated
+  status files are unchanged.
+- A ten-case representative replay exercises both IEEE widths and every
+  rounding mode through all three arithmetic APIs after the type-only changes.
+  All compiled/kernel/Rocq rows and ten generated kernel equalities pass in
+  **8.334 seconds**. Receipt:
+  `/private/tmp/floatspec-rounding-premises-replay-20260920/report.json`.
+  This is deliberately not a claim that the prior 27,771-case run was rerun
+  on the changed types; the earlier frozen receipt keeps its original hash.
+- The paired multiplication-error grid (5,385 cases), finite rounding oracle
+  (35,845 cases, including 95 closed Lean kernel boundaries), integer oracle
+  (5,125 cases), and one-bit arithmetic fixture (30 literal results) were
+  re-executed in Lean and pinned Rocq after the repair; the combined command
+  exits 0. The standalone oracle claim boundaries remain unchanged.
+
+The focused review ledger lists the exact repaired/retained premise boundary.
+The independently prepared executable-helper slice remains separate future
+work; it is not part of this contract repair.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In

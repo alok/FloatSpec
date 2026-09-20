@@ -98,7 +98,7 @@ word pair can be replayed through the fixture's public `observations32` or
 Rocq on those words, in addition to the full-payload baseline. This is finite native execution, not a hardware
 correctness proof or a native FMA/directed-rounding test.
 
-`Test/SourcePremiseContracts.lean` additionally has 52 source-premise guards,
+`Test/SourcePremiseContracts.lean` additionally has 72 source-premise guards,
 paired typed consumers for the Prop, integer-rounding, canonical-exponent,
 real-comparison, and generic IEEE comparison exports, and four deliberate
 negative guard examples. The corresponding Rocq fixture checks the paired
