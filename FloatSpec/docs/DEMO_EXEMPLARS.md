@@ -166,6 +166,33 @@ it does not by itself prove that code agrees with the source. The 37-entry
 fixture checks every newly executable definition/instance, and the seeded
 bridge supplies broader, explicitly finite tests.
 
+## A second small demo: which radix does an API actually use?
+
+```sh
+lake env lean --run scripts/fixtures/PffWalkthrough.lean
+```
+
+Read [the walkthrough](../../scripts/fixtures/PffWalkthrough.lean) linearly.
+It starts with one, stored as `(1,0)`. In a two-digit base-three format,
+normalization produces `(3,-1)`, the successor is `(4,-1)` = four thirds,
+and the predecessor of two is `(5,-1)` = five thirds. The normalized
+mantissa of one is three, so its parity is odd.
+
+The second half deliberately calls the older compatibility wrapper with a
+Core type indexed by base two and an extra argument equal to three. That
+extra argument is ignored; the results are `(3,-1)` and `(8,-1)` instead.
+The bound was chosen for base three, so this does not refute a theorem about
+valid base-two formats. It shows why source porting must inspect parameter
+use and data types, not just similar names or denoted real values.
+
+The correct explicit-radix interface is in
+[Pff/SourceFacade](../src/Pff/SourceFacade.lean). The paired
+[Lean](../Test/PffExecution.lean) and
+[Rocq](../../scripts/fixtures/PffExecution.v) fixtures retain literal kernel
+regressions. A separate bridge observes all 56 source/compatibility fields
+on identical inputs; its report distinguishes runtime agreement from
+independently checked value/canonical-neighbor invariants.
+
 ## A small follow-on: why fused multiply-add is a separate operation
 
 Run `lake env lean scripts/fixtures/SingleNaNArithmetic.lean` and read the paired

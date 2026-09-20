@@ -216,7 +216,7 @@ echo 'Pure Rocq order loop passed: 2,000 ordering-law checks and boundary exampl
 "$coqc_bin" -q -R "$flocq_dir/src" Flocq -o "$scratch/RoundingWalkthrough.vo" \
   "$repo_root/scripts/fixtures/RoundingWalkthrough.v"
 for fixture in BooleanComparison PrimitiveComparison PrimitiveConversion PrimitiveExecution RawIEEERounding RawOverflow SingleNaNArithmetic SingleNaNHelpers FrexpLaws Normalization MultiplicationErrorGrid DoubleRoundingWitness SingleNaNValidity RelativeErrorGrid \
-    SourcePremiseContracts PffLogTotality CalcBrackets ExactArithmeticLaws RoundingOracle IntegerRounding; do
+    SourcePremiseContracts PffLogTotality PffExecution CalcBrackets ExactArithmeticLaws RoundingOracle IntegerRounding; do
   "$coqc_bin" -q -R "$flocq_dir/src" Flocq -o "$scratch/$fixture.vo" \
     "$repo_root/scripts/fixtures/$fixture.v"
 done
@@ -233,10 +233,12 @@ run_lake env lean "$repo_root/FloatSpec/Test/NativeSourceArithmetic.lean"
 run_lake env lean "$repo_root/FloatSpec/Test/RoundingWalkthrough.lean"
 run_lake env lean "$repo_root/FloatSpec/Test/SourcePremiseContracts.lean"
 run_lake env lean "$repo_root/FloatSpec/Test/PffLogTotality.lean"
+run_lake env lean "$repo_root/FloatSpec/Test/PffExecution.lean"
 for fixture in BooleanComparison PrimitiveComparison PrimitiveConversion PrimitiveExecution RawIEEERounding RawOverflow SingleNaNArithmetic SingleNaNHelpers FrexpLaws Normalization CalcBrackets NativeSingleNaNArithmetic MultiplicationErrorGrid DoubleRoundingWitness SingleNaNValidity RelativeErrorGrid ExactArithmeticLaws RoundingOracle IntegerRounding; do
   run_lake env lean "$repo_root/scripts/fixtures/$fixture.lean"
 done
 run_lake env lean --run "$repo_root/scripts/fixtures/GuidedDemo.lean"
+run_lake env lean --run "$repo_root/scripts/fixtures/PffWalkthrough.lean"
 echo 'Pure Lean loop passed: examples and 10,734 kernel-checked arithmetic invariant cases'
 run_lake exe floatspec_demo
 echo 'Lean bit/order loops passed: 20,000 roundtrips, 2,000 pure laws, 200,000 native comparisons'
@@ -281,5 +283,10 @@ uv run "$repo_root/scripts/ieee_integer_bridge.py" --flocq-dir "$flocq_dir" --co
   --seed "${FLOCQ_BRIDGE_SEED:-20260919}" --samples "${FLOCQ_INTEGER_SAMPLES:-20}" \
   --batch-size "${FLOCQ_INTEGER_BATCH_SIZE:-40}"
 FLOCQ_AUDIT_DIR="$flocq_dir" uv run "$repo_root/scripts/test_ieee_integer_bridge.py" -v
+
+uv run "$repo_root/scripts/pff_bridge.py" --flocq-dir "$flocq_dir" --coqc "$coqc_bin" \
+  --seed "${FLOCQ_BRIDGE_SEED:-20260919}" --samples "${FLOCQ_PFF_SAMPLES:-100}" \
+  --batch-size "${FLOCQ_PFF_BATCH_SIZE:-50}"
+FLOCQ_AUDIT_DIR="$flocq_dir" uv run "$repo_root/scripts/test_pff_bridge.py" -v
 
 echo "Three finite-test loops passed against pinned Flocq $gitlink_commit"

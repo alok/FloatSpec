@@ -16,18 +16,23 @@ adding `[ValidRadix beta]` to source declarations that do not export it.
 
 namespace FloatSpec.Pff.Source
 
+set_option linter.coqSource true
+
 /-- Coq `Pff.float`: an unindexed pair of integer mantissa and exponent. -/
+@[flocq_source "src/Pff/Pff.v" 1134 "float"]
 structure float where
   Fnum : Int
   Fexp : Int
 deriving DecidableEq, Repr
 
 /-- Forget the Core radix index. -/
+@[flocq_local "Forget the Lean Core radix index at the Pff boundary"]
 def float.ofCore {beta : Int} [ValidRadix beta]
     (x : FloatSpec.Core.Defs.FlocqFloat beta) : float :=
   ⟨x.Fnum, x.Fexp⟩
 
 /-- Refine a source Pff float into the Core carrier at a valid radix. -/
+@[flocq_local "Refine the unindexed Pff carrier into Lean Core"]
 def float.toCore (beta : Int) [ValidRadix beta]
     (x : float) : FloatSpec.Core.Defs.FlocqFloat beta :=
   ⟨x.Fnum, x.Fexp⟩
@@ -44,6 +49,7 @@ def float.toCore (beta : Int) [ValidRadix beta]
   rfl
 
 /-- Coq `Pff.FtoR`, total at every integer radix exported by the source. -/
+@[flocq_source "src/Pff/Pff.v" 1158 "FtoR"]
 noncomputable def FtoR (radix : Int) (x : float) : Real :=
   (x.Fnum : Real) * (radix : Real) ^ x.Fexp
 
@@ -53,16 +59,20 @@ FloatSpec's indexed Core observer. -/
     FtoR beta x = _root_.F2R (x.toCore beta) := by
   rfl
 
+@[flocq_source "src/Pff/Pff.v" 1385 "Fle"]
 def Fle (radix : Int) (x y : float) : Prop :=
   FtoR radix x ≤ FtoR radix y
 
+@[flocq_source "src/Pff/Pff.v" 5227 "UniqueP"]
 def UniqueP (radix : Int) (P : Real → float → Prop) : Prop :=
   ∀ r p q, P r p → P r q → FtoR radix p = FtoR radix q
 
+@[flocq_source "src/Pff/Pff.v" 4529 "MonotoneP"]
 def MonotoneP (radix : Int) (P : Real → float → Prop) : Prop :=
   ∀ p q p' q', p < q → P p p' → P q q' →
     FtoR radix p' ≤ FtoR radix q'
 
+@[flocq_source "src/Pff/Pff.v" 4695 "MinExList"]
 theorem MinExList (radix : Int) (r : Real) (L : List float) :
     (∀ f ∈ L, r < FtoR radix f) ∨
     ∃ min ∈ L, FtoR radix min ≤ r ∧
@@ -99,44 +109,53 @@ theorem MinExList (radix : Int) (r : Real) (L : List float) :
             · exact absurd hfr (not_le.mpr ha)
             · exact hmin f hf hfr⟩
 
+@[flocq_source "src/Pff/Pff.v" 1504 "Fopp"]
 def Fopp (x : float) : float :=
   ⟨-x.Fnum, x.Fexp⟩
 
+@[flocq_source "src/Pff/Pff.v" 1524 "Fabs"]
 def Fabs (x : float) : float :=
   ⟨x.Fnum.natAbs, x.Fexp⟩
 
 /-- Coq `Pff.boundNat`, including its total behavior at every integer radix. -/
 -- Source ID: Pff/Pff.v:boundNat:150939
-noncomputable def boundNat (radix : Int) (n : Nat) : float :=
+@[flocq_source "src/Pff/Pff.v" 4322 "boundNat"]
+def boundNat (radix : Int) (n : Nat) : float :=
   ⟨1, _root_.digit radix n⟩
 
 /-- Coq `Pff.boundR`; `up` is the strict ceiling `floor x + 1`. -/
 -- Source ID: Pff/Pff.v:boundR:151409
+@[flocq_source "src/Pff/Pff.v" 4336 "boundR"]
 noncomputable def boundR (radix : Int) (r : Real) : float :=
   boundNat radix (Int.natAbs (Int.floor |r| + 1))
 
 /-- Coq `Pff.boundRrOpp`. -/
 -- Source ID: Pff/Pff.v:boundRrOpp:152106
+@[flocq_source "src/Pff/Pff.v" 4355 "boundRrOpp"]
 theorem boundRrOpp (radix : Int) (r : Real) :
     boundR radix r = boundR radix (-r) := by
   simp [boundR, abs_neg]
 
+@[flocq_source "src/Pff/Pff.v" 1483 "Fplus"]
 def Fplus (radix : Int) (x y : float) : float :=
   let commonExp := min x.Fexp y.Fexp
   ⟨x.Fnum * radix ^ Int.natAbs (x.Fexp - commonExp) +
       y.Fnum * radix ^ Int.natAbs (y.Fexp - commonExp),
     commonExp⟩
 
+@[flocq_source "src/Pff/Pff.v" 1605 "Fminus"]
 def Fminus (radix : Int) (x y : float) : float :=
   Fplus radix x (Fopp y)
 
 /-- Source-shaped counterpart of Coq's `positive × N` bound record. -/
+@[flocq_source "src/Pff/Pff.v" 1664 "Fbound"]
 structure Fbound where
   vNum : Nat
   dExp : Nat
   vNum_pos : 0 < vNum
 
 /-- Refine the source carrier into the arithmetic-friendly integrated bound. -/
+@[flocq_local "Convert source positive/natural bounds into Lean integer refinements"]
 def Fbound.toIntegrated (b : Fbound) : _root_.Fbound :=
   { vNum := b.vNum
     dExp := b.dExp
@@ -144,6 +163,7 @@ def Fbound.toIntegrated (b : Fbound) : _root_.Fbound :=
     dExp_nonneg := by omega }
 
 /-- Forget the integer refinement representation used by the integrated layer. -/
+@[flocq_local "Recover source positive/natural bounds from Lean integer refinements"]
 def Fbound.ofIntegrated (b : _root_.Fbound) : Fbound :=
   { vNum := b.vNum.natAbs
     dExp := b.dExp.natAbs
@@ -166,16 +186,20 @@ def Fbound.ofIntegrated (b : _root_.Fbound) : Fbound :=
         Int.natAbs_of_nonneg dExp_nonneg,
         Int.natAbs_of_nonneg (le_of_lt vNum_pos)]
 
+@[flocq_source "src/Pff/Pff.v" 1666 "Fbounded"]
 def Fbounded (b : Fbound) (x : float) : Prop :=
   |x.Fnum| < (b.vNum : Int) ∧ -(b.dExp : Int) ≤ x.Fexp
 
+@[flocq_source "src/Pff/Pff.v" 2123 "Fnormal"]
 def Fnormal (radix : Int) (b : Fbound) (x : float) : Prop :=
   Fbounded b x ∧ (b.vNum : Int) ≤ |radix * x.Fnum|
 
+@[flocq_source "src/Pff/Pff.v" 2184 "Fsubnormal"]
 def Fsubnormal (radix : Int) (b : Fbound) (x : float) : Prop :=
   Fbounded b x ∧ x.Fexp = -(b.dExp : Int) ∧
     |radix * x.Fnum| < (b.vNum : Int)
 
+@[flocq_source "src/Pff/Pff.v" 2234 "Fcanonic"]
 def Fcanonic (radix : Int) (b : Fbound) (x : float) : Prop :=
   Fnormal radix b x ∨ Fsubnormal radix b x
 
@@ -210,18 +234,22 @@ private def digitAuxFuel (radix value : Int) : Int → Nat → Nat
 
 /-- Coq `Pff.digit`, retaining the source structural recursion on the entire
 integer-radix domain.  The fuel is the constructor depth of `xO |q|`. -/
+@[flocq_source "src/Pff/Pff.v" 564 "digit"]
 def digit (radix q : Int) : Nat :=
   if q = 0 then 0
   else digitAuxFuel radix q.natAbs 1 (Nat.log2 q.natAbs + 1)
 
+@[flocq_source "src/Pff/Pff.v" 1265 "Fdigit"]
 def Fdigit (radix : Int) (x : float) : Nat :=
   digit radix x.Fnum
 
+@[flocq_source "src/Pff/Pff.v" 1267 "Fshift"]
 def Fshift (radix : Int) (amount : Nat) (x : float) : float :=
   ⟨x.Fnum * radix ^ amount, x.Fexp - (amount : Int)⟩
 
 /-- Coq `Pff.Fnormalize`, including its observable behavior outside the
 section's non-exported `1 < radix` hypothesis. -/
+@[flocq_source "src/Pff/Pff.v" 2622 "Fnormalize"]
 def Fnormalize (radix : Int) (b : Fbound) (precision : Nat)
     (x : float) : float :=
   if x.Fnum = 0 then
@@ -234,18 +262,109 @@ def Fnormalize (radix : Int) (b : Fbound) (precision : Nat)
 
 /-- Coq `Pff.Fulp`, observed using the same explicit radix that normalization
 uses rather than an independent type index. -/
+@[flocq_source "src/Pff/Pff.v" 6268 "Fulp"]
 noncomputable def Fulp (b : Fbound) (radix : Int) (precision : Nat)
     (x : float) : Real :=
   (radix : Real) ^ (Fnormalize radix b precision x).Fexp
 
 /-- Coq `Pff.nNormMin`, retaining the source `Nat.pred` at precision zero. -/
-noncomputable def nNormMin (radix : Int) (precision : Nat) : Int :=
+@[flocq_source "src/Pff/Pff.v" 2460 "nNormMin"]
+def nNormMin (radix : Int) (precision : Nat) : Int :=
   Zpower_nat radix (Nat.pred precision)
 
 /-- Coq `Pff.firstNormalPos`. -/
-noncomputable def firstNormalPos (radix : Int) (b : Fbound)
+@[flocq_source "src/Pff/Pff.v" 2481 "firstNormalPos"]
+def firstNormalPos (radix : Int) (b : Fbound)
     (precision : Nat) : float :=
   ⟨nNormMin radix precision, -(b.dExp : Int)⟩
+
+/-- Flocq's integer-mantissa parity predicate. -/
+@[flocq_source "src/Pff/Pff.v" 5043 "Feven"]
+def Feven (p : float) : Prop := Even p.Fnum
+
+/-- Flocq's integer-mantissa oddness predicate. -/
+@[flocq_source "src/Pff/Pff.v" 5045 "Fodd"]
+def Fodd (p : float) : Prop := Odd p.Fnum
+
+/-- Source-shaped successor, using only the explicit integer radix. -/
+@[flocq_source "src/Pff/Pff.v" 2976 "FSucc"]
+def FSucc (b : Fbound) (radix : Int) (precision : Nat)
+    (x : float) : float :=
+  if x.Fnum = (b.vNum : Int) - 1 then
+    ⟨nNormMin radix precision, x.Fexp + 1⟩
+  else if x.Fnum = -nNormMin radix precision then
+    if x.Fexp = -(b.dExp : Int) then
+      ⟨x.Fnum + 1, x.Fexp⟩
+    else
+      ⟨-((b.vNum : Int) - 1), x.Fexp - 1⟩
+  else
+    ⟨x.Fnum + 1, x.Fexp⟩
+
+/-- Source-shaped predecessor, using only the explicit integer radix. -/
+@[flocq_source "src/Pff/Pff.v" 3904 "FPred"]
+def FPred (b : Fbound) (radix : Int) (precision : Nat)
+    (x : float) : float :=
+  if x.Fnum = -((b.vNum : Int) - 1) then
+    ⟨-nNormMin radix precision, x.Fexp + 1⟩
+  else if x.Fnum = nNormMin radix precision then
+    if x.Fexp = -(b.dExp : Int) then
+      ⟨x.Fnum - 1, x.Fexp⟩
+    else
+      ⟨(b.vNum : Int) - 1, x.Fexp - 1⟩
+  else
+    ⟨x.Fnum - 1, x.Fexp⟩
+
+/-- Flocq normalizes with this same explicit radix before taking a successor. -/
+@[flocq_source "src/Pff/Pff.v" 3819 "FNSucc"]
+def FNSucc (b : Fbound) (radix : Int) (precision : Nat)
+    (x : float) : float :=
+  FSucc b radix precision (Fnormalize radix b precision x)
+
+/-- Flocq normalizes with this same explicit radix before taking a predecessor. -/
+@[flocq_source "src/Pff/Pff.v" 4110 "FNPred"]
+def FNPred (b : Fbound) (radix : Int) (precision : Nat)
+    (x : float) : float :=
+  FPred b radix precision (Fnormalize radix b precision x)
+
+/-- Normalized-even parity uses the source's explicit radix. -/
+@[flocq_source "src/Pff/Pff.v" 5131 "FNeven"]
+def FNeven (b : Fbound) (radix : Int) (precision : Nat)
+    (x : float) : Prop :=
+  Feven (Fnormalize radix b precision x)
+
+/-- Normalized-odd parity uses the source's explicit radix. -/
+@[flocq_source "src/Pff/Pff.v" 5129 "FNodd"]
+def FNodd (b : Fbound) (radix : Int) (precision : Nat)
+    (x : float) : Prop :=
+  Fodd (Fnormalize radix b precision x)
+
+/-- The unnormalized successor commutes with the carrier conversion, at every
+explicit operational radix. No equality with the Core type index is needed. -/
+theorem FSucc_toCore (beta : Int) [ValidRadix beta] (b : Fbound)
+    (radix : Int) (precision : Nat) (x : float) :
+    float.ofCore (_root_.FSucc b.toIntegrated radix precision (x.toCore beta)) =
+      FSucc b radix precision x := by
+  by_cases hmax : x.Fnum = (b.vNum : Int) - 1 <;>
+    by_cases hmin : x.Fnum = -(radix ^ (precision - 1)) <;>
+    by_cases hexp : x.Fexp = -(b.dExp : Int) <;>
+    simp [float.ofCore, float.toCore, Fbound.toIntegrated,
+      _root_.FSucc, FSucc, pPred, _root_.nNormMin, nNormMin, Zpower_nat,
+      Nat.pred_eq_sub_one, hmax, hmin, hexp]
+  all_goals simp_all
+
+/-- The unnormalized predecessor also commutes with the carrier conversion,
+independently of the Core type index. -/
+theorem FPred_toCore (beta : Int) [ValidRadix beta] (b : Fbound)
+    (radix : Int) (precision : Nat) (x : float) :
+    float.ofCore (_root_.FPred b.toIntegrated radix precision (x.toCore beta)) =
+      FPred b radix precision x := by
+  by_cases hmax : x.Fnum = -((b.vNum : Int) - 1) <;>
+    by_cases hmin : x.Fnum = radix ^ (precision - 1) <;>
+    by_cases hexp : x.Fexp = -(b.dExp : Int) <;>
+    simp [float.ofCore, float.toCore, Fbound.toIntegrated,
+      _root_.FPred, FPred, pPred, _root_.nNormMin, nNormMin, Zpower_nat,
+      Nat.pred_eq_sub_one, hmax, hmin, hexp]
+  all_goals simp_all
 
 /-- Rocq Stdlib's natural logarithm is zero on nonpositive inputs.
 
@@ -272,5 +391,17 @@ noncomputable def RND_Min_Pos (b : Fbound) (radix : Int)
     ⟨IRNDD (r * (radix : Real) ^ (-e)), e⟩
   else
     ⟨IRNDD (r * (radix : Real) ^ (b.dExp : Int)), -(b.dExp : Int)⟩
+
+
+-- These older indexed entry points are compatibility APIs, not the total
+-- unindexed source exports above. Their legacy radix argument is ignored.
+attribute [flocq_local "Indexed normalized-even compatibility predicate; use FloatSpec.Pff.Source.FNeven for the explicit-radix source export"] _root_.FNeven
+attribute [flocq_local "Indexed normalized-odd compatibility predicate; use FloatSpec.Pff.Source.FNodd for the explicit-radix source export"] _root_.FNodd
+attribute [flocq_local "Indexed normalized-successor compatibility adapter; use FloatSpec.Pff.Source.FNSucc for the explicit-radix source export"] _root_.FNSucc
+attribute [flocq_local "Indexed normalized-predecessor compatibility adapter; use FloatSpec.Pff.Source.FNPred for the explicit-radix source export"] _root_.FNPred
+
+-- This distinct legacy signature also has integer precision and an independent
+-- Core radix. Its positive/matching-radix proof domain is not a total-source claim.
+attribute [flocq_local "Legacy indexed rounding implementation; the total source interface is FloatSpec.Pff.Source.RND_Min_Pos"] _root_.RND_Min_Pos
 
 end FloatSpec.Pff.Source

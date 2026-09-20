@@ -1388,7 +1388,8 @@ def case_batches(cases: list[Case], requested_size: int):
         offset = end
 
 
-def main() -> None:
+def main(*, lean_build_targets: tuple[str, ...] | None = None,
+         profile_metadata: dict | None = None) -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--flocq-dir", type=Path, required=True)
     parser.add_argument("--coqc", help="override the compiler recorded by the reference build")
@@ -1433,18 +1434,21 @@ def main() -> None:
               "method": "Lean compiled execution and kernel reduction versus Rocq vm_compute; finite tests only",
               "compared_cases": 0, "compiled_cases": 0, "bootstrapped_lean_cases": 0, "mismatches": []}
     report_path = output / "report.json"
+    if profile_metadata is not None:
+        report["profile"] = profile_metadata
     report_path.write_text(json.dumps(report, indent=2) + "\n")
     print(f"Executing {len(cases)} cases; seed={args.seed}; artifacts={output}", flush=True)
     started = time.monotonic()
     mismatches = []
     try:
         if not args.skip_build:
-            build = run(["lake", "build", "FloatSpec.src.Calc.Plus", "FloatSpec.src.Calc.Div",
-                         "FloatSpec.src.Calc.Sqrt", "FloatSpec.src.Core.FTZ",
-                         "FloatSpec.src.IEEE754.BinarySingleNaNSourceFacade",
-                         "FloatSpec.src.IEEE754.BitsSourceFacade",
-                         "FloatSpec.src.IEEE754.PrimFloat",
-                         "FloatSpec.Test.BitsExecution"], timeout=600)
+            targets = lean_build_targets or (
+                "FloatSpec.src.Calc.Plus", "FloatSpec.src.Calc.Div",
+                "FloatSpec.src.Calc.Sqrt", "FloatSpec.src.Core.FTZ",
+                "FloatSpec.src.IEEE754.BinarySingleNaNSourceFacade",
+                "FloatSpec.src.IEEE754.BitsSourceFacade",
+                "FloatSpec.src.IEEE754.PrimFloat", "FloatSpec.Test.BitsExecution")
+            build = run(["lake", "build", *targets], timeout=600)
             (output / "lean_build.out").write_text(build)
         require_lean_source_snapshot(report["lean_source_sha256"])
         for offset, batch in case_batches(cases, args.batch_size):

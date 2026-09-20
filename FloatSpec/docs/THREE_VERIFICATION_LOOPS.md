@@ -818,7 +818,52 @@ implementation's shifts. Both check idempotence, and Lean closes the whole
 finite grid in its kernel. The combined runner includes this fixture and
 the new bridge through `FLOCQ_INTEGER_SAMPLES` and `FLOCQ_INTEGER_BATCH_SIZE`.
 
-## 10. What this still does not establish
+## 10. Pff records, explicit radices, and indexed compatibility
+
+`scripts/pff_bridge.py` reuses the strict three-path core runner with an
+isolated profile. It observes 56 integer columns: source digit, shift,
+addition, subtraction, normalization, sign/absolute value, bounds,
+neighbors, and parity, plus the older indexed entry points. The legacy
+normalized neighbor/parity columns explicitly say `type_radix_2`; their
+Rocq counterparts use two even when the ignored legacy Lean argument is a
+different integer. This distinction is an API boundary, not a mismatch
+exception that discards fields.
+
+```sh
+uv run scripts/pff_bridge.py --flocq-dir /path/to/pinned-flocq \
+  --seed 850021 --samples 300 --batch-size 50
+FLOCQ_AUDIT_DIR=/path/to/pinned-flocq uv run scripts/test_pff_bridge.py -v
+lake env lean --run scripts/fixtures/PffWalkthrough.lean
+```
+
+There are 2,472 fixed cases plus the requested seeded samples. The corpus
+includes negative/zero/unit radices, zero precision, 192-bit mantissas,
+noncanonical and out-of-bound inputs, exact power boundaries, and exponent
+boundaries. Natural arguments use Rocq's binary `Z.to_nat` codec to avoid
+large unary-literal warnings without relaxing stderr rejection. Source
+integer domains are retained even where mathematical correctness theorems
+would require stronger premises.
+
+After all three paths agree, an independent exact-rational oracle checks
+value preservation, arithmetic, parity, zero normalization, and a
+division-based digit count. Strict/canonical neighbor assertions apply only
+when radix is at least two, precision is positive, the bound is exactly
+radix-to-precision, and the input is bounded. Report metadata counts these
+assertions separately and records the exact failing input on any oracle
+error. Matching wrong outputs are therefore not automatically a pass.
+
+The runner produces kernel-checked Lean equalities from Rocq observations,
+retains the corpus/seed and mismatch replay, and rejects interrupted or
+timed-out runs. Its fresh build targets the actual source facade; a supplied
+`--skip-build` is explicit in the report. The profile restores every shared
+runner binding on exit, including exceptions. Harness tests corrupt each
+of the 56 observation columns, distinguish compiled-only mistakes, reject
+wrong bootstrap expectations, and test partial/invalid outputs and failure
+reporting. Paired `PffExecution` fixtures exercise all eighteen newly
+computable existing APIs; separate `PffLogTotality` proofs cover the
+noncomputable real-logarithm convention.
+
+## 11. What this still does not establish
 
 The expanded combined runner completed at commit `ba3e2a8b`, seed `961703`,
 with 10,788 core cases, 672 native unary cases, 1,624 arithmetic pairs,

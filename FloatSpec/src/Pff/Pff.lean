@@ -591,9 +591,9 @@ theorem EvenMultInv (n m : Int) :
   exact (Int.even_mul.mp hev).resolve_left (Int.not_even_iff_odd.mpr hodd)
 
 -- Integer power on Int for natural exponent (compat with Coq Zpower_nat)
-noncomputable def Zpower_nat (n : Int) (k : Nat) : Int := n ^ k
+def Zpower_nat (n : Int) (k : Nat) : Int := n ^ k
 
-noncomputable def Zpower_nat_int (n : Int) (k : Nat) : Int := Zpower_nat n k
+def Zpower_nat_int (n : Int) (k : Nat) : Int := Zpower_nat n k
 
 -- Coq: `EvenExp` — if n is even then n^(S m) is even (nat exponent)
 noncomputable def EvenExp_check (n : Int) (m : Nat) : Unit :=
@@ -1055,7 +1055,7 @@ theorem RleBoundRoundr {beta : Int} [ValidRadix beta]
     exact le_of_eq (roundedProjectorOfMode b P hRounded p q hpBounded hrq').symm
 
 /-- Minimal normal mantissa (`nNormMin`) defined using a positive-exponent power. -/
-noncomputable def nNormMin (radix : Int) (precision : Nat) : Int :=
+def nNormMin (radix : Int) (precision : Nat) : Int :=
   radix ^ (precision - 1)
 
 /-- Coq: `PosNormMin` — the positive mantissa bound is `radix * nNormMin`. -/
@@ -1071,11 +1071,11 @@ theorem PosNormMin (radix : Int) (b : Fbound_skel) (precision : Nat) :
       simp [Zpower_nat, nNormMin, pow_succ, mul_comm]
 
 /-- Coq: `pPred (vNum b)` is the predecessor of the positive mantissa bound. -/
-noncomputable def pPred (n : Int) : Int :=
+def pPred (n : Int) : Int :=
   n - 1
 
 -- Coq: `firstNormalPos_eq` — value of the first normal positive float
-noncomputable def firstNormalPos {beta : Int} [ValidRadix beta]
+def firstNormalPos {beta : Int} [ValidRadix beta]
     (radix : Int) (b : Fbound_skel) (precision : Nat) :
     FloatSpec.Core.Defs.FlocqFloat beta :=
   ⟨nNormMin radix precision, -b.dExp⟩
@@ -1246,7 +1246,7 @@ private def pffStructuralDigit (radix q : Int) : Nat :=
 
 /-- Coq Pff's `digit`, using the existing Core implementation only on the
 radix domain where the two algorithms are extensionally equivalent. -/
-noncomputable def pffDigit (radix q : Int) : Nat :=
+def pffDigit (radix q : Int) : Nat :=
   if 1 < radix then
     Int.toNat (FloatSpec.Core.Digits.Zdigits radix q)
   else
@@ -1278,12 +1278,12 @@ private theorem pffDigit_abs (radix q : Int) :
   · rw [abs_of_neg (lt_of_not_ge hq), pffDigit_neg]
 
 -- Coq: `Fdigit p := digit radix (Fnum p)`.
-noncomputable def Fdigit {beta : Int} [ValidRadix beta]
+def Fdigit {beta : Int} [ValidRadix beta]
     (radix : Int) (x : FloatSpec.Core.Defs.FlocqFloat beta) : Nat :=
   pffDigit radix x.Fnum
 
 -- Coq: `Fshift n x := Float (Fnum x * Zpower_nat radix n) (Fexp x - n)`.
-noncomputable def Fshift {beta : Int} [ValidRadix beta]
+def Fshift {beta : Int} [ValidRadix beta]
     (radix : Int) (n : Nat) (x : FloatSpec.Core.Defs.FlocqFloat beta) :
     FloatSpec.Core.Defs.FlocqFloat beta :=
   ⟨x.Fnum * radix ^ n, x.Fexp - (n : Int)⟩
@@ -1324,7 +1324,7 @@ neighbor aliases can match Flocq:
 `FNSucc x := FSucc (Fnormalize radix b precision x)`.
 -/
 
-noncomputable def FSucc {beta : Int} [ValidRadix beta]
+def FSucc {beta : Int} [ValidRadix beta]
     (b : Fbound_skel) (radix : Int) (precision : Nat)
     (x : FloatSpec.Core.Defs.FlocqFloat beta) :
     FloatSpec.Core.Defs.FlocqFloat beta :=
@@ -1338,7 +1338,7 @@ noncomputable def FSucc {beta : Int} [ValidRadix beta]
   else
     ⟨x.Fnum + 1, x.Fexp⟩
 
-noncomputable def FPred {beta : Int} [ValidRadix beta]
+def FPred {beta : Int} [ValidRadix beta]
     (b : Fbound_skel) (radix : Int) (precision : Nat)
     (x : FloatSpec.Core.Defs.FlocqFloat beta) :
     FloatSpec.Core.Defs.FlocqFloat beta :=
@@ -1357,7 +1357,7 @@ noncomputable def FPred {beta : Int} [ValidRadix beta]
 Zero is represented with the boundary exponent `-b.dExp`; nonzero floats are
 shifted just enough to fit the requested precision without crossing the
 minimum exponent. -/
-noncomputable def Fnormalize {beta : Int} [ValidRadix beta]
+def Fnormalize {beta : Int} [ValidRadix beta]
     (radix : Int) (b : Fbound_skel) (precision : Nat)
     (p : FloatSpec.Core.Defs.FlocqFloat beta) :
     FloatSpec.Core.Defs.FlocqFloat beta :=
@@ -1546,14 +1546,14 @@ def FNodd {beta : Int} [ValidRadix beta]
   Fodd (beta:=beta) (Fnormalize (beta:=beta) beta b precision p)
 
 /-- Coq: `FNSucc x := FSucc (Fnormalize radix b precision x)`. -/
-noncomputable def FNSucc {beta : Int} [ValidRadix beta]
+def FNSucc {beta : Int} [ValidRadix beta]
     (b : Fbound_skel) (_radix : ℝ) (precision : Nat)
     (p : FloatSpec.Core.Defs.FlocqFloat beta) : FloatSpec.Core.Defs.FlocqFloat beta :=
   FSucc (beta:=beta) b beta precision
     (Fnormalize (beta:=beta) beta b precision p)
 
 /-- Coq: `FNPred x := FPred (Fnormalize radix b precision x)`. -/
-noncomputable def FNPred {beta : Int} [ValidRadix beta]
+def FNPred {beta : Int} [ValidRadix beta]
     (b : Fbound_skel) (_radix : ℝ) (precision : Nat)
     (p : FloatSpec.Core.Defs.FlocqFloat beta) : FloatSpec.Core.Defs.FlocqFloat beta :=
   FPred (beta:=beta) b beta precision
@@ -15474,7 +15474,7 @@ theorem ZDividesLe (n m : Int) :
         apply mul_le_mul_of_nonneg_left (Int.one_le_abs hq_ne) (abs_nonneg m)
 
 -- Coq: `digit` from the Pdigit section, including its exported total behavior.
-noncomputable def digit (n : Int) (q : Int) : Nat :=
+def digit (n : Int) (q : Int) : Nat :=
   pffDigit n q
 
 private lemma digit_neg (n p : Int) : digit n (-p) = digit n p := by
@@ -17253,7 +17253,7 @@ theorem in_map_inv {A B : Type}
   exact hinj' x y hy_eq.symm ▸ hy_mem
 
 -- Coq: `boundNat n := Float 1 (digit radix n)`.
-noncomputable def boundNat {beta : Int} [ValidRadix beta]
+def boundNat {beta : Int} [ValidRadix beta]
     (radix : Int) (n : Nat) : FloatSpec.Core.Defs.FlocqFloat beta :=
   ⟨1, Int.ofNat (digit radix (Int.ofNat n))⟩
 

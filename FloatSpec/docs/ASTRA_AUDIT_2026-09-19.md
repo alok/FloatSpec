@@ -2763,6 +2763,74 @@ pass. A new run encodes natural arguments via binary `Z.to_nat` expressions;
 it preserves every input and keeps stderr checking enabled. It remains
 in progress, and none of those native/interface candidates is integrated yet.
 
+### September 20, 16:01 UTC — integrated Pff native/source boundary and three-path profile
+
+The eight explicit-radix neighbor/parity definitions are now integrated in
+`Pff.Source`, with pinned source anchors and two closed raw-neighbor carrier
+bridges. Older normalized wrappers are explicitly classified as indexed
+compatibility APIs. The source facade opts into the source-definition
+linter, and all its public definitions are source-linked or explicitly local.
+Fifteen root and three pre-existing facade definitions become computable;
+their types and bodies are unchanged. The same eighteen-entry client that
+failed before this change now executes every entry point successfully.
+
+The permanent paired `PffExecution` fixtures check all eighteen APIs and the
+base-three/base-two neighbor distinction, with source parity. Lean's three
+regression theorems and two carrier-bridge theorems have printed axiom lists
+without `sorryAx`. `PffWalkthrough.lean` prints the records and explains the
+different operational radices linearly, with failing runtime assertions.
+The combined runner includes both fixtures, the walkthrough, and the new
+Pff differential profile and harness.
+
+Verified at Lean/configuration SHA-256
+`ae6a6458b65f1742274a98ba120e9406a638df9d7f6f5289804abad503daacb9`:
+
+- Full macOS Lean 4.34 build: **6,221 jobs**, exit zero, receipt
+  `/private/tmp/floatspec-pff-native-full-build-20260920.log`.
+- Integrated three-path Pff profile: **2,772 / 2,772 compared, compiled,
+  and bootstrapped kernel cases**, seed **850021**, 56 columns, 488.697 seconds.
+  All **45,368** independent exact-rational assertions pass, including
+  **3,510** canonical-neighbor assertions under explicit source premises.
+  Full inputs, source hash, generated programs, outputs and report:
+  `/private/tmp/floatspec-pff-integrated-20260920/`.
+- All **16** Pff harness tests pass in 23.798 seconds, including live
+  mutations in all 56 columns of both Lean paths, compiled-only mutation
+  with a persisted mismatch/replay, wrong bootstrap expectations,
+  matching-wrong-result oracle failure, malformed inputs, timeout and
+  interruption behavior, and restoration of every shared-runner binding.
+  Receipt: `/private/tmp/floatspec-pff-harness-live-v2-20260920.log`.
+- Core harness: **32 non-live tests pass**, 44 live tests explicitly skipped
+  in this invocation, not counted as passes. The frozen broad runner will
+  execute the live suite separately. Receipt:
+  `/private/tmp/floatspec-pff-core-harness-20260920.log`.
+- Compiled trust: **13,553 declarations / 58 modules / four unchanged
+  manifest-only proof debts**, no new axioms or runtime overrides.
+  Freshly exported source metadata validates **262 pinned anchors**.
+  Receipts: `/private/tmp/floatspec-pff-native-trust-20260920.json`,
+  `floatspec-pff-native-source-metadata-20260920.json`, and
+  `floatspec-pff-native-anchors-20260920.log` in the same directory.
+- Paired fixtures, the seven-part Lake demo, the new Pff walkthrough,
+  Python compilation, shell syntax and whitespace checks pass. Source
+  facade, finite Lean fixture and walkthrough have complete zero-error LSP
+  diagnostics. The large root Pff LSP query remained partial; its full
+  module and project builds provide the completed fallback verification.
+
+The copied-module candidate is separately retained: its 2,772-case rerun
+also passed after the large-natural codec correction. It is not substituted
+for the integrated run above. During integration an overlapping Lake module
+build encountered an `EACCES` error on a cache-restored read-only artifact;
+that failed log is retained as
+`/private/tmp/floatspec-pff-native-source-build-20260920.log`.
+No cached hardlinks were chmodded or deleted. Serialized retries and the full
+build passed; no overlapping module builds were used for this final snapshot.
+
+The older **48,614-case** broad run remains active on the earlier frozen
+`32ec11b5…` source snapshot. It is not yet an aggregate pass and does not
+cover these new Pff definitions. The new finite agreement, named bridge
+proofs, source anchors, and whole-library source equivalence remain distinct
+claims. No complete Pff theorem audit or normalized-carrier equivalence is
+claimed.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In

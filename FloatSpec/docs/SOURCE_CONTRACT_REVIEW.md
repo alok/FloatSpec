@@ -6,6 +6,39 @@ all declarations in the named modules. See the
 [running audit](ASTRA_AUDIT_2026-09-19.md) for execution receipts and the
 [reading guide](READING_GUIDE.md) for the mathematical story.
 
+## Pff operational radix and native integer execution
+
+Pinned Pff exports an unindexed integer record. Its normalized neighbors
+and parity predicates consume their explicit integer radix. The older Lean
+wrappers instead accept an ignored real-valued argument and operate at the
+Core carrier's type radix. At bound `(9,10)`, precision two, and explicit
+radix three, the source successor of `(1,0)` is `(4,-1)`, the predecessor of
+`(2,0)` is `(5,-1)`, and normalized one is odd. A Core-base-two wrapper
+returns `(3,-1)`, `(8,-1)`, and even, respectively. The bound is valid for
+base three, not base two; these are interface distinctions, not violations
+of a source theorem's valid-format premises.
+
+`Pff.Source` now supplies `Feven`, `Fodd`, `FSucc`, `FPred`, `FNSucc`,
+`FNPred`, `FNeven`, and `FNodd` with the source's single explicit radix.
+The old normalized APIs remain compatibility adapters, explicitly marked
+local. Two closed theorems commute raw successor/predecessor with carrier
+conversion for every explicit operational radix and valid Core index;
+there is no unproved global normalization bridge hidden in this result.
+
+The complete source facade opts into the source-definition linter; 33 newly
+added pinned anchors cover its previously unclassified surface. Four carrier
+conversions and the Rocq logarithm boundary are explicitly local. A link is
+provenance, not certification of the linked implementation or theorem.
+
+Fifteen root definitions and three existing source-facade definitions lose
+only unnecessary `noncomputable` markers. The permanent `PffExecution`
+fixture invokes all eighteen in compiled code and checks the expected
+results by kernel reduction. The 56-column differential profile separately
+observes the explicit-radix and legacy indexed APIs, preserves nonpositive
+radices and invalid later-theorem preconditions, and checks exact-rational
+invariants under stated premises. See the running ledger for completed-run
+counts; the surrounding Pff theorem library remains unreviewed.
+
 ## Pff logarithm: total extensions are observable
 
 Pinned `Pff/Pff.v:27157` uses Rocq Stdlib's `Rpower.ln`, whose definition is
