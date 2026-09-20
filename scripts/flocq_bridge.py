@@ -35,7 +35,7 @@ OPS = ("power", "div_eucl", "location", "round", "truncate", "div", "plus", "sqr
        "bit_fields", "order32", "order64", "validity", "nearby", "neighbors", "comparison", "small_ieee",
        "ieee_round")
 ARITIES = dict(zip(OPS, (2, 2, 3, 3, 5, 6, 6, 4, 3, 2, 5, 8, 4, 1, 1, 6, 2, 2, 5, 6, 6, 10, 15, 8), strict=True))
-WIDTHS = dict(zip(OPS, (1, 2, 3, 6, 3, 2, 2, 2, 4, 1, 13, 12, 21, 9, 9, 8, 14, 14, 15, 7, 17, 14, 39, 16), strict=True))
+WIDTHS = dict(zip(OPS, (1, 2, 3, 6, 3, 2, 2, 2, 4, 1, 13, 12, 21, 9, 9, 8, 14, 14, 15, 7, 17, 14, 87, 16), strict=True))
 RADIX_OPS = {"truncate", "div", "plus", "sqrt", "digits", "operations", "format_calc"}
 
 
@@ -120,8 +120,9 @@ def small_ieee_expressions(case: Case) -> tuple[str, str]:
     coq = ''
     for name, operand in zip(('x', 'y', 'z'), operands, strict=True):
         lean += (f'let raw_{name} : StandardFloat := {small_ieee_raw(operand)}; '
-                 f'let {name} := Binary.BSN2B nan (BinarySingleNaN.SF2B\' '
-                 f'(prec := {p}) (emax := {emax}) raw_{name}); ')
+                 f'let single_{name} := BinarySingleNaN.SF2B\' '
+                 f'(prec := {p}) (emax := {emax}) raw_{name}; '
+                 f'let {name} := Binary.BSN2B nan single_{name}; ')
         coq += (f'let raw_{name} := {small_ieee_raw(operand, True)} in '
                 f'let {name} := @BinarySingleNaN.SF2B\' {p} {emax} raw_{name} in ')
     lean += '[' + ', '.join(f'boolean (validBinarySingleNaNStandardFloat '
@@ -139,6 +140,17 @@ def small_ieee_expressions(case: Case) -> tuple[str, str]:
     for lvalue, cvalue in zip(values_l, values_c, strict=True):
         lean += f' ++ standard (binarySingleNaNFloatToStandardFloat (Binary.B2BSN ({lvalue})))'
         coq += f' ++ standard (@BinarySingleNaN.B2SF {p} {emax} ({cvalue}))'
+    # Observe each public SingleNaN entry point itself, not only the full-payload
+    # implementation. The source-mode facade has a distinct rounding-mode type.
+    for namespace, lean_mode in (('BinarySingleNaN', lm),
+                                 ('FloatSpec.IEEE754.BinarySingleNaN.Source', f'.{cm}')):
+        for name, cvalue in zip(('Bplus', 'Bminus', 'Bmult', 'Bdiv', 'Bsqrt', 'Bfma'),
+                                values_c[3:], strict=True):
+            arity = 1 if name == 'Bsqrt' else 3 if name == 'Bfma' else 2
+            args = ' '.join(f'single_{n}' for n in ('x', 'y', 'z')[:arity])
+            lean += (f' ++ standard (binarySingleNaNFloatToStandardFloat '
+                     f'({namespace}.{name} {lean_mode} {args}))')
+            coq += f' ++ standard (@BinarySingleNaN.B2SF {p} {emax} ({cvalue}))'
     return lean, coq
 
 

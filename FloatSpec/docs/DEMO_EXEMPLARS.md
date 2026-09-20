@@ -88,6 +88,23 @@ Testing only that final conversion missed the earlier discrepancy. The
 expanded bridge compares every exported stage and retains 87 replay inputs
 from this separate finding.
 
+## A small follow-on: why fused multiply-add is a separate operation
+
+Run `lake env lean scripts/fixtures/SingleNaNArithmetic.lean` and read the paired
+[Lean](../../scripts/fixtures/SingleNaNArithmetic.lean) and
+[Rocq](../../scripts/fixtures/SingleNaNArithmetic.v) files. Their deliberately
+tiny format has one significant bit and a largest finite positive value of 2.
+Under nearest-even, multiplying 2 by 2 alone overflows to infinity. But the
+single operation `fma(2, 2, -2)` returns exactly 2: it computes the exact
+product-plus-addend and rounds only once, after cancellation has made the
+result representable again. It is not multiplication followed by addition.
+
+The same fixture shows the division `1 / 2` at the underflow midpoint. Its
+nearest-even result is positive zero; nearest-away returns 1. Both answers
+follow the selected policy. These examples call the proof-carrying SingleNaN
+API itself, including its separate source-mode facade, rather than a native
+hardware float or a full-payload compatibility wrapper.
+
 ## Exemplars inspected
 
 These are reading recommendations, not dependencies adopted by FloatSpec.

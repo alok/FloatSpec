@@ -15,7 +15,7 @@ This guide follows those jobs in order. The detailed
 [independent continuation audit](ASTRA_AUDIT_2026-09-19.md) retain the
 declaration-by-declaration findings and historical milestones.
 
-## Wake-up summary — September 20, 2026, 07:35 UTC
+## Wake-up summary — September 20, 2026, 07:50 UTC
 
 **What changed most recently:** actually running the raw IEEE rounding APIs
 found a semantic bug. A helper replaced signed shifting with floor division
@@ -74,12 +74,18 @@ CI claim. Reviewable work is on
 [`alok/FloatSpec`, branch `codex/astra-flocq-audit`](https://github.com/alok/FloatSpec/tree/codex/astra-flocq-audit),
 with BAIF retained as the optional `upstream` remote.
 
-**Next:** enable and cross-test the separate SingleNaN arithmetic entry
-points. Their add/multiply/divide/square-root clients currently fail on
-`noncomputable` markers even for zero inputs; inspecting their integer bodies
-and six correctness signatures found no additional source mismatch in this
-slice. Successful finite tests do not settle every theorem signature or
-every total-function input.
+**Current work under verification:** the separate SingleNaN arithmetic entry
+points now execute after removing unnecessary `noncomputable` markers and
+moving square root's proof-only real temporary inside its proof. The six
+operation types and integer algorithms are unchanged. Both Lean and Rocq pass
+30 literal one-bit arithmetic boundaries, including `fma(2,2,-2) = 2` even
+though the separately rounded product overflows. Both SingleNaN entry points
+are tested, including the source-mode facade. The 6,215-job library/test/
+executable build has passed; an expanded fresh-seed, all-family differential
+run is in progress. Its arithmetic rows now observe all three public APIs
+separately. This paragraph is a work-in-progress status, not a claim that the
+ongoing run has passed. Successful finite tests do not settle every theorem
+signature or every total-function input.
 
 ## 1. Start with one small rounding problem
 
@@ -415,7 +421,7 @@ changed surfaces have been checked.
 Source links make that review navigable. `@[flocq_source]` records a pinned
 Coq path, line, and name; `@[flocq_local]` explains a Lean-only helper.
 Eleven modules currently enforce strict public-definition classification.
-The compiler-backed validator checks all 160 registered anchors, including
+The compiler-backed validator checks all 172 registered anchors, including
 combined attributes and later attribute commands. These links are metadata,
 not a proof that bodies or theorem signatures correspond.
 

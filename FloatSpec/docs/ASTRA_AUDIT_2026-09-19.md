@@ -1175,6 +1175,68 @@ the nonzero-real denominator premise for division, and signed-zero clauses.
 No additional signature mismatch was found in this inspection; the real-sign
 helper definitions were checked as part of that comparison.
 
+### September 20 continuation: execute the separate SingleNaN arithmetic APIs
+
+The six direct `BinarySingleNaN` arithmetic operations and their six
+source-mode facade exports now compile. Their types and integer calculations
+are unchanged. The finite-division helper is also executable. Square root's
+real-valued `input` temporary had to move into its erased validity proof:
+merely deleting `noncomputable` failed with `lean.dependsOnNoncomputable` on
+`F2R`. The relocated proof remains closed, as do all existing correctness
+theorems. Twelve pinned source anchors identify the six operations in both
+namespaces; the extracted finite-division helper is explicitly Lean-local.
+
+The `small_ieee` bridge now serializes **87 columns**, not 39. In addition to
+input validity, the three converted inputs, and six full-payload results, it
+calls all six direct SingleNaN operations and all six source-mode facade
+operations. All three sets are compared with the actual pinned Rocq
+SingleNaN operations. These Lean paths share helpers; this checks exported
+wiring and executable behavior, not independence of three implementations.
+
+The new paired `SingleNaNArithmetic.lean`/`.v` fixtures separately check
+**30 literal one-bit-format answers** across the five modes and six operations.
+The Lean fixture checks both SingleNaN APIs, by kernel reduction and compiled
+execution. This includes nearest-even versus nearest-away at the underflow
+midpoint, directed overflow, signed cancellation, square root, and
+`fma(2,2,-2) = 2` despite overflow of the separately rounded product.
+One-bit precision is deliberately outside the full-payload bridge's
+`1 < prec < emax` domain: that bridge needs a valid nonzero NaN payload.
+The combined runner includes the new pair. CI's Lean fixture list now also
+includes Boolean comparisons and both raw-rounding regression fixtures;
+this does not repair the separately known hosted cache/toolchain issue.
+
+Verification completed before the broad integration run finishes:
+
+- The original four-call failing client now prints `true, true, false, true`
+  for finiteness of zero addition, multiplication, division, and square root.
+- Complete LSP error diagnostics are clean for the implementation, source
+  facade, and new fixture. The library builds in 3,101 jobs; the explicit
+  library/test/executable targets build in **6,215 jobs**, both exit 0.
+  Logs: `/private/tmp/floatspec-single-nan-full-build-20260920.log` and
+  `/private/tmp/floatspec-single-nan-tests-build-20260920.log`.
+- All **42 live harness tests** pass in **142.137 seconds**. The arithmetic
+  mutation test independently replaces addition with subtraction in each of
+  the three public APIs. Every change is caught in both Lean execution paths;
+  all untouched columns must continue matching. Log:
+  `/private/tmp/floatspec-single-nan-harness-20260920.log`.
+- The new one-bit fixture and the Boolean/raw-rounding/raw-overflow paired
+  fixtures run successfully in both languages on this snapshot.
+- **172 source anchors** validate. The compiled trust audit checks
+  **13,590 declarations / 58 modules / four unchanged named debts**.
+  Generated status files are unchanged.
+
+The initial marker-only build remains a recorded failure in
+`/private/tmp/floatspec-single-nan-executable-build-20260920.log`; its corrected
+success is in the separate `...-build-v2-...` log. An initial two-test harness
+attempt overlapped rebuilding the test artifacts and failed on a missing
+`BitsExecution.olean`; it is not counted as a pass. All build processes
+finished before the complete passing harness run and the frozen grid began.
+
+A **27,771-case**, fresh-seed all-24-family run is in progress, seed `828431`
+with 40 supplemental samples. It is not yet a passed milestone. Its retained
+receipt is `/private/tmp/floatspec-single-nan-all-families-20260920/report.json`.
+No source edits or builds will overlap that frozen run.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In

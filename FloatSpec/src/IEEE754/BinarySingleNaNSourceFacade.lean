@@ -1705,7 +1705,8 @@ in this API. -/
 -- Source ID: IEEE754/BinarySingleNaN.v:Bmult:43454
 -- Target: FloatSpec.IEEE754.BinarySingleNaN.Source.Bmult
 /-- Source ID: `IEEE754/BinarySingleNaN.v:Bmult:43454`. -/
-noncomputable def Bmult {prec emax : Int}
+@[flocq_source "src/IEEE754/BinarySingleNaN.v" 1578 "Bmult"]
+def Bmult {prec emax : Int}
     [Prec_gt_0 prec] [Prec_lt_emax prec emax]
     (m : mode) (x y : _root_.BinarySingleNaN.binary_float prec emax) :
     _root_.BinarySingleNaN.binary_float prec emax :=
@@ -1714,7 +1715,8 @@ noncomputable def Bmult {prec emax : Int}
 -- Source ID: IEEE754/BinarySingleNaN.v:Bplus:53668
 -- Target: FloatSpec.IEEE754.BinarySingleNaN.Source.Bplus
 /-- Source ID: `IEEE754/BinarySingleNaN.v:Bplus:53668`. -/
-noncomputable def Bplus {prec emax : Int}
+@[flocq_source "src/IEEE754/BinarySingleNaN.v" 1940 "Bplus"]
+def Bplus {prec emax : Int}
     [Prec_gt_0 prec] [Prec_lt_emax prec emax]
     (m : mode) (x y : _root_.BinarySingleNaN.binary_float prec emax) :
     _root_.BinarySingleNaN.binary_float prec emax :=
@@ -1723,7 +1725,8 @@ noncomputable def Bplus {prec emax : Int}
 -- Source ID: IEEE754/BinarySingleNaN.v:Bminus:56616
 -- Target: FloatSpec.IEEE754.BinarySingleNaN.Source.Bminus
 /-- Source ID: `IEEE754/BinarySingleNaN.v:Bminus:56616`. -/
-noncomputable def Bminus {prec emax : Int}
+@[flocq_source "src/IEEE754/BinarySingleNaN.v" 2042 "Bminus"]
+def Bminus {prec emax : Int}
     [Prec_gt_0 prec] [Prec_lt_emax prec emax]
     (m : mode) (x y : _root_.BinarySingleNaN.binary_float prec emax) :
     _root_.BinarySingleNaN.binary_float prec emax :=
@@ -1732,7 +1735,8 @@ noncomputable def Bminus {prec emax : Int}
 -- Source ID: IEEE754/BinarySingleNaN.v:Bfma:58551
 -- Target: FloatSpec.IEEE754.BinarySingleNaN.Source.Bfma
 /-- Source ID: `IEEE754/BinarySingleNaN.v:Bfma:58551`. -/
-noncomputable def Bfma {prec emax : Int}
+@[flocq_source "src/IEEE754/BinarySingleNaN.v" 2094 "Bfma"]
+def Bfma {prec emax : Int}
     [Prec_gt_0 prec] [Prec_lt_emax prec emax]
     (m : mode) (x y z : _root_.BinarySingleNaN.binary_float prec emax) :
     _root_.BinarySingleNaN.binary_float prec emax :=
@@ -1741,7 +1745,8 @@ noncomputable def Bfma {prec emax : Int}
 -- Source ID: IEEE754/BinarySingleNaN.v:Bdiv:66074
 -- Target: FloatSpec.IEEE754.BinarySingleNaN.Source.Bdiv
 /-- Source ID: `IEEE754/BinarySingleNaN.v:Bdiv:66074`. -/
-noncomputable def Bdiv {prec emax : Int}
+@[flocq_source "src/IEEE754/BinarySingleNaN.v" 2307 "Bdiv"]
+def Bdiv {prec emax : Int}
     [Prec_gt_0 prec] [Prec_lt_emax prec emax]
     (m : mode) (x y : _root_.BinarySingleNaN.binary_float prec emax) :
     _root_.BinarySingleNaN.binary_float prec emax :=
@@ -1750,7 +1755,8 @@ noncomputable def Bdiv {prec emax : Int}
 -- Source ID: IEEE754/BinarySingleNaN.v:Bsqrt:70887
 -- Target: FloatSpec.IEEE754.BinarySingleNaN.Source.Bsqrt
 /-- Source ID: `IEEE754/BinarySingleNaN.v:Bsqrt:70887`. -/
-noncomputable def Bsqrt {prec emax : Int}
+@[flocq_source "src/IEEE754/BinarySingleNaN.v" 2466 "Bsqrt"]
+def Bsqrt {prec emax : Int}
     [Prec_gt_0 prec] [Prec_lt_emax prec emax]
     (m : mode) (x : _root_.BinarySingleNaN.binary_float prec emax) :
     _root_.BinarySingleNaN.binary_float prec emax :=

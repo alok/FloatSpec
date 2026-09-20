@@ -1125,6 +1125,7 @@ fallback to one at nonpositive precision. -/
 def rawOverflowMantissa (prec : Int) : Nat :=
   if 0 < prec then (2 : Nat) ^ prec.toNat - 1 else 1
 
+/-- At positive precision, the raw overflow mantissa is the largest significand. -/
 @[simp] theorem rawOverflowMantissa_of_pos {prec : Int} [Prec_gt_0 prec] :
     rawOverflowMantissa prec = (2 : Nat) ^ prec.toNat - 1 := by
   simp [rawOverflowMantissa, (inferInstance : Prec_gt_0 prec).pos]

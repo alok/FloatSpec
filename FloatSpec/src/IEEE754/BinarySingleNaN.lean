@@ -8194,7 +8194,8 @@ def Bopp {prec emax : Int} : binary_float prec emax → binary_float prec emax
   | BinarySingleNaNFloat.B754_finite s m e hm hb =>
       BinarySingleNaNFloat.B754_finite (!s) m e hm hb
 
-noncomputable def Bmult {prec emax : Int}
+@[flocq_source "src/IEEE754/BinarySingleNaN.v" 1578 "Bmult"]
+def Bmult {prec emax : Int}
     [Prec_gt_0 prec] [Prec_lt_emax prec emax]
     (mode : RoundingMode) (x y : binary_float prec emax) :
     binary_float prec emax :=
@@ -8226,7 +8227,8 @@ noncomputable def Bmult {prec emax : Int}
         mode sx mx ex hmx Hx sy my ey hmy Hy
       standardFloatToBinarySingleNaNFloat z haux.1
 
-noncomputable def Bplus {prec emax : Int}
+@[flocq_source "src/IEEE754/BinarySingleNaN.v" 1940 "Bplus"]
+def Bplus {prec emax : Int}
     [Prec_gt_0 prec] [Prec_lt_emax prec emax]
     (mode : RoundingMode) (x y : binary_float prec emax) :
     binary_float prec emax :=
@@ -8252,7 +8254,8 @@ noncomputable def Bplus {prec emax : Int}
         (Fplus_naive sx mx ex sy my ey ez) ez
         (match mode with | RoundingMode.RTN => true | _ => false))
 
-noncomputable def Bminus {prec emax : Int}
+@[flocq_source "src/IEEE754/BinarySingleNaN.v" 2042 "Bminus"]
+def Bminus {prec emax : Int}
     [Prec_gt_0 prec] [Prec_lt_emax prec emax]
     (mode : RoundingMode) (x y : binary_float prec emax) :
     binary_float prec emax :=
@@ -8266,7 +8269,8 @@ def Bfma_szero {prec emax : Int} (mode : RoundingMode)
   if sxy == BSN_sign (binarySingleNaNFloatToB754 z) then sxy
   else match mode with | RoundingMode.RTN => true | _ => false
 
-noncomputable def Bfma {prec emax : Int}
+@[flocq_source "src/IEEE754/BinarySingleNaN.v" 2094 "Bfma"]
+def Bfma {prec emax : Int}
     [Prec_gt_0 prec] [Prec_lt_emax prec emax]
     (mode : RoundingMode) (x y z : binary_float prec emax) :
     binary_float prec emax :=
@@ -8321,7 +8325,8 @@ noncomputable def Bfma {prec emax : Int}
           Binary.B2BSN (Binary.normalize (prec:=prec) (emax:=emax) mode
             sum.Fnum sum.Fexp (Bfma_szero mode x y z))
 
-noncomputable def Bdiv_finite {prec emax : Int}
+@[flocq_local "Finite-operand branch extracted from BinarySingleNaN.Bdiv"]
+def Bdiv_finite {prec emax : Int}
     [Prec_gt_0 prec] [Prec_lt_emax prec emax]
     (mode : RoundingMode) (sx : Bool) (mx : Nat) (ex : Int) (hmx : 0 < mx)
     (sy : Bool) (my : Nat) (ey : Int) (hmy : 0 < my) :
@@ -8338,7 +8343,8 @@ noncomputable def Bdiv_finite {prec emax : Int}
     simpa [mxp, myp, result, z, binaryPositiveOfNat_spec] using haux.1
   standardFloatToBinarySingleNaNFloat z hvalid
 
-noncomputable def Bdiv {prec emax : Int}
+@[flocq_source "src/IEEE754/BinarySingleNaN.v" 2307 "Bdiv"]
+def Bdiv {prec emax : Int}
     [Prec_gt_0 prec] [Prec_lt_emax prec emax]
     (mode : RoundingMode) (x y : binary_float prec emax) :
     binary_float prec emax :=
@@ -8367,7 +8373,8 @@ noncomputable def Bdiv {prec emax : Int}
       BinarySingleNaNFloat.B754_finite sy my ey hmy _ =>
       Bdiv_finite mode sx mx ex hmx sy my ey hmy
 
-noncomputable def Bsqrt {prec emax : Int}
+@[flocq_source "src/IEEE754/BinarySingleNaN.v" 2466 "Bsqrt"]
+def Bsqrt {prec emax : Int}
     [Prec_gt_0 prec] [Prec_lt_emax prec emax]
     (mode : RoundingMode) (x : binary_float prec emax) :
     binary_float prec emax :=
@@ -8379,8 +8386,6 @@ noncomputable def Bsqrt {prec emax : Int}
   | BinarySingleNaNFloat.B754_finite true _ _ _ _ =>
       BinarySingleNaNFloat.B754_nan
   | BinarySingleNaNFloat.B754_finite false mx ex hmx _ =>
-      let input := F2R (FloatSpec.Core.Defs.FlocqFloat.mk (mx : Int) ex :
-        FloatSpec.Core.Defs.FlocqFloat 2)
       let result := SFsqrt_core_binary prec emax (mx : Int) ex
       have hdata := SFsqrt_core_binary_correct_data
         (prec:=prec) (emax:=emax) (mx : Int) ex (by exact_mod_cast hmx)
@@ -8391,19 +8396,21 @@ noncomputable def Bsqrt {prec emax : Int}
         Int.toNat_of_nonneg (le_of_lt hresult_pos)
       let z := binary_round_aux (prec:=prec) (emax:=emax) mode false
         (mzn : Int) result.2.1 result.2.2
-      have hbetween : FloatSpec.Calc.Bracket.inbetween_float 2
-          (mzn : Int) result.2.1 |Real.sqrt input| result.2.2 := by
-        simpa [input, result, hmzn_cast, abs_of_nonneg (Real.sqrt_nonneg _)]
-          using hdata.2.1
-      have hexp : result.2.1 ≤ FLT_exp (3 - emax - prec) prec
-          (FloatSpec.Core.Digits.Zdigits 2 (mzn : Int) + result.2.1) := by
-        simpa [result, hmzn_cast] using hdata.2.2
-      have haux := binary_round_aux_correct (prec:=prec) (emax:=emax)
-        mode (Real.sqrt input) mzn result.2.1 result.2.2 hmzn_pos hbetween hexp
-      have hsqrt_sign : FloatSpec.Core.Raux.Rlt_bool (Real.sqrt input) 0 = false := by
-        simp [FloatSpec.Core.Raux.Rlt_bool, Real.sqrt_nonneg]
       have hvalid : validBinarySingleNaNStandardFloat
           (prec:=prec) (emax:=emax) z = true := by
+        let input := F2R (FloatSpec.Core.Defs.FlocqFloat.mk (mx : Int) ex :
+          FloatSpec.Core.Defs.FlocqFloat 2)
+        have hbetween : FloatSpec.Calc.Bracket.inbetween_float 2
+            (mzn : Int) result.2.1 |Real.sqrt input| result.2.2 := by
+          simpa [input, result, hmzn_cast, abs_of_nonneg (Real.sqrt_nonneg _)]
+            using hdata.2.1
+        have hexp : result.2.1 ≤ FLT_exp (3 - emax - prec) prec
+            (FloatSpec.Core.Digits.Zdigits 2 (mzn : Int) + result.2.1) := by
+          simpa [result, hmzn_cast] using hdata.2.2
+        have haux := binary_round_aux_correct (prec:=prec) (emax:=emax)
+          mode (Real.sqrt input) mzn result.2.1 result.2.2 hmzn_pos hbetween hexp
+        have hsqrt_sign : FloatSpec.Core.Raux.Rlt_bool (Real.sqrt input) 0 = false := by
+          simp [FloatSpec.Core.Raux.Rlt_bool, Real.sqrt_nonneg]
         simpa [z, hsqrt_sign] using haux.1
       standardFloatToBinarySingleNaNFloat z hvalid
 

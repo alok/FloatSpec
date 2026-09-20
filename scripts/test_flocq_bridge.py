@@ -286,22 +286,34 @@ class LiveTests(unittest.TestCase):
             self.assertEqual(row[11:15], [2, 0, 0, 0])
             self.assertEqual(row[15:19], [3, 0, 6, -2])
             self.assertEqual(row[-4:], [2, 0, 0, 0])
+            self.assertEqual(len(row), 87)
+            self.assertEqual(row[15:39], row[39:63])
+            self.assertEqual(row[15:39], row[63:87])
 
     def test_small_format_add_to_subtract_mutation_is_rejected(self):
         flocq = Path(os.environ['FLOCQ_AUDIT_DIR']).resolve()
         original = bridge.expressions
-        def mutated(case):
-            lean, rocq = original(case)
-            self.assertIn('Binary.Bplus', lean)
-            return lean.replace('Binary.Bplus', 'Binary.Bminus'), rocq
         one = (3, 0, 4, -2)
         case = bridge.Case('small_ieee', (3, 4, 0, *one, *one, *one))
-        with (tempfile.TemporaryDirectory(prefix='floatspec-small-ieee-mutation-') as directory,
-              patch.object(bridge, 'expressions', mutated)):
-            rows = bridge.execute([case], flocq, bridge.configured_coqc(flocq), Path(directory))
-        failures = bridge.compare([case], rows)
-        self.assertEqual(len(failures), 1)
-        self.assertEqual(failures[0]['paths'], ['lean', 'compiled'])
+        # Change one independently serialized public entry point at a time.
+        for symbol, start in (('Binary.Bplus', 15), ('BinarySingleNaN.Bplus', 39),
+                              ('FloatSpec.IEEE754.BinarySingleNaN.Source.Bplus', 63)):
+            with self.subTest(symbol=symbol):
+                def mutated(case):
+                    lean, rocq = original(case)
+                    token = f'({symbol} '
+                    self.assertEqual(lean.count(token), 1)
+                    return lean.replace(token, token.replace('Bplus', 'Bminus')), rocq
+                with (tempfile.TemporaryDirectory(prefix='floatspec-small-ieee-mutation-') as directory,
+                      patch.object(bridge, 'expressions', mutated)):
+                    rows = bridge.execute([case], flocq, bridge.configured_coqc(flocq), Path(directory))
+                failures = bridge.compare([case], rows)
+                self.assertEqual(len(failures), 1)
+                self.assertEqual(failures[0]['paths'], ['lean', 'compiled'])
+                for path in ('lean', 'compiled'):
+                    self.assertNotEqual(rows[path][0][start:start+4], rows['rocq'][0][start:start+4])
+                    self.assertEqual(rows[path][0][:start], rows['rocq'][0][:start])
+                    self.assertEqual(rows[path][0][start+4:], rows['rocq'][0][start+4:])
 
     def test_generic_comparison_observes_validity_and_degenerate_formats(self):
         flocq = Path(os.environ["FLOCQ_AUDIT_DIR"]).resolve()

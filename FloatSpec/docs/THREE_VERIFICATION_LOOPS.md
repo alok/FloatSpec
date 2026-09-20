@@ -74,6 +74,12 @@ The standalone paired fixtures add independent contract and error checks:
   including the positive-carrier fallback at nonpositive precision. A Lean
   theorem separately proves that the shared helper is positive at every
   integer precision, without a format-validity instance.
+- `SingleNaNArithmetic`: 30 literal one-bit-format results in all five modes,
+  through both the direct and source-mode SingleNaN APIs. The cases cover
+  overflow, signed cancellation, underflow ties, square root, and an FMA whose
+  unrounded intermediate product would overflow if evaluated separately.
+  Lean checks both APIs by kernel reduction and compiled execution; the paired
+  Rocq fixture proves the same literal results independently.
 
 `Test/SourcePremiseContracts.lean` additionally has 52 source-premise guards,
 paired typed consumers for the Prop, integer-rounding, canonical-exponent,
@@ -227,8 +233,10 @@ The twenty-third family, `small_ieee`, executes full-payload Lean arithmetic
 in precisions 2, 3, 4, and 8 with two exponent ranges each, against pinned
 Rocq SingleNaN arithmetic. Each row runs addition, subtraction, multiplication,
 division, square root, and fused multiply-add in one of the five modes.
-Thirty-nine columns retain raw validity, the converted three inputs, and all
-six results. Every pair in the twelve-value boundary pool is included; FMA's
+Eighty-seven columns retain raw validity, the converted three inputs, and all
+six results through three independently called public entry points: full-payload
+`Binary`, direct `BinarySingleNaN`, and the source-mode SingleNaN facade.
+Every pair in the twelve-value boundary pool is included; FMA's
 third operand rotates through that pool and is not exhaustively enumerated.
 Seeded supplemental triples add coverage beyond the boundary pool.
 
@@ -236,8 +244,11 @@ This family deliberately erases NaN payloads using a fixed valid handler;
 the separate binary32/64 mode bridge checks payload policy. It requires
 `1 < prec < emax`, because the chosen payload must fit. Invalid finite raw
 carriers are visibly converted to NaN rather than silently treated as valid
-arithmetic operands. A live addition-to-subtraction mutation must fail in both
-Lean paths. It is included automatically in the combined runner, or run it
+arithmetic operands. Three separate live addition-to-subtraction mutations
+alter one public entry point at a time; each must fail in both Lean paths,
+and the unaffected result columns must stay equal. The paired one-bit fixture
+above covers a format outside this full-payload family's domain.
+It is included automatically in the combined runner, or run it
 alone with `--operations small_ieee --seed 491733 --samples 10`.
 
 The twenty-fourth family, `ieee_round`, executes `binary_round_aux` and
