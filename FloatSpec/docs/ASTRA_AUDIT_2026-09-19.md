@@ -2567,6 +2567,68 @@ The next complete three-loop run will restart the entire corpus after the
 separately scratch-verified parity/symmetry contract repairs are integrated;
 no completed prefix is silently promoted into a full run.
 
+### September 20, 14:38 UTC — six parity/symmetry source interfaces repaired
+
+Compiled pinned types exposed six additional section-premise mismatches.
+The two `DN_UP_parity_*_prop` definitions take no `Valid_exp` in Flocq.
+`DN_UP_parity_aux` and `round_NE_opp` need neither `Valid_exp` nor
+`Exists_NE`; `round_NE_abs` needs validity but not `Exists_NE`;
+`round_odd_opp` needs no exponent-validity premise. Lean formerly required
+all the extra instances. Source-shaped clients failed against those types.
+
+The six public signatures and one private symmetry helper now have the
+source premise boundaries. Every production proof body is unchanged and
+closed. Six new pinned anchors identify the inspected exports; actual
+parity-existence/correctness theorems retain their stronger hypotheses.
+The compiled-premise guard now accepts multiple named arguments and is tested
+against deliberate implicit and explicit `Exists_NE beta fexp` leaks, plus
+an independent-exponent control. There are **98 production premise guards**,
+**seven expected-negative examples**, and **two guard self-tests**.
+
+Paired clients also prove a useful boundary: binary FLX precision one does
+not satisfy the source's `Exists_NE` condition, while its concrete
+nearest-even rounding still commutes with negation. This shows an actual
+positive-precision case excluded by the old symmetry signature. It does not
+claim that the class characterizes nearest-even totality in both directions.
+
+Verification on macOS arm64 / Lean 4.34.0:
+
+- Full `FloatSpecLib FloatSpecTests floatspec floatspec_demo` build passes
+  **6,219 jobs**: `/private/tmp/floatspec-parity-full-build-20260920.log`.
+  The earlier targeted dependency build passes 3,060 jobs.
+- Both production modules and the combined premise fixture have complete
+  zero-error LSP diagnostics. The old standalone clients now compile without
+  errors (`RoundNEUnrestrictedClients20260920-after.out` and
+  `RoundOddUnrestrictedClients20260920-after.out` in `/private/tmp`).
+- The complete paired Rocq premise fixture passes:
+  `/private/tmp/floatspec-parity-source-rocq-20260920.log`.
+- Ten printed source/client axiom lists contain only `propext`,
+  `Classical.choice`, and `Quot.sound`:
+  `/private/tmp/floatspec-parity-axioms-20260920.log`.
+- Compiled trust remains **13,537 declarations / 58 modules / four unchanged
+  manifest-only debts**. Source metadata was freshly exported after the
+  successful build; validation of that saved metadata checks **228 anchors**.
+  Reports use `/private/tmp/floatspec-parity-` with suffixes
+  `trust-20260920.json`, `source-metadata-20260920.json`, and
+  `anchors-20260920.log`. The validator's supplied-manifest mode does not
+  itself establish freshness; the preceding export/build does.
+- The real seven-part Lake demo reruns successfully:
+  `/private/tmp/floatspec-parity-demo-20260920.log`.
+  Generated textual status is unchanged; shell syntax and whitespace checks pass.
+
+Lean/configuration SHA-256:
+`32ec11b5b0ac7fb6cba5d58635307df2857568f7228c9554e8343d498305dfbf`.
+Scratch whole-module proofs passed before integration. Early boundary drafts
+failed on a missing FLX import (the scratch copy cannot import its own
+downstream module), missing `Lia`, and a section-local real-number scope;
+those failed receipts remain, and the successful final scratch receipts are
+`RoundNEWholeUnrestricted20260920-v6.out`,
+`RoundNEUnrestrictedClients20260920-rocq-v5.out`, and
+`RoundOddWholeUnrestricted20260920.out`.
+No new proof admission or arithmetic algorithm change was introduced.
+The complete differential rerun remains pending until the new snapshot is
+committed and frozen; earlier aggregate runs are not relabeled as current.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In

@@ -453,8 +453,10 @@ theorem Rnd_odd_pt_opp_inv (x f : ℝ) :
           g.Fnum g.Fexp hcan
       · exact emod_two_ne_zero_neg hodd
 
+omit [FloatSpec.Core.Generic_fmt.Valid_exp fexp] in
 /-- Negation commutes with round-to-odd.
     Coq counterpart: `round_odd_opp`. -/
+@[flocq_source "src/Prop/Round_odd.v" 221 "round_odd_opp"]
 theorem round_odd_opp (x : ℝ) (hβ : 1 < beta) :
   FloatSpec.Calc.Round.round beta fexp oddMode (-x)
   = - FloatSpec.Calc.Round.round beta fexp oddMode x := by

@@ -9,25 +9,29 @@ import FloatSpec.src.Pff.Pff2Flocq
 
 open Lean Meta Elab Command
 
-/-- Reject a direct predicate premise on the named parameter of an elaborated
-declaration. This detects accidental section-instance leakage; it is not a
-translator or a proof that the entire statement matches Rocq. -/
-elab "#guard_no_source_premise " target:ident cls:ident " at " parameter:ident : command =>
+/-- Reject a direct source predicate premise at named elaborated parameters. -/
+elab "#guard_no_source_premise " target:ident cls:ident " at " parameters:ident+ : command =>
   liftTermElabM do
     let targetName ← realizeGlobalConstNoOverloadWithInfo target
     let className ← realizeGlobalConstNoOverloadWithInfo cls
+    let parameterLabel := match parameters.toList with
+      | [parameter] => m!"parameter {parameter.getId}"
+      | _ => m!"parameters {String.intercalate " " (parameters.toList.map (·.getId.toString))}"
     let info ← getConstInfo targetName
     forallTelescope info.type fun binders _ => do
-      let some param ← binders.findM? fun binder => do
-        return (← binder.fvarId!.getDecl).userName == parameter.getId
-        | throwErrorAt parameter "unknown parameter {parameter.getId} on {target.getId}"
-      let expected ← mkAppM className #[param]
+      let mut arguments := #[]
+      for parameter in parameters do
+        let some param ← binders.findM? fun binder => do
+          return (← binder.fvarId!.getDecl).userName == parameter.getId
+          | throwErrorAt parameter "unknown parameter {parameter.getId} on {target.getId}"
+        arguments := arguments.push param
+      let expected ← mkAppM className arguments
       unless ← isProp expected do
         throwErrorAt cls "{cls.getId} does not produce a proposition"
       for binder in binders do
         let domain ← withTransparency .all <| whnf (← inferType binder)
         if ← withTransparency .all <| isDefEq domain expected then
-          throwErrorAt target "unexpected premise {cls.getId} on parameter {parameter.getId} of {target.getId}"
+          throwErrorAt target "unexpected premise {cls.getId} on {parameterLabel} of {target.getId}"
 
 namespace FloatSpec.Test.SourcePremiseGuard
 
@@ -64,6 +68,23 @@ theorem factLeak (prec : Int) [Fact (0 < prec)] : prec = prec := rfl
 #guard_no_source_premise selective FloatSpec.Core.Generic_fmt.Valid_exp at typo
 
 #guard_no_source_premise selective FloatSpec.Core.Generic_fmt.Valid_exp at fexpe
+
+theorem multiParameterLeak (beta : Int) [ValidRadix beta] (fexp : Int → Int)
+    [FloatSpec.Core.RoundNE.Exists_NE beta fexp] : beta = beta := rfl
+theorem explicitMultiLeak (beta : Int) [ValidRadix beta] (fexp : Int → Int)
+    (_h : FloatSpec.Core.RoundNE.Exists_NE beta fexp) : beta = beta := rfl
+theorem multiSelective (beta : Int) [ValidRadix beta] (fexp other : Int → Int)
+    [FloatSpec.Core.RoundNE.Exists_NE beta fexp] : other 0 = other 0 := rfl
+
+/-- error: unexpected premise FloatSpec.Core.RoundNE.Exists_NE on parameters beta fexp of multiParameterLeak -/
+#guard_msgs in
+#guard_no_source_premise multiParameterLeak FloatSpec.Core.RoundNE.Exists_NE at beta fexp
+
+/-- error: unexpected premise FloatSpec.Core.RoundNE.Exists_NE on parameters beta fexp of explicitMultiLeak -/
+#guard_msgs in
+#guard_no_source_premise explicitMultiLeak FloatSpec.Core.RoundNE.Exists_NE at beta fexp
+
+#guard_no_source_premise multiSelective FloatSpec.Core.RoundNE.Exists_NE at beta other
 
 end FloatSpec.Test.SourcePremiseGuard
 
@@ -629,3 +650,57 @@ theorem nonpositive_precision_examples :
   norm_num [FloatSpec.Core.FLX.ulp_FLX_1, FloatSpec.Core.FLX.succ_FLX_1]
 
 end FLXUnitSourceContracts
+
+-- The parity statements and symmetry laws have distinct source premises.
+#guard_no_source_premise FloatSpec.Core.RoundNE.DN_UP_parity_pos_prop FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.RoundNE.DN_UP_parity_prop FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.RoundNE.DN_UP_parity_aux FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.RoundNE.DN_UP_parity_aux FloatSpec.Core.RoundNE.Exists_NE at beta fexp
+#guard_no_source_premise FloatSpec.Core.RoundNE.round_NE_opp FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.RoundNE.round_NE_opp FloatSpec.Core.RoundNE.Exists_NE at beta fexp
+#guard_no_source_premise FloatSpec.Core.RoundNE.round_NE_abs FloatSpec.Core.RoundNE.Exists_NE at beta fexp
+#guard_no_source_premise round_odd_opp FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+
+namespace RoundParitySourceContracts
+open FloatSpec.Core.Generic_fmt FloatSpec.Core.RoundNE
+variable (beta : Int) [ValidRadix beta] (fexp : Int → Int)
+
+def positive_statement : Prop := DN_UP_parity_pos_prop beta fexp
+def signed_statement : Prop := DN_UP_parity_prop beta fexp
+theorem parity_transfer (h : DN_UP_parity_pos_prop beta fexp) :
+    DN_UP_parity_prop beta fexp := DN_UP_parity_aux beta fexp h
+
+theorem nearest_negate (x : Real) :
+    roundR beta fexp (Znearest (fun t : Int => !(decide (2 ∣ t)))) (-x) =
+    -roundR beta fexp (Znearest (fun t : Int => !(decide (2 ∣ t)))) x :=
+  round_NE_opp beta fexp x
+
+theorem odd_negate (x : Real) :
+    roundR beta fexp Zrnd_odd (-x) = -roundR beta fexp Zrnd_odd x :=
+  round_odd_opp beta fexp x ValidRadix.valid
+
+-- This source export still takes Valid_exp, but not Exists_NE.
+theorem nearest_absolute [FloatSpec.Core.Generic_fmt.Valid_exp fexp] (x : Real) :
+    roundR beta fexp (Znearest (fun t : Int => !(decide (2 ∣ t)))) |x| =
+    |roundR beta fexp (Znearest (fun t : Int => !(decide (2 ∣ t)))) x| :=
+  round_NE_abs beta fexp x
+
+-- The class fails for a genuine positive-precision format; the symmetry
+-- theorem must not require that class. This does not identify the class
+-- with a necessary-and-sufficient characterization of nearest-even totality.
+theorem one_bit_fails_exists_ne :
+    ¬ FloatSpec.Core.RoundNE.Exists_NE 2 (FloatSpec.Core.FLX.FLX_exp 1) := by
+  intro h
+  rcases h.exists_ne with hodd | hexp
+  · norm_num at hodd
+  · have h := (hexp 1).1 (by norm_num [FloatSpec.Core.FLX.FLX_exp])
+    norm_num [FloatSpec.Core.FLX.FLX_exp] at h
+
+theorem one_bit_negate (x : Real) :
+    roundR 2 (FloatSpec.Core.FLX.FLX_exp 1)
+      (Znearest (fun t : Int => !(decide (2 ∣ t)))) (-x) =
+    -roundR 2 (FloatSpec.Core.FLX.FLX_exp 1)
+      (Znearest (fun t : Int => !(decide (2 ∣ t)))) x :=
+  round_NE_opp 2 (FloatSpec.Core.FLX.FLX_exp 1) x
+
+end RoundParitySourceContracts

@@ -76,8 +76,46 @@ they are four and five. These are laws of total definitions, not assertions
 about adjacent values in a valid floating-point format. Positive precision
 is still required by `negligible_exp_FLX` and the ULP-at-zero theorem.
 Four new guards reject both the named precision class and the legacy
-positivity `Fact` on the unrestricted laws. The current combined premise
-guard count is **90**; earlier counts below describe earlier checkpoints.
+positivity `Fact` on the unrestricted laws. This repair brought the combined
+premise guard count to **90**; later checkpoints extend that total.
+
+## Parity and symmetry: do not import stronger rounding-correctness premises
+
+Compiled pinned `Core/Round_NE.v` and `Prop/Round_odd.v` distinguish
+these interfaces (all still have a valid radix):
+
+| Source interface | Exponent assumptions in the compiled source |
+|---|---|
+| `DN_UP_parity_pos_prop`, `DN_UP_parity_prop` (47, 57) | None; these form propositions, not proofs that the propositions hold. |
+| `DN_UP_parity_aux` (66) | None; assumes positive-case parity and derives signed parity. |
+| `round_NE_opp` (482) | None; a symmetry of the concrete rounding function. |
+| `round_NE_abs` (502) | `Valid_exp`, but no `Exists_NE`. |
+| `round_odd_opp` (221 in `Round_odd.v`) | None. |
+
+The former Lean interfaces added `Valid_exp` to the two propositions,
+both `Valid_exp` and `Exists_NE` to the parity implication and nearest-even
+negation law, `Exists_NE` to the absolute-value law, and `Valid_exp` to
+round-to-odd negation. The six public signatures now match the source premise
+boundaries. One private symmetry helper is similarly unrestricted.
+Every existing proof body is preserved and closed; numerical definitions
+are unchanged. Six pinned source anchors record the inspected exports.
+
+Source-shaped clients failed in Lean before and compile after, while the
+paired Rocq clients compile. Both provers additionally establish that binary
+FLX precision one fails the source's `Exists_NE` class, yet its concrete
+nearest-even rounder commutes with negation. Thus the old assumption excluded
+a real positive-precision case. This does not identify the class with a
+necessary-and-sufficient condition for nearest-even totality.
+The actual parity-existence and nearest-even-correctness theorems keep their
+source `Valid_exp` / `Exists_NE` assumptions; no blanket removal is made.
+
+The compiled-premise guard now supports multiple named parameters, with
+deliberate instance and explicit-premise leaks plus a selective control.
+Eight new guards bring the production total to **98**, alongside seven
+negative tests and two guard self-tests. Ten source/client theorem axiom
+lists exclude `sorryAx`; fresh compiled trust retains four named debts.
+This is an interface repair and bounded source audit, not a review of every
+supporting nearest-even or round-to-odd proof.
 
 ## Total primitive conversion: wrapping and two rounding stages
 

@@ -15,7 +15,7 @@ This guide follows those jobs in order. The detailed
 [independent continuation audit](ASTRA_AUDIT_2026-09-19.md) retain the
 declaration-by-declaration findings and historical milestones.
 
-## Wake-up summary — September 20, 2026, 14:24 UTC
+## Wake-up summary — September 20, 2026, 14:36 UTC
 
 **The port builds and runs on macOS with Lean 4.34.0, but it is not yet a
 fully source-audited port.** All 35 built Flocq module names have Lean
@@ -23,12 +23,12 @@ counterparts. Four native/decoder proof obligations remain explicit, and
 much of the existing theorem-by-theorem source comparison remains undone.
 File coverage is not a completion percentage.
 
-The current library checkpoint is
-[`2282a69b`](https://github.com/alok/FloatSpec/commit/2282a69b).
+The latest verified library and tests are on the
+[review branch](https://github.com/alok/FloatSpec/tree/codex/astra-flocq-audit).
 Run `lake exe floatspec_demo` for the seven-part native executable.
 Its examples and the **6,219-job build** pass. Fresh compiled checks cover
 **13,537 declarations / 58 modules**, find exactly the four recorded proof
-debts, and validate **222 pinned source anchors**.
+debts, and validate **228 pinned source anchors**.
 
 The main conceptual repair is separating a **raw encoding**, a **canonical
 value**, and a **native machine float**. Raw `(3,-1)` denotes 1.5 but is not
@@ -42,7 +42,11 @@ predicate-to-rounding constructor now returns its value/function *with its
 proof*, as Flocq does. FLX's two unit-value laws now accept all integer
 precisions, also as Flocq does; this does not say an invalid precision
 describes a valid format. Paired Lean/Rocq clients and closed Lean proofs
-check these boundaries. Sections 3 and 4 explain them.
+check these boundaries. Six more parity/symmetry interfaces now expose only
+the assumptions in their compiled Flocq counterparts. In particular,
+negation symmetry does not require the conditions used to prove
+nearest-even correctness. There are **98** compiled premise guards, with
+deliberate failures testing the guard itself. Sections 3 and 4 explain them.
 
 **Execution evidence, with its limits:** the prior frozen primitive snapshot
 passes **4,970 cross-tests**, seed `844763`, with compiled Lean, kernel Lean,
@@ -228,6 +232,16 @@ zero they give `ulp 1 = 2` and `succ 1 = 3`; with precision -1 they give 4 and
 5. These are legitimate equalities of the total definitions, not assertions
 that such a precision describes a valid floating-point format. The repaired
 Lean signatures and paired boundary proofs preserve that distinction.
+
+Similarly, a symmetry of a rounding *function* is not the same contract as
+a theorem that its output satisfies a nearest-even *predicate*. Flocq's
+nearest-even and round-to-odd negation laws work for any exponent function.
+The Lean signatures used to require stronger format/existence assumptions.
+Both provers now check a revealing boundary: binary precision one fails the
+source's `Exists_NE` condition, but its rounder still commutes with negation.
+The repaired symmetry laws accept that case. Theorems actually establishing
+nearest-even correctness retain their source assumptions; removing every
+condition would be wrong.
 
 Integer rounding gives a compact example of the executable/mathematical
 boundary. `Binary.Bnearbyint` returns another float; `Binary.Btrunc` returns

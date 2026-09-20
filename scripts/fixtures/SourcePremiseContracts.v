@@ -4,6 +4,7 @@ Require Import Flocq.Core.Core Flocq.Prop.Plus_error Flocq.Prop.Mult_error
 Require Import Flocq.Pff.Pff2Flocq.
 Require Import Flocq.Calc.Bracket Flocq.Calc.Div Flocq.Calc.Sqrt.
 Require Import Flocq.Core.FTZ.
+Require Import Flocq.Prop.Round_odd.
 Open Scope R_scope.
 
 Section Contracts.
@@ -361,3 +362,38 @@ Proof.
   repeat split; rewrite ?ulp_FLX_1, ?succ_FLX_1; cbn; ring.
 Qed.
 End FLXUnitSourceContracts.
+
+Module RoundParitySourceContracts.
+Section Contracts.
+Variable beta : radix.
+Variable fexp : Z -> Z.
+Definition positive_statement : Prop := Round_NE.DN_UP_parity_pos_prop beta fexp.
+Definition signed_statement : Prop := Round_NE.DN_UP_parity_prop beta fexp.
+Definition parity_transfer (h : Round_NE.DN_UP_parity_pos_prop beta fexp) :
+  Round_NE.DN_UP_parity_prop beta fexp := Round_NE.DN_UP_parity_aux beta fexp h.
+Definition nearest_negate (x : R) :
+  round beta fexp ZnearestE (-x) = -round beta fexp ZnearestE x :=
+  Round_NE.round_NE_opp beta fexp x.
+Definition odd_negate (x : R) :
+  round beta fexp Round_odd.Zrnd_odd (-x) = -round beta fexp Round_odd.Zrnd_odd x :=
+  Round_odd.round_odd_opp beta fexp x.
+Context {valid : Valid_exp fexp}.
+Definition nearest_absolute (x : R) :
+  round beta fexp ZnearestE (Rabs x) = Rabs (round beta fexp ZnearestE x) :=
+  Round_NE.round_NE_abs beta fexp x.
+End Contracts.
+
+Example one_bit_fails_exists_ne : ~Round_NE.Exists_NE radix2 (FLX_exp 1).
+Proof.
+  intros [Hodd|Hexp].
+  - discriminate Hodd.
+  - specialize (Hexp 1%Z).
+    unfold FLX_exp in Hexp.
+    destruct Hexp as [H _].
+    specialize (H ltac:(lia)). lia.
+Qed.
+Example one_bit_negate (x : R) :
+  round radix2 (FLX_exp 1) ZnearestE (-x) =
+    -round radix2 (FLX_exp 1) ZnearestE x.
+Proof. apply Round_NE.round_NE_opp. Qed.
+End RoundParitySourceContracts.

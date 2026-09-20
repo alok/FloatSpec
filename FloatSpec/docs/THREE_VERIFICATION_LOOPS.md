@@ -129,10 +129,10 @@ outside square root's exponent premise makes that domain boundary executable.
 Deliberately increasing the returned mantissa or replacing its location by
 exact must break both the closed finite assertions and compiled checks.
 
-`Test/SourcePremiseContracts.lean` additionally has 90 source-premise guards,
+`Test/SourcePremiseContracts.lean` additionally has 98 source-premise guards,
 paired typed consumers for the Prop, integer-rounding, canonical-exponent,
 real-comparison, division, square-root, FTZ inclusion, eleven FLT relationships,
-two unrestricted FLX unit laws, and generic IEEE comparison exports, and five deliberate negative guard
+two unrestricted FLX unit laws, parity/symmetry contracts, and generic IEEE comparison exports, and seven deliberate negative guard
 examples. The corresponding Rocq fixture checks the paired
 consumer signatures. These
 checks caught real section-instance leakage that the former bare `#check`
@@ -167,6 +167,19 @@ and rejection of an empty relation test this boundary; two closed Lean
 theorems show that valid inputs retain the old selected values/functions.
 These mathematical constructors legitimately use classical choice and do not
 claim to be native-executable rounding algorithms.
+
+Nearest-even parity statements can be formed without `Valid_exp`, and the
+positive-to-signed parity implication needs neither `Valid_exp` nor
+`Exists_NE`. Negation laws for nearest-even and round-to-odd are also
+unrestricted in the exponent function. The source's nearest-even absolute
+value theorem retains `Valid_exp`, but not `Exists_NE`. Paired typed
+clients test all six repaired interfaces; eight new guards detect leaked
+premises. The guard accepts several named parameters, with deliberate
+instance/explicit leaks and a selective two-parameter control.
+Both provers show that binary FLX precision one fails `Exists_NE`, while
+its nearest-even rounding function still commutes with negation. This
+checks a real domain excluded by the previous stronger Lean signature;
+it does not claim the class is a necessary-and-sufficient totality criterion.
 
 `lake exe floatspec_demo` builds and runs the seven-part guided introduction
 as a native executable, with kernel assertions and runtime checks against

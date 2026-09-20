@@ -105,8 +105,9 @@ end NearestEvenRounding
 def Zeven (z : Int) : Bool := decide (2 ∣ z)
 
 /-- Exact FLoCq `DN_UP_parity_pos_prop`. -/
+@[flocq_source "src/Core/Round_NE.v" 47 "DN_UP_parity_pos_prop"]
 def DN_UP_parity_pos_prop
-    (beta : Int) [ValidRadix beta] (fexp : Int → Int) [Valid_exp fexp] : Prop :=
+    (beta : Int) [ValidRadix beta] (fexp : Int → Int) : Prop :=
   ∀ (x : ℝ) (xd xu : FlocqFloat beta),
     0 < x →
     ¬ FloatSpec.Core.Generic_fmt.generic_format beta fexp x →
@@ -116,8 +117,9 @@ def DN_UP_parity_pos_prop
     Zeven xu.Fnum = ! Zeven xd.Fnum
 
 /-- Exact FLoCq `DN_UP_parity_prop`. -/
+@[flocq_source "src/Core/Round_NE.v" 57 "DN_UP_parity_prop"]
 def DN_UP_parity_prop
-    (beta : Int) [ValidRadix beta] (fexp : Int → Int) [Valid_exp fexp] : Prop :=
+    (beta : Int) [ValidRadix beta] (fexp : Int → Int) : Prop :=
   ∀ (x : ℝ) (xd xu : FlocqFloat beta),
     ¬ FloatSpec.Core.Generic_fmt.generic_format beta fexp x →
     canonical beta fexp xd → canonical beta fexp xu →
@@ -1236,7 +1238,9 @@ theorem DN_UP_parity_generic_pos : DN_UP_parity_pos_prop beta fexp := by
   subst gu
   exact Zeven_flip_of_mod_ne xd.Fnum xu.Fnum hpar
 
+omit [FloatSpec.Core.Generic_fmt.Valid_exp fexp] [Exists_NE beta fexp] in
 /-- Exact FLoCq `DN_UP_parity_aux`. -/
+@[flocq_source "src/Core/Round_NE.v" 66 "DN_UP_parity_aux"]
 theorem DN_UP_parity_aux
     (hpos : DN_UP_parity_pos_prop beta fexp) :
     DN_UP_parity_prop beta fexp := by
@@ -3068,6 +3072,7 @@ private lemma ZnearestE_opp (x : ℝ) :
   rw [hchoice] at h
   simpa [choice] using h
 
+omit [FloatSpec.Core.Generic_fmt.Valid_exp fexp] [Exists_NE beta fexp] in
 private lemma roundR_ZnearestE_opp
     (hβ : 1 < beta) (x : ℝ) :
     FloatSpec.Core.Generic_fmt.roundR beta fexp
@@ -3089,8 +3094,10 @@ private lemma roundR_ZnearestE_opp
     (rnd := FloatSpec.Core.Generic_fmt.Znearest choice) (x := x) hβ
   simpa [choice, hself] using h
 
+omit [FloatSpec.Core.Generic_fmt.Valid_exp fexp] [Exists_NE beta fexp] in
 /-- Exact FLoCq observation: concrete nearest-even rounding commutes with
     negation. -/
+@[flocq_source "src/Core/Round_NE.v" 482 "round_NE_opp"]
 theorem round_NE_opp (x : ℝ) :
     FloatSpec.Core.Generic_fmt.roundR beta fexp
         (FloatSpec.Core.Generic_fmt.Znearest
@@ -3100,7 +3107,9 @@ theorem round_NE_opp (x : ℝ) :
           (fun t : Int => !(decide (2 ∣ t)))) x :=
   roundR_ZnearestE_opp (beta := beta) (fexp := fexp) ValidRadix.valid x
 
+omit [Exists_NE beta fexp] in
 /-- Exact FLoCq observation for absolute value. -/
+@[flocq_source "src/Core/Round_NE.v" 502 "round_NE_abs"]
 theorem round_NE_abs (x : ℝ) :
     FloatSpec.Core.Generic_fmt.roundR beta fexp
         (FloatSpec.Core.Generic_fmt.Znearest
