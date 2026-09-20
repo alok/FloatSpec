@@ -866,9 +866,10 @@ the new bridge through `FLOCQ_INTEGER_SAMPLES` and `FLOCQ_INTEGER_BATCH_SIZE`.
 ## 10. Pff records, explicit radices, and indexed compatibility
 
 `scripts/pff_bridge.py` reuses the strict three-path core runner with an
-isolated profile. It observes 56 integer columns: source digit, shift,
+isolated profile. It observes 61 integer columns: source digit, shift,
 addition, subtraction, normalization, sign/absolute value, bounds,
-neighbors, and parity, plus the older indexed entry points. The legacy
+neighbors, parity, exponent-preserving zero, the zero predicate and unindexed
+multiplication, plus the older indexed entry points. The legacy
 normalized neighbor/parity columns explicitly say `type_radix_2`; their
 Rocq counterparts use two even when the ignored legacy Lean argument is a
 different integer. This distinction is an API boundary, not a mismatch
@@ -904,9 +905,19 @@ retains the corpus/seed and mismatch replay, and rejects interrupted or
 timed-out runs. Its fresh build targets the actual source facade; a supplied
 `--skip-build` is explicit in the report. The profile restores every shared
 runner binding on exit, including exceptions. Harness tests corrupt each
-of the 56 observation columns, distinguish compiled-only mistakes, reject
+of the 61 observation columns, distinguish compiled-only mistakes, reject
 wrong bootstrap expectations, and test partial/invalid outputs and failure
-reporting. Paired `PffExecution` fixtures exercise all eighteen newly
+reporting. Actual-program shared mutations erase a zero's exponent or negate
+one multiplication operand in all three paths; independent exact record checks
+reject both before generating kernel regressions. All twenty harness tests pass.
+
+Paired `PffBasicSourceContracts` fixtures check the exact unindexed interfaces:
+`Fzero`, `is_Fzero`, `Fmult` and four observer laws. The multiplication theorem
+accepts radix one (`0 < radix`), while the two forward zero laws accept every
+integer radix. A proved radix-zero counterexample guards the multiplication
+premise. This is distinct from a needlessly strengthened indexed signature.
+
+Paired `PffExecution` fixtures exercise all eighteen newly
 computable existing APIs; separate `PffLogTotality` proofs cover the
 noncomputable real-logarithm convention.
 

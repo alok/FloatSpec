@@ -25,6 +25,14 @@ structure float where
   Fexp : Int
 deriving DecidableEq, Repr
 
+/-- Source zero retains the requested exponent in its raw representation. -/
+@[flocq_source "src/Pff/Pff.v" 1151 "Fzero"]
+def Fzero (exponent : Int) : float := ⟨0, exponent⟩
+
+/-- Source zero predicate tests the mantissa, not the chosen exponent. -/
+@[flocq_source "src/Pff/Pff.v" 1153 "is_Fzero"]
+def is_Fzero (x : float) : Prop := x.Fnum = 0
+
 /-- Forget the Core radix index. -/
 @[flocq_local "Forget the Lean Core radix index at the Pff boundary"]
 def float.ofCore {beta : Int} [ValidRadix beta]
@@ -52,6 +60,26 @@ def float.toCore (beta : Int) [ValidRadix beta]
 @[flocq_source "src/Pff/Pff.v" 1158 "FtoR"]
 noncomputable def FtoR (radix : Int) (x : float) : Real :=
   (x.Fnum : Real) * (radix : Real) ^ x.Fexp
+
+/-- Every source zero represents real zero, including at unrestricted radices. -/
+@[flocq_source "src/Pff/Pff.v" 1162 "FzeroisReallyZero"]
+theorem FzeroisReallyZero (radix exponent : Int) : FtoR radix (Fzero exponent) = 0 := by
+  simp [FtoR, Fzero]
+
+/-- A zero mantissa represents zero without any radix restriction. -/
+@[flocq_source "src/Pff/Pff.v" 1166 "is_Fzero_rep1"]
+theorem is_Fzero_rep1 (radix : Int) (x : float) (hx : is_Fzero x) :
+    FtoR radix x = 0 := by
+  simp [FtoR, show x.Fnum = 0 from hx]
+
+/-- The source converse retains its explicit valid-radix premise. -/
+@[flocq_source "src/Pff/Pff.v" 1179 "is_Fzero_rep2"]
+theorem is_Fzero_rep2 (radix : Int) (hradix : 1 < radix) (x : float)
+    (hx : FtoR radix x = 0) : is_Fzero x := by
+  have hradix_pos : (0 : Real) < radix := by exact_mod_cast (by omega : 0 < radix)
+  have hpower : (radix : Real) ^ x.Fexp ≠ 0 := ne_of_gt (zpow_pos hradix_pos _)
+  have hmantissa : (x.Fnum : Real) = 0 := (mul_eq_zero.mp hx).resolve_right hpower
+  exact_mod_cast hmantissa
 
 /-- At a valid matching radix, the source observer agrees definitionally with
 FloatSpec's indexed Core observer. -/
@@ -146,6 +174,18 @@ def Fplus (radix : Int) (x y : float) : float :=
 @[flocq_source "src/Pff/Pff.v" 1605 "Fminus"]
 def Fminus (radix : Int) (x y : float) : float :=
   Fplus radix x (Fopp y)
+
+/-- Source multiplication uses only the unindexed integer fields. -/
+@[flocq_source "src/Pff/Pff.v" 1628 "Fmult"]
+def Fmult (x y : float) : float := ⟨x.Fnum * y.Fnum, x.Fexp + y.Fexp⟩
+
+/-- The source multiplication law needs a positive radix, including radix one. -/
+@[flocq_source "src/Pff/Pff.v" 1630 "Fmult_correct"]
+theorem Fmult_correct (radix : Int) (hradix : 0 < radix) (x y : float) :
+    FtoR radix (Fmult x y) = FtoR radix x * FtoR radix y := by
+  have hradix_pos : (0 : Real) < radix := by exact_mod_cast hradix
+  simp only [FtoR, Fmult, Int.cast_mul, zpow_add₀ (ne_of_gt hradix_pos)]
+  ring
 
 /-- Source-shaped counterpart of Coq's `positive × N` bound record. -/
 @[flocq_source "src/Pff/Pff.v" 1664 "Fbound"]

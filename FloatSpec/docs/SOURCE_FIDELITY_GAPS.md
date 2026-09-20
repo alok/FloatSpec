@@ -28,10 +28,12 @@ The indexed Core carrier and unindexed Pff carrier are different interfaces.
 The source facade now handles explicit-radix normalization and signed rounding;
 legacy normalized Pff helpers intentionally keep their indexed-radix behavior
 and are labeled local. They should not be silently presented as source exports.
-The facade is not yet the complete Pff surface: for example, source Fzero,
-is_Fzero and Fmult have no unindexed facade entry at this checkpoint even
-though analogous indexed operations exist. This is a domain/API gap, not
-evidence that the existing indexed multiplication computes the wrong product.
+The facade is not yet the complete Pff surface. The concrete Fzero, is_Fzero
+and Fmult gaps identified earlier are now filled, with four exact source-shaped
+observer laws and paired clients. Multiplication correctness accepts radix one,
+which the indexed valid-radix carrier cannot express. Other source exports must
+still be compared individually; analogous indexed operations do not establish
+complete unindexed API coverage.
 
 The existing Pdiv, oZ, oZ1 and Zquotient bodies use only integer/natural
 arithmetic but still carry noncomputable markers. maxDiv additionally selects

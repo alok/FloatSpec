@@ -31,6 +31,7 @@ GROUPS = (
     ("source.FNSucc", 2), ("source.FNPred", 2),
     ("source.FNeven", 1), ("source.FNodd", 1),
     ("integrated.FNeven_type_radix_2", 1), ("integrated.FNodd_type_radix_2", 1),
+    ("source.Fzero", 2), ("source.is_Fzero", 1), ("source.Fmult", 2),
 )
 COLUMNS = tuple(name if width == 1 else name + "." + field
                 for name, width in GROUPS
@@ -40,7 +41,7 @@ _offset = 0
 for _name, _width in GROUPS:
     OFFSETS[_name] = _offset
     _offset += _width
-assert _offset == len(COLUMNS) == 56
+assert _offset == len(COLUMNS) == 61
 
 
 @dataclass(frozen=True)
@@ -183,12 +184,17 @@ def independent_checks(case: Case, row: list[int]):
     check(pair(row, "source.Fshift") == [mantissa * radix ** shift, exponent-shift], "shift record")
     check(pair(row, "source.Fopp") == [-mantissa, exponent], "negation record")
     check(pair(row, "source.Fabs") == [abs(mantissa), exponent], "absolute-mantissa record")
+    check(pair(row, "source.Fzero") == [0, exponent], "zero retains its exponent")
+    check(scalar(row, "source.is_Fzero") == int(mantissa == 0), "zero predicate")
+    check(pair(row, "source.Fmult") == [mantissa * other_mantissa, exponent + other_exponent],
+          "unindexed multiplication record")
     check(value(radix, pair(row, "source.Fopp")) == -x, "negation value")
     if radix != 0:
         check(value(radix, pair(row, "source.Fshift")) == x, "shift value")
         check(value(radix, pair(row, "source.Fplus")) == x+y, "addition value")
         check(value(radix, pair(row, "source.Fminus")) == x-y, "subtraction value")
         check(value(radix, normalized) == x, "normalization value")
+        check(value(radix, pair(row, "source.Fmult")) == x*y, "multiplication value")
     if radix > 0:
         check(value(radix, pair(row, "source.Fabs")) == abs(x), "absolute value")
     if radix >= 2:
@@ -257,6 +263,7 @@ def boolean (x : Bool) : Int := if x then 1 else 0
 def pffObserve (radix mantissa exponent otherMantissa otherExponent : Int)
     (shift boundExponent precision boundMantissaPred : Nat) : List Int :=
   let x : Source.float := ⟨mantissa, exponent⟩
+  let y : Source.float := ⟨otherMantissa, otherExponent⟩
   let bound : Source.Fbound := ⟨boundMantissaPred + 1, boundExponent, Nat.zero_lt_succ _⟩
   let core := x.toCore 2
   let ib := bound.toIntegrated
@@ -290,7 +297,10 @@ def pffObserve (radix mantissa exponent otherMantissa otherExponent : Int)
    boolean (@decide (_root_.FNeven ib (radix : Real) precision core)
     (by unfold _root_.FNeven _root_.Feven; infer_instance)),
    boolean (@decide (_root_.FNodd ib (radix : Real) precision core)
-    (by unfold _root_.FNodd _root_.Fodd; infer_instance))]
+    (by unfold _root_.FNodd _root_.Fodd; infer_instance))] ++
+  pair (Source.Fzero exponent) ++
+  [boolean (@decide (Source.is_Fzero x) (by unfold Source.is_Fzero; infer_instance))] ++
+  pair (Source.Fmult x y)
 """
 
 COQ_HEADER = """From Stdlib Require Import ZArith List.
@@ -326,9 +336,12 @@ Definition norm_even_dec (b : Pff.Fbound) (radix : Z) (precision : nat) (p : Pff
 Definition norm_odd_dec (b : Pff.Fbound) (radix : Z) (precision : nat) (p : Pff.float)
     : {Pff.FNodd b radix precision p} + {~ Pff.FNodd b radix precision p} :=
   odd_dec (Pff.Fnormalize radix b precision p).
+Definition zero_dec (p : Pff.float) : {Pff.is_Fzero p} + {~ Pff.is_Fzero p} :=
+  Z.eq_dec (Pff.Fnum p) 0.
 Definition pffObserve (radix mantissa exponent otherMantissa otherExponent : Z)
     (shift boundExponent precision boundMantissaPred : nat) : list Z :=
   let x := Pff.Float mantissa exponent in
+  let y := Pff.Float otherMantissa otherExponent in
   let bound := Pff.Bound (Pos.of_nat (S boundMantissaPred)) (N.of_nat boundExponent) in
   pffSourceObserve radix mantissa exponent otherMantissa otherExponent
     shift boundExponent precision boundMantissaPred ++
@@ -348,7 +361,8 @@ Definition pffObserve (radix mantissa exponent otherMantissa otherExponent : Z)
   [if norm_even_dec bound radix precision x then 1 else 0;
    if norm_odd_dec bound radix precision x then 1 else 0;
    if norm_even_dec bound 2 precision x then 1 else 0;
-   if norm_odd_dec bound 2 precision x then 1 else 0].
+   if norm_odd_dec bound 2 precision x then 1 else 0] ++
+  pair (Pff.Fzero exponent) ++ [if zero_dec x then 1 else 0] ++ pair (Pff.Fmult x y).
 """
 
 @contextmanager

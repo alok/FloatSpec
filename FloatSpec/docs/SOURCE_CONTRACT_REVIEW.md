@@ -1021,6 +1021,30 @@ Both assistants reject nearest-even replaced by downward rounding at `3/2`
 and positively prove the resulting different record. No universal correctness
 or normalized-carrier equivalence theorem is added or claimed here.
 
+## Basic unindexed Pff operations
+
+The source facade now exports `Fzero : Int → float`, `is_Fzero : float → Prop`
+and `Fmult : float → float → float`. No radix parameter or valid-radix typeclass
+is added to these operations. Source anchors: `Pff.v:1151`, `1153`, `1628`.
+
+Actual Rocq `Check @...` output confirms the observer contracts:
+
+| Law | Radix premise |
+|---|---|
+| `FzeroisReallyZero` | none |
+| `is_Fzero_rep1` | none |
+| `is_Fzero_rep2` | `1 < radix` |
+| `Fmult_correct` | `0 < radix` |
+
+The Lean facade retains exactly these premises; all four proofs are closed.
+The paired `PffBasicSourceContracts` clients check the types and explicitly
+instantiate multiplication at radix one. A proved radix-zero counterexample
+shows why unrestricted multiplication of observed values would be wrong.
+Executable observations retain zero's chosen exponent and both product fields.
+The bridge's exact oracle checks those fields even on nonpositive radices,
+where a value-level theorem may not apply. No existing noncomputable marker
+was removed in this slice.
+
 ## Independent finite arithmetic laws and selection oracle
 
 ### Validity does not imply exponent monotonicity

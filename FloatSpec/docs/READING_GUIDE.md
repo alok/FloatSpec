@@ -15,150 +15,76 @@ This guide follows those jobs in order. The detailed
 [independent continuation audit](ASTRA_AUDIT_2026-09-19.md) retain the
 declaration-by-declaration findings and historical milestones.
 
-## Wake-up summary — September 20, 2026, 20:47 UTC
+## Wake-up summary — September 20, 2026, 21:12 UTC
 
-**The port builds and runs on macOS with Lean 4.34.0; it is not yet a fully
-source-audited port.** All 35 built Flocq module names have Lean counterparts,
-but much of the theorem-by-theorem comparison remains undone. Four named
-native/decoder proof obligations remain. File coverage is not a completion
-percentage.
+**The port builds and runs on macOS with Lean 4.34.0, but is not yet a fully
+source-audited port.** All 35 built Flocq module names have Lean counterparts.
+That is file coverage, not a percentage of faithful definitions or theorems.
+Four named native/decoder proof obligations remain; the unreviewed source
+surface is a separate and larger issue.
 
-Start with `lake exe floatspec_demo`, then read sections 1–6 below. The latest
-**6,226-job build and all seven demo examples pass**. Fresh compiled checks
-cover **13,667 declarations / 59 modules**, find exactly the four recorded
-debts, and validate **319 pinned source anchors**. Reviewable changes are on
-the normal `main` checkout in `~/floatspec` (the same directory as `~/FloatSpec`
-on this Mac). The audited continuation and Claude's value-comparison work
-are being integrated here, not left as a separate project. Your fork is the
-default fetch/push remote and BAIF remains `upstream`.
+The continuation is now on `main` in `~/floatspec` (the same directory as
+`~/FloatSpec` on this Mac), pushed to
+[your fork](https://github.com/alok/FloatSpec/tree/main).
+It includes Hantao's upstream work, the audited continuation, and Claude's
+three comparison commits in its ancestry. Your fork is the default remote;
+BAIF remains `upstream`. Your modified `Deps/flocq` is untouched.
 
-The repairs preserve four distinctions worth carrying through the story:
+For code understanding, run `lake exe floatspec_demo`, then read sections
+1–6 below. Use the [exemplar guide](DEMO_EXEMPLARS.md) for smaller examples.
 
-- A raw encoding, a canonical floating-point value, and a native machine
-  float are different interfaces. The same real number can have several
-  encodings; NaN payloads and signed zero make bit identity stricter still.
-- A source constructor can return a value **with its proof**. A theorem
-  asserting something about an optional value is not a substitute for that
-  dependent return type. The rounding and classical-witness APIs now expose
-  their source-shaped results.
-- A law about a total function can hold outside valid floating-point formats.
-  Conversely, validity premises cannot be removed just because small examples
-  pass. The newest ULP repair follows Flocq's integer witness construction and
-  has a closed proof preserving **every old ULP value for valid exponent
-  functions**, including at zero. Invalid exponents need not be choice-independent.
-- Classical real-number definitions are not executable integer algorithms.
-  Many integer-only Pff/model adapters now execute, but some legacy helpers
-  still have unnecessary markers. Read the concrete `Zquotient` example in
-  [the computability explanation](COMPUTABLE_COMPARE_GUIDE.md#5-what-noncomputable-does-and-what-it-does-not-do).
+The important recent changes are:
 
-**What actually ran:** a complete frozen-snapshot three-loop run passed
-**55,162 differential case executions and generated kernel equalities**, plus
-**119 bridge-harness tests**, independent Lean/Rocq fixtures, source/trust
-gates and the demo. The newer Pff/auxiliary/model-adapter stress pass also
-completed: **8,128 cases**, seed `859003`, plus a **200-case** targeted
-neighbor replay, with every three-path comparison and generated kernel
-equality passing. The targeted generator closes a real coverage gap: broad
-random bounds rarely satisfy the neighbor theorems' premises.
-Earlier changes removed spurious assumptions from 22 source theorem interfaces
-and one compatibility helper. The current continuation removes **27 more**
-unwanted exponent-validity assumptions from generic rounding and ULP laws.
-Four proofs now use more direct facts; no arithmetic definition changes and
-no new admitted proofs were needed. The latest build passes **147
-source-premise guards**, and all 27 new paired Lean/Rocq typed clients compile.
-The preceding interface snapshot's **360-case** runtime replay also
-passes all three paths and every generated kernel equality.
-Each run retains its exact source fingerprint. Earlier interruptions and
-timeouts remain errors, not retroactive passes.
-The [machine-readable receipt](VERIFICATION_RECEIPT_2026-09-20.json) records
-the snapshot groups separately, including their exact seeds and hashes.
+- **Contracts that mention the actual rounding policy.** Eight ULP exports
+  accepted a tie policy but referred to a fixed-policy result. One two-policy
+  equality was merely reflexivity. Those statements now preserve the policies,
+  with paired Lean/Rocq clients and mutation controls.
+- **The correct hypotheses.** Recent repairs removed 27 unnecessary
+  exponent-validity assumptions, while a paired counterexample shows that
+  exponent monotonicity really is needed for a different ULP law.
+- **Independent expected answers.** IEEE bridges now check exact rational/grid
+  expectations, including infinities, zero divisors, signed zero, negative
+  square roots and source NaN-payload priority. Deliberately shared wrong
+  programs are rejected even when their prover outputs agree.
+- **Preserving Claude's useful work without preserving a wrong source claim.**
+  The exponent-alignment backend compares arbitrary dyadic values. It is
+  integrated as that explicit API, with twelve `*_eq_value` contracts. The
+  different raw Flocq comparator remains unchanged.
+- **Restoring the unindexed Pff interface.** The current slice adds `Fzero`,
+  `is_Fzero`, `Fmult` and four source-shaped laws. Multiplication correctness
+  accepts radix one; zero's forward observer laws need no radix restriction.
+  The new bridge observes complete records, not only real values.
 
-The four-hour continuation adds a stronger neighbor test: it independently
-checks the *nearest* representable values, not just canonical values on either
-side. The same 200 targeted inputs pass another three-path replay, now including
-400 exact-adjacency checks. Mutations that skip a valid neighbor are rejected
-even if all three language observations agree on the wrong answer.
-The [small explanatory example](DEMO_EXEMPLARS.md#nearest-is-stronger-than-larger)
-shows why this matters.
+Current verification is deliberately separated by source snapshot:
 
-The same principle now strengthens IEEE arithmetic: an independent exact
-rational/grid oracle checks expected rounded results, including squared-midpoint
-selection for square root. The suite has been rerun on the corrected source:
-**14 tests pass**, including **47 live cases, 47 generated Lean kernel
-equalities, and 6,738 independent field checks**. Separately, checking the earlier saved 1,814-case IEEE
-observations passes 76,162 independent field checks; this is a new audit of
-old execution evidence, not a rerun. Deliberately shared wrong answers are
-rejected even when the language paths agree. See
-[the explanatory example](DEMO_EXEMPLARS.md#agreement-is-stronger-with-an-independent-expectation).
-The large aggregate is still running on its frozen, preceding snapshot,
-not yet a pass. Its source hash begins `5d241916`; the new contract
-snapshot begins `eb306bb5`. Keeping these separate prevents a long test
-from silently changing its subject while edits continue.
+| Snapshot | Completed evidence |
+|---|---|
+| Current Pff addition, `21a75295` | Full 6,226-job build; 13,678 compiled source declarations / 59 modules; four manifest-only debts; 326 validated source anchors; paired basic Pff clients; all 20 expanded Pff harness tests. Fresh bridge: 3,072 cases/kernel equalities and 65,846 independent assertions, seed 862307. |
+| Integrated comparison API, `4b714ddb` | Full build and seven demos; 20,000 executable dyadic pairs; 24 paired raw-comparison fixture cases; 1,237 fresh raw-comparison bridge cases and kernel equalities, seed 862149. |
+| Pre-integration IEEE snapshot, `687aa7a8` | 1,104 native plus 470 all-mode cases, all 1,574 generated kernel equalities, and 111,282 independent expected-field checks; seeds 862081 and 862073. |
+| Earlier broad snapshot, `32ec11b5` | Complete three-loop run: 55,162 differential executions/kernel equalities and 119 bridge-harness tests. |
 
-The independent expectations now gate the ordinary native-arithmetic and
-all-mode bridge runners, not just a standalone test. All **20 integrated
-harness tests** pass, including real programs deliberately given the same
-wrong operand order or the same wrong rounding mode. Those runs are rejected,
-their inputs are retained, and rejected logical outputs are not accepted as
-new regression expectations. The fresh seed-861047 runs now pass: **1,104
-native-arithmetic cases and 390 all-mode cases**, with all **1,494 generated
-kernel equalities** and **67,627 independent expected-field checks**. These
-runs use the preceding `eb306bb5` snapshot; the current `687aa7a8` snapshot
-additionally contains the theorem repairs described next.
+The newer full aggregate on frozen `5d241916` is still running and is not
+a pass yet. Historical stress groups, exact fingerprints, seeds, failures and
+replay artifacts are retained in the [verification receipt](VERIFICATION_RECEIPT_2026-09-20.json)
+and [audit ledger](ASTRA_AUDIT_2026-09-19.md); these snapshots are not interchangeable.
 
-The latest source-contract repair restores **eight nearest-rounding statements**
-that accepted a tie-policy argument but referred to a fixed-policy chooser.
-The old two-policy equality even compared a value with itself. The corrected
-statements actually mention both supplied policies. Eight paired typed clients,
-a midpoint distinction, and an executable integer tie decision pass in both
-Lean and Rocq; four mutation tests reject the former mistake and a wrong tie
-answer. All corrected proofs are closed, and four obsolete private helpers
-are removed. Read [the small example](DEMO_EXEMPLARS.md#a-proved-statement-can-say-too-little).
+**About `noncomputable`:** arbitrary-real specifications and executable
+integer algorithms are different layers in both provers. Some legacy integer
+helpers are unnecessarily marked, which is a real execution-capability gap.
+The unchanged `Zquotient (-7) 3` returns −2 in Rocq and Lean kernel reduction,
+but Lean's `#eval` rejects its marker. Read
+[the explanation and concrete probes](COMPUTABLE_COMPARE_GUIDE.md#5-what-noncomputable-does-and-what-it-does-not-do).
+No existing marker was changed in answering that question.
 
-The independent IEEE oracle now covers exceptional inputs too: infinities,
-NaNs with the pinned first-payload rule, zero divisors and negative square
-roots. **Sixteen oracle tests and twenty-two integrated bridge-harness tests
-pass**, including real shared-bug mutations for invalid FMA and NaN priority.
-The 47 small fresh cases have 47 kernel proofs and 7,036 expected-field checks.
-Re-auditing the saved 1,494-case group with the expanded oracle passes **97,602
-checks**; that strengthens old observations, not their execution freshness.
-The fresh 470-case all-mode run (seed 862073, source `687aa7a8`) passes with
-470 kernel equalities and 80,370 independent checks. The fresh 1,104-case
-native run (seed 862081, same source) also passes: 1,104 kernel equalities
-and 30,912 independent checks. Together these runs cover 1,574 cases and
-111,282 independently expected fields, without mismatches. They precede
-the additive comparison integration, whose source hash is `4b714ddb`.
-For the remaining work, read the explicit [fidelity gap list](SOURCE_FIDELITY_GAPS.md).
+**CI is not green.** The latest main run fails before compiling project
+sources: it requests the pinned Mathlib rc2 cache under Lean 4.34.0 final.
+The narrow cache-policy repair is awaiting approval. A local macOS pass is
+not a hosted/Linux pass.
 
-A second [small paired example](DEMO_EXEMPLARS.md#a-valid-format-can-have-decreasing-ulp)
-explains why assumption removal must be selective: a valid format can have
-ULP `1/2` at input `1/2` but ULP `1/4` at input `1`. Both inputs are representable.
-Lean and Rocq prove this concrete counterexample to ULP monotonicity without
-the separate monotone-exponent hypothesis.
-
-A [review of the three concurrent Claude comparison commits](CLAUDE_COMPARISON_REVIEW_2026-09-20.md)
-finds another important distinction: proving an executable backend equal to
-an older Lean specification does not show that specification matches Rocq.
-The copied backend and actual Rocq code were run on the same noncanonical
-encodings and disagree. The integration retains Claude's executable backend
-as an explicitly local dyadic-value API, and keeps the raw Flocq API unchanged.
-All twelve comparison contracts now name `ValueSpec` rather than claiming
-unconditional raw-source equality. The 20,000-pair executable test passes,
-as do the kernel examples distinguishing the two APIs. Read
-[the corrected implementation guide](COMPUTABLE_COMPARE_GUIDE.md).
-The integrated source additionally passes a fresh **1,237-case raw-comparison
-bridge** with 1,237 generated kernel equalities (seed 862149).
-
-Read [the demo/exemplar guide](DEMO_EXEMPLARS.md) for small runnable examples,
-[the three-loop guide](THREE_VERIFICATION_LOOPS.md) for reproduction, and
-[the audit ledger](ASTRA_AUDIT_2026-09-19.md) for detailed receipts and historical
-failures. Finite agreement is not universal equivalence. Local macOS success
-is not a green hosted-CI claim: the latest fork run still fails before source
-compilation because it requests an rc2 Mathlib cache under Lean 4.34.0.
-The narrow cache-policy repair is awaiting approval; the existing CI commands
-pass locally, with live Rocq harness tests explicitly skipped in that CI-style
-run. Your modified `Deps/flocq` remains untouched at `54cadd27` with its seven
-pre-existing untracked analysis files. Testing uses a separate clean Flocq pin;
-the ordinary checkout now carries the combined continuation.
+For the remaining fidelity work, read [SOURCE_FIDELITY_GAPS.md](SOURCE_FIDELITY_GAPS.md).
+Finite agreement, closed proofs, source links and correct source correspondence
+are distinct claims.
 
 ## 1. Start with one small rounding problem
 

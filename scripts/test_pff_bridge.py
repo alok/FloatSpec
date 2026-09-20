@@ -14,10 +14,11 @@ import flocq_bridge as core
 import pff_bridge as pff
 
 CASE = pff.Case("pff_source", (3, 1, 0, -1, 1, 1, 10, 2, 8))
-# Rocq/kernel/compiled observation retained from seed 850021, case 2115.
+# First 56 fields: retained seed850021 case2115. Last five: exact new source records.
 ROW = [1, 1, 3, -1, -2, 0, 4, 0, 3, -1, -1, 0, 1, 0, 3, 3, 3, 8,
        3, -10, 1, 1, 3, -1, 2, 0, 0, 0, 3, -1, 3, -1, 8, -2, 1, 1,
-       1, 1, 1, 3, 3, -10, 0, 1, 2, 0, 0, 0, 4, -1, 8, -2, 0, 1, 1, 0]
+       1, 1, 1, 3, 3, -10, 0, 1, 2, 0, 0, 0, 4, -1, 8, -2, 0, 1, 1, 0,
+       0, 0, 0, -1, 1]
 
 
 def observations(row=ROW):
@@ -26,8 +27,8 @@ def observations(row=ROW):
 
 class ProfileTests(unittest.TestCase):
     def test_layout_and_deterministic_inputs(self):
-        self.assertEqual(len(pff.COLUMNS), 56)
-        self.assertEqual(len(set(pff.COLUMNS)), 56)
+        self.assertEqual(len(pff.COLUMNS), 61)
+        self.assertEqual(len(set(pff.COLUMNS)), 61)
         self.assertEqual(pff.corpus(850021, 300), pff.corpus(850021, 300))
         self.assertNotEqual(pff.corpus(850021, 3), pff.corpus(850022, 3))
         self.assertEqual(len(pff.corpus(850021, 300)), 3072)
@@ -69,7 +70,7 @@ class ProfileTests(unittest.TestCase):
         before = vars(core).copy()
         with self.assertRaisesRegex(RuntimeError, "deliberate"):
             with pff.profile():
-                self.assertEqual(core.WIDTHS, {"pff_source": 56})
+                self.assertEqual(core.WIDTHS, {"pff_source": 61})
                 raise RuntimeError("deliberate")
         changed = [name for name, value in before.items() if getattr(core, name) is not value]
         self.assertEqual(changed, [])
@@ -88,7 +89,7 @@ class ProfileTests(unittest.TestCase):
         with pff.profile():
             self.assertEqual(core.compare([CASE], observations()), [])
             for path in ("lean", "compiled"):
-                for column in range(56):
+                for column in range(61):
                     rows = observations()
                     rows[path][0][column] += 1
                     mismatch = core.compare([CASE], rows)
@@ -141,7 +142,8 @@ class ProfileTests(unittest.TestCase):
         # Compilers agreeing on the SAME wrong answer must still fail.
         for group in ("source.Fshift", "source.Fplus", "source.Fminus",
                       "source.Fnormalize", "source.Fopp", "source.Fabs",
-                      "source.FNSucc", "source.FNPred", "source.FNeven"):
+                      "source.FNSucc", "source.FNPred", "source.FNeven",
+                      "source.Fzero", "source.is_Fzero", "source.Fmult"):
             bad = list(ROW)
             offset = pff.OFFSETS[group]
             bad[offset] += 100 if "FNeven" not in group else 1
@@ -256,6 +258,45 @@ class ProfileTests(unittest.TestCase):
 
 @unittest.skipUnless(os.environ.get("FLOCQ_AUDIT_DIR"), "live tests require FLOCQ_AUDIT_DIR")
 class LiveTests(unittest.TestCase):
+    def test_shared_zero_and_product_mutations_fail_independent_gate(self):
+        case = pff.Case("pff_source", (3, 1, -7, -1, 1, 1, 10, 2, 8))
+        flocq = Path(os.environ["FLOCQ_AUDIT_DIR"]).resolve()
+        with pff.profile(), tempfile.TemporaryDirectory(prefix="floatspec-pff-basic-baseline-") as directory:
+            rows = core.execute([case], flocq, core.configured_coqc(flocq), Path(directory))
+            self.assertEqual(core.compare([case], rows), [])
+        mutations = (
+            ("Source.Fzero exponent", "Source.Fzero 0",
+             "Pff.Fzero exponent", "Pff.Fzero 0", "zero retains its exponent"),
+            ("Source.Fmult x y", "Source.Fmult x (Source.Fopp y)",
+             "Pff.Fmult x y", "Pff.Fmult x (Pff.Fopp y)", "unindexed multiplication record"),
+        )
+        for lean_old, lean_new, rocq_old, rocq_new, label in mutations:
+            with self.subTest(label=label), tempfile.TemporaryDirectory(prefix="floatspec-pff-basic-shared-") as directory:
+                folder = Path(directory)
+                output, replay = folder / "out", folder / "cases.json"
+                replay.write_text(json.dumps([pff.asdict(case)]))
+                argv = ["pff_bridge", "--flocq-dir", str(flocq), "--skip-build",
+                        "--replay", str(replay), "--output", str(output)]
+                self.assertIn(lean_old, pff.LEAN_HEADER)
+                self.assertIn(rocq_old, pff.COQ_HEADER)
+                with (patch("sys.argv", argv),
+                      patch.object(pff, "LEAN_HEADER", pff.LEAN_HEADER.replace(lean_old, lean_new)),
+                      patch.object(pff, "COQ_HEADER", pff.COQ_HEADER.replace(rocq_old, rocq_new)),
+                      patch.object(core, "bootstrap_lean") as bootstrap,
+                      contextlib.redirect_stdout(io.StringIO()),
+                      self.assertRaisesRegex(AssertionError, label)):
+                    pff.main()
+                report = json.loads((output / "report.json").read_text())
+                self.assertEqual(report["status"], "error")
+                self.assertEqual(report["mismatches"], [])
+                self.assertEqual(report["bootstrapped_lean_cases"], 0)
+                self.assertEqual(report["profile"]["oracle_checked_cases"], 0)
+                self.assertEqual(report["profile"]["oracle_failure_case"],
+                                 json.loads(json.dumps(pff.asdict(case))))
+                self.assertEqual(json.loads((output / "cases.json").read_text()),
+                                 json.loads(replay.read_text()))
+                bootstrap.assert_not_called()
+
     def test_large_natural_and_invalid_domains_execute_all_three_paths(self):
         cases = [CASE,
                  pff.Case("pff_source", (0, -7, -9, 11, -13, 32, 32, 256, 1024)),
@@ -281,13 +322,13 @@ def pffObserve (radix mantissa exponent otherMantissa otherExponent : Int)
       if index == mantissa.toNat then value + 1 else value
 """
         cases = [pff.Case("pff_source", (3, column, 0, -1, 1, 1, 10, 2, 8))
-                 for column in range(56)]
+                 for column in range(61)]
         flocq = Path(os.environ["FLOCQ_AUDIT_DIR"]).resolve()
         with (pff.profile(), patch.object(core, "LEAN_HEADER", header),
               tempfile.TemporaryDirectory(prefix="floatspec-pff-mutations-") as directory):
             rows = core.execute(cases, flocq, core.configured_coqc(flocq), Path(directory))
             mismatches = core.compare(cases, rows)
-            self.assertEqual(len(mismatches), 56)
+            self.assertEqual(len(mismatches), 61)
             for column, mismatch in enumerate(mismatches):
                 self.assertEqual(mismatch["index"], column)
                 self.assertEqual(mismatch["paths"], ["lean", "compiled"])

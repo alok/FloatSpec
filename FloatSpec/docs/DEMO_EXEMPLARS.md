@@ -562,6 +562,33 @@ expected type or choose the wrong policy at the tie, and require both
 assistants to reject the mutation. A checked proof and a faithfully stated
 source theorem are distinct requirements; this example tests both.
 
+## A source interface can be narrower than its arithmetic
+
+The old indexed Pff carrier requires a radix greater than one. But Flocq's
+unindexed multiplication theorem only asks for a positive radix, so radix one
+is a valid client. The restored `Pff.Source.Fmult` operates on two plain integer
+records without any radix argument; its observer theorem takes the radix and
+the exact source premise separately.
+
+The paired `PffBasicSourceContracts.lean` / `.v` fixtures check that exported
+shape. They also show why some premise is still needed: at radix zero,
+multiply `(1, 1)` by `(1, -1)`. The result record is `(1, 0)`, whose value is
+one, but the first operand's value is zero, so the product of values is zero.
+Both assistants prove the inequality. The counterexample is stated directly,
+without wrapping it in trivial conjunctions.
+
+Likewise, `Fzero (-7)` is `(0, -7)`, not `(0, 0)`. Both represent zero, but
+they are different source records. The 61-column Pff bridge observes those
+fields independently, and a deliberate shared mutation erasing the exponent
+is rejected even when every execution path agrees on it.
+
+Run the Lean fixture after building the source facade:
+
+```sh
+lake build FloatSpec.src.Pff.SourceFacade
+lake env lean scripts/fixtures/PffBasicSourceContracts.lean
+```
+
 ## After the demo
 
 Read [the linear guide](READING_GUIDE.md), then

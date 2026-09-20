@@ -3654,6 +3654,51 @@ The original dependency is still at `54cadd27` with the same seven untracked
 analysis files. The gitlink stays pinned at `7aab8f55`; no dependency checkout,
 reset or submodule update was performed.
 
+### September 20, 21:12 UTC — unindexed Pff zero and multiplication
+
+The source facade now exports `Fzero`, `is_Fzero`, `Fmult` and four fully
+proved observer laws, each linked to the pinned Pff source. Actual Rocq
+export types confirm the hypothesis boundary: the two forward zero laws
+need no radix restriction, zero's converse retains `1 < radix`, and the
+multiplication law requires only `0 < radix`, including radix one.
+The facade does not silently impose the indexed Core carrier's stronger
+radix restriction. No existing `noncomputable` marker was changed.
+
+Paired typed clients exercise all seven exports, preserve the requested
+exponent in a zero record, accept multiplication at radix one, and prove
+that dropping positivity entirely admits a radix-zero counterexample.
+The four observer proofs and Lean counterexample have no `sorryAx`;
+the two executable record constructors have no axioms. Both complete
+LSP diagnostics and the final paired Lean/Rocq compiles pass. Initial
+fixture failures (ambiguous source names, missing Rocq `Lia`, and a
+redundant rewrite after simplification) remain failures, not test passes.
+
+The differential profile grows from 56 to 61 observations. It compares
+actual pinned Rocq, Lean kernel reduction and compiled Lean results, then
+checks exact record/value expectations independently. All **20 harness
+tests pass with live Rocq enabled** in 45.576 seconds. The tests mutate all
+61 output columns and deliberately change both provers' actual programs
+to agree on the same wrong zero exponent or multiplication sign. The
+independent gate rejects those shared errors, retains replay inputs and
+does not bootstrap misleading kernel regressions.
+
+Fresh seed **862307** passes **3,072 cases**, **3,072 generated kernel
+equalities**, **65,846 independent assertions**, including **7,014
+conditional neighbor assertions**, in 665.199 seconds. This is finite
+evidence across invalid radices/bounds and large integer inputs, not
+universal source equivalence. Source fingerprint:
+`21a75295de260d1079eec62944ca54dadc80a541b760d9926ef37ec97fced48d`.
+Report: `/private/tmp/floatspec-main-pff-basic-862307/report.json`.
+
+The full macOS Lean 4.34 build passes **6,226 jobs**; fresh compiled trust
+checks **13,678 source declarations / 59 modules**, with exactly the same
+four manifest-only direct/transitive debts. Fresh metadata validates
+**326 source anchors**. Logs are
+`/private/tmp/floatspec-main-pff-basic-{full-build,trust,anchors,live-final}-20260920.log`.
+The reading guide's opening is condensed into a current summary and
+snapshot-specific evidence table. The broad frozen `5d241916` aggregate
+is still running, and hosted CI still awaits the proposed cache repair.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In

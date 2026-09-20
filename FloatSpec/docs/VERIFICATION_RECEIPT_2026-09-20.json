@@ -1,26 +1,27 @@
 {
   "schema_version": 1,
-  "recorded_at_utc": "2026-09-20T20:50:00Z",
+  "recorded_at_utc": "2026-09-20T21:12:00Z",
   "claim": "Finite execution and kernel-regression receipts, not universal Flocq equivalence.",
   "source_pin": "7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f",
-  "latest_source_sha256": "4b714ddb87364ecf504600c50bc1421d89b61b91080f5926d742f2e1d5d30795",
+  "latest_source_sha256": "21a75295de260d1079eec62944ca54dadc80a541b760d9926ef37ec97fced48d",
   "final_build": {
     "platform": "macOS arm64",
     "lean": "4.34.0",
     "rocq": "9.2",
     "jobs": 6226,
     "status": "passed",
-    "log": "/private/tmp/floatspec-main-merged-full-build-20260920.log",
-    "demo_examples": 7
+    "log": "/private/tmp/floatspec-main-pff-basic-full-build-20260920.log",
+    "demo_examples": 7,
+    "demo_scope": "Seven examples executed on preceding integrated main source 4b714ddb."
   },
   "compiled_trust": {
-    "source_declarations": 13667,
+    "source_declarations": 13678,
     "modules": 59,
     "manifest_only_proof_debts": 4,
-    "source_anchors": 319,
+    "source_anchors": 326,
     "source_premise_guards": 147,
     "nearest_fixture_axiom_lists_without_sorryAx": 10,
-    "report": "/private/tmp/floatspec-main-merged-trust-20260920.json",
+    "report": "/private/tmp/floatspec-main-pff-basic-trust-20260920.json",
     "nearest_fixture_axiom_lists_scope": "Unchanged fixture, checked on preceding 687aa7a8 source."
   },
   "proof_debts": [
@@ -447,17 +448,35 @@
       ]
     }
   ],
+  "latest_pff_basic_run": {
+    "report_path": "/private/tmp/floatspec-main-pff-basic-862307/report.json",
+    "status": "passed",
+    "seed": 862307,
+    "lean_head": "65f8ab5f1b27d25ccb1c30e847b5ef1f6285916b",
+    "lean_source_sha256": "21a75295de260d1079eec62944ca54dadc80a541b760d9926ef37ec97fced48d",
+    "cases": 3072,
+    "compiled_cases": 3072,
+    "compared_cases": 3072,
+    "bootstrapped_lean_cases": 3072,
+    "columns": 61,
+    "oracle_assertions": 65846,
+    "conditional_neighbor_assertions": 7014,
+    "elapsed_seconds": 665.199,
+    "fresh_build": false,
+    "claim": "Finite cases only; fresh full source build completed separately before this run."
+  },
   "harness_tests": {
     "frozen_core_native_ieee": 119,
     "newer_profiles_and_contracts_before_generator_extension": 41,
     "extended_pff_suite": 17,
     "final_ulp_controls": 3,
-    "note": "The extended 17-test Pff suite replaces its older 16-test suite; the totals overlap and must not be summed blindly.",
+    "latest_pff_basic_suite": 20,
+    "note": "The latest 20-test Pff suite replaces its older suites; the totals overlap and must not be summed blindly.",
     "exceptional_ieee_oracle": 16,
     "integrated_exceptional_ieee_bridges": 22
   },
   "boundaries": [
-    "Each group is bound to its own source fingerprint. The final delta from the stress snapshot changes theorem signatures and callers, not arithmetic definition bodies.",
+    "Each group is bound to its own source fingerprint. The latest delta adds unindexed Pff zero/product APIs; preceding comparison integration adds a separate local dyadic-value API. Neither changes the existing raw source arithmetic bodies.",
     "The 55,162 cases are executions including saved replays, not necessarily distinct inputs.",
     "Native checks exclude unsupported directed modes and certain exceptional frexp observations; scale has 2032 cases with fewer native columns and integer rounding has 537.",
     "Model-adapter profiles compare integer algorithms under explicit NaN and UInt policies, not native floating-point FFI.",
