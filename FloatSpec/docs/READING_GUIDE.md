@@ -15,7 +15,7 @@ This guide follows those jobs in order. The detailed
 [independent continuation audit](ASTRA_AUDIT_2026-09-19.md) retain the
 declaration-by-declaration findings and historical milestones.
 
-## Wake-up summary — September 20, 2026, 08:50 UTC
+## Wake-up summary — September 20, 2026, 09:20 UTC
 
 **Most important recent finding:** actually running the raw IEEE rounding APIs
 found a semantic bug. A helper replaced signed shifting with floor division
@@ -111,9 +111,27 @@ macOS build. A ten-case replay covers both IEEE widths and all five modes on
 this new type-only snapshot. The larger receipts above retain their original
 source hash; they are not relabeled as fresh runs of changed code.
 
-**Next:** a separate helper slice will remove remaining execution blockers
-on normalization, decomposition, and alternate neighbor operations; that
-repair has only been tested in an isolated copy so far.
+**Helper execution is now integrated locally:** eleven unnecessary execution
+blockers are removed from normalization, decomposition, alternate neighbors,
+the constant one, and shift aliases. Bodies and types are unchanged. The
+6,216-job build, complete editor diagnostics, paired literal Lean/Rocq tests,
+and all 46 live harness tests pass; source anchors now number 199.
+The new 46-field bridge observes each public helper separately, including
+invalid raw carriers before conversion. Its first larger run stopped at
+Lean's test-only exponentiation limit after 1,650 agreeing cases. That run
+remains an **error**, not a pass. A regression reproduces the limit failure
+and passes after raising the test-only bound. The complete rerun now passes
+**1,900 comparisons and 1,900 generated kernel equalities**, seed `835627`,
+with all 46 fields observed separately. The port's implementation did not
+change to bypass this limit.
+
+One useful new example: a one-bit format with `emax = 2` can represent `1`
+but not `1/2`, so its `frexp(1)` is `(1, 0)`, not `(1/2, 1)`. Flocq's
+normalized-fraction conclusion correctly requires `2 < emax`. This is a
+checked explanation of a theorem premise, not a newly discovered port bug.
+Two other paired counterexamples show why alternate ulp requires a finite
+input and positive-only predecessor requires a positive input. They are
+explained next to the runnable examples, not hidden in the audit log.
 
 ## 1. Start with one small rounding problem
 

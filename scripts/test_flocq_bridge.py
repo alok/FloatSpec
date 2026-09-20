@@ -49,6 +49,21 @@ class RunnerTests(unittest.TestCase):
 
 
 class ParserTests(unittest.TestCase):
+    def test_single_helpers_corpus_and_domains(self):
+        cases = bridge.single_helpers_corpus(834619, 3)
+        self.assertEqual(cases, bridge.single_helpers_corpus(834619, 3))
+        self.assertNotEqual(cases, bridge.single_helpers_corpus(834620, 3))
+        self.assertEqual(len(cases), len(set(cases)))
+        self.assertEqual({c.args[0] for c in cases}, {1, 2, 3, 4, 8, 24, 53})
+        self.assertEqual({c.args[2] for c in cases}, set(range(5)))
+        self.assertEqual(bridge.WIDTHS['single_helpers'], 46)
+        self.assertIn(bridge.Case('single_helpers', (1, 2, 0, 3, 0, 1, 0, 0, 1)), cases)
+        for position, value in ((0, 0), (0, 4), (1, 3), (2, 5), (3, 4), (4, 2), (5, 0)):
+            args = [3, 4, 0, 3, 0, 4, -2, 1, 9]
+            args[position] = value
+            with self.assertRaises(ValueError):
+                bridge.Case('single_helpers', tuple(args))
+
     def test_raw_overflow_accepts_source_total_domain(self):
         cases = bridge.corpus(827419, 0)
         for args in ((-3, -4, 1, 0), (0, 1, 1, 1), (3, 3, 4, 0)):
@@ -230,6 +245,73 @@ class LiveTests(unittest.TestCase):
             failures = bridge.compare([case], rows)
             self.assertEqual(len(failures), 1)
             self.assertEqual(failures[0]['paths'], ['lean', 'compiled'])
+
+    def test_single_helpers_public_boundaries(self):
+        flocq = Path(os.environ['FLOCQ_AUDIT_DIR']).resolve()
+        cases = [bridge.Case('single_helpers', (p, emax, mode, kind, sign, m, e, shift, norm))
+                 for mode in range(5) for p, emax, kind, sign, m, e, shift, norm in
+                 ((1, 2, 0, 1, 1, 0, 1, 0), (1, 2, 3, 0, 1, 0, 0, 1),
+                  (3, 4, 3, 0, 4, -2, 1, 9), (3, 4, 3, 1, 1, -4, -1, -1),
+                  (3, 4, 3, 0, 1, -5, 0, -1),
+                  (24, 128, 3, 0, 1 << 23, -23, 129, 9),
+                  (53, 1024, 3, 0, 1 << 52, -52, -1075, -9))]
+        with tempfile.TemporaryDirectory(prefix='floatspec-single-helper-boundaries-') as directory:
+            folder = Path(directory)
+            results = bridge.execute(cases, flocq, bridge.configured_coqc(flocq), folder)
+            self.assertEqual(bridge.compare(cases, results), [])
+            self.assertEqual(results['rocq'][0][37], -5)
+            self.assertEqual(results['rocq'][1][21:25], [3, 0, 1, 0])
+            self.assertEqual(results['rocq'][1][37], 0)
+            self.assertEqual(results['rocq'][4][0:5], [0, 2, 0, 0, 0])
+            bridge.bootstrap_lean(cases, results['rocq'], folder)
+
+    def test_single_helper_mutations_are_independently_rejected(self):
+        flocq = Path(os.environ['FLOCQ_AUDIT_DIR']).resolve()
+        case = bridge.Case('single_helpers', (3, 4, 0, 3, 0, 4, -2, 1, 9))
+        original = bridge.expressions
+        changes = [
+            ('binary_normalize (prec := 3) (emax := 4) .RNE',
+             'binary_normalize (prec := 3) (emax := 4) .RNA', 5, 9),
+            ('BinarySingleNaN.Bldexp .RNE x (1)', 'BinarySingleNaN.Bldexp .RNE x (-1)', 17, 21),
+            (' ++ [f.2]', ' ++ [f.2 + 1]', 37, 38),
+            ("BinarySingleNaN.Bsucc' x", 'BinarySingleNaN.Bpred x', 33, 37),
+            ('Binary.shr_fexp (prec := 3) (emax := 4) (9)',
+             'Binary.shr_fexp (prec := 3) (emax := 4) (0)', 38, 42)]
+        for before, after, start, end in changes:
+            def mutation(case):
+                lean, rocq = original(case)
+                self.assertEqual(lean.count(before), 1)
+                return lean.replace(before, after), rocq
+
+            with (self.subTest(mutation=before),
+                  tempfile.TemporaryDirectory(prefix='floatspec-single-helper-mutation-') as directory,
+                  patch.object(bridge, 'expressions', mutation)):
+                results = bridge.execute([case], flocq, bridge.configured_coqc(flocq), Path(directory))
+                mismatch = bridge.compare([case], results)[0]
+                self.assertEqual(mismatch['paths'], ['lean', 'compiled'])
+                for path in ('lean', 'compiled'):
+                    self.assertNotEqual(results[path][0][start:end], results['rocq'][0][start:end])
+                    self.assertEqual(results[path][0][:start], results['rocq'][0][:start])
+                    self.assertEqual(results[path][0][end:], results['rocq'][0][end:])
+
+    def test_single_helper_large_exponents_reduce_completely(self):
+        flocq = Path(os.environ['FLOCQ_AUDIT_DIR']).resolve()
+        case = bridge.Case('single_helpers',
+                           (53, 1024, 0, 3, 0, 1 << 52, -52, -2048, 1))
+        # This real binary64 boundary previously stopped the full run at the
+        # default reduction threshold. Diagnostics must remain a hard error;
+        # raising a bounded test-only resource limit must produce full values.
+        with (tempfile.TemporaryDirectory(prefix='floatspec-helper-threshold-') as directory,
+              patch.object(bridge, 'LEAN_HEADER', bridge.LEAN_HEADER.replace(
+                  'set_option exponentiation.threshold 5000\n', ''))):
+            with self.assertRaisesRegex(ValueError, r'exponent \d+ exceeds the threshold 256'):
+                bridge.execute([case], flocq, bridge.configured_coqc(flocq), Path(directory))
+        with tempfile.TemporaryDirectory(prefix='floatspec-helper-large-exponents-') as directory:
+            folder = Path(directory)
+            results = bridge.execute([case], flocq, bridge.configured_coqc(flocq), folder)
+            self.assertEqual(bridge.compare([case], results), [])
+            self.assertEqual(results['rocq'][0][17:21], [0, 0, 0, 0])
+            bridge.bootstrap_lean([case], results['rocq'], folder)
 
     def test_raw_ieee_round_boundaries_and_degenerate_parameters(self):
         flocq = Path(os.environ['FLOCQ_AUDIT_DIR']).resolve()

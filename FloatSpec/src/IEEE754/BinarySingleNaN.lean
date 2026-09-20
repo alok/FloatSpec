@@ -5845,7 +5845,8 @@ theorem shl_align_fexp_correct {prec emax : Int}
 -- Binary.v imports the SingleNaN shift before re-exporting its theorem.
 -- Use the precision-dependent source-shaped shift here; the unrelated root
 -- compatibility helper has been removed.
-noncomputable abbrev shr_fexp (m e : Int) (l : Loc) : ShrRecord × Int :=
+@[flocq_local "Alias of Rocq Stdlib SpecFloat.shr_fexp exposed in Flocq through notation"]
+abbrev shr_fexp (m e : Int) (l : Loc) : ShrRecord × Int :=
   bsn_shr_fexp (prec := prec) (emax := emax) m e l
 
 theorem shr_fexp_truncate (m e : Int) (l : Loc) (hm : 0 ≤ m) :
@@ -6805,7 +6806,8 @@ theorem Bnearbyint_correct {prec emax : Int}
           rw [Bsign_standardFloatToBinarySingleNaNFloat _ _ hnotnan]
           simpa [Bsign] using hc.2.2.2 hnotnan
 
-noncomputable def BoneSingle {prec emax : Int}
+@[flocq_source "src/IEEE754/BinarySingleNaN.v" 2723 "Bone"]
+def BoneSingle {prec emax : Int}
     [Prec_gt_0 prec] [Prec_lt_emax prec emax] :
     BinarySingleNaNFloat prec emax :=
   let z := _root_.binary_round (prec:=prec) (emax:=emax)
@@ -6815,7 +6817,8 @@ noncomputable def BoneSingle {prec emax : Int}
   standardFloatToBinarySingleNaNFloat z hcorrect.1
 
 -- Coq `Binary.v:Bone`, obtained from the exact SingleNaN rounding algorithm.
-noncomputable def Bone {prec emax : Int}
+@[flocq_source "src/IEEE754/Binary.v" 1242 "Bone"]
+def Bone {prec emax : Int}
     [Prec_gt_0 prec] [Prec_lt_emax prec emax] :
     binary_float prec emax :=
   BSN2B' (BoneSingle (prec:=prec) (emax:=emax)) (by

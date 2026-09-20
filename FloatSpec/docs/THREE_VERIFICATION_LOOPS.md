@@ -88,6 +88,13 @@ The standalone paired fixtures add independent contract and error checks:
   executes it. A subnormal-product counterexample checks why the hypothesis
   cannot simply be omitted.
 
+`SingleNaNHelpers` separately checks 13 literal helper results, four
+decompositions, and two signed shifts, closed independently in both assistants
+and executed in Lean. The one-bit decomposition explicitly checks the branch
+outside the normalized-fraction theorem's `2 < emax` hypothesis.
+Two additional closed counterexamples show that alternate ulp equality needs
+a finite input and positive-only predecessor equality needs a positive input.
+
 `NativeSingleNaNArithmetic.lean` additionally executes **200,200** nearest-even
 comparisons against native Float32/Float, calling both direct and source-mode
 SingleNaN APIs. Seed `831557` supplies 10,000 pairs at each width, plus ten
@@ -311,6 +318,28 @@ and `.v` files, and a `replay.json` corpus. This is the feedback step: inspect
 the source, fix the incorrect definition or adapter, and preserve the case as
 a regression. Do not automatically alter the implementation merely to agree
 with a possibly faulty adapter.
+
+The twenty-fifth family, `single_helpers`, calls the newly executable helper
+exports themselves. A row carries precision, maximum exponent, rounding mode,
+raw input constructor/sign/mantissa/exponent, a scaling shift, and a separate
+signed normalization mantissa. It observes raw validity before conversion;
+the converted input; normalization; both one constants; scaling;
+decomposition; alternate ulp, positive predecessor and successor; the
+decomposition exponent; and both exported signed-shift aliases. All **46**
+fields are mandatory.
+
+The family spans one-bit through IEEE binary64 formats, all five modes,
+invalid raw encodings, nonfinite values, signed zeros, and shifts crossing
+underflow/overflow. Its operation types require `0 < prec < emax`; it does not
+invent calls outside those carrier hypotheses. Total-function comparisons of
+`Bulp'` on nonfinite inputs and `Bpred_pos'` on negative inputs are not claims
+that their conditional correctness theorems apply there. The two shift aliases
+expose Rocq Stdlib `SpecFloat.shr_fexp` through Flocq notation rather than a
+standalone declaration defined in Flocq's own sources.
+The test header permits powers through exponent 5,000, matching the other
+large-format bridges. It still rejects all warning-bearing or partially
+reduced output. A live regression removes this resource option to reproduce
+the binary64 threshold failure, then checks three-path agreement with it.
 
 ## 4. One command runs all three
 

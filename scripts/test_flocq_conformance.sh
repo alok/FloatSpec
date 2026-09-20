@@ -215,7 +215,7 @@ echo 'Pure Rocq bit loop passed: 20,000 binary32/binary64 roundtrip checks'
 echo 'Pure Rocq order loop passed: 2,000 ordering-law checks and boundary examples'
 "$coqc_bin" -q -R "$flocq_dir/src" Flocq -o "$scratch/RoundingWalkthrough.vo" \
   "$repo_root/scripts/fixtures/RoundingWalkthrough.v"
-for fixture in BooleanComparison RawIEEERounding RawOverflow SingleNaNArithmetic MultiplicationErrorGrid DoubleRoundingWitness SingleNaNValidity RelativeErrorGrid \
+for fixture in BooleanComparison RawIEEERounding RawOverflow SingleNaNArithmetic SingleNaNHelpers MultiplicationErrorGrid DoubleRoundingWitness SingleNaNValidity RelativeErrorGrid \
     SourcePremiseContracts ExactArithmeticLaws RoundingOracle IntegerRounding; do
   "$coqc_bin" -q -R "$flocq_dir/src" Flocq -o "$scratch/$fixture.vo" \
     "$repo_root/scripts/fixtures/$fixture.v"
@@ -232,7 +232,7 @@ run_lake env lean "$repo_root/FloatSpec/Test/BitOrderExecution.lean"
 run_lake env lean "$repo_root/FloatSpec/Test/NativeSourceArithmetic.lean"
 run_lake env lean "$repo_root/FloatSpec/Test/RoundingWalkthrough.lean"
 run_lake env lean "$repo_root/FloatSpec/Test/SourcePremiseContracts.lean"
-for fixture in BooleanComparison RawIEEERounding RawOverflow SingleNaNArithmetic NativeSingleNaNArithmetic MultiplicationErrorGrid DoubleRoundingWitness SingleNaNValidity RelativeErrorGrid ExactArithmeticLaws RoundingOracle IntegerRounding; do
+for fixture in BooleanComparison RawIEEERounding RawOverflow SingleNaNArithmetic SingleNaNHelpers NativeSingleNaNArithmetic MultiplicationErrorGrid DoubleRoundingWitness SingleNaNValidity RelativeErrorGrid ExactArithmeticLaws RoundingOracle IntegerRounding; do
   run_lake env lean "$repo_root/scripts/fixtures/$fixture.lean"
 done
 run_lake env lean --run "$repo_root/scripts/fixtures/GuidedDemo.lean"

@@ -122,6 +122,30 @@ nearest-even, so the rounding error is `-1/256`. That is smaller in magnitude
 than this format's smallest nonzero value and is not representable. This does
 not contradict the conditional theorem; it explains one of its hypotheses.
 
+## Another useful boundary: decomposition is conditional
+
+The [helper fixture](../../scripts/fixtures/SingleNaNHelpers.lean) has a paired
+[Rocq version](../../scripts/fixtures/SingleNaNHelpers.v). In the three-bit
+format, decomposing `1` gives `(1/2, 1)`: the value is `1/2 × 2¹`. Decomposing
+the smallest positive subnormal `1/16` gives `(1/2, -3)`.
+
+Now reduce the format to one bit with maximum exponent two. Its smallest
+positive value is `1`; it cannot represent `1/2`. The source deliberately
+returns `(1, 0)` instead. The exact product identity still holds, while the
+claim that the fraction lies in `[1/2, 1)` requires `2 < emax`. This is a
+small executable example of why preserving a theorem's hypotheses matters.
+The same fixture checks signed zero, directed underflow, both one constants,
+alternate neighbors, and signed shifts using literal expected results.
+
+Two more checked non-examples guard against dropping source hypotheses.
+In the three-bit format, `Bulp'(+infinity)` is `1/16`, while
+`Bulp(+infinity)` is infinity; their equality theorem requires a finite
+input. Also, `Bpred_pos'(-1)` returns `-1`, while ordinary `Bpred(-1)` is
+`-1.25`. The positive-only algorithm subtracts a positive-side spacing and
+then rounds, so using it on a negative boundary is not ordinary predecessor.
+Its source theorem explicitly requires a positive real value. The fixture
+proves both inequalities independently in Lean and Rocq.
+
 ## Exemplars inspected
 
 These are reading recommendations, not dependencies adopted by FloatSpec.
@@ -155,7 +179,7 @@ Use the same Rocq version that built that checkout. This Mac used
 
 Read [the linear guide](READING_GUIDE.md), then
 [the three verification loops](THREE_VERIFICATION_LOOPS.md), then
-[the review ledger](ASTRA_AUDIT_2026-09-19.md). The demo demonstrates five
+[the review ledger](ASTRA_AUDIT_2026-09-19.md). The demo demonstrates six
 behaviors; the seeded bridge checks larger finite corpora; closed Lean proofs
 establish their stated propositions. None is interchangeable with a universal
 proof that the entire port matches pinned Flocq. Four explicitly recorded

@@ -506,7 +506,8 @@ abbrev shl_align_fexp {prec emax : Int} := @Binary.shl_align_fexp prec emax
 abbrev shl_align_fexp_correct {prec emax : Int} :=
   @Binary.shl_align_fexp_correct prec emax
 
-noncomputable abbrev shr_fexp {prec emax : Int} := @Binary.shr_fexp prec emax
+@[flocq_local "Re-export of Rocq Stdlib SpecFloat.shr_fexp exposed in Flocq through notation"]
+abbrev shr_fexp {prec emax : Int} := @Binary.shr_fexp prec emax
 
 abbrev shr_fexp_truncate {prec emax : Int} := @Binary.shr_fexp_truncate prec emax
 
@@ -594,7 +595,8 @@ theorem binary_overflow_correct {prec emax : Int}
       (binary_overflow (prec:=prec) (emax:=emax) mode s) = true :=
   _root_.binary_overflow_correct (prec:=prec) (emax:=emax) mode s
 
-noncomputable def binary_normalize {prec emax : Int}
+@[flocq_source "src/IEEE754/BinarySingleNaN.v" 1751 "binary_normalize"]
+def binary_normalize {prec emax : Int}
     [Prec_gt_0 prec] [Prec_lt_emax prec emax]
     (mode : RoundingMode) (m e : Int) (szero : Bool) : binary_float prec emax :=
   Binary.B2BSN (Binary.normalize (prec:=prec) (emax:=emax) mode m e szero)
@@ -768,7 +770,8 @@ theorem Btrunc_correct {prec emax : Int} [Prec_lt_emax prec emax]
         (FloatSpec.Core.FIX.FIX_exp 0) FloatSpec.Core.Raux.Ztrunc (B2R x) := by
   simpa only [Btrunc, B2R] using Binary.BtruncSingle_correct x
 
-noncomputable abbrev Bone {prec emax : Int}
+@[flocq_source "src/IEEE754/BinarySingleNaN.v" 2723 "Bone"]
+abbrev Bone {prec emax : Int}
     [Prec_gt_0 prec] [Prec_lt_emax prec emax] :=
   @Binary.BoneSingle prec emax _ _
 
@@ -779,7 +782,8 @@ abbrev Bmax_float {prec emax : Int}
 abbrev Bnormfr_mantissa {prec emax : Int} :=
   @BinarySingleNaNFloat.Bnormfr_mantissa prec emax
 
-noncomputable abbrev Bldexp {prec emax : Int}
+@[flocq_source "src/IEEE754/BinarySingleNaN.v" 2857 "Bldexp"]
+abbrev Bldexp {prec emax : Int}
     [Prec_gt_0 prec] [Prec_lt_emax prec emax] :=
   @Binary.BldexpSingle prec emax _ _
 
@@ -1105,7 +1109,8 @@ private theorem Bldexp_Bone_to_raw {prec emax : Int}
         RoundingMode.RNE _root_.Bone k := by
           simp [ExperimentalSingleNaNArithmetic.Bldexp, _root_.Bone, _root_.SF2B, z]
 
-noncomputable def Bfrexp {prec emax : Int}
+@[flocq_source "src/IEEE754/BinarySingleNaN.v" 3042 "Bfrexp"]
+def Bfrexp {prec emax : Int}
     [Prec_gt_0 prec]
     (x : binary_float prec emax) : binary_float prec emax × Int :=
   match x with
@@ -1293,7 +1298,8 @@ theorem is_finite_strict_Bulp {prec emax : Int}
   rw [← Bulp_toB754 x] at href
   simpa [is_finite_strict, is_finite, binarySingleNaNFloatToB754] using href
 
-noncomputable def Bulp' {prec emax : Int}
+@[flocq_source "src/IEEE754/BinarySingleNaN.v" 3173 "Bulp'"]
+def Bulp' {prec emax : Int}
     [Prec_gt_0 prec] [Prec_lt_emax prec emax]
     (x : binary_float prec emax) : binary_float prec emax :=
   Bldexp RoundingMode.RNE (Bone (prec:=prec) (emax:=emax))
@@ -1378,7 +1384,8 @@ theorem Bulp'_correct {prec emax : Int}
       · rw [hbprime'.1, hulp.1, hulpEq]
       · rw [hbprime'.2.2, hulp.2.2]
 
-noncomputable def Bpred_pos' {prec emax : Int}
+@[flocq_source "src/IEEE754/BinarySingleNaN.v" 3453 "Bpred_pos'"]
+def Bpred_pos' {prec emax : Int}
     [Prec_gt_0 prec] [Prec_lt_emax prec emax]
     (x : binary_float prec emax) : binary_float prec emax :=
   match x with
@@ -1392,7 +1399,8 @@ noncomputable def Bpred_pos' {prec emax : Int}
       Bminus RoundingMode.RNE x d
   | _ => x
 
-noncomputable def Bsucc' {prec emax : Int}
+@[flocq_source "src/IEEE754/BinarySingleNaN.v" 3661 "Bsucc'"]
+def Bsucc' {prec emax : Int}
     [Prec_gt_0 prec] [Prec_lt_emax prec emax]
     (x : binary_float prec emax) : binary_float prec emax :=
   match x with

@@ -264,6 +264,48 @@ existing real-valued correctness theorem statements were not changed by this
 execution-enabling slice. This branch comparison and finite execution do not
 constitute universal source-equivalence proofs.
 
+## SingleNaN normalization, decomposition, and alternate neighbors
+
+Twelve compiled signatures were compared between the source facade and
+pinned Rocq: `binary_normalize`, `Bone`, `Bldexp`, `Bfrexp`,
+`Bfrexp_correct`, `is_nan_Bfrexp`, `Bulp'`, `Bulp'_correct`,
+`Bpred_pos'`, `Bpred_pos'_correct`, `Bsucc'`, and `Bsucc'_correct`.
+Their inspected premises and conclusions match, accounting for the named
+rounding-mode and carrier representations. In particular, **do not remove**
+these source restrictions:
+
+- `Bfrexp` needs positive precision, but not `prec < emax`; its exact
+  decomposition theorem is about strictly finite inputs. The normalized
+  fraction and magnitude conclusion additionally needs `2 < emax`.
+- `Bulp'_correct` and `Bsucc'_correct` require `2 < emax` and a finite input.
+- `Bpred_pos'_correct` requires `2 < emax` and a positive real value.
+
+The implementations' case splits and exponent calculations were read against
+`BinarySingleNaN.v` lines 1751, 2723, 2857, 3042, 3173, 3453, and 3661.
+The normalization facade delegates through the existing full-payload
+normalizer; its signed integer and signed-zero inputs are retained.
+The alternate positive predecessor's `2 * mantissa = 2^precision` branch
+uses the exponent of the preceding binade, just as in the source. The
+alternate successor handles zero and both infinities separately and uses
+that positive predecessor only after negating a negative finite input.
+
+The paired `SingleNaNHelpers` fixture includes literal boundaries and two
+domain counterexamples: alternate ulp at infinity differs from primary ulp;
+positive-only predecessor at negative one differs from ordinary predecessor.
+It also demonstrates why the normalized-fraction claim fails when `emax = 2`.
+The 46-field `single_helpers` bridge independently calls every newly
+executable helper. Its **bundle** uses the common `0 < prec < emax` domain;
+that test restriction must not be mistaken for the weaker type of `Bfrexp`
+itself, nor for coverage of its entire positive-precision domain.
+
+This slice removes eleven unnecessary execution markers without changing
+algorithm bodies, types, or proof bodies. The signed-shift aliases refer to
+Rocq Stdlib `SpecFloat.shr_fexp`, exposed by Flocq notation, not a standalone
+Flocq declaration. Compiled type snapshots are retained as
+`/private/tmp/SingleHelperContracts-lean.out` and `-rocq.out`.
+These inspections and finite execution are not a universal proof of source
+equivalence or a review of every supporting lemma in the large IEEE module.
+
 ## Double rounding: definitions and main exports
 
 The six exponent-condition definitions in `Prop/Double_rounding.lean` were
@@ -292,13 +334,20 @@ The inspected applications account for this difference.
 
 The Lean radix premise `1 < beta` is supplied separately from `ValidRadix`;
 Rocq bundles it in `radix`. Precision hypotheses declared in Rocq sections
-must be considered along with displayed theorem statements. The Lean
-multiplication specializations prove slightly stronger statements by not
-requiring all of the source section's positivity instances. The Lean
-`round_round_sqrt_FTZ` also proves its statement for every valid radix,
+must be checked against the **compiled** statement: unused section variables
+are omitted by Rocq. The September 20 compiled recheck corrects the earlier
+claim of stronger multiplication specializations: both assistants' FLX and
+FLT exports omit positivity premises; both FTZ exports retain positivity of
+the first precision only. Those statements match; they are not Lean-only
+generalizations. The Lean `round_round_sqrt_FTZ` does prove its statement for every valid radix,
 where the source export takes an unused `4 <= beta` premise. These are
 documented generalizations, not discovered counterexamples. No premise was
-removed during this review.
+removed during this review. The additional compiled check also confirms the
+three public square-root exponent-hypothesis helpers require only the first
+precision's positivity, and both same-place midpoint lemmas require validity
+only of the first exponent function. The stronger `_from_..._payload`
+helpers are compatibility endpoints, not the source exports. Receipt:
+`/private/tmp/DoubleRoundCompiledContracts-v2.out`.
 
 The [paired double-rounding witness](../../scripts/fixtures/DoubleRoundingWitness.lean)
 executes `binary_round` directly and has a closed Lean kernel equality and

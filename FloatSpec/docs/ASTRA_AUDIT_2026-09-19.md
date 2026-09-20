@@ -1418,6 +1418,81 @@ The focused review ledger lists the exact repaired/retained premise boundary.
 The independently prepared executable-helper slice remains separate future
 work; it is not part of this contract repair.
 
+### September 20 continuation: execute the source helper APIs
+
+Eleven unnecessary `noncomputable` markers are removed from the two signed
+shift aliases, both constant-one constructors, and the source facade's
+normalization, one, scaling, decomposition, alternate ulp, positive
+predecessor, and successor. The algorithms and types are unchanged. The
+shift aliases are explicitly local references to Rocq Stdlib `SpecFloat`
+notation rather than falsely linked to an unrelated Flocq declaration.
+Nine new source anchors bring the validated total to **199**.
+
+The 6,216-job full build, complete LSP diagnostics for both production
+modules and the new fixture, and compiled trust audit all pass. The latter
+still records **13,590 declarations / 58 modules / four existing debts**.
+Build and trust receipts are
+`/private/tmp/floatspec-single-helper-full-build-20260920.log` and
+`/private/tmp/floatspec-single-helper-trust-20260920.json`.
+The original seven-call execution-failure probe now runs successfully.
+
+`SingleNaNHelpers.lean` and `.v` independently check 13 literal helper
+results, four decompositions, and two signed shifts. The one-bit `emax = 2`
+case returns `(1, 0)` for decomposition of one; half is not representable
+and source normalization is conditional on `2 < emax`. The larger bridge
+adds a 25th family with 46 result fields, eight formats, all five modes,
+both signs, signed raw normalization, exceptional values, and observed
+invalid raw-carrier validity before conversion. The first **45** live
+harness tests pass, including five independently rejected helper mutations.
+Log: `/private/tmp/floatspec-single-helper-harness-20260920.log`.
+
+The same fixture subsequently gained two closed domain counterexamples:
+`Bulp'(+infinity) = 1/16` differs from `Bulp(+infinity) = +infinity`, and
+`Bpred_pos'(-1) = -1` differs from `Bpred(-1) = -1.25`. The latter algorithm
+is intentionally positive-only. Both assistants check the inequalities;
+Lean also executes them and has complete clean LSP diagnostics. Log:
+`/private/tmp/floatspec-single-helper-fixture-v2-20260920.log`.
+Twelve compiled helper signatures were compared with pinned Rocq and found
+to retain the inspected source premises/conclusions. The focused source
+review records the precise domain, including `Bfrexp`'s weaker requirement
+of positive precision without `prec < emax`.
+
+The first seed-`835627` 1,900-case run failed at a test-tool resource limit
+after **1,650 compared/compiled/kernel-regression cases** with no numerical
+mismatch. Lean's default exponentiation threshold refused a binary64 power;
+the strict parser correctly rejected diagnostic-bearing output. Receipt:
+`/private/tmp/floatspec-single-helper-grid-20260920/report.json`, status
+**error**, exit 1. No prior receipt is overwritten or reclassified.
+The bridge header now uses the bounded test-only threshold 5,000 already
+used by the other IEEE bridges; the production implementation is unchanged.
+A new live test reproduces the failure without that option, then checks
+complete three-path agreement and a kernel regression with it. Its first
+attempt over-specified the exact exponent in the expected warning; the
+corrected test accepts any numeric exponent and passes in 8.648 seconds:
+`/private/tmp/floatspec-single-helper-threshold-test-v2-20260920.log`.
+The full rerun passes **1,900 compared cases / 1,900 compiled cases /
+1,900 generated kernel equalities** in **335.909 seconds**, exit 0, on
+unchanged library SHA-256
+`6110bb056804058cb0606007b0a2721296f7355a464e98269772aee1d046ccb3`.
+Receipt: `/private/tmp/floatspec-single-helper-grid-v2-20260920/report.json`.
+The complete updated harness then passes **46 tests in 168.331 seconds**,
+including the resource-limit regression and all earlier live mutations:
+`/private/tmp/floatspec-single-helper-harness-v2-20260920.log`.
+After the frozen run and harness completed, the explicit full build passed
+again, **6,216 jobs**, exit 0:
+`/private/tmp/floatspec-single-helper-final-build-20260920.log`.
+
+A separate compiled recheck corrects one claim in the earlier double-rounding
+review: Rocq discards unused section positivity variables. The FLX/FLT
+multiplication statements already have no positivity binders, and FTZ retains
+only the first precision's positivity, exactly as in the Lean public exports.
+The three public square-root exponent-hypothesis helpers and both same-place
+midpoint lemmas also match the inspected compiled source premises. No port
+definition or theorem changed for this documentation correction. The first
+scratch Rocq import used `From Flocq Require Import Prop...`, which fails
+because `Prop` is a keyword; its corrected qualified import succeeds. Both
+attempts remain in `/private/tmp/DoubleRoundCompiledContracts*.out`.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In

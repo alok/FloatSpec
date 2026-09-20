@@ -33,9 +33,9 @@ COQ_LOC = ["loc_Exact", "loc_Inexact Lt", "loc_Inexact Eq", "loc_Inexact Gt"]
 OPS = ("power", "div_eucl", "location", "round", "truncate", "div", "plus", "sqrt",
        "formats", "digits", "operations", "format_calc", "overflow", "bits32", "bits64",
        "bit_fields", "order32", "order64", "validity", "nearby", "neighbors", "comparison", "small_ieee",
-       "ieee_round")
-ARITIES = dict(zip(OPS, (2, 2, 3, 3, 5, 6, 6, 4, 3, 2, 5, 8, 4, 1, 1, 6, 2, 2, 5, 6, 6, 10, 15, 8), strict=True))
-WIDTHS = dict(zip(OPS, (1, 2, 3, 6, 3, 2, 2, 2, 4, 1, 13, 12, 21, 9, 9, 8, 14, 14, 15, 7, 17, 14, 87, 16), strict=True))
+       "ieee_round", "single_helpers")
+ARITIES = dict(zip(OPS, (2, 2, 3, 3, 5, 6, 6, 4, 3, 2, 5, 8, 4, 1, 1, 6, 2, 2, 5, 6, 6, 10, 15, 8, 9), strict=True))
+WIDTHS = dict(zip(OPS, (1, 2, 3, 6, 3, 2, 2, 2, 4, 1, 13, 12, 21, 9, 9, 8, 14, 14, 15, 7, 17, 14, 87, 16, 46), strict=True))
 RADIX_OPS = {"truncate", "div", "plus", "sqrt", "digits", "operations", "format_calc"}
 
 
@@ -90,6 +90,10 @@ class Case:
             _, _, mode, sign, _, _, location, positive = self.args
             if mode not in range(5) or sign not in (0, 1) or location not in range(4) or positive <= 0:
                 raise ValueError("ieee_round requires mode 0..4, sign 0/1, location 0..3, positive round mantissa")
+        if self.op == "single_helpers":
+            prec, emax, mode, kind, sign, mantissa, _, _, _ = self.args
+            if not 0 < prec < emax or mode not in range(5) or kind not in range(4) or sign not in (0, 1) or mantissa <= 0:
+                raise ValueError("single_helpers requires 0 < prec < emax, mode 0..4, kind 0..3, sign 0/1, positive source mantissa")
 
 
 def small_ieee_raw(value, coq=False):
@@ -100,6 +104,74 @@ def small_ieee_raw(value, coq=False):
             f'{prefix}S754_nan',
             f'{prefix}S754_finite {s} ({mantissa})' + ('%positive' if coq else '') +
             f' ({exponent})')[kind]
+
+
+def single_helpers_expressions(case: Case) -> tuple[str, str]:
+    prec, emax, mode, kind, sign, mantissa, exponent, shift, norm = case.args
+    lm = ('.RNE', '.RTZ', '.RTN', '.RTP', '.RNA')[mode]
+    cm = ('mode_NE', 'mode_ZR', 'mode_DN', 'mode_UP', 'mode_NA')[mode]
+    s = 'true' if sign else 'false'
+    lean = (f'letI : Prec_gt_0 {prec} := ⟨by decide⟩; '
+            f'letI : Prec_lt_emax {prec} {emax} := ⟨by decide⟩; '
+            f'let raw : StandardFloat := {small_ieee_raw((kind, sign, mantissa, exponent))}; '
+            f'let x := BinarySingleNaN.SF2B\' (prec := {prec}) (emax := {emax}) raw; '
+            'let f := BinarySingleNaN.Bfrexp x; '
+            f'[boolean (validBinarySingleNaNStandardFloat (prec := {prec}) (emax := {emax}) raw)]')
+    coq = (f'let raw := {small_ieee_raw((kind, sign, mantissa, exponent), True)} in '
+           f'let x := @BinarySingleNaN.SF2B\' {prec} {emax} raw in '
+           f'let f := @BinarySingleNaN.Bfrexp {prec} {emax} eq_refl x in '
+           f'[boolean (SpecFloat.valid_binary {prec} {emax} raw)]')
+    lv = ['x', f'BinarySingleNaN.binary_normalize (prec := {prec}) (emax := {emax}) {lm} ({norm}) ({exponent}) {s}',
+          f'BinarySingleNaN.Bone (prec := {prec}) (emax := {emax})',
+          f'Binary.B2BSN (Binary.Bone (prec := {prec}) (emax := {emax}))',
+          f'BinarySingleNaN.Bldexp {lm} x ({shift})', 'f.1',
+          "BinarySingleNaN.Bulp' x", "BinarySingleNaN.Bpred_pos' x", "BinarySingleNaN.Bsucc' x"]
+    head = f'{prec} {emax} eq_refl eq_refl'
+    cv = ['x', f'@BinarySingleNaN.binary_normalize {head} {cm} ({norm}) ({exponent}) {s}',
+          f'@BinarySingleNaN.Bone {head}',
+          f'@Binary.B2BSN {prec} {emax} (@Binary.Bone {head})',
+          f'@BinarySingleNaN.Bldexp {head} {cm} x ({shift})', 'fst f',
+          f"@BinarySingleNaN.Bulp' {head} x", f"@BinarySingleNaN.Bpred_pos' {head} x",
+          f"@BinarySingleNaN.Bsucc' {head} x"]
+    for left, right in zip(lv, cv, strict=True):
+        lean += f' ++ standard (binarySingleNaNFloatToStandardFloat ({left}))'
+        coq += f' ++ standard (@BinarySingleNaN.B2SF {prec} {emax} ({right}))'
+    lean += ' ++ [f.2]'
+    coq += ' ++ [snd f]'
+    for namespace in ('Binary', 'BinarySingleNaN'):
+        lean += (f' ++ (let r := {namespace}.shr_fexp (prec := {prec}) (emax := {emax}) '
+                 f'({norm}) ({exponent}) .loc_Exact; '
+                 '[r.1.shr_m, boolean r.1.shr_r, boolean r.1.shr_s, r.2])')
+        coq += (f' ++ (let r := SpecFloat.shr_fexp {prec} {emax} ({norm}) ({exponent}) '
+                'SpecFloat.loc_Exact in [SpecFloat.shr_m (fst r); boolean (SpecFloat.shr_r (fst r)); '
+                'boolean (SpecFloat.shr_s (fst r)); snd r])')
+    return lean, coq
+
+
+def single_helpers_corpus(seed: int, samples: int) -> list[Case]:
+    rng, cases = random.Random(seed), []
+    for prec, emax in ((1, 2), (1, 3), (2, 3), (3, 4), (4, 8), (8, 16), (24, 128), (53, 1024)):
+        emin = 3 - emax - prec
+        raw = [(kind, sign, 1, 0) for kind in (0, 1, 2) for sign in (0, 1)]
+        raw += [(3, sign, m, e) for sign in (0, 1) for m, e in
+                ((1, emin), ((1 << prec) - 1, emin), (1, -prec), (1 << (prec - 1), -prec),
+                 ((1 << prec) - 1, emax - prec), (1, emin - 1), (1 << prec, 0),
+                 ((1 << prec) - 1, emax - prec + 1))]
+        shifts = (-2 * emax, -1, 0, 1, 2 * emax)
+        for mode in range(5):
+            for index, (kind, sign, m, e) in enumerate(raw):
+                norm = 0 if kind == 0 else -m if sign else m
+                cases.append(Case('single_helpers', (prec, emax, mode, kind, sign, m, e,
+                                                     shifts[index % len(shifts)], norm)))
+            for sign in (0, 1):
+                for shift in shifts:
+                    cases.append(Case('single_helpers', (prec, emax, mode, 3, sign,
+                        1 << (prec - 1), 1 - prec, shift, -1 if sign else 1)))
+        for _ in range(samples):
+            cases.append(Case('single_helpers', (prec, emax, rng.randrange(5), rng.randrange(4),
+                rng.randrange(2), rng.randint(1, 1 << (prec + 1)), rng.randint(emin - 2, emax + 2),
+                rng.randint(-2 * emax, 2 * emax), rng.randint(-(1 << prec), 1 << prec))))
+    return list(dict.fromkeys(cases))
 
 
 def small_ieee_expressions(case: Case) -> tuple[str, str]:
@@ -345,8 +417,9 @@ def corpus(seed: int, samples: int) -> list[Case]:
     cases.extend(comparison_corpus(seed, samples))
     cases.extend(small_ieee_corpus(seed, samples))
     cases.extend(ieee_round_corpus(seed, samples))
+    cases.extend(single_helpers_corpus(seed, samples))
     for op in OPS:
-        if op in ("comparison", "small_ieee", "ieee_round"):
+        if op in ("comparison", "small_ieee", "ieee_round", "single_helpers"):
             continue
         for _ in range(samples):
             base = rng.choice((2, 3, 10, 16))
@@ -429,6 +502,8 @@ def expressions(case: Case) -> tuple[str, str]:
         return ' ++ '.join(lean), ' ++ '.join(rocq)
     if op == "small_ieee":
         return small_ieee_expressions(case)
+    if op == "single_helpers":
+        return single_helpers_expressions(case)
     if op == "comparison":
         p, emax, *words = case.args
         operands = [words[:4], words[4:]]
@@ -645,6 +720,7 @@ import FloatSpec.Test.BitsExecution
 open FloatSpec.Core FloatSpec.Calc FloatSpec.Calc.Bracket
 set_option maxRecDepth 100000
 set_option maxHeartbeats 100000000
+set_option exponentiation.threshold 5000
 set_option pp.maxSteps 200000
 set_option pp.deepTerms true
 namespace Bridge
