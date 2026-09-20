@@ -1282,17 +1282,24 @@ theorem Rcompare_not_Gt_inv (x y : ℝ) :
 def Zcompare_int (m n : Int) : Int :=
   (if m < n then -1 else if m = n then 0 else 1)
 
-/-- Carrier for {coq}`Rcompare_IZR`: comparing casts of integers matches integer comparison. -/
-noncomputable def Rcompare_IZR (m n : Int) : Int := Rcompare (m : ℝ) (n : ℝ)
+/-- Legacy computational carrier for the integer-comparison triple. -/
+@[flocq_local "Compatibility carrier for the legacy integer-comparison Hoare triple"]
+noncomputable def Rcompare_IZR_check (m n : Int) : Int := Rcompare (m : ℝ) (n : ℝ)
+
+/-- Comparing real casts of integers agrees with the integer comparison code. -/
+@[flocq_source "src/Core/Raux.v" 468 "Rcompare_IZR"]
+theorem Rcompare_IZR (m n : Int) :
+    Rcompare (m : ℝ) (n : ℝ) = Zcompare_int m n := by
+  simp [Rcompare, Zcompare_int]
 
 /-- Coq theorem {name}`Rcompare_IZR`: comparing casts of integers matches integer comparison. -/
 theorem Rcompare_IZR_spec (m n : Int) :
     ⦃⌜True⌝⦄
-    (pure (Rcompare_IZR m n) : Id _)
+    (pure (Rcompare_IZR_check m n) : Id _)
     ⦃⇓r => ⌜r = (Zcompare_int m n)⌝⦄ := by
   intro _
   -- Discharge the Hoare triple by computation on both sides
-  simp [Zcompare_int, Rcompare_IZR, Rcompare, wp, PostCond.noThrow, Id.run, pure]
+  exact Rcompare_IZR m n
 
 /-- Middle-value comparison identity: compare (x - d) vs (u - x) equals comparing x vs (d+u)/2 -/
 noncomputable def Rcompare_middle_check (x d u : ℝ) : (Int × Int) :=

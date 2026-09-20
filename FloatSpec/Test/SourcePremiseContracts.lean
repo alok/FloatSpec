@@ -254,3 +254,8 @@ example (x y : ℝ) (h : y ≤ x) : FloatSpec.Core.Raux.Rcompare x y ≠ -1 :=
   FloatSpec.Core.Raux.Rcompare_not_Lt x y h
 example (x y : ℝ) (h : x ≤ y) : FloatSpec.Core.Raux.Rcompare x y ≠ 1 :=
   FloatSpec.Core.Raux.Rcompare_not_Gt x y h
+
+example (left right : Int) :
+    FloatSpec.Core.Raux.Rcompare (left : ℝ) (right : ℝ) =
+      FloatSpec.Core.Raux.Zcompare_int left right :=
+  FloatSpec.Core.Raux.Rcompare_IZR left right

@@ -106,3 +106,7 @@ Definition single_trunc_value_contract (prec emax : Z) (Hlt : Prec_lt_emax prec 
     IZR (@BinarySingleNaN.Btrunc prec emax x) =
       round radix2 (FIX_exp 0) Ztrunc (@BinarySingleNaN.B2R prec emax x) :=
   @BinarySingleNaN.Btrunc_correct prec emax Hlt x.
+
+Definition real_integer_comparison_contract (left right : Z) :
+    Rcompare (IZR left) (IZR right) = Z.compare left right :=
+  Rcompare_IZR left right.
