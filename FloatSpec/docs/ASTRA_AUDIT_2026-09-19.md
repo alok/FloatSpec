@@ -3260,6 +3260,56 @@ source modules; those partial responses are not passes. Direct per-client
 compilation and the full build supply the source verification. The final
 fixture LSP request did complete cleanly. No new sorry was introduced.
 
+### September 20, 18:27 UTC — exact neighbor oracle; hosted CI diagnosed
+
+The new four-hour continuation ends at 22:14 UTC. Live hosted runs
+[`35528043323`](https://github.com/alok/FloatSpec/actions/runs/35528043323)
+and `35528043110` confirm the known CI setup failure: Lean 4.34.0 is installed,
+but the automatic Mathlib cache requires the pinned dependency's 4.34.0-rc2
+toolchain. No FloatSpec source compilation occurs in those failed jobs.
+The current action also saves its cache before the separate build steps.
+The proposed narrow repair retains the dependency pins, disables that
+incompatible prebuilt cache, and builds inside the action so it saves completed
+artifacts. Approval was requested under the CI workflow; no workflow or
+dependency changes have been made in this milestone.
+
+The current CI commands were independently run locally: the full macOS build
+passes 6,227 jobs; every listed runtime fixture and the seven-part demo pass;
+placeholder/source-linter checks, compiled trust (13,568 / 58 / four debts),
+the listed Python tests, and generated-status consistency pass. The CI-style
+Python run deliberately had no `FLOCQ_AUDIT_DIR`, so its live Rocq tests were
+**skipped**, exactly as on the current hosted configuration. This is not
+three-loop CI coverage. `actionlint` v1.7.12 finds no workflow syntax errors;
+the failure is the cache policy, not YAML parsing.
+
+The Pff independent oracle now checks exact adjacency as well as canonicality
+and strict order. It searches bounded integer grids using exact rational
+floor/ceiling, stopping once the positive grid unit exceeds the input's absolute
+value. It does not duplicate Flocq's normalization/neighbor branches. An
+independent finite enumeration checks 180 queries across four radices, three
+precisions, and three minimum exponents.
+
+Two new controls mutate **all three** observation streams to the same canonical
+but nonadjacent answers: at base three/precision two, successor of one `5/3`
+instead of `4/3`, and predecessor `7/9` instead of `8/9`. Both are rejected.
+All **19** Pff harness tests pass with live pinned Rocq (21.073 seconds);
+the 15 non-live profile checks pass again after adding report metadata.
+The retained seed-859111 replay passes **200 cases / 200 kernel equalities**,
+with **4,612** independent assertions, including **1,400** premise-gated checks
+and **400** exact adjacency assertions (35.921 seconds). Reports and logs:
+
+- `/private/tmp/floatspec-adjacency-final-859111/report.json`
+- `/private/tmp/floatspec-pff-adjacency-controls-20260920.log`
+- `/private/tmp/floatspec-pff-adjacency-profile-controls-20260920.log`
+- `/private/tmp/floatspec-ci-local-build-20260920.log`
+
+The Lean/configuration hash remains `d53fa107…b1f00`; no product definition,
+theorem, or proof debt changes. The earlier first adjacency replay also passed
+but recorded the unused default CLI seed `20260919`; its inputs were the same
+saved seed-859111 corpus. The final replay explicitly supplies that seed and
+includes the oracle description. Historical reports retain their original
+weaker assertion counts. Finite tests are not a universal adjacency proof.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In

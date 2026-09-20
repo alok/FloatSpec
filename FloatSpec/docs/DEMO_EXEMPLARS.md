@@ -126,6 +126,19 @@ expanded bridge compares every exported stage and retains 87 replay inputs
 from this separate finding.
 
 
+## Nearest is stronger than larger
+
+Before comparing interfaces, distinguish **a larger value** from **the next
+value**. In base three with two digits, one normalizes to `3 * 3^-1`.
+Its successor is `4/3`; `5/3` is also canonical and larger, but skips `4/3`.
+Likewise its predecessor is `8/9`, not the also-canonical `7/9`.
+Run `lake env lean --run scripts/fixtures/PffWalkthrough.lean` to see the
+actual source-facing successor. The Pff bridge independently searches exact
+per-exponent rational grids and rejects deliberately skipped neighbors even
+when Lean and Rocq observations are both mutated to agree on the wrong answer.
+This makes a useful small lesson in testing specifications: checking an
+inequality is weaker than checking nearest adjacency.
+
 ## One operation, three interfaces
 
 Run `lake env lean scripts/fixtures/PrimitiveExecution.lean` and read the paired

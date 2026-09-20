@@ -138,6 +138,32 @@ def value(radix, fields):
     return mantissa * Fraction(radix) ** exponent
 
 
+def adjacent_values(radix: int, bound_num: int, minimum_exponent: int, x: Fraction):
+    """Find adjacent bounded values by exact grids, without normalizing x.
+
+    Each exponent contributes a grid with mantissas in (-bound_num, bound_num).
+    Floor/ceiling find that grid's nearest strict neighbors. Once its positive
+    unit exceeds abs(x), later grids have no smaller nonzero absolute value;
+    zero is already present. This covers the unbounded exponent range without
+    reproducing Pff's normalization or successor/predecessor case splits.
+    """
+    if radix < 2 or bound_num < 2:
+        raise ValueError("adjacency oracle requires radix and mantissa bound at least two")
+    scale = Fraction(radix) ** minimum_exponent
+    maximum_mantissa = bound_num - 1
+    lower, upper = [], []
+    while True:
+        above = max(-maximum_mantissa, x // scale + 1)
+        below = min(maximum_mantissa, -((-x) // scale) - 1)
+        if above <= maximum_mantissa:
+            upper.append(above * scale)
+        if below >= -maximum_mantissa:
+            lower.append(below * scale)
+        if scale > abs(x):
+            return max(lower), min(upper)
+        scale *= radix
+
+
 def independent_checks(case: Case, row: list[int]):
     """Exact finite invariants, independent of the Rocq observations."""
     if len(row) != len(COLUMNS) or any(type(item) is not int for item in row):
@@ -195,7 +221,12 @@ def independent_checks(case: Case, row: list[int]):
         check(canonical(predecessor), "predecessor is canonical under source premises")
         check(value(radix, successor) > x, "strict successor under source premises")
         check(value(radix, predecessor) < x, "strict predecessor under source premises")
-        neighbor_checks = 5
+        expected_predecessor, expected_successor = adjacent_values(radix, bound_num, -bound_exp, x)
+        check(value(radix, successor) == expected_successor,
+              "adjacent successor under source premises")
+        check(value(radix, predecessor) == expected_predecessor,
+              "adjacent predecessor under source premises")
+        neighbor_checks = 7
     return checks, neighbor_checks
 
 
@@ -330,6 +361,7 @@ def profile():
         "oracle_checked_cases": 0,
         "oracle_assertions": 0,
         "conditional_neighbor_assertions": 0,
+        "neighbor_oracle": "exact per-exponent grids, including strict adjacency",
     }
     original_compare = bridge.compare
     def compare(cases, observations):

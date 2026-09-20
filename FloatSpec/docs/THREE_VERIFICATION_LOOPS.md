@@ -836,7 +836,8 @@ FLOCQ_AUDIT_DIR=/path/to/pinned-flocq uv run scripts/test_pff_bridge.py -v
 lake env lean --run scripts/fixtures/PffWalkthrough.lean
 ```
 
-There are 2,472 fixed cases plus the requested seeded samples. The corpus
+There are 2,472 fixed cases plus two cases per requested seeded sample
+(one unrestricted and one satisfying the neighbor premises). The corpus
 includes negative/zero/unit radices, zero precision, 192-bit mantissas,
 noncanonical and out-of-bound inputs, exact power boundaries, and exponent
 boundaries. Natural arguments use Rocq's binary `Z.to_nat` codec to avoid
@@ -846,7 +847,8 @@ would require stronger premises.
 
 After all three paths agree, an independent exact-rational oracle checks
 value preservation, arithmetic, parity, zero normalization, and a
-division-based digit count. Strict/canonical neighbor assertions apply only
+division-based digit count. Canonicality, strict ordering, and exact adjacency
+assertions for neighbors apply only
 when radix is at least two, precision is positive, the bound is exactly
 radix-to-precision, and the input is bounded. Report metadata counts these
 assertions separately and records the exact failing input on any oracle
@@ -947,12 +949,26 @@ precision, a bounded signed mantissa and an exponent above the minimum.
 It samples radices 2, 3, 10 and 16, both signs, zero, and the minimum-exponent
 boundary. Its current Nat-transport bound is capped at 4096.
 
-The seed-859111 targeted replay has **200** cases and **1,000** premise-gated
-normalization/neighbor assertions, with all compiled/kernel/Rocq observations
-and all generated Lean equalities passing. The independent assertions check
-canonicality and strict ordering; the exact returned records are compared
-with Flocq. They are not a universal adjacency proof. All **17** Pff harness
-tests pass, including a generator-domain check over 1,000 inputs.
+The original seed-859111 targeted replay had **200** cases and **1,000**
+premise-gated normalization/neighbor assertions. Its September 20 continuation
+replays the same inputs with a stronger oracle: **1,400** such assertions,
+including **400 exact adjacency checks**. Every compiled/kernel/Rocq observation
+and generated Lean equality passes in both runs.
+
+The independent oracle views a format as one bounded integer grid per exponent.
+At each exponent, exact rational floor and ceiling locate the nearest strict
+neighbors. It stops after the grid's positive unit exceeds the input's absolute
+value: all later nonzero values are farther away, and zero is already present.
+This does not copy Flocq's normalization or neighbor case splits. The harness
+also compares it with explicit finite-format enumeration over 180 queries.
+
+Crucially, a canonical value on the correct side can still be the wrong neighbor.
+For base three, precision two, the successor of one is `4/3`, not `5/3`;
+its predecessor is `8/9`, not `7/9`. Two new mutations make all three result
+streams agree on those wrong answers; the independent oracle rejects both.
+All **19** Pff harness tests pass, including the existing generator-domain
+check over 1,000 inputs. This is finite evidence for adjacency, not a universal
+adjacency or source-equivalence proof.
 
 ### Logical-model adapters and integer bit inputs
 

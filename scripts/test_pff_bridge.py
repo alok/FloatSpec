@@ -1,5 +1,6 @@
 """Pff profile isolation, independent invariants, live execution and mutations."""
 import contextlib
+from fractions import Fraction
 import io
 import json
 import os
@@ -135,7 +136,7 @@ class ProfileTests(unittest.TestCase):
 
     def test_independent_oracle_and_premise_gated_neighbor_checks(self):
         count, neighbors = pff.independent_checks(CASE, ROW)
-        self.assertEqual(neighbors, 5)
+        self.assertEqual(neighbors, 7)
         self.assertGreaterEqual(count, 20)
         # Compilers agreeing on the SAME wrong answer must still fail.
         for group in ("source.Fshift", "source.Fplus", "source.Fminus",
@@ -147,6 +148,42 @@ class ProfileTests(unittest.TestCase):
             with pff.profile() as metadata:
                 with self.assertRaises(AssertionError):
                     core.compare([CASE], observations(bad))
+                self.assertEqual(metadata["oracle_failure_case"], pff.asdict(CASE))
+                self.assertEqual(metadata["oracle_checked_cases"], 0)
+
+    def test_adjacency_oracle_matches_exhaustive_small_formats(self):
+        for radix in (2, 3, 4, 10):
+            for precision in (1, 2, 3):
+                bound = radix ** precision
+                for minimum_exponent in (-3, 0, 2):
+                    # This finite super-grid extends beyond every queried x.
+                    values = sorted({pff.value(radix, (mantissa, exponent))
+                                     for exponent in range(minimum_exponent, 6)
+                                     for mantissa in range(1-bound, bound)})
+                    for mantissa in (1-bound, -1, 0, 1, bound-1):
+                        x = pff.value(radix, (mantissa, minimum_exponent+1))
+                        expected = (max(y for y in values if y < x),
+                                    min(y for y in values if y > x))
+                        self.assertEqual(pff.adjacent_values(radix, bound, minimum_exponent, x),
+                                         expected, (radix, precision, minimum_exponent, x))
+        self.assertEqual(pff.adjacent_values(2, 8, -3, Fraction(0)),
+                         (Fraction(-1, 8), Fraction(1, 8)))
+        for radix, bound in ((1, 2), (2, 1), (-2, 8)):
+            with self.assertRaises(ValueError):
+                pff.adjacent_values(radix, bound, -3, Fraction(0))
+
+    def test_matching_canonical_but_nonadjacent_neighbors_are_rejected(self):
+        # At base three, precision two, x=1: 5/3 and 7/9 are canonical
+        # and strictly on the right sides, but skip 4/3 and 8/9 respectively.
+        for group, replacement, label in (
+                ("source.FNSucc", [5, -1], "adjacent successor"),
+                ("source.FNPred", [7, -2], "adjacent predecessor")):
+            wrong = list(ROW)
+            offset = pff.OFFSETS[group]
+            wrong[offset:offset+2] = replacement
+            with pff.profile() as metadata:
+                with self.assertRaisesRegex(AssertionError, label):
+                    core.compare([CASE], observations(wrong))
                 self.assertEqual(metadata["oracle_failure_case"], pff.asdict(CASE))
                 self.assertEqual(metadata["oracle_checked_cases"], 0)
 
@@ -187,7 +224,7 @@ class ProfileTests(unittest.TestCase):
         self.assertEqual(report["profile"]["columns"], list(pff.COLUMNS))
         self.assertEqual(report["profile"]["legacy_normalized_radix"], 2)
         self.assertEqual(report["profile"]["oracle_checked_cases"], 1)
-        self.assertEqual(report["profile"]["conditional_neighbor_assertions"], 5)
+        self.assertEqual(report["profile"]["conditional_neighbor_assertions"], 7)
         self.assertEqual(report["bootstrapped_lean_cases"], 1)
         self.assertEqual(bootstraps, 1)
 

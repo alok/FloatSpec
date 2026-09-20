@@ -15,7 +15,7 @@ This guide follows those jobs in order. The detailed
 [independent continuation audit](ASTRA_AUDIT_2026-09-19.md) retain the
 declaration-by-declaration findings and historical milestones.
 
-## Wake-up summary — September 20, 2026, 18:05 UTC
+## Wake-up summary — September 20, 2026, 18:27 UTC
 
 **The port builds and runs on macOS with Lean 4.34.0; it is not yet a fully
 source-audited port.** All 35 built Flocq module names have Lean counterparts,
@@ -66,12 +66,23 @@ timeouts remain errors, not retroactive passes.
 The [machine-readable receipt](VERIFICATION_RECEIPT_2026-09-20.json) records
 the three snapshot groups separately, including their exact seeds and hashes.
 
+The four-hour continuation adds a stronger neighbor test: it independently
+checks the *nearest* representable values, not just canonical values on either
+side. The same 200 targeted inputs pass another three-path replay, now including
+400 exact-adjacency checks. Mutations that skip a valid neighbor are rejected
+even if all three language observations agree on the wrong answer.
+The [small explanatory example](DEMO_EXEMPLARS.md#nearest-is-stronger-than-larger)
+shows why this matters.
+
 Read [the demo/exemplar guide](DEMO_EXEMPLARS.md) for small runnable examples,
 [the three-loop guide](THREE_VERIFICATION_LOOPS.md) for reproduction, and
 [the audit ledger](ASTRA_AUDIT_2026-09-19.md) for detailed receipts and historical
 failures. Finite agreement is not universal equivalence. Local macOS success
-is not a green hosted-CI claim: fork CI has a separate dependency-cache/toolchain
-mismatch. Your original checkout, Claude changes and modified `Deps/flocq`
+is not a green hosted-CI claim: the latest fork run still fails before source
+compilation because it requests an rc2 Mathlib cache under Lean 4.34.0.
+The narrow cache-policy repair is awaiting approval; the existing CI commands
+pass locally, with live Rocq harness tests explicitly skipped in that CI-style
+run. Your original checkout, Claude changes and modified `Deps/flocq`
 remain preserved in place; this work uses isolated Lean and pinned Rocq checkouts.
 
 ## 1. Start with one small rounding problem
