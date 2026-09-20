@@ -2785,6 +2785,7 @@ theorem round_NE_pt_pos_check_spec (x : ℝ) :
   exact hTotProp x
 
 /-- Exact source contract at the concrete nearest-even rounded value. -/
+@[flocq_source "src/Core/Round_NE.v" 339 "round_NE_pt_pos"]
 theorem round_NE_pt_pos (x : ℝ) (hx : 0 < x) :
     Rnd_NE_pt beta fexp x
       (FloatSpec.Core.Generic_fmt.roundR beta fexp
@@ -3140,7 +3141,8 @@ noncomputable def round_NE_pt_check (x : ℝ) : Bool :=
             (FloatSpec.Core.Generic_fmt.Znearest (fun t : Int => !(decide (2 ∣ t)))) x))
         (Classical.dec _)
 
-theorem round_NE_pt (x : ℝ) :
+/-- Legacy Boolean/Hoare adapter for concrete nearest-even correctness. -/
+theorem round_NE_pt_check_spec (x : ℝ) :
     ⦃⌜beta > 1⌝⦄
     (pure (round_NE_pt_check beta fexp x) : Id Bool)
     ⦃⇓result => ⌜result = true⌝⦄ := by
@@ -3205,6 +3207,16 @@ theorem round_NE_pt (x : ℝ) :
           (FloatSpec.Core.Generic_fmt.roundR beta fexp
             (FloatSpec.Core.Generic_fmt.Znearest choice) x)).mpr hright
       simpa [choice] using hmain
+
+/-- The concrete nearest-even rounded value satisfies the source predicate. -/
+@[flocq_source "src/Core/Round_NE.v" 521 "round_NE_pt"]
+theorem round_NE_pt (x : ℝ) :
+    Rnd_NE_pt beta fexp x
+      (FloatSpec.Core.Generic_fmt.roundR beta fexp
+        (FloatSpec.Core.Generic_fmt.Znearest
+          (fun t : Int => !(decide (2 ∣ t)))) x) := by
+  simpa [round_NE_pt_check, pure, decide_eq_true_iff] using
+    (round_NE_pt_check_spec (beta := beta) (fexp := fexp) x ValidRadix.valid)
 
 end ParityProperties
 

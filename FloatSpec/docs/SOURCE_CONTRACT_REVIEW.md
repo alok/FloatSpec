@@ -6,6 +6,24 @@ all declarations in the named modules. See the
 [running audit](ASTRA_AUDIT_2026-09-19.md) for execution receipts and the
 [reading guide](READING_GUIDE.md) for the mathematical story.
 
+## Nearest-even concrete-point interface
+
+`round_NE_pt` now exposes the same direct proposition as the pinned
+`Core/Round_NE.v:521`: the specific value returned by nearest-even rounding
+satisfies `Rnd_NE_pt`. Its former Boolean/Hoare theorem survives under the
+explicit adapter name `round_NE_pt_check_spec`; the new theorem extracts the
+existing closed proof. Both production Pff callers now consume the proposition
+directly. No rounding algorithm, predicate or hypothesis was changed.
+
+The paired `RoundNEPointContracts` fixtures distinguish four compiled exports:
+negation has no exponent assumptions, absolute value requires `Valid_exp`,
+and the positive/all-input point theorems require `Valid_exp` and `Exists_NE`.
+The last two have pinned anchors at lines 339 and 521. All four Lean axiom
+lists contain only the standard axioms. Mutation controls check that clients
+reject a replacement of the concrete result by bare existence and reject
+removing the genuine `Exists_NE` premise. This is an API alignment, not a
+new claim of universal cross-assistant equivalence.
+
 ## ULP nearest rounding: eight erased policy parameters
 
 Eight midpoint and neighbor exports accepted tie policies but stated their

@@ -15,7 +15,7 @@ This guide follows those jobs in order. The detailed
 [independent continuation audit](ASTRA_AUDIT_2026-09-19.md) retain the
 declaration-by-declaration findings and historical milestones.
 
-## Wake-up summary — September 20, 2026, 21:12 UTC
+## Wake-up summary — September 20, 2026, 21:21 UTC
 
 **The port builds and runs on macOS with Lean 4.34.0, but is not yet a fully
 source-audited port.** All 35 built Flocq module names have Lean counterparts.
@@ -38,7 +38,8 @@ The important recent changes are:
 - **Contracts that mention the actual rounding policy.** Eight ULP exports
   accepted a tie policy but referred to a fixed-policy result. One two-policy
   equality was merely reflexivity. Those statements now preserve the policies,
-  with paired Lean/Rocq clients and mutation controls.
+  with paired Lean/Rocq clients and mutation controls. `round_NE_pt` now states
+  correctness of the actual rounded value directly, with both Pff callers migrated.
 - **The correct hypotheses.** Recent repairs removed 27 unnecessary
   exponent-validity assumptions, while a paired counterexample shows that
   exponent monotonicity really is needed for a different ULP law.
@@ -50,7 +51,7 @@ The important recent changes are:
   The exponent-alignment backend compares arbitrary dyadic values. It is
   integrated as that explicit API, with twelve `*_eq_value` contracts. The
   different raw Flocq comparator remains unchanged.
-- **Restoring the unindexed Pff interface.** The current slice adds `Fzero`,
+- **Restoring the unindexed Pff interface.** The latest addition supplies `Fzero`,
   `is_Fzero`, `Fmult` and four source-shaped laws. Multiplication correctness
   accepts radix one; zero's forward observer laws need no radix restriction.
   The new bridge observes complete records, not only real values.
@@ -59,7 +60,8 @@ Current verification is deliberately separated by source snapshot:
 
 | Snapshot | Completed evidence |
 |---|---|
-| Current Pff addition, `21a75295` | Full 6,226-job build; 13,678 compiled source declarations / 59 modules; four manifest-only debts; 326 validated source anchors; paired basic Pff clients; all 20 expanded Pff harness tests. Fresh bridge: 3,072 cases/kernel equalities and 65,846 independent assertions, seed 862307. |
+| Current direct nearest-even API, `b9b5abb6` | Full 6,226-job build; 13,680 compiled source declarations / 59 modules; four manifest-only debts; 328 validated source anchors; four paired typed exports and four live mutation controls. Arithmetic bodies are unchanged from the Pff snapshot below. |
+| Pff addition, `21a75295` | Full build; paired basic Pff clients; all 20 expanded Pff harness tests. Fresh bridge: 3,072 cases/kernel equalities and 65,846 independent assertions, seed 862307. |
 | Integrated comparison API, `4b714ddb` | Full build and seven demos; 20,000 executable dyadic pairs; 24 paired raw-comparison fixture cases; 1,237 fresh raw-comparison bridge cases and kernel equalities, seed 862149. |
 | Pre-integration IEEE snapshot, `687aa7a8` | 1,104 native plus 470 all-mode cases, all 1,574 generated kernel equalities, and 111,282 independent expected-field checks; seeds 862081 and 862073. |
 | Earlier broad snapshot, `32ec11b5` | Complete three-loop run: 55,162 differential executions/kernel equalities and 119 bridge-harness tests. |

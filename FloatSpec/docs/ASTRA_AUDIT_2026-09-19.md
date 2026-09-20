@@ -3699,6 +3699,35 @@ The reading guide's opening is condensed into a current summary and
 snapshot-specific evidence table. The broad frozen `5d241916` aggregate
 is still running, and hosted CI still awaits the proposed cache repair.
 
+### September 20, 21:21 UTC — direct nearest-even point contract
+
+`RoundNE.round_NE_pt` now returns the concrete nearest-even correctness
+proposition directly. The prior closed Boolean/Hoare proof is retained as
+`round_NE_pt_check_spec`, and both production Pff callers now use the direct
+result. Pinned anchors cover the positive and all-input point exports.
+No numerical body, predicate, source premise or existing noncomputable marker
+changed; no new proof debt was introduced.
+
+Paired `RoundNEPointContracts` clients freeze the four compiled export types:
+negation without exponent assumptions, absolute value with `Valid_exp`, and
+the two point theorems with `Valid_exp` and `Exists_NE`. All four Lean axiom
+lists exclude `sorryAx`. Four mutation controls first compile their baselines,
+then reject an existence-only result or removal of the actual `Exists_NE`
+premise in both assistants; all pass in 16.082 seconds.
+
+The first incremental caller build correctly rejected the second, not-yet-
+migrated caller. After migrating that caller, the full macOS Lean 4.34 build
+passes **6,226 jobs**. Core and fixture LSP diagnostics are complete and clean;
+Pff auxiliary LSP diagnostics remained unavailable after dependency rebuilding,
+so its successful compiler/full-build checks are the evidence instead.
+Fresh compiled trust checks **13,680 source declarations / 59 modules**, with
+the same four recorded direct/transitive debts; **328 source anchors** validate.
+Source fingerprint:
+`b9b5abb6161724b5647c56beb8bae05cc8960dbc2137da7273e4eabc58bc50f6`.
+Logs: `/private/tmp/floatspec-main-round-ne-{full-build,trust,anchors,mutations}-20260920.log`.
+The previous Pff execution remains bound to `21a75295`; theorem/API changes
+are not relabeled as a fresh run of the arithmetic bridge.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In

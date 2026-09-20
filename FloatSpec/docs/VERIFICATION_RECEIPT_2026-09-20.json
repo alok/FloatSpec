@@ -1,27 +1,27 @@
 {
   "schema_version": 1,
-  "recorded_at_utc": "2026-09-20T21:12:00Z",
+  "recorded_at_utc": "2026-09-20T21:21:00Z",
   "claim": "Finite execution and kernel-regression receipts, not universal Flocq equivalence.",
   "source_pin": "7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f",
-  "latest_source_sha256": "21a75295de260d1079eec62944ca54dadc80a541b760d9926ef37ec97fced48d",
+  "latest_source_sha256": "b9b5abb6161724b5647c56beb8bae05cc8960dbc2137da7273e4eabc58bc50f6",
   "final_build": {
     "platform": "macOS arm64",
     "lean": "4.34.0",
     "rocq": "9.2",
     "jobs": 6226,
     "status": "passed",
-    "log": "/private/tmp/floatspec-main-pff-basic-full-build-20260920.log",
+    "log": "/private/tmp/floatspec-main-round-ne-full-build-20260920.log",
     "demo_examples": 7,
     "demo_scope": "Seven examples executed on preceding integrated main source 4b714ddb."
   },
   "compiled_trust": {
-    "source_declarations": 13678,
+    "source_declarations": 13680,
     "modules": 59,
     "manifest_only_proof_debts": 4,
-    "source_anchors": 326,
+    "source_anchors": 328,
     "source_premise_guards": 147,
     "nearest_fixture_axiom_lists_without_sorryAx": 10,
-    "report": "/private/tmp/floatspec-main-pff-basic-trust-20260920.json",
+    "report": "/private/tmp/floatspec-main-round-ne-trust-20260920.json",
     "nearest_fixture_axiom_lists_scope": "Unchanged fixture, checked on preceding 687aa7a8 source."
   },
   "proof_debts": [
@@ -473,7 +473,8 @@
     "latest_pff_basic_suite": 20,
     "note": "The latest 20-test Pff suite replaces its older suites; the totals overlap and must not be summed blindly.",
     "exceptional_ieee_oracle": 16,
-    "integrated_exceptional_ieee_bridges": 22
+    "integrated_exceptional_ieee_bridges": 22,
+    "nearest_even_point_contract_mutations": 4
   },
   "boundaries": [
     "Each group is bound to its own source fingerprint. The latest delta adds unindexed Pff zero/product APIs; preceding comparison integration adds a separate local dyadic-value API. Neither changes the existing raw source arithmetic bodies.",

@@ -1776,10 +1776,8 @@ theorem pff_round_NE_is_round (beta : Int) [ValidRadix beta] (b : Fbound) (p : I
       exact hqval.symm.trans (hUnique q hqClosest)
   have hNE_round :
       FloatSpec.Core.RoundNE.Rnd_NE_pt beta (FLT_exp (-b.dExp) p) r rounded := by
-    have h := FloatSpec.Core.RoundNE.round_NE_pt
+    simpa [rounded] using FloatSpec.Core.RoundNE.round_NE_pt
       (beta := beta) (fexp := FLT_exp (-b.dExp) p) (x := r)
-    simpa [FloatSpec.Core.RoundNE.round_NE_pt_check, pure, decide_eq_true_iff,
-      rounded] using h hbeta
   have huniq := FloatSpec.Core.RoundNE.Rnd_NE_pt_unique
       (beta := beta) (fexp := FLT_exp (-b.dExp) p)
       (x := r) (f1 := y) (f2 := rounded)
@@ -1846,10 +1844,8 @@ theorem evenClosest_value_eq_round_NE (beta : Int) [ValidRadix beta] (b : Fbound
       exact hqval.symm.trans (hUnique q hqClosest)
   have hNE_round :
       FloatSpec.Core.RoundNE.Rnd_NE_pt beta (FLT_exp (-b.dExp) p) r rounded := by
-    have h := FloatSpec.Core.RoundNE.round_NE_pt
+    simpa [rounded] using FloatSpec.Core.RoundNE.round_NE_pt
       (beta := beta) (fexp := FLT_exp (-b.dExp) p) (x := r)
-    simpa [FloatSpec.Core.RoundNE.round_NE_pt_check, pure, decide_eq_true_iff,
-      rounded] using h hbeta
   have huniq := FloatSpec.Core.RoundNE.Rnd_NE_pt_unique
       (beta := beta) (fexp := FLT_exp (-b.dExp) p)
       (x := r) (f1 := y) (f2 := rounded)

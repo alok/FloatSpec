@@ -231,6 +231,13 @@ its nearest-even rounding function still commutes with negation. This
 checks a real domain excluded by the previous stronger Lean signature;
 it does not claim the class is a necessary-and-sufficient totality criterion.
 
+The paired `RoundNEPointContracts.lean` / `.v` clients additionally require
+the concrete nearest-even result from `round_NE_pt`, now a direct proposition
+with its two production Pff callers migrated. They retain the genuine
+`Valid_exp` and `Exists_NE` assumptions. Four live mutation controls reject
+weaker existence-only result types or a missing existence premise in both
+assistants; each control first compiles its unchanged baseline.
+
 `lake exe floatspec_demo` builds and runs the seven-part guided introduction
 as a native executable, with kernel assertions and runtime checks against
 literal expected answers. The combined runner executes this target as well.
