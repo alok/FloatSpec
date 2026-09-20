@@ -15,7 +15,7 @@ This guide follows those jobs in order. The detailed
 [independent continuation audit](ASTRA_AUDIT_2026-09-19.md) retain the
 declaration-by-declaration findings and historical milestones.
 
-## Wake-up summary — September 20, 2026, 16:58 UTC
+## Wake-up summary — September 20, 2026, 17:08 UTC
 
 **The port builds and runs on macOS with Lean 4.34.0, but it is not yet a
 fully source-audited port.** All 35 built Flocq module names have Lean
@@ -26,9 +26,9 @@ File coverage is not a completion percentage.
 The latest verified library and tests are on the
 [review branch](https://github.com/alok/FloatSpec/tree/codex/astra-flocq-audit).
 Run `lake exe floatspec_demo` for the seven-part native executable.
-Its examples and the **6,225-job build** pass. Fresh compiled checks cover
-**13,557 declarations / 58 modules**, find exactly the four recorded proof
-debts, and validate **269 pinned source anchors**.
+Its examples and the **6,226-job build** pass. Fresh compiled checks cover
+**13,571 declarations / 58 modules**, find exactly the four recorded proof
+debts, and validate **272 pinned source anchors**.
 
 The main conceptual repair is separating a **raw encoding**, a **canonical
 value**, and a **native machine float**. Raw `(3,-1)` denotes 1.5 but is not
@@ -161,6 +161,17 @@ positive minimum subnormal. Both assistants agree. The paired examples now
 keep this domain distinction, signed zero, and NaN canonicalization explicit.
 The model-adapter profile runs integer algorithms; it is not a native float
 FFI test or a universal equivalence proof.
+
+The same proof-carrying-interface issue appeared in three classical existence
+constructors: `LPO_min`, `LPO`, and `LPO_Z`. Flocq returns either a witness
+with its membership proof, or a proof of nonexistence; the old Lean names
+only asserted properties of optional values. The repaired APIs now return
+the alternatives directly. Paired typed clients, a negative integer witness,
+an empty predicate, and deliberate proof-erasure failures check that boundary.
+The old optional choices remain, with their specifications explicitly named
+`LPO_min_choice_spec`, `LPO_choice_spec`, and `LPO_Z_choice_spec`. These are
+classical mathematical constructors, not executable decision procedures for
+arbitrary predicates.
 
 Reviewable work is on
 [`alok/FloatSpec:codex/astra-flocq-audit`](https://github.com/alok/FloatSpec/tree/codex/astra-flocq-audit).
@@ -579,7 +590,7 @@ Source links make that review navigable. `@[flocq_source]` records a pinned
 Coq path, line, and name; `@[flocq_local]` explains a Lean-only helper.
 Thirteen source files enable strict public-definition classification; a targeted
 section of `Binary.lean` additionally enables the same check.
-The compiler-backed validator checks all 269 registered anchors, including
+The compiler-backed validator checks all 272 registered anchors, including
 combined attributes and later attribute commands. These links are metadata,
 not a proof that bodies or theorem signatures correspond.
 

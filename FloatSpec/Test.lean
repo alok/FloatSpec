@@ -22,6 +22,7 @@ import FloatSpec.Test.PffAuxExecution
 import FloatSpec.Test.PffRoundingSource
 import FloatSpec.Test.DoubleRoundingContracts
 import FloatSpec.Test.NativeModelAdapters
+import FloatSpec.Test.LpoSourceContracts
 import FloatSpec.Test.PffSourceContracts
 import FloatSpec.Test.PrimFloatSource
 import FloatSpec.Test.RoundingModeSource

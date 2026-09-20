@@ -171,6 +171,30 @@ value/function on valid inputs. No arithmetic body was made executable:
 these are genuinely noncomputable mathematical witnesses using classical
 choice. Five printed regression-theorem axiom lists contain no `sorryAx`.
 
+The same result-sort mismatch was subsequently found in `Raux.LPO_min`,
+`LPO`, and `LPO_Z` (pinned lines 2271, 2384, 2396). Rocq exports a `sumor`
+whose positive branch is a dependent pair and whose negative branch proves
+universal nonexistence. The old Lean declarations were propositions about
+`Option` results; all three actual source-shaped baseline clients failed
+because a `Prop` was supplied where a `Type` was required.
+
+The new noncomputable definitions use `PSum` to carry the exact alternatives.
+The minimal-natural branch retains `P n ∧ ∀ i < n, ¬ P i`, not a silently
+rewritten weaker condition. Natural LPO projects that witness; integer LPO
+follows the source's nonnegative search followed by negated-natural search.
+The optional compatibility definitions keep their bodies/types unchanged;
+their old theorem names move to the explicit `_choice_spec` names. There
+were no repository callers of the old theorem names to migrate.
+
+Paired `LpoSourceContracts` fixtures consume all three exact result shapes,
+extract witnesses and their proofs, and cover a negative-only integer
+predicate and the empty predicate. Two closed Lean projection equalities
+preserve the old natural optional results for every predicate. No equality
+with the old arbitrary integer choice is asserted. Live controls reject all
+three old property-only results in Lean and an erased optional result in
+Rocq. These are source-interface checks, not native predicate-decision tests
+or universal cross-assistant witness-identity proofs.
+
 ## FLX unit laws: unrestricted precision is intentional
 
 Pinned `Core/FLX.v:240,246` states `ulp_FLX_1` and `succ_FLX_1` for

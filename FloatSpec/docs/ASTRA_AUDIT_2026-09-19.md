@@ -3010,6 +3010,52 @@ used an unsupported output flag and exited before testing; only the corrected
 invocation above is counted. The frozen broad run has now passed native unary
 and arithmetic stages and their harnesses; its remaining stages are active.
 
+### September 20, 17:08 UTC — LPO producers return the source proof-carrying alternatives
+
+Repaired `Raux.LPO_min`, `LPO`, and `LPO_Z` against pinned source lines
+2271, 2384 and 2396. Three pre-change typed clients failed with the concrete
+`Prop` versus `Type` mismatch: the old names were Hoare properties of
+optional values, while the source returns dependent witnesses or universal
+nonexistence proofs. The new `PSum` results retain the exact minimum,
+membership and negative-branch contracts. Integer construction mirrors the
+source's nonnegative-then-negated-natural order. The old optional definitions
+are unchanged; their theorem names become explicit `_choice_spec` adapters.
+Repository search found no old-name callers requiring migration.
+
+Source/configuration SHA-256:
+`74b1ea8a5c19b6e1c4dbc2a91bd7a97b6717ad50a7f55fe03ffe33923b8c4b8c`.
+
+- Full macOS Lean 4.34 build passes **6,226 jobs**; receipt
+  `/private/tmp/floatspec-lpo-full-build-20260920.log`.
+- The identical three baseline clients now compile. Paired permanent
+  fixtures consume all three result types, extract proof-carrying witnesses,
+  and cover negative-only and empty predicates. Two closed Lean theorems
+  prove that dropping the natural witness proofs recovers the previous
+  optional choices. All seven printed client/theorem axiom lists exclude
+  `sorryAx`. Receipts: `/private/tmp/LpoSourceBaseline20260920-{before,after}.out`,
+  `floatspec-lpo-contract-lean-final-20260920.log`, and
+  `floatspec-lpo-contract-rocq-20260920.log`.
+- Both live contract controls pass (5.545 seconds): all three former
+  property-only results fail the Lean source clients, and Rocq rejects a
+  proof-erased optional result. The original fixtures pass before mutation.
+  Receipt: `/private/tmp/floatspec-lpo-contract-controls-v2-20260920.log`.
+- Fresh compiled trust: **13,571 declarations / 58 modules / four unchanged
+  debts**; freshly exported metadata validates **272** source anchors.
+  Receipts use `/private/tmp/floatspec-lpo-{trust,source-metadata,anchors}-20260920`.
+- Source and fixture LSP diagnostics complete with zero errors. Demo,
+  warning-as-error Python compilation, shell syntax, generated status and
+  whitespace checks pass. Status: 99 Lean files, four sorries, no explicit
+  axioms/admit. No new proof debt.
+
+The first projection proof split the result match before its existence
+condition; the resulting failed `rfl` goals were corrected and retained in
+the v1 log. The first Python control emitted an escape-sequence warning;
+the warning-free rerun is the reported receipt. Earlier partial LSP results
+were not treated as passes; later diagnostics completed. These classical
+constructors are not native decision procedures. No universal integer witness
+identity across old/new choices or assistants is claimed. The frozen older
+broad runner remains active in scaling and integer stages.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In

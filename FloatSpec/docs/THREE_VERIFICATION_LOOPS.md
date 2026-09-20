@@ -961,6 +961,26 @@ retains full corpus, seed, generated kernel equalities and oracle counts;
 all columns have live mutation controls in both widths. Matching corrupted
 answers are rejected by an independent arithmetic field classifier.
 
+### Classical witness result types
+
+`LpoSourceContracts.lean` and `.v` compile consumers of `LPO_min`, `LPO`
+and `LPO_Z` that require proof-carrying alternatives, not a theorem about an
+unrelated optional value. They extract a witness with its membership proof,
+test a negative-only integer predicate and reject the impossible positive
+branch for an empty predicate. Lean additionally proves universal projection
+equalities to the old natural optional choices. No equality to the old
+arbitrary integer choice is claimed.
+
+```sh
+lake env lean FloatSpec/Test/LpoSourceContracts.lean
+FLOCQ_AUDIT_DIR=/path/to/pinned-flocq uv run scripts/test_lpo_contracts.py -v
+```
+
+The live controls first compile the unmutated clients, then reject all three
+former property-only result shapes in Lean and an optional proof-erased result
+in Rocq. Arbitrary-predicate LPO is genuinely noncomputable here: a successful
+kernel/type check is not native execution of a predicate decision procedure.
+
 ## 11. What this still does not establish
 
 The expanded combined runner completed at commit `ba3e2a8b`, seed `961703`,

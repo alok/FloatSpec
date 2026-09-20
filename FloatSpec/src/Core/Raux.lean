@@ -3637,14 +3637,15 @@ theorem IZR_Zpower (r : FloatSpec.Core.Zaux.Radix) (e : Int) (he : 0 ≤ e) :
 end PowBasics
 
 /-
-  Limited Principle of Omniscience (LPO) style results from Coquelicot
-  (ported from Coq Raux.v). We encode the computational content as
-  Id-wrapped options that select a witness when it exists.
+  Limited Principle of Omniscience (LPO) results from Coquelicot, via Raux.v.
+  Public source exports return proof-carrying alternatives. The old optional
+  choices and their Hoare specifications remain explicitly local adapters.
  -/
 /-!  LPO (limited principle of omniscience) corner -/
 section LPO
 
-/-- Carrier for {coq}`LPO_min`: either {given -show}`n : Nat` wrapped in {lean}`some n` with a minimal witness, or {lean}`none` if none exists. -/
+/-- Legacy optional projection for minimal natural witnesses. -/
+@[flocq_local "Optional compatibility choice; source LPO_min returns a proof-carrying alternative"]
 noncomputable def LPO_min_choice (P : Nat → Prop) : (Option Nat) :=
   by
     classical
@@ -3655,8 +3656,9 @@ noncomputable def LPO_min_choice (P : Nat → Prop) : (Option Nat) :=
       else
         none
 
-/-- Coq (Raux.v) {coq}`LPO_min`. Lean spec uses {lean}`Option` {lean}`Nat` to encode the sum. -/
-theorem LPO_min (P : Nat → Prop)
+/-- Compatibility specification of the optional minimal-witness choice. -/
+@[flocq_local "Legacy optional-choice Hoare specification, not the proof-carrying LPO_min source export"]
+theorem LPO_min_choice_spec (P : Nat → Prop)
     (_hdec : ∀ n : Nat, P n ∨ ¬ P n) :
     ⦃⌜True⌝⦄
     (pure (LPO_min_choice P) : Id _)
@@ -3682,7 +3684,8 @@ theorem LPO_min (P : Nat → Prop)
     -- From ¬∃ n, P n, derive ∀ n, ¬ P n
     simpa [h] using (not_exists.mp h)
 
-/-- Carrier for {coq}`LPO`: either {given -show}`n : Nat` wrapped in {lean}`some n` with a witness, or {lean}`none` if none exists. -/
+/-- Legacy optional projection for natural witnesses. -/
+@[flocq_local "Optional compatibility choice; source LPO returns a proof-carrying alternative"]
 noncomputable def LPO_choice (P : Nat → Prop) : (Option Nat) :=
   by
     classical
@@ -3693,8 +3696,9 @@ noncomputable def LPO_choice (P : Nat → Prop) : (Option Nat) :=
       else
         none
 
-/-- Coq (Raux.v) {coq}`LPO`. Lean spec: {given -show}`n : Nat` in {lean}`some n` indicates a witness satisfying the predicate; {lean}`none` indicates universal negation. -/
-theorem LPO (P : Nat → Prop)
+/-- Compatibility specification of the optional natural-witness choice. -/
+@[flocq_local "Legacy optional-choice Hoare specification, not the proof-carrying LPO source export"]
+theorem LPO_choice_spec (P : Nat → Prop)
     (_hdec : ∀ n : Nat, P n ∨ ¬ P n) :
     ⦃⌜True⌝⦄
     (pure (LPO_choice P) : Id _)
@@ -3714,7 +3718,8 @@ theorem LPO (P : Nat → Prop)
     -- From ¬∃ n, P n, derive ∀ n, ¬ P n
     simpa [h] using (not_exists.mp h)
 
-/-- Carrier for {coq}`LPO` over integers: either {given -show}`n : Int` in {lean}`some n` with a witness, or {lean}`none`. -/
+/-- Legacy optional projection for integer witnesses. -/
+@[flocq_local "Optional compatibility choice; source LPO_Z returns a proof-carrying alternative"]
 noncomputable def LPO_Z_choice (P : Int → Prop) : (Option Int) :=
   by
     classical
@@ -3725,8 +3730,9 @@ noncomputable def LPO_Z_choice (P : Int → Prop) : (Option Int) :=
       else
         none
 
-/-- Coq (Raux.v) lemma {coq}`LPO_Z`: for any predicate on integers with decidability, either {given -show}`n : Int` satisfies it or no integer does; the Lean spec encodes this as an option meaning {lean}`some n` indicates satisfaction and {lean}`none` indicates no witness exists. -/
-theorem LPO_Z (P : Int → Prop)
+/-- Compatibility specification of the optional integer-witness choice. -/
+@[flocq_local "Legacy optional-choice Hoare specification, not the proof-carrying LPO_Z source export"]
+theorem LPO_Z_choice_spec (P : Int → Prop)
     (_hdec : ∀ n : Int, P n ∨ ¬ P n) :
     ⦃⌜True⌝⦄
     (pure (LPO_Z_choice P) : Id _)
@@ -3745,6 +3751,41 @@ theorem LPO_Z (P : Int → Prop)
   · -- no witness exists: return none and prove ∀ n, ¬ P n
     -- From ¬∃ n, P n, derive ∀ n, ¬ P n
     simpa [h] using (not_exists.mp h)
+
+/-- Source minimal-witness alternative, carrying both membership and the
+absence of every smaller witness, or universal nonexistence. -/
+@[flocq_source "src/Core/Raux.v" 2271 "LPO_min"]
+noncomputable def LPO_min (P : Nat → Prop) (_hdec : ∀ n, P n ∨ ¬ P n) :
+    PSum {n : Nat // P n ∧ ∀ i : Nat, i < n → ¬ P i} (∀ n : Nat, ¬ P n) := by
+  classical
+  exact if h : ∃ n, P n then
+    .inl ⟨Nat.find h, Nat.find_spec h, fun _ hi => Nat.find_min h hi⟩
+  else .inr (not_exists.mp h)
+
+/-- Source natural-witness alternative. The positive branch retains its
+membership proof rather than returning a bare optional natural. -/
+@[flocq_source "src/Core/Raux.v" 2384 "LPO"]
+noncomputable def LPO (P : Nat → Prop) (hdec : ∀ n, P n ∨ ¬ P n) :
+    PSum {n : Nat // P n} (∀ n : Nat, ¬ P n) :=
+  match LPO_min P hdec with
+  | .inl witness => .inl ⟨witness.val, witness.property.1⟩
+  | .inr noWitness => .inr noWitness
+
+/-- Source integer-witness alternative. As in Rocq, first seek a
+nonnegative witness, then the negation of a natural witness. -/
+@[flocq_source "src/Core/Raux.v" 2396 "LPO_Z"]
+noncomputable def LPO_Z (P : Int → Prop) (hdec : ∀ n, P n ∨ ¬ P n) :
+    PSum {n : Int // P n} (∀ n : Int, ¬ P n) := by
+  match LPO (fun n : Nat => P (n : Int)) (fun n => hdec n) with
+  | .inl witness => exact .inl ⟨witness.val, witness.property⟩
+  | .inr noPositive =>
+    match LPO (fun n : Nat => P (-(n : Int))) (fun n => hdec (-(n : Int))) with
+    | .inl witness => exact .inl ⟨-(witness.val : Int), witness.property⟩
+    | .inr noNegative =>
+      refine .inr (fun n => ?_)
+      cases n with
+      | ofNat n => exact noPositive n
+      | negSucc n => exact noNegative (n + 1)
 
 end LPO
 
