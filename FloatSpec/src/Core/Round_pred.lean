@@ -202,73 +202,33 @@ end RoundingFunctionProperties
 
 section ExistenceAndUniqueness
 
-/-- Extract rounding value from predicate
+/-- Choose a rounded value with its witness, as in Flocq's dependent result.
+The input proof supplies totality; no default value is introduced for an
+unsatisfied relation. Classical choice makes this mathematical constructor
+noncomputable, unlike the integer algorithms in the executable IEEE layer. -/
+@[flocq_source "src/Core/Round_pred.v" 51 "round_val_of_pred"]
+noncomputable def round_val_of_pred (rnd : ℝ → ℝ → Prop)
+    (h : round_pred rnd) (x : ℝ) : {f : ℝ // rnd x f} :=
+  ⟨Classical.choose (h.1 x), Classical.choose_spec (h.1 x)⟩
 
-    Given a rounding predicate that is known to hold,
-    extract the actual rounded value. This enables
-    computation from specification predicates.
--/
-noncomputable def round_val_of_pred (rnd : ℝ → ℝ → Prop) (x : ℝ) : ℝ :=
-  by
-    classical
-    -- Choose any value satisfying the predicate when it exists; default to 0 otherwise.
-    by_cases h : ∃ f : ℝ, rnd x f
-    · exact Classical.choose h
-    · exact 0
+/-- The predicate proof carried by the source-shaped value constructor. -/
+@[flocq_local "Lean projection of the proof carried by round_val_of_pred; no separate Flocq declaration"]
+theorem round_val_of_pred_spec (rnd : ℝ → ℝ → Prop)
+    (h : round_pred rnd) (x : ℝ) : rnd x (round_val_of_pred rnd h x).val :=
+  (round_val_of_pred rnd h x).property
 
-/-- Specification: Value existence from round predicate
+/-- Choose a rounding function together with its pointwise predicate proof. -/
+@[flocq_source "src/Core/Round_pred.v" 78 "round_fun_of_pred"]
+noncomputable def round_fun_of_pred (rnd : ℝ → ℝ → Prop)
+    (h : round_pred rnd) : {f : ℝ → ℝ // ∀ x, rnd x (f x)} :=
+  ⟨fun x => (round_val_of_pred rnd h x).val,
+    fun x => (round_val_of_pred rnd h x).property⟩
 
-    Given `round_pred rnd`, for each `x` there exists some `f`
-    such that `rnd x f`. The extractor returns such an `f`.
-    This relies on classical choice to select a witness.
--/
-theorem round_val_of_pred_spec (rnd : ℝ → ℝ → Prop) (x : ℝ) :
-    ⦃⌜round_pred rnd⌝⦄
-    (pure (round_val_of_pred rnd x) : Id ℝ)
-    ⦃⇓f => ⌜rnd x f⌝⦄ := by
-  intro h
-  simp [wp, PostCond.noThrow, pure]
-  unfold round_val_of_pred
-  classical
-  -- From totality, obtain a witness for `rnd x f`.
-  have hx : ∃ f : ℝ, rnd x f := (And.left h) x
-  -- The definition selects `Classical.choose hx` in this case.
-  simp [hx]
-  exact Classical.choose_spec hx
-
-/-- Extract rounding function from predicate
-
-    Given a rounding predicate, construct the corresponding
-    rounding function. This provides the functional interface
-    to relational rounding specifications.
--/
-noncomputable def round_fun_of_pred (rnd : ℝ → ℝ → Prop) : (ℝ → ℝ) :=
-  by
-    classical
-    -- Build a function selecting, for each x, some f with rnd x f (defaulting to 0 if none).
-    exact fun x => if h : ∃ f : ℝ, rnd x f then Classical.choose h else 0
-
-/-- Specification: Function existence from round predicate
-
-    Given a proper rounding predicate `rnd` (total and monotone), the
-    extractor `round_fun_of_pred` returns a function `f` such that
-    `rnd x (f x)` holds for every input `x`.
--/
-theorem round_fun_of_pred_spec (rnd : ℝ → ℝ → Prop) :
-    ⦃⌜round_pred rnd⌝⦄
-    (pure (round_fun_of_pred rnd) : Id (ℝ → ℝ))
-    ⦃⇓f => ⌜∀ x, rnd x (f x)⌝⦄ := by
-  intro h
-  simp [wp, PostCond.noThrow, pure]
-  unfold round_fun_of_pred
-  classical
-  -- Reduce the Hoare triple on `Id` to a pure goal about the returned function.
-  -- It suffices to show that for every `x`, the chosen branch yields a witness.
-  intro x
-  have hx : ∃ f : ℝ, rnd x f := (And.left h) x
-  -- In the total case, the `if` picks `Classical.choose hx`, whose spec gives `rnd x _`.
-  simp [hx]
-  exact Classical.choose_spec hx
+/-- The pointwise proof carried by the source-shaped function constructor. -/
+@[flocq_local "Lean projection of the proof carried by round_fun_of_pred; no separate Flocq declaration"]
+theorem round_fun_of_pred_spec (rnd : ℝ → ℝ → Prop)
+    (h : round_pred rnd) : ∀ x, rnd x ((round_fun_of_pred rnd h).val x) :=
+  (round_fun_of_pred rnd h).property
 
 /-- Check uniqueness of rounding result
 

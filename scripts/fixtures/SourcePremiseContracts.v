@@ -317,3 +317,29 @@ Proof.
       cbn in He. lia.
 Qed.
 End FLTUnrestrictedSourceContracts.
+
+Module RoundingWitnessSourceContracts.
+Definition identity_predicate : round_pred (fun x y : R => y = x).
+Proof.
+  split.
+  - intro x. exists x. reflexivity.
+  - intros x y f g Hf Hg Hxy. now rewrite Hf, Hg.
+Defined.
+
+Example identity_value (x : R) :
+    proj1_sig (round_val_of_pred _ identity_predicate x) = x.
+Proof. exact (proj2_sig (round_val_of_pred _ identity_predicate x)). Qed.
+
+Example identity_function (x : R) :
+    proj1_sig (round_fun_of_pred _ identity_predicate) x = x.
+Proof. exact (proj2_sig (round_fun_of_pred _ identity_predicate) x). Qed.
+
+Example no_empty_predicate : ~ round_pred (fun _ _ : R => False).
+Proof. intros [H _]. destruct (H 0) as [x Hx]. exact Hx. Qed.
+
+Definition witness_value_client (rnd : R -> R -> Prop) (h : round_pred rnd) (x : R)
+    : {f : R | rnd x f} := round_val_of_pred rnd h x.
+Definition witness_function_client (rnd : R -> R -> Prop) (h : round_pred rnd)
+    : {f : R -> R | forall x, rnd x (f x)} := round_fun_of_pred rnd h.
+
+End RoundingWitnessSourceContracts.

@@ -15,7 +15,7 @@ This guide follows those jobs in order. The detailed
 [independent continuation audit](ASTRA_AUDIT_2026-09-19.md) retain the
 declaration-by-declaration findings and historical milestones.
 
-## Wake-up summary — September 20, 2026, 13:37 UTC
+## Wake-up summary — September 20, 2026, 13:44 UTC
 
 **The port builds and runs on macOS with Lean 4.34.0, but it is not yet a
 fully source-audited port.** All 35 built Flocq module names have Lean
@@ -66,18 +66,24 @@ saved inputs pass in eight 25-case batches. The scheduling repair is now
 integrated: 29 runner/parser/batching tests and a 28-case mixed-family replay
 pass, including all generated kernel equalities. Timeouts remain errors.
 
-A separate **1,224-pair** native arithmetic run is still running. It adds a
+A separate **1,224-pair** native arithmetic experiment also passes. It adds a
 compiled logical-model observation alongside native FFI, kernel reduction,
 and pinned Rocq. Those are four execution paths inside the same three
-verification loops, not four independent proofs.
+verification loops, not four independent proofs. That draft, and the
+522-word native-IEEE draft, are ready for persistent bridge integration.
 
-**Next confirmed interface finding:** Flocq's predicate-to-rounding
-constructors return a value/function *with its proof*. The current Lean
-exports return bare values and fall back to zero if no witness exists.
-Two source-shaped clients pass in Rocq and fail in Lean. A closed scratch
-repair is ready, but library sources are frozen while that native run finishes.
-This is a source-interface discrepancy, not a disproof of the old
-conditional theorem.
+**Newest completed source repair:** Flocq's predicate-to-rounding constructors
+return a value/function *with its proof*. Lean now does too, and requires the
+rounding-predicate evidence instead of inventing a zero default. Paired source
+clients pass, the full **6,216-job macOS build** passes, and five new regression
+theorems have no `sorry` dependency. They include universal preservation of
+the old selected values/functions on valid inputs. Compiled trust still finds
+only the four named debts; **220** pinned anchors validate. Section 3 explains
+this proof-carrying interface in ordinary terms.
+
+Next are two FLX unit laws whose positive-precision assumptions are stricter
+than the source. Paired scratch proofs already cover precision zero and -1;
+production integration and the next broad combined run remain to be done.
 
 To understand the system rather than just the status, continue with
 sections 1–6 below. The [demo guide](DEMO_EXEMPLARS.md) supplies small
@@ -196,6 +202,26 @@ The `Location` information in [`Bracket.lean`](../src/Calc/Bracket.lean)
 says whether a result is exact or where an inexact result lies relative to
 the halfway point. [`Round.lean`](../src/Calc/Round.lean) uses that
 information, the sign, and the rounding choice to decide whether to increment.
+
+There is also a mathematical, non-executable view. A rounding predicate
+`rnd x f` says that `f` is an acceptable rounded value for `x`. Flocq's
+predicate-to-function constructor requires proof that the relation is a
+rounding predicate and returns both a value and evidence that it satisfies
+the relation:
+
+```lean
+round_val_of_pred rnd h x : { f : ℝ // rnd x f }
+```
+
+The `.val` field gives the number; `.property` gives its proof. The function
+constructor does the same for every input. This is why returning a bare real
+and defaulting to zero was the wrong interface, even though the old conditional
+correctness theorem could still hold. The repaired source-shaped constructors
+remain `noncomputable`: selecting mathematical reals by classical choice is
+not an integer rounding algorithm. Paired
+[source clients](../Test/SourcePremiseContracts.lean) check their dependent
+return types; closed Lean theorems also preserve the old selected value and
+function on every valid input.
 
 This explains one repaired interface mistake. Flocq's `truncate` accepts
 a mantissa/exponent/location triple **and an exponent function**. The
@@ -465,7 +491,7 @@ Source links make that review navigable. `@[flocq_source]` records a pinned
 Coq path, line, and name; `@[flocq_local]` explains a Lean-only helper.
 Twelve source files enable strict public-definition classification; a targeted
 section of `Binary.lean` additionally enables the same check.
-The compiler-backed validator checks all 218 registered anchors, including
+The compiler-backed validator checks all 220 registered anchors, including
 combined attributes and later attribute commands. These links are metadata,
 not a proof that bodies or theorem signatures correspond.
 

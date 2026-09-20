@@ -2322,6 +2322,64 @@ No library source or configuration changed during these runs. A separate
 1,224-pair native-arithmetic four-path draft is still running; its partial
 output is not counted as a completed result. Proof debts remain unchanged.
 
+### September 20, 13:44 UTC — source-shaped proof-carrying rounding constructors
+
+Pinned `Core/Round_pred.v:51,78` takes `round_pred rnd` and returns a dependent
+value/function paired with its predicate proof. The previous Lean definitions
+omitted that input and returned a bare real/function, selecting zero if no
+witness existed. Two source-shaped clients compile in Rocq but fail against
+the old Lean interface. This is a contract mismatch, not a counterexample to
+the former conditional correctness theorem.
+
+`round_val_of_pred` now returns `{f : ℝ // rnd x f}` and
+`round_fun_of_pred` returns `{f : ℝ → ℝ // ∀ x, rnd x (f x)}`. Both require
+the source predicate proof. Their two `_spec` adapters are direct projections
+of carried proofs, explicitly classified as local helpers; the constructors
+have pinned source anchors. No other production callers existed. Classical
+choice remains genuinely noncomputable here: this is a mathematical witness
+interface, not the executable integer algorithm layer.
+
+The paired `SourcePremiseContracts` fixtures include dependent clients,
+identity-value/function examples, and rejection of an empty relation. Two
+additional closed Lean theorems universally preserve the old selected value
+and function for every valid input. Their five printed axiom lists contain
+only `propext`, `Classical.choice`, and `Quot.sound`, not `sorryAx`.
+
+Verification on Lean 4.34.0/macOS arm64:
+
+- Full `FloatSpecLib FloatSpecTests floatspec` build passes **6,216 jobs**:
+  `/private/tmp/floatspec-rounding-witness-full-build-20260920.log`.
+- LSP diagnostics complete with zero errors for both changed Lean files.
+- Paired Rocq fixture passes with pinned Flocq and Rocq 9.2:
+  `/private/tmp/floatspec-rounding-witness-rocq-v2-20260920.log`.
+  The first invocation used a mismatched output basename and failed before
+  compiling; it is retained as an invocation error, not a test pass.
+- New theorem axiom receipt:
+  `/private/tmp/floatspec-rounding-witness-axioms-20260920.log`.
+- Fresh post-build source metadata validates **220** pinned anchors; compiled
+  trust checks **13,537 declarations / 58 source modules**, with precisely the
+  same four manifest-recorded direct/transitive debts. Reports use the
+  `/private/tmp/floatspec-rounding-witness-` prefix and suffixes
+  `source-metadata-20260920.json`, `anchors-20260920.log`, `trust-20260920.json`.
+- Generated textual status is unchanged: four sorries, no new placeholder
+  findings. `git diff --check` passes.
+
+This library snapshot's SHA-256 is
+`b77ac977532953f24013c4f31209713e1e3f638cebfc4d9a1bacd25793d41d85`.
+No new proof debt was introduced. The source-interface comparison and closed
+Lean preservation theorems do not assert whole-library cross-language equality.
+
+Before changing that library snapshot, the separate four-path native arithmetic
+draft finished **1,224 pairs**, seed `846811`, with zero mismatches and **1,224
+compiled-model observations plus 1,224 generated kernel equalities** in
+**1,036.241 seconds**:
+`/private/tmp/floatspec-native-arithmetic-four-path-draft-20260920/report.json`.
+Its four paths are native Lean FFI, an executable copy of the unchanged model
+body, the original kernel model, and pinned Rocq. A universal `rfl` theorem
+identifies that copied body with the actual model. It uses the earlier frozen
+`4ad5cb53…` fingerprint, not the new rounding-constructor snapshot. Persistent
+four-path integration is still pending.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In

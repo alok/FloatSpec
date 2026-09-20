@@ -152,6 +152,14 @@ inclusions. Each language proves a precision-zero counterexample satisfying
 all the reverse FIX-to-FLT theorem's other premises. This prevents the wider
 interfaces from being mistaken for permission to remove every assumption.
 
+The rounding-predicate clients require the exact proof-carrying result shapes:
+`{f : ℝ // rnd x f}` for a value and `{f : ℝ → ℝ // ∀ x, rnd x (f x)}`
+for a function. Both take `round_pred rnd` evidence. Paired identity examples
+and rejection of an empty relation test this boundary; two closed Lean
+theorems show that valid inputs retain the old selected values/functions.
+These mathematical constructors legitimately use classical choice and do not
+claim to be native-executable rounding algorithms.
+
 The current `floatspec` executable's `main` does nothing. Running it is a
 launch smoke test only, not an arithmetic regression; the checks described here
 execute inside the test modules and bridges. Native execution is covered by

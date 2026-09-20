@@ -546,3 +546,58 @@ theorem zero_precision_reverse_inclusion_counterexample :
     FloatSpec.Core.Raux.mag, FloatSpec.Core.Raux.Ztrunc, FloatSpec.Core.Defs.F2R]
 
 end FLTUnrestrictedSourceContracts
+
+namespace RoundingWitnessSourceContracts
+
+open FloatSpec.Core.Defs FloatSpec.Core.Round_pred
+
+-- The dependent result, and not just its projection, must fit the source client.
+noncomputable def value_client (rnd : ℝ → ℝ → Prop)
+    (h : round_pred rnd) (x : ℝ) : {f : ℝ // rnd x f} :=
+  round_val_of_pred rnd h x
+
+noncomputable def function_client (rnd : ℝ → ℝ → Prop)
+    (h : round_pred rnd) : {f : ℝ → ℝ // ∀ x, rnd x (f x)} :=
+  round_fun_of_pred rnd h
+
+private theorem identity_predicate : round_pred (fun x y : ℝ => y = x) := by
+  constructor
+  · intro x
+    exact ⟨x, rfl⟩
+  · intro x y f g hf hg hxy
+    simpa [hf, hg] using hxy
+
+theorem identity_value (x : ℝ) :
+    (value_client (fun x y : ℝ => y = x) identity_predicate x).val = x :=
+  (value_client (fun x y : ℝ => y = x) identity_predicate x).property
+
+theorem identity_function :
+    (function_client (fun x y : ℝ => y = x) identity_predicate).val = id := by
+  funext x
+  exact (function_client (fun x y : ℝ => y = x) identity_predicate).property x
+
+theorem no_empty_predicate : ¬round_pred (fun _ _ : ℝ => False) := by
+  intro h
+  obtain ⟨_, hf⟩ := h.1 0
+  exact hf
+
+-- Freeze the former body only inside this regression. For every valid input,
+-- the new proof-carrying interface preserves the value previously selected.
+private noncomputable def legacy_value (rnd : ℝ → ℝ → Prop) (x : ℝ) : ℝ := by
+  classical
+  exact if h : ∃ f : ℝ, rnd x f then Classical.choose h else 0
+
+theorem preserves_legacy_value (rnd : ℝ → ℝ → Prop)
+    (h : round_pred rnd) (x : ℝ) :
+    legacy_value rnd x = (round_val_of_pred rnd h x).val := by
+  classical
+  simp [legacy_value, round_val_of_pred, h.1 x]
+
+theorem preserves_legacy_function (rnd : ℝ → ℝ → Prop)
+    (h : round_pred rnd) :
+    (fun x => legacy_value rnd x) = (round_fun_of_pred rnd h).val := by
+  classical
+  funext x
+  simp [legacy_value, round_fun_of_pred, round_val_of_pred, h.1 x]
+
+end RoundingWitnessSourceContracts
