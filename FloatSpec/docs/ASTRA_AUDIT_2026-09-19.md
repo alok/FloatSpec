@@ -2655,6 +2655,60 @@ pass. A corrected-header run has a separate `-v2-` artifact directory.
 Neither the probe nor its result certifies the legacy module or changes
 the port's numerical definitions.
 
+### September 20, 15:02 UTC — Pff executable slice and a separate radix gap
+
+The scratch Pff source-facade probe completes **1,452 cases**, seed `849917`,
+with compiled Lean, kernel Lean, pinned Rocq, and **1,452 generated kernel
+equalities**. Fourteen columns observe digit/Fdigit, shift, addition,
+subtraction, normalization, negation, and absolute mantissa. Inputs include
+radices -16 through 16, zero/one/negative radices, zero precision, and random
+mantissas up to 192 bits; the reference's exported domains are preserved.
+Report: `/private/tmp/floatspec-pff-source-probe-v4-20260920/report.json`.
+This uses the unchanged `32ec11b5…` library snapshot, not copied Lean APIs.
+
+An independent exact-rational Python oracle checks **14,078 assertions**
+across those same 1,452 actual compiled observations: shift/add/subtract/
+normalization value preservation at nonzero radix, negation, positive-radix
+absolute value, division-based digit counts at radix at least two, and the
+zero-normalization exponent. These are finite oracle checks, not new Lean
+theorems. The harness also detects **all 14 independently corrupted columns**
+in both Lean execution paths, checking that the remaining columns are equal.
+Report: `/private/tmp/floatspec-pff-probe-harness-20260920/report.json`.
+
+The first three probe attempts remain errors: unsupported namespace alias,
+ambiguous root/source names, and truncated pretty-printer output respectively.
+The strict parser correctly rejects that truncation. Version four uses fully
+qualified source names and the normal bridge's full-output settings.
+
+A separate paired typed probe confirms a compatibility-interface gap.
+The root `FNeven`, `FNodd`, `FNSucc`, and `FNPred` ignore their real-valued
+radix argument and normalize at the independent Core index. Pinned Pff's
+four exports instead use their single explicit integer radix, with no
+radix-validity premise. With bound `(vNum=9,dExp=10)`, precision two, and
+explicit radix three:
+
+| Observation | Pinned Pff | Old wrapper indexed by two |
+|---|---|---|
+| Normalized successor of `(1,0)` | `(4,-1)` | `(3,-1)` |
+| Normalized predecessor of `(2,0)` | `(5,-1)` | `(8,-1)` |
+| Normalized parity of `(1,0)` | odd, not even | even, not odd |
+
+The bound is a valid base-3 precision bound; it is not a base-2 precision
+bound. These are definition-domain counterexamples to treating the wrapper's
+extra argument as operational, not counterexamples to conditional neighbor
+theorems. Successful receipts are
+`/private/tmp/PffIgnoredRadixProbe20260920-lean.out` and
+`/private/tmp/PffIgnoredRadixProbe20260920-rocq-v3.out`.
+
+An eight-definition explicit-radix source-facade candidate and six boundary
+assertions typecheck in scratch, with two closed carrier-adapter proofs for
+the unnormalized successor/predecessor:
+`/private/tmp/PffSourceNeighborsDraft20260920-v6.out`.
+This candidate is **not yet integrated**; production remains frozen for the
+broad three-loop run. Earlier draft proof attempts and the unsupported
+scratch-file LSP query are errors, with direct `lake env lean` used as the
+fallback. No global normalization equivalence or complete Pff audit is claimed.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In

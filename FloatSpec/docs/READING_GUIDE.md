@@ -15,7 +15,7 @@ This guide follows those jobs in order. The detailed
 [independent continuation audit](ASTRA_AUDIT_2026-09-19.md) retain the
 declaration-by-declaration findings and historical milestones.
 
-## Wake-up summary — September 20, 2026, 14:50 UTC
+## Wake-up summary — September 20, 2026, 15:02 UTC
 
 **The port builds and runs on macOS with Lean 4.34.0, but it is not yet a
 fully source-audited port.** All 35 built Flocq module names have Lean
@@ -82,6 +82,17 @@ The [demo guide](DEMO_EXEMPLARS.md) gives runnable examples, the
 contracts without certifying their surrounding modules.
 Local macOS success is not a green hosted-CI claim: fork CI has a separate
 known dependency-cache/toolchain mismatch.
+
+**Newest bounded finding:** a separate Pff probe passes 1,452 cross-tests
+and 14,078 independent exact-value assertions, with all 14 deliberately
+corrupted output columns detected. A different, typed boundary probe exposes
+a missing source-shaped interface: the old normalized-neighbor/parity
+wrappers ignore their extra radix argument and use the Core type's radix.
+For a valid base-3 bound, Flocq's normalized successor of one is `(4,-1)`;
+the wrapper indexed by base two returns `(3,-1)` even when passed `3`.
+This is an adapter restriction, not permission to identify those APIs.
+An explicit one-radix interface is scratch-checked but **not yet integrated**
+while the broad source snapshot is frozen. Its status will be updated here.
 
 Reviewable work is on
 [`alok/FloatSpec:codex/astra-flocq-audit`](https://github.com/alok/FloatSpec/tree/codex/astra-flocq-audit).
