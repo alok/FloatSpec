@@ -117,7 +117,7 @@ correctness proof or a native FMA/directed-rounding test.
 
 `Test/SourcePremiseContracts.lean` additionally has 72 source-premise guards,
 paired typed consumers for the Prop, integer-rounding, canonical-exponent,
-real-comparison, and generic IEEE comparison exports, and four deliberate
+real-comparison, division, and generic IEEE comparison exports, and four deliberate
 negative guard examples. The corresponding Rocq fixture checks the paired
 consumer signatures. These
 checks caught real section-instance leakage that the former bare `#check`

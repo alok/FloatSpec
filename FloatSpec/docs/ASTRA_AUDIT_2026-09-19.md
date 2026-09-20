@@ -1544,6 +1544,56 @@ After both frozen verifications completed, the full macOS Lean 4.34 build
 passed **6,216 jobs**, exit 0:
 `/private/tmp/floatspec-frexp-domain-final-build-20260920.log`.
 
+### September 20 continuation: direct division source contracts
+
+`Calc.Div.mag_div_F2R` now states pinned `Calc/Div.v:48`'s integer digit-count
+bounds directly. Its former Hoare wrapper ignored the dummy computation's
+result and gave abstract magnitude bounds; these are related mathematically,
+but required extra rewrites in both downstream clients. The unused projection
+is removed. `Fdiv_core_correct` now exposes line 70's ordinary quotient-location
+proposition, with its caller migrated. Both derive radix validity from the
+existing carrier, rather than demanding an additional explicit argument.
+All changed proofs remain closed and all numerical algorithm bodies are
+unchanged. This is an interface mismatch repair, not a numerical bug finding.
+
+The two standalone typed clients fail before and pass after the repair:
+`/private/tmp/DivisionContractGuards-before.out` and `-after.out`.
+They are now persistent in `SourcePremiseContracts.lean`, paired with exact
+Rocq consumer types. The first Rocq fixture attempt omitted the Bracket import
+and failed; the corrected fixture passes, exit 0:
+`/private/tmp/floatspec-division-contract-rocq-v2-20260920.log`.
+Initial Lean fixture diagnostics exposed ambiguous compatibility aliases for
+`F2R` and `mag`; explicit qualification resolves them. Final complete LSP error
+diagnostics are clean for Div, BinarySingleNaN, and SourcePremiseContracts.
+The preliminary proof prototypes and their failed simplification attempts
+remain in `/private/tmp/DivisionSourceContract*.out`.
+
+The library-only build passes **3,101 jobs**; the explicit library/test/
+executable build passes **6,216 jobs**, exit 0:
+`/private/tmp/floatspec-division-contract-full-build-20260920.log` and
+`/private/tmp/floatspec-division-contract-all-targets-20260920.log`.
+Fresh compiled source metadata validates **201** anchors. The trust audit
+observes **13,588 declarations in 58 modules**, with exactly the four existing
+manifest debts and no added project axioms, unsafe declarations, runtime
+overrides, or unexpected axioms:
+`/private/tmp/floatspec-division-contract-trust-20260920.json`.
+
+On frozen source SHA-256
+`583be3cf37934ac34920b5221c69a9b460ea8d636fe8d5ed1394a5b420c237f5`,
+seed `837661` passes **1,994 compared/compiled cases and 1,994 generated kernel
+equalities** in **80.179 seconds**: 694 core division and 1,300 format-calculation
+cases. Both exponent branches and zero/negative raw operands are exercised;
+the latter are total-function checks, not witnesses of the positive-input
+correctness theorem. Receipt:
+`/private/tmp/floatspec-division-contract-grid-20260920/report.json`.
+The ten saved binary32/binary64 rows also pass all five modes through all
+three public arithmetic APIs, with ten generated kernel equalities, in
+**8.288 seconds**:
+`/private/tmp/floatspec-division-contract-modes-20260920/report.json`.
+Both use the explicitly prebuilt snapshot (`fresh_build: false`); no library
+edits or overlapping builds occurred during execution. Earlier larger
+receipts retain their original hashes rather than being relabeled.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In

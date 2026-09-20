@@ -4142,28 +4142,10 @@ private theorem SFdiv_core_binary_correct_data {prec emax : Int}
   let e' := (d1 + ex) - (d2 + ey)
   have hmag := FloatSpec.Calc.Div.mag_div_F2R
     (beta := 2) (m1 := mx) (e1 := ex) (m2 := my) (e2 := ey)
-    hmx_pos hmy_pos (by norm_num)
-  have hmag_bounds := hmag ⟨hmx_pos, hmy_pos⟩
-  have hmagX :
-      FloatSpec.Core.Raux.mag 2 (F2R X) = d1 + ex := by
-    simpa [X, d1] using
-      (FloatSpec.Core.Float_prop.Raux_mag_F2R_Zdigits
-        (beta := 2) (m := mx) (e := ex) (by norm_num : (1 : Int) < 2)
-        (ne_of_gt hmx_pos))
-  have hmagY :
-      FloatSpec.Core.Raux.mag 2 (F2R Y) = d2 + ey := by
-    simpa [Y, d2] using
-      (FloatSpec.Core.Float_prop.Raux_mag_F2R_Zdigits
-        (beta := 2) (m := my) (e := ey) (by norm_num : (1 : Int) < 2)
-        (ne_of_gt hmy_pos))
+    hmx_pos hmy_pos
   have hmag_lower :
       e' ≤ FloatSpec.Core.Raux.mag 2 quotient := by
-    have hraw := hmag_bounds.1
-    change FloatSpec.Core.Raux.mag 2 (F2R X) -
-        FloatSpec.Core.Raux.mag 2 (F2R Y) ≤
-      FloatSpec.Core.Raux.mag 2 quotient at hraw
-    rw [hmagX, hmagY] at hraw
-    simpa [e'] using hraw
+    simpa [e', d1, d2, quotient, X, Y] using hmag.1
   have he_le_fexp : result.2.1 ≤ fexp e' := by
     simp [result, SFdiv_core_binary, FloatSpec.Calc.Div.Fdiv, fexp, e', d1, d2,
       X, Y]

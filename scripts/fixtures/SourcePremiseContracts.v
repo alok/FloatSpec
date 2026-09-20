@@ -2,10 +2,24 @@ From Stdlib Require Import ZArith Reals Lia.
 Require Import Flocq.Core.Core Flocq.Prop.Plus_error Flocq.Prop.Mult_error
   Flocq.Prop.Div_sqrt_error Flocq.IEEE754.Binary Flocq.IEEE754.BinarySingleNaN.
 Require Import Flocq.Pff.Pff2Flocq.
+Require Import Flocq.Calc.Bracket Flocq.Calc.Div.
 Open Scope R_scope.
 
 Section Contracts.
 Variable beta : radix.
+
+Definition division_magnitude_contract (m1 e1 m2 e2 : Z)
+    (Hm1 : (0 < m1)%Z) (Hm2 : (0 < m2)%Z) :
+    let e := ((Zdigits beta m1 + e1) - (Zdigits beta m2 + e2))%Z in
+    (e <= mag beta (F2R (Float beta m1 e1) / F2R (Float beta m2 e2)) <= e + 1)%Z :=
+  @Div.mag_div_F2R beta m1 e1 m2 e2 Hm1 Hm2.
+
+Definition division_core_contract (m1 e1 m2 e2 e : Z)
+    (Hm1 : (0 < m1)%Z) (Hm2 : (0 < m2)%Z) :
+    let '(m, l) := Div.Fdiv_core beta m1 e1 m2 e2 e in
+    inbetween_float beta m e
+      (F2R (Float beta m1 e1) / F2R (Float beta m2 e2)) l :=
+  @Div.Fdiv_core_correct beta m1 e1 m2 e2 e Hm1 Hm2.
 
 Definition canonical_positive_contract (fexp : Z -> Z) (Hmono : Monotone_exp fexp)
     (x y : R) (Hy : 0 < y) (Hexp : (cexp beta fexp x < cexp beta fexp y)%Z) :

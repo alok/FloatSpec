@@ -1,4 +1,5 @@
 import Lean
+import FloatSpec.src.Calc.Div
 import FloatSpec.src.Prop.Div_sqrt_error
 import FloatSpec.src.Prop.Round_odd
 import FloatSpec.src.IEEE754.BinarySingleNaNSourceFacade
@@ -384,3 +385,28 @@ example (left right : Int) :
     FloatSpec.Core.Raux.Rcompare (left : ℝ) (right : ℝ) =
       FloatSpec.Core.Raux.Zcompare_int left right :=
   FloatSpec.Core.Raux.Rcompare_IZR left right
+
+namespace DivisionSourceContracts
+
+open FloatSpec.Core.Defs FloatSpec.Core.Digits FloatSpec.Core.Raux FloatSpec.Calc.Bracket
+
+-- These clients demand the source's computed bounds and direct proposition,
+-- without an extra radix proof argument or an Id/Hoare wrapper.
+example (beta : Int) [ValidRadix beta]
+    (m1 e1 m2 e2 : Int) (hm1 : 0 < m1) (hm2 : 0 < m2) :
+    let e := (Zdigits beta m1 + e1) - (Zdigits beta m2 + e2)
+    e ≤ FloatSpec.Core.Raux.mag beta (FloatSpec.Core.Defs.F2R (FlocqFloat.mk m1 e1 : FlocqFloat beta) /
+      FloatSpec.Core.Defs.F2R (FlocqFloat.mk m2 e2 : FlocqFloat beta)) ∧
+    FloatSpec.Core.Raux.mag beta (FloatSpec.Core.Defs.F2R (FlocqFloat.mk m1 e1 : FlocqFloat beta) /
+      FloatSpec.Core.Defs.F2R (FlocqFloat.mk m2 e2 : FlocqFloat beta)) ≤ e + 1 :=
+  FloatSpec.Calc.Div.mag_div_F2R beta m1 e1 m2 e2 hm1 hm2
+
+example (beta : Int) [ValidRadix beta]
+    (m1 e1 m2 e2 e : Int) (hm1 : 0 < m1) (hm2 : 0 < m2) :
+    let result := FloatSpec.Calc.Div.Fdiv_core beta m1 e1 m2 e2 e
+    inbetween_float beta result.1 e
+      (FloatSpec.Core.Defs.F2R (FlocqFloat.mk m1 e1 : FlocqFloat beta) /
+        FloatSpec.Core.Defs.F2R (FlocqFloat.mk m2 e2 : FlocqFloat beta)) result.2 :=
+  FloatSpec.Calc.Div.Fdiv_core_correct beta m1 e1 m2 e2 e hm1 hm2
+
+end DivisionSourceContracts

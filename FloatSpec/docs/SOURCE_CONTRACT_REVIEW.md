@@ -6,6 +6,35 @@ all declarations in the named modules. See the
 [running audit](ASTRA_AUDIT_2026-09-19.md) for execution receipts and the
 [reading guide](READING_GUIDE.md) for the mathematical story.
 
+## Division: computed bounds and direct result contracts
+
+Pinned `Calc/Div.v:48` bounds the quotient magnitude using the explicit integer
+`(Zdigits beta m1 + e1) - (Zdigits beta m2 + e2)`. The former Lean public
+`mag_div_F2R` was a Hoare triple over a dummy computation, ignored the returned
+integer, and instead stated abstract magnitude-difference bounds. Those bounds
+are mathematically related under the positive-mantissa hypotheses, but they
+were not the source's stated interface. Its two callers had to perform the
+missing digit-count rewrites themselves.
+
+The public theorem now gives the source's integer bounds directly; the unused
+dummy projection is removed. `Fdiv_core_correct` (source line 70) is likewise
+an ordinary proposition about the returned mantissa and location. Both derive
+radix validity from the existing `ValidRadix` carrier rather than requiring
+an additional explicit proof argument. The two magnitude clients and the
+core-correctness client migrate together, with all proofs closed and no
+numerical algorithm changes. The source-absent left-branch proof helper still
+uses its existing local Hoare interface; this is not a blanket migration.
+
+Two typed Lean clients failed before the correction and now pass. Their
+paired pinned Rocq clients also compile. Complete Lean diagnostics are clean
+for both changed source files and the test module. The 6,216-job macOS build,
+201 source-anchor check, and 13,588-declaration compiled trust audit pass with
+the same four named debts. A fresh 1,994-case division/format-calculation grid
+and ten-case all-mode IEEE replay agree in all three execution paths and
+generate passing kernel equalities. Detailed receipts are in the audit ledger.
+This repair improves interface fidelity; it is not a numerical counterexample
+or a proof of whole-module source equivalence.
+
 ## Raw rounding, structural laws, and multiplication-error bounds
 
 Compiled pinned Rocq permits arbitrary exponent functions in `Generic_fmt.round`

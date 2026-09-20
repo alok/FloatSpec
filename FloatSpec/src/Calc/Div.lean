@@ -32,57 +32,31 @@ variable (fexp : Int → Int)
 
 section MagnitudeBounds
 
-/-- Compute magnitude bound for division
-
-    Calculates the exponent range for the quotient of two floats
--/
-@[flocq_local "Lean-only projection of source mag_div_F2R bound; not a source operation"]
-def mag_div_F2R_compute (m1 e1 m2 e2 : Int) : Int :=
-  let d1 := Zdigits beta m1
-  let d2 := Zdigits beta m2
-  (d1 + e1) - (d2 + e2)
-
-/-- Specification: Division magnitude bounds
-
-    The magnitude of a quotient is bounded by the difference of magnitudes
--/
+/-- Flocq's integer-computed lower and upper bounds for quotient magnitude. -/
+@[flocq_source "src/Calc/Div.v" 48 "mag_div_F2R"]
 lemma mag_div_F2R (m1 e1 m2 e2 : Int) (Hm1 : 0 < m1) (Hm2 : 0 < m2)
-    (Hβ : 1 < beta) :
-    ⦃⌜0 < m1 ∧ 0 < m2⌝⦄
-    (pure (mag_div_F2R_compute beta m1 e1 m2 e2) : Id Int)
-    ⦃⇓_ => ⌜(mag beta ((F2R (FlocqFloat.mk m1 e1 : FlocqFloat beta))))
-              - (mag beta ((F2R (FlocqFloat.mk m2 e2 : FlocqFloat beta))))
-              ≤ (mag beta ((F2R (FlocqFloat.mk m1 e1 : FlocqFloat beta)) /
-                   (F2R (FlocqFloat.mk m2 e2 : FlocqFloat beta))))
-          ∧ (mag beta ((F2R (FlocqFloat.mk m1 e1 : FlocqFloat beta)) /
-                   (F2R (FlocqFloat.mk m2 e2 : FlocqFloat beta))))
-              ≤ (mag beta ((F2R (FlocqFloat.mk m1 e1 : FlocqFloat beta))))
-                - (mag beta ((F2R (FlocqFloat.mk m2 e2 : FlocqFloat beta)))) + 1⌝⦄ := by
-  intro hpre
-  rcases hpre with ⟨hm1_pos, hm2_pos⟩
-  -- Reduce the computation and expose the result expression
-  simp [mag_div_F2R_compute]
-  -- Abbreviations
-  set x : ℝ := (F2R (FlocqFloat.mk m1 e1 : FlocqFloat beta))
-  set y : ℝ := (F2R (FlocqFloat.mk m2 e2 : FlocqFloat beta))
-  have hx_ne : x ≠ 0 := by
-    have hx_pos : 0 < x := by
-      simpa [x, FloatSpec.Core.Defs.F2R] using
-        (FloatSpec.Core.Float_prop.F2R_gt_0 (beta := beta) (f := FlocqFloat.mk m1 e1) Hβ hm1_pos)
-    exact ne_of_gt hx_pos
-  have hy_ne : y ≠ 0 := by
-    have hy_pos : 0 < y := by
-      simpa [y, FloatSpec.Core.Defs.F2R] using
-        (FloatSpec.Core.Float_prop.F2R_gt_0 (beta := beta) (f := FlocqFloat.mk m2 e2) Hβ hm2_pos)
-    exact ne_of_gt hy_pos
-  -- Use generic magnitude bound under division from Core.Raux
-  have hmag :=
-    (FloatSpec.Core.Raux.mag_div (beta := beta) (x := x) (y := y) Hβ hx_ne hy_ne) trivial
-  -- Unpack and rewrite the triple result to get the inequalities on `mag beta (x / y)`
-  -- hmag gives us: t.2.1 - t.2.2 ≤ t.1 ∧ t.1 ≤ t.2.1 - t.2.2 + 1
-  -- where t = (mag β (x/y), mag β x, mag β y)
-  simp only [x, y, FloatSpec.Core.Defs.F2R, pure, bind] at hmag ⊢
-  simpa [wp, PostCond.noThrow, pure] using hmag
+    : let e := (Zdigits beta m1 + e1) - (Zdigits beta m2 + e2)
+      e ≤ mag beta (F2R (FlocqFloat.mk m1 e1 : FlocqFloat beta) /
+        F2R (FlocqFloat.mk m2 e2 : FlocqFloat beta)) ∧
+      mag beta (F2R (FlocqFloat.mk m1 e1 : FlocqFloat beta) /
+        F2R (FlocqFloat.mk m2 e2 : FlocqFloat beta)) ≤ e + 1 := by
+  have Hβ : 1 < beta := ValidRadix.valid
+  have hx := FloatSpec.Core.Float_prop.F2R_gt_0
+    (beta := beta) (f := FlocqFloat.mk m1 e1) Hβ Hm1
+  have hy := FloatSpec.Core.Float_prop.F2R_gt_0
+    (beta := beta) (f := FlocqFloat.mk m2 e2) Hβ Hm2
+  have h := FloatSpec.Core.Raux.mag_div beta _ _ Hβ (ne_of_gt hx) (ne_of_gt hy) trivial
+  have hmx := FloatSpec.Core.Float_prop.Raux_mag_F2R_Zdigits beta m1 e1 Hβ (ne_of_gt Hm1)
+  have hmy := FloatSpec.Core.Float_prop.Raux_mag_F2R_Zdigits beta m2 e2 Hβ (ne_of_gt Hm2)
+  change mag beta (F2R (FlocqFloat.mk m1 e1 : FlocqFloat beta)) -
+      mag beta (F2R (FlocqFloat.mk m2 e2 : FlocqFloat beta)) ≤
+      mag beta (F2R (FlocqFloat.mk m1 e1 : FlocqFloat beta) /
+        F2R (FlocqFloat.mk m2 e2 : FlocqFloat beta)) ∧
+    mag beta (F2R (FlocqFloat.mk m1 e1 : FlocqFloat beta) /
+      F2R (FlocqFloat.mk m2 e2 : FlocqFloat beta)) ≤
+      mag beta (F2R (FlocqFloat.mk m1 e1 : FlocqFloat beta)) -
+        mag beta (F2R (FlocqFloat.mk m2 e2 : FlocqFloat beta)) + 1 at h
+  simpa only [hmx, hmy] using h
 
 end MagnitudeBounds
 
@@ -327,15 +301,14 @@ theorem Fdiv_core_correct_left_branch (m1 e1 m2 e2 e : Int)
       new_location, new_location_odd] using hxexact
 
 /-- FLoCq `Fdiv_core_correct`: correctness for both exponent-scaling branches. -/
+@[flocq_source "src/Calc/Div.v" 70 "Fdiv_core_correct"]
 theorem Fdiv_core_correct (m1 e1 m2 e2 e : Int)
-    (Hm1 : 0 < m1) (Hm2 : 0 < m2) (Hβ : 1 < beta) :
-    ⦃⌜True⌝⦄
-    (pure (Fdiv_core beta m1 e1 m2 e2 e) : Id _)
-    ⦃⇓result => let (m, l) := result
-                ⌜inbetween_float beta m e
-                  ((F2R (FlocqFloat.mk m1 e1 : FlocqFloat beta)) /
-                   (F2R (FlocqFloat.mk m2 e2 : FlocqFloat beta))) l⌝⦄ := by
-  intro _
+    (Hm1 : 0 < m1) (Hm2 : 0 < m2) :
+    let result := Fdiv_core beta m1 e1 m2 e2 e
+    inbetween_float beta result.1 e
+      (F2R (FlocqFloat.mk m1 e1 : FlocqFloat beta) /
+        F2R (FlocqFloat.mk m2 e2 : FlocqFloat beta)) result.2 := by
+  have Hβ : 1 < beta := ValidRadix.valid
   by_cases hele : e ≤ e1 - e2
   · exact Fdiv_core_correct_left_branch
       (beta := beta) m1 e1 m2 e2 e Hm1 Hm2 Hβ ⟨Hm1, Hm2, hele⟩
@@ -464,20 +437,12 @@ theorem Fdiv_correct (x y : FlocqFloat beta)
         simpa [e] using this
       -- Apply core correctness and rewrite to obtain the inbetween property on the components
       have hinst :=
-        (Fdiv_core_correct (beta := beta) (m1 := m1) (e1 := e1)
-          (m2 := m2) (e2 := e2) (e := e) (Hm1 := hm1_pos) (Hm2 := hm2_pos) (Hβ := Hβ))
-          trivial
+        Fdiv_core_correct (beta := beta) (m1 := m1) (e1 := e1)
+          (m2 := m2) (e2 := e2) (e := e) (Hm1 := hm1_pos) (Hm2 := hm2_pos)
       have hinSimple : inbetween_float beta (Fdiv_core beta m1 e1 m2 e2 e).fst e qR
             (Fdiv_core beta m1 e1 m2 e2 e).snd := by
         simpa [qR, wp, PostCond.noThrow, pure] using hinst
-      have hmag := mag_div_F2R (beta := beta) m1 e1 m2 e2 hm1_pos hm2_pos Hβ
-        ⟨hm1_pos, hm2_pos⟩
-      have hmag1 := FloatSpec.Core.Float_prop.Raux_mag_F2R_Zdigits
-        (beta := beta) m1 e1 Hβ (ne_of_gt hm1_pos)
-      have hmag2 := FloatSpec.Core.Float_prop.Raux_mag_F2R_Zdigits
-        (beta := beta) m2 e2 Hβ (ne_of_gt hm2_pos)
-      simp only [wp, PostCond.noThrow, pure] at hmag
-      rw [hmag1, hmag2] at hmag
+      have hmag := mag_div_F2R (beta := beta) m1 e1 m2 e2 hm1_pos hm2_pos
       have hbounds : e' ≤ mag beta qR ∧ mag beta qR ≤ e' + 1 := by
         simpa [qR, e', d1, d2, wp, PostCond.noThrow, pure] using hmag
       have hmag_cases : mag beta qR = e' ∨ mag beta qR = e' + 1 := by omega
