@@ -661,12 +661,12 @@ theorem FLT_format_plus_small (x y : ℝ)
     have htrip :=
       FloatSpec.Core.FLT.generic_format_FIX_FLT
         (prec := prec) (emin := emin) (beta := beta) (x := x)
-    simpa [fixExp] using htrip ⟨hβ, hx⟩
+    simpa [fixExp] using htrip hx
   have hy_fix : generic_format beta fixExp y := by
     have htrip :=
       FloatSpec.Core.FLT.generic_format_FIX_FLT
         (prec := prec) (emin := emin) (beta := beta) (x := y)
-    simpa [fixExp] using htrip ⟨hβ, hy⟩
+    simpa [fixExp] using htrip hy
   rcases generic_format_shift (beta := beta) (fexp := fixExp)
       (x := x) (e := emin) hβ hx_fix
       (by

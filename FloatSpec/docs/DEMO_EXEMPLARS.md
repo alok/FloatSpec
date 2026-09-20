@@ -219,6 +219,38 @@ that this is a counterexample to dropping the premise. The high-level routine
 always chooses a sufficiently fine exponent, and its bracket theorem does
 not additionally require that the exponent function describes a valid format.
 
+## When a precision assumption matters—and when it does not
+
+The format relationships are easier to read as implications than as programs.
+FLT describes bounded-precision numbers with a minimum exponent; FLX drops
+the minimum-exponent restriction, and FIX uses one fixed spacing. In particular,
+every FLT number is also an FLX number and a FIX number. Those forward
+implications in Flocq do **not** require the precision parameter to be positive.
+Eleven Lean statements had accidentally inherited that extra assumption from
+their surrounding sections; their repaired signatures now match this boundary.
+
+Do not infer that positive precision can be removed everywhere. Take base two,
+minimum exponent zero, precision zero, and the number one. FIX at exponent
+zero includes one: it is an integer multiple of `2^0`. But FLT's canonical
+exponent is `max(mag(1) - 0, 0) = 1`. Dividing one by `2^1` gives one-half;
+integer truncation gives zero, and reconstructing gives zero, not one.
+Thus one is **not** in this FLT format. It even satisfies the reverse
+inclusion's size bound, `|1| ≤ 2^(0 + 0)`. Positive precision really is needed
+for that reverse theorem.
+
+Run `lake env lean FloatSpec/Test/SourcePremiseContracts.lean`, and read the
+final `FLTUnrestrictedSourceContracts` section with its
+[paired Rocq clients](../../scripts/fixtures/SourcePremiseContracts.v).
+It contains eleven clients that do not supply positive precision and a closed
+proof of the counterexample above in each language. These are proofs about
+mathematical formats, not an attempt to configure hardware with zero bits.
+
+The broader lesson: a green build can hide an overly restrictive theorem.
+The theorem may be true, yet unusable in cases supported by the source.
+Conversely, removing all restrictions can turn a useful statement false.
+The source comparison, unrestricted typed clients, and counterexamples check
+different sides of that boundary.
+
 ## The same number through three normalization entry points
 
 Run `lake env lean scripts/fixtures/Normalization.lean`, then read its paired

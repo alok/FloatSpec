@@ -6,6 +6,40 @@ all declarations in the named modules. See the
 [running audit](ASTRA_AUDIT_2026-09-19.md) for execution receipts and the
 [reading guide](READING_GUIDE.md) for the mathematical story.
 
+## FLT format relationships: eleven unrestricted precision contracts
+
+Compiled pinned `Core/FLT.v` omits positive precision from eleven exports:
+`cexp_FLT_FLX` (130), `generic_format_FLT_FLX` (179),
+`generic_format_FLX_FLT` (193), `round_FLT_FLX` (207),
+`cexp_FLT_FIX` (217), `generic_format_FIX_FLT` (234), `ulp_FLT_le` (324),
+`ulp_FLT_exact_shift` (366), `succ_FLT_exact_shift_pos` (381),
+`succ_FLT_exact_shift` (394), and `pred_FLT_exact_shift` (419).
+Their Lean counterparts inherited `Prec_gt_0 prec` from their sections.
+All eleven now omit that premise. Ten former Hoare wrappers become ordinary
+propositions; the rounding equality was already direct. Existing callers in
+the addition, multiplication, and division/square-root error modules migrate
+with them. The redundant explicit radix inequality is obtained from
+`ValidRadix`; none of the numerical definitions changes.
+
+The existing proofs remain closed. One private positive-predecessor helper
+previously called a lemma covering nonnegative inputs, including zero, whose
+proof requires validity of the exponent function. Its actual inputs are
+strictly positive. Unfolding that branch directly avoids importing a stronger
+premise through an unnecessarily general helper. The successor theorem for
+positive inputs has the source's weaker magnitude/shift bounds, without the
+extra `+1` used by the signed successor and predecessor statements; a copied
+source comment previously blurred this distinction and is corrected.
+
+The neighboring reverse inclusion `generic_format_FLT_FIX`,
+`FLT_format_generic`, `ulp_FLT_gt`, and `ulp_FLT_pred_pos` retain the source's
+positive-precision premise. This is intentional, not incomplete cleanup.
+Paired Lean/Rocq proofs show that at base two, precision zero, and minimum
+exponent zero, `1` satisfies the reverse inclusion's size bound and belongs
+to FIX, but does not belong to FLT. The revised forward statements and this
+counterexample compile in `SourcePremiseContracts.lean/.v`. Eleven additional
+production guards bring the selected compiled-premise total to **86**.
+These clients check this interface boundary, not whole-module equivalence.
+
 ## Raw primitive comparison: preserve the source's encoding order
 
 `FaithfulPrimFloat.SFcompare` now follows Rocq 9.2 Corelib's constructor,

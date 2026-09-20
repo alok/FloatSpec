@@ -15,7 +15,7 @@ This guide follows those jobs in order. The detailed
 [independent continuation audit](ASTRA_AUDIT_2026-09-19.md) retain the
 declaration-by-declaration findings and historical milestones.
 
-## Wake-up summary — September 20, 2026, 11:33 UTC
+## Wake-up summary — September 20, 2026, 12:00 UTC
 
 **Where to start:** run the six-part demo above, then read sections 1–6 below.
 The [exemplar guide](DEMO_EXEMPLARS.md) adds small examples explaining why a
@@ -23,7 +23,25 @@ theorem needs its hypotheses. This summary records the current milestone;
 the [audit ledger](ASTRA_AUDIT_2026-09-19.md) keeps the detailed history,
 including failed runs and the exact source hashes tested.
 
-**Newest checked change:** raw primitive comparison now matches Rocq's
+**Newest checked change:** eleven FLT theorem signatures no longer demand
+positive precision where Flocq does not. Ten now state ordinary mathematical
+propositions instead of wrapping pure values in Hoare triples. Their proofs
+remain closed, callers are migrated, and the numerical definitions are
+unchanged. The source's genuinely restricted reverse inclusions stay restricted.
+
+The [new explanation](DEMO_EXEMPLARS.md#when-a-precision-assumption-mattersand-when-it-does-not)
+works through a tiny counterexample: at base two and precision zero, one is
+in FIX but not FLT, even though the reverse theorem's size bound holds.
+Both Lean and Rocq prove it. Eleven unrestricted typed clients compile in
+both languages, and the selected premise checker now has **86 guards**.
+A fresh frozen-snapshot run passes **1,813 differential cases and 1,813
+generated kernel equalities**, seed `842729`, including 127 format cases
+with nonpositive precision. The **6,216-job macOS build**, 218 pinned source
+anchors, and compiled trust gate pass with the same four named proof debts.
+The full 60-test harness also passes on this checkpoint.
+This repairs theorem-interface fidelity; it is not a new numerical algorithm.
+
+**The preceding primitive checkpoint:** raw primitive comparison now matches Rocq's
 encoding order. The encodings `3 × 2^-1` and `6 × 2^-2` are both 1.5,
 but the raw source comparator says greater-than because it compares exponent
 then mantissa. The old Lean helper compared their real values instead.
@@ -91,7 +109,8 @@ failures of ordinary valid binary32/binary64 arithmetic.
 
 | Slice | Observed result |
 |---|---|
-| Full library, test library, and executable | Lean 4.34.0 on macOS arm64: 6,216 build jobs pass after the primitive comparison correction |
+| Full library, test library, and executable | Lean 4.34.0 on macOS arm64: 6,216 build jobs pass after the eleven FLT contract repairs |
+| FLT format relationships | Eleven unrestricted clients in each prover, a closed reverse-inclusion counterexample, and 1,813 fresh differential cases/kernel equalities |
 | Primitive/raw and neighboring comparison APIs | 6,116 differential cases and kernel equalities; 1,425 observe twelve primitive/raw exports separately |
 | SingleNaN helper exports | 1,900 differential cases and kernel equalities; every exported helper observed separately |
 | `frexp`'s wider parameter domain | 4,169 differential cases and kernel equalities, including 3,455 with `prec ≥ emax` |
@@ -100,7 +119,7 @@ failures of ordinary valid binary32/binary64 arithmetic.
 | Remaining normalization entry points | 3,004 three-way cases; paired fixtures separately check 150 literal observations |
 | Raw rounding plus validity adapter | 6,342 three-way cases; rejection and an actual valid NaN have distinct observations |
 | Test-harness checks | Latest full core-harness run: 60 tests pass, including twelve independent primitive comparison mutations |
-| Compiled trust/source metadata | 13,532 source declarations in 58 modules; four unchanged named proof debts; 207 checked source anchors |
+| Compiled trust/source metadata | 13,532 source declarations in 58 modules; four unchanged named proof debts; 218 checked source anchors |
 
 These are separate, snapshot-bound receipts, **not** a claim that every row
 was rerun after every subsequent type-only change. Earlier broad runs cover
@@ -118,10 +137,17 @@ The exact reconstruction property still holds. Paired runnable examples also
 explain the finite-input condition on alternate ulp and the positive-input
 condition on the specialized predecessor.
 
-**Next concrete findings, not yet fixed in this checkpoint:** eleven FLT
-signatures retain an unnecessary positive-precision premise. Their unrestricted
-Rocq clients and scratch Lean repairs check; the nearby reverse inclusion
-really does need the premise. Separately, a scratch compile removes unnecessary
+**Next confirmed bug, not yet fixed:** raw `SF2Prim` conversion rejects
+noncanonical encodings as NaN, but Rocq converts them numerically. The raw
+encoding `3 × 2^-1` becomes `1.5` in Rocq and NaN in the current Lean code.
+The source also wraps the mantissa through an unsigned 63-bit word and rounds
+twice; a concrete subnormal case proves that replacing rejection with a
+single rounding step would still disagree. The existing roundtrip theorems
+assume valid encodings, so they cannot detect this total-interface bug.
+Four executed counterexamples are saved in the audit ledger; this repair
+takes priority next.
+
+**Prepared execution work:** a scratch compile removes unnecessary
 `noncomputable` markers from 33 primitive definitions and four arithmetic
 instances without changing their bodies or types. All 37 ordinary clients
 currently fail compilation, giving a concrete before-state for the next
@@ -130,7 +156,7 @@ repairs. The separate Claude comparison branch remains preserved; its
 real-value `*C` APIs are not merged because they preserve the raw mismatch.
 
 **What remains overall:** whole-library source-signature review is incomplete, and
-the four native/decoder proof obligations remain. The 75 premise guards and
+the four native/decoder proof obligations remain. The 86 premise guards and
 paired typed clients catch selected interface regressions, not every possible
 deviation. Fork CI has a separate known dependency-cache/toolchain mismatch;
 a local macOS pass is not a green-CI claim. Compilation, finite agreement,

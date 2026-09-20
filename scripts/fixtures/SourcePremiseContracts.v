@@ -1,4 +1,4 @@
-From Stdlib Require Import ZArith Reals Lia.
+From Stdlib Require Import ZArith Reals Lia Lra.
 Require Import Flocq.Core.Core Flocq.Prop.Plus_error Flocq.Prop.Mult_error
   Flocq.Prop.Div_sqrt_error Flocq.IEEE754.Binary Flocq.IEEE754.BinarySingleNaN.
 Require Import Flocq.Pff.Pff2Flocq.
@@ -244,3 +244,76 @@ Definition nearest_mult_error_bound_contract (beta : radix) (emin prec : Z)
     (Hy : generic_format beta (FLT_exp emin prec) y)
     (Hb : x * y = 0 \/ bpow beta e <= Rabs (x * y)) :=
   @mult_error_FLT_ge_bpow' beta emin prec x y e Hx Hy Hb.
+
+Module FLTUnrestrictedSourceContracts.
+Open Scope R_scope.
+Definition normal_exponent_client (beta : radix) (emin prec : Z) (x : R)
+    (h : bpow beta (emin + prec - 1) <= Rabs x) :
+    cexp beta (FLT_exp emin prec) x = cexp beta (FLX_exp prec) x :=
+  cexp_FLT_FLX beta emin prec x h.
+Definition normal_format_client (beta : radix) (emin prec : Z) (x : R)
+    (h : bpow beta (emin + prec - 1) <= Rabs x)
+    (hx : generic_format beta (FLX_exp prec) x) :
+    generic_format beta (FLT_exp emin prec) x :=
+  generic_format_FLT_FLX beta emin prec x h hx.
+Definition unbounded_format_client (beta : radix) (emin prec : Z) (x : R)
+    (hx : generic_format beta (FLT_exp emin prec) x) :
+    generic_format beta (FLX_exp prec) x :=
+  generic_format_FLX_FLT beta emin prec x hx.
+Definition normal_round_client (beta : radix) (emin prec : Z) (rnd : R -> Z) (x : R)
+    (h : bpow beta (emin + prec - 1) <= Rabs x) :
+    round beta (FLT_exp emin prec) rnd x = round beta (FLX_exp prec) rnd x :=
+  round_FLT_FLX beta emin prec rnd x h.
+Definition small_exponent_client (beta : radix) (emin prec : Z) (x : R)
+    (hne : x <> 0) (h : Rabs x < bpow beta (emin + prec)) :
+    cexp beta (FLT_exp emin prec) x = cexp beta (FIX_exp emin) x :=
+  cexp_FLT_FIX beta emin prec x hne h.
+Definition fixed_format_client (beta : radix) (emin prec : Z) (x : R)
+    (hx : generic_format beta (FLT_exp emin prec) x) :
+    generic_format beta (FIX_exp emin) x :=
+  generic_format_FIX_FLT beta emin prec x hx.
+
+Definition normal_ulp_client (beta : radix) (emin prec : Z) (x : R)
+    (h : bpow beta (emin + prec - 1) <= Rabs x) :
+    ulp beta (FLT_exp emin prec) x <= Rabs x * bpow beta (1 - prec) :=
+  @ulp_FLT_le beta emin prec x h.
+Definition shift_ulp_client (beta : radix) (emin prec : Z) (x : R) (e : Z)
+    (hx : x <> 0) (hm : (emin + prec <= mag beta x)%Z)
+    (he : (emin + prec - mag beta x <= e)%Z) :
+    ulp beta (FLT_exp emin prec) (x * bpow beta e) =
+      ulp beta (FLT_exp emin prec) x * bpow beta e :=
+  @ulp_FLT_exact_shift beta emin prec x e hx hm he.
+Definition shift_succ_pos_client (beta : radix) (emin prec : Z) (x : R) (e : Z)
+    (hx : 0 < x) (hm : (emin + prec <= mag beta x)%Z)
+    (he : (emin + prec - mag beta x <= e)%Z) :
+    succ beta (FLT_exp emin prec) (x * bpow beta e) =
+      succ beta (FLT_exp emin prec) x * bpow beta e :=
+  @succ_FLT_exact_shift_pos beta emin prec x e hx hm he.
+Definition shift_succ_client (beta : radix) (emin prec : Z) (x : R) (e : Z)
+    (hx : x <> 0) (hm : (emin + prec + 1 <= mag beta x)%Z)
+    (he : (emin + prec - mag beta x + 1 <= e)%Z) :
+    succ beta (FLT_exp emin prec) (x * bpow beta e) =
+      succ beta (FLT_exp emin prec) x * bpow beta e :=
+  @succ_FLT_exact_shift beta emin prec x e hx hm he.
+Definition shift_pred_client (beta : radix) (emin prec : Z) (x : R) (e : Z)
+    (hx : x <> 0) (hm : (emin + prec + 1 <= mag beta x)%Z)
+    (he : (emin + prec - mag beta x + 1 <= e)%Z) :
+    pred beta (FLT_exp emin prec) (x * bpow beta e) =
+      pred beta (FLT_exp emin prec) x * bpow beta e :=
+  @pred_FLT_exact_shift beta emin prec x e hx hm he.
+(* All other premises of generic_format_FLT_FIX hold at precision zero. *)
+Example zero_precision_reverse_inclusion_counterexample :
+    Rabs 1 <= bpow radix2 (0 + 0) /\
+    generic_format radix2 (FIX_exp 0) 1 /\
+    ~ generic_format radix2 (FLT_exp 0 0) 1.
+Proof.
+  split.
+  - change (Rabs 1 <= 1)%R. rewrite Rabs_R1. lra.
+  - replace 1 with (bpow radix2 0) by reflexivity.
+    split.
+    + apply generic_format_bpow. unfold FIX_exp. lia.
+    + intro H.
+      pose proof (generic_format_bpow_inv' radix2 (FLT_exp 0 0) 0 H) as He.
+      cbn in He. lia.
+Qed.
+End FLTUnrestrictedSourceContracts.

@@ -530,14 +530,12 @@ Theorem generic_format_FLT_FLX :
   generic_format beta (FLX_exp prec) x ->
   generic_format beta FLT_exp x.
 -/
-theorem generic_format_FLT_FLX (beta : Int) [ValidRadix beta] (x : ℝ) :
-    ⦃⌜(beta : ℝ) ^ (emin + prec - 1) ≤ |x| ∧
-      generic_format beta (FLX.FLX_exp prec) x⌝⦄
-    (pure (generic_format beta (FLT_exp prec emin) x) : Id Prop)
-    ⦃⇓result => ⌜result⌝⦄ := by
-  intro hpre
-  simp only [wp, PostCond.noThrow, pure]
-  rcases hpre with ⟨hx_lb, hx_fmt⟩
+omit [Prec_gt_0 prec] in
+@[flocq_source "src/Core/FLT.v" 179 "generic_format_FLT_FLX"]
+theorem generic_format_FLT_FLX (beta : Int) [ValidRadix beta] (x : ℝ)
+    (hx_lb : (beta : ℝ) ^ (emin + prec - 1) ≤ |x|)
+    (hx_fmt : generic_format beta (FLX.FLX_exp prec) x) :
+    generic_format beta (FLT_exp prec emin) x := by
   have hβ : 1 < beta := ValidRadix.valid
   -- Use the generic inclusion principle with a global lower bound e1 := emin + prec
   -- For e ≥ emin + prec, we have FLT_exp e = e - prec = FLX_exp prec e
@@ -567,12 +565,11 @@ Theorem cexp_FLT_FLX :
   (bpow (emin + prec - 1) <= Rabs x)%R ->
   cexp beta FLT_exp x = cexp beta (FLX_exp prec) x.
 -/
-theorem cexp_FLT_FLX (beta : Int) [ValidRadix beta] (x : ℝ) :
-    ⦃⌜(beta : ℝ) ^ (emin + prec - 1) ≤ |x|⌝⦄
-    (pure (FloatSpec.Core.Generic_fmt.cexp beta (FLT_exp prec emin) x) : Id ℤ)
-    ⦃⇓result => ⌜result = (FloatSpec.Core.Generic_fmt.cexp beta (FLX.FLX_exp prec) x)⌝⦄ := by
-  intro hx_lb
-  simp only [wp, PostCond.noThrow, pure]
+omit [Prec_gt_0 prec] in
+@[flocq_source "src/Core/FLT.v" 130 "cexp_FLT_FLX"]
+theorem cexp_FLT_FLX (beta : Int) [ValidRadix beta] (x : ℝ)
+    (hx_lb : (beta : ℝ) ^ (emin + prec - 1) ≤ |x|) :
+    cexp beta (FLT_exp prec emin) x = cexp beta (FLX.FLX_exp prec) x := by
   have hβ : 1 < beta := ValidRadix.valid
   set M : Int := (FloatSpec.Core.Raux.mag beta x) with hM
   have hx_upper : |x| < (beta : ℝ) ^ M := by
@@ -589,7 +586,7 @@ theorem cexp_FLT_FLX (beta : Int) [ValidRadix beta] (x : ℝ) :
       simpa [sub_eq_add_neg, add_comm, add_left_comm, add_assoc] using this
     simpa [FLT_exp, FLX.FLX_exp, max_eq_left this]
   unfold FloatSpec.Core.Generic_fmt.cexp
-  change (pure (FLT_exp prec emin M) : Id Int) = (pure (FLX.FLX_exp prec M) : Id Int)
+  change FLT_exp prec emin M = FLX.FLX_exp prec M
   simpa [hEqExp]
 
 end FloatSpec.Core.FLT
@@ -656,13 +653,12 @@ Theorem generic_format_FIX_FLT :
   generic_format beta FLT_exp x ->
   generic_format beta (FIX_exp emin) x.
 -/
-theorem generic_format_FIX_FLT (beta : Int) [ValidRadix beta] (x : ℝ) :
-    ⦃⌜beta > 1 ∧ (generic_format beta (FLT_exp prec emin) x)⌝⦄
-    (pure (generic_format beta (FloatSpec.Core.FIX.FIX_exp (emin := emin)) x) : Id Prop)
-    ⦃⇓result => ⌜result⌝⦄ := by
-  intro hpre
-  simp only [wp, PostCond.noThrow, pure]
-  rcases hpre with ⟨hβ, hx⟩
+omit [Prec_gt_0 prec] in
+@[flocq_source "src/Core/FLT.v" 234 "generic_format_FIX_FLT"]
+theorem generic_format_FIX_FLT (beta : Int) [ValidRadix beta] (x : ℝ)
+    (hx : generic_format beta (FLT_exp prec emin) x) :
+    generic_format beta (FloatSpec.Core.FIX.FIX_exp emin) x := by
+  have hβ : 1 < beta := ValidRadix.valid
   classical
   -- Expand the hypothesis to the canonical F2R representation under FLT_exp
   unfold FloatSpec.Core.Generic_fmt.generic_format
@@ -883,13 +879,13 @@ Theorem cexp_FLT_FIX :
   (Rabs x < bpow (emin + prec))%R ->
   cexp beta FLT_exp x = cexp beta (FIX_exp emin) x.
 -/
-theorem cexp_FLT_FIX (beta : Int) [ValidRadix beta] (x : ℝ) :
-    ⦃⌜beta > 1 ∧ x ≠ 0 ∧ |x| < (beta : ℝ) ^ (emin + prec)⌝⦄
-    (pure (FloatSpec.Core.Generic_fmt.cexp beta (FLT_exp prec emin) x) : Id ℤ)
-    ⦃⇓result => ⌜result = (FloatSpec.Core.Generic_fmt.cexp beta (FloatSpec.Core.FIX.FIX_exp (emin := emin)) x)⌝⦄ := by
-  intro hpre
-  simp only [wp, PostCond.noThrow, pure]
-  rcases hpre with ⟨hβ, hx_ne, hx_lt⟩
+omit [Prec_gt_0 prec] in
+@[flocq_source "src/Core/FLT.v" 217 "cexp_FLT_FIX"]
+theorem cexp_FLT_FIX (beta : Int) [ValidRadix beta] (x : ℝ)
+    (hx_ne : x ≠ 0) (hx_lt : |x| < (beta : ℝ) ^ (emin + prec)) :
+    cexp beta (FLT_exp prec emin) x =
+      cexp beta (FloatSpec.Core.FIX.FIX_exp emin) x := by
+  have hβ : 1 < beta := ValidRadix.valid
   classical
   -- Let M be the logarithmic magnitude of x
   set M : Int := (FloatSpec.Core.Raux.mag beta x) with hM
@@ -965,13 +961,12 @@ Theorem generic_format_FLX_FLT :
   forall x : R,
   generic_format beta FLT_exp x -> generic_format beta (FLX_exp prec) x.
 -/
-theorem generic_format_FLX_FLT (beta : Int) [ValidRadix beta] (x : ℝ) :
-    ⦃⌜beta > 1 ∧ (generic_format beta (FLT_exp prec emin) x)⌝⦄
-    (pure (generic_format beta (FLX.FLX_exp prec) x) : Id Prop)
-    ⦃⇓result => ⌜result⌝⦄ := by
-  intro hpre
-  simp only [wp, PostCond.noThrow, pure]
-  rcases hpre with ⟨hβ, hx⟩
+omit [Prec_gt_0 prec] in
+@[flocq_source "src/Core/FLT.v" 193 "generic_format_FLX_FLT"]
+theorem generic_format_FLX_FLT (beta : Int) [ValidRadix beta] (x : ℝ)
+    (hx : generic_format beta (FLT_exp prec emin) x) :
+    generic_format beta (FLX.FLX_exp prec) x := by
+  have hβ : 1 < beta := ValidRadix.valid
   -- Use the generic inclusion on magnitude: FLX_exp ≤ FLT_exp pointwise
   have hpoint : x ≠ 0 →
       (FLX.FLX_exp prec) ((FloatSpec.Core.Raux.mag beta x))
@@ -987,9 +982,7 @@ theorem generic_format_FLX_FLT (beta : Int) [ValidRadix beta] (x : ℝ) :
       (fexp1 := FLT_exp prec emin)
       (fexp2 := FLX.FLX_exp prec)
       (x := x)) hβ hpoint hx
-  -- Reduce the Hoare triple on Id to the pure proposition
-  simpa [wp, PostCond.noThrow, Id.run, pure]
-    using hrun
+  exact hrun
 
 end FloatSpec.Core.FLT
 
@@ -1003,12 +996,12 @@ Theorem ulp_FLT_le:
   forall x, (bpow (emin + prec - 1) <= Rabs x)%R ->
   (ulp beta FLT_exp x <= Rabs x * bpow (1 - prec))%R.
 -/
-theorem ulp_FLT_le (beta : Int) [ValidRadix beta] (x : ℝ) :
-    ⦃⌜beta > 1 ∧ (beta : ℝ) ^ (emin + prec - 1) ≤ |x|⌝⦄
-    (pure (FloatSpec.Core.Ulp.ulp beta (FLT_exp prec emin) x) : Id ℝ)
-    ⦃⇓r => ⌜r ≤ |x| * (beta : ℝ) ^ (1 - prec)⌝⦄ := by
-  intro hpre
-  rcases hpre with ⟨hβ, hx_lb⟩
+omit [Prec_gt_0 prec] in
+@[flocq_source "src/Core/FLT.v" 324 "ulp_FLT_le"]
+theorem ulp_FLT_le (beta : Int) [ValidRadix beta] (x : ℝ)
+    (hx_lb : (beta : ℝ) ^ (emin + prec - 1) ≤ |x|) :
+    FloatSpec.Core.Ulp.ulp beta (FLT_exp prec emin) x ≤ |x| * (beta : ℝ) ^ (1 - prec) := by
+  have hβ : 1 < beta := ValidRadix.valid
   classical
   -- Basic positivity from 1 < beta
   have hbposℤ : (0 : Int) < beta := lt_trans Int.zero_lt_one hβ
@@ -1076,14 +1069,11 @@ theorem ulp_FLT_le (beta : Int) [ValidRadix beta] (x : ℝ) :
     have := mul_le_mul_of_nonneg_right hcore hfac_nonneg
     simpa [hsplit, mul_comm, mul_left_comm, mul_assoc, sub_eq_add_neg]
       using this
-  -- Move the inequality to the concrete `Id.run` result and discharge the triple
   have hout : (FloatSpec.Core.Ulp.ulp beta (FLT_exp prec emin) x)
                 ≤ |x| * (beta : ℝ) ^ (1 - prec) := by
     rw [hulp_run]
     exact this
-  -- Discharge the Hoare triple
-  simpa [wp, PostCond.noThrow, Id.run, bind, pure]
-    using hout
+  exact hout
 
 /-
 Coq (FLT.v):
@@ -1238,15 +1228,14 @@ Lemma ulp_FLT_exact_shift:
   (emin + prec - mag beta x <= e)%Z ->
   (ulp beta FLT_exp (x * bpow e) = ulp beta FLT_exp x * bpow e)%R.
 -/
-theorem ulp_FLT_exact_shift (beta : Int) [ValidRadix beta] (x : ℝ) (e : Int) :
-    ⦃⌜beta > 1 ∧ x ≠ 0 ∧ emin + prec ≤ (FloatSpec.Core.Raux.mag beta x) ∧ emin + prec - (FloatSpec.Core.Raux.mag beta x) ≤ e⌝⦄
-    (do
-      let u1 ← pure (FloatSpec.Core.Ulp.ulp beta (FLT_exp prec emin) (x * (beta : ℝ) ^ e))
-      let u2 ← pure (FloatSpec.Core.Ulp.ulp beta (FLT_exp prec emin) x)
-      pure (u1, u2) : Id (ℝ × ℝ))
-    ⦃⇓p => ⌜p.1 = p.2 * (beta : ℝ) ^ e⌝⦄ := by
-  intro hpre
-  rcases hpre with ⟨hβ, hx_ne, hMx_lb, hshift⟩
+omit [Prec_gt_0 prec] in
+@[flocq_source "src/Core/FLT.v" 366 "ulp_FLT_exact_shift"]
+theorem ulp_FLT_exact_shift (beta : Int) [ValidRadix beta] (x : ℝ) (e : Int)
+    (hx_ne : x ≠ 0) (hMx_lb : emin + prec ≤ FloatSpec.Core.Raux.mag beta x)
+    (hshift : emin + prec - FloatSpec.Core.Raux.mag beta x ≤ e) :
+    FloatSpec.Core.Ulp.ulp beta (FLT_exp prec emin) (x * (beta : ℝ) ^ e) =
+      FloatSpec.Core.Ulp.ulp beta (FLT_exp prec emin) x * (beta : ℝ) ^ e := by
+  have hβ : 1 < beta := ValidRadix.valid
   classical
   -- Basic facts about the base and the scaled input
   have hbposℤ : (0 : Int) < beta := lt_trans Int.zero_lt_one hβ
@@ -1384,8 +1373,7 @@ theorem ulp_FLT_exact_shift (beta : Int) [ValidRadix beta] (x : ℝ) (e : Int) :
       rw [hExp_eq, hzadd]
     rw [hulp_y, hulp_x]
     exact hpow_eq
-  -- Discharge the Hoare-triple on Id
-  simpa [wp, PostCond.noThrow, Id.run, bind, pure] using this
+  exact this
 
 end FloatSpec.Core.FLT
 
@@ -1402,6 +1390,8 @@ Theorem round_FLT_FLX : forall rnd x,
 Lean (spec): Under the lower-bound condition on |x|, rounding in
 FLT equals rounding in FLX for any rounding predicate `rnd`.
 -/
+omit [Prec_gt_0 prec] in
+@[flocq_source "src/Core/FLT.v" 207 "round_FLT_FLX"]
 theorem round_FLT_FLX (beta : Int) [ValidRadix beta] (rnd : ℝ → Int) (x : ℝ) :
     (beta : ℝ) ^ (emin + prec - 1) ≤ |x| →
       round_to_generic (beta := beta) (fexp := FLT_exp prec emin) (mode := rnd) x =
@@ -1431,20 +1421,17 @@ Coq (FLT.v):
 Lemma succ_FLT_exact_shift_pos:
   forall x e,
   (0 < x)%R ->
-  (emin + prec + 1 <= mag beta x)%Z ->
-  (emin + prec - mag beta x + 1 <= e)%Z ->
+  (emin + prec <= mag beta x)%Z ->
+  (emin + prec - mag beta x <= e)%Z ->
   (succ beta FLT_exp (x * bpow e) = succ beta FLT_exp x * bpow e)%R.
 -/
-theorem succ_FLT_exact_shift_pos (beta : Int) [ValidRadix beta] (x : ℝ) (e : Int) :
-    ⦃⌜0 < x ∧ emin + prec ≤ (FloatSpec.Core.Raux.mag beta x) ∧
-      emin + prec - (FloatSpec.Core.Raux.mag beta x) ≤ e⌝⦄
-    (do
-      let s1 ← pure (FloatSpec.Core.Ulp.succ beta (FLT_exp prec emin) (x * (beta : ℝ) ^ e))
-      let s2 ← pure (FloatSpec.Core.Ulp.succ beta (FLT_exp prec emin) x)
-      pure (s1, s2) : Id (ℝ × ℝ))
-    ⦃⇓p => ⌜p.1 = p.2 * (beta : ℝ) ^ e⌝⦄ := by
-  intro hpre
-  rcases hpre with ⟨hx_pos, hMx_lb, hshift⟩
+omit [Prec_gt_0 prec] in
+@[flocq_source "src/Core/FLT.v" 381 "succ_FLT_exact_shift_pos"]
+theorem succ_FLT_exact_shift_pos (beta : Int) [ValidRadix beta] (x : ℝ) (e : Int)
+    (hx_pos : 0 < x) (hMx_lb : emin + prec ≤ FloatSpec.Core.Raux.mag beta x)
+    (hshift : emin + prec - FloatSpec.Core.Raux.mag beta x ≤ e) :
+    FloatSpec.Core.Ulp.succ beta (FLT_exp prec emin) (x * (beta : ℝ) ^ e) =
+      FloatSpec.Core.Ulp.succ beta (FLT_exp prec emin) x * (beta : ℝ) ^ e := by
   classical
   have hβ : 1 < beta := ValidRadix.valid
   -- Basic positivity facts from beta > 1
@@ -1457,7 +1444,7 @@ theorem succ_FLT_exact_shift_pos (beta : Int) [ValidRadix beta] (x : ℝ) (e : I
   -- Abbreviations for magnitudes
   set M : Int := (FloatSpec.Core.Raux.mag beta x) with hM
   -- We will use `ulp_FLT_exact_shift` (proved above).
-  -- Its preconditions follow from the stronger `+1` hypotheses.
+  -- Its magnitude and shift hypotheses are exactly the ones available here.
   have hMx_lb : emin + prec ≤ M := by simpa [M] using hMx_lb
   have hshift : emin + prec - M ≤ e := by simpa [M] using hshift
   -- Evaluate `succ` in the positive branch and use the ULP scaling lemma
@@ -1473,26 +1460,15 @@ theorem succ_FLT_exact_shift_pos (beta : Int) [ValidRadix beta] (x : ℝ) (e : I
   have hulp_shift :
       (FloatSpec.Core.Ulp.ulp beta (FLT_exp prec emin) (x * (beta : ℝ) ^ e))
         = (FloatSpec.Core.Ulp.ulp beta (FLT_exp prec emin) x) * (beta : ℝ) ^ e := by
-    -- Reuse the previously proven lemma ulp_FLT_exact_shift
-    have h := ulp_FLT_exact_shift (prec := prec) (emin := emin) (beta := beta) (x := x) (e := e)
-    -- Build its precondition
-    have hpre' : beta > 1 ∧ x ≠ 0 ∧ emin + prec ≤ (FloatSpec.Core.Raux.mag beta x) ∧ emin + prec - (FloatSpec.Core.Raux.mag beta x) ≤ e := by
-      refine ⟨hβ, (ne_of_gt hx_pos), hMx_lb, hshift⟩
-    -- Reduce the triple to its pure equality
-    have := h hpre'
-    -- Extract the run-level equality
-    simpa [wp, PostCond.noThrow, Id.run, bind, pure]
-      using this
-  -- Combine the pieces and discharge the Hoare triple
+    exact ulp_FLT_exact_shift (prec := prec) (emin := emin) beta x e
+      (ne_of_gt hx_pos) hMx_lb hshift
+  -- Combine the two real equalities.
   have hsucc_run_eq : (FloatSpec.Core.Ulp.succ beta (FLT_exp prec emin) (x * (beta : ℝ) ^ e))
             = ((FloatSpec.Core.Ulp.succ beta (FLT_exp prec emin) x)) * (beta : ℝ) ^ e := by
     -- Expand both sides using the `succ` evaluations and the ULP shift
     rw [hsucc_y_run, hsucc_x_run, hulp_shift]
     ring
-  -- Normalize to non-.run form for the Hoare triple
-  -- Finalize the result pair equality in Id
-  simpa [wp, PostCond.noThrow, bind, pure]
-    using hsucc_run_eq
+  exact hsucc_run_eq
 
 /-
 Coq (FLT.v):
@@ -1504,15 +1480,13 @@ Lemma succ_FLT_exact_shift:
 (succ beta FLT_exp (x * bpow e) = succ beta FLT_exp x * bpow e)%R.
 -/
 -- Auxiliary lemma: pred exact shift for positive inputs (used to handle negative `x` for succ)
-private theorem pred_FLT_exact_shift_pos_aux (beta : Int) [ValidRadix beta] (x : ℝ) (e : Int) :
-    ⦃⌜beta > 1 ∧ 0 < x ∧ emin + prec + 1 ≤ (FloatSpec.Core.Raux.mag beta x) ∧ emin + prec - (FloatSpec.Core.Raux.mag beta x) + 1 ≤ e⌝⦄
-    (do
-      let p1 ← pure (FloatSpec.Core.Ulp.pred beta (FLT_exp prec emin) (x * (beta : ℝ) ^ e))
-      let p2 ← pure (FloatSpec.Core.Ulp.pred beta (FLT_exp prec emin) x)
-      pure (p1, p2) : Id (ℝ × ℝ))
-    ⦃⇓p => ⌜p.1 = p.2 * (beta : ℝ) ^ e⌝⦄ := by
-  intro hpre
-  rcases hpre with ⟨hβ, hx_pos, hMx_lb1, hshift1⟩
+omit [Prec_gt_0 prec] in
+private theorem pred_FLT_exact_shift_pos_aux (beta : Int) [ValidRadix beta] (x : ℝ) (e : Int)
+    (hx_pos : 0 < x) (hMx_lb1 : emin + prec + 1 ≤ FloatSpec.Core.Raux.mag beta x)
+    (hshift1 : emin + prec - FloatSpec.Core.Raux.mag beta x + 1 ≤ e) :
+    FloatSpec.Core.Ulp.pred beta (FLT_exp prec emin) (x * (beta : ℝ) ^ e) =
+      FloatSpec.Core.Ulp.pred beta (FLT_exp prec emin) x * (beta : ℝ) ^ e := by
+  have hβ : 1 < beta := ValidRadix.valid
   classical
   have hbposℤ : (0 : Int) < beta := lt_trans Int.zero_lt_one hβ
   have hbposR : (0 : ℝ) < (beta : ℝ) := by exact_mod_cast hbposℤ
@@ -1588,17 +1562,13 @@ private theorem pred_FLT_exact_shift_pos_aux (beta : Int) [ValidRadix beta] (x :
   have hpred_y_pos :
       FloatSpec.Core.Ulp.pred beta (FLT_exp prec emin) y =
         FloatSpec.Core.Ulp.pred_pos beta (FLT_exp prec emin) y := by
-    have h := FloatSpec.Core.Ulp.pred_eq_pos (beta := beta) (fexp := FLT_exp prec emin)
-                  (x := y) (hx := hy_nonneg)
-    have hrun := h hβ
-    simpa [wp, PostCond.noThrow, Id.run, bind, pure] using hrun
+    have hneg : ¬ 0 ≤ -y := by linarith
+    simp only [FloatSpec.Core.Ulp.pred, FloatSpec.Core.Ulp.succ, hneg, ite_false, neg_neg]
   have hpred_x_pos :
       FloatSpec.Core.Ulp.pred beta (FLT_exp prec emin) x =
         FloatSpec.Core.Ulp.pred_pos beta (FLT_exp prec emin) x := by
-    have h := FloatSpec.Core.Ulp.pred_eq_pos (beta := beta) (fexp := FLT_exp prec emin)
-                  (x := x) (hx := hx_nonneg)
-    have hrun := h hβ
-    simpa [wp, PostCond.noThrow, Id.run, bind, pure] using hrun
+    have hneg : ¬ 0 ≤ -x := by linarith
+    simp only [FloatSpec.Core.Ulp.pred, FloatSpec.Core.Ulp.succ, hneg, ite_false, neg_neg]
   have hMx_lb : emin + prec ≤ FloatSpec.Core.Raux.mag beta x := by
     have : emin + prec ≤ emin + prec + 1 := by exact le_of_lt (Int.lt_add_one_iff.mpr le_rfl)
     exact le_trans this hMx_lb1
@@ -1695,11 +1665,8 @@ private theorem pred_FLT_exact_shift_pos_aux (beta : Int) [ValidRadix beta] (x :
       have hulp_shift :
           FloatSpec.Core.Ulp.ulp beta (FLT_exp prec emin) y =
             FloatSpec.Core.Ulp.ulp beta (FLT_exp prec emin) x * (beta : ℝ) ^ e := by
-        have h := ulp_FLT_exact_shift (prec := prec) (emin := emin) (beta := beta) (x := x) (e := e)
-        have hpre' : beta > 1 ∧ x ≠ 0 ∧ emin + prec ≤ FloatSpec.Core.Raux.mag beta x ∧ emin + prec - FloatSpec.Core.Raux.mag beta x ≤ e := by
-          exact ⟨hβ, hx_ne, hMx_lb, hshift⟩
-        have hrun := h hpre'
-        simpa [wp, PostCond.noThrow, Id.run, bind, pure, hy] using hrun
+        simpa [hy] using ulp_FLT_exact_shift (prec := prec) (emin := emin)
+          beta x e hx_ne hMx_lb hshift
       calc
         FloatSpec.Core.Ulp.pred beta (FLT_exp prec emin) y
             = FloatSpec.Core.Ulp.pred_pos beta (FLT_exp prec emin) y := hpred_y_pos
@@ -1715,20 +1682,19 @@ private theorem pred_FLT_exact_shift_pos_aux (beta : Int) [ValidRadix beta] (x :
       FloatSpec.Core.Ulp.pred beta (FLT_exp prec emin) (x * (beta : ℝ) ^ e) =
         FloatSpec.Core.Ulp.pred beta (FLT_exp prec emin) x * (beta : ℝ) ^ e := by
     simpa [hy] using hrunEq
-  simpa [wp, PostCond.noThrow, Id.run, bind, pure] using hrunEq'
+  exact hrunEq'
 
 -- Auxiliary lemma: pred exact shift for positive inputs (used to handle negative `x` for succ)
 -- (moved earlier)
 
-theorem succ_FLT_exact_shift (beta : Int) [ValidRadix beta] (x : ℝ) (e : Int) :
-    ⦃⌜beta > 1 ∧ x ≠ 0 ∧ emin + prec + 1 ≤ (FloatSpec.Core.Raux.mag beta x) ∧ emin + prec - (FloatSpec.Core.Raux.mag beta x) + 1 ≤ e⌝⦄
-    (do
-      let s1 ← pure (FloatSpec.Core.Ulp.succ beta (FLT_exp prec emin) (x * (beta : ℝ) ^ e))
-      let s2 ← pure (FloatSpec.Core.Ulp.succ beta (FLT_exp prec emin) x)
-      pure (s1, s2) : Id (ℝ × ℝ))
-    ⦃⇓p => ⌜p.1 = p.2 * (beta : ℝ) ^ e⌝⦄ := by
-  intro hpre
-  rcases hpre with ⟨hβ, hx_ne, hMx_lb1, hshift1⟩
+omit [Prec_gt_0 prec] in
+@[flocq_source "src/Core/FLT.v" 394 "succ_FLT_exact_shift"]
+theorem succ_FLT_exact_shift (beta : Int) [ValidRadix beta] (x : ℝ) (e : Int)
+    (hx_ne : x ≠ 0) (hMx_lb1 : emin + prec + 1 ≤ FloatSpec.Core.Raux.mag beta x)
+    (hshift1 : emin + prec - FloatSpec.Core.Raux.mag beta x + 1 ≤ e) :
+    FloatSpec.Core.Ulp.succ beta (FLT_exp prec emin) (x * (beta : ℝ) ^ e) =
+      FloatSpec.Core.Ulp.succ beta (FLT_exp prec emin) x * (beta : ℝ) ^ e := by
+  have hβ : 1 < beta := ValidRadix.valid
   classical
   -- Split on the sign of x
   by_cases hxpos : 0 < x
@@ -1736,9 +1702,9 @@ theorem succ_FLT_exact_shift (beta : Int) [ValidRadix beta] (x : ℝ) (e : Int) 
     have hpos_pre : 0 < x ∧ emin + prec ≤ (FloatSpec.Core.Raux.mag beta x) ∧
                     emin + prec - (FloatSpec.Core.Raux.mag beta x) ≤ e := by
       exact ⟨hxpos, by omega, by omega⟩
-    -- Apply the pos lemma and reduce the Id-pair equality
-    have := succ_FLT_exact_shift_pos (prec := prec) (emin := emin) (beta := beta) (x := x) (e := e) hpos_pre
-    simpa [wp, PostCond.noThrow, Id.run, bind, pure] using this
+    -- Apply the positive-input scaling lemma.
+    have := succ_FLT_exact_shift_pos (prec := prec) (emin := emin) (beta := beta) (x := x) (e := e) hpos_pre.1 hpos_pre.2.1 hpos_pre.2.2
+    exact this
   · -- Negative case: reduce to `pred` on positive input `-x` via `pred` definition
     have hxle : x ≤ 0 := le_of_not_gt hxpos
     have hxlt : x < 0 := lt_of_le_of_ne hxle hx_ne
@@ -1756,8 +1722,8 @@ theorem succ_FLT_exact_shift (beta : Int) [ValidRadix beta] (x : ℝ) (e : Int) 
                       emin + prec - (FloatSpec.Core.Raux.mag beta (-x)) + 1 ≤ e := by
         rw [hmag_eq]
         exact ⟨hβ, hxneg_pos, hMx_lb1, hshift1⟩
-      have := pred_FLT_exact_shift_pos_aux (prec := prec) (emin := emin) (beta := beta) (-x) e hpos_pre
-      simpa [wp, PostCond.noThrow, Id.run, bind, pure] using this
+      have := pred_FLT_exact_shift_pos_aux (prec := prec) (emin := emin) (beta := beta) (-x) e hpos_pre.2.1 hpos_pre.2.2.1 hpos_pre.2.2.2
+      exact this
     -- succ z = - pred (-z)
     have hsucc_y : (FloatSpec.Core.Ulp.succ beta (FLT_exp prec emin) (x * (beta : ℝ) ^ e))
                     = - (FloatSpec.Core.Ulp.pred beta (FLT_exp prec emin) (-(x * (beta : ℝ) ^ e))) := by
@@ -1772,7 +1738,7 @@ theorem succ_FLT_exact_shift (beta : Int) [ValidRadix beta] (x : ℝ) (e : Int) 
       have hneg_factor : -(x * (beta : ℝ) ^ e) = (-x) * (beta : ℝ) ^ e := by ring
       rw [hsucc_y, hneg_factor, hpred_pos_shift, hsucc_x]
       ring
-    simpa [wp, PostCond.noThrow, Id.run, bind, pure] using this
+    exact this
 
 /-
 Coq (FLT.v):
@@ -1783,15 +1749,14 @@ Lemma pred_FLT_exact_shift:
   (emin + prec - mag beta x + 1 <= e)%Z ->
   (pred beta FLT_exp (x * bpow e) = pred beta FLT_exp x * bpow e)%R.
 -/
-theorem pred_FLT_exact_shift (beta : Int) [ValidRadix beta] (x : ℝ) (e : Int) :
-    ⦃⌜beta > 1 ∧ x ≠ 0 ∧ emin + prec + 1 ≤ (FloatSpec.Core.Raux.mag beta x) ∧ emin + prec - (FloatSpec.Core.Raux.mag beta x) + 1 ≤ e⌝⦄
-    (do
-      let p1 ← pure (FloatSpec.Core.Ulp.pred beta (FLT_exp prec emin) (x * (beta : ℝ) ^ e))
-      let p2 ← pure (FloatSpec.Core.Ulp.pred beta (FLT_exp prec emin) x)
-      pure (p1, p2) : Id (ℝ × ℝ))
-    ⦃⇓p => ⌜p.1 = p.2 * (beta : ℝ) ^ e⌝⦄ := by
-  intro hpre
-  rcases hpre with ⟨hβ, hx_ne, hMx_lb1, hshift1⟩
+omit [Prec_gt_0 prec] in
+@[flocq_source "src/Core/FLT.v" 419 "pred_FLT_exact_shift"]
+theorem pred_FLT_exact_shift (beta : Int) [ValidRadix beta] (x : ℝ) (e : Int)
+    (hx_ne : x ≠ 0) (hMx_lb1 : emin + prec + 1 ≤ FloatSpec.Core.Raux.mag beta x)
+    (hshift1 : emin + prec - FloatSpec.Core.Raux.mag beta x + 1 ≤ e) :
+    FloatSpec.Core.Ulp.pred beta (FLT_exp prec emin) (x * (beta : ℝ) ^ e) =
+      FloatSpec.Core.Ulp.pred beta (FLT_exp prec emin) x * (beta : ℝ) ^ e := by
+  have hβ : 1 < beta := ValidRadix.valid
   classical
   -- Split on the sign of x
   by_cases hxpos : 0 < x
@@ -1799,9 +1764,9 @@ theorem pred_FLT_exact_shift (beta : Int) [ValidRadix beta] (x : ℝ) (e : Int) 
     have hpos_pre : beta > 1 ∧ 0 < x ∧ emin + prec + 1 ≤ (FloatSpec.Core.Raux.mag beta x) ∧
                     emin + prec - (FloatSpec.Core.Raux.mag beta x) + 1 ≤ e := by
       exact ⟨hβ, hxpos, hMx_lb1, hshift1⟩
-    -- Use the auxiliary lemma and discharge the triple
-    have := pred_FLT_exact_shift_pos_aux (prec := prec) (emin := emin) (beta := beta) (x := x) (e := e) hpos_pre
-    simpa [wp, PostCond.noThrow, Id.run, bind, pure] using this
+    -- Apply the positive-input predecessor lemma.
+    have := pred_FLT_exact_shift_pos_aux (prec := prec) (emin := emin) (beta := beta) (x := x) (e := e) hpos_pre.2.1 hpos_pre.2.2.1 hpos_pre.2.2.2
+    exact this
   · -- Negative case: use `pred_opp` to transfer to `succ` on positive input `-x`
     have hxle : x ≤ 0 := le_of_not_gt hxpos
     have hxlt : x < 0 := lt_of_le_of_ne hxle hx_ne
@@ -1827,8 +1792,8 @@ theorem pred_FLT_exact_shift (beta : Int) [ValidRadix beta] (x : ℝ) (e : Int) 
     have hsucc_pos :
         (FloatSpec.Core.Ulp.succ beta (FLT_exp prec emin) ((-x) * (beta : ℝ) ^ e))
           = (FloatSpec.Core.Ulp.succ beta (FLT_exp prec emin) (-x)) * (beta : ℝ) ^ e := by
-      have := succ_FLT_exact_shift_pos (prec := prec) (emin := emin) (beta := beta) (-x) e hpos_pre
-      simpa [wp, PostCond.noThrow, Id.run, bind, pure] using this
+      have := succ_FLT_exact_shift_pos (prec := prec) (emin := emin) (beta := beta) (-x) e hpos_pre.1 hpos_pre.2.1 hpos_pre.2.2
+      exact this
     -- Combine and cancel the negations
     have : (FloatSpec.Core.Ulp.pred beta (FLT_exp prec emin) (x * (beta : ℝ) ^ e))
               = (FloatSpec.Core.Ulp.pred beta (FLT_exp prec emin) x) * (beta : ℝ) ^ e := by
@@ -1836,7 +1801,7 @@ theorem pred_FLT_exact_shift (beta : Int) [ValidRadix beta] (x : ℝ) (e : Int) 
       have hneg_factor : -(x * (beta : ℝ) ^ e) = (-x) * (beta : ℝ) ^ e := by ring
       rw [hpred_y_eq, hneg_factor, hsucc_pos, hpred_x_eq]
       ring
-    simpa [wp, PostCond.noThrow, Id.run, bind, pure] using this
+    exact this
 
 /-
 Coq (FLT.v):

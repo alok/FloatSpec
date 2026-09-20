@@ -1928,6 +1928,103 @@ proof warnings: `/private/tmp/PrimitiveExecutableDraftV2_20260920.out`.
 These changes need production integration and actual boundary/cross-tests
 before becoming a completed execution milestone.
 
+### September 20, 11:55 UTC — eleven FLT contracts repaired
+
+The eleven candidates above are now production corrections. Each compiled
+Rocq export omits positive precision; each Lean export now does too.
+Ten legacy Hoare wrappers become direct propositions, while the rounding
+equality was already direct. Callers in `Plus_error`, `Mult_error`, and
+`Div_sqrt_error` migrate together. Eleven pinned source anchors identify the
+checked statements. All existing proofs close; no algorithm body or proof-debt
+manifest changes.
+
+The private positive-predecessor helper no longer imports a validity premise
+through a lemma that also handles zero. Its strictly positive branch reduces
+directly from the definitions. The signed successor/predecessor retain their
+stronger `+1` magnitude bounds; the positive successor retains the source's
+weaker bounds. A copied source comment was corrected accordingly.
+
+Positive precision remains on the genuinely restricted reverse inclusion and
+neighboring `FLT_format_generic`, `ulp_FLT_gt`, and `ulp_FLT_pred_pos`.
+The paired permanent fixtures prove a counterexample at base two, precision
+zero, minimum exponent zero, and value one: the reverse theorem's size bound
+holds, FIX membership holds, but FLT membership does not. This is a closed
+proof in each prover, not merely a failed search for a proof.
+
+Verification on library SHA-256
+`f5dc4646d4bc0ed7ce862bb00a3620507d525a304f3b9c73a3a7de904f8d89e7`:
+
+- Eleven unrestricted typed clients compile in each prover; the Lean fixture
+  now checks **86 production premise guards**, with the existing five deliberate
+  negative controls. The paired reverse-inclusion counterexample also passes.
+  Receipts: `/private/tmp/floatspec-flt-eleven-pure-lean-20260920.log` and
+  `/private/tmp/floatspec-flt-eleven-clients-rocq-v3-20260920.log`.
+- The full explicit library/test/executable build passes **6,216 jobs**:
+  `/private/tmp/floatspec-flt-eleven-all-targets-20260920.log`.
+  Complete error-free LSP diagnostics were obtained for all four changed
+  source modules and `SourcePremiseContracts.lean`. The stale LSP initially
+  returned `diagnostics_unavailable`, not a pass; a build/server restart
+  restored complete diagnostics.
+- Fresh metadata validates **218 source anchors**. The compiled trust gate
+  reports **13,532 declarations in 58 modules** with the same **four** named
+  direct/transitive proof debts and no unexpected project axioms, unsafe
+  declarations, or runtime overrides. Receipts end in
+  `anchors-20260920.log` and `trust-20260920.json` under the same prefix.
+- **1,813 differential cases** agree in compiled Lean, kernel reduction,
+  and pinned Rocq, with **1,813 generated kernel equalities**. Seed `842729`,
+  200 supplemental samples, batch size 50; **209.176 seconds**.
+  The 413 format cases include **127 with nonpositive precision**; the other
+  1,400 exercise format-driven integer calculations. All replay inputs,
+  outputs, and the report remain in
+  `/private/tmp/floatspec-flt-eleven-grid-20260920/`.
+  No imported-source edits or library builds overlapped this authoritative run.
+- The source-anchor self-tests and compiled-trust mutation controls pass:
+  `/private/tmp/floatspec-flt-eleven-anchor-tests-20260920.log` and
+  `/private/tmp/floatspec-flt-eleven-trust-tests-20260920.log`.
+
+The first integrated Lean client build failed because the broad test import
+made unqualified `cexp` and `generic_format` ambiguous. Explicit qualification
+fixed the test. The first integrated Rocq counterexample failed because the
+fixture did not import `Lra`; the explicit import fixed it. Both failed logs
+remain next to their successful reruns and are not counted as passes.
+Earlier scratch failures exposing the helper's extra premise remain recorded.
+
+The full core harness also passes **60 tests in 255.632 seconds** on this
+snapshot, including the existing arithmetic, serializer, mutation, timeout,
+interruption, and concurrent-source-change controls:
+`/private/tmp/floatspec-flt-eleven-full-harness-20260920.log`.
+
+This is a theorem-interface correction, not a discovered numerical mismatch.
+The finite grid does not prove the eleven universal statements; their closed
+Lean proofs do. Neither those proofs nor the grid certify whole-port source
+equivalence. The separate Claude checkout still has its original submodule
+modification and three independent comparison commits, preserved untouched.
+
+### Next confirmed finding — total primitive conversion
+
+Fresh execution finds a separate total-interface mismatch in
+`FaithfulPrimFloat.SF2Prim`: the Lean definition rejects every invalid raw
+encoding as NaN, whereas Rocq's `FloatOps.SF2Prim` numerically converts the
+mantissa through an unsigned 63-bit word, rounds that integer, then scales
+and rounds again. The current roundtrip theorems only cover valid inputs and
+therefore do not detect this mismatch.
+
+Four raw positive-mantissa cases return NaN in Lean but respectively `1.5`,
+positive zero, `1`, and mantissa `1125899906842624` at exponent `-1074` in
+Rocq. Their inputs are `(3,-1)`, `(2^63,0)`, `(2^63+1,0)`, and
+`(2^53+5,-1077)`. The last case distinguishes the source's double rounding
+from one-shot normalization, which instead returns mantissa
+`1125899906842625` at exponent `-1074`. A repair must preserve both unsigned
+wrapping and the two rounding stages; replacing rejection by one rounding
+operation would still be wrong.
+
+Receipts: `/private/tmp/SF2PrimTotalCounterexamples20260920-lean-before-v2.out`
+and `/private/tmp/SF2PrimTotalCounterexamples20260920-rocq.out`, with both
+source fixtures retained beside them. The initial Lean observation attempted
+to print a carrier without a `Repr` instance and failed; the successful
+rerun serializes its constructors explicitly. This finding is not repaired
+in the FLT checkpoint and takes priority over cosmetic execution-marker work.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In

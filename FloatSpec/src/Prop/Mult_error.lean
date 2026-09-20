@@ -446,12 +446,12 @@ theorem mult_error_FLT (x y : ℝ)
   have hx_flx : generic_format beta (FLX_exp prec) x := by
     have h := FloatSpec.Core.FLT.generic_format_FLX_FLT
       (prec := prec) (emin := emin) (beta := beta) (x := x)
-    have h' := h ⟨hβ, by simpa [FLT_exp] using hx⟩
+    have h' := h (by simpa [FLT_exp] using hx)
     simpa [FLX_exp] using h'
   have hy_flx : generic_format beta (FLX_exp prec) y := by
     have h := FloatSpec.Core.FLT.generic_format_FLX_FLT
       (prec := prec) (emin := emin) (beta := beta) (x := y)
-    have h' := h ⟨hβ, by simpa [FLT_exp] using hy⟩
+    have h' := h (by simpa [FLT_exp] using hy)
     simpa [FLX_exp] using h'
   have herr_flx :
       FloatSpec.Core.Generic_fmt.roundR beta (FLX_exp prec) rnd (x * y) - (x * y) ≠ 0 := by

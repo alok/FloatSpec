@@ -129,10 +129,11 @@ outside square root's exponent premise makes that domain boundary executable.
 Deliberately increasing the returned mantissa or replacing its location by
 exact must break both the closed finite assertions and compiled checks.
 
-`Test/SourcePremiseContracts.lean` additionally has 75 source-premise guards,
+`Test/SourcePremiseContracts.lean` additionally has 86 source-premise guards,
 paired typed consumers for the Prop, integer-rounding, canonical-exponent,
-real-comparison, division, square-root, FTZ inclusion, and generic IEEE comparison exports, and five deliberate
-negative guard examples. The corresponding Rocq fixture checks the paired
+real-comparison, division, square-root, FTZ inclusion, eleven FLT relationships,
+and generic IEEE comparison exports, and five deliberate negative guard
+examples. The corresponding Rocq fixture checks the paired
 consumer signatures. These
 checks caught real section-instance leakage that the former bare `#check`
 regressions did not detect. The combined runner re-executes all these fixtures;
@@ -144,6 +145,12 @@ as named precision classes. A deliberate leaking instance tests that case.
 Paired Lean/Rocq proofs show that zero has an FTZ witness at every integer
 precision and is covered by the unrestricted forward-inclusion theorem.
 The reverse source inclusion retains its positive-precision premise.
+
+The FLT clients similarly distinguish unrestricted forward inclusions and
+normal-range exponent/ulp/shift statements from genuinely restricted reverse
+inclusions. Each language proves a precision-zero counterexample satisfying
+all the reverse FIX-to-FLT theorem's other premises. This prevents the wider
+interfaces from being mistaken for permission to remove every assumption.
 
 The current `floatspec` executable's `main` does nothing. Running it is a
 launch smoke test only, not an arithmetic regression; the checks described here

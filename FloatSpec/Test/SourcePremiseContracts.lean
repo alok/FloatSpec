@@ -464,3 +464,85 @@ example (prec emin beta : Int) [ValidRadix beta] (x : ℝ)
   FloatSpec.Core.FTZ.generic_format_FTZ prec emin beta x hx
 
 end FTZSourceContracts
+
+-- Each of these compiled Rocq exports omits positive precision.
+#guard_no_source_premise FloatSpec.Core.FLT.cexp_FLT_FLX Prec_gt_0 at prec
+#guard_no_source_premise FloatSpec.Core.FLT.generic_format_FLT_FLX Prec_gt_0 at prec
+#guard_no_source_premise FloatSpec.Core.FLT.generic_format_FLX_FLT Prec_gt_0 at prec
+#guard_no_source_premise FloatSpec.Core.FLT.round_FLT_FLX Prec_gt_0 at prec
+#guard_no_source_premise FloatSpec.Core.FLT.cexp_FLT_FIX Prec_gt_0 at prec
+#guard_no_source_premise FloatSpec.Core.FLT.generic_format_FIX_FLT Prec_gt_0 at prec
+#guard_no_source_premise FloatSpec.Core.FLT.ulp_FLT_le Prec_gt_0 at prec
+#guard_no_source_premise FloatSpec.Core.FLT.ulp_FLT_exact_shift Prec_gt_0 at prec
+#guard_no_source_premise FloatSpec.Core.FLT.succ_FLT_exact_shift_pos Prec_gt_0 at prec
+#guard_no_source_premise FloatSpec.Core.FLT.succ_FLT_exact_shift Prec_gt_0 at prec
+#guard_no_source_premise FloatSpec.Core.FLT.pred_FLT_exact_shift Prec_gt_0 at prec
+
+namespace FLTUnrestrictedSourceContracts
+
+open FloatSpec.Core.Generic_fmt
+variable (beta prec emin : Int) [ValidRadix beta] (x : Real)
+example (h : (beta : Real) ^ (emin + prec - 1) ≤ |x|) :
+    FloatSpec.Core.Generic_fmt.cexp beta (FloatSpec.Core.FLT.FLT_exp prec emin) x =
+      FloatSpec.Core.Generic_fmt.cexp beta (FloatSpec.Core.FLX.FLX_exp prec) x :=
+  FloatSpec.Core.FLT.cexp_FLT_FLX prec emin beta x h
+example (h : (beta : Real) ^ (emin + prec - 1) ≤ |x|)
+    (hx : FloatSpec.Core.Generic_fmt.generic_format beta (FloatSpec.Core.FLX.FLX_exp prec) x) :
+    FloatSpec.Core.Generic_fmt.generic_format beta (FloatSpec.Core.FLT.FLT_exp prec emin) x :=
+  FloatSpec.Core.FLT.generic_format_FLT_FLX prec emin beta x h hx
+example (hx : FloatSpec.Core.Generic_fmt.generic_format beta (FloatSpec.Core.FLT.FLT_exp prec emin) x) :
+    FloatSpec.Core.Generic_fmt.generic_format beta (FloatSpec.Core.FLX.FLX_exp prec) x :=
+  FloatSpec.Core.FLT.generic_format_FLX_FLT prec emin beta x hx
+example (rnd : Real → Int) (h : (beta : Real) ^ (emin + prec - 1) ≤ |x|) :
+    round_to_generic beta (FloatSpec.Core.FLT.FLT_exp prec emin) rnd x =
+      round_to_generic beta (FloatSpec.Core.FLX.FLX_exp prec) rnd x :=
+  FloatSpec.Core.FLT.round_FLT_FLX prec emin beta rnd x h
+example (hne : x ≠ 0) (h : |x| < (beta : Real) ^ (emin + prec)) :
+    FloatSpec.Core.Generic_fmt.cexp beta (FloatSpec.Core.FLT.FLT_exp prec emin) x =
+      FloatSpec.Core.Generic_fmt.cexp beta (FloatSpec.Core.FIX.FIX_exp emin) x :=
+  FloatSpec.Core.FLT.cexp_FLT_FIX prec emin beta x hne h
+example (hx : FloatSpec.Core.Generic_fmt.generic_format beta (FloatSpec.Core.FLT.FLT_exp prec emin) x) :
+    FloatSpec.Core.Generic_fmt.generic_format beta (FloatSpec.Core.FIX.FIX_exp emin) x :=
+  FloatSpec.Core.FLT.generic_format_FIX_FLT prec emin beta x hx
+
+example (h : (beta : Real) ^ (emin + prec - 1) ≤ |x|) :
+    FloatSpec.Core.Ulp.ulp beta (FloatSpec.Core.FLT.FLT_exp prec emin) x ≤
+      |x| * (beta : Real) ^ (1 - prec) :=
+  FloatSpec.Core.FLT.ulp_FLT_le prec emin beta x h
+example (e : Int) (hx : x ≠ 0)
+    (hm : emin + prec ≤ FloatSpec.Core.Raux.mag beta x)
+    (he : emin + prec - FloatSpec.Core.Raux.mag beta x ≤ e) :
+    FloatSpec.Core.Ulp.ulp beta (FloatSpec.Core.FLT.FLT_exp prec emin) (x * (beta : Real) ^ e) =
+      FloatSpec.Core.Ulp.ulp beta (FloatSpec.Core.FLT.FLT_exp prec emin) x * (beta : Real) ^ e :=
+  FloatSpec.Core.FLT.ulp_FLT_exact_shift prec emin beta x e hx hm he
+example (e : Int) (hx : 0 < x)
+    (hm : emin + prec ≤ FloatSpec.Core.Raux.mag beta x)
+    (he : emin + prec - FloatSpec.Core.Raux.mag beta x ≤ e) :
+    FloatSpec.Core.Ulp.succ beta (FloatSpec.Core.FLT.FLT_exp prec emin) (x * (beta : Real) ^ e) =
+      FloatSpec.Core.Ulp.succ beta (FloatSpec.Core.FLT.FLT_exp prec emin) x * (beta : Real) ^ e :=
+  FloatSpec.Core.FLT.succ_FLT_exact_shift_pos prec emin beta x e hx hm he
+example (e : Int) (hx : x ≠ 0)
+    (hm : emin + prec + 1 ≤ FloatSpec.Core.Raux.mag beta x)
+    (he : emin + prec - FloatSpec.Core.Raux.mag beta x + 1 ≤ e) :
+    FloatSpec.Core.Ulp.succ beta (FloatSpec.Core.FLT.FLT_exp prec emin) (x * (beta : Real) ^ e) =
+      FloatSpec.Core.Ulp.succ beta (FloatSpec.Core.FLT.FLT_exp prec emin) x * (beta : Real) ^ e :=
+  FloatSpec.Core.FLT.succ_FLT_exact_shift prec emin beta x e hx hm he
+example (e : Int) (hx : x ≠ 0)
+    (hm : emin + prec + 1 ≤ FloatSpec.Core.Raux.mag beta x)
+    (he : emin + prec - FloatSpec.Core.Raux.mag beta x + 1 ≤ e) :
+    FloatSpec.Core.Ulp.pred beta (FloatSpec.Core.FLT.FLT_exp prec emin) (x * (beta : Real) ^ e) =
+      FloatSpec.Core.Ulp.pred beta (FloatSpec.Core.FLT.FLT_exp prec emin) x * (beta : Real) ^ e :=
+  FloatSpec.Core.FLT.pred_FLT_exact_shift prec emin beta x e hx hm he
+
+-- Positive precision is genuinely necessary for the reverse FIX-to-FLT
+-- inclusion: every other source premise holds in this zero-precision case.
+theorem zero_precision_reverse_inclusion_counterexample :
+    |(1 : Real)| ≤ (2 : Real) ^ (0 + 0 : Int) ∧
+    FloatSpec.Core.Generic_fmt.generic_format 2 (FloatSpec.Core.FIX.FIX_exp 0) (1 : Real) ∧
+    ¬FloatSpec.Core.Generic_fmt.generic_format 2 (FloatSpec.Core.FLT.FLT_exp 0 0) (1 : Real) := by
+  norm_num [FloatSpec.Core.Generic_fmt.generic_format,
+    FloatSpec.Core.Generic_fmt.scaled_mantissa, FloatSpec.Core.Generic_fmt.cexp,
+    FloatSpec.Core.FLT.FLT_exp, FloatSpec.Core.FIX.FIX_exp,
+    FloatSpec.Core.Raux.mag, FloatSpec.Core.Raux.Ztrunc, FloatSpec.Core.Defs.F2R]
+
+end FLTUnrestrictedSourceContracts

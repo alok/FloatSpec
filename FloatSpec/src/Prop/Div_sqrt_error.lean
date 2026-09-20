@@ -1503,11 +1503,10 @@ theorem sqrt_error_N_FLT_ex_without_prec_gt_one_payload
       simpa [hsqrt0] using hround0
   · have hx_pos : 0 < x := lt_of_not_ge hx_nonpos
     have hx_flx : generic_format beta (FLX_exp prec) x := by
-      have htrip := FloatSpec.Core.FLT.generic_format_FLX_FLT
+      have h := FloatSpec.Core.FLT.generic_format_FLX_FLT
         (prec := prec) (emin := emin) (beta := beta) (x := x)
-      simpa [FLT_exp, FloatSpec.Core.FLT.FLT_exp, FLX_exp, FloatSpec.Core.FLX.FLX_exp,
-        wp, Std.Do.PostCond.noThrow, Id.run, pure]
-        using htrip ⟨hβ, hx⟩
+      simpa [FLT_exp, FloatSpec.Core.FLT.FLT_exp, FLX_exp, FloatSpec.Core.FLX.FLX_exp]
+        using h hx
     rcases sqrt_error_N_FLX_ex_without_prec_gt_one_payload
         (beta := beta) (choice := choice)
       (prec := prec) x hβ hx_flx with ⟨eps, heps, hround_flx⟩
