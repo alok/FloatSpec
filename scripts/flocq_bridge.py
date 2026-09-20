@@ -1361,13 +1361,36 @@ def bootstrap_lean(cases: list[Case], expected: list[list[int]], folder: Path) -
         raise ValueError(f"unexpected Lean regression diagnostics: {output[:500]}")
 
 
+# The 70/68-column primitive batches repeatedly normalize binary64 values.
+# On macOS a 200-case kernel reduction exceeded the 120-second process limit.
+# This is a scheduling limit, not a restriction on the test inputs. Timeouts
+# still fail; do not retry them invisibly or treat partial output as a pass.
+BATCH_LIMITS = {"prim_arithmetic": 25, "prim_helpers": 25, "prim_round": 25}
+
+
+def case_batches(cases: list[Case], requested_size: int):
+    """Yield ordered homogeneous batches without dropping or duplicating inputs."""
+    if requested_size < 1:
+        raise ValueError("batch size must be positive")
+    offset = 0
+    while offset < len(cases):
+        operation = cases[offset].op
+        limit = min(requested_size, BATCH_LIMITS.get(operation, requested_size))
+        end = offset + 1
+        while end < len(cases) and end - offset < limit and cases[end].op == operation:
+            end += 1
+        yield offset, cases[offset:end]
+        offset = end
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--flocq-dir", type=Path, required=True)
     parser.add_argument("--coqc", help="override the compiler recorded by the reference build")
     parser.add_argument("--seed", type=int, default=20260919)
     parser.add_argument("--samples", type=int, default=100, help="random cases per API after boundary grids")
-    parser.add_argument("--batch-size", type=int, default=100)
+    parser.add_argument("--batch-size", type=int, default=100,
+                        help="maximum cases per batch; heavy primitive families are capped at 25")
     parser.add_argument("--output", type=Path)
     parser.add_argument("--replay", type=Path, help="JSON list of {op, args} inputs")
     parser.add_argument("--operations", help="comma-separated test families; default is all")
@@ -1400,6 +1423,7 @@ def main() -> None:
               "rocq_version": run([coqc, "--version"]).strip(), "cases": len(cases),
               "operations": dict(Counter(case.op for case in cases)), "status": "running",
               "fresh_build": not args.skip_build,
+              "requested_batch_size": args.batch_size, "batch_size_limits": BATCH_LIMITS,
               "method": "Lean compiled execution and kernel reduction versus Rocq vm_compute; finite tests only",
               "compared_cases": 0, "compiled_cases": 0, "bootstrapped_lean_cases": 0, "mismatches": []}
     report_path = output / "report.json"
@@ -1417,8 +1441,7 @@ def main() -> None:
                          "FloatSpec.Test.BitsExecution"], timeout=600)
             (output / "lean_build.out").write_text(build)
         require_lean_source_snapshot(report["lean_source_sha256"])
-        for offset in range(0, len(cases), args.batch_size):
-            batch = cases[offset:offset + args.batch_size]
+        for offset, batch in case_batches(cases, args.batch_size):
             folder = output / f"batch_{offset:06d}"
             folder.mkdir()
             observations = execute(batch, flocq, coqc, folder)
@@ -1436,7 +1459,7 @@ def main() -> None:
                 bootstrap_lean(batch, observations["rocq"], folder)
                 report["bootstrapped_lean_cases"] += len(batch)
                 report_path.write_text(json.dumps(report, indent=2) + "\n")
-            print(f"{min(offset + args.batch_size, len(cases))}/{len(cases)}; "
+            print(f"{offset + len(batch)}/{len(cases)}; "
                   f"mismatches={len(mismatches)}", flush=True)
             require_lean_source_snapshot(report["lean_source_sha256"])
         report["mismatches"] = mismatches

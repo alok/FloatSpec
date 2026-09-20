@@ -15,7 +15,7 @@ This guide follows those jobs in order. The detailed
 [independent continuation audit](ASTRA_AUDIT_2026-09-19.md) retain the
 declaration-by-declaration findings and historical milestones.
 
-## Wake-up summary — September 20, 2026, 13:09 UTC
+## Wake-up summary — September 20, 2026, 13:37 UTC
 
 **The port builds and runs on macOS with Lean 4.34.0, but it is not yet a
 fully source-audited port.** All 35 built Flocq module names have Lean
@@ -24,7 +24,7 @@ definitions and theorem statements really match Flocq, exercising their
 boundaries, and closing four explicit native/decoder proof obligations.
 A file-count or successful build is not a completion percentage.
 
-**Latest pushed checkpoint:**
+**Latest primitive source checkpoint:**
 [`e18434ad`](https://github.com/alok/FloatSpec/commit/e18434ad).
 All 33 remaining primitive definitions and four arithmetic notation instances
 now execute at their original names. Their formulas, types, and proofs are
@@ -35,8 +35,8 @@ API/exponent mutations pass. Compiled trust still finds exactly four named
 proof debts; 218 pinned source anchors validate.
 The seven-part demo additionally passes as a standalone linked macOS arm64
 executable; the ledger retains its build/run receipts and exact hashes.
-A subsequent scratch check detects all **40** deliberately wrong API/instance
-or exponent observations; integration waits for the frozen run to finish.
+The expanded mutation suite is now integrated and passes all **40** deliberately
+wrong API/instance or exponent observations in both Lean paths.
 
 **The idea that makes the latest work understandable:** a raw encoding, a
 canonical floating-point value, and a native machine float are different
@@ -53,21 +53,29 @@ of performing unsigned wrapping and two rounding stages. Both repairs are
 pushed, with saved failing inputs and passing reruns. The seven-part demo
 includes the conversion and double-rounding examples.
 
-**Currently running, not yet passed:** a frozen-snapshot **4,970-case**
-cross-test, seed `844763`, through the three new primitive test families.
-The [audit ledger](ASTRA_AUDIT_2026-09-19.md) records its source hash,
-completion status, earlier broad tests, and failed attempts. Counts from
+**Newly completed:** the frozen-snapshot **4,970-case** cross-test, seed
+`844763`, passes through the three new primitive families: 1,465 arithmetic,
+1,325 helper, and 2,180 rounding cases. Both Lean execution paths agree with
+pinned Rocq, and all 4,970 generated kernel equalities pass. The
+[audit ledger](ASTRA_AUDIT_2026-09-19.md) records its source hash, earlier
+broad tests, and failed attempts. Counts from
 different snapshots must not be silently added into a claim that every
 test ran on the latest commit.
 Separately, the runner's 200-case default batch hit its timeout. The exact
-saved inputs pass in eight 25-case batches; this scheduling repair is tested
-in scratch, not yet applied to the running production harness.
+saved inputs pass in eight 25-case batches. The scheduling repair is now
+integrated: 29 runner/parser/batching tests and a 28-case mixed-family replay
+pass, including all generated kernel equalities. Timeouts remain errors.
+
+A separate **1,224-pair** native arithmetic run is still running. It adds a
+compiled logical-model observation alongside native FFI, kernel reduction,
+and pinned Rocq. Those are four execution paths inside the same three
+verification loops, not four independent proofs.
 
 **Next confirmed interface finding:** Flocq's predicate-to-rounding
 constructors return a value/function *with its proof*. The current Lean
 exports return bare values and fall back to zero if no witness exists.
 Two source-shaped clients pass in Rocq and fail in Lean. A closed scratch
-repair is ready, but production is frozen while the arithmetic run finishes.
+repair is ready, but library sources are frozen while that native run finishes.
 This is a source-interface discrepancy, not a disproof of the old
 conditional theorem.
 

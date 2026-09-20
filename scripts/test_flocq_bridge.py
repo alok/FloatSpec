@@ -48,6 +48,92 @@ class RunnerTests(unittest.TestCase):
         self.assertEqual(len(interrupted), 1)
 
 
+class BatchTests(unittest.TestCase):
+    def test_heavy_family_limits_and_smaller_requests(self):
+        for family in bridge.BATCH_LIMITS:
+            case = getattr(bridge, family + '_corpus')(844763, 0)[0]
+            cases = [case] * 61
+            batches = list(bridge.case_batches(cases, 200))
+            self.assertEqual([offset for offset, _ in batches], [0, 25, 50])
+            self.assertEqual([len(batch) for _, batch in batches], [25, 25, 11])
+            self.assertEqual([len(batch) for _, batch in bridge.case_batches(cases, 10)],
+                             [10, 10, 10, 10, 10, 10, 1])
+
+    def test_order_duplicates_family_boundaries_and_offsets(self):
+        light = bridge.Case('power', (2, 3))
+        heavy = bridge.prim_arithmetic_corpus(844763, 0)[0]
+        cases = [light] * 201 + [heavy] * 26 + [light, heavy, light]
+        batches = list(bridge.case_batches(cases, 200))
+        self.assertEqual([len(batch) for _, batch in batches], [200, 1, 25, 1, 1, 1, 1])
+        self.assertEqual([case for _, batch in batches for case in batch], cases)
+        offset = 0
+        for actual, batch in batches:
+            self.assertEqual(actual, offset)
+            self.assertEqual(len({case.op for case in batch}), 1)
+            offset += len(batch)
+        self.assertEqual(offset, len(cases))
+
+    def test_empty_and_invalid_request(self):
+        self.assertEqual(list(bridge.case_batches([], 200)), [])
+        for size in (0, -1):
+            with self.assertRaisesRegex(ValueError, 'positive'):
+                list(bridge.case_batches([], size))
+
+    def check_driver(self, fail_batch=None):
+        cases = bridge.prim_arithmetic_corpus(844763, 0)[:61]
+        with tempfile.TemporaryDirectory() as directory:
+            folder = Path(directory)
+            replay = folder / 'replay.json'
+            replay.write_text(json.dumps([{'op': c.op, 'args': c.args} for c in cases]))
+            output = folder / 'out'
+            argv = ['bridge', '--flocq-dir', directory, '--coqc', 'coqc',
+                    '--replay', str(replay), '--output', str(output),
+                    '--batch-size', '200', '--skip-build']
+            observed, bootstrapped = [], []
+            def execute(batch, *_):
+                if len(observed) == fail_batch:
+                    raise subprocess.TimeoutExpired(['lean'], 120)
+                observed.append(batch)
+                return {name: [[0] * bridge.WIDTHS[c.op] for c in batch]
+                        for name in ('lean', 'compiled', 'rocq')}
+            def bootstrap(batch, *_):
+                bootstrapped.append(batch)
+            with (patch('sys.argv', argv),
+                  patch.object(bridge, 'verify_reference', return_value='pinned'),
+                  patch.object(bridge, 'run', return_value='metadata'),
+                  patch.object(bridge, 'lean_source_fingerprint', return_value='snapshot'),
+                  patch.object(bridge, 'execute', side_effect=execute),
+                  patch.object(bridge, 'bootstrap_lean', side_effect=bootstrap),
+                  contextlib.redirect_stdout(io.StringIO())):
+                if fail_batch is None:
+                    bridge.main()
+                else:
+                    with self.assertRaises(subprocess.TimeoutExpired):
+                        bridge.main()
+            report = json.loads((output / 'report.json').read_text())
+            self.assertEqual(report['requested_batch_size'], 200)
+            self.assertEqual(report['batch_size_limits'], bridge.BATCH_LIMITS)
+            self.assertEqual(len(json.loads((output / 'cases.json').read_text())), 61)
+            self.assertEqual(observed, bootstrapped)
+            return report, observed, cases
+
+    def test_driver_uses_cap_and_keeps_all_cases(self):
+        report, batches, cases = self.check_driver()
+        self.assertEqual(report['status'], 'passed')
+        self.assertEqual([len(batch) for batch in batches], [25, 25, 11])
+        self.assertEqual([case for batch in batches for case in batch], cases)
+        for count in ('compared_cases', 'compiled_cases', 'bootstrapped_lean_cases'):
+            self.assertEqual(report[count], 61)
+
+    def test_later_batch_timeout_is_error_not_partial_pass(self):
+        report, batches, _ = self.check_driver(fail_batch=1)
+        self.assertEqual(report['status'], 'error')
+        self.assertIn('TimeoutExpired', report['error'])
+        self.assertEqual(len(batches), 1)
+        for count in ('compared_cases', 'compiled_cases', 'bootstrapped_lean_cases'):
+            self.assertEqual(report[count], 25)
+
+
 class ParserTests(unittest.TestCase):
 
     def test_primitive_execution_domains_and_replayable_corpora(self):
@@ -339,21 +425,51 @@ class LiveTests(unittest.TestCase):
         helpers = bridge.Case('prim_helpers', (0, *one, 1, 2102))
         rounding = bridge.Case('prim_round', (0, 0, 1, 0, 0, 1))
         original = bridge.expressions
+        # Every executable API/instance has its own mutation; the three
+        # decomposition exponent projections are additionally checked alone.
         changes = [
-            (arithmetic, 'SFmul raw_x raw_y', 'SFadd raw_x raw_y', 0, 4),
-            (arithmetic, 'mul prim_x prim_y', 'add prim_x prim_y', 14, 18),
-            (arithmetic, '(prim_x * prim_y)', '(prim_x + prim_y)', 34, 38),
-            (arithmetic, 'Bmult .RNE x y', 'Bplus .RNE x y', 50, 54),
-            (helpers, 'SFldexp raw (1)', 'SFldexp raw (0)', 1, 5),
-            (helpers, 'FaithfulPrimFloat.ldexp prim (1)', 'FaithfulPrimFloat.ldexp prim (0)', 9, 13),
-            (helpers, 'FaithfulPrimFloat.next_up prim', 'FaithfulPrimFloat.next_down prim', 25, 29),
-            (helpers, ' ++ [f.2]', ' ++ [f.2 + 1]', 41, 42),
-            (helpers, 'Uint63.to_Z fs.2]', 'Uint63.to_Z fs.2 + 1]', 46, 47),
-            (helpers, ' ++ [fb.2]', ' ++ [fb.2 + 1]', 67, 68),
-            (rounding, 'binary_round_aux false (1) (0)', 'binary_round_aux true (1) (0)', 0, 4),
-            (rounding, 'binary_round false (binaryPositiveOfNat 1', 'binary_round true (binaryPositiveOfNat 1', 4, 8),
-            (rounding, 'binary_normalize (1) (0)', 'binary_normalize (-1) (0)', 8, 12),
-            (rounding, 'binary_normalize_bsn .RNE (1)', 'binary_normalize_bsn .RNE (-1)', 12, 16)]
+            (arithmetic, "SFmul raw_x raw_y", "SFadd raw_x raw_y", 0, 4),
+            (arithmetic, "SFdiv raw_x raw_y", "SFadd raw_x raw_y", 4, 8),
+            (arithmetic, "SFadd raw_x raw_y", "SFmul raw_x raw_y", 8, 12),
+            (arithmetic, "FaithfulPrimFloat.mul prim_x prim_y", "FaithfulPrimFloat.add prim_x prim_y", 14, 18),
+            (arithmetic, "FaithfulPrimFloat.div prim_x prim_y", "FaithfulPrimFloat.add prim_x prim_y", 18, 22),
+            (arithmetic, "FaithfulPrimFloat.sqrt prim_x", "FaithfulPrimFloat.add prim_x prim_y", 22, 26),
+            (arithmetic, "FaithfulPrimFloat.add prim_x prim_y", "FaithfulPrimFloat.mul prim_x prim_y", 26, 30),
+            (arithmetic, "FaithfulPrimFloat.sub prim_x prim_y", "FaithfulPrimFloat.add prim_x prim_y", 30, 34),
+            (arithmetic, "(prim_x * prim_y)", "(prim_x + prim_y)", 34, 38),
+            (arithmetic, "(prim_x / prim_y)", "(prim_x + prim_y)", 38, 42),
+            (arithmetic, "(prim_x + prim_y)", "(prim_x * prim_y)", 42, 46),
+            (arithmetic, "(prim_x - prim_y)", "(prim_x + prim_y)", 46, 50),
+            (arithmetic, "Bmult .RNE x y", "Bplus .RNE x y", 50, 54),
+            (arithmetic, "Bdiv .RNE x y", "Bplus .RNE x y", 54, 58),
+            (arithmetic, "Bsqrt .RNE x", "Bplus .RNE x y", 58, 62),
+            (arithmetic, "Bplus .RNE x y", "Bmult .RNE x y", 62, 66),
+            (arithmetic, "Bminus .RNE x y", "Bplus .RNE x y", 66, 70),
+            (helpers, "SFldexp raw (1)", "SFldexp raw (0)", 1, 5),
+            (helpers, "FaithfulPrimFloat.of_uint63 u", "FaithfulPrimFloat.two", 5, 9),
+            (helpers, "FaithfulPrimFloat.ldexp prim (1)", "prim", 9, 13),
+            (helpers, "FaithfulPrimFloat.Z.ldexp prim (1)", "prim", 13, 17),
+            (helpers, "FaithfulPrimFloat.ldshiftexp prim u", "prim", 17, 21),
+            (helpers, "FaithfulPrimFloat.ulp prim", "FaithfulPrimFloat.two", 21, 25),
+            (helpers, "FaithfulPrimFloat.next_up prim", "prim", 25, 29),
+            (helpers, "FaithfulPrimFloat.next_down prim", "prim", 29, 33),
+            (helpers, "FaithfulPrimFloat.two", "prim", 33, 37),
+            (helpers, "FaithfulPrimFloat.Z.frexp prim", "(prim, (0 : Int))", 37, 42),
+            (helpers, "FaithfulPrimFloat.frshiftexp prim", "(prim, u)", 42, 47),
+            (helpers, "FaithfulPrimFloat.Bldexp .RNE x (1)", "x", 47, 51),
+            (helpers, "FaithfulPrimFloat.Bulp' x", "x", 51, 55),
+            (helpers, "FaithfulPrimFloat.Bsucc x", "x", 55, 59),
+            (helpers, "FaithfulPrimFloat.Bpred x", "x", 59, 63),
+            (helpers, "FaithfulPrimFloat.Bfrexp x", "(x, (0 : Int))", 63, 68),
+            (helpers, " ++ [f.2]", " ++ [f.2 + 1]", 41, 42),
+            (helpers, "Uint63.to_Z fs.2]", "Uint63.to_Z fs.2 + 1]", 46, 47),
+            (helpers, " ++ [fb.2]", " ++ [fb.2 + 1]", 67, 68),
+            (rounding, "binary_round_aux false (1) (0)", "binary_round_aux true (1) (0)", 0, 4),
+            (rounding, "binary_round false (binaryPositiveOfNat 1", "binary_round true (binaryPositiveOfNat 1", 4, 8),
+            (rounding, "binary_normalize (1) (0)", "binary_normalize (-1) (0)", 8, 12),
+            (rounding, "binary_normalize_bsn .RNE (1)", "binary_normalize_bsn .RNE (-1)", 12, 16),
+        ]
+        self.assertEqual(len(changes), 40)
         for case, before, after, start, end in changes:
             def mutation(current):
                 lean, rocq = original(current)

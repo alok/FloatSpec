@@ -2278,6 +2278,50 @@ They prepare integration after the **still-running** 4,970-case production
 grid; none is a claim that a draft already ships or that the larger grid
 has finished. Only documentation changes during that frozen run.
 
+### September 20, 13:37 UTC — completed primitive grid; integrated runner safeguards
+
+The frozen production grid has now completed successfully: **4,970 cases**,
+all compared in kernel Lean, compiled Lean, and pinned Rocq, with **4,970
+generated Lean kernel equalities**, zero mismatches, in **3,358.485 seconds**.
+Seed `844763` gives 1,465 `prim_arithmetic`, 1,325 `prim_helpers`, and 2,180
+`prim_round` cases. Report and retained inputs:
+`/private/tmp/floatspec-primitive-execution-grid-20260920/report.json`.
+The source fingerprint remained
+`4ad5cb5325f15839c048fc2655e483f084a2ba395d2c556269e5c56144b35ba3`.
+The recorded launch HEAD is `c4f0d85f` with then-uncommitted primitive changes;
+those exact library changes were subsequently committed as `e18434ad`.
+The fingerprint, not the launch commit alone, identifies the executed source.
+
+The tested batch-cap repair now ships in `scripts/flocq_bridge.py`. Batches
+are homogeneous and preserve original ordering, duplicates, and indices.
+Only the three heavyweight primitive families have a 25-case cap; other
+families retain the requested maximum. The report includes that maximum and
+the cap table. **29 runner/parser/batching tests pass**, including explicit
+later-batch timeout handling: completed counts are retained, status is error.
+Receipt: `/private/tmp/floatspec-primitive-batch-unit-integrated-20260920.log`.
+
+A production mixed-family replay requests batch size 200 and executes two
+lightweight cases around 26 saved random primitive cases. It passes **28/28
+comparisons, compiled observations, and generated kernel equalities in
+89.819 seconds**, using batches of 1, 25, 1, and 1:
+`/private/tmp/floatspec-primitive-mixed-batch-integrated-20260920/report.json`.
+This checks the actual driver and global indices, not merely the batch helper.
+The earlier 200-case timeout remains a recorded error; the exact complete
+200-case scratch rerun described above remains separate evidence.
+
+The production mutation suite now covers **40** independent result changes:
+all 33 executable APIs, all four arithmetic instances, and three returned
+decomposition exponents. All are detected in both Lean paths; unaffected
+result columns remain unchanged. The integrated test passes in **115.133
+seconds**:
+`/private/tmp/floatspec-primitive-all-mutations-integrated-20260920.log`.
+The full harness has five additional unit tests (72 total), but this
+checkpoint does not claim that all 72 have been rerun together yet.
+
+No library source or configuration changed during these runs. A separate
+1,224-pair native-arithmetic four-path draft is still running; its partial
+output is not counted as a completed result. Proof debts remain unchanged.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In

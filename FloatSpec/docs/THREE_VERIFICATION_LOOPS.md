@@ -479,8 +479,19 @@ check three returned decomposition exponents. A closed example in both
 provers distinguishes raw `(9,-2)` from canonical 2.25 after squaring raw
 `(3,-1)`. The fixture executes actual clients, so reintroducing a
 `noncomputable` dependency makes it fail even when logical reductions remain
-possible. Fourteen deliberate API/exponent mutations test the bridge's
-independent observation columns.
+possible. Forty deliberate mutations cover each of the 33 APIs and four
+notation instances, plus the three returned exponents independently. Every
+mutation must change its designated result and leave other columns intact in
+both Lean execution paths.
+
+The requested batch size is a maximum, not a promise to put every family in
+one large compiler input. The three primitive families are capped at 25 cases
+per homogeneous batch: a saved 200-case arithmetic input exceeded the kernel
+runner's 120-second limit, while the same inputs passed in eight smaller
+batches. Input order, duplicates, global case indices, and replay contents are
+preserved. Reports record `requested_batch_size` and `batch_size_limits`.
+Timeouts still fail the entire run; the runner does not silently retry or call
+a completed prefix a pass.
 
 Run only these families with
 `--operations prim_arithmetic,prim_helpers,prim_round`. Exact run counts,
