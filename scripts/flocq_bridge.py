@@ -32,9 +32,9 @@ LEAN_LOC = [".loc_Exact", ".loc_Inexact .lt", ".loc_Inexact .eq", ".loc_Inexact 
 COQ_LOC = ["loc_Exact", "loc_Inexact Lt", "loc_Inexact Eq", "loc_Inexact Gt"]
 OPS = ("power", "div_eucl", "location", "round", "truncate", "div", "plus", "sqrt",
        "formats", "digits", "operations", "format_calc", "overflow", "bits32", "bits64",
-       "bit_fields", "order32", "order64", "validity", "nearby", "neighbors", "comparison")
-ARITIES = dict(zip(OPS, (2, 2, 3, 3, 5, 6, 6, 4, 3, 2, 5, 8, 4, 1, 1, 6, 2, 2, 5, 6, 6, 10), strict=True))
-WIDTHS = dict(zip(OPS, (1, 2, 3, 6, 3, 2, 2, 2, 4, 1, 13, 12, 5, 9, 9, 8, 14, 14, 15, 7, 17, 11), strict=True))
+       "bit_fields", "order32", "order64", "validity", "nearby", "neighbors", "comparison", "small_ieee")
+ARITIES = dict(zip(OPS, (2, 2, 3, 3, 5, 6, 6, 4, 3, 2, 5, 8, 4, 1, 1, 6, 2, 2, 5, 6, 6, 10, 15), strict=True))
+WIDTHS = dict(zip(OPS, (1, 2, 3, 6, 3, 2, 2, 2, 4, 1, 13, 12, 5, 9, 9, 8, 14, 14, 15, 7, 17, 11, 39), strict=True))
 RADIX_OPS = {"truncate", "div", "plus", "sqrt", "digits", "operations", "format_calc"}
 
 
@@ -77,6 +77,97 @@ class Case:
                 kind, sign, mantissa, _ = self.args[offset:offset+4]
                 if kind not in range(4) or sign not in (0, 1) or mantissa <= 0:
                     raise ValueError("comparison requires kind 0..3, sign 0/1, positive source mantissa")
+        if self.op == "small_ieee":
+            prec, emax, mode = self.args[:3]
+            if not 1 < prec < emax or mode not in range(5):
+                raise ValueError("small_ieee requires 1 < prec < emax and mode 0..4")
+            for offset in (3, 7, 11):
+                kind, sign, mantissa, _ = self.args[offset:offset+4]
+                if kind not in range(4) or sign not in (0, 1) or mantissa <= 0:
+                    raise ValueError("small_ieee requires kind 0..3, sign 0/1, positive source mantissa")
+
+
+def small_ieee_raw(value, coq=False):
+    kind, sign, mantissa, exponent = value
+    s = 'true' if sign else 'false'
+    prefix = 'SpecFloat.' if coq else '.'
+    return (f'{prefix}S754_zero {s}', f'{prefix}S754_infinity {s}',
+            f'{prefix}S754_nan',
+            f'{prefix}S754_finite {s} ({mantissa})' + ('%positive' if coq else '') +
+            f' ({exponent})')[kind]
+
+
+def small_ieee_expressions(case: Case) -> tuple[str, str]:
+    p, emax, mode, *words = case.args
+    if not 1 < p < emax or mode not in range(5):
+        raise ValueError('small full-payload formats require 1 < precision < emax')
+    operands = [words[offset:offset+4] for offset in (0, 4, 8)]
+    if any(k not in range(4) or s not in (0, 1) or m <= 0 for k, s, m, e in operands):
+        raise ValueError('invalid raw constructor')
+    lm = ('.RNE', '.RTZ', '.RTN', '.RTP', '.RNA')[mode]
+    cm = ('mode_NE', 'mode_ZR', 'mode_DN', 'mode_UP', 'mode_NA')[mode]
+    lean = (f'letI : Prec_gt_0 {p} := ⟨by decide⟩; '
+            f'letI : Prec_lt_emax {p} {emax} := ⟨by decide⟩; '
+            f'let nan : {{ x : binary_float {p} {emax} // Binary.is_nan x = true }} := '
+            '⟨.B754_nan false .xH (by norm_num [nan_pl, Zaux.Zlt_bool, '
+            'Digits.digits2_pos, Digits.digits2_Pnat, Digits.digits2_Pnat_bitlength_payload, '
+            'Zaux.positiveToNat]), rfl⟩; ')
+    coq = ''
+    for name, operand in zip(('x', 'y', 'z'), operands, strict=True):
+        lean += (f'let raw_{name} : StandardFloat := {small_ieee_raw(operand)}; '
+                 f'let {name} := Binary.BSN2B nan (BinarySingleNaN.SF2B\' '
+                 f'(prec := {p}) (emax := {emax}) raw_{name}); ')
+        coq += (f'let raw_{name} := {small_ieee_raw(operand, True)} in '
+                f'let {name} := @BinarySingleNaN.SF2B\' {p} {emax} raw_{name} in ')
+    lean += '[' + ', '.join(f'boolean (validBinarySingleNaNStandardFloat '
+                            f'(prec := {p}) (emax := {emax}) raw_{n})' for n in ('x','y','z')) + ']'
+    coq += '[' + '; '.join(f'boolean (SpecFloat.valid_binary {p} {emax} raw_{n})'
+                           for n in ('x','y','z')) + ']'
+    values_l, values_c = ['x', 'y', 'z'], ['x', 'y', 'z']
+    for name in ('Bplus', 'Bminus', 'Bmult', 'Bdiv', 'Bsqrt', 'Bfma'):
+        arity = 1 if name == 'Bsqrt' else 3 if name == 'Bfma' else 2
+        args = ' '.join(('x','y','z')[:arity])
+        handler = '(fun ' + ' '.join('_' for _ in range(arity)) + ' => nan)'
+        values_l.append(f'Binary.{name} {handler} {lm} {args}')
+        values_c.append(f'@BinarySingleNaN.{name} {p} {emax} '
+                        f'(ltac:(compute; reflexivity)) (ltac:(compute; reflexivity)) {cm} {args}')
+    for lvalue, cvalue in zip(values_l, values_c, strict=True):
+        lean += f' ++ standard (binarySingleNaNFloatToStandardFloat (Binary.B2BSN ({lvalue})))'
+        coq += f' ++ standard (@BinarySingleNaN.B2SF {p} {emax} ({cvalue}))'
+    return lean, coq
+
+
+def small_ieee_corpus(seed: int, samples: int) -> list[Case]:
+    rng, cases = random.Random(seed), []
+    for p in (2, 3, 4, 8):
+        for emax in (p + 1, 2*p + 1):
+            emin = 3-emax-p
+            poszero, negzero = (0, 0, 1, 0), (0, 1, 1, 0)
+            posinf, neginf, nan = (1, 0, 1, 0), (1, 1, 1, 0), (2, 0, 1, 0)
+            tiny = (3, 0, 1, emin)
+            one = (3, 0, 1 << (p-1), 1-p)
+            negone = (3, 1, 1 << (p-1), 1-p)
+            maximum = (3, 0, (1 << p)-1, emax-p)
+            normal = (3, 0, 1 << (p-1), emin)
+            subnormal = (3, 0, (1 << (p-1))-1, emin)
+            invalid = (3, 0, 1, emax+1)
+            values = [poszero, negzero, posinf, neginf, nan, tiny, one, negone,
+                      maximum, normal, subnormal, invalid]
+            # Every pair of exceptional/normal/subnormal/boundary operands;
+            # FMA's addend rotates over the same independently defined pool.
+            triples = [(x, y, values[(row*7 + col*3) % len(values)])
+                       for row, x in enumerate(values) for col, y in enumerate(values)]
+            for mode in range(5):
+                for x, y, z in triples:
+                    cases.append(Case('small_ieee', (p, emax, mode, *x, *y, *z)))
+                for _ in range(samples):
+                    operands = []
+                    for _ in range(3):
+                        kind = rng.choice((0, 1, 2, 3, 3, 3, 3))
+                        operands.extend((kind, rng.randrange(2), rng.randint(1, (1 << p)-1),
+                                         rng.randint(emin, emax-p)))
+                    cases.append(Case('small_ieee', (p, emax, mode, *operands)))
+    return list(dict.fromkeys(cases))
 
 
 def comparison_corpus(seed: int, samples: int) -> list[Case]:
@@ -209,8 +300,9 @@ def corpus(seed: int, samples: int) -> list[Case]:
                                             emax-prec-1, emax-prec, emax-prec+1}):
                         cases.append(Case("neighbors", (prec, emax, 3, sign, mantissa, exponent)))
     cases.extend(comparison_corpus(seed, samples))
+    cases.extend(small_ieee_corpus(seed, samples))
     for op in OPS:
-        if op == "comparison":
+        if op in ("comparison", "small_ieee"):
             continue
         for _ in range(samples):
             base = rng.choice((2, 3, 10, 16))
@@ -275,6 +367,8 @@ def expressions(case: Case) -> tuple[str, str]:
     """Translate inputs only; all arithmetic is performed by imported APIs."""
     a = [f"({n})" for n in case.args]
     op = case.op
+    if op == "small_ieee":
+        return small_ieee_expressions(case)
     if op == "comparison":
         p, emax, *words = case.args
         operands = [words[:4], words[4:]]

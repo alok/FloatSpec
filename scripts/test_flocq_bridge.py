@@ -49,6 +49,19 @@ class RunnerTests(unittest.TestCase):
 
 
 class ParserTests(unittest.TestCase):
+    def test_small_format_corpus_and_preconditions(self):
+        cases = bridge.small_ieee_corpus(491731, 1)
+        self.assertEqual(cases, bridge.small_ieee_corpus(491731, 1))
+        self.assertNotEqual(cases, bridge.small_ieee_corpus(491732, 1))
+        self.assertEqual({c.args[0] for c in cases}, {2, 3, 4, 8})
+        self.assertEqual({c.args[2] for c in cases}, set(range(5)))
+        for args in ((1, 4, 0), (3, 3, 0), (3, 4, 5)):
+            with self.assertRaises(ValueError):
+                bridge.Case('small_ieee', (*args, *(0, 0, 1, 0)*3))
+        for operand in ((4, 0, 1, 0), (0, 2, 1, 0), (3, 0, 0, 0)):
+            with self.assertRaises(ValueError):
+                bridge.Case('small_ieee', (3, 4, 0, *operand, *(0, 0, 1, 0)*2))
+
     def test_source_snapshot_changes_with_inputs_not_documentation(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -153,6 +166,37 @@ class ParserTests(unittest.TestCase):
 
 @unittest.skipUnless(os.environ.get("FLOCQ_AUDIT_DIR"), "live test requires FLOCQ_AUDIT_DIR")
 class LiveTests(unittest.TestCase):
+    def test_small_format_arithmetic_and_invalid_conversion(self):
+        flocq = Path(os.environ['FLOCQ_AUDIT_DIR']).resolve()
+        one, half, invalid = (3, 0, 4, -2), (3, 0, 4, -3), (3, 0, 1, 5)
+        cases = [bridge.Case('small_ieee', (3, 4, mode, *one, *half, *invalid))
+                 for mode in range(5)]
+        with tempfile.TemporaryDirectory(prefix='floatspec-small-ieee-') as directory:
+            rows = bridge.execute(cases, flocq, bridge.configured_coqc(flocq), Path(directory))
+            bridge.bootstrap_lean(cases, rows['rocq'], Path(directory))
+        self.assertEqual(bridge.compare(cases, rows), [])
+        for row in rows['lean']:
+            self.assertEqual(row[:3], [1, 1, 0])
+            self.assertEqual(row[11:15], [2, 0, 0, 0])
+            self.assertEqual(row[15:19], [3, 0, 6, -2])
+            self.assertEqual(row[-4:], [2, 0, 0, 0])
+
+    def test_small_format_add_to_subtract_mutation_is_rejected(self):
+        flocq = Path(os.environ['FLOCQ_AUDIT_DIR']).resolve()
+        original = bridge.expressions
+        def mutated(case):
+            lean, rocq = original(case)
+            self.assertIn('Binary.Bplus', lean)
+            return lean.replace('Binary.Bplus', 'Binary.Bminus'), rocq
+        one = (3, 0, 4, -2)
+        case = bridge.Case('small_ieee', (3, 4, 0, *one, *one, *one))
+        with (tempfile.TemporaryDirectory(prefix='floatspec-small-ieee-mutation-') as directory,
+              patch.object(bridge, 'expressions', mutated)):
+            rows = bridge.execute([case], flocq, bridge.configured_coqc(flocq), Path(directory))
+        failures = bridge.compare([case], rows)
+        self.assertEqual(len(failures), 1)
+        self.assertEqual(failures[0]['paths'], ['lean', 'compiled'])
+
     def test_generic_comparison_observes_validity_and_degenerate_formats(self):
         flocq = Path(os.environ["FLOCQ_AUDIT_DIR"]).resolve()
         cases = [bridge.Case("comparison", args) for args in

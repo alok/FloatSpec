@@ -298,8 +298,10 @@ The source pin is
 gitlink. Tests use a separate clean reference checkout; the user's modified
 nested checkout is preserved.
 
-All 36 Flocq source-module names have corresponding Lean files or umbrella
-modules. The old extraction plan lists 2,548 source declarations, with
+The pinned checkout has 34 tracked `.v` modules plus the generated `Version.v`.
+All 35 built module names have corresponding Lean files or umbrella modules,
+as checked directly against the pinned file list. This corrects the earlier
+unqualified count of 36. The old extraction plan lists 2,548 source declarations, with
 2,472 automatic pairings and 76 separately classified items. Those are
 navigation counts, **not a completed-port percentage**. Its 5,951 comparison
 jobs include multiple jobs per declaration, and only 27 received valid

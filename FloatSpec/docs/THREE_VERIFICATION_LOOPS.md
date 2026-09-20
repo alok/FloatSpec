@@ -91,6 +91,15 @@ configured Rocq compiler. On the audit Mac, the cached reference uses Homebrew
 Rocq 9.2, while the project-local `coqc` is 9.1; those compiled artifacts are not
 interchangeable.
 
+A separate Rocq 9.2 `coqchk -silent -o -Q src Flocq` run checked all 35 built
+reference modules, recursively including their dependencies, without `-admit`
+or `-norec`. This checks compiled proof objects, not just executable examples.
+Its successful context report records classical-real/function-extensionality
+assumptions and Rocq's primitive integer/float axioms. It is **not** an
+axiom-free certification of native hardware. The report found no type-in-type,
+unsafe (co)fixpoint, or assumed-positivity dependencies. The exact command and
+receipt are retained in the audit ledger.
+
 ## 3. Connect the two
 
 `scripts/flocq_bridge.py` creates one JSON input corpus and translates each row
@@ -180,6 +189,23 @@ paths. The public `Binary.Bcompare` and `BinarySingleNaN.Bcompare` now return
 reversal proofs. The legacy raw-carrier integer-coded adapter is named
 `BcompareIntCompat` rather than presented as the source interface.
 
+The twenty-third family, `small_ieee`, executes full-payload Lean arithmetic
+in precisions 2, 3, 4, and 8 with two exponent ranges each, against pinned
+Rocq SingleNaN arithmetic. Each row runs addition, subtraction, multiplication,
+division, square root, and fused multiply-add in one of the five modes.
+Thirty-nine columns retain raw validity, the converted three inputs, and all
+six results. Every pair in the twelve-value boundary pool is included; FMA's
+third operand rotates through that pool and is not exhaustively enumerated.
+Seeded supplemental triples add coverage beyond the boundary pool.
+
+This family deliberately erases NaN payloads using a fixed valid handler;
+the separate binary32/64 mode bridge checks payload policy. It requires
+`1 < prec < emax`, because the chosen payload must fit. Invalid finite raw
+carriers are visibly converted to NaN rather than silently treated as valid
+arithmetic operands. A live addition-to-subtraction mutation must fail in both
+Lean paths. It is included automatically in the combined runner, or run it
+alone with `--operations small_ieee --seed 491733 --samples 10`.
+
 Lean both executes compiled calls with `--run` and reduces them with `#reduce`;
 Rocq uses `vm_compute`. Enabling compiled execution required removing
 unnecessary `noncomputable` markers from twelve integer-only Calc definitions
@@ -210,7 +236,7 @@ bash scripts/test_flocq_conformance.sh
 ```
 
 This creates and builds a detached reference worktree, runs the standalone
-Rocq and Lean checks, runs all five differential bridges, and executes their own
+Rocq and Lean checks, runs all six differential bridges, and executes their own
 tests. Live mutations recreate the historical negative-exponent bug and replace
 native successor by predecessor, swap native arithmetic operands, and alter
 only compiled Lean while kernel/Rocq still agree. Each
