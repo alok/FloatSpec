@@ -2525,7 +2525,8 @@ def binary_round_aux (mode : RoundingMode) (sx : Bool)
 -- Upstream `B754_finite` carries validity evidence in the constructor; the
 -- current raw `StandardFloat` result needs that proof supplied explicitly until
 -- the faithful `binary_round_aux_correct` payload is available.
-noncomputable def binaryRoundAuxToBinarySingleNaNFloat
+@[flocq_local "Proof-carrying adapter for the raw binary_round_aux compatibility API"]
+def binaryRoundAuxToBinarySingleNaNFloat
     (mode : RoundingMode) (sx : Bool) (mx ex : Int) (lx : Loc)
     (hvalid :
       validBinarySingleNaNStandardFloat (prec:=prec) (emax:=emax)
@@ -2653,8 +2654,9 @@ private theorem BSN_is_nan_SF2B_eq (x : StandardFloat) :
     BSN_is_nan (SF2B x) = is_nan_SF x := by
   cases x <;> rfl
 
--- Coq: `binary_normalize`.
-noncomputable def binary_normalize (mode : RoundingMode) (m e : Int) (szero : Bool) :
+-- Raw compatibility carrier; the source-facing facade returns validity evidence.
+@[flocq_local "Raw B754 compatibility version of BinarySingleNaN.binary_normalize"]
+def binary_normalize (mode : RoundingMode) (m e : Int) (szero : Bool) :
     B754 :=
   if m = 0 then
     B754.B754_zero szero
@@ -14149,7 +14151,8 @@ def binary_round {prec emax : Int}
 
 -- Coq `Binary.v:binary_normalize`, constructing the proof-carrying result
 -- directly from the already-verified SingleNaN rounding result.
-noncomputable def binary_normalize {prec emax : Int}
+@[flocq_source "src/IEEE754/Binary.v" 1019 "binary_normalize"]
+def binary_normalize {prec emax : Int}
     [Prec_gt_0 prec] [Prec_lt_emax prec emax]
     (mode : RoundingMode) (m e : Int) (szero : Bool) : binary_float prec emax :=
   if hm0 : m = 0 then binary_float.B754_zero szero

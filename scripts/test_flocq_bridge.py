@@ -49,6 +49,23 @@ class RunnerTests(unittest.TestCase):
 
 
 class ParserTests(unittest.TestCase):
+    def test_normalization_domains_and_replayable_boundaries(self):
+        cases = bridge.normalize_corpus(840691, 3)
+        self.assertEqual(cases, bridge.normalize_corpus(840691, 3))
+        self.assertNotEqual(cases, bridge.normalize_corpus(840692, 3))
+        self.assertEqual(len(cases), len(set(cases)))
+        self.assertEqual({c.args[2] for c in cases}, set(range(5)))
+        for args in ((3, 4, 0, -9, -3, 0), (3, 4, 4, 0, 0, 1),
+                     (53, 1024, 3, 1, -1075, 0), (1, 2, 0, 1, 2, 1)):
+            self.assertIn(bridge.Case('normalize', args), cases)
+        for position, bad in ((0, 0), (0, 4), (1, 3), (2, 5), (5, 2)):
+            args = [3, 4, 0, -9, -3, 0]
+            args[position] = bad
+            with self.assertRaises(ValueError):
+                bridge.Case('normalize', tuple(args))
+        self.assertEqual(bridge.WIDTHS['normalize'], 12)
+        self.assertEqual(bridge.WIDTHS['ieee_round'], 21)
+
     def test_frexp_corpus_uses_its_actual_source_domain(self):
         cases = bridge.single_frexp_corpus(836641, 3)
         self.assertEqual(cases, bridge.single_frexp_corpus(836641, 3))
@@ -429,11 +446,11 @@ class LiveTests(unittest.TestCase):
             rows = bridge.execute(cases, flocq, bridge.configured_coqc(flocq), Path(directory))
             bridge.bootstrap_lean(cases, rows['rocq'], Path(directory))
         self.assertEqual(bridge.compare(cases, rows), [])
-        self.assertEqual(rows['rocq'][0], [3, 0, 4, -2] * 4)
-        self.assertEqual(rows['rocq'][1], [3, 0, 5, -2] * 4)
+        self.assertEqual(rows['rocq'][0], [3, 0, 4, -2] * 4 + [1, 3, 0, 4, -2])
+        self.assertEqual(rows['rocq'][1], [3, 0, 5, -2] * 4 + [1, 3, 0, 5, -2])
         self.assertEqual(rows['rocq'][2][:8], [0, 1, 0, 0] * 2)
         self.assertEqual(rows['rocq'][3][:8], [2, 0, 0, 0, 2, 0, 1, 0])
-        self.assertEqual(rows['rocq'][6], [3, 0, 4, -2] * 4)
+        self.assertEqual(rows['rocq'][6], [3, 0, 4, -2] * 4 + [1, 3, 0, 4, -2])
         self.assertEqual(rows['rocq'][7][:8], [0, 0, 0, 0] * 2)
         self.assertEqual(rows['rocq'][8][:8], [0, 1, 0, 0] * 2)
         self.assertEqual(rows['rocq'][9][:8], [0, 1, 0, 0] * 2)
@@ -452,6 +469,75 @@ class LiveTests(unittest.TestCase):
         failures = bridge.compare([case], rows)
         self.assertEqual(len(failures), 1)
         self.assertEqual(failures[0]['paths'], ['lean', 'compiled'])
+
+    def test_normalization_three_exports_and_signed_zero(self):
+        flocq = Path(os.environ['FLOCQ_AUDIT_DIR']).resolve()
+        cases = [bridge.Case('normalize', args) for args in
+                 ((3, 4, 0, -9, -3, 0), (3, 4, 4, -9, -3, 0),
+                  (3, 4, 0, 0, 20, 1), (3, 4, 0, 1, -5, 0),
+                  (3, 4, 3, 1, -5, 0), (3, 4, 0, 15, 0, 0),
+                  (3, 4, 1, -15, 0, 0), (1, 2, 0, 1, 0, 0))]
+        with tempfile.TemporaryDirectory(prefix='floatspec-normalization-') as directory:
+            folder = Path(directory)
+            rows = bridge.execute(cases, flocq, bridge.configured_coqc(flocq), folder)
+            self.assertEqual(bridge.compare(cases, rows), [])
+            expected = [[3, 1, 4, -2], [3, 1, 5, -2], [0, 1, 0, 0],
+                        [0, 0, 0, 0], [3, 0, 1, -4], [1, 0, 0, 0],
+                        [3, 1, 7, 1], [3, 0, 1, 0]]
+            self.assertEqual(rows['rocq'], [row * 3 for row in expected])
+            bridge.bootstrap_lean(cases, rows['rocq'], folder)
+
+    def test_normalization_each_export_is_independently_observed(self):
+        flocq = Path(os.environ['FLOCQ_AUDIT_DIR']).resolve()
+        original = bridge.expressions
+        case = bridge.Case('normalize', (3, 4, 0, -9, -3, 0))
+        for namespace, start in (('Binary', 0), ('_root_', 4), ('BinarySingleNaN', 8)):
+            before = f'{namespace}.binary_normalize (prec := 3) (emax := 4) .RNE'
+            after = before.replace('.RNE', '.RNA')
+            def mutated(case):
+                lean, rocq = original(case)
+                self.assertEqual(lean.count(before), 1)
+                return lean.replace(before, after), rocq
+            with (self.subTest(namespace=namespace),
+                  tempfile.TemporaryDirectory(prefix='floatspec-normalization-mutation-') as directory,
+                  patch.object(bridge, 'expressions', mutated)):
+                rows = bridge.execute([case], flocq, bridge.configured_coqc(flocq), Path(directory))
+                self.assertEqual(bridge.compare([case], rows)[0]['paths'], ['lean', 'compiled'])
+                for path in ('lean', 'compiled'):
+                    self.assertNotEqual(rows[path][0][start:start+4], rows['rocq'][0][start:start+4])
+                    self.assertEqual(rows[path][0][:start], rows['rocq'][0][:start])
+                    self.assertEqual(rows[path][0][start+4:], rows['rocq'][0][start+4:])
+
+    def test_round_adapter_rejects_invalid_results_and_preserves_valid_nan(self):
+        flocq = Path(os.environ['FLOCQ_AUDIT_DIR']).resolve()
+        cases = [bridge.Case('ieee_round', args) for args in
+                 ((3, 0, 1, 0, 1, 0, 0, 1), (3, 4, 0, 0, -1, -4, 0, 1),
+                  (3, 4, 0, 1, 0, -4, 0, 1), (0, 1, 1, 0, 1, 0, 0, 1))]
+        with tempfile.TemporaryDirectory(prefix='floatspec-round-adapter-') as directory:
+            folder = Path(directory)
+            rows = bridge.execute(cases, flocq, bridge.configured_coqc(flocq), folder)
+            self.assertEqual(bridge.compare(cases, rows), [])
+            self.assertEqual([row[16:] for row in rows['rocq']],
+                             [[0, 2, 0, 0, 0], [1, 2, 0, 0, 0], [1, 0, 1, 0, 0],
+                              [1, 0, 0, 0, 0]])
+            bridge.bootstrap_lean(cases, rows['rocq'], folder)
+
+    def test_round_adapter_columns_are_not_hidden_by_raw_rounding(self):
+        flocq = Path(os.environ['FLOCQ_AUDIT_DIR']).resolve()
+        original = bridge.expressions
+        case = bridge.Case('ieee_round', (3, 4, 0, 0, 9, -3, 0, 9))
+        for column in (16, 19):
+            def mutated(case):
+                lean, rocq = original(case)
+                return f'({lean}).set {column} 0', rocq
+            with (self.subTest(column=column),
+                  tempfile.TemporaryDirectory(prefix='floatspec-round-adapter-mutation-') as directory,
+                  patch.object(bridge, 'expressions', mutated)):
+                rows = bridge.execute([case], flocq, bridge.configured_coqc(flocq), Path(directory))
+                self.assertEqual(bridge.compare([case], rows)[0]['paths'], ['lean', 'compiled'])
+                for path in ('lean', 'compiled'):
+                    self.assertEqual(rows[path][0][:16], rows['rocq'][0][:16])
+                    self.assertNotEqual(rows[path][0][16:], rows['rocq'][0][16:])
 
     def test_small_format_arithmetic_and_invalid_conversion(self):
         flocq = Path(os.environ['FLOCQ_AUDIT_DIR']).resolve()

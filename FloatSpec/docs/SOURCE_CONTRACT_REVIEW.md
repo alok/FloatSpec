@@ -6,6 +6,36 @@ all declarations in the named modules. See the
 [running audit](ASTRA_AUDIT_2026-09-19.md) for execution receipts and the
 [reading guide](READING_GUIDE.md) for the mathematical story.
 
+## Executable normalization: source interfaces versus compatibility carriers
+
+Pinned `Binary.v:1019` and `BinarySingleNaN.v:1751` export normalizers with
+positive precision and `prec < emax`. Both take a mode, signed integer
+mantissa, integer exponent, and zero sign. Compiled Lean and Rocq types match
+these premises for the source-facing entry points. The full-payload Lean
+implementation constructs the proof-carrying result from the same signed
+rounding branches; the source wraps its SingleNaN result with the non-NaN
+conversion. A source anchor identifies this correspondence without claiming
+that an anchor proves equivalence.
+
+The remaining `noncomputable` markers on `Binary.binary_normalize`, the root
+raw compatibility `binary_normalize`, and
+`binaryRoundAuxToBinarySingleNaNFloat` prevented ordinary compiled clients.
+Their bodies and types use only integer computation and proof-carrying
+construction; removing those markers makes the clients execute. The latter
+two are explicitly classified `flocq_local`: the raw compatibility carrier
+does not have the source's proof-carrying result type, and the validity adapter
+has no separate source declaration. It would be misleading to give either an
+exact source-interface label merely because it participates in the algorithm.
+
+The `normalize` bridge family observes all three normalizers separately,
+and the existing raw IEEE-rounding family now separately observes the local
+validity adapter. Its premise is validity of the computed result, not validity
+of every format parameter. Both a valid NaN and a rejected finite encoding are
+possible; a separate flag prevents the rejection sentinel from hiding that
+difference. The paired literal fixtures cover both cases and a malformed
+format that nevertheless produces a valid zero. Earlier raw-rounding receipts
+covered sixteen columns; the extended family requires twenty-one.
+
 ## FTZ inclusion: preserve each direction's actual premises
 
 Compiled pinned Rocq `FLXN_format_FTZ` (FTZ.v:71) and `generic_format_FTZ`

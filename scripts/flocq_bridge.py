@@ -33,9 +33,9 @@ COQ_LOC = ["loc_Exact", "loc_Inexact Lt", "loc_Inexact Eq", "loc_Inexact Gt"]
 OPS = ("power", "div_eucl", "location", "round", "truncate", "div", "plus", "sqrt",
        "formats", "digits", "operations", "format_calc", "overflow", "bits32", "bits64",
        "bit_fields", "order32", "order64", "validity", "nearby", "neighbors", "comparison", "small_ieee",
-       "ieee_round", "single_helpers", "single_frexp")
-ARITIES = dict(zip(OPS, (2, 2, 3, 3, 5, 6, 6, 4, 3, 2, 5, 8, 4, 1, 1, 6, 2, 2, 5, 6, 6, 10, 15, 8, 9, 6), strict=True))
-WIDTHS = dict(zip(OPS, (1, 2, 3, 6, 3, 2, 2, 2, 4, 1, 13, 12, 21, 9, 9, 8, 14, 14, 15, 7, 17, 14, 87, 16, 46, 11), strict=True))
+       "ieee_round", "single_helpers", "single_frexp", "normalize")
+ARITIES = dict(zip(OPS, (2, 2, 3, 3, 5, 6, 6, 4, 3, 2, 5, 8, 4, 1, 1, 6, 2, 2, 5, 6, 6, 10, 15, 8, 9, 6, 6), strict=True))
+WIDTHS = dict(zip(OPS, (1, 2, 3, 6, 3, 2, 2, 2, 4, 1, 13, 12, 21, 9, 9, 8, 14, 14, 15, 7, 17, 14, 87, 21, 46, 11, 12), strict=True))
 RADIX_OPS = {"truncate", "div", "plus", "sqrt", "digits", "operations", "format_calc"}
 
 
@@ -98,6 +98,49 @@ class Case:
             prec, _, kind, sign, mantissa, _ = self.args
             if prec <= 0 or kind not in range(4) or sign not in (0, 1) or mantissa <= 0:
                 raise ValueError("single_frexp requires positive precision, kind 0..3, sign 0/1, positive source mantissa")
+        if self.op == "normalize":
+            prec, emax, mode, _, _, szero = self.args
+            if not 0 < prec < emax or mode not in range(5) or szero not in (0, 1):
+                raise ValueError("normalize requires 0 < prec < emax, mode 0..4, zero sign 0/1")
+
+
+def normalize_expressions(case: Case) -> tuple[str, str]:
+    """Observe three distinct entry points, including the legacy raw carrier."""
+    prec, emax, mode, mantissa, exponent, szero = case.args
+    lm = ('.RNE', '.RTZ', '.RTN', '.RTP', '.RNA')[mode]
+    cm = ('mode_NE', 'mode_ZR', 'mode_DN', 'mode_UP', 'mode_NA')[mode]
+    sign = 'true' if szero else 'false'
+    args = f'(prec := {prec}) (emax := {emax}) {lm} ({mantissa}) ({exponent}) {sign}'
+    lean = (f'letI : Prec_gt_0 {prec} := ⟨by decide⟩; '
+            f'letI : Prec_lt_emax {prec} {emax} := ⟨by decide⟩; '
+            f'standard (Binary.B2SF (Binary.binary_normalize {args})) ++ '
+            f'standard (B2SF_BSN (_root_.binary_normalize {args})) ++ '
+            f'standard (binarySingleNaNFloatToStandardFloat (BinarySingleNaN.binary_normalize {args}))')
+    source_args = f'{prec} {emax} eq_refl eq_refl {cm} ({mantissa}) ({exponent}) {sign}'
+    full = f'standard (@Binary.B2SF {prec} {emax} (@Binary.binary_normalize {source_args}))'
+    single = f'standard (@BinarySingleNaN.B2SF {prec} {emax} (@BinarySingleNaN.binary_normalize {source_args}))'
+    return lean, ' ++ '.join((full, single, single))
+
+
+def normalize_corpus(seed: int, samples: int) -> list[Case]:
+    rng, cases = random.Random(seed), []
+    for prec, emax in ((1, 2), (1, 3), (2, 3), (3, 4), (4, 8), (8, 16), (24, 128), (53, 1024)):
+        emin = 3 - emax - prec
+        boundaries = [(0, e) for e in (emin - 1, 0, emax + 1)]
+        boundaries += [(sign * m, e) for sign in (-1, 1) for m, e in (
+            (1, emin - 1), (1, emin), ((1 << (prec - 1)) - 1, emin),
+            (1 << (prec - 1), emin), ((1 << prec) - 1, emin),
+            ((1 << prec) + 1, -prec), ((1 << prec) + 3, -prec),
+            ((1 << prec) - 1, emax - prec), ((1 << (prec + 1)) - 1, emax - prec - 1),
+            (1, emax), ((1 << prec) + 1, emin - 2))]
+        for mode in range(5):
+            for sign in (0, 1):
+                cases.extend(Case('normalize', (prec, emax, mode, m, e, sign)) for m, e in boundaries)
+        for _ in range(samples):
+            cases.append(Case('normalize', (prec, emax, rng.randrange(5),
+                rng.randint(-(1 << (prec + 2)), 1 << (prec + 2)),
+                rng.randint(emin - 3, emax + 3), rng.randrange(2))))
+    return list(dict.fromkeys(cases))
 
 
 def small_ieee_raw(value, coq=False):
@@ -459,8 +502,9 @@ def corpus(seed: int, samples: int) -> list[Case]:
     cases.extend(ieee_round_corpus(seed, samples))
     cases.extend(single_helpers_corpus(seed, samples))
     cases.extend(single_frexp_corpus(seed, samples))
+    cases.extend(normalize_corpus(seed, samples))
     for op in OPS:
-        if op in ("comparison", "small_ieee", "ieee_round", "single_helpers", "single_frexp"):
+        if op in ("comparison", "small_ieee", "ieee_round", "single_helpers", "single_frexp", "normalize"):
             continue
         for _ in range(samples):
             base = rng.choice((2, 3, 10, 16))
@@ -540,6 +584,21 @@ def expressions(case: Case) -> tuple[str, str]:
                         f'{lm} {s} (binaryPositiveOfNat {positive} (by decide)) ({exponent}))')
             rocq.append(f'{serialize} (@{name}.binary_round ({p}) ({emax}) '
                         f'{cm} {s} ({positive})%positive ({exponent}))')
+        # The adapter has no separate Flocq declaration. Test its observation
+        # against the source raw result only when its explicit validity premise
+        # holds. Keep the flag so rejection cannot masquerade as an actual NaN.
+        raw_l = (f'_root_.binary_round_aux (prec := ({p})) (emax := ({emax})) '
+                 f'{lm} {s} ({mantissa}) ({exponent}) ({LEAN_LOC[loc]})')
+        raw_c = (f'@BinarySingleNaN.binary_round_aux ({p}) ({emax}) '
+                 f'{cm} {s} ({mantissa}) ({exponent}) ({COQ_LOC[loc]})')
+        lean.append(f'(let raw := {raw_l}; '
+            f'let valid := validBinarySingleNaNStandardFloat (prec := ({p})) (emax := ({emax})) raw; '
+            '[boolean valid] ++ standard (if h : valid = true then '
+            f'binarySingleNaNFloatToStandardFloat (binaryRoundAuxToBinarySingleNaNFloat '
+            f'(prec := ({p})) (emax := ({emax})) {lm} {s} ({mantissa}) ({exponent}) '
+            f'({LEAN_LOC[loc]}) h) else .S754_nan))')
+        rocq.append(f'(let raw := {raw_c} in let valid := SpecFloat.valid_binary ({p}) ({emax}) raw in '
+                    '[boolean valid] ++ standard (if valid then raw else SpecFloat.S754_nan))')
         return ' ++ '.join(lean), ' ++ '.join(rocq)
     if op == "small_ieee":
         return small_ieee_expressions(case)
@@ -547,6 +606,8 @@ def expressions(case: Case) -> tuple[str, str]:
         return single_helpers_expressions(case)
     if op == "single_frexp":
         return single_frexp_expressions(case)
+    if op == "normalize":
+        return normalize_expressions(case)
     if op == "comparison":
         p, emax, *words = case.args
         operands = [words[:4], words[4:]]

@@ -1714,6 +1714,116 @@ The FTZ docstrings and linear guide now distinguish the witness predicate,
 its generic characterization, the actual small-magnitude exponent
 `emin + prec - 1`, and the separate integer-rounding policy.
 
+### September 20 continuation: remaining normalization execution blockers
+
+Three minimal compiled clients failed on `Binary.binary_normalize`, the
+root raw `binary_normalize`, and `binaryRoundAuxToBinarySingleNaNFloat`.
+Only their `noncomputable` markers were removed; bodies and type signatures
+are unchanged. The full-payload normalizer is linked to `Binary.v:1019`.
+The raw compatibility carrier and explicit validity adapter are classified
+as local, not falsely labeled as exact source interfaces.
+Before/after receipts are
+`/private/tmp/RemainingNormalizationGaps-isolated-before.out` and
+`-after.out`. Compiled source/Lean signatures are retained in
+`/private/tmp/NormalizationContracts-{lean,rocq}.out`: the two source-facing
+normalizers require positive precision and precision less than the maximum
+exponent; the local raw compatibility interfaces have different contracts.
+
+The new `normalize` bridge family observes three public entry points
+separately in twelve columns. The `ieee_round` family grows from sixteen to
+twenty-one columns, retaining all earlier raw observations and separately
+observing the validity adapter. Its explicit validity bit distinguishes a
+rejected finite result from a valid NaN. Both streams use the actual source
+algorithm, with no alternate rounding algorithm hidden in the adapter.
+
+Paired pure fixtures pass **150 normalization observations** (three APIs,
+five modes) and **six validity-adapter boundaries**. Expected results are
+literal, covering both zero signs, even/odd halfway cases, underflow and
+overflow. The first fixture incorrectly expected precision-zero rounding
+to produce an invalid result; both provers rejected that oracle because
+the actual result was a valid zero. That zero case is now retained beside
+a genuinely invalid finite overflow at `prec = 3, emax = 0`. An initial
+Lean runtime check also needed an explicitly typed expected-row definition.
+The failed receipts remain
+`/private/tmp/floatspec-normalization-pure-{lean,rocq}-20260920.log` and
+`/private/tmp/floatspec-round-adapter-focused-20260920.log`.
+The corrected paired fixtures and complete LSP diagnostics pass; final logs
+are `/private/tmp/floatspec-normalization-pure-{lean,rocq}-final-20260920.log`.
+
+All **57** live core-harness tests pass in **231.004 seconds**:
+`/private/tmp/floatspec-normalization-full-harness-20260920.log`.
+New mutations change one normalization export at a time, and separately
+corrupt adapter validity and payload columns. Both Lean execution paths
+must disagree with Rocq while unrelated columns remain unchanged.
+Fresh compiled metadata checks **207** source anchors; the trust report
+still observes **13,588 source declarations / 58 modules / four debts**.
+The default-library build passes 3,101 jobs. On frozen source SHA-256
+`a1157e49442726ed62f05d601f267b3efa85bc5f7e257a279cc258a89ece328d`,
+the serial differential run passes **9,346 compared/compiled cases and
+9,346 generated kernel equalities** in **1,193.671 seconds**, seed
+`840691`: 6,342 raw-rounding cases and 3,004 normalization cases.
+Receipt: `/private/tmp/floatspec-normalization-grid-20260920/report.json`.
+After the bridge finishes, the explicit
+`lake build FloatSpecLib FloatSpecTests floatspec` passes **6,216 jobs**:
+`/private/tmp/floatspec-normalization-all-targets-20260920.log`.
+No product source edits or builds overlapped the differential run. The
+default-library build and trust/metadata checks preceded it; the all-target
+cross-check followed it. These are finite execution and closed-client
+checks, not a whole-port equivalence proof.
+
+### Further findings prepared without changing the running snapshot
+
+Six FLT exports retain positive-precision premises absent from compiled Rocq:
+`cexp_FLT_FLX`, `generic_format_FLT_FLX`, `generic_format_FLX_FLT`,
+`round_FLT_FLX`, `cexp_FLT_FIX`, and `generic_format_FIX_FLT`.
+All six exact unrestricted Rocq clients pass; the corresponding Lean clients
+fail on the extra premise or legacy packed Hoare argument. A scratch copy
+removes those premises, makes five claims direct propositions, and closes
+the existing proofs. The production source has not yet changed.
+The nearby `generic_format_FLT_FIX` really does retain positive precision
+in the source. Paired closed counterexamples show why: at precision zero,
+one belongs to FIX with exponent zero but not FLT with minimum exponent zero,
+even though it meets the claimed upper-bound condition.
+
+Receipts:
+`/private/tmp/FLTCompiledContracts20260920-{lean,rocq}.out`,
+`/private/tmp/FLTUnrestrictedClients20260920-before.out`,
+`/private/tmp/FLTUnrestrictedClients20260920-rocq.out`, and
+`/private/tmp/FLTUnrestrictedDraft20260920-v2.out`.
+The first standalone draft inherited default style linters, unlike the Lake
+build; the second uses the project's existing style settings and passes.
+Counterexamples:
+`/private/tmp/FLTZeroPrecisionCounterexample.out` and
+`/private/tmp/FLTZeroPrecisionCounterexample-rocq-v2.out`.
+
+Reading the separate Claude comparison branch exposed a more substantive
+raw-interface mismatch in the existing port. For positive finite encodings
+`(3,-1)` and `(6,-2)`, both mathematical values are 1.5. The current
+`FaithfulPrimFloat.SFeqb` says true, proved by a closed Lean calculation.
+Rocq 9.2's actual raw `SpecFloat.SFcompare` returns `Some Gt`, and
+`SFeqb` returns false: it compares exponent then mantissa and relies on
+canonicality for that order to mean numerical order. Its
+[pinned Corelib definition](https://github.com/rocq-prover/rocq/blob/adfbf1855c348766beb4b790dcc8ebc02f908f63/theories/Corelib/Floats/SpecFloat.v#L163)
+matches the inspected compiled definition. The raw comparison has no
+canonicality argument, so total-function correspondence must retain that
+behavior rather than silently reinterpret noncanonical inputs by real value.
+This is not a counterexample to comparison of valid binary64 operands.
+
+The mismatch originates in `c55f3805`, which predates upstream `158263e9`
+and the Sol audit range. Claude's separate `ff02ad28`/`f5d01e1d` additions
+preserve this real-valued interpretation in new `*C` APIs; they do not repair
+the raw source mismatch. Their guide's claim that Rocq's raw comparison is
+defined through reals is incorrect. That branch remains preserved and is not
+integrated into this audit branch. A scratch source-shaped replacement
+already typechecks with a closed structural equality to the generic
+proof-carrying comparator, but the production fix and cross-test are pending.
+Receipts: `/private/tmp/RawSpecFloatComparisonAudit-lean.out`,
+`/private/tmp/RawSpecFloatComparisonAudit-v2.out`,
+`/private/tmp/RawSourceComparisonDraft-v3.out`, and
+`/private/tmp/PrimitiveSourceComparisonDraft20260920.out`.
+The scratch primitive module has only the same three pre-existing native
+proof warnings; no new holes were added.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In

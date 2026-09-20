@@ -185,6 +185,31 @@ that this is a counterexample to dropping the premise. The high-level routine
 always chooses a sufficiently fine exponent, and its bracket theorem does
 not additionally require that the exponent function describes a valid format.
 
+## The same number through three normalization entry points
+
+Run `lake env lean scripts/fixtures/Normalization.lean`, then read its paired
+[Lean](../../scripts/fixtures/Normalization.lean) and
+[Rocq](../../scripts/fixtures/Normalization.v) files. A signed mantissa nine
+with exponent minus three denotes `1.125`; nearest-even returns `1`, while
+nearest-away returns `1.25`. Eleven at the same exponent is halfway between
+`1.25` and `1.5`, so nearest-even now chooses the larger endpoint.
+The fixture spells out expected results for both signs, both zero signs,
+underflow, and overflow, in all five modes.
+
+Three Lean entry points are called separately: the proof-carrying full-payload
+normalizer, its SingleNaN facade, and the older raw compatibility normalizer.
+Their results have different types, but their observed numbers agree in these
+150 checks. Removing an unnecessary `noncomputable` marker made two of these
+clients runnable without changing the algorithm or claiming a new proof.
+
+The same fixture explains a subtler boundary: a proof-carrying adapter needs
+evidence that its **result** is valid. A malformed format parameter does not
+automatically make every result invalid. Precision zero can still produce a
+valid zero; a different malformed format produces a rejected finite result.
+A valid NaN and a rejected result are separately recorded, even though the
+test serializes the rejection with a NaN-shaped sentinel. The validity bit
+keeps those meanings distinct.
+
 ## Exemplars inspected
 
 These are reading recommendations, not dependencies adopted by FloatSpec.

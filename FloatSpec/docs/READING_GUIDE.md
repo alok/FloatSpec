@@ -15,7 +15,7 @@ This guide follows those jobs in order. The detailed
 [independent continuation audit](ASTRA_AUDIT_2026-09-19.md) retain the
 declaration-by-declaration findings and historical milestones.
 
-## Wake-up summary — September 20, 2026, 10:24 UTC
+## Wake-up summary — September 20, 2026, 11:01 UTC
 
 **Where to start:** run the six-part demo above, then read sections 1–6 below.
 The [exemplar guide](DEMO_EXEMPLARS.md) adds small examples explaining why a
@@ -23,7 +23,17 @@ theorem needs its hypotheses. This summary records the current milestone;
 the [audit ledger](ASTRA_AUDIT_2026-09-19.md) keeps the detailed history,
 including failed runs and the exact source hashes tested.
 
-**Newest checked change:** two FTZ inclusion theorems now have the same
+**Newest checked change:** the remaining normalization entry points now run
+without changing their bodies or types. The bridge observes the full-payload,
+SingleNaN, and legacy raw APIs separately, plus the explicit validity adapter.
+All **9,346 differential cases and generated kernel equalities** pass, seed
+`840691`; the paired pure fixtures also pass 150 literal normalization
+observations and six validity-boundary cases. The new
+[walkthrough](DEMO_EXEMPLARS.md#the-same-number-through-three-normalization-entry-points)
+explains halfway rounding and why an invalid format parameter can still
+produce a valid zero.
+
+**The preceding FTZ checkpoint:** two inclusion theorems now have the same
 unrestricted precision parameter as Flocq. Their former extra
 `Fact (0 < prec)` premise was unnecessary. The existing forward proofs remain
 closed, while the source's stronger assumptions on the reverse direction are
@@ -62,13 +72,15 @@ failures of ordinary valid binary32/binary64 arithmetic.
 
 | Slice | Observed result |
 |---|---|
-| Full library, test library, and executable | Lean 4.34.0 on macOS arm64: 6,216 build jobs pass after the FTZ inclusion change |
+| Full library, test library, and executable | Lean 4.34.0 on macOS arm64: 6,216 build jobs pass after the normalization execution change |
 | SingleNaN helper exports | 1,900 differential cases and kernel equalities; every exported helper observed separately |
 | `frexp`'s wider parameter domain | 4,169 differential cases and kernel equalities, including 3,455 with `prec ≥ emax` |
 | Independent decomposition laws | Lean and Rocq each check 6,772 encodings: 2,086 valid finite cases and 4,686 rejected raw encodings |
 | Independent Calc brackets | Lean and Rocq each check 8,640 division and 2,496 square-root cases, including exact midpoint locations |
-| Test-harness checks | Latest full core-harness run: 52 tests pass, including deliberate output mutations and a resource-limit regression |
-| Compiled trust/source metadata | 13,588 source declarations in 58 modules; four unchanged named proof debts; 206 checked source anchors |
+| Remaining normalization entry points | 3,004 three-way cases; paired fixtures separately check 150 literal observations |
+| Raw rounding plus validity adapter | 6,342 three-way cases; rejection and an actual valid NaN have distinct observations |
+| Test-harness checks | Latest full core-harness run: 57 tests pass, including independent export and adapter-column mutations |
+| Compiled trust/source metadata | 13,588 source declarations in 58 modules; four unchanged named proof debts; 207 checked source anchors |
 
 These are separate, snapshot-bound receipts, **not** a claim that every row
 was rerun after every subsequent type-only change. Earlier broad runs cover
@@ -86,7 +98,18 @@ The exact reconstruction property still holds. Paired runnable examples also
 explain the finite-input condition on alternate ulp and the positive-input
 condition on the specialized predecessor.
 
-**What remains:** whole-library source-signature review is incomplete, and
+**Next concrete findings, not yet fixed in this checkpoint:** the raw
+`FaithfulPrimFloat.SFcompare/SFeqb` helpers compare real values where Rocq
+compares encoding fields. Two noncanonical encodings of 1.5 expose the
+difference. This does not demonstrate a failure on valid binary64 operands.
+A source-shaped scratch replacement already checks; the production change
+and cross-tests are next. Six additional FLT signatures also retain an
+unnecessary positive-precision premise. Their unrestricted source clients
+and scratch Lean repairs check; the nearby reverse inclusion really does
+need the premise. The audit ledger keeps these findings separate from
+completed changes and preserves the separate Claude branch.
+
+**What remains overall:** whole-library source-signature review is incomplete, and
 the four native/decoder proof obligations remain. The 75 premise guards and
 paired typed clients catch selected interface regressions, not every possible
 deviation. Fork CI has a separate known dependency-cache/toolchain mismatch;
@@ -273,8 +296,9 @@ one convenient equivalence inside the implementation.
 
 Read the **elaborated type**, including implicit assumptions. Coq can erase
 an unused section parameter from an exported theorem, while Lean may retain
-a section instance. This audit found 31 such unwanted premises across 26
-exports. For example, representing a rounded value at the input exponent
+a section instance. An earlier broad pass found 31 such unwanted premises
+across 26 exports; subsequent focused passes have found more. For example,
+representing a rounded value at the input exponent
 does not require a valid exponent function, and multiplication by a radix
 power preserves FLX format without assuming positive precision. Typed
 consumers and compiler-backed premise guards now enforce these corrected
