@@ -260,6 +260,14 @@ integer codes or noncomputable real comparison. It is also checked against
 native Float/Float32 comparisons. The direct decoder and integer-width packing families avoid
 using `Float.Model.ofBits` as a substitute for the port's own decoder.
 
+Generic successor, predecessor, and ulp now execute too, using the integer
+source algorithms with their validity proofs erased at runtime. Tests compare
+them with the separate fixed-width implementations, and directly with Rocq
+across small and IEEE precisions. Negative minimum subnormal stepping to
+negative zero, maximum finite stepping to infinity, and NaN payload retention
+are explicit regression cases. The pure ordering loop checks the generic
+algorithms as well as their agreement with the bit-level neighbors.
+
 For agreeing batches, Rocq's output becomes the expected value of generated
 Lean equality statements. Lean checks each with `decide +kernel`.
 This bootstraps a Lean regression oracle; it is not a universal equivalence
@@ -296,7 +304,7 @@ changed surfaces have been checked.
 Source links make that review navigable. `@[flocq_source]` records a pinned
 Coq path, line, and name; `@[flocq_local]` explains a Lean-only helper.
 Eleven modules currently enforce strict public-definition classification.
-The compiler-backed validator checks all 118 registered anchors, including
+The compiler-backed validator checks all 126 registered anchors, including
 combined attributes and later attribute commands. These links are metadata,
 not a proof that bodies or theorem signatures correspond.
 

@@ -1245,7 +1245,9 @@ theorem Bulp_correct_aux {prec emax : Int}
     bounded (prec:=prec) (emax:=emax) 1 (3 - emax - prec) = true :=
   ExperimentalSingleNaNArithmetic.Bulp_correct_aux prec emax
 
-noncomputable def Bulp {prec emax : Int}
+/-- Executable source ulp on the SingleNaN carrier. -/
+@[flocq_source "src/IEEE754/BinarySingleNaN.v" 3099 "Bulp"]
+def Bulp {prec emax : Int}
     [Prec_gt_0 prec] [Prec_lt_emax prec emax]
     (x : binary_float prec emax) : binary_float prec emax :=
   match x with
@@ -1433,11 +1435,13 @@ noncomputable def Bsucc' {prec emax : Int}
   | BinarySingleNaNFloat.B754_finite true _ _ _ _ =>
       Bopp (Bpred_pos' (Bopp x))
 
-noncomputable abbrev Bsucc {prec emax : Int}
+@[flocq_source "src/IEEE754/BinarySingleNaN.v" 3242 "Bsucc"]
+abbrev Bsucc {prec emax : Int}
     [Prec_gt_0 prec] [Prec_lt_emax prec emax] :=
   @Binary.BsuccSingle prec emax _ _
 
-noncomputable abbrev Bpred {prec emax : Int}
+@[flocq_source "src/IEEE754/BinarySingleNaN.v" 3412 "Bpred"]
+abbrev Bpred {prec emax : Int}
     [Prec_gt_0 prec] [Prec_lt_emax prec emax] :=
   @Binary.BpredSingle prec emax _ _
 

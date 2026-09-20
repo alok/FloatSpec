@@ -613,6 +613,32 @@ examples. Keep valid theorem domains distinct from total-function behavior
 outside those domains. Test the bridge with intentional mismatches so a parser
 or skipped command cannot silently produce a green result.
 
+## Generic neighbors: executable source algorithms
+
+Eight integer-only SingleNaN/full-payload successor, predecessor, and ulp
+declarations now compile without `noncomputable`; their bodies and types are
+unchanged. Source branches were read against SingleNaN lines 3099, 3242,
+3412 and Binary lines 1368, 1392, 1421. The twenty-first core family observes
+validity, conversion, successor, predecessor, and ulp in generic formats.
+The fixed-width order families additionally execute the generic full-payload
+algorithms, independently of the existing bit-level neighbor implementations.
+
+At source SHA-256
+`8b72c2224acb46bd7fcaf2bac6fc132bb4bba8e956001351ec3ee1d9eee6de8d`,
+**2,510 differential rows and all 2,510 generated kernel regressions pass**
+(seed `681943`, 289.349 seconds): 687 binary32 rows, 687 binary64 rows, and
+1,136 generic SingleNaN rows. Artifact:
+`/private/tmp/floatspec-neighbors-public-20260920`.
+The pure Lean ordering grid now checks generic/bit-level agreement too;
+the paired Lean and Rocq fixtures retain explicit signed-zero, max-finite,
+and NaN-payload boundaries. All 27 core harness tests pass, including a
+deliberate successor-to-predecessor mutation. Complete fresh diagnostics
+for the two implementation files and the ordering test contain no errors.
+The compiled source validator checks 126 pinned anchors. The fresh compiled
+trust audit covers 13,574 source declarations across 58 modules and finds
+only the four existing manifest debts. No new proof debt is introduced.
+Finite agreement is not a universal source-equivalence proof.
+
 ## Still unreviewed
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In

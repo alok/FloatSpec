@@ -32,9 +32,9 @@ LEAN_LOC = [".loc_Exact", ".loc_Inexact .lt", ".loc_Inexact .eq", ".loc_Inexact 
 COQ_LOC = ["loc_Exact", "loc_Inexact Lt", "loc_Inexact Eq", "loc_Inexact Gt"]
 OPS = ("power", "div_eucl", "location", "round", "truncate", "div", "plus", "sqrt",
        "formats", "digits", "operations", "format_calc", "overflow", "bits32", "bits64",
-       "bit_fields", "order32", "order64", "validity", "nearby")
-ARITIES = dict(zip(OPS, (2, 2, 3, 3, 5, 6, 6, 4, 3, 2, 5, 8, 4, 1, 1, 6, 2, 2, 5, 6), strict=True))
-WIDTHS = dict(zip(OPS, (1, 2, 3, 6, 3, 2, 2, 2, 4, 1, 13, 12, 5, 9, 9, 8, 9, 9, 15, 7), strict=True))
+       "bit_fields", "order32", "order64", "validity", "nearby", "neighbors")
+ARITIES = dict(zip(OPS, (2, 2, 3, 3, 5, 6, 6, 4, 3, 2, 5, 8, 4, 1, 1, 6, 2, 2, 5, 6, 6), strict=True))
+WIDTHS = dict(zip(OPS, (1, 2, 3, 6, 3, 2, 2, 2, 4, 1, 13, 12, 5, 9, 9, 8, 12, 12, 15, 7, 17), strict=True))
 RADIX_OPS = {"truncate", "div", "plus", "sqrt", "digits", "operations", "format_calc"}
 
 
@@ -68,6 +68,10 @@ class Case:
         if self.op == "nearby" and (self.args[2] not in range(5) or
                                      self.args[3] not in (0, 1) or self.args[4] <= 0):
             raise ValueError("nearby requires mode 0..4, sign 0/1, and a positive source mantissa")
+        if self.op == "neighbors":
+            prec, emax, kind, sign, mantissa, _ = self.args
+            if not 0 < prec < emax or kind not in range(4) or sign not in (0, 1) or mantissa <= 0:
+                raise ValueError("neighbors requires 0 < prec < emax, kind 0..3, sign 0/1, positive mantissa")
 
 
 def corpus(seed: int, samples: int) -> list[Case]:
@@ -165,6 +169,16 @@ def corpus(seed: int, samples: int) -> list[Case]:
                     for exponent in sorted({-prec - 2, -prec - 1, -prec, -1, 0, 1, 2}):
                         cases.append(Case("nearby", (prec, max(4, prec + 1), mode, sign,
                                                      mantissa, exponent)))
+    # Observe validity before total conversion so rejected finite inputs do
+    # not silently disappear into the NaN control cases.
+    for prec in (1, 2, 3, 4, 24, 53):
+        for emax in sorted({prec + 1, 2 * prec + 1}):
+            for sign in (0, 1):
+                cases.extend(Case("neighbors", (prec, emax, kind, sign, 1, 0)) for kind in (0, 1, 2))
+                for mantissa in sorted({1, 2, 3, 1 << (prec - 1), (1 << prec) - 1, 1 << prec}):
+                    for exponent in sorted({2-emax-prec, 3-emax-prec, 4-emax-prec, -prec, 0,
+                                            emax-prec-1, emax-prec, emax-prec+1}):
+                        cases.append(Case("neighbors", (prec, emax, 3, sign, mantissa, exponent)))
     for op in OPS:
         for _ in range(samples):
             base = rng.choice((2, 3, 10, 16))
@@ -212,6 +226,13 @@ def corpus(seed: int, samples: int) -> list[Case]:
             elif op == "nearby":
                 args = (rng.randint(-2, 64), rng.randint(-2, 128), rng.randrange(5),
                         rng.randrange(2), rng.randint(1, 1 << 54), rng.randint(-120, 120))
+            elif op == "neighbors":
+                prec = rng.choice((1, 2, 3, 4, 8, 24, 53))
+                emax = rng.choice((prec + 1, 2 * prec + 1, 128, 1024))
+                exponent = rng.choice((2-emax-prec, 3-emax-prec, 4-emax-prec, -prec, 0,
+                                       emax-prec, emax-prec+1))
+                mantissa = rng.randint(1, (1 << (prec + 1)) - 1)
+                args = (prec, emax, rng.choice((0, 1, 2, 3, 3, 3)), rng.randrange(2), mantissa, exponent)
             else:
                 args = (base, m1, e1, m2, e2, target, rng.randint(1, 5), rng.randrange(4))
             cases.append(Case(op, args))
@@ -222,6 +243,29 @@ def expressions(case: Case) -> tuple[str, str]:
     """Translate inputs only; all arithmetic is performed by imported APIs."""
     a = [f"({n})" for n in case.args]
     op = case.op
+    if op == "neighbors":
+        prec, emax, kind, sign, mantissa, exponent = case.args
+        p, e, n = f"({prec})", f"({exponent})", f"({mantissa})"
+        s = "true" if sign else "false"
+        lean_input = (f".S754_zero {s}", f".S754_infinity {s}", ".S754_nan",
+                      f".S754_finite {s} {n} {e}")[kind]
+        coq_input = (f"SpecFloat.S754_zero {s}", f"SpecFloat.S754_infinity {s}", "SpecFloat.S754_nan",
+                     f"SpecFloat.S754_finite {s} {n}%positive {e}")[kind]
+        lean = (f"letI : Prec_gt_0 {p} := ⟨by decide⟩; "
+                f"letI : Prec_lt_emax {p} {emax} := ⟨by decide⟩; "
+                f"let raw : StandardFloat := {lean_input}; "
+                f"let x := BinarySingleNaN.SF2B' (prec := {p}) (emax := {emax}) raw; "
+                f"[boolean (validBinarySingleNaNStandardFloat (prec := {p}) (emax := {emax}) raw)] ++ "
+                "standard (BinarySingleNaN.B2SF x)")
+        rocq = (f"let raw := {coq_input} in let x := @BinarySingleNaN.SF2B' {p} {emax} raw in "
+                f"[boolean (SpecFloat.valid_binary {p} {emax} raw)] ++ "
+                f"standard (@BinarySingleNaN.B2SF {p} {emax} x)")
+        for name in ("Bsucc", "Bpred", "Bulp"):
+            lean += f" ++ standard (BinarySingleNaN.B2SF (BinarySingleNaN.{name} x))"
+            rocq += (f" ++ standard (@BinarySingleNaN.B2SF {p} {emax} "
+                     f"(@BinarySingleNaN.{name} {p} {emax} "
+                     "(ltac:(compute; reflexivity)) (ltac:(compute; reflexivity)) x))")
+        return lean, rocq
     if op == "nearby":
         prec, emax, mode, sign, mantissa, exponent = case.args
         lm = (".RNE", ".RTZ", ".RTN", ".RTP", ".RNA")[mode]
@@ -279,6 +323,13 @@ def expressions(case: Case) -> tuple[str, str]:
         for name in ("opp", "abs", "erase", "pred", "succ"):
             lean_columns.append(f"bits_of_b{width} (b{width}_{name} x)")
             coq_columns.append(f"Bits.bits_of_b{width} (Bits.b{width}_{name} x)")
+        prec, emax = (24, 128) if width == "32" else (53, 1024)
+        lean = (f"letI : Prec_gt_0 {prec} := ⟨by decide⟩; "
+                f"letI : Prec_lt_emax {prec} {emax} := ⟨by decide⟩; " + lean)
+        for name in ("Bpred", "Bsucc", "Bulp"):
+            lean_columns.append(f"bits_of_b{width} (Binary.{name} x)")
+            coq_columns.append(f"Bits.bits_of_b{width} (@Binary.{name} {prec} {emax} "
+                               "(ltac:(compute; reflexivity)) (ltac:(compute; reflexivity)) x)")
         return lean + "[" + ", ".join(lean_columns) + "]", rocq + "[" + "; ".join(coq_columns) + "]"
     if op == "power":
         return (f"[Zaux.Zpower {a[0]} {a[1]}]", f"[Zpower {a[0]} {a[1]}]")

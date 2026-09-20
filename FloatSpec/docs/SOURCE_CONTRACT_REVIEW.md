@@ -73,6 +73,27 @@ grid in its kernel. Deliberately forcing nearest-away fails under nearest-even
 at `-500/8`. The separate bit-level bridge retains signed zero, NaN payloads,
 unbounded integer outputs, and explicit native-comparison restrictions.
 
+## Generic successor, predecessor, and ulp
+
+Compared the actual branches of `BinarySingleNaN.v:3099,3242,3412` and the
+payload-preserving lifts in `Binary.v:1368,1392,1421`. Successor sends either
+zero to the minimum positive subnormal, keeps positive infinity, sends
+negative infinity to the negative maximum finite value, and preserves NaN.
+Positive finite values round `(m+1,e)` upward; negative finite values round
+`(2*m-1,e-1)` toward zero. Predecessor is sign reversal around successor.
+Ulp returns positive minimum subnormal at zero, positive infinity at either
+infinity, preserves NaN, and rounds the unit mantissa at a finite input's
+exponent. The Lean finite ulp branch uses `binary_round` where the source
+uses normalization of positive one; the normalization's zero/sign branches
+therefore do not apply.
+
+Eight unnecessary `noncomputable` markers are removed without changing
+bodies or types. The SingleNaN and full-payload interfaces are both exercised
+by the expanded bridge; the full-payload paths retain exact NaN bits. Their
+existing real-valued correctness theorem statements were not changed by this
+execution-enabling slice. This branch comparison and finite execution do not
+constitute universal source-equivalence proofs.
+
 ## Double rounding: definitions and main exports
 
 The six exponent-condition definitions in `Prop/Double_rounding.lean` were

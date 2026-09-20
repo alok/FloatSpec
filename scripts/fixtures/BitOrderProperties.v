@@ -54,3 +54,11 @@ Proof. vm_compute. reflexivity. Qed.
 Example signed_signaling_nan_is_unordered :
   b32_compare (b32_of_bits 4286578689) (b32_of_bits 0) = None.
 Proof. vm_compute. reflexivity. Qed.
+
+Example generic_neighbor_boundaries :
+  bits_of_b32 (b32_succ (b32_of_bits 2147483649)) = 2147483648 /\
+  bits_of_b32 (b32_pred (b32_of_bits 0)) = 2147483649 /\
+  bits_of_b32 (b32_succ (b32_of_bits 2139095039)) = 2139095040 /\
+  bits_of_b32 (@Binary.Bulp 24 128 eq_refl eq_refl (b32_of_bits 4286578689)) = 4286578689 /\
+  bits_of_b32 (@Binary.Bulp 24 128 eq_refl eq_refl (b32_of_bits 1065353216)) = 872415232.
+Proof. vm_compute. repeat split; reflexivity. Qed.

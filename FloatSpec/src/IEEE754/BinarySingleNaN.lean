@@ -7318,7 +7318,9 @@ private theorem is_nan_BoppSingle {prec emax : Int}
     is_nan_BSN (BoppSingle x) = is_nan_BSN x := by
   cases x <;> rfl
 
-noncomputable def BsuccSingle {prec emax : Int}
+/-- Executable source successor on the SingleNaN carrier. -/
+@[flocq_source "src/IEEE754/BinarySingleNaN.v" 3242 "Bsucc"]
+def BsuccSingle {prec emax : Int}
     [Prec_gt_0 prec] [Prec_lt_emax prec emax] :
     BinarySingleNaNFloat prec emax → BinarySingleNaNFloat prec emax
   | BinarySingleNaNFloat.B754_zero _ =>
@@ -7377,13 +7379,16 @@ theorem is_nan_BsuccSingle {prec emax : Int}
           RoundingMode.RTZ true m' (e - 1)
 
 -- Coq `Binary.v:Bsucc`, preserving the source NaN when present.
-noncomputable def Bsucc {prec emax : Int}
+@[flocq_source "src/IEEE754/Binary.v" 1392 "Bsucc"]
+def Bsucc {prec emax : Int}
     [Prec_gt_0 prec] [Prec_lt_emax prec emax]
     (x : binary_float prec emax) : binary_float prec emax :=
   lift x (BsuccSingle (B2BSN x)) (by
     rw [is_nan_BsuccSingle, is_nan_B2BSN])
 
-noncomputable def BpredSingle {prec emax : Int}
+/-- Executable source predecessor on the SingleNaN carrier. -/
+@[flocq_source "src/IEEE754/BinarySingleNaN.v" 3412 "Bpred"]
+def BpredSingle {prec emax : Int}
     [Prec_gt_0 prec] [Prec_lt_emax prec emax]
     (x : BinarySingleNaNFloat prec emax) : BinarySingleNaNFloat prec emax :=
   BoppSingle (BsuccSingle (BoppSingle x))
@@ -7395,7 +7400,8 @@ theorem is_nan_BpredSingle {prec emax : Int}
   simp only [BpredSingle, is_nan_BoppSingle, is_nan_BsuccSingle]
 
 -- Coq `Binary.v:Bpred`, preserving the source NaN when present.
-noncomputable def Bpred {prec emax : Int}
+@[flocq_source "src/IEEE754/Binary.v" 1421 "Bpred"]
+def Bpred {prec emax : Int}
     [Prec_gt_0 prec] [Prec_lt_emax prec emax]
     (x : binary_float prec emax) : binary_float prec emax :=
   lift x (BpredSingle (B2BSN x)) (by
@@ -8163,7 +8169,9 @@ def Bfma {prec emax : Int}
           let sum := FloatSpec.Calc.Operations.Fplus 2 product Z
           normalize mode sum.Fnum sum.Fexp (Bfma_szero mode x y z)
 
-noncomputable def Bulp {prec emax : Int}
+/-- Executable source ulp, preserving NaN sign and payload. -/
+@[flocq_source "src/IEEE754/Binary.v" 1368 "Bulp"]
+def Bulp {prec emax : Int}
     [Prec_gt_0 prec] [Prec_lt_emax prec emax]
     (x : binary_float prec emax) : binary_float prec emax :=
   match x with

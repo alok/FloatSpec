@@ -129,9 +129,11 @@ the roundtrip theorem outside its width/field hypotheses. An 836-case run
 and Rocq and generated 836 passing kernel regression equalities.
 
 Two further families execute the fixed-width comparison APIs, negation,
-absolute value, proof erasure, predecessor, and successor. Their nine output
-columns retain both decoded input words, both comparison directions, and the
-five exact unary results. Comparison has type `Option Ordering`; only the
+absolute value, proof erasure, predecessor, and successor. Their twelve output
+columns retain both decoded input words, both comparison directions, the
+five fixed-width unary results, and the generic `Binary.Bpred`, `Bsucc`, and
+`Bulp` results. The generic algorithms are now compiled rather than replaced
+by the fixed-width wrappers. Comparison has type `Option Ordering`; only the
 serialization adapter uses integers (`lt=-1`, `eq=0`, `gt=1`, unordered `2`).
 Signed zeros compare equal; NaNs remain unordered and unary source operations
 preserve their exact signs and payloads. The boundary corpus crosses all
@@ -150,6 +152,17 @@ The fifteenth observation column now checks the repaired legacy
 with Rocq on three of a five-case red corpus; that corpus is retained for
 replay. A separate deliberate always-true mutation must be rejected in both
 compiled Lean and kernel reduction.
+
+The twenty-first family directly exercises generic SingleNaN successor,
+predecessor, and ulp across precisions 1, 2, 3, 4, 24, and 53, with seeded
+supplemental formats. Seventeen columns retain input validity, the total
+converter's result, and each operation's constructor/sign/mantissa/exponent.
+Input grids straddle the minimum exponent, normal/subnormal transition, and
+overflow boundary, and include signed zero, infinities, NaN, and invalid raw
+carriers. Invalid raw inputs are visibly rejected to NaN before arithmetic;
+they are not mislabeled as valid arithmetic inputs. The operation's precision
+premises `0 < prec < emax` remain enforced. A successor-to-predecessor mutation
+must fail in both compiled Lean and kernel reduction against Rocq.
 
 Lean both executes compiled calls with `--run` and reduces them with `#reduce`;
 Rocq uses `vm_compute`. Enabling compiled execution required removing

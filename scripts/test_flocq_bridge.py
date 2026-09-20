@@ -122,6 +122,8 @@ class ParserTests(unittest.TestCase):
         self.assertIn(bridge.Case("validity", (-1, 1, 1, 1, -5)), first)
         self.assertIn(bridge.Case("nearby", (-1, 4, 0, 0, 1, 0)), first)
         self.assertIn(bridge.Case("nearby", (53, 54, 4, 1, 1, -55)), first)
+        self.assertIn(bridge.Case("neighbors", (3, 4, 3, 0, 4, -4)), first)
+        self.assertIn(bridge.Case("neighbors", (1, 2, 0, 1, 1, 0)), first)
 
     def test_replay_input_validation(self):
         for op, args in (("no_such_function", ()), ("power", (2,)),
@@ -134,13 +136,33 @@ class ParserTests(unittest.TestCase):
                          ("validity", (3, 4, 2, 1, 0)),
                          ("nearby", (3, 4, 5, 0, 1, 0)),
                          ("nearby", (3, 4, 0, 2, 1, 0)),
-                         ("nearby", (3, 4, 0, 0, 0, 0))):
+                         ("nearby", (3, 4, 0, 0, 0, 0)),
+                         ("neighbors", (0, 4, 0, 0, 1, 0)),
+                         ("neighbors", (3, 3, 0, 0, 1, 0)),
+                         ("neighbors", (3, 4, 4, 0, 1, 0)),
+                         ("neighbors", (3, 4, 0, 2, 1, 0)),
+                         ("neighbors", (3, 4, 3, 0, 0, 0))):
             with self.subTest(op=op, args=args), self.assertRaises(ValueError):
                 bridge.Case(op, args)
 
 
 @unittest.skipUnless(os.environ.get("FLOCQ_AUDIT_DIR"), "live test requires FLOCQ_AUDIT_DIR")
 class LiveTests(unittest.TestCase):
+    def test_generic_neighbors_preserve_boundaries_and_reject_invalid_carriers(self):
+        flocq = Path(os.environ["FLOCQ_AUDIT_DIR"]).resolve()
+        cases = [bridge.Case("neighbors", args) for args in
+                 ((3, 4, 0, 1, 1, 0), (3, 4, 3, 0, 7, 1),
+                  (3, 4, 3, 1, 1, -4), (3, 4, 3, 0, 1, 0))]
+        with tempfile.TemporaryDirectory(prefix="floatspec-neighbors-") as directory:
+            rows = bridge.execute(cases, flocq, bridge.configured_coqc(flocq), Path(directory))
+            bridge.bootstrap_lean(cases, rows["rocq"], Path(directory))
+        self.assertEqual(bridge.compare(cases, rows), [])
+        self.assertEqual(rows["lean"][0], [1, 0, 1, 0, 0, 3, 0, 1, -4,
+                                           3, 1, 1, -4, 3, 0, 1, -4])
+        self.assertEqual(rows["lean"][1][5:9], [1, 0, 0, 0])
+        self.assertEqual(rows["lean"][2][5:9], [0, 1, 0, 0])
+        self.assertEqual(rows["lean"][3], [0] + [2, 0, 0, 0] * 4)
+
     def test_raw_nearby_modes_and_invalid_precision(self):
         flocq = Path(os.environ["FLOCQ_AUDIT_DIR"]).resolve()
         cases = [bridge.Case("nearby", (3, 4, mode, sign, 6, -2))
@@ -154,6 +176,21 @@ class LiveTests(unittest.TestCase):
         self.assertEqual(rows["lean"][0], [2, 3, 0, 4, -1, 1, 1])
         self.assertEqual(rows["lean"][1], [2, 3, 1, 4, -1, 1, 1])
         self.assertEqual(rows["lean"][-1][-2:], [0, 0])
+
+    def test_generic_successor_mutation_is_rejected(self):
+        flocq = Path(os.environ["FLOCQ_AUDIT_DIR"]).resolve()
+        original = bridge.expressions
+        def mutated(case):
+            lean, rocq = original(case)
+            self.assertIn("BinarySingleNaN.Bsucc x", lean)
+            return lean.replace("BinarySingleNaN.Bsucc x", "BinarySingleNaN.Bpred x"), rocq
+        case = bridge.Case("neighbors", (3, 4, 0, 0, 1, 0))
+        with (tempfile.TemporaryDirectory(prefix="floatspec-neighbor-mutation-") as directory,
+              patch.object(bridge, "expressions", mutated)):
+            rows = bridge.execute([case], flocq, bridge.configured_coqc(flocq), Path(directory))
+        failures = bridge.compare([case], rows)
+        self.assertEqual(len(failures), 1)
+        self.assertEqual(failures[0]["paths"], ["lean", "compiled"])
 
     def test_raw_and_proof_carrying_validity_agree_with_source(self):
         flocq = Path(os.environ["FLOCQ_AUDIT_DIR"]).resolve()
@@ -287,11 +324,12 @@ class LiveTests(unittest.TestCase):
             bridge.bootstrap_lean(cases, observations["rocq"], Path(directory))
         self.assertEqual(bridge.compare(cases, observations), [])
         self.assertEqual(observations["lean"][0], [0x80000000, 0, 0, 0, 0, 0,
-                                                 0x80000000, 0x80000001, 1])
-        self.assertEqual(observations["lean"][1], [0xff800001, 0, 2, 2] + [0xff800001] * 5)
+                                                 0x80000000, 0x80000001, 1, 0x80000001, 1, 1])
+        self.assertEqual(observations["lean"][1], [0xff800001, 0, 2, 2] + [0xff800001] * 8)
         self.assertEqual(observations["lean"][2], [0x3ff0000000000000, 0x4000000000000000,
                           -1, 1, 0xbff0000000000000, 0x3ff0000000000000,
-                          0x3ff0000000000000, 0x3fefffffffffffff, 0x3ff0000000000001])
+                          0x3ff0000000000000, 0x3fefffffffffffff, 0x3ff0000000000001,
+                          0x3fefffffffffffff, 0x3ff0000000000001, 0x3cb0000000000000])
 
     def test_nan_order_cannot_be_mutated_into_equality(self):
         original = bridge.expressions

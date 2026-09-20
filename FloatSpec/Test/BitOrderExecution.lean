@@ -15,17 +15,25 @@ private def laws (xy yx xx predX xSucc : Option Ordering) (nan : Bool) : Bool :=
 
 /-- Reflexivity/unorderedness, reversal, and predecessor/successor order. -/
 def laws32 (left right : UInt32) : Bool :=
+  letI : Prec_gt_0 24 := ⟨by decide⟩
+  letI : Prec_lt_emax 24 128 := ⟨by decide⟩
   let x := b32_of_bits left.toNat
   let y := b32_of_bits right.toNat
+  bits_of_b32 (Binary.Bpred x) == bits_of_b32 (b32_pred x) &&
+  bits_of_b32 (Binary.Bsucc x) == bits_of_b32 (b32_succ x) &&
   laws (b32_compare x y) (b32_compare y x) (b32_compare x x)
-    (b32_compare (b32_pred x) x) (b32_compare x (b32_succ x)) (Binary.is_nan x)
+    (b32_compare (Binary.Bpred x) x) (b32_compare x (Binary.Bsucc x)) (Binary.is_nan x)
 
 /-- The same pure ordering laws for binary64. -/
 def laws64 (left right : UInt64) : Bool :=
+  letI : Prec_gt_0 53 := ⟨by decide⟩
+  letI : Prec_lt_emax 53 1024 := ⟨by decide⟩
   let x := b64_of_bits left.toNat
   let y := b64_of_bits right.toNat
+  bits_of_b64 (Binary.Bpred x) == bits_of_b64 (b64_pred x) &&
+  bits_of_b64 (Binary.Bsucc x) == bits_of_b64 (b64_succ x) &&
   laws (b64_compare x y) (b64_compare y x) (b64_compare x x)
-    (b64_compare (b64_pred x) x) (b64_compare x (b64_succ x)) (Binary.is_nan x)
+    (b64_compare (Binary.Bpred x) x) (b64_compare x (Binary.Bsucc x)) (Binary.is_nan x)
 
 private def nextWord (state : UInt64) : UInt64 :=
   state * 6364136223846793005 + 1442695040888963407
@@ -77,6 +85,19 @@ theorem orderBoundaryRegressions :
      b32_compare (b32_of_bits 0xff800001) (b32_of_bits 0),
      bits_of_b64 (b64_succ (b64_of_bits 0x8000000000000001))) =
     (some .eq, some .lt, none, 0x8000000000000000) := by decide +kernel
+
+/-- The generic integer algorithms retain signed-zero and overflow boundaries,
+including exact signaling-NaN payloads. These are kernel checks, not FFI calls. -/
+theorem genericNeighborBoundaryRegressions :
+    (letI : Prec_gt_0 24 := ⟨by decide⟩;
+     letI : Prec_lt_emax 24 128 := ⟨by decide⟩;
+     [bits_of_b32 (Binary.Bsucc (b32_of_bits 0x80000001)),
+      bits_of_b32 (Binary.Bpred (b32_of_bits 0)),
+      bits_of_b32 (Binary.Bsucc (b32_of_bits 0x7f7fffff)),
+      bits_of_b32 (Binary.Bulp (b32_of_bits 0xff800001)),
+      bits_of_b32 (Binary.Bulp (b32_of_bits 0x3f800000))]) =
+    [0x80000000, 0x80000001, 0x7f800000, 0xff800001, 0x34000000] := by
+  decide +kernel
 
 #eval checkPureOrder
 #eval checkNativeOrder
