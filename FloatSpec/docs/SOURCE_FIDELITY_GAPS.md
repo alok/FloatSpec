@@ -42,7 +42,7 @@ useful next slice. Do not infer arithmetic failure merely from those markers.
 ## Priority 3: make provenance coverage a gate everywhere
 
 Fresh metadata validates 319 source anchors. Strict public-definition
-classification is enabled in thirteen source files plus a section of Binary;
+classification is enabled in fourteen source files plus a section of Binary;
 unclassified definitions elsewhere are not yet rejected. The current linter
 checks public def/abbrev declarations, not every theorem. Expand classification
 while distinguishing source exports, deliberate local adapters, and genuinely

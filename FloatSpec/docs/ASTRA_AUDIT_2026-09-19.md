@@ -3605,6 +3605,55 @@ source fingerprint. The reading guide now links an explicit fidelity gap list,
 distinguishing known interface gaps, unreviewed semantics, provenance coverage,
 test scope and native proof obligations.
 
+### September 20, 20:47 UTC — integrate the continuation in the normal checkout
+
+At the user's direction, development is now in `/Users/alokbeniwal/FloatSpec`
+on `main`; `~/floatspec` denotes that same directory on this filesystem.
+`origin` is the user's fork, `main` tracks `origin/main`, and BAIF remains the
+optional `upstream`. The old local main was an ancestor and fast-forwarded.
+Claude's three comparison commits are retained in history and their useful
+implementation is integrated with explicit semantic boundaries.
+
+The executable exponent-alignment bodies and dyadic-value proofs are preserved.
+The four old real-valued comparison definitions are exposed as local
+`ComputableCompare.ValueSpec` specifications. Twelve correspondence theorems
+are renamed `*_eq_value` and target that specification, not Flocq's raw API.
+All twenty public definitions are locally classified and the source linter
+is enabled for this module. No existing noncomputable marker was removed;
+the user's question about it was answered using unchanged-source Lean/Rocq
+probes. The corrected linear implementation guide records the distinction.
+
+Both modified Lean files have complete clean LSP diagnostics. Earlier partial
+or unavailable responses were not counted as passes; incremental compiler
+checks first exposed the old raw-equivalence claims, then all adapted proofs
+checked without new sorries. The 20,000-pair executable test passes. Additional
+kernel regressions distinguish equal values from unequal raw comparisons.
+The full macOS Lean 4.34 build passes **6,226 jobs**, the seven-example demo
+passes, and the paired 24-case raw-comparison fixtures pass in Lean and Rocq.
+Fresh trust audit: **13,667 declarations, 59 modules, exactly four recorded
+direct/transitive proof debts**. Fresh metadata validates **319 source anchors**.
+Integrated Lean source hash:
+`4b714ddb87364ecf504600c50bc1421d89b61b91080f5926d742f2e1d5d30795`.
+
+A fresh raw-comparison bridge on this integrated source passes **1,237 cases**
+and 1,237 generated kernel equalities, seed 862149, in 156.894 seconds.
+Its report is `/private/tmp/floatspec-main-comparison-862149/report.json`.
+The first command used the nonexistent family spelling `primitive_comparison`
+and exited with an argument error before execution; the corrected family is
+`prim_comparison`. That rejected invocation is not a test pass.
+
+The preceding frozen `687aa7a8` native run also finished: seed 862081,
+**1,104 cases/kernel equalities and 30,912 independent assertions**, no
+mismatches, 1,074.270 seconds. Combined with the 470-case all-mode run,
+that gives **1,574 cases and 111,282 independent assertions** on that snapshot.
+These are not relabeled as executions of the additive main integration.
+
+Logs: `/private/tmp/floatspec-main-merged-{full-build,trust,anchors,demo}-20260920.log`,
+`floatspec-main-compare-execution-20260920.log`, and the seed-862081 report.
+The original dependency is still at `54cadd27` with the same seven untracked
+analysis files. The gitlink stays pinned at `7aab8f55`; no dependency checkout,
+reset or submodule update was performed.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In

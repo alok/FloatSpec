@@ -1,25 +1,27 @@
 {
   "schema_version": 1,
-  "recorded_at_utc": "2026-09-20T20:18:00Z",
+  "recorded_at_utc": "2026-09-20T20:50:00Z",
   "claim": "Finite execution and kernel-regression receipts, not universal Flocq equivalence.",
   "source_pin": "7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f",
-  "latest_source_sha256": "687aa7a88bdb9b5d4d3a7ac34b39b2b16efe7f265514e28b03039e76257395d2",
+  "latest_source_sha256": "4b714ddb87364ecf504600c50bc1421d89b61b91080f5926d742f2e1d5d30795",
   "final_build": {
     "platform": "macOS arm64",
     "lean": "4.34.0",
     "rocq": "9.2",
     "jobs": 6226,
     "status": "passed",
-    "log": "/private/tmp/floatspec-eight-choice-full-build-20260920.log",
+    "log": "/private/tmp/floatspec-main-merged-full-build-20260920.log",
     "demo_examples": 7
   },
   "compiled_trust": {
-    "source_declarations": 13565,
-    "modules": 58,
+    "source_declarations": 13667,
+    "modules": 59,
     "manifest_only_proof_debts": 4,
     "source_anchors": 319,
     "source_premise_guards": 147,
-    "nearest_fixture_axiom_lists_without_sorryAx": 10
+    "nearest_fixture_axiom_lists_without_sorryAx": 10,
+    "report": "/private/tmp/floatspec-main-merged-trust-20260920.json",
+    "nearest_fixture_axiom_lists_scope": "Unchanged fixture, checked on preceding 687aa7a8 source."
   },
   "proof_debts": [
     "Binary64.ofBits_flipSign",
@@ -371,6 +373,78 @@
           "worktree_status": "?? scripts/fixtures/UlpNearestChoiceContracts.lean"
         }
       ]
+    },
+    {
+      "name": "exceptional_ieee_independent_oracle_runs",
+      "count": 1574,
+      "claim": "Fresh execution before additive dyadic-value integration; source687aa7a8.",
+      "reports": [
+        {
+          "report_path": "/private/tmp/floatspec-exception-native-862081/report.json",
+          "status": "passed",
+          "seed": 862081,
+          "reference": "7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f",
+          "lean_head": "0a4483285cabd7ce768a2c280eb3fbf47bdba66f",
+          "lean_source_sha256": "687aa7a88bdb9b5d4d3a7ac34b39b2b16efe7f265514e28b03039e76257395d2",
+          "cases": 1104,
+          "compared_cases": 1104,
+          "bootstrapped_lean_cases": 1104,
+          "elapsed_seconds": 1074.27,
+          "oracle_assertions": 30912,
+          "oracle_scope": "Exact rational/grid return-value expectations for IEEE arithmetic; square root uses squared midpoints. Includes signed zero, gradual underflow, overflow, infinities, zero divisors, negative square roots and pinned Flocq first-NaN payload selection. Native observations canonicalize NaNs. Does not model hardware exception flags.",
+          "worktree_status": "M FloatSpec/docs/READING_GUIDE.md\n M scripts/ieee_exact_oracle.py\n M scripts/ieee_modes_bridge.py\n M scripts/test_ieee_exact_oracle.py\n M scripts/test_ieee_modes_bridge.py"
+        },
+        {
+          "report_path": "/private/tmp/floatspec-exception-modes-862073/report.json",
+          "status": "passed",
+          "seed": 862073,
+          "reference": "7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f",
+          "lean_head": "0a4483285cabd7ce768a2c280eb3fbf47bdba66f",
+          "lean_source_sha256": "687aa7a88bdb9b5d4d3a7ac34b39b2b16efe7f265514e28b03039e76257395d2",
+          "cases": 470,
+          "compared_cases": 470,
+          "bootstrapped_lean_cases": 470,
+          "elapsed_seconds": 735.288,
+          "oracle_assertions": 80370,
+          "oracle_scope": "Exact rational/grid return-value expectations for IEEE arithmetic; square root uses squared midpoints. Includes signed zero, gradual underflow, overflow, infinities, zero divisors, negative square roots and pinned Flocq first-NaN payload selection. Native observations canonicalize NaNs. Does not model hardware exception flags.",
+          "worktree_status": "M FloatSpec/docs/READING_GUIDE.md\n M scripts/ieee_exact_oracle.py\n M scripts/ieee_modes_bridge.py\n M scripts/test_ieee_exact_oracle.py\n M scripts/test_ieee_modes_bridge.py"
+        }
+      ]
+    },
+    {
+      "name": "integrated_main_raw_comparison",
+      "count": 1237,
+      "reports": [
+        {
+          "report_path": "/private/tmp/floatspec-main-comparison-862149/report.json",
+          "seed": 862149,
+          "reference": "7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f",
+          "lean_head": "d12e8faa21825e56a104d9d7992bfbfb76171925",
+          "lean_source_sha256": "4b714ddb87364ecf504600c50bc1421d89b61b91080f5926d742f2e1d5d30795",
+          "worktree_status": "M Deps/flocq\n M FloatSpec/Test.lean\n A FloatSpec/Test/ComputableCompareExecution.lean\n A FloatSpec/docs/COMPUTABLE_COMPARE_GUIDE.md\n M FloatSpec/src/IEEE754.lean\n A FloatSpec/src/IEEE754/ComputableCompare.lean\n?? scripts/fixtures/PrimitiveComparison.glob\n?? scripts/fixtures/PrimitiveComparison.vo",
+          "lean_version": "Lean (version 4.34.0, arm64-apple-darwin24.6.0, commit 293d5d0c0c3f3dded4688b3ccd6a33939ac5102b, Release)",
+          "rocq_version": "The Rocq Prover, version 9.2\ncompiled with OCaml 5.5.0",
+          "cases": 1237,
+          "operations": {
+            "prim_comparison": 1237
+          },
+          "status": "passed",
+          "fresh_build": false,
+          "requested_batch_size": 100,
+          "batch_size_limits": {
+            "prim_arithmetic": 25,
+            "prim_helpers": 25,
+            "prim_round": 25
+          },
+          "batch_policy": "ordered mixed-light and homogeneous capped-heavy",
+          "method": "Lean compiled execution and kernel reduction versus Rocq vm_compute; finite tests only",
+          "compared_cases": 1237,
+          "compiled_cases": 1237,
+          "bootstrapped_lean_cases": 1237,
+          "mismatches": [],
+          "elapsed_seconds": 156.894
+        }
+      ]
     }
   ],
   "harness_tests": {
@@ -378,7 +452,9 @@
     "newer_profiles_and_contracts_before_generator_extension": 41,
     "extended_pff_suite": 17,
     "final_ulp_controls": 3,
-    "note": "The extended 17-test Pff suite replaces its older 16-test suite; the totals overlap and must not be summed blindly."
+    "note": "The extended 17-test Pff suite replaces its older 16-test suite; the totals overlap and must not be summed blindly.",
+    "exceptional_ieee_oracle": 16,
+    "integrated_exceptional_ieee_bridges": 22
   },
   "boundaries": [
     "Each group is bound to its own source fingerprint. The final delta from the stress snapshot changes theorem signatures and callers, not arithmetic definition bodies.",
@@ -388,6 +464,7 @@
     "Classical real-valued definitions are checked by mathematical proofs and typed clients, not native execution.",
     "The source fingerprint guards project Lean/configuration changes; it is not attestation of external compiler binaries or build artifacts.",
     "Interrupted and timed-out earlier runs remain failures; this receipt does not overwrite them.",
-    "Local macOS success is not a claim of green hosted CI or complete theorem-by-theorem source review."
+    "Local macOS success is not a claim of green hosted CI or complete theorem-by-theorem source review.",
+    "The latest source additionally integrates Claude's dyadic-value API with explicit local contracts; its20000 deterministic pair tests are not raw Flocq equivalence."
   ]
 }

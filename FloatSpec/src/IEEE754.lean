@@ -8,3 +8,4 @@ import FloatSpec.src.IEEE754.SourceCorrectnessAliases
 import FloatSpec.src.IEEE754.PrimFloat
 import FloatSpec.src.IEEE754.LeanFloat
 import FloatSpec.src.IEEE754.Decoder
+import FloatSpec.src.IEEE754.ComputableCompare

@@ -15,7 +15,7 @@ This guide follows those jobs in order. The detailed
 [independent continuation audit](ASTRA_AUDIT_2026-09-19.md) retain the
 declaration-by-declaration findings and historical milestones.
 
-## Wake-up summary — September 20, 2026, 20:30 UTC
+## Wake-up summary — September 20, 2026, 20:47 UTC
 
 **The port builds and runs on macOS with Lean 4.34.0; it is not yet a fully
 source-audited port.** All 35 built Flocq module names have Lean counterparts,
@@ -25,10 +25,12 @@ percentage.
 
 Start with `lake exe floatspec_demo`, then read sections 1–6 below. The latest
 **6,226-job build and all seven demo examples pass**. Fresh compiled checks
-cover **13,565 declarations / 58 modules**, find exactly the four recorded
+cover **13,667 declarations / 59 modules**, find exactly the four recorded
 debts, and validate **319 pinned source anchors**. Reviewable changes are on
-[your fork's audit branch](https://github.com/alok/FloatSpec/tree/codex/astra-flocq-audit);
-your fork is the default remote and BAIF remains `upstream`.
+the normal `main` checkout in `~/floatspec` (the same directory as `~/FloatSpec`
+on this Mac). The audited continuation and Claude's value-comparison work
+are being integrated here, not left as a separate project. Your fork is the
+default fetch/push remote and BAIF remains `upstream`.
 
 The repairs preserve four distinctions worth carrying through the story:
 
@@ -45,8 +47,9 @@ The repairs preserve four distinctions worth carrying through the story:
   has a closed proof preserving **every old ULP value for valid exponent
   functions**, including at zero. Invalid exponents need not be choice-independent.
 - Classical real-number definitions are not executable integer algorithms.
-  Integer-only Pff/model adapters now execute; real logarithms and arbitrary
-  predicate choice remain explicitly noncomputable.
+  Many integer-only Pff/model adapters now execute, but some legacy helpers
+  still have unnecessary markers. Read the concrete `Zquotient` example in
+  [the computability explanation](COMPUTABLE_COMPARE_GUIDE.md#5-what-noncomputable-does-and-what-it-does-not-do).
 
 **What actually ran:** a complete frozen-snapshot three-loop run passed
 **55,162 differential case executions and generated kernel equalities**, plus
@@ -120,7 +123,10 @@ Re-auditing the saved 1,494-case group with the expanded oracle passes **97,602
 checks**; that strengthens old observations, not their execution freshness.
 The fresh 470-case all-mode run (seed 862073, source `687aa7a8`) passes with
 470 kernel equalities and 80,370 independent checks. The fresh 1,104-case
-native run remains in progress and is not yet a pass.
+native run (seed 862081, same source) also passes: 1,104 kernel equalities
+and 30,912 independent checks. Together these runs cover 1,574 cases and
+111,282 independently expected fields, without mismatches. They precede
+the additive comparison integration, whose source hash is `4b714ddb`.
 For the remaining work, read the explicit [fidelity gap list](SOURCE_FIDELITY_GAPS.md).
 
 A second [small paired example](DEMO_EXEMPLARS.md#a-valid-format-can-have-decreasing-ulp)
@@ -133,8 +139,14 @@ A [review of the three concurrent Claude comparison commits](CLAUDE_COMPARISON_R
 finds another important distinction: proving an executable backend equal to
 an older Lean specification does not show that specification matches Rocq.
 The copied backend and actual Rocq code were run on the same noncanonical
-encodings and disagree. Those commits remain unmerged; the current audit
-branch already preserves Rocq's raw comparison and retains that regression.
+encodings and disagree. The integration retains Claude's executable backend
+as an explicitly local dyadic-value API, and keeps the raw Flocq API unchanged.
+All twelve comparison contracts now name `ValueSpec` rather than claiming
+unconditional raw-source equality. The 20,000-pair executable test passes,
+as do the kernel examples distinguishing the two APIs. Read
+[the corrected implementation guide](COMPUTABLE_COMPARE_GUIDE.md).
+The integrated source additionally passes a fresh **1,237-case raw-comparison
+bridge** with 1,237 generated kernel equalities (seed 862149).
 
 Read [the demo/exemplar guide](DEMO_EXEMPLARS.md) for small runnable examples,
 [the three-loop guide](THREE_VERIFICATION_LOOPS.md) for reproduction, and
@@ -144,8 +156,9 @@ is not a green hosted-CI claim: the latest fork run still fails before source
 compilation because it requests an rc2 Mathlib cache under Lean 4.34.0.
 The narrow cache-policy repair is awaiting approval; the existing CI commands
 pass locally, with live Rocq harness tests explicitly skipped in that CI-style
-run. Your original checkout, Claude changes and modified `Deps/flocq`
-remain preserved in place; this work uses isolated Lean and pinned Rocq checkouts.
+run. Your modified `Deps/flocq` remains untouched at `54cadd27` with its seven
+pre-existing untracked analysis files. Testing uses a separate clean Flocq pin;
+the ordinary checkout now carries the combined continuation.
 
 ## 1. Start with one small rounding problem
 
@@ -614,7 +627,7 @@ changed surfaces have been checked.
 
 Source links make that review navigable. `@[flocq_source]` records a pinned
 Coq path, line, and name; `@[flocq_local]` explains a Lean-only helper.
-Thirteen source files enable strict public-definition classification; a targeted
+Fourteen source files enable strict public-definition classification; a targeted
 section of `Binary.lean` additionally enables the same check.
 The compiler-backed validator checks all 319 registered anchors, including
 combined attributes and later attribute commands. These links are metadata,

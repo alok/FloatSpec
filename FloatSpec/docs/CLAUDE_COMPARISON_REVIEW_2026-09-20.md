@@ -2,9 +2,10 @@
 
 Reviewed September 20, 2026. This is an independent review of local commits
 `ff02ad28`, `f5d01e1d`, and `8b81a532` on
-`claude-daemon/20260920_030005_computable_sf_compare`. They are **not merged**
-into this audit branch. The original checkout and its modified `Deps/flocq`
-remain untouched. Their common ancestor with the audit branch is `f95c7407`.
+`claude-daemon/20260920_030005_computable_sf_compare`. Their common ancestor
+with the audit branch is `f95c7407`. This review originally kept them separate;
+the September 20 main-checkout integration now retains their value backend
+with the contract corrections below. The modified `Deps/flocq` stays untouched.
 
 ## Finding: a valid equivalence proof can preserve the wrong specification
 
@@ -70,18 +71,23 @@ later validating conversion hide the raw discrepancy.
 ## Integration decision
 
 Do not substitute these arbitrary-dyadic comparison backends for the source
-raw APIs. The arithmetic helpers could be useful under names that explicitly
-say they compare *dyadic values*, or behind a theorem with the necessary
-canonical-input hypotheses. That would be a distinct API and requires its
-own review. The current audit branch does not need this replacement to make
-the source comparator executable.
+raw APIs. The integrated module preserves the executable helpers and their
+dyadic-value proofs. Its twelve public correspondence theorems are now named
+`*_eq_value` and explicitly target the local `ValueSpec`. All twenty public
+definitions carry local-helper classifications, and the module enables the
+source-classification linter. The raw source comparator remains unchanged.
 
-The companion `COMPUTABLE_COMPARE_GUIDE.md` also needs correction before
-reuse: its claim that Rocq's raw `SFeqb` compares through reals is false for
-the inspected source, and `@[flocq_source]` validates reference metadata,
-not literal or semantic correspondence. The general technique of proving
-an executable implementation equal to a mathematical specification remains
-useful; first verify that the specification is the intended one.
+The companion [guide](COMPUTABLE_COMPARE_GUIDE.md) is corrected: its earlier
+claim that Rocq's raw `SFeqb` compares through reals was false for the inspected
+source. It also now distinguishes kernel reduction from native compilation
+and unnecessary markers from genuinely classical data construction.
+
+Integration checks: the full macOS Lean 4.34 build passes (6,226 jobs), both
+edited Lean files have complete clean LSP diagnostics, and the retained
+20,000-pair executable test passes. The 24-case paired raw-comparison fixtures
+pass in Lean and pinned Rocq. The compiled trust gate covers 13,667 source
+declarations in 59 modules and still finds only the four manifest debts.
+Source hash: `4b714ddb87364ecf504600c50bc1421d89b61b91080f5926d742f2e1d5d30795`.
 
 This review establishes a concrete raw-interface mismatch. It does not claim
 that the concurrent dyadic-order proofs are invalid, nor that every derived
