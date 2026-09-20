@@ -31,7 +31,8 @@ closed without new sorries. The local nearest-point helper and two midpoint
 helpers were adjusted with their callers.
 
 `Test/SourcePremiseContracts.lean` contains 31 compiler-backed guards and six
-fully typed consumers. Each guard inspects the elaborated type and resolves
+fully typed consumers for these Prop repairs, plus the IEEE checks below.
+Each guard inspects the elaborated type and resolves
 predicate aliases; a missing parameter is an error. Deliberate negative tests
 cover implicit instances, explicit premises, aliases, and misspelled names.
 All 31 guards and all six consumers failed against the pre-fix snapshot;
@@ -43,6 +44,34 @@ compiled Rocq types as well: `relative_error`, `relative_error_N`, `d_ge_0`,
 `DN_odd_d_aux`, and `UP_odd_d_aux` retain their source `Valid_exp` premise.
 The `ValidRadix` carrier invariant also remains. The guard checks the selected
 premise boundary, not every possible alteration of the rest of a theorem.
+
+## Integer truncation and nearby-integer rounding
+
+The compiled Rocq exports distinguish the algorithm from its correctness
+premises. `Binary.Btrunc` and `BinarySingleNaN.Btrunc` require no precision
+instance at all; their value theorems require `prec < emax`. The `Bnearbyint`
+algorithm and its correctness theorem likewise require `prec < emax`, but
+not the additional `0 < prec` instance previously present on the Lean Binary
+exports. That extra premise is now removed, with six additional elaborated-
+type guards and typed consumers that omit it. The paired Rocq consumers
+compile against the exact pinned declarations.
+
+The previous public truncation definitions used real-valued `Ztrunc`, so they
+could not execute. Both now use the source finite-case integer algorithm at
+`BinarySingleNaN.v:2680`, via a shared `Binary.BtruncSingle` implementation.
+Zeros and nonfinite values return zero, just as in the source. Closed proofs
+establish its real-value theorem under the source `Prec_lt_emax` premise;
+the full-float wrapper uses the already-proved SingleNaN value conversion.
+Nearby-integer bodies are unchanged; their unnecessary noncomputable markers
+are removed. The old definitions and extra premise already exist in upstream
+`158263e9`, predating the 23 Sol commits.
+
+The paired `IntegerRounding.lean` / `.v` oracle independently chooses integer
+answers using signed division by eight and exact distance/parity. Both
+assistants check 5,125 cases and idempotence; Lean proves the complete finite
+grid in its kernel. Deliberately forcing nearest-away fails under nearest-even
+at `-500/8`. The separate bit-level bridge retains signed zero, NaN payloads,
+unbounded integer outputs, and explicit native-comparison restrictions.
 
 ## Double rounding: definitions and main exports
 

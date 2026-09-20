@@ -1,6 +1,6 @@
 From Stdlib Require Import ZArith Reals.
 Require Import Flocq.Core.Core Flocq.Prop.Plus_error Flocq.Prop.Mult_error
-  Flocq.Prop.Div_sqrt_error.
+  Flocq.Prop.Div_sqrt_error Flocq.IEEE754.Binary Flocq.IEEE754.BinarySingleNaN.
 Open Scope R_scope.
 
 Section Contracts.
@@ -42,3 +42,29 @@ Definition sqrt_decompose_contract (prec : Z) (x : R)
   @sqrt_error_N_FLX_aux1 beta prec x Hx Hpos.
 
 End Contracts.
+
+Definition binary_trunc_without_precision (prec emax : Z)
+    (x : Binary.binary_float prec emax) : Z := @Binary.Btrunc prec emax x.
+
+Definition single_trunc_without_precision (prec emax : Z)
+    (x : BinarySingleNaN.binary_float prec emax) : Z := @BinarySingleNaN.Btrunc prec emax x.
+
+Definition binary_nearby_finite_contract (prec emax : Z) (Hlt : Prec_lt_emax prec emax)
+    (nan : Binary.binary_float prec emax ->
+      {x : Binary.binary_float prec emax | Binary.is_nan prec emax x = true})
+    (md : mode) (x : Binary.binary_float prec emax) :
+    Binary.is_finite prec emax (Binary.Bnearbyint prec emax Hlt nan md x) =
+      Binary.is_finite prec emax x :=
+  proj1 (proj2 (@Binary.Bnearbyint_correct prec emax Hlt nan md x)).
+
+Definition binary_trunc_value_contract (prec emax : Z) (Hlt : Prec_lt_emax prec emax)
+    (x : Binary.binary_float prec emax) :
+    IZR (@Binary.Btrunc prec emax x) =
+      round radix2 (FIX_exp 0) Ztrunc (Binary.B2R prec emax x) :=
+  @Binary.Btrunc_correct prec emax Hlt x.
+
+Definition single_trunc_value_contract (prec emax : Z) (Hlt : Prec_lt_emax prec emax)
+    (x : BinarySingleNaN.binary_float prec emax) :
+    IZR (@BinarySingleNaN.Btrunc prec emax x) =
+      round radix2 (FIX_exp 0) Ztrunc (@BinarySingleNaN.B2R prec emax x) :=
+  @BinarySingleNaN.Btrunc_correct prec emax Hlt x.

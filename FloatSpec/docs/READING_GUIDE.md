@@ -130,6 +130,22 @@ than silently replacing every NaN by one canonical bit pattern.
 
 ## 4. Read a theorem as a contract, not as a badge
 
+Integer rounding gives a compact example of the executable/mathematical
+boundary. `Binary.Bnearbyint` returns another float; `Binary.Btrunc` returns
+an unbounded Lean integer. At `-2.5`, nearby nearest-even produces the float
+`-2`, nearby nearest-away produces `-3`, and truncation produces the integer
+`-2`. The source defines truncation of NaNs and infinities as integer zero;
+that behavior must be read from the definition, not guessed from a native cast.
+
+The public truncation operation now executes the source integer algorithm:
+inspect the sign/mantissa/exponent, run the toward-zero integer helper, and
+restore the sign. Its closed correctness theorem then relates that result to
+rounding the represented mathematical real. The implementation no longer
+tries to execute a definition made from noncomputable reals. The paired
+[`IntegerRounding` oracle](../../scripts/fixtures/IntegerRounding.lean) checks
+5,125 eighth-integer cases in all five modes and checks idempotence; its
+expected answers come from integer division, distance, and parity.
+
 A Lean proof establishes **the Lean proposition actually written down**.
 It does not tell us that this proposition is the one intended by Flocq.
 
@@ -273,7 +289,7 @@ changed surfaces have been checked.
 Source links make that review navigable. `@[flocq_source]` records a pinned
 Coq path, line, and name; `@[flocq_local]` explains a Lean-only helper.
 Eleven modules currently enforce strict public-definition classification.
-The compiler-backed validator checks all 105 registered anchors, including
+The compiler-backed validator checks all 118 registered anchors, including
 combined attributes and later attribute commands. These links are metadata,
 not a proof that bodies or theorem signatures correspond.
 

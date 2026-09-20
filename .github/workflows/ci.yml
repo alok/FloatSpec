@@ -26,7 +26,7 @@ jobs:
         run: |
           lake build FloatSpecTests
           lake build FloatSpec.Test
-          for fixture in DoubleRoundingWitness SingleNaNValidity RelativeErrorGrid ExactArithmeticLaws RoundingOracle; do
+          for fixture in DoubleRoundingWitness SingleNaNValidity RelativeErrorGrid ExactArithmeticLaws RoundingOracle IntegerRounding; do
             lake env lean "scripts/fixtures/$fixture.lean"
           done
 
@@ -46,6 +46,7 @@ jobs:
           python3 scripts/test_native_arithmetic_bridge.py -v
           python3 scripts/test_ieee_modes_bridge.py -v
           python3 scripts/test_ieee_scale_bridge.py -v
+          python3 scripts/test_ieee_integer_bridge.py -v
           python3 scripts/test_flocq_source_refs.py -v
 
       - name: Verify generated status is current

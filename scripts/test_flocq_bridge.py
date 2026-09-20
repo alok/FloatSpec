@@ -120,6 +120,8 @@ class ParserTests(unittest.TestCase):
         self.assertIn(bridge.Case("validity", (3, 4, 0, 1, 0)), first)
         self.assertIn(bridge.Case("validity", (3, 4, 0, 4, -2)), first)
         self.assertIn(bridge.Case("validity", (-1, 1, 1, 1, -5)), first)
+        self.assertIn(bridge.Case("nearby", (-1, 4, 0, 0, 1, 0)), first)
+        self.assertIn(bridge.Case("nearby", (53, 54, 4, 1, 1, -55)), first)
 
     def test_replay_input_validation(self):
         for op, args in (("no_such_function", ()), ("power", (2,)),
@@ -129,13 +131,30 @@ class ParserTests(unittest.TestCase):
                          ("overflow", (4, 4, 0, 0)), ("overflow", (3, 4, 5, 0)),
                          ("bit_fields", (0, 0, 2, 0, 0, 0)),
                          ("validity", (3, 4, 0, 0, 0)),
-                         ("validity", (3, 4, 2, 1, 0))):
+                         ("validity", (3, 4, 2, 1, 0)),
+                         ("nearby", (3, 4, 5, 0, 1, 0)),
+                         ("nearby", (3, 4, 0, 2, 1, 0)),
+                         ("nearby", (3, 4, 0, 0, 0, 0))):
             with self.subTest(op=op, args=args), self.assertRaises(ValueError):
                 bridge.Case(op, args)
 
 
 @unittest.skipUnless(os.environ.get("FLOCQ_AUDIT_DIR"), "live test requires FLOCQ_AUDIT_DIR")
 class LiveTests(unittest.TestCase):
+    def test_raw_nearby_modes_and_invalid_precision(self):
+        flocq = Path(os.environ["FLOCQ_AUDIT_DIR"]).resolve()
+        cases = [bridge.Case("nearby", (3, 4, mode, sign, 6, -2))
+                 for mode in range(5) for sign in (0, 1)]
+        cases.append(bridge.Case("nearby", (-1, 4, 0, 0, 1, 0)))
+        with tempfile.TemporaryDirectory(prefix="floatspec-nearby-") as directory:
+            folder = Path(directory)
+            rows = bridge.execute(cases, flocq, bridge.configured_coqc(flocq), folder)
+            self.assertEqual(bridge.compare(cases, rows), [])
+            bridge.bootstrap_lean(cases, rows["rocq"], folder)
+        self.assertEqual(rows["lean"][0], [2, 3, 0, 4, -1, 1, 1])
+        self.assertEqual(rows["lean"][1], [2, 3, 1, 4, -1, 1, 1])
+        self.assertEqual(rows["lean"][-1][-2:], [0, 0])
+
     def test_raw_and_proof_carrying_validity_agree_with_source(self):
         flocq = Path(os.environ["FLOCQ_AUDIT_DIR"]).resolve()
         cases = [bridge.Case("validity", (3, 4, 0, 1, 0)),

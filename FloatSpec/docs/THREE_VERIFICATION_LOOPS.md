@@ -384,7 +384,42 @@ Its shifts are bounded; it does not claim practical execution of arbitrary
 enormous integer shifts. The combined runner now includes this phase through
 `FLOCQ_SCALE_SAMPLES` and `FLOCQ_SCALE_BATCH_SIZE`.
 
-## 9. What this still does not establish
+## 9. Integer rounding and unbounded truncation
+
+`scripts/ieee_integer_bridge.py` executes the actual Binary and SingleNaN
+`Bnearbyint`/`Btrunc` APIs in compiled Lean, kernel reduction, and pinned Rocq.
+Its five observations are input bits, full-float nearby bits, full-float
+truncation integer, SingleNaN nearby bits, and SingleNaN truncation integer.
+Source paths retain NaN signs/payloads exactly; integer outputs are unbounded.
+
+Native Float/Float32 provides a fourth path. Its floor, ceil, and ties-away
+rounding check four modes; its `round` is not claimed to implement nearest-even.
+Native unsigned conversion checks truncation only for finite `|x| < 2^64`.
+Every excluded native field remains in the report with its explicit scope;
+all source fields still compare exactly even outside that native range.
+
+```sh
+uv run scripts/ieee_integer_bridge.py --flocq-dir /path/to/pinned-flocq \
+  --seed 730519 --samples 20 --batch-size 50
+FLOCQ_AUDIT_DIR=/path/to/pinned-flocq uv run scripts/test_ieee_integer_bridge.py -v
+# Replay rows are [width, mode, unsigned_input_word].
+```
+
+The corpus includes both signs, every mode, integer/halfway boundaries,
+adjacent inputs, the integer-spacing transition, the unsigned-conversion
+boundary, maximum finite values, infinities, and NaNs. A separate twentieth
+core family (`--operations nearby`) executes both raw integer helpers over
+precision/exponent parameters including invalid later-theorem domains. It
+observes the intermediate integer, resulting representation, and both input
+and output validity. Its source mantissa must still be positive.
+
+The independent paired `IntegerRounding.lean` / `.v` fixtures check 5,125
+eighth-integer inputs using division, distance, and parity rather than the
+implementation's shifts. Both check idempotence, and Lean closes the whole
+finite grid in its kernel. The combined runner includes this fixture and
+the new bridge through `FLOCQ_INTEGER_SAMPLES` and `FLOCQ_INTEGER_BATCH_SIZE`.
+
+## 10. What this still does not establish
 
 The expanded combined runner completed at commit `ba3e2a8b`, seed `961703`,
 with 10,788 core cases, 672 native unary cases, 1,624 arithmetic pairs,

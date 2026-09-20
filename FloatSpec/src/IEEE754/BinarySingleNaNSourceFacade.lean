@@ -676,10 +676,13 @@ theorem is_nan_binary_normalize {prec emax : Int}
           simp_all [B2SF, binarySingleNaNFloatToStandardFloat,
             binary_overflow, bsn_binary_overflow, overflow_to_inf]
 
-noncomputable abbrev Bnearbyint {prec emax : Int}
+/-- Executable source nearby-integer rounding. -/
+@[flocq_source "src/IEEE754/BinarySingleNaN.v" 2653 "Bnearbyint"]
+abbrev Bnearbyint {prec emax : Int}
     [Prec_lt_emax prec emax] :=
   @Binary.BnearbyintSingle prec emax _
 
+@[flocq_source "src/IEEE754/BinarySingleNaN.v" 2662 "Bnearbyint_correct"]
 theorem Bnearbyint_correct {prec emax : Int}
     [Prec_lt_emax prec emax]
     (mode : RoundingMode) (x : binary_float prec emax) :
@@ -778,15 +781,19 @@ theorem sign_plus_overflow {prec emax : Int}
   _root_.sign_plus_overflow (prec:=prec) (emax:=emax)
     mode sx mx ex sy my ey Hx Hy
 
-noncomputable def Btrunc {prec emax : Int} (x : binary_float prec emax) : Int :=
-  FloatSpec.Core.Raux.Ztrunc (B2R x)
+/-- Executable integer truncation, including source behavior on nonfinite values. -/
+@[flocq_source "src/IEEE754/BinarySingleNaN.v" 2680 "Btrunc"]
+def Btrunc {prec emax : Int} (x : binary_float prec emax) : Int :=
+  Binary.BtruncSingle x
 
-theorem Btrunc_correct {prec emax : Int} (x : binary_float prec emax) :
+/-- Source real-value correctness of executable integer truncation. -/
+@[flocq_source "src/IEEE754/BinarySingleNaN.v" 2687 "Btrunc_correct"]
+theorem Btrunc_correct {prec emax : Int} [Prec_lt_emax prec emax]
+    (x : binary_float prec emax) :
     (Btrunc x : ℝ) =
       FloatSpec.Core.Generic_fmt.round_to_generic 2
         (FloatSpec.Core.FIX.FIX_exp 0) FloatSpec.Core.Raux.Ztrunc (B2R x) := by
-  have h := FloatSpec.Core.FIX.round_FIX_IZR FloatSpec.Core.Raux.Ztrunc (B2R x)
-  simpa [Btrunc] using h.symm
+  simpa only [Btrunc, B2R] using Binary.BtruncSingle_correct x
 
 noncomputable abbrev Bone {prec emax : Int}
     [Prec_gt_0 prec] [Prec_lt_emax prec emax] :=

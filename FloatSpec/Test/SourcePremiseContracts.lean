@@ -1,6 +1,7 @@
 import Lean
 import FloatSpec.src.Prop.Div_sqrt_error
 import FloatSpec.src.Prop.Round_odd
+import FloatSpec.src.IEEE754.BinarySingleNaNSourceFacade
 
 open Lean Meta Elab Command
 
@@ -87,6 +88,14 @@ end FloatSpec.Test.SourcePremiseGuard
 #guard_no_source_premise Fm FloatSpec.Core.Generic_fmt.Valid_exp at fexpe
 #guard_no_source_premise Zm FloatSpec.Core.Generic_fmt.Valid_exp at fexpe
 
+-- Pinned Binary exports require prec < emax, not an extra positive-precision premise.
+#guard_no_source_premise Binary.Bnearbyint Prec_gt_0 at prec
+#guard_no_source_premise Binary.Bnearbyint_correct Prec_gt_0 at prec
+#guard_no_source_premise Binary.Btrunc Prec_gt_0 at prec
+#guard_no_source_premise Binary.Btrunc_correct Prec_gt_0 at prec
+#guard_no_source_premise BinarySingleNaN.Btrunc Prec_gt_0 at prec
+#guard_no_source_premise BinarySingleNaN.Btrunc_correct Prec_gt_0 at prec
+
 /-! Typed consumers deliberately omit proof-only section assumptions.
 Unlike a bare `#check`, each example fails if a public theorem accidentally
 inherits a stronger premise than its pinned Rocq counterpart. -/
@@ -135,3 +144,33 @@ example (prec : Int) (x : ℝ)
   sqrt_error_N_FLX_aux1 beta prec x hβ hx hpos
 
 end SourcePremiseContracts
+
+namespace IntegerSourcePremiseContracts
+
+example (prec emax : Int) (x : binary_float prec emax) : Int := Binary.Btrunc x
+example (prec emax : Int) (x : BinarySingleNaN.binary_float prec emax) : Int :=
+  BinarySingleNaN.Btrunc x
+
+example (prec emax : Int) [Prec_lt_emax prec emax]
+    (nan : Binary.BnearbyintNaNHandler prec emax) (mode : RoundingMode)
+    (x : binary_float prec emax) :
+    Binary.is_finite (Binary.Bnearbyint nan mode x) = Binary.is_finite x :=
+  (Binary.Bnearbyint_correct nan mode x).2.1
+
+example (prec emax : Int) [Prec_lt_emax prec emax] (x : binary_float prec emax) :
+    (Binary.Btrunc x : ℝ) = FloatSpec.Core.Generic_fmt.round_to_generic 2
+      (FloatSpec.Core.FIX.FIX_exp 0) FloatSpec.Core.Raux.Ztrunc (Binary.B2R x) :=
+  Binary.Btrunc_correct x
+
+example (prec emax : Int) [Prec_lt_emax prec emax]
+    (x : BinarySingleNaN.binary_float prec emax) :
+    (BinarySingleNaN.Btrunc x : ℝ) = FloatSpec.Core.Generic_fmt.round_to_generic 2
+      (FloatSpec.Core.FIX.FIX_exp 0) FloatSpec.Core.Raux.Ztrunc (BinarySingleNaN.B2R x) :=
+  BinarySingleNaN.Btrunc_correct x
+
+private instance : Prec_lt_emax (0 : Int) (1 : Int) := ⟨by decide⟩
+
+example : BinarySingleNaN.Bnearbyint (prec := 0) (emax := 1) .RNE (.B754_zero true) =
+    .B754_zero true := rfl
+
+end IntegerSourcePremiseContracts

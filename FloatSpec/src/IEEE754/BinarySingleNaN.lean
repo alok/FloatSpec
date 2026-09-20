@@ -1842,6 +1842,7 @@ theorem round_mode_choice_mode (mode : RoundingMode) (x : ℝ) (m : Int) (l : Lo
       (FloatSpec.Calc.Round.inbetween_int_ZR_sign (x := x) (m := m) (l := l) Hl)
 
 -- Coq: SFnearbyint_binary_aux
+@[flocq_source "src/IEEE754/BinarySingleNaN.v" 2510 "SFnearbyint_binary_aux"]
 def SFnearbyint_binary_aux (mode : RoundingMode) (sx : Bool) (mx : Nat) (ex : Int) : Int :=
   if 0 ≤ ex then
     (mx : Int) * zpow2 ex
@@ -1857,6 +1858,7 @@ def SFnearbyint_binary_aux (mode : RoundingMode) (sx : Bool) (mx : Nat) (ex : In
     choice_mode mode sx mx' l'
 
 -- Coq: SFnearbyint_binary
+@[flocq_source "src/IEEE754/BinarySingleNaN.v" 2520 "SFnearbyint_binary"]
 def SFnearbyint_binary (mode : RoundingMode) (sx : Bool) (mx : Nat) (ex : Int) :
     StandardFloat :=
   if 0 ≤ ex then
@@ -6638,15 +6640,96 @@ theorem Bcompare_swap {prec emax : Int} (x y : binary_float prec emax) :
     | none => none) at hs
   exact hs
 
-noncomputable def Btrunc {prec emax : Int} (x : binary_float prec emax) : Int :=
-  FloatSpec.Core.Raux.Ztrunc (B2R x)
+/-- Executable source truncation; exceptional values map to zero. -/
+@[flocq_source "src/IEEE754/BinarySingleNaN.v" 2680 "Btrunc"]
+def BtruncSingle {prec emax : Int} (x : BinarySingleNaNFloat prec emax) : Int :=
+  match x with
+  | .B754_finite sign m e _ _ =>
+      FloatSpec.Core.Zaux.cond_Zopp sign (SFnearbyint_binary_aux prec .RTZ sign m e)
+  | _ => 0
 
-theorem Btrunc_correct {prec emax : Int} (x : binary_float prec emax) :
+private theorem BtruncSingle_aux_nonnegative (prec : Int) (s : Bool) (m : Nat) (e : Int) :
+    0 ≤ SFnearbyint_binary_aux prec .RTZ s m e := by
+  by_cases he : 0 ≤ e
+  · change 0 ≤ (if 0 ≤ e then
+        (m : Int) * (if 0 ≤ e then (2 : Int) ^ e.toNat else 0) else _)
+    simp [he]
+  · simp [SFnearbyint_binary_aux, he, choice_mode]
+    split_ifs
+    · exact le_rfl
+    · exact (le_shr_le { shr_m := m, shr_r := false, shr_s := false }
+        e (-e) (Int.natCast_nonneg m) (by grind)).1
+
+private theorem BtruncSingle_aux_value (prec emax : Int) (s : Bool) (m : Nat) (e : Int) :
+    ((FloatSpec.Core.Zaux.cond_Zopp s (SFnearbyint_binary_aux prec .RTZ s m e) : Int) : ℝ) =
+      SF2R 2 (SFnearbyint_binary prec emax .RTZ s m e) := by
+  by_cases he : 0 ≤ e
+  · have hp : ((2 : ℝ) ^ e.toNat) = (2 : ℝ) ^ e := by
+      rw [← zpow_natCast, Int.toNat_of_nonneg he]
+    change ((FloatSpec.Core.Zaux.cond_Zopp s
+      (if 0 ≤ e then (m : Int) * (if 0 ≤ e then (2 : Int) ^ e.toNat else 0) else _) : Int) : ℝ) = _
+    cases s <;> simp [SFnearbyint_binary, he, FloatSpec.Core.Zaux.cond_Zopp,
+      SF2R, F2R, FloatSpec.Core.Defs.F2R, hp]
+  · let n := SFnearbyint_binary_aux prec .RTZ s m e
+    have hn : 0 ≤ n := BtruncSingle_aux_nonnegative prec s m e
+    by_cases hnpos : 0 < n
+    · have hnat : (n.toNat : Int) = n := Int.toNat_of_nonneg hn
+      have hnatpos : n.toNat ≠ 0 := by grind
+      have h := (_root_.shl_align_fexp_correct (prec := prec) (emax := emax) n.toNat 0 hnatpos) hnatpos
+      let a := _root_.shl_align_fexp (prec := prec) (emax := emax) n.toNat 0
+      have hv : (a.1 : ℝ) * (2 : ℝ) ^ a.2 = (n : ℝ) := by
+        simpa [a, shl_align_fexp_check, F2R, FloatSpec.Core.Defs.F2R, hnat] using h.1
+      rw [SFnearbyint_binary, ite_eq_right he]
+      change ((FloatSpec.Core.Zaux.cond_Zopp s n : Int) : ℝ) =
+        SF2R 2 (if 0 < n then .S754_finite s a.1 a.2
+          else if n < 0 then .S754_nan else .S754_zero s)
+      rw [ite_eq_left hnpos]
+      cases s
+      · simpa [SF2R, F2R, FloatSpec.Core.Defs.F2R, FloatSpec.Core.Zaux.cond_Zopp] using hv.symm
+      · simpa [SF2R, F2R, FloatSpec.Core.Defs.F2R, FloatSpec.Core.Zaux.cond_Zopp] using
+          (congrArg Neg.neg hv).symm
+    · have hz : n = 0 := by grind
+      simp [SFnearbyint_binary, he, show SFnearbyint_binary_aux prec .RTZ s m e = 0 from hz,
+        FloatSpec.Core.Zaux.cond_Zopp, SF2R]
+
+/-- The integer algorithm realizes truncation of the represented real value. -/
+@[flocq_source "src/IEEE754/BinarySingleNaN.v" 2687 "Btrunc_correct"]
+theorem BtruncSingle_correct {prec emax : Int} [Prec_lt_emax prec emax]
+    (x : BinarySingleNaNFloat prec emax) :
+    (BtruncSingle x : ℝ) = FloatSpec.Core.Generic_fmt.round_to_generic 2
+      (FloatSpec.Core.FIX.FIX_exp 0) FloatSpec.Core.Raux.Ztrunc
+      (B754_to_R (binarySingleNaNFloatToB754 x)) := by
+  cases x with
+  | B754_zero s =>
+      simp [BtruncSingle, binarySingleNaNFloatToB754, B754_to_R,
+        FloatSpec.Core.FIX.round_FIX_IZR, FloatSpec.Core.Raux.Ztrunc]
+  | B754_infinity s =>
+      simp [BtruncSingle, binarySingleNaNFloatToB754, B754_to_R,
+        FloatSpec.Core.FIX.round_FIX_IZR, FloatSpec.Core.Raux.Ztrunc]
+  | B754_nan =>
+      simp [BtruncSingle, binarySingleNaNFloatToB754, B754_to_R,
+        FloatSpec.Core.FIX.round_FIX_IZR, FloatSpec.Core.Raux.Ztrunc]
+  | B754_finite s m e hm hb =>
+      have hv := BtruncSingle_aux_value prec emax s m e
+      have hc := (Bnearbyint_correct_aux_nat (prec := prec) (emax := emax)
+        .RTZ s m e hm hb).2.1
+      simpa [BtruncSingle, binarySingleNaNFloatToB754, B754_to_R, SF2R,
+        rnd_of_mode, FloatSpec.Core.Generic_fmt.round_to_generic] using hv.trans hc
+
+
+/-- Flocq truncation through the source SingleNaN view. -/
+@[flocq_source "src/IEEE754/Binary.v" 1229 "Btrunc"]
+def Btrunc {prec emax : Int} (x : binary_float prec emax) : Int :=
+  BtruncSingle (B2BSN x)
+
+/-- Executable truncation agrees with rounding to the integer format. -/
+@[flocq_source "src/IEEE754/Binary.v" 1231 "Btrunc_correct"]
+theorem Btrunc_correct {prec emax : Int} [Prec_lt_emax prec emax]
+    (x : binary_float prec emax) :
     (Btrunc x : ℝ) =
       FloatSpec.Core.Generic_fmt.round_to_generic 2
         (FloatSpec.Core.FIX.FIX_exp 0) FloatSpec.Core.Raux.Ztrunc (B2R x) := by
-  have h := FloatSpec.Core.FIX.round_FIX_IZR FloatSpec.Core.Raux.Ztrunc (B2R x)
-  simpa [Btrunc] using h.symm
+  simpa only [Btrunc, B2R_B2BSN] using BtruncSingle_correct (B2BSN x)
 
 abbrev BnearbyintNaNHandler (prec emax : Int) :=
   (x : binary_float prec emax) →
@@ -6682,7 +6765,9 @@ theorem Bsign_standardFloatToBinarySingleNaNFloat {prec emax : Int}
   cases x <;> simp [is_nan_SF, standardFloatToBinarySingleNaNFloat,
     binarySingleNaNFloatToB754, BSN_sign, sign_SF] at hn ⊢
 
-noncomputable def BnearbyintSingle {prec emax : Int}
+/-- Source nearby-integer rounding on the proof-carrying SingleNaN carrier. -/
+@[flocq_source "src/IEEE754/BinarySingleNaN.v" 2653 "Bnearbyint"]
+def BnearbyintSingle {prec emax : Int}
     [Prec_lt_emax prec emax]
     (mode : RoundingMode) (x : BinarySingleNaNFloat prec emax) :
     BinarySingleNaNFloat prec emax :=
@@ -6721,15 +6806,18 @@ theorem is_nan_BnearbyintSingle {prec emax : Int}
 
 -- Coq `Binary.v:Bnearbyint`: the numerical operation is performed on the
 -- SingleNaN view and the caller supplies the result for an input NaN.
-noncomputable def Bnearbyint {prec emax : Int}
-    [Prec_gt_0 prec] [Prec_lt_emax prec emax]
+/-- Source rounding to an integer-valued float with caller-supplied NaN behavior. -/
+@[flocq_source "src/IEEE754/Binary.v" 1212 "Bnearbyint"]
+def Bnearbyint {prec emax : Int}
+    [Prec_lt_emax prec emax]
     (nearbyint_nan : BnearbyintNaNHandler prec emax)
     (mode : RoundingMode) (x : binary_float prec emax) :
     binary_float prec emax :=
   BSN2B (nearbyint_nan x) (BnearbyintSingle mode (B2BSN x))
 
+@[flocq_source "src/IEEE754/Binary.v" 1215 "Bnearbyint_correct"]
 theorem Bnearbyint_correct {prec emax : Int}
-    [Prec_gt_0 prec] [Prec_lt_emax prec emax]
+    [Prec_lt_emax prec emax]
     (nearbyint_nan : BnearbyintNaNHandler prec emax)
     (mode : RoundingMode) (x : binary_float prec emax) :
     B2R (Bnearbyint nearbyint_nan mode x) =

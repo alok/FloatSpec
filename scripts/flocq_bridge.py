@@ -32,9 +32,9 @@ LEAN_LOC = [".loc_Exact", ".loc_Inexact .lt", ".loc_Inexact .eq", ".loc_Inexact 
 COQ_LOC = ["loc_Exact", "loc_Inexact Lt", "loc_Inexact Eq", "loc_Inexact Gt"]
 OPS = ("power", "div_eucl", "location", "round", "truncate", "div", "plus", "sqrt",
        "formats", "digits", "operations", "format_calc", "overflow", "bits32", "bits64",
-       "bit_fields", "order32", "order64", "validity")
-ARITIES = dict(zip(OPS, (2, 2, 3, 3, 5, 6, 6, 4, 3, 2, 5, 8, 4, 1, 1, 6, 2, 2, 5), strict=True))
-WIDTHS = dict(zip(OPS, (1, 2, 3, 6, 3, 2, 2, 2, 4, 1, 13, 12, 5, 9, 9, 8, 9, 9, 14), strict=True))
+       "bit_fields", "order32", "order64", "validity", "nearby")
+ARITIES = dict(zip(OPS, (2, 2, 3, 3, 5, 6, 6, 4, 3, 2, 5, 8, 4, 1, 1, 6, 2, 2, 5, 6), strict=True))
+WIDTHS = dict(zip(OPS, (1, 2, 3, 6, 3, 2, 2, 2, 4, 1, 13, 12, 5, 9, 9, 8, 9, 9, 14, 7), strict=True))
 RADIX_OPS = {"truncate", "div", "plus", "sqrt", "digits", "operations", "format_calc"}
 
 
@@ -65,6 +65,9 @@ class Case:
             raise ValueError("bit-field sign must be 0 or 1")
         if self.op == "validity" and (self.args[2] not in (0, 1) or self.args[3] <= 0):
             raise ValueError("validity requires sign 0/1 and a positive source mantissa")
+        if self.op == "nearby" and (self.args[2] not in range(5) or
+                                     self.args[3] not in (0, 1) or self.args[4] <= 0):
+            raise ValueError("nearby requires mode 0..4, sign 0/1, and a positive source mantissa")
 
 
 def corpus(seed: int, samples: int) -> list[Case]:
@@ -153,6 +156,15 @@ def corpus(seed: int, samples: int) -> list[Case]:
             for mode in range(5):
                 for sign in range(2):
                     cases.append(Case("overflow", (prec, emax, mode, sign)))
+    # Raw source helpers have no precision premise; include values outside
+    # later arithmetic theorem domains and observe actual input/output validity.
+    for prec in (-1, 0, 1, 3, 24, 53):
+        for mode in range(5):
+            for sign in (0, 1):
+                for mantissa in sorted({1, 2, 3, 4, 5, 7, 8, 15, (1 << max(1, prec)) - 1}):
+                    for exponent in sorted({-prec - 2, -prec - 1, -prec, -1, 0, 1, 2}):
+                        cases.append(Case("nearby", (prec, max(4, prec + 1), mode, sign,
+                                                     mantissa, exponent)))
     for op in OPS:
         for _ in range(samples):
             base = rng.choice((2, 3, 10, 16))
@@ -197,6 +209,9 @@ def corpus(seed: int, samples: int) -> list[Case]:
             elif op == "validity":
                 args = (rng.randint(-2, 12), rng.randint(-2, 16), rng.randrange(2),
                         rng.randint(1, 1 << 14), rng.randint(-32, 20))
+            elif op == "nearby":
+                args = (rng.randint(-2, 64), rng.randint(-2, 128), rng.randrange(5),
+                        rng.randrange(2), rng.randint(1, 1 << 54), rng.randint(-120, 120))
             else:
                 args = (base, m1, e1, m2, e2, target, rng.randint(1, 5), rng.randrange(4))
             cases.append(Case(op, args))
@@ -207,6 +222,24 @@ def expressions(case: Case) -> tuple[str, str]:
     """Translate inputs only; all arithmetic is performed by imported APIs."""
     a = [f"({n})" for n in case.args]
     op = case.op
+    if op == "nearby":
+        prec, emax, mode, sign, mantissa, exponent = case.args
+        lm = (".RNE", ".RTZ", ".RTN", ".RTP", ".RNA")[mode]
+        cm = ("mode_NE", "mode_ZR", "mode_DN", "mode_UP", "mode_NA")[mode]
+        s = "true" if sign else "false"
+        p, e, n = f"({prec})", f"({exponent})", f"({mantissa})"
+        emax = f"({emax})"
+        lean = (f"let x := StandardFloat.S754_finite {s} {n} {e}; "
+                f"let y := SFnearbyint_binary (prec := {p}) (emax := {emax}) {lm} {s} {n} {e}; "
+                f"[SFnearbyint_binary_aux (prec := {p}) {lm} {s} {n} {e}] ++ standard y ++ "
+                f"[boolean (validBinarySingleNaNStandardFloat (prec := {p}) (emax := {emax}) x), "
+                f"boolean (validBinarySingleNaNStandardFloat (prec := {p}) (emax := {emax}) y)]")
+        rocq = (f"let x := SpecFloat.S754_finite {s} {n}%positive {e} in "
+                f"let y := BinarySingleNaN.SFnearbyint_binary {p} {emax} {cm} {s} {n}%positive {e} in "
+                f"[BinarySingleNaN.SFnearbyint_binary_aux {p} {cm} {s} {n}%positive {e}] ++ standard y ++ "
+                f"[boolean (SpecFloat.valid_binary {p} {emax} x); "
+                f"boolean (SpecFloat.valid_binary {p} {emax} y)]")
+        return lean, rocq
     if op == "validity":
         prec, emax, _, mantissa, exponent = a
         sign = "true" if case.args[2] else "false"
