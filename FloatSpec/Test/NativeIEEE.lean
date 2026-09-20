@@ -1,6 +1,6 @@
 import FloatSpec.src.IEEE754.PrimFloat
 
-/-! Serialization adapters for three-way binary64 execution tests. These call the
+/-! Serialization adapters for four-path binary64 execution tests. These call the
 actual implementations; they do not duplicate the arithmetic. NaNs are observed
 through the single-NaN model, so payload preservation is not asserted. -/
 
@@ -20,7 +20,7 @@ def nativeObservation (word : UInt64) : List Int :=
 
 /-- The same five observations through the Lean port's logical Flocq carrier.
 Unlike native `frExp`, this total model has a specified exceptional exponent. -/
-noncomputable def modelObservation (word : UInt64) : List Int :=
+def modelObservation (word : UInt64) : List Int :=
   let x := PrimitiveFloat.ofModel (Float.Model.ofBits word)
   let result := FaithfulPrimFloat.Z.frexp x
   [x.toModel.toBits.toNat, (next_up x).toModel.toBits.toNat,

@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Compare macOS/native Lean binary64, the Lean model, and pinned Flocq.
+"""Compare native Lean binary64, compiled/kernel Lean models, and pinned Flocq.
 
 All inputs are raw uint64 words. NaNs are canonicalized explicitly through the
 single-NaN observation model. Native frexp equality is checked only on nonzero
-finite inputs; exceptional observations are still retained and reported. Every
-Lean-model result is compared with Rocq, including exceptional inputs, and each
+finite inputs; exceptional observations are still retained and reported. Both compiled and kernel
+Lean-model results are compared with Rocq, including exceptional inputs, and each
 agreeing result is promoted to a kernel-checked Lean equality.
 """
 
@@ -73,10 +73,17 @@ def native_source(words: list[int]) -> str:
             json.dumps(words) + " : List UInt64).map nativeObservation)\n")
 
 
+def compiled_model_source(words: list[int]) -> str:
+    return (LEAN_HEADER + "def main : IO Unit :=\n  IO.println ((" +
+            json.dumps(words) + " : List UInt64).map modelObservation)\n")
+
+
 def execute(words: list[int], flocq: Path, coqc: str, folder: Path) -> dict[str, list[list[int]]]:
     paths = {name: folder / filename for name, filename in
-             (("native", "Native.lean"), ("model", "Model.lean"), ("rocq", "NativeIEEE.v"))}
+             (("native", "Native.lean"), ("model", "Model.lean"),
+              ("compiled_model", "CompiledModel.lean"), ("rocq", "NativeIEEE.v"))}
     paths["native"].write_text(native_source(words))
+    paths["compiled_model"].write_text(compiled_model_source(words))
     paths["model"].write_text(LEAN_HEADER + "#reduce ([" +
                              ", ".join(f"modelObservation {word}" for word in words) +
                              "] : List (List Int))\n")
@@ -84,6 +91,7 @@ def execute(words: list[int], flocq: Path, coqc: str, folder: Path) -> dict[str,
                             "; ".join(f"observation {word}" for word in words) + "].\n")
     commands = {"native": ["lake", "env", "lean", "--run", str(paths["native"])],
                 "model": ["lake", "env", "lean", str(paths["model"])],
+                "compiled_model": ["lake", "env", "lean", "--run", str(paths["compiled_model"])],
                 "rocq": [coqc, "-q", "-R", str(flocq / "src"), "Flocq", str(paths["rocq"])]}
 
     def observe(name: str) -> list[list[int]]:
@@ -94,25 +102,28 @@ def execute(words: list[int], flocq: Path, coqc: str, folder: Path) -> dict[str,
             raise ValueError(f"{name}: expected all five observation columns")
         return rows
 
-    with ThreadPoolExecutor(max_workers=3) as pool:
+    with ThreadPoolExecutor(max_workers=4) as pool:
         futures = {name: pool.submit(observe, name) for name in commands}
         return {name: future.result() for name, future in futures.items()}
 
 
 def compare(words: list[int], observations: dict[str, list[list[int]]]) -> tuple[list, list]:
     mismatches, exceptions = [], []
-    if set(observations) != {"native", "model", "rocq"}:
-        raise ValueError("all three execution paths are required")
+    if set(observations) != {"native", "model", "compiled_model", "rocq"}:
+        raise ValueError("all four execution paths are required")
     for name, rows in observations.items():
         if len(rows) != len(words) or any(len(row) != 5 for row in rows):
             raise ValueError(f"{name}: incomplete observations")
     for index, word in enumerate(words):
-        native, model, rocq = (observations[name][index] for name in ("native", "model", "rocq"))
+        native, model, compiled_model, rocq = (observations[name][index]
+            for name in ("native", "model", "compiled_model", "rocq"))
         kind = category(word)
         record = {"word": word, "hex": f"0x{word:016x}", "category": kind,
-                  "native": native, "model": model, "rocq": rocq}
+                  "native": native, "model": model, "compiled_model": compiled_model, "rocq": rocq}
         if model != rocq:
             mismatches.append({**record, "path": "model-versus-rocq"})
+        if compiled_model != rocq:
+            mismatches.append({**record, "path": "compiled-model-versus-rocq"})
         # Zero/nonfinite frexp results are outside native_frExp_equiv's domain,
         # not an excuse to skip their decoding or successor/predecessor checks.
         width = 5 if kind in ("normal", "subnormal") else 3
@@ -166,9 +177,9 @@ def main() -> None:
               "lean_version": run(["lake", "env", "lean", "--version"]).strip(),
               "rocq_version": run([coqc, "--version"]).strip(),
               "host": run(["uname", "-sm"]).strip(),
-              "method": "Native FFI execution, Lean kernel reduction, Rocq vm_compute",
+              "method": "Native FFI execution, compiled Lean model, Lean kernel reduction, Rocq vm_compute",
               "nan_observation": "single canonical NaN; payload identity not claimed",
-              "compared_cases": 0, "bootstrapped_lean_cases": 0,
+              "compared_cases": 0, "compiled_model_cases": 0, "bootstrapped_lean_cases": 0,
               "mismatches": [], "exceptional_frexp_observations": []}
     report_path = output / "report.json"
 
@@ -194,6 +205,7 @@ def main() -> None:
             report["mismatches"].extend(mismatches)
             report["exceptional_frexp_observations"].extend(exceptions)
             report["compared_cases"] += len(batch)
+            report["compiled_model_cases"] += len(batch)
             save()
             if observations["model"] == observations["rocq"]:
                 bootstrap_lean(batch, observations["rocq"], folder)
@@ -212,7 +224,7 @@ def main() -> None:
         save()
     if report["mismatches"]:
         raise SystemExit(f"{len(report['mismatches'])} mismatches; see {report_path}")
-    print(f"PASS: {len(words)} three-way binary64 cases; see {report_path}")
+    print(f"PASS: {len(words)} four-path binary64 cases; see {report_path}")
 
 
 if __name__ == "__main__":

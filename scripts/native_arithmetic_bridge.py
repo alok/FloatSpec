@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Execute identical binary64 arithmetic in native Lean, its model, and Rocq.
+"""Execute binary64 arithmetic in native Lean, compiled/kernel models, and Rocq.
 
 Round-to-nearest-even; NaNs are canonicalized, signed zeros are not. Every model
 result agreeing with pinned Rocq becomes a kernel-checked Lean regression.
@@ -63,17 +63,26 @@ def native_source(cases: list[tuple[int, int]]) -> str:
             "] : List (UInt64 × UInt64)).map fun (x, y) => nativeObservation x y)\n")
 
 
+def compiled_model_source(cases: list[tuple[int, int]]) -> str:
+    pairs = ", ".join(f"({left}, {right})" for left, right in cases)
+    return (LEAN_HEADER + "def main : IO Unit :=\n  IO.println (([" + pairs +
+            "] : List (UInt64 × UInt64)).map fun (x, y) => modelObservation x y)\n")
+
+
 def execute(cases: list[tuple[int, int]], flocq: Path, coqc: str,
             folder: Path) -> dict[str, list[list[int]]]:
     paths = {name: folder / filename for name, filename in
-             (("native", "Native.lean"), ("model", "Model.lean"), ("rocq", "Arithmetic.v"))}
+             (("native", "Native.lean"), ("model", "Model.lean"),
+              ("compiled_model", "CompiledModel.lean"), ("rocq", "Arithmetic.v"))}
     paths["native"].write_text(native_source(cases))
+    paths["compiled_model"].write_text(compiled_model_source(cases))
     paths["model"].write_text(LEAN_HEADER + "#reduce ([" + ", ".join(
         f"modelObservation {left} {right}" for left, right in cases) + "] : List (List Int))\n")
     paths["rocq"].write_text(COQ_HEADER.read_text() + "\nEval vm_compute in [" + "; ".join(
         f"observation {left} {right}" for left, right in cases) + "].\n")
     commands = {"native": ["lake", "env", "lean", "--run", str(paths["native"])],
                 "model": ["lake", "env", "lean", str(paths["model"])],
+                "compiled_model": ["lake", "env", "lean", "--run", str(paths["compiled_model"])],
                 "rocq": [coqc, "-q", "-R", str(flocq / "src"), "Flocq", str(paths["rocq"])]}
 
     def observe(name: str) -> list[list[int]]:
@@ -84,24 +93,24 @@ def execute(cases: list[tuple[int, int]], flocq: Path, coqc: str,
             raise ValueError(f"{name}: expected all seven observation columns")
         return rows
 
-    with ThreadPoolExecutor(max_workers=3) as pool:
+    with ThreadPoolExecutor(max_workers=4) as pool:
         futures = {name: pool.submit(observe, name) for name in commands}
         return {name: future.result() for name, future in futures.items()}
 
 
 def compare(cases: list[tuple[int, int]], observations: dict[str, list[list[int]]]) -> list:
-    if set(observations) != {"native", "model", "rocq"}:
-        raise ValueError("all three execution paths are required")
+    if set(observations) != {"native", "model", "compiled_model", "rocq"}:
+        raise ValueError("all four execution paths are required")
     if any(len(rows) != len(cases) or any(len(row) != len(COLUMNS) for row in rows)
            for rows in observations.values()):
         raise ValueError("incomplete observations")
     mismatches = []
     for index, case in enumerate(cases):
-        for path in ("native", "model"):
+        for path in ("native", "model", "compiled_model"):
             actual, expected = observations[path][index], observations["rocq"][index]
             if actual != expected:
                 mismatches.append({"case": case, "hex": [f"0x{word:016x}" for word in case],
-                                   "path": f"{path}-versus-rocq", "actual": actual,
+                                   "path": f"{path.replace('_', '-')}-versus-rocq", "actual": actual,
                                    "expected": expected, "columns": [name for name, a, b in
                                    zip(COLUMNS, actual, expected, strict=True) if a != b]})
     return mismatches
@@ -148,10 +157,10 @@ def main() -> None:
               "worktree_status": run(["git", "status", "--porcelain"]).strip(),
               "lean_version": run(["lake", "env", "lean", "--version"]).strip(),
               "rocq_version": run([coqc, "--version"]).strip(), "host": run(["uname", "-sm"]).strip(),
-              "method": "Native FFI execution, Lean kernel reduction, Rocq vm_compute",
+              "method": "Native FFI execution, compiled Lean model, Lean kernel reduction, Rocq vm_compute",
               "rounding": "nearest, ties to even", "columns": COLUMNS,
               "nan_observation": "single canonical NaN; payload identity not claimed",
-              "compared_cases": 0, "bootstrapped_lean_cases": 0, "mismatches": []}
+              "compared_cases": 0, "compiled_model_cases": 0, "bootstrapped_lean_cases": 0, "mismatches": []}
     report_path = output / "report.json"
 
     def save() -> None:
@@ -174,6 +183,7 @@ def main() -> None:
             observations = execute(batch, flocq, coqc, folder)
             report["mismatches"].extend(compare(batch, observations))
             report["compared_cases"] += len(batch)
+            report["compiled_model_cases"] += len(batch)
             save()
             if observations["model"] == observations["rocq"]:
                 bootstrap_lean(batch, observations["rocq"], folder)
@@ -191,7 +201,7 @@ def main() -> None:
         save()
     if report["mismatches"]:
         raise SystemExit(f"{len(report['mismatches'])} mismatches; see {report_path}")
-    print(f"PASS: {len(cases)} three-way arithmetic pairs; see {report_path}")
+    print(f"PASS: {len(cases)} four-path arithmetic pairs; see {report_path}")
 
 
 if __name__ == "__main__":

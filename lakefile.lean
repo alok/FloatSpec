@@ -65,5 +65,9 @@ lean_lib FloatSpecTests where
 lean_exe floatspec where
   root := `Main
 
+/-- Seven source-backed examples with kernel assertions and native runtime checks. -/
+lean_exe floatspec_demo where
+  root := `scripts.fixtures.GuidedDemo
+
 -- lean_exe floatspecmanual where
 --   root := `FloatSpec.ManualMain

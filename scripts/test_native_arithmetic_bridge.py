@@ -32,19 +32,23 @@ class CorpusTests(unittest.TestCase):
                 bridge.validate_case(case)
 
     def test_each_output_column_is_compared_on_each_path(self):
-        for path in ("native", "model"):
+        for path in ("native", "model", "compiled_model"):
             for column, name in enumerate(bridge.COLUMNS):
-                observations = {key: [[0] * 7] for key in ("native", "model", "rocq")}
+                observations = {key: [[0] * 7] for key in ("native", "model", "compiled_model", "rocq")}
                 observations[path][0][column] = 1
                 mismatches = bridge.compare([(0, 0)], observations)
                 self.assertEqual(len(mismatches), 1)
-                self.assertEqual(mismatches[0]["path"], f"{path}-versus-rocq")
+                self.assertEqual(mismatches[0]["path"], f"{path.replace('_', '-')}-versus-rocq")
                 self.assertEqual(mismatches[0]["columns"], [name])
+
+    def test_missing_compiled_path_is_rejected(self):
+        with self.assertRaisesRegex(ValueError, "four execution paths"):
+            bridge.compare([(0, 0)], {name: [[0] * 7] for name in ("native", "model", "rocq")})
 
     def test_missing_paths_and_columns_rejected(self):
         for observations in ({"native": [[0] * 7], "rocq": [[0] * 7]},
-                             {name: [[0] * 6] for name in ("native", "model", "rocq")},
-                             {name: [] for name in ("native", "model", "rocq")}):
+                             {name: [[0] * 6] for name in ("native", "model", "compiled_model", "rocq")},
+                             {name: [] for name in ("native", "model", "compiled_model", "rocq")}):
             with self.assertRaises(ValueError):
                 bridge.compare([(0, 0)], observations)
 
@@ -83,6 +87,32 @@ class LiveTests(unittest.TestCase):
             self.assertEqual(report["status"], "mismatch")
             self.assertIn("sub", report["mismatches"][0]["columns"])
             self.assertIn("div", report["mismatches"][0]["columns"])
+            self.assertEqual(report["bootstrapped_lean_cases"], 1)
+            self.assertEqual(json.loads((output / "replay.json").read_text()), [case])
+
+    def test_compiled_model_mutation_cannot_hide_behind_kernel_proofs(self):
+        original = bridge.compiled_model_source
+
+        def wrong_compiled(cases):
+            return original(cases).replace("modelObservation x y", "modelObservation y x")
+
+        with tempfile.TemporaryDirectory(prefix="floatspec-arithmetic-compiled-mutation-") as directory:
+            output, replay = Path(directory) / "output", Path(directory) / "cases.json"
+            case = [0x3ff0000000000000, 0x4000000000000000]
+            replay.write_text(json.dumps([case]))
+            argv = ["native_arithmetic_bridge", "--flocq-dir", os.environ["FLOCQ_AUDIT_DIR"],
+                    "--replay", str(replay), "--output", str(output)]
+            with (patch("sys.argv", argv),
+                  patch.object(bridge, "compiled_model_source", wrong_compiled),
+                  contextlib.redirect_stdout(io.StringIO()), self.assertRaises(SystemExit)):
+                bridge.main()
+            report = json.loads((output / "report.json").read_text())
+            self.assertEqual(report["status"], "mismatch")
+            self.assertEqual([row["path"] for row in report["mismatches"]],
+                             ["compiled-model-versus-rocq"])
+            self.assertIn("sub", report["mismatches"][0]["columns"])
+            self.assertIn("div", report["mismatches"][0]["columns"])
+            self.assertEqual(report["compiled_model_cases"], 1)
             self.assertEqual(report["bootstrapped_lean_cases"], 1)
             self.assertEqual(json.loads((output / "replay.json").read_text()), [case])
 

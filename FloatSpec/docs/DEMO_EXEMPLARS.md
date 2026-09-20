@@ -3,14 +3,17 @@
 Start here, then read [the linear guide](READING_GUIDE.md). From the repository root:
 
 ```sh
-lake build
-lake env lean --run scripts/fixtures/GuidedDemo.lean
+lake exe floatspec_demo
 ```
 
 The [demo source](../../scripts/fixtures/GuidedDemo.lean) is short enough to read
 in execution order. It uses the port's actual integer algorithms, not decimal
 approximations as an oracle. Every section has both a `decide +kernel` assertion
 and a compiled runtime check that throws on disagreement.
+This command builds and runs a native executable through Lake. For the direct
+Lean interpreter path, `lake env lean --run scripts/fixtures/GuidedDemo.lean`
+still runs the same source and checks. The old `floatspec` executable remains
+a no-op launch smoke test; it is not this demo.
 
 ## 1. Compute something unsurprising
 

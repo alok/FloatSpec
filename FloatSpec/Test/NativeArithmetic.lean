@@ -18,7 +18,7 @@ def nativeObservation (left right : UInt64) : List Int :=
    x.sqrt.toModel.toBits.toNat]
 
 /-- The same seven fields through the actual source-facing Lean operations. -/
-noncomputable def modelObservation (left right : UInt64) : List Int :=
+def modelObservation (left right : UInt64) : List Int :=
   let x := PrimitiveFloat.ofModel (Float.Model.ofBits left)
   let y := PrimitiveFloat.ofModel (Float.Model.ofBits right)
   [x.toModel.toBits.toNat, y.toModel.toBits.toNat,

@@ -168,10 +168,12 @@ theorems show that valid inputs retain the old selected values/functions.
 These mathematical constructors legitimately use classical choice and do not
 claim to be native-executable rounding algorithms.
 
-The current `floatspec` executable's `main` does nothing. Running it is a
-launch smoke test only, not an arithmetic regression; the checks described here
-execute inside the test modules and bridges. Native execution is covered by
-the three-way binary64 bridge described below, not by that no-op executable.
+`lake exe floatspec_demo` builds and runs the seven-part guided introduction
+as a native executable, with kernel assertions and runtime checks against
+literal expected answers. The combined runner executes this target as well.
+The older `floatspec` executable's `main` still does nothing: running that
+target is a launch smoke test only, not an arithmetic regression. Broader
+native coverage comes from the four-path binary64 bridges described below.
 
 ## 2. Flocq checks itself
 
@@ -568,18 +570,23 @@ An interrupted or errored run is not a pass. CI currently runs the Lean grids
 and fast harness-unit tests; the live Rocq bridge is separately executed on
 this Mac and is not yet installed as a hosted-CI job.
 
-## 5. Native binary64: three implementations, one input
+## 5. Native binary64: four execution paths, one input
 
 `scripts/native_ieee_bridge.py` adds actual native execution via `lean --run`
 and its floating-point FFI. For each raw 64-bit input, it compares five fields:
 decoded/canonicalized input, successor, predecessor, `frExp` significand, and
-signed `frExp` exponent. The other two paths reduce the Lean logical Flocq
-carrier in the kernel and execute the pinned Rocq definitions with `vm_compute`.
+signed `frExp` exponent. Three further paths execute the Lean logical Flocq
+carrier as compiled code, reduce that same carrier in the kernel, and execute
+the pinned Rocq definitions with `vm_compute`. These are four execution paths
+inside the three verification loops, not four independent algorithms or proofs.
+The logical model adapter is executable without changing its body or type.
 
 The boundary corpus covers both signs, zero, subnormal powers of two and their
 neighbors, minimum normals, exponent transitions, maximum finite values,
 infinities, and signaling/quiet NaN payloads. Seeded arbitrary bit patterns
-supplement that corpus. All three result streams are retained independently.
+supplement that corpus. All four result streams are retained independently;
+reports include a separate `compiled_model_cases` count. Missing a path is an
+error, never an implicit downgrade to a weaker comparison.
 
 Two qualifications are deliberate and visible in the report:
 
@@ -589,13 +596,16 @@ Two qualifications are deliberate and visible in the report:
   the theorem's precondition. The observed exceptional exponent is `0` on this
   Mac, versus `-2101` in the logical Flocq model. Those exceptional observations
   remain in the report; their input decoding and successor/predecessor results
-  are still compared. Lean-model versus Rocq comparison includes **all** fields
-  on **all** inputs, including the exceptional cases.
+  are still compared. Both compiled-model and kernel-model versus Rocq
+  comparisons include **all** fields on **all** inputs, including exceptions.
 
 Every agreeing model/Rocq row becomes a checked Lean equality. This proves the
 individual logical-model result, not the native FFI correspondence theorem.
 The native minimum-subnormal case is also a permanent model regression in
 `FloatSpec/Test/NativeIEEE.lean`, paired with `scripts/fixtures/NativeIEEE.v`.
+Independent mutations alter only native successor or only compiled-model
+observations. A compiled-only error must still produce a mismatch and replay
+even when the separate kernel/Rocq equality proof succeeds.
 
 ```sh
 uv run scripts/native_ieee_bridge.py --flocq-dir /path/to/pinned-flocq \
@@ -609,7 +619,8 @@ The combined shell runner accepts `FLOCQ_NATIVE_SAMPLES` and
 ## 6. Arithmetic at real binary64 sizes
 
 `scripts/native_arithmetic_bridge.py` sends each pair of raw binary64 words
-through native Lean arithmetic, the port's `FaithfulPrimFloat` operations, and
+through native Lean arithmetic, compiled and kernel execution of the port's
+`FaithfulPrimFloat` operations, and
 Flocq's `b64_plus`, `b64_minus`, `b64_mult`, `b64_div`, and `b64_sqrt`. All use
 round-to-nearest, ties-to-even. Each row contains seven fields: both canonical
 inputs, sum, difference, product, quotient, and square root of the left operand.
@@ -638,7 +649,8 @@ uv run scripts/native_arithmetic_bridge.py --flocq-dir /path/to/pinned-flocq \
 
 The combined runner accepts `FLOCQ_ARITHMETIC_SAMPLES` and
 `FLOCQ_ARITHMETIC_BATCH_SIZE`. Its harness tests each output column, deliberately
-swaps native operands, and verifies that timeout/interruption records are
+swaps native operands and independently swaps only compiled-model operands,
+and verifies that timeout/interruption records are
 errors with zero completed cases, never passes. Do not rebuild dependencies
 or edit imported Lean source during an active run: rebuilding can temporarily
 remove `.olean` files that another evaluator is reading. Finish or explicitly

@@ -8,14 +8,14 @@ Those are separate jobs. A program can compile while its specification is wrong.
 
 For a seven-part runnable introduction, start with
 [the guided demo and exemplar reading list](DEMO_EXEMPLARS.md):
-`lake env lean --run scripts/fixtures/GuidedDemo.lean`.
+`lake exe floatspec_demo`.
 
 This guide follows those jobs in order. The detailed
 [original audit](FLOCQ_CONFORMANCE_AUDIT_2026-09-18.md) and
 [independent continuation audit](ASTRA_AUDIT_2026-09-19.md) retain the
 declaration-by-declaration findings and historical milestones.
 
-## Wake-up summary — September 20, 2026, 13:52 UTC
+## Wake-up summary — September 20, 2026, 13:56 UTC
 
 **The port builds and runs on macOS with Lean 4.34.0, but it is not yet a
 fully source-audited port.** All 35 built Flocq module names have Lean
@@ -33,8 +33,9 @@ The full **6,216-job macOS build**, **67-test harness**, paired Lean/Rocq
 37-entry fixture, three decomposition-exponent checks, and fourteen deliberate
 API/exponent mutations pass. Compiled trust still finds exactly four named
 proof debts; 218 pinned source anchors validate.
-The seven-part demo additionally passes as a standalone linked macOS arm64
-executable; the ledger retains its build/run receipts and exact hashes.
+The seven-part demo now ships as a proper Lake-built macOS arm64 executable:
+`lake exe floatspec_demo`. All seven runtime checks pass; the ledger retains
+its build/run receipts and exact hashes.
 The expanded mutation suite is now integrated and passes all **40** deliberately
 wrong API/instance or exponent observations in both Lean paths.
 
@@ -66,11 +67,13 @@ saved inputs pass in eight 25-case batches. The scheduling repair is now
 integrated: 29 runner/parser/batching tests and a 28-case mixed-family replay
 pass, including all generated kernel equalities. Timeouts remain errors.
 
-A separate **1,224-pair** native arithmetic experiment also passes. It adds a
-compiled logical-model observation alongside native FFI, kernel reduction,
-and pinned Rocq. Those are four execution paths inside the same three
-verification loops, not four independent proofs. That draft, and the
-522-word native-IEEE draft, are ready for persistent bridge integration.
+Both native bridges now compare compiled logical-model execution alongside
+native FFI, kernel reduction, and pinned Rocq: four execution paths inside
+the same three verification loops, not four independent proofs. The current
+integration passes its **19-test harness**, including independent native and
+compiled-only corruptions. Missing paths and incomplete outputs fail. Earlier
+scratch experiments passed **1,224 arithmetic pairs** and **522 IEEE words**;
+the forthcoming broad run will exercise the persistent integration afresh.
 
 **Newest completed source repair:** Flocq's predicate-to-rounding constructors
 return a value/function *with its proof*. Lean now does too, and requires the
@@ -87,7 +90,9 @@ callers, full **6,216-job build**, and direct client check pass. There are now
 **90** premise guards and **222** validated pinned anchors, with the same four
 proof debts. Section 4 explains why these total-definition laws say nothing
 about the existence of a valid format at those precisions.
-Persistent four-path bridge integration and a fresh broad combined run are next.
+The combined target including the demo passes **6,219 build jobs**. Its source
+fingerprint is frozen for the next broad combined run; that run is not yet
+counted as passed.
 
 To understand the system rather than just the status, continue with
 sections 1–6 below. The [demo guide](DEMO_EXEMPLARS.md) supplies small

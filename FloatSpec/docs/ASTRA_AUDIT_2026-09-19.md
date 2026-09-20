@@ -2430,6 +2430,63 @@ empty output before production integration (`FLXWholeModuleUnitDraft20260920-v4.
 Neither this type repair nor its finite examples certify the remaining FLX
 theorems or the rest of the port.
 
+### September 20, 13:56 UTC — persistent four-path native bridges and Lake-built demo
+
+Both native test-model adapters now compile at their actual exported names.
+Fresh clients failed with `dependsOnNoncomputable` before removing only the
+two `noncomputable` markers; the identical clients compile afterward. Their
+bodies, types, and logical proofs are unchanged. The persistent IEEE and
+arithmetic bridges now require four complete observations: native Lean FFI,
+compiled logical Lean model, kernel-reduced logical model, and pinned Rocq.
+They retain each stream and count compiled-model cases separately.
+
+All model fields are compared with Rocq, including exceptional frexp outputs.
+Only the documented native frexp nonzero/finite boundary limits the native
+comparison. Kernel/Rocq agreeing results still produce individual kernel
+equalities; a separate compiled-only discrepancy remains an overall mismatch
+even when those equalities pass. Missing paths are errors, not a silent
+downgrade. Independent live mutations corrupt native and compiled paths and
+must retain replay inputs. No new oracle arithmetic was implemented.
+
+The seven-part `GuidedDemo.lean` source now has a real `floatspec_demo` Lake
+target. `lake exe floatspec_demo` runs a linked native executable with all
+seven kernel-asserted/runtime-checked examples. The combined three-loop shell
+runner also invokes it. The unrelated legacy `floatspec` target remains a
+no-op smoke test. Guides now lead with the useful executable command.
+
+Verification on macOS arm64/Lean 4.34.0:
+
+- `lake build FloatSpecLib FloatSpecTests floatspec floatspec_demo` passes
+  **6,219 jobs**: `/private/tmp/floatspec-four-path-demo-build-20260920.log`.
+- `lake exe floatspec_demo` exits zero; all seven examples pass:
+  `/private/tmp/floatspec-lake-demo-run-20260920.log`.
+- The **19-test** native bridge harness passes in **43.458 seconds**, including
+  all live native/compiled-only mutations and timeout/interruption tests:
+  `/private/tmp/floatspec-four-path-live-harness-20260920.log`.
+  Its 12 unit tests also passed before the live run; they are not 12 extra
+  independent tests beyond the 19.
+- Both changed Lean adapters have complete zero-error LSP diagnostics.
+  Before/after client logs use `/private/tmp/floatspec-native-model-integrated-`
+  and `floatspec-native-arithmetic-model-integrated-`, followed by
+  `before-20260920.log` / `after-20260920.log`.
+- Compiled trust remains **13,537 declarations / 58 modules / four unchanged
+  manifest debts**. Fresh source metadata validates **222** pinned anchors.
+  Reports use `/private/tmp/floatspec-four-path-` with
+  `trust-20260920.json`, `source-metadata-20260920.json`, `anchors-20260920.log`.
+- Shell syntax and `git diff --check` pass.
+
+This snapshot's Lean/configuration SHA-256 is
+`2cb288c3347dc66b2324b2ac6ad02ebfa84bd839affbde4d811789d6b7f40958`.
+The demo binary is Mach-O arm64 with SHA-256
+`8b82f999ea2793484c4d9e0552cf378d9bb6faf0c2234af817046fcca7ff46ce`;
+its unchanged source hash is
+`4b436c2e1c6909581fb5b8d47ced02f52f27aef8d77c3b242d8c43716deed6d1`.
+
+The earlier 522-word and 1,224-pair scratch runs are separate evidence on the
+previous snapshot. The next all-family combined run is still pending here;
+neither launching it nor these targeted successes constitute a whole-port
+semantic-equivalence proof. Hosted-CI cache/toolchain mismatch remains separate.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In

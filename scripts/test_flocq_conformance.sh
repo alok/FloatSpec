@@ -237,6 +237,7 @@ for fixture in BooleanComparison PrimitiveComparison PrimitiveConversion Primiti
 done
 run_lake env lean --run "$repo_root/scripts/fixtures/GuidedDemo.lean"
 echo 'Pure Lean loop passed: examples and 10,734 kernel-checked arithmetic invariant cases'
+run_lake exe floatspec_demo
 echo 'Lean bit/order loops passed: 20,000 roundtrips, 2,000 pure laws, 200,000 native comparisons'
 echo 'Boolean ordering passed: eight boundary assertions and 600,000 native Boolean comparisons'
 echo 'Native source-arithmetic loop passed: 100,100 binary32/binary64 comparisons'
