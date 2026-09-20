@@ -946,6 +946,16 @@ have no such premise. Lean now matches that premise boundary, including its
 the total definition bodies are unchanged. The legacy Hoare presentation and
 redundant radix facts in some wrappers remain explicit adaptation details.
 
+Seven further compiled source types omit exponent validity:
+`pred_pos_lt_id`, `succ_gt_id`, `pred_lt_id`, `succ_ge_id`, `pred_le_id`,
+`succ_0`, and `pred_0` (`Ulp.v:742–803,1550–1559`). The Lean exports now
+omit that accidental section instance too, along with five private helpers.
+Their proof bodies are unchanged and remain closed. Seven additional paired
+clients and compiled-type guards preserve this boundary, including zero.
+The nonzero premise on the strict laws remains necessary; the non-strict
+laws include zero. This change does not remove validity from representability
+or choice-independence theorems that genuinely require it.
+
 `fexp_negligible_exp_eq` at pinned `Ulp.v:76` is purely an integer law:
 it needs `Valid_exp`, but no radix. Its unused Lean radix parameter/instance
 are removed and all repository callers migrated. Fifteen paired typed

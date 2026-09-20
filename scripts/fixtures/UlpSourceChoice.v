@@ -83,6 +83,20 @@ Proof. apply generic_format_abs. exact Hf. Qed.
 Example generic_abs_inv_unrestricted (Hf : generic_format beta fexp (Rabs x)) :
   generic_format beta fexp x.
 Proof. apply generic_format_abs_inv. exact Hf. Qed.
+Example pred_pos_lt_id_unrestricted (Hx : x <> 0) : pred_pos beta fexp x < x.
+Proof. apply pred_pos_lt_id. exact Hx. Qed.
+Example succ_gt_id_unrestricted (Hx : x <> 0) : x < succ beta fexp x.
+Proof. apply succ_gt_id. exact Hx. Qed.
+Example pred_lt_id_unrestricted (Hx : x <> 0) : pred beta fexp x < x.
+Proof. apply pred_lt_id. exact Hx. Qed.
+Example succ_ge_id_unrestricted : x <= succ beta fexp x.
+Proof. apply succ_ge_id. Qed.
+Example pred_le_id_unrestricted : pred beta fexp x <= x.
+Proof. apply pred_le_id. Qed.
+Example succ_0_unrestricted : succ beta fexp 0 = ulp beta fexp 0.
+Proof. apply succ_0. Qed.
+Example pred_0_unrestricted : pred beta fexp 0 = -ulp beta fexp 0.
+Proof. apply pred_0. Qed.
 End SourcePremises.
 
 Example witness_exponents_agree (fexp : Z -> Z) (Hvalid : Valid_exp fexp)

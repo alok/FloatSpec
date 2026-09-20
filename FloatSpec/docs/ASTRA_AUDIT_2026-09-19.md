@@ -3310,6 +3310,46 @@ saved seed-859111 corpus. The final replay explicitly supplies that seed and
 includes the oracle description. Historical reports retain their original
 weaker assertion counts. Finite tests are not a universal adjacency proof.
 
+### September 20, 18:36 UTC — seven unrestricted neighbor laws
+
+Pinned Rocq's compiled types for `pred_pos_lt_id`, `succ_gt_id`, `pred_lt_id`,
+`succ_ge_id`, `pred_le_id`, `succ_0`, and `pred_0` contain no `Valid_exp` premise.
+The former Lean types all contained it. A matching unrestricted predecessor
+client compiled in Rocq but failed in Lean solely at instance synthesis.
+All seven public exports and five private supporting lemmas now omit the
+accidental section instance. Their proof bodies are unchanged; no new sorry
+is used. Seven pinned anchors, paired typed clients, and compiler guards
+were added. The public legacy Hoare wrappers remain compatible.
+
+Verification on source/configuration hash
+`5d2419162276975de050051816be91dc8af1562adeeeb4fc28bb07eea3974cfe`:
+
+- The identical previously failing Lean client now compiles; all seven new
+  fixture proofs were checked separately before adding the next.
+- All seven paired Rocq clients pass; all 30 printed fixture axiom lists
+  exclude `sorryAx`. The three live zero-spacing/validity mutation controls
+  pass (10.448 seconds).
+- Full macOS Lean 4.34 build passes **6,227 jobs**, and the compiled seven-part
+  demo passes. The shared gate now has **120** source-premise checks and
+  nine separate self-test commands (seven negative, two positive).
+- Fresh compiled trust remains **13,568 declarations / 58 modules / four
+  recorded debts**. Freshly exported metadata validates **284** pinned anchors.
+  Status remains 100 Lean files / four sorries / no explicit axioms or admit.
+- LSP fully checks the changed source module and, after rebuilding imports,
+  both test files without errors. Earlier per-client partial/time-out LSP
+  responses are not passes; direct compiler checks supplied those results.
+  One initial helper annotation followed its docstring and caused a parser
+  error; placing `omit` before the docstring fixed it before the source build.
+
+Logs use `/private/tmp/floatspec-neighbor-premise-` followed by
+`slice`, `full-build`, `controls`, `trust`, or `demo`, then `-20260920.log`;
+the metadata and trust JSON files use the same prefix/date.
+The baseline probe files are `/private/tmp/UlpNeighborPremises20260920.lean`
+and `.v`, and the post-fix client output is
+`/private/tmp/floatspec-neighbor-client-after-20260920.log`.
+No arithmetic definition body changed. Finite replay of earlier snapshots
+must not be relabeled as execution of this new fingerprint.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In

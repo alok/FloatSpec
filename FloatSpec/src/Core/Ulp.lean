@@ -275,6 +275,7 @@ private lemma ulp_run_pos (hβ : 1 < beta) (x : ℝ) (hx : x ≠ 0) :
   simp [hx]
   exact zpow_pos hbpos _
 
+omit [Valid_exp fexp] in
 private lemma pred_pos_run_le_self (hβ : 1 < beta) (x : ℝ) (hx : 0 < x) :
     (pred_pos beta fexp x) ≤ x := by
   classical
@@ -298,6 +299,7 @@ private lemma pred_pos_run_le_self (hβ : 1 < beta) (x : ℝ) (hx : 0 < x) :
     exact sub_le_self _ (ulp_run_nonneg (beta := beta) (fexp := fexp) hβ x)
 
 -- Strict version: on positive inputs, `pred_pos` strictly decreases the value.
+omit [Valid_exp fexp] in
 private lemma pred_pos_run_lt_self (hβ : 1 < beta) (x : ℝ) (hx : 0 < x) :
     (pred_pos beta fexp x) < x := by
   classical
@@ -326,6 +328,7 @@ private lemma pred_pos_run_lt_self (hβ : 1 < beta) (x : ℝ) (hx : 0 < x) :
     have hlt : x - (ulp beta fexp x) < x := sub_lt_self _ hpos
     simpa [pred_pos, ite_eq_right hxeq] using hlt
 
+omit [Valid_exp fexp] in
 private lemma pred_run_le_self (hβ : 1 < beta) (x : ℝ) :
     (pred beta fexp x) ≤ x := by
   classical
@@ -356,6 +359,7 @@ private lemma pred_run_le_self (hβ : 1 < beta) (x : ℝ) :
     exact pred_pos_run_le_self (beta := beta) (fexp := fexp) hβ x hxpos
 
 -- Strict version: on nonzero inputs, `pred` strictly decreases the value.
+omit [Valid_exp fexp] in
 private lemma pred_run_lt_self (hβ : 1 < beta) (x : ℝ) (hx : x ≠ 0) :
     (pred beta fexp x) < x := by
   classical
@@ -401,6 +405,7 @@ theorem pred_le_self_of_le
   simp [wp, PostCond.noThrow, pure]
   exact le_trans (pred_run_le_self (beta := beta) (fexp := fexp) hβ x) hxy
 
+omit [Valid_exp fexp] in
 /-- A basic growth property of {name}`succ`: {lit}`y ≤ succ y` (run form). -/
 private lemma succ_run_ge_self (hβ : 1 < beta) (y : ℝ) :
     y ≤ (succ beta fexp y) := by
@@ -3129,7 +3134,9 @@ theorem pred_ulp_0 :
   simpa [wp, PostCond.noThrow, Id.run, bind, pure]
     using h
 
+omit [Valid_exp fexp] in
 /-- Coq (Ulp.v): Theorem {coq}`succ_0`: {lit}`succ 0 = ulp 0`. -/
+@[flocq_source "src/Core/Ulp.v" 1550 "succ_0"]
 theorem succ_0 :
     ⦃⌜True⌝⦄
     (pure
@@ -3141,7 +3148,9 @@ theorem succ_0 :
   -- Unfold both sides at 0 and normalize the Id monad
   simp [wp, PostCond.noThrow, Id.run, bind, pure, succ, ulp]
 
+omit [Valid_exp fexp] in
 /-- Coq (Ulp.v): Theorem {coq}`pred_0`: {lit}`pred 0 = - ulp 0`. -/
+@[flocq_source "src/Core/Ulp.v" 1559 "pred_0"]
 theorem pred_0 :
     ⦃⌜True⌝⦄
     (pure
@@ -4419,12 +4428,14 @@ theorem eq_0_round_0_negligible_exp
   exact (round_neq_0_negligible_exp
     (beta := beta) (fexp := fexp) hne rnd x hx) hr
 
+omit [Valid_exp fexp] in
 /-- Coq (Ulp.v):
 Lemma {coq}`pred_pos_lt_id`: {lit}`forall x, x ≠ 0 -> pred_pos x < x`.
 
 Lean (adapted): We require the standard radix hypothesis {lit}`1 < beta` so that
 {lit}`bpow` is strictly positive. This matches Coq's `radix` assumption.
 -/
+@[flocq_source "src/Core/Ulp.v" 742 "pred_pos_lt_id"]
 theorem pred_pos_lt_id (x : ℝ) (hx : x ≠ 0) :
     ⦃⌜1 < beta⌝⦄
     (pure (pred_pos beta fexp x) : Id ℝ)
@@ -4451,9 +4462,11 @@ theorem pred_pos_lt_id (x : ℝ) (hx : x ≠ 0) :
       exact zpow_pos hbpos _
     exact sub_lt_self _ hpos
 
+omit [Valid_exp fexp] in
 /-- Coq (Ulp.v):
 Theorem {coq}`succ_gt_id`: {lit}`forall x, x ≠ 0 -> x < succ x`.
 -/
+@[flocq_source "src/Core/Ulp.v" 764 "succ_gt_id"]
 theorem succ_gt_id (x : ℝ) (hx : x ≠ 0) :
     ⦃⌜1 < beta⌝⦄
     (pure (succ beta fexp x) : Id ℝ)
@@ -4481,12 +4494,14 @@ theorem succ_gt_id (x : ℝ) (hx : x ≠ 0) :
     have : x < - (pred_pos beta fexp (-x)) := by linarith
     simpa [succ, hx0] using this
 
+omit [Valid_exp fexp] in
 /-- Coq (Ulp.v):
 Theorem {coq}`pred_lt_id`: {lit}`forall x, x ≠ 0 -> pred x < x`.
 
 Lean (adapted): require the standard radix hypothesis {lit}`1 < beta` so that {name}`ulp` is
 strictly positive on nonzero inputs. This matches neighboring lemmas.
 -/
+@[flocq_source "src/Core/Ulp.v" 781 "pred_lt_id"]
 theorem pred_lt_id (x : ℝ) (hx : x ≠ 0) :
     ⦃⌜1 < beta⌝⦄
     (pure (pred beta fexp x) : Id ℝ)
@@ -4495,6 +4510,7 @@ theorem pred_lt_id (x : ℝ) (hx : x ≠ 0) :
   simp [wp, PostCond.noThrow, Id.run, pure]
   exact pred_run_lt_self (beta := beta) (fexp := fexp) hβ x hx
 
+omit [Valid_exp fexp] in
 /-- Coq (Ulp.v):
 Theorem {coq}`succ_ge_id`: {lit}`forall x, x ≤ succ x`.
 
@@ -4503,6 +4519,7 @@ Lean (adapted): we require the standard radix hypothesis {lit}`1 < beta` so that
 while in the negative branch {lit}`succ x = -pred_pos (-x)` is ≥ {lit}`x` by the auxiliary
 bound on {name}`pred_pos`. This matches the neighboring lemmas that assume {lit}`1 < beta`.
 -/
+@[flocq_source "src/Core/Ulp.v" 792 "succ_ge_id"]
 theorem succ_ge_id (x : ℝ) :
     ⦃⌜1 < beta⌝⦄
     (pure (succ beta fexp x) : Id ℝ)
@@ -4512,9 +4529,11 @@ theorem succ_ge_id (x : ℝ) :
   simp [wp, PostCond.noThrow, Id.run, pure]
   exact succ_run_ge_self (beta := beta) (fexp := fexp) hβ x
 
+omit [Valid_exp fexp] in
 /-- Coq (Ulp.v):
 Theorem {coq}`pred_le_id`: {lit}`forall x, pred x ≤ x`.
 -/
+@[flocq_source "src/Core/Ulp.v" 803 "pred_le_id"]
 theorem pred_le_id (x : ℝ) :
     ⦃⌜1 < beta⌝⦄
     (pure (pred beta fexp x) : Id ℝ)

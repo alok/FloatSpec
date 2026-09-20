@@ -203,6 +203,62 @@ theorem generic_abs_inv_unrestricted (x : Real) (hF : generic_format beta fexp |
 
 #print axioms generic_abs_inv_unrestricted
 
+/-- Typed neighbor client without exponent validity, matching pinned Rocq. -/
+theorem pred_pos_lt_id_unrestricted (x : Real) (hx : x ≠ 0) :
+    pred_pos beta fexp x < x := by
+  simpa [wp, PostCond.noThrow, Id.run, bind, pure] using
+    (pred_pos_lt_id beta fexp x hx) ValidRadix.valid
+
+#print axioms pred_pos_lt_id_unrestricted
+
+/-- Typed neighbor client without exponent validity, matching pinned Rocq. -/
+theorem succ_gt_id_unrestricted (x : Real) (hx : x ≠ 0) :
+    x < succ beta fexp x := by
+  simpa [wp, PostCond.noThrow, Id.run, bind, pure] using
+    (succ_gt_id beta fexp x hx) ValidRadix.valid
+
+#print axioms succ_gt_id_unrestricted
+
+/-- Typed neighbor client without exponent validity, matching pinned Rocq. -/
+theorem pred_lt_id_unrestricted (x : Real) (hx : x ≠ 0) :
+    pred beta fexp x < x := by
+  simpa [wp, PostCond.noThrow, Id.run, bind, pure] using
+    (pred_lt_id beta fexp x hx) ValidRadix.valid
+
+#print axioms pred_lt_id_unrestricted
+
+/-- Typed neighbor client without exponent validity, matching pinned Rocq. -/
+theorem succ_ge_id_unrestricted (x : Real) :
+    x ≤ succ beta fexp x := by
+  simpa [wp, PostCond.noThrow, Id.run, bind, pure] using
+    (succ_ge_id beta fexp x) ValidRadix.valid
+
+#print axioms succ_ge_id_unrestricted
+
+/-- Typed neighbor client without exponent validity, matching pinned Rocq. -/
+theorem pred_le_id_unrestricted (x : Real) :
+    pred beta fexp x ≤ x := by
+  simpa [wp, PostCond.noThrow, Id.run, bind, pure] using
+    (pred_le_id beta fexp x) ValidRadix.valid
+
+#print axioms pred_le_id_unrestricted
+
+/-- Typed neighbor client without exponent validity, matching pinned Rocq. -/
+theorem succ_0_unrestricted  :
+    succ beta fexp 0 = ulp beta fexp 0 := by
+  simpa [wp, PostCond.noThrow, Id.run, bind, pure] using
+    (succ_0 beta fexp ) True.intro
+
+#print axioms succ_0_unrestricted
+
+/-- Typed neighbor client without exponent validity, matching pinned Rocq. -/
+theorem pred_0_unrestricted  :
+    pred beta fexp 0 = -ulp beta fexp 0 := by
+  simpa [wp, PostCond.noThrow, Id.run, bind, pure] using
+    (pred_0 beta fexp ) True.intro
+
+#print axioms pred_0_unrestricted
+
 end Unrestricted
 
 /-- The source integer witness lemma has no radix parameter or radix premise. -/

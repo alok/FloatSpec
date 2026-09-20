@@ -189,6 +189,13 @@ end FloatSpec.Test.SourcePremiseGuard
 #guard_no_source_premise FloatSpec.Core.Ulp.ulp_canonical FloatSpec.Core.Generic_fmt.Valid_exp at fexp
 #guard_no_source_premise FloatSpec.Core.Ulp.ulp_bpow FloatSpec.Core.Generic_fmt.Valid_exp at fexp
 #guard_no_source_premise FloatSpec.Core.Ulp.pred_bpow FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.Ulp.pred_pos_lt_id FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.Ulp.succ_gt_id FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.Ulp.pred_lt_id FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.Ulp.succ_ge_id FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.Ulp.pred_le_id FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.Ulp.succ_0 FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.Ulp.pred_0 FloatSpec.Core.Generic_fmt.Valid_exp at fexp
 #guard_no_source_premise FloatSpec.Core.Generic_fmt.generic_format_abs FloatSpec.Core.Generic_fmt.Valid_exp at fexp
 #guard_no_source_premise FloatSpec.Core.Generic_fmt.generic_format_abs_inv FloatSpec.Core.Generic_fmt.Valid_exp at fexp
 

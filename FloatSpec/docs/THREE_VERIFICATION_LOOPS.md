@@ -134,7 +134,7 @@ outside square root's exponent premise makes that domain boundary executable.
 Deliberately increasing the returned mantissa or replacing its location by
 exact must break both the closed finite assertions and compiled checks.
 
-`Test/SourcePremiseContracts.lean` additionally has 113 source-premise guards,
+`Test/SourcePremiseContracts.lean` additionally has 120 source-premise guards,
 paired typed consumers for the Prop, integer-rounding, canonical-exponent,
 real-comparison, division, square-root, FTZ inclusion, eleven FLT relationships,
 two unrestricted FLX unit laws, parity/symmetry contracts, and generic IEEE comparison exports, and seven deliberate negative guard
@@ -1032,10 +1032,10 @@ zero-spacing body drift in both assistants and the removed validity premise
 in Lean. These are kernel-checked mathematical contracts, not native
 execution of the real-valued ULP function or arbitrary-predicate choice.
 
-Fifteen paired typed clients additionally consume the reviewed ULP/absolute-
+Twenty-two paired typed clients additionally consume the reviewed ULP/absolute-
 value laws without irrelevant exponent-validity premises, and the integer
 witness-equality lemma without a radix. The shared compiled-type guard covers
-the 14 widened source laws and one compatibility wrapper. All 23 printed
+the 21 widened source laws and one compatibility wrapper. All 30 printed
 Lean fixture axiom lists exclude `sorryAx`. The preservation theorem still
 requires valid exponents; its negative control targets that theorem specifically.
 

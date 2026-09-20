@@ -15,7 +15,7 @@ This guide follows those jobs in order. The detailed
 [independent continuation audit](ASTRA_AUDIT_2026-09-19.md) retain the
 declaration-by-declaration findings and historical milestones.
 
-## Wake-up summary — September 20, 2026, 18:27 UTC
+## Wake-up summary — September 20, 2026, 18:36 UTC
 
 **The port builds and runs on macOS with Lean 4.34.0; it is not yet a fully
 source-audited port.** All 35 built Flocq module names have Lean counterparts,
@@ -26,7 +26,7 @@ percentage.
 Start with `lake exe floatspec_demo`, then read sections 1–6 below. The latest
 **6,227-job build and all seven demo examples pass**. Fresh compiled checks
 cover **13,568 declarations / 58 modules**, find exactly the four recorded
-debts, and validate **277 pinned source anchors**. Reviewable changes are on
+debts, and validate **284 pinned source anchors**. Reviewable changes are on
 [your fork's audit branch](https://github.com/alok/FloatSpec/tree/codex/astra-flocq-audit);
 your fork is the default remote and BAIF remains `upstream`.
 
@@ -56,10 +56,10 @@ completed: **8,128 cases**, seed `859003`, plus a **200-case** targeted
 neighbor replay, with every three-path comparison and generated kernel
 equality passing. The targeted generator closes a real coverage gap: broad
 random bounds rarely satisfy the neighbor theorems' premises.
-The latest subsequent change removes spurious assumptions from 15 source
+The following changes remove spurious assumptions from 22 source
 theorem interfaces and one compatibility helper; their arithmetic bodies
-are unchanged. It passes the full build, **113 source-premise guards** and
-15 paired typed clients. Its final-snapshot **360-case** runtime replay also
+are unchanged. The latest build passes **120 source-premise guards** and
+22 paired typed clients. The preceding interface snapshot's **360-case** runtime replay also
 passes all three paths and every generated kernel equality.
 Each run retains its exact source fingerprint. Earlier interruptions and
 timeouts remain errors, not retroactive passes.
