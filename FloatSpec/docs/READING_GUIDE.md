@@ -85,6 +85,12 @@ rejected even when the language paths agree. See
 [the explanatory example](DEMO_EXEMPLARS.md#agreement-is-stronger-with-an-independent-expectation).
 The large fresh aggregate is still running, not yet a pass.
 
+A second [small paired example](DEMO_EXEMPLARS.md#a-valid-format-can-have-decreasing-ulp)
+explains why assumption removal must be selective: a valid format can have
+ULP `1/2` at input `1/2` but ULP `1/4` at input `1`. Both inputs are representable.
+Lean and Rocq prove this concrete counterexample to ULP monotonicity without
+the separate monotone-exponent hypothesis.
+
 A [review of the three concurrent Claude comparison commits](CLAUDE_COMPARISON_REVIEW_2026-09-20.md)
 finds another important distinction: proving an executable backend equal to
 an older Lean specification does not show that specification matches Rocq.

@@ -984,6 +984,24 @@ or normalized-carrier equivalence theorem is added or claimed here.
 
 ## Independent finite arithmetic laws and selection oracle
 
+### Validity does not imply exponent monotonicity
+
+The paired `ExponentValidityBoundary` fixtures define the same alternating
+exponent function in both assistants: even `e` maps to `e-1`, odd `e` to `e-3`.
+It satisfies the literal `Valid_exp` conditions at pinned `Generic_fmt.v:38`,
+but violates `Monotone_exp` (`Generic_fmt.v:1546`) already at `0 <= 1`.
+All powers of two remain representable. Closed Lean and Rocq statements
+establish `ulp(1/2) = 1/2` and `ulp(1) = 1/4`, hence a strict decrease.
+
+This independently demonstrates that the `Monotone_exp` premise on pinned
+`Ulp.v:333` (`ulp_le_pos`) and `:354` (`ulp_le`) is substantive. The current Lean
+types preserve it. The fixture adds no source API or proof debt, and does not
+execute classical real operations natively. The six Lean axiom lists contain
+only the ordinary `propext`, `Classical.choice`, and `Quot.sound` dependencies.
+Rocq's corresponding assumptions are printed rather than silently elided.
+
+### Enumerated arithmetic and rounding
+
 `ExactArithmeticLaws.lean` / `.v` enumerate the 55 finite mathematical values
 of the three-bit, maximum-exponent-four format independently of the rounder.
 Both assistants check 275 exact-input cases, 1,055 Sterbenz subtraction cases

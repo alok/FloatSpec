@@ -29,6 +29,15 @@ arithmetic, zero divisors and negative square roots, while retaining finite
 overflow/underflow and signed-zero rules. The paired differential paths still
 cover the excluded exceptional cases; no universal equivalence is inferred.
 
+The standalone paired `scripts/fixtures/ExponentValidityBoundary.lean` / `.v`
+provides six checked declarations explaining a genuine source premise:
+`Valid_exp` alone permits decreasing ULP. The alternate-binade format is valid,
+contains every power of two, and has `ulp(1/2)=1/2 > 1/4=ulp(1)`.
+All six Lean axiom lists exclude `sorryAx`; Rocq prints its classical-real
+assumptions. This is proof-level testing of real definitions, not a native
+real-arithmetic execution claim. It is separate from the already-running
+frozen aggregate until the next runner integration.
+
 ## 1. Lean checks itself
 
 `lake build FloatSpec.Test FloatSpecTests floatspec` builds the port, its tests,

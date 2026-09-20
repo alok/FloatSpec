@@ -176,6 +176,40 @@ arithmetic, division by zero, and negative square root remain outside its
 numeric scope; the differential paths still observe them. Finite checks and
 an independent oracle are not universal conformance proofs.
 
+## A valid format can have decreasing ULP
+
+Some source theorems do not need `Valid_exp`; others genuinely need the separate
+`Monotone_exp` hypothesis. These are different properties, not stronger and
+weaker names for the same thing. Read the small paired
+[Lean](../../scripts/fixtures/ExponentValidityBoundary.lean) and
+[Rocq](../../scripts/fixtures/ExponentValidityBoundary.v) examples in order.
+
+The exponent function is `f(e) = e - 1` when `e` is even, and `e - 3` otherwise.
+Both assistants prove that it is a valid format, that every power of two is
+representable, and that the exponent function is not monotone. At two adjacent
+binades it gives:
+
+| Input | Binary magnitude | Selected exponent | ULP |
+|---|---:|---:|---:|
+| `1/2` | `0` | `f(0) = -1` | `1/2` |
+| `1` | `1` | `f(1) = -2` | `1/4` |
+
+Thus increasing the input can decrease its ULP, even in a valid format and
+even when both inputs are representable. The format simply offers more bits
+in the second binade. Removing `Monotone_exp` from the source ULP-monotonicity
+theorem would make it false; removing an unrelated leaked section assumption
+is a different operation.
+
+```sh
+lake env lean scripts/fixtures/ExponentValidityBoundary.lean
+```
+
+This checks six Lean declarations and prints their axiom dependencies, none
+containing `sorryAx`. The paired Rocq file proves the same statements against
+the pinned library and prints its classical-real assumptions. These are
+checked propositions about noncomputable real-valued definitions, not native
+execution of real logarithms or a proof of whole-library equivalence.
+
 ## One operation, three interfaces
 
 Run `lake env lean scripts/fixtures/PrimitiveExecution.lean` and read the paired

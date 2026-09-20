@@ -3406,6 +3406,32 @@ aggregate keeps its frozen source and harness. The new oracle and receipt
 checker are standalone pending integration after that run. CI's narrow
 cache-policy repair still awaits approval. No proof debt was added.
 
+### September 20, 19:08 UTC — a concrete boundary for assumption removal
+
+The new paired `ExponentValidityBoundary` fixtures prove six declarations in
+each assistant. The same alternating exponent function is valid, not monotone,
+and represents every power of two; nevertheless its ULP decreases from `1/2`
+at input `1/2` to `1/4` at input one. This demonstrates why pinned `ulp_le_pos`
+and `ulp_le` genuinely require `Monotone_exp`, which the current Lean types keep.
+It is a counterexample to dropping that premise, not a source-conformance bug.
+
+Each new Lean proof was checked before the next was added. Final LSP diagnostics
+complete without errors; direct Lean compilation and pinned Rocq compilation
+both pass. Six printed Lean axiom lists exclude `sorryAx`; the paired Rocq
+lists expose their ordinary classical-real assumptions. Logs:
+`/private/tmp/floatspec-exponent-boundary-lean-20260920.log` and
+`/private/tmp/floatspec-exponent-boundary-rocq-final-20260920.log`.
+An initial Rocq output path had a basename different from its source and was
+rejected before compilation; using the matching basename passed. Earlier
+scratch errors from an ambiguous Lean alias and proof syntax were corrected
+before the final fixture was added.
+
+The standalone fixture and linear explanatory table do not change any imported
+Lean source, existing harness or dependency. The running source fingerprint
+remains `5d241916…974cfe`. The current Generic_fmt validity docstring loosely
+calls the large-regime condition monotonicity; its formula is correct, and
+that wording should be corrected after the source-frozen run.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In
