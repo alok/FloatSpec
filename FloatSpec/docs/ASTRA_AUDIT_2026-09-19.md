@@ -2629,6 +2629,32 @@ No new proof admission or arithmetic algorithm change was introduced.
 The complete differential rerun remains pending until the new snapshot is
 committed and frozen; earlier aggregate runs are not relabeled as current.
 
+### September 20, 14:50 UTC — current frozen rerun and Pff probe
+
+The complete runner restarted at **14:38:51 UTC** on pushed commit
+`5a6d16df`, with Lean/configuration fingerprint `32ec11b5…` recorded above.
+The source/trust gates, pure Rocq suites, pure Lean suites, and native demo
+have passed. The core differential stage is still running; it is not yet
+an aggregate success. It uses seed `848933`, 100 random samples per family,
+and the unchanged ordered **48,614-case** corpus, now in 378 batches.
+
+Current log: `/private/tmp/floatspec-full-three-loop-5a6d16df-20260920.log`.
+Core artifacts:
+`/private/var/folders/gn/1hqqc7pn3nz5s_p0dxnn9h300000gp/T/floatspec-bridge-1vtmvy__`.
+Production sources, configuration, and verification tooling remain frozen
+while this run executes. Documentation changes do not alter its fingerprint.
+
+In parallel, a scratch-only Pff source-facade probe is testing digit count,
+shift, addition, subtraction, normalization, negation, and absolute value
+against pinned Pff, including radix zero, one, and negative values and
+zero precision where the exported functions have no excluding premise.
+The first probe failed before comparison because its generated Lean header
+used unsupported namespace-alias syntax. The error report is retained at
+`/private/tmp/floatspec-pff-source-probe-20260920/report.json`; it is not a
+pass. A corrected-header run has a separate `-v2-` artifact directory.
+Neither the probe nor its result certifies the legacy module or changes
+the port's numerical definitions.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In

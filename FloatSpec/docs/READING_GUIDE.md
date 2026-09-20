@@ -15,7 +15,7 @@ This guide follows those jobs in order. The detailed
 [independent continuation audit](ASTRA_AUDIT_2026-09-19.md) retain the
 declaration-by-declaration findings and historical milestones.
 
-## Wake-up summary — September 20, 2026, 14:36 UTC
+## Wake-up summary — September 20, 2026, 14:50 UTC
 
 **The port builds and runs on macOS with Lean 4.34.0, but it is not yet a
 fully source-audited port.** All 35 built Flocq module names have Lean
@@ -58,12 +58,16 @@ Those are four executions inside the three verification loops, not four
 independent proofs. Earlier 522-word and 1,224-pair scratch runs remain
 separate evidence on the older snapshot.
 
-**The broad rerun is being prepared, not counted as passed.** The 13:57 run
+**The broad rerun is running, not counted as passed.** It started at
+14:38 UTC on pushed commit `5a6d16df`. The source/trust gates, pure Rocq
+suites, pure Lean suites, and seven-part demo have passed on this snapshot;
+the differential corpus and harness stages are still in progress.
+The 13:57 run
 on `2282a69b` passed source/trust gates, pure Rocq suites, Lean fixed fixtures,
 and the demo, but was explicitly interrupted after a scheduling bottleneck
 was identified. It retains an error result: 1,755 compared cases and 1,754
 completed generated proofs, not a successful full run.
-The exact **48,614-case**, seed-`848933` corpus will run again with 378
+The exact **48,614-case**, seed-`848933` corpus is running again with 378
 batches instead of 2,502; no inputs are removed or reordered. The integrated
 87-case mixed-family pilot already passes in all three paths with all
 87 generated proofs. Timeouts and interruptions remain errors.
