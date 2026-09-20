@@ -15,7 +15,7 @@ This guide follows those jobs in order. The detailed
 [independent continuation audit](ASTRA_AUDIT_2026-09-19.md) retain the
 declaration-by-declaration findings and historical milestones.
 
-## Wake-up summary — September 20, 2026, 09:20 UTC
+## Wake-up summary — September 20, 2026, 09:36 UTC
 
 **Most important recent finding:** actually running the raw IEEE rounding APIs
 found a semantic bug. A helper replaced signed shifting with floor division
@@ -111,7 +111,7 @@ macOS build. A ten-case replay covers both IEEE widths and all five modes on
 this new type-only snapshot. The larger receipts above retain their original
 source hash; they are not relabeled as fresh runs of changed code.
 
-**Helper execution is now integrated locally:** eleven unnecessary execution
+**Helper execution is now integrated and pushed:** eleven unnecessary execution
 blockers are removed from normalization, decomposition, alternate neighbors,
 the constant one, and shift aliases. Bodies and types are unchanged. The
 6,216-job build, complete editor diagnostics, paired literal Lean/Rocq tests,
@@ -132,6 +132,17 @@ checked explanation of a theorem premise, not a newly discovered port bug.
 Two other paired counterexamples show why alternate ulp requires a finite
 input and positive-only predecessor requires a positive input. They are
 explained next to the runnable examples, not hidden in the audit log.
+
+**The latest coverage expansion checks `frexp`'s actual type.** Unlike the
+other helpers, decomposition does not require `prec < emax`. Its new separate
+bridge passes **4,169 cases and 4,169 kernel equalities**, seed `836647`,
+including 3,455 inputs with `prec ≥ emax`. Pure Lean and Rocq also each check
+**6,772 independent integer-law cases**: 2,086 valid finite values decompose
+exactly, while 4,686 invalid raw encodings are rejected. The normalized
+fraction bound is checked only where the source promises it. All **50**
+harness tests pass, including an exponent mutation that breaks both the
+kernel and compiled property checks. The implementation is unchanged in this
+test expansion; agreement is still finite, not universal equivalence.
 
 ## 1. Start with one small rounding problem
 

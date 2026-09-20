@@ -33,9 +33,9 @@ COQ_LOC = ["loc_Exact", "loc_Inexact Lt", "loc_Inexact Eq", "loc_Inexact Gt"]
 OPS = ("power", "div_eucl", "location", "round", "truncate", "div", "plus", "sqrt",
        "formats", "digits", "operations", "format_calc", "overflow", "bits32", "bits64",
        "bit_fields", "order32", "order64", "validity", "nearby", "neighbors", "comparison", "small_ieee",
-       "ieee_round", "single_helpers")
-ARITIES = dict(zip(OPS, (2, 2, 3, 3, 5, 6, 6, 4, 3, 2, 5, 8, 4, 1, 1, 6, 2, 2, 5, 6, 6, 10, 15, 8, 9), strict=True))
-WIDTHS = dict(zip(OPS, (1, 2, 3, 6, 3, 2, 2, 2, 4, 1, 13, 12, 21, 9, 9, 8, 14, 14, 15, 7, 17, 14, 87, 16, 46), strict=True))
+       "ieee_round", "single_helpers", "single_frexp")
+ARITIES = dict(zip(OPS, (2, 2, 3, 3, 5, 6, 6, 4, 3, 2, 5, 8, 4, 1, 1, 6, 2, 2, 5, 6, 6, 10, 15, 8, 9, 6), strict=True))
+WIDTHS = dict(zip(OPS, (1, 2, 3, 6, 3, 2, 2, 2, 4, 1, 13, 12, 21, 9, 9, 8, 14, 14, 15, 7, 17, 14, 87, 16, 46, 11), strict=True))
 RADIX_OPS = {"truncate", "div", "plus", "sqrt", "digits", "operations", "format_calc"}
 
 
@@ -94,6 +94,10 @@ class Case:
             prec, emax, mode, kind, sign, mantissa, _, _, _ = self.args
             if not 0 < prec < emax or mode not in range(5) or kind not in range(4) or sign not in (0, 1) or mantissa <= 0:
                 raise ValueError("single_helpers requires 0 < prec < emax, mode 0..4, kind 0..3, sign 0/1, positive source mantissa")
+        if self.op == "single_frexp":
+            prec, _, kind, sign, mantissa, _ = self.args
+            if prec <= 0 or kind not in range(4) or sign not in (0, 1) or mantissa <= 0:
+                raise ValueError("single_frexp requires positive precision, kind 0..3, sign 0/1, positive source mantissa")
 
 
 def small_ieee_raw(value, coq=False):
@@ -104,6 +108,42 @@ def small_ieee_raw(value, coq=False):
             f'{prefix}S754_nan',
             f'{prefix}S754_finite {s} ({mantissa})' + ('%positive' if coq else '') +
             f' ({exponent})')[kind]
+
+
+def single_frexp_expressions(case: Case) -> tuple[str, str]:
+    """The source frexp type has no precision/maximum-exponent separation premise."""
+    prec, emax, *raw = case.args
+    lean = (f'letI : Prec_gt_0 {prec} := ⟨by decide⟩; '
+            f'let raw : StandardFloat := {small_ieee_raw(raw)}; '
+            f'let x := BinarySingleNaN.SF2B\' (prec := {prec}) (emax := ({emax})) raw; '
+            'let f := BinarySingleNaN.Bfrexp x; '
+            'let fraction := binarySingleNaNFloatToStandardFloat f.1; '
+            f'[boolean (validBinarySingleNaNStandardFloat (prec := {prec}) (emax := ({emax})) raw)] ++ '
+            'standard (binarySingleNaNFloatToStandardFloat x) ++ standard fraction ++ '
+            f'[f.2, boolean (validBinarySingleNaNStandardFloat (prec := {prec}) (emax := ({emax})) fraction)]')
+    coq = (f'let raw := {small_ieee_raw(raw, True)} in '
+           f'let x := @BinarySingleNaN.SF2B\' {prec} ({emax}) raw in '
+           f'let f := @BinarySingleNaN.Bfrexp {prec} ({emax}) eq_refl x in '
+           f'let fraction := @BinarySingleNaN.B2SF {prec} ({emax}) (fst f) in '
+           f'[boolean (SpecFloat.valid_binary {prec} ({emax}) raw)] ++ '
+           f'standard (@BinarySingleNaN.B2SF {prec} ({emax}) x) ++ standard fraction ++ '
+           f'[snd f; boolean (SpecFloat.valid_binary {prec} ({emax}) fraction)]')
+    return lean, coq
+
+
+def single_frexp_corpus(seed: int, samples: int) -> list[Case]:
+    rng, cases = random.Random(seed), []
+    for prec in (1, 2, 3, 8, 24, 53):
+        for emax in sorted({-3, 0, 1, 2, 3, prec - 1, prec, prec + 1}):
+            emin = 3 - emax - prec
+            raw = [(kind, sign, 1, 0) for kind in (0, 1) for sign in (0, 1)] + [(2, 0, 1, 0)]
+            raw += [(3, sign, m, e) for sign in (0, 1)
+                    for m in sorted({1, 1 << (prec - 1), (1 << prec) - 1, 1 << prec})
+                    for e in sorted({emin - 1, emin, emin + 1, -prec, 0, emax - prec, emax - prec + 1})]
+            raw += [(rng.randrange(4), rng.randrange(2), rng.randint(1, 1 << (prec + 1)),
+                     rng.randint(min(emin - 2, -prec - 2), max(emax + 2, 2))) for _ in range(samples)]
+            cases.extend(Case('single_frexp', (prec, emax, *value)) for value in raw)
+    return list(dict.fromkeys(cases))
 
 
 def single_helpers_expressions(case: Case) -> tuple[str, str]:
@@ -418,8 +458,9 @@ def corpus(seed: int, samples: int) -> list[Case]:
     cases.extend(small_ieee_corpus(seed, samples))
     cases.extend(ieee_round_corpus(seed, samples))
     cases.extend(single_helpers_corpus(seed, samples))
+    cases.extend(single_frexp_corpus(seed, samples))
     for op in OPS:
-        if op in ("comparison", "small_ieee", "ieee_round", "single_helpers"):
+        if op in ("comparison", "small_ieee", "ieee_round", "single_helpers", "single_frexp"):
             continue
         for _ in range(samples):
             base = rng.choice((2, 3, 10, 16))
@@ -504,6 +545,8 @@ def expressions(case: Case) -> tuple[str, str]:
         return small_ieee_expressions(case)
     if op == "single_helpers":
         return single_helpers_expressions(case)
+    if op == "single_frexp":
+        return single_frexp_expressions(case)
     if op == "comparison":
         p, emax, *words = case.args
         operands = [words[:4], words[4:]]

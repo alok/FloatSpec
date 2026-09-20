@@ -88,12 +88,22 @@ The standalone paired fixtures add independent contract and error checks:
   executes it. A subnormal-product counterexample checks why the hypothesis
   cannot simply be omitted.
 
-`SingleNaNHelpers` separately checks 13 literal helper results, four
+`SingleNaNHelpers` separately checks 13 literal helper results, eight
 decompositions, and two signed shifts, closed independently in both assistants
 and executed in Lean. The one-bit decomposition explicitly checks the branch
 outside the normalized-fraction theorem's `2 < emax` hypothesis.
 Two additional closed counterexamples show that alternate ulp equality needs
 a finite input and positive-only predecessor equality needs a positive input.
+
+`FrexpLaws.lean` and `.v` independently check **6,772** raw finite encodings
+using explicit integer format membership and dyadic comparisons. Exactly
+**2,086** are valid finite values; these must retain their sign, decompose
+exactly, produce another valid finite value, and have a normalized fraction
+when `2 < emax`. The other **4,686** encodings must become NaN with the source
+sentinel exponent. The formats include eight-bit precision with `emax = 2`
+and `3`, and parameters with an empty finite-value range. Both assistants
+close the complete finite grid, and Lean also executes it. Adding one to the
+returned exponent breaks both the kernel assertion and compiled check.
 
 `NativeSingleNaNArithmetic.lean` additionally executes **200,200** nearest-even
 comparisons against native Float32/Float, calling both direct and source-mode
@@ -340,6 +350,16 @@ The test header permits powers through exponent 5,000, matching the other
 large-format bridges. It still rejects all warning-bearing or partially
 reduced output. A live regression removes this resource option to reproduce
 the binary64 threshold failure, then checks three-path agreement with it.
+
+The twenty-sixth family, `single_frexp`, isolates decomposition's weaker
+source domain: **only positive precision**, with no `prec < emax` premise.
+It compares eleven fields: raw validity, converted input, fraction, exponent,
+and fraction validity. It includes nonpositive maximum exponents, equal
+precision/maximum-exponent values, and precision greater than the maximum
+exponent. These are source-legal parameters, not claims about IEEE hardware
+formats. Invalid raw finite constructors are observed before their conversion
+to NaN. Literal outputs and independent fraction/exponent mutations check the
+adapter, while the paired law fixture separately checks mathematical meaning.
 
 ## 4. One command runs all three
 

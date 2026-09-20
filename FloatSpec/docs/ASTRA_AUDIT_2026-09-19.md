@@ -1493,6 +1493,57 @@ scratch Rocq import used `From Flocq Require Import Prop...`, which fails
 because `Prop` is a keyword; its corrected qualified import succeeds. Both
 attempts remain in `/private/tmp/DoubleRoundCompiledContracts*.out`.
 
+### September 20 continuation: test the complete frexp parameter domain
+
+The combined helper family necessarily shared `0 < prec < emax`, but
+compiled Rocq and Lean `Bfrexp` require only positive precision. A separate
+26th bridge family now accepts that actual source type, including precision
+equal to or greater than `emax` and nonpositive maximum exponents. Eleven
+fields retain input validity, converted input, fraction, exponent and output
+validity. Five literal rows and independent mutations of the fraction and
+exponent pass in compiled Lean, kernel reduction and pinned Rocq. The three
+new targeted harness tests pass in **11.122 seconds**. The complete harness
+then passes **49 tests in 188.932 seconds**, before adding the independent-law
+mutation described below. No production definition or theorem was changed.
+
+The paired `SingleNaNHelpers` fixture now includes eight decompositions,
+with four additional calls that have no `Prec_lt_emax` instance. In particular,
+eight-bit precision with `emax = 2` returns `(1/128, 0)` for `1/128`, while
+`emax = 3` returns `(-1/2, -7)` for `-1/256`. Signed zero in a source-legal
+negative-maximum-exponent parameterization retains the specified sentinel.
+Both assistants close these literal results; Lean executes them and has
+complete clean LSP diagnostics.
+
+New paired `FrexpLaws.lean` / `.v` fixtures independently check **6,772** raw
+finite encodings. An explicit integer format-membership test admits **2,086**
+finite values and rejects **4,686** encodings. For the valid values, the
+checks require sign preservation, validity of the fraction, exact dyadic
+reconstruction, and the `[1/2, 1)` fraction bound only when `2 < emax`.
+Rejected encodings must convert to NaN with the source sentinel exponent.
+The test oracle uses integer powers/comparisons, not the port's real-valued
+correctness theorem or its validity predicate. Both full grid proofs close
+by reduction; compiled Lean also passes. Rocq emits its standard large-Nat
+notation warning, not a failed proof. Logs:
+`/private/tmp/floatspec-frexp-independent-lean-v2-20260920.log` and
+`/private/tmp/floatspec-frexp-independent-rocq-20260920.log`.
+
+Adding one to the returned exponent fails both the closed kernel assertion
+and the compiled check, exit 1 (`/private/tmp/FrexpLawsMutation.out`). That
+mutation is now a persistent live harness test, and both pure fixtures
+are wired into the standard runner/CI fixture loop. The complete harness
+rerun passes **50 tests in 193.220 seconds**:
+`/private/tmp/floatspec-frexp-domain-harness-v2-20260920.log`.
+The seed-`836647` run also passes **4,169 compared/compiled cases and 4,169
+generated kernel equalities** in **541.930 seconds**, exit 0, on unchanged
+library SHA-256 `6110bb056804058cb0606007b0a2721296f7355a464e98269772aee1d046ccb3`.
+Receipt: `/private/tmp/floatspec-frexp-domain-grid-20260920/report.json`.
+Its **40** parameter pairs include **3,455** inputs with `prec >= emax`,
+**2,406** with `emax <= 2`, and **1,763** with `emax > 2`. These counts
+describe the finite corpus, not proof coverage of all integer parameters.
+After both frozen verifications completed, the full macOS Lean 4.34 build
+passed **6,216 jobs**, exit 0:
+`/private/tmp/floatspec-frexp-domain-final-build-20260920.log`.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In

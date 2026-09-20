@@ -10,6 +10,7 @@ private instance : Prec_gt_0 (3 : Int) := ⟨by decide⟩
 private instance : Prec_lt_emax (3 : Int) (4 : Int) := ⟨by decide⟩
 private instance : Prec_gt_0 (1 : Int) := ⟨by decide⟩
 private instance : Prec_lt_emax (1 : Int) (2 : Int) := ⟨by decide⟩
+private instance : Prec_gt_0 (8 : Int) := ⟨by decide⟩
 
 private def one : BinarySingleNaN.binary_float 3 4 := BinarySingleNaN.Bone
 private def tiny : BinarySingleNaN.binary_float 3 4 :=
@@ -44,11 +45,25 @@ private def fractions : List (StandardFloat × Int) :=
    let f := BinarySingleNaN.Bfrexp (prec := 3) (emax := 4) (.B754_zero true);
      (observe f.1, f.2),
    let f := BinarySingleNaN.Bfrexp (BinarySingleNaN.Bone (prec := 1) (emax := 2));
+     (observe f.1, f.2),
+   -- No Prec_lt_emax instance exists for these four source-legal calls.
+   let f := BinarySingleNaN.Bfrexp
+     (BinarySingleNaN.SF2B' (prec := 8) (emax := 2) (.S754_finite false 1 (-7)));
+     (observe f.1, f.2),
+   let f := BinarySingleNaN.Bfrexp
+     (BinarySingleNaN.SF2B' (prec := 8) (emax := 3) (.S754_finite true 1 (-8)));
+     (observe f.1, f.2),
+   let f := BinarySingleNaN.Bfrexp
+     (BinarySingleNaN.SF2B' (prec := 3) (emax := 3) (.S754_finite false 4 (-2)));
+     (observe f.1, f.2),
+   let f := BinarySingleNaN.Bfrexp (prec := 1) (emax := -3) (.B754_zero true);
      (observe f.1, f.2)]
 
 private def expectedFractions : List (StandardFloat × Int) :=
   [(.S754_finite false 4 (-3), 1), (.S754_finite false 4 (-3), -3),
-   (.S754_zero true, -11), (.S754_finite false 1 0, 0)]
+   (.S754_zero true, -11), (.S754_finite false 1 0, 0),
+   (.S754_finite false 1 (-7), 0), (.S754_finite true 128 (-8), -7),
+   (.S754_finite false 4 (-3), 1), (.S754_zero true, 5)]
 
 private def shifts : List Int :=
   [(Binary.shr_fexp (prec := 3) (emax := 4) (-1) (-5) .loc_Exact).1.shr_m,
@@ -71,6 +86,6 @@ example : premiseWitnesses = true := by decide +kernel
   unless decide (rows = expected ∧ fractions = expectedFractions ∧ shifts = [0, 0]) &&
       premiseWitnesses do
     throw (IO.userError "SingleNaN helper boundary mismatch")
-  IO.println "PASS: 13 helper values, four decompositions, two signed shifts, and two premise counterexamples."
+  IO.println "PASS: 13 helper values, eight decompositions, two signed shifts, and two premise counterexamples."
 
 end SingleNaNHelpers

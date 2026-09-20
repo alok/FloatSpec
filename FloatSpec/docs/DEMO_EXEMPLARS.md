@@ -146,6 +146,17 @@ then rounds, so using it on a negative boundary is not ordinary predecessor.
 Its source theorem explicitly requires a positive real value. The fixture
 proves both inequalities independently in Lean and Rocq.
 
+There is another easy-to-miss type distinction: `Bfrexp` itself requires only
+positive precision, not `prec < emax`. With eight-bit precision and
+`emax = 2`, it decomposes `1/128` as `(1/128, 0)`. With `emax = 3`, it
+decomposes `-1/256` as `(-1/2, -7)`. The source's exact-value identity works
+in both cases; normalized fractions are only promised in the second domain.
+The helper fixture now checks both examples without a precision-separation
+instance. For the larger independent check, run
+`lake env lean scripts/fixtures/FrexpLaws.lean`: it tests 6,772 encodings
+against integer membership and exact dyadic arithmetic, without calling a
+real-valued correctness theorem as its oracle.
+
 ## Exemplars inspected
 
 These are reading recommendations, not dependencies adopted by FloatSpec.

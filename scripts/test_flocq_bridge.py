@@ -49,6 +49,21 @@ class RunnerTests(unittest.TestCase):
 
 
 class ParserTests(unittest.TestCase):
+    def test_frexp_corpus_uses_its_actual_source_domain(self):
+        cases = bridge.single_frexp_corpus(836641, 3)
+        self.assertEqual(cases, bridge.single_frexp_corpus(836641, 3))
+        self.assertNotEqual(cases, bridge.single_frexp_corpus(836642, 3))
+        self.assertEqual(len(cases), len(set(cases)))
+        self.assertIn(bridge.Case('single_frexp', (8, 2, 3, 0, 1, -7)), cases)
+        self.assertIn(bridge.Case('single_frexp', (8, 3, 3, 1, 1, -8)), cases)
+        self.assertIn(bridge.Case('single_frexp', (1, -3, 0, 1, 1, 0)), cases)
+        for position, value in ((0, 0), (0, -1), (2, 4), (3, 2), (4, 0)):
+            args = [8, 2, 3, 0, 1, -7]
+            args[position] = value
+            with self.assertRaises(ValueError):
+                bridge.Case('single_frexp', tuple(args))
+        self.assertEqual(bridge.WIDTHS['single_frexp'], 11)
+
     def test_single_helpers_corpus_and_domains(self):
         cases = bridge.single_helpers_corpus(834619, 3)
         self.assertEqual(cases, bridge.single_helpers_corpus(834619, 3))
@@ -216,6 +231,60 @@ class ParserTests(unittest.TestCase):
 
 @unittest.skipUnless(os.environ.get("FLOCQ_AUDIT_DIR"), "live test requires FLOCQ_AUDIT_DIR")
 class LiveTests(unittest.TestCase):
+    def test_independent_frexp_laws_reject_exponent_mutation(self):
+        source = (Path(__file__).parent / 'fixtures/FrexpLaws.lean').read_text()
+        before = 'let f := BinarySingleNaN.Bfrexp x'
+        self.assertEqual(source.count(before), 1)
+        changed = source.replace(before,
+            'let result := BinarySingleNaN.Bfrexp x\n  let f := (result.1, result.2 + 1)')
+        with tempfile.TemporaryDirectory(prefix='floatspec-frexp-law-mutation-') as directory:
+            path = Path(directory) / 'FrexpLawsMutation.lean'
+            path.write_text(changed)
+            with self.assertRaises(RuntimeError) as caught:
+                bridge.run(['lake', 'env', 'lean', str(path)])
+            # Both the closed kernel assertion and compiled #eval must reject it.
+            self.assertIn('(kernel)', str(caught.exception))
+            self.assertIn('independent frexp domain law failed', str(caught.exception))
+
+    def test_frexp_without_precision_separation_and_literal_outputs(self):
+        flocq = Path(os.environ['FLOCQ_AUDIT_DIR']).resolve()
+        cases = [bridge.Case('single_frexp', args) for args in
+                 ((8, 2, 3, 0, 1, -7), (8, 3, 3, 1, 1, -8),
+                  (1, -3, 0, 1, 1, 0), (3, 3, 3, 0, 4, -2),
+                  (8, 2, 3, 0, 1, -8))]
+        with tempfile.TemporaryDirectory(prefix='floatspec-frexp-domain-') as directory:
+            folder = Path(directory)
+            rows = bridge.execute(cases, flocq, bridge.configured_coqc(flocq), folder)
+            self.assertEqual(bridge.compare(cases, rows), [])
+            self.assertEqual(rows['rocq'], [
+                [1, 3, 0, 1, -7, 3, 0, 1, -7, 0, 1],
+                [1, 3, 1, 1, -8, 3, 1, 128, -8, -7, 1],
+                [1, 0, 1, 0, 0, 0, 1, 0, 0, 5, 1],
+                [1, 3, 0, 4, -2, 3, 0, 4, -3, 1, 1],
+                [0, 2, 0, 0, 0, 2, 0, 0, 0, -12, 1]])
+            bridge.bootstrap_lean(cases, rows['rocq'], folder)
+
+    def test_frexp_fraction_and_exponent_mutations_are_rejected(self):
+        flocq = Path(os.environ['FLOCQ_AUDIT_DIR']).resolve()
+        case = bridge.Case('single_frexp', (8, 3, 3, 0, 1, -8))
+        original = bridge.expressions
+        for before, after, start, end in (
+            ('standard fraction ++', 'standard (binarySingleNaNFloatToStandardFloat x) ++', 5, 9),
+            ('[f.2, boolean', '[f.2 + 1, boolean', 9, 10)):
+            def mutation(case):
+                lean, rocq = original(case)
+                self.assertEqual(lean.count(before), 1)
+                return lean.replace(before, after), rocq
+            with (self.subTest(mutation=before),
+                  tempfile.TemporaryDirectory(prefix='floatspec-frexp-domain-mutation-') as directory,
+                  patch.object(bridge, 'expressions', mutation)):
+                rows = bridge.execute([case], flocq, bridge.configured_coqc(flocq), Path(directory))
+                self.assertEqual(bridge.compare([case], rows)[0]['paths'], ['lean', 'compiled'])
+                for path in ('lean', 'compiled'):
+                    self.assertNotEqual(rows[path][0][start:end], rows['rocq'][0][start:end])
+                    self.assertEqual(rows[path][0][:start], rows['rocq'][0][:start])
+                    self.assertEqual(rows[path][0][end:], rows['rocq'][0][end:])
+
     def test_raw_overflow_positive_fallback_and_all_exports(self):
         flocq = Path(os.environ['FLOCQ_AUDIT_DIR']).resolve()
         cases = [bridge.Case('overflow', args) for args in

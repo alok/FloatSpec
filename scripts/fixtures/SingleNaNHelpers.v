@@ -34,11 +34,20 @@ Definition fractions :=
   [let f := @S.Bfrexp 3 4 eq_refl one in (observe (fst f), snd f);
    let f := @S.Bfrexp 3 4 eq_refl tiny in (observe (fst f), snd f);
    let f := @S.Bfrexp 3 4 eq_refl (@S.B754_zero 3 4 true) in (observe (fst f), snd f);
-   let f := @S.Bfrexp 1 2 eq_refl (@S.Bone 1 2 eq_refl eq_refl) in (observe (fst f), snd f)].
+   let f := @S.Bfrexp 1 2 eq_refl (@S.Bone 1 2 eq_refl eq_refl) in (observe (fst f), snd f);
+   let f := @S.Bfrexp 8 2 eq_refl (@S.SF2B' 8 2 (SpecFloat.S754_finite false 1 (-7))) in
+     (observe (fst f), snd f);
+   let f := @S.Bfrexp 8 3 eq_refl (@S.SF2B' 8 3 (SpecFloat.S754_finite true 1 (-8))) in
+     (observe (fst f), snd f);
+   let f := @S.Bfrexp 3 3 eq_refl (@S.SF2B' 3 3 (SpecFloat.S754_finite false 4 (-2))) in
+     (observe (fst f), snd f);
+   let f := @S.Bfrexp 1 (-3) eq_refl (@S.B754_zero 1 (-3) true) in (observe (fst f), snd f)].
 
 Definition expectedFractions :=
   [(SpecFloat.S754_finite false 4 (-3), 1); (SpecFloat.S754_finite false 4 (-3), -3);
-   (SpecFloat.S754_zero true, -11); (SpecFloat.S754_finite false 1 0, 0)].
+   (SpecFloat.S754_zero true, -11); (SpecFloat.S754_finite false 1 0, 0);
+   (SpecFloat.S754_finite false 1 (-7), 0); (SpecFloat.S754_finite true 128 (-8), -7);
+   (SpecFloat.S754_finite false 4 (-3), 1); (SpecFloat.S754_zero true, 5)].
 
 Definition shifts :=
   [SpecFloat.shr_m (fst (SpecFloat.shr_fexp 3 4 (-1) (-5) SpecFloat.loc_Exact));

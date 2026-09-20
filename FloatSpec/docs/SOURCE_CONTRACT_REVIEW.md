@@ -296,7 +296,11 @@ It also demonstrates why the normalized-fraction claim fails when `emax = 2`.
 The 46-field `single_helpers` bridge independently calls every newly
 executable helper. Its **bundle** uses the common `0 < prec < emax` domain;
 that test restriction must not be mistaken for the weaker type of `Bfrexp`
-itself, nor for coverage of its entire positive-precision domain.
+itself. A subsequent separate `single_frexp` family passes 4,169 cases over
+40 parameter pairs, including 3,455 with `prec >= emax`. Paired independent
+integer-law fixtures cover 6,772 raw finite encodings in seven formats.
+These add finite evidence in the wider type domain, not exhaustive coverage
+of every positive-precision parameterization.
 
 This slice removes eleven unnecessary execution markers without changing
 algorithm bodies, types, or proof bodies. The signed-shift aliases refer to
