@@ -1,25 +1,25 @@
 {
   "schema_version": 1,
-  "recorded_at_utc": "2026-09-20T18:05:00Z",
+  "recorded_at_utc": "2026-09-20T20:18:00Z",
   "claim": "Finite execution and kernel-regression receipts, not universal Flocq equivalence.",
   "source_pin": "7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f",
-  "latest_source_sha256": "d53fa1077ac3e66a70bbafd753b9566986a679478866046208fe3ce3901b1f00",
+  "latest_source_sha256": "687aa7a88bdb9b5d4d3a7ac34b39b2b16efe7f265514e28b03039e76257395d2",
   "final_build": {
     "platform": "macOS arm64",
     "lean": "4.34.0",
     "rocq": "9.2",
-    "jobs": 6227,
+    "jobs": 6226,
     "status": "passed",
-    "log": "/private/tmp/floatspec-ulp-premise-full-build-20260920.log",
+    "log": "/private/tmp/floatspec-eight-choice-full-build-20260920.log",
     "demo_examples": 7
   },
   "compiled_trust": {
-    "source_declarations": 13568,
+    "source_declarations": 13565,
     "modules": 58,
     "manifest_only_proof_debts": 4,
-    "source_anchors": 277,
-    "source_premise_guards": 113,
-    "ulp_fixture_axiom_lists_without_sorryAx": 23
+    "source_anchors": 319,
+    "source_premise_guards": 147,
+    "nearest_fixture_axiom_lists_without_sorryAx": 10
   },
   "proof_debts": [
     "Binary64.ofBits_flipSign",
@@ -332,6 +332,43 @@
           "conditional_neighbor_assertions": null,
           "out_of_range_cases": 54,
           "distinct_route_cases": 25
+        }
+      ]
+    },
+    {
+      "name": "integrated_independent_oracle_ieee_runs",
+      "count": 1494,
+      "claim": "Preceding source snapshot, not the later eight nearest-policy repairs.",
+      "reports": [
+        {
+          "report_path": "/private/tmp/floatspec-integrated-native-oracle-861047/report.json",
+          "status": "passed",
+          "seed": 861047,
+          "reference": "7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f",
+          "lean_head": "87fb71bbde65d67a3365074543456c185b16c2e5",
+          "lean_source_sha256": "eb306bb511c7c42deea5750a87753ca53b8168e51ea701c4acde55319e722eb6",
+          "cases": 1104,
+          "compared_cases": 1104,
+          "bootstrapped_lean_cases": 1104,
+          "elapsed_seconds": 1044.033,
+          "oracle_assertions": 22672,
+          "oracle_scope": "Exact rational/grid expectations for finite-input IEEE arithmetic; square root uses squared midpoints. NaN/infinite-input arithmetic, zero divisors and negative square roots are excluded. Input echoes, finite overflow/underflow and signed zero are included.",
+          "worktree_status": "M scripts/ieee_exact_oracle.py\n M scripts/ieee_modes_bridge.py\n M scripts/native_arithmetic_bridge.py\n M scripts/test_flocq_conformance.sh\n M scripts/test_ieee_modes_bridge.py\n M scripts/test_native_arithmetic_bridge.py"
+        },
+        {
+          "report_path": "/private/tmp/floatspec-integrated-modes-oracle-861047/report.json",
+          "status": "passed",
+          "seed": 861047,
+          "reference": "7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f",
+          "lean_head": "d8186eed7fe065552725828a42611ea13a54cddc",
+          "lean_source_sha256": "eb306bb511c7c42deea5750a87753ca53b8168e51ea701c4acde55319e722eb6",
+          "cases": 390,
+          "compared_cases": 390,
+          "bootstrapped_lean_cases": 390,
+          "elapsed_seconds": 674.23,
+          "oracle_assertions": 44955,
+          "oracle_scope": "Exact rational/grid expectations for finite-input IEEE arithmetic; square root uses squared midpoints. NaN/infinite-input arithmetic, zero divisors and negative square roots are excluded. Input echoes, finite overflow/underflow and signed zero are included.",
+          "worktree_status": "?? scripts/fixtures/UlpNearestChoiceContracts.lean"
         }
       ]
     }

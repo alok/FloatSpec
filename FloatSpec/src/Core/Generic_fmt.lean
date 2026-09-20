@@ -7185,10 +7185,11 @@ theorem precision_generic_format (beta : Int) [ValidRadix beta] (fexp : Int → 
     -- Coercion monotonicity gives the required Nat inequality
     exact (by exact_mod_cast hcast_ineq)
 
-/-- Round to nearest in generic format
-
-    Computes the nearest representable value in the format.
--/
+/-- Lean-only nearest chooser with midpoint ties toward positive infinity.
+This compatibility helper has no tie-policy argument. Source-facing nearest
+contracts must instead use {name}`roundR` with {name}`Znearest` and the
+supplied choice function. -/
+@[flocq_local "Legacy nearest chooser with fixed upward ties, not the policy-parameterized source rounding"]
 noncomputable def round_N_to_format
     (beta : Int) [ValidRadix beta] (fexp : Int → Int) [Valid_exp fexp] (x : ℝ) (hbeta: 1 < beta): ℝ :=
   -- Choose the canonical down/up neighbors in the generic format,

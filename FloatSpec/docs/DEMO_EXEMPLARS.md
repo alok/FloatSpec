@@ -522,6 +522,35 @@ the domain visible: exact word-sized inputs and arbitrary integer inputs
 are different interfaces. The test initially assumed wrapping everywhere;
 running both assistants exposed and corrected that oracle mistake.
 
+## A proved statement can say too little
+
+Consider rounding `1/2` to integers. The two closest values are `0` and `1`.
+A tie policy returning false chooses `0`; a policy returning true chooses `1`.
+Away from the midpoint, both policies must choose the closer value.
+
+Eight ULP exports previously accepted a policy argument but used a separate,
+fixed-policy chooser in their conclusions. In particular, the purported
+two-policy agreement theorem compared the same fixed value with itself.
+That proposition was easy to prove, but did not establish agreement between
+the two supplied policies. The corrected theorem mentions `Znearest choice₁`
+and `Znearest choice₂` separately and proves their agreement away from ties.
+
+Read `scripts/fixtures/UlpNearestChoiceContracts.lean` linearly, alongside the
+matching `.v` file. The first eight clients demand the source-shaped types.
+`tie_choices_differ` proves the midpoint distinction about mathematical
+rounding. Finally, `executable_tie_decisions` computes the integer rounding
+decision: both assistants print `[0, 1]`. Run the Lean side with:
+
+```sh
+lake env lean scripts/fixtures/UlpNearestChoiceContracts.lean
+```
+
+All ten Lean proofs are free of `sorryAx`. The four live controls in
+`scripts/test_ulp_nearest_contracts.py` deliberately erase a policy from the
+expected type or choose the wrong policy at the tie, and require both
+assistants to reject the mutation. A checked proof and a faithfully stated
+source theorem are distinct requirements; this example tests both.
+
 ## After the demo
 
 Read [the linear guide](READING_GUIDE.md), then

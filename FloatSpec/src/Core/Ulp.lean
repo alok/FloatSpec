@@ -1285,92 +1285,6 @@ private theorem pred_round_le_id_theorem
     simpa [hpred_eq] using hneg'
 -/
 
--- Local bridge theorem (DN-midpoint strict inequality selects DN).
--- If `x` lies strictly below the midpoint between the chosen `DN x = d` and
--- `UP x = u`, then round-to-nearest returns `d`.
-private theorem round_N_eq_DN_pt_theorem
-    (beta : Int) [ValidRadix beta] (fexp : Int → Int)
-    [FloatSpec.Core.Generic_fmt.Valid_exp fexp]
-    (choice : Int → Bool) (x d u : ℝ) (hbeta: 1 < beta)
-    (Hd : FloatSpec.Core.Round_pred.Rnd_DN_pt (fun y => (FloatSpec.Core.Generic_fmt.generic_format beta fexp y)) x d)
-    (Hu : FloatSpec.Core.Round_pred.Rnd_UP_pt (fun y => (FloatSpec.Core.Generic_fmt.generic_format beta fexp y)) x u)
-    (h : x < ((d + u) / 2)) :
-    (FloatSpec.Core.Generic_fmt.round_N_to_format beta fexp x hbeta) = d := by
-  classical
-  -- Chosen DN/UP witnesses for x
-  set d₀ := Classical.choose (FloatSpec.Core.Generic_fmt.round_DN_exists beta fexp x hbeta) with hd
-  set u₀ := Classical.choose (FloatSpec.Core.Generic_fmt.round_UP_exists beta fexp x hbeta) with hu0
-  have hDN := Classical.choose_spec (FloatSpec.Core.Generic_fmt.round_DN_exists beta fexp x hbeta)
-  have hUP := Classical.choose_spec (FloatSpec.Core.Generic_fmt.round_UP_exists beta fexp x hbeta)
-  rcases hDN with ⟨hFd₀, hdn₀⟩
-  rcases hUP with ⟨hFu₀, hup₀⟩
-  rcases hdn₀ with ⟨_Fd₀', hd₀_le_x, hmax_dn₀⟩
-  rcases hup₀ with ⟨_Fu₀', hx_le_u₀, hmin_up₀⟩
-  -- Unpack the given predicates Hd and Hu
-  rcases Hd with ⟨Fd_mem, hd_le_x, hmax_d⟩
-  rcases Hu with ⟨Fu_mem, hx_le_u, hmin_u⟩
-  -- Uniqueness of DN via mutual bounds
-  have h_d_le_d₀ : d ≤ d₀ := hmax_dn₀ d Fd_mem hd_le_x
-  have h_d₀_le_d : d₀ ≤ d := hmax_d d₀ hFd₀ hd₀_le_x
-  have hd_eq : d₀ = d := le_antisymm h_d₀_le_d h_d_le_d₀
-  -- Uniqueness of UP via mutual bounds
-  -- From the chosen UP minimality: for g = u, we get u₀ ≤ u
-  have h_u₀_le_u : u₀ ≤ u := hmin_up₀ u Fu_mem hx_le_u
-  -- From the given UP minimality: for g = u₀, we get u ≤ u₀
-  have h_u_le_u₀ : u ≤ u₀ := hmin_u u₀ hFu₀ hx_le_u₀
-  have hu_eq : u₀ = u := le_antisymm h_u₀_le_u h_u_le_u₀
-  -- Midpoint test selects DN in the first branch of round_N
-  have hbranch : x < (d₀ + u₀) / 2 := by simpa [hd_eq, hu_eq] using h
-  -- Evaluate the definition of round_N_to_format on this branch
-  have hnotgt : ¬ ((d₀ + u₀) / 2) < x := by
-    exact not_lt.mpr (le_of_lt hbranch)
-  have hres : (FloatSpec.Core.Generic_fmt.round_N_to_format beta fexp x hbeta) = d₀ := by
-    simp [FloatSpec.Core.Generic_fmt.round_N_to_format,
-          hd.symm, hu0.symm, hbranch, hnotgt]
-  simpa [hd_eq] using hres
-
--- Symmetric local bridge theorem (UP-midpoint strict inequality selects UP).
--- If `x` lies strictly above the midpoint between the chosen `DN x = d` and
--- `UP x = u`, then round-to-nearest returns `u`.
-private theorem round_N_eq_UP_pt_theorem
-    (beta : Int) [ValidRadix beta] (fexp : Int → Int)
-    [FloatSpec.Core.Generic_fmt.Valid_exp fexp]
-    (choice : Int → Bool) (x d u : ℝ) (hbeta : 1 < beta)
-    (Hd : FloatSpec.Core.Round_pred.Rnd_DN_pt (fun y => (FloatSpec.Core.Generic_fmt.generic_format beta fexp y)) x d)
-    (Hu : FloatSpec.Core.Round_pred.Rnd_UP_pt (fun y => (FloatSpec.Core.Generic_fmt.generic_format beta fexp y)) x u)
-    (h : ((d + u) / 2) < x) :
-    (FloatSpec.Core.Generic_fmt.round_N_to_format beta fexp x hbeta) = u := by
-  classical
-  -- Chosen DN/UP witnesses for x
-  set d₀ := Classical.choose (FloatSpec.Core.Generic_fmt.round_DN_exists beta fexp x hbeta) with hd
-  set u₀ := Classical.choose (FloatSpec.Core.Generic_fmt.round_UP_exists beta fexp x hbeta) with hu0
-  have hDN := Classical.choose_spec (FloatSpec.Core.Generic_fmt.round_DN_exists beta fexp x hbeta)
-  have hUP := Classical.choose_spec (FloatSpec.Core.Generic_fmt.round_UP_exists beta fexp x hbeta)
-  rcases hDN with ⟨hFd₀, hdn₀⟩
-  rcases hUP with ⟨hFu₀, hup₀⟩
-  rcases hdn₀ with ⟨_Fd₀', hd₀_le_x, hmax_dn₀⟩
-  rcases hup₀ with ⟨_Fu₀', hx_le_u₀, hmin_up₀⟩
-  -- Unpack the given predicates Hd and Hu
-  rcases Hd with ⟨Fd_mem, hd_le_x, hmax_d⟩
-  rcases Hu with ⟨Fu_mem, hx_le_u, hmin_u⟩
-  -- Uniqueness of DN via mutual bounds
-  have h_d_le_d₀ : d ≤ d₀ := hmax_dn₀ d Fd_mem hd_le_x
-  have h_d₀_le_d : d₀ ≤ d := hmax_d d₀ hFd₀ hd₀_le_x
-  have hd_eq : d₀ = d := le_antisymm h_d₀_le_d h_d_le_d₀
-  -- Uniqueness of UP via mutual bounds
-  have h_u₀_le_u : u₀ ≤ u := hmin_up₀ u Fu_mem hx_le_u
-  have h_u_le_u₀ : u ≤ u₀ := hmin_u u₀ hFu₀ hx_le_u₀
-  have hu_eq : u₀ = u := le_antisymm h_u₀_le_u h_u_le_u₀
-  -- Midpoint test selects UP in the second branch of round_N
-  have hbranch : (d₀ + u₀) / 2 < x := by simpa [hd_eq, hu_eq] using h
-  -- Evaluate the definition of round_N_to_format on this branch
-  have hnotlt : ¬ x < (d₀ + u₀) / 2 := by exact not_lt.mpr (le_of_lt hbranch)
-  have hres : (FloatSpec.Core.Generic_fmt.round_N_to_format beta fexp x hbeta) = u₀ := by
-    simp [FloatSpec.Core.Generic_fmt.round_N_to_format,
-          hd.symm, hu0.symm, hnotlt, hbranch]
-  simpa [hu_eq] using hres
-
--- (moved earlier)
 
 /-- Coq (Ulp.v):
 Theorem round_DN_ge_UP_gt:
@@ -2375,95 +2289,70 @@ theorem pred_round_le_id
 /-- Coq (Ulp.v):
 Lemma round_N_eq_DN: forall choice x, let d := round_DN x; let u := round_UP x; x < (d+u)/2 -> round_N x = d.
 -/
-theorem round_N_eq_DN
-    (choice : Int → Bool) (x : ℝ) (hβ: 1 < beta)
-    (h : let d := FloatSpec.Core.Generic_fmt.round_DN_to_format beta fexp x hβ;
-         let u := FloatSpec.Core.Generic_fmt.round_UP_to_format beta fexp x hβ;
-         x < ((d + u) / 2)) :
-    ⦃⌜True⌝⦄
-    (pure
-      (let rn := FloatSpec.Core.Generic_fmt.round_N_to_format beta fexp x hβ
-       let d := FloatSpec.Core.Generic_fmt.round_DN_to_format beta fexp x hβ
-       (rn, d)) : Id (ℝ × ℝ))
-    ⦃⇓r => ⌜r.1 = r.2⌝⦄ := by
-  intro _; classical
-  -- Reduce the Hoare triple to a pure equality about the chosen DN/UP witnesses
-  simp [wp, PostCond.noThrow, Id.run, bind, pure] at h ⊢
-  -- Unpack DN/UP existence to obtain the witness predicates
-  let F : ℝ → Prop := fun y => (FloatSpec.Core.Generic_fmt.generic_format beta fexp y)
-  have hDN := Classical.choose_spec (FloatSpec.Core.Generic_fmt.round_DN_exists beta fexp x hβ)
-  have hUP := Classical.choose_spec (FloatSpec.Core.Generic_fmt.round_UP_exists beta fexp x hβ)
-  rcases hDN with ⟨hFdn, hRndDN⟩
-  rcases hUP with ⟨hFup, hRndUP⟩
-  -- Apply the local bridge: strict-below-midpoint selects the DN witness
-  exact round_N_eq_DN_pt_theorem (beta := beta) (fexp := fexp)
-    (choice := choice) (x := x)
-    (d := Classical.choose (FloatSpec.Core.Generic_fmt.round_DN_exists beta fexp x hβ))
-    (u := Classical.choose (FloatSpec.Core.Generic_fmt.round_UP_exists beta fexp x hβ))
-    hβ hRndDN hRndUP h
+@[flocq_source "src/Core/Ulp.v" 2564 "round_N_eq_DN"]
+theorem round_N_eq_DN (choice : Int → Bool) (x : ℝ)
+    (h : x < (roundR beta fexp rnd_floor x + roundR beta fexp rnd_ceil x) / 2) :
+    roundR beta fexp (Znearest choice) x = roundR beta fexp rnd_floor x := by
+  have hd := (roundR_DN_pt beta fexp x ValidRadix.valid).2.1
+  have hu := (roundR_UP_pt beta fexp x ValidRadix.valid).2.1
+  apply FloatSpec.Core.Generic_fmt.round_N_eq_DN beta fexp choice x ValidRadix.valid
+  rw [abs_of_nonpos (sub_nonpos.mpr hd), abs_of_nonneg (sub_nonneg.mpr hu)]
+  linarith
 
-theorem round_N_eq_DN_pt
-    (choice : Int → Bool) (x d u : ℝ)
-    (Hd : FloatSpec.Core.Round_pred.Rnd_DN_pt (fun y => (FloatSpec.Core.Generic_fmt.generic_format beta fexp y)) x d)
-    (Hu : FloatSpec.Core.Round_pred.Rnd_UP_pt (fun y => (FloatSpec.Core.Generic_fmt.generic_format beta fexp y)) x u)
-    (h : x < ((d + u) / 2)) (hβ: 1 < beta) :
-    ⦃⌜True⌝⦄
-    (pure (FloatSpec.Core.Generic_fmt.round_N_to_format beta fexp x hβ) : Id ℝ)
-    ⦃⇓r => ⌜r = d⌝⦄ := by
-  intro _; classical
-  -- Reduce the monadic triple to a plain equality about the returned value
-  simp [wp, PostCond.noThrow, Id.run, bind, pure]
-  -- Use the local bridge theorem for round-to-nearest below midpoint
-  exact round_N_eq_DN_pt_theorem (beta := beta) (fexp := fexp)
-          (choice := choice) (x := x) (d := d) (u := u) hβ Hd Hu h
+
+/-- Below the midpoint, the supplied nearest policy selects the downward neighbor. -/
+@[flocq_source "src/Core/Ulp.v" 2583 "round_N_eq_DN_pt"]
+theorem round_N_eq_DN_pt (choice : Int → Bool) (x d u : ℝ)
+    (Hd : FloatSpec.Core.Round_pred.Rnd_DN_pt (generic_format beta fexp) x d)
+    (Hu : FloatSpec.Core.Round_pred.Rnd_UP_pt (generic_format beta fexp) x u)
+    (h : x < (d + u) / 2) :
+    roundR beta fexp (Znearest choice) x = d := by
+  have down := roundR_DN_pt beta fexp x ValidRadix.valid
+  have up := roundR_UP_pt beta fexp x ValidRadix.valid
+  have hd : d = roundR beta fexp rnd_floor x :=
+    le_antisymm (down.2.2 d Hd.1 Hd.2.1)
+      (Hd.2.2 _ down.1 down.2.1)
+  have hu : u = roundR beta fexp rnd_ceil x :=
+    le_antisymm (Hu.2.2 _ up.1 up.2.1)
+      (up.2.2 u Hu.1 Hu.2.1)
+  rw [hd, hu] at h
+  exact (round_N_eq_DN beta fexp choice x h).trans hd.symm
+
 
 /-- Coq (Ulp.v):
 Lemma {coq}`round_N_eq_UP`: {lit}`forall choice x, let d := round_DN x; let u := round_UP x; (d+u)/2 < x -> round_N x = u`.
 -/
-theorem round_N_eq_UP
-    (choice : Int → Bool) (x : ℝ) (hβ: 1 < beta)
-    (h : let d := FloatSpec.Core.Generic_fmt.round_DN_to_format beta fexp x hβ;
-         let u := FloatSpec.Core.Generic_fmt.round_UP_to_format beta fexp x hβ;
-         ((d + u) / 2) < x) :
-    ⦃⌜True⌝⦄
-    (pure
-      (let rn := FloatSpec.Core.Generic_fmt.round_N_to_format beta fexp x hβ
-       let u := FloatSpec.Core.Generic_fmt.round_UP_to_format beta fexp x hβ
-       (rn, u)) : Id (ℝ × ℝ))
-    ⦃⇓r => ⌜r.1 = r.2⌝⦄ := by
-  intro _; classical
-  -- Reduce the Hoare triple to a pure equality about the chosen DN/UP witnesses
-  simp [wp, PostCond.noThrow, Id.run, bind, pure] at h ⊢
-  -- Unpack DN/UP existence to obtain the witness predicates
-  let F : ℝ → Prop := fun y => (FloatSpec.Core.Generic_fmt.generic_format beta fexp y)
-  have hDN := Classical.choose_spec (FloatSpec.Core.Generic_fmt.round_DN_exists beta fexp x hβ)
-  have hUP := Classical.choose_spec (FloatSpec.Core.Generic_fmt.round_UP_exists beta fexp x hβ)
-  rcases hDN with ⟨hFdn, hRndDN⟩
-  rcases hUP with ⟨hFup, hRndUP⟩
-  -- Apply the local bridge: strict-above-midpoint selects the UP witness
-  exact round_N_eq_UP_pt_theorem (beta := beta) (fexp := fexp)
-    (choice := choice) (x := x)
-    (d := Classical.choose (FloatSpec.Core.Generic_fmt.round_DN_exists beta fexp x hβ))
-    (u := Classical.choose (FloatSpec.Core.Generic_fmt.round_UP_exists beta fexp x hβ))
-    hβ hRndDN hRndUP h
+@[flocq_source "src/Core/Ulp.v" 2599 "round_N_eq_UP"]
+theorem round_N_eq_UP (choice : Int → Bool) (x : ℝ)
+    (h : (roundR beta fexp rnd_floor x + roundR beta fexp rnd_ceil x) / 2 < x) :
+    roundR beta fexp (Znearest choice) x = roundR beta fexp rnd_ceil x := by
+  have hd := (roundR_DN_pt beta fexp x ValidRadix.valid).2.1
+  have hu := (roundR_UP_pt beta fexp x ValidRadix.valid).2.1
+  apply FloatSpec.Core.Generic_fmt.round_N_eq_UP beta fexp choice x ValidRadix.valid
+  rw [abs_of_nonneg (sub_nonneg.mpr hu), abs_of_nonpos (sub_nonpos.mpr hd)]
+  linarith
+
 
 /-- Coq (Ulp.v):
 Lemma {coq}`round_N_eq_UP_pt`: {lit}`forall choice x d u, Rnd_DN_pt F x d -> Rnd_UP_pt F x u -> (d+u)/2 < x -> round_N x = u`.
 -/
-theorem round_N_eq_UP_pt
-    (choice : Int → Bool) (x d u : ℝ)
-    (Hd : FloatSpec.Core.Round_pred.Rnd_DN_pt (fun y => (FloatSpec.Core.Generic_fmt.generic_format beta fexp y)) x d)
-    (Hu : FloatSpec.Core.Round_pred.Rnd_UP_pt (fun y => (FloatSpec.Core.Generic_fmt.generic_format beta fexp y)) x u)
-    (h : ((d + u) / 2) < x) (hβ: 1 < beta) :
-    ⦃⌜True⌝⦄
-    (pure (FloatSpec.Core.Generic_fmt.round_N_to_format beta fexp x hβ) : Id ℝ)
-    ⦃⇓r => ⌜r = u⌝⦄ := by
-  intro _; classical
-  -- Reduce the monadic triple to a plain equality about the returned value
-  simp [wp, PostCond.noThrow, pure]
-  -- Use the local bridge theorem for round-to-nearest above midpoint
-  exact round_N_eq_UP_pt_theorem (beta := beta) (fexp := fexp) (hbeta := hβ)
-          (choice := choice) (x := x) (d := d) (u := u) Hd Hu h
+@[flocq_source "src/Core/Ulp.v" 2618 "round_N_eq_UP_pt"]
+theorem round_N_eq_UP_pt (choice : Int → Bool) (x d u : ℝ)
+    (Hd : FloatSpec.Core.Round_pred.Rnd_DN_pt (generic_format beta fexp) x d)
+    (Hu : FloatSpec.Core.Round_pred.Rnd_UP_pt (generic_format beta fexp) x u)
+    (h : (d + u) / 2 < x) :
+    roundR beta fexp (Znearest choice) x = u := by
+  have down := roundR_DN_pt beta fexp x ValidRadix.valid
+  have up := roundR_UP_pt beta fexp x ValidRadix.valid
+  have hd : d = roundR beta fexp rnd_floor x :=
+    le_antisymm (down.2.2 d Hd.1 Hd.2.1)
+      (Hd.2.2 _ down.1 down.2.1)
+  have hu : u = roundR beta fexp rnd_ceil x :=
+    le_antisymm (Hu.2.2 _ up.1 up.2.1)
+      (up.2.2 u Hu.1 Hu.2.1)
+  rw [hd, hu] at h
+  exact (round_N_eq_UP beta fexp choice x h).trans hu.symm
+
 
 /-- The value computed by `round_N_to_format` is in the generic format. -/
 private theorem round_N_to_format_generic_theorem
@@ -2545,20 +2434,15 @@ private theorem round_N_to_format_generic_identity_theorem
 /-- Coq (Ulp.v):
 Lemma {coq}`round_N_eq_ties`: {lit}`forall c1 c2 x, x - round_DN x ≠ round_UP x - x -> round_N c1 x = round_N c2 x`.
 -/
-theorem round_N_eq_ties
-    (c1 c2 : Int → Bool) (x : ℝ) (hβ: 1 < beta)
-    (hne : x - (FloatSpec.Core.Generic_fmt.round_DN_to_format beta fexp x hβ) ≠
-            (FloatSpec.Core.Generic_fmt.round_UP_to_format beta fexp x hβ) - x) :
-    ⦃⌜True⌝⦄
-    (pure
-      (FloatSpec.Core.Generic_fmt.round_N_to_format beta fexp x hβ,
-       FloatSpec.Core.Generic_fmt.round_N_to_format beta fexp x hβ) : Id (ℝ × ℝ))
-    ⦃⇓r => ⌜r.1 = r.2⌝⦄ := by
-  intro _; classical
-  -- `round_N_to_format` in this port does not depend on the tie-breaking choice
-  -- (both calls compute the same value). Reduce the monadic program definitionally.
-  simp [wp, PostCond.noThrow, pure,
-        FloatSpec.Core.Generic_fmt.round_N_to_format]
+@[flocq_source "src/Core/Ulp.v" 2650 "round_N_eq_ties"]
+theorem round_N_eq_ties (choice₁ choice₂ : Int → Bool) (x : ℝ)
+    (hne : x - roundR beta fexp rnd_floor x ≠ roundR beta fexp rnd_ceil x - x) :
+    roundR beta fexp (Znearest choice₁) x = roundR beta fexp (Znearest choice₂) x := by
+  rcases lt_trichotomy x ((roundR beta fexp rnd_floor x + roundR beta fexp rnd_ceil x) / 2) with h | h | h
+  · rw [round_N_eq_DN beta fexp choice₁ x h, round_N_eq_DN beta fexp choice₂ x h]
+  · exact False.elim (hne (by linarith))
+  · rw [round_N_eq_UP beta fexp choice₁ x h, round_N_eq_UP beta fexp choice₂ x h]
+
 
 /-- Coq (Ulp.v):
 Theorem {coq}`error_lt_ulp_round`:
@@ -6288,7 +6172,7 @@ private theorem round_N_le_midp_theorem
 /-- Coq (Ulp.v):
 Theorem round_N_le_midp: forall choice u v, F u -> v < (u + succ u)/2 -> round_N v ≤ u.
 -/
-theorem round_N_le_midp
+theorem round_N_le_midp_from_fixed_choice_payload
     (choice : Int → Bool) (u v : ℝ)
     (Fu : (FloatSpec.Core.Generic_fmt.generic_format beta fexp u))
     (h : v < ((u + (succ beta fexp u)) / 2)) (hβ : 1 < beta):
@@ -7437,7 +7321,7 @@ private theorem round_N_ge_midp_theorem
 /-- Coq (Ulp.v):
 Theorem {coq}`round_N_ge_midp`: {lit}`forall choice u v, F u -> (u + pred u)/2 < v -> u ≤ round_N v`.
 -/
-theorem round_N_ge_midp
+theorem round_N_ge_midp_from_fixed_choice_payload
     (choice : Int → Bool) (u v : ℝ)
     (Fu : (FloatSpec.Core.Generic_fmt.generic_format beta fexp u))
     (h : ((u + (pred beta fexp u)) / 2) < v) (hβ : 1 < beta):
@@ -7450,8 +7334,9 @@ theorem round_N_ge_midp
   exact round_N_ge_midp_theorem (beta := beta) (fexp := fexp)
     (choice := choice) (u := u) (v := v) Fu hβ h
 
-/-- Source-shaped strict midpoint bridge for the concrete supplied nearest choice. -/
-private theorem round_N_le_midp_raw
+/-- Source strict midpoint bound, retaining the supplied nearest tie policy. -/
+@[flocq_source "src/Core/Ulp.v" 2439 "round_N_le_midp"]
+theorem round_N_le_midp
     (choice : Int → Bool) (u v : ℝ)
     (Fu : FloatSpec.Core.Generic_fmt.generic_format beta fexp u)
     (hvm : v < (u + succ beta fexp u) / 2) :
@@ -7516,6 +7401,33 @@ private theorem round_N_le_midp_raw
       F v m rv u hrv hNu (by simpa [m, s] using hvm)
     simpa [FloatSpec.Core.Round_pred.Rnd_N_pt_monotone_check,
       pure, decide_eq_true_iff, rv] using hmono True.intro
+
+/-- The source lower-midpoint bound follows by negating the upper-midpoint
+bound and transforming the supplied tie policy. -/
+@[flocq_source "src/Core/Ulp.v" 2478 "round_N_ge_midp"]
+theorem round_N_ge_midp
+    (choice : Int → Bool) (u v : ℝ)
+    (Fu : generic_format beta fexp u)
+    (h : (u + pred beta fexp u) / 2 < v) :
+    u ≤ round_to_generic beta fexp (Znearest choice) v := by
+  let choice' := fun t : Int => ! choice (-(t + 1))
+  have Fnu : generic_format beta fexp (-u) := by
+    simpa [wp, PostCond.noThrow, Id.run, bind, pure] using
+      (generic_format_opp beta fexp u) Fu
+  have successor : succ beta fexp (-u) = -pred beta fexp u := by
+    simpa [wp, PostCond.noThrow, Id.run, bind, pure] using
+      (succ_opp beta fexp u) True.intro
+  have midpoint : -v < (-u + succ beta fexp (-u)) / 2 := by
+    rw [successor]
+    linarith
+  have opposite := round_N_le_midp beta fexp choice' (-u) (-v) Fnu midpoint
+  have symmetry := FloatSpec.Core.Generic_fmt.round_N_opp beta fexp choice (-v)
+  simp only [neg_neg] at symmetry
+  change roundR beta fexp (Znearest choice') (-v) ≤ -u at opposite
+  change u ≤ roundR beta fexp (Znearest choice) v
+  change roundR beta fexp (Znearest choice) v =
+    -roundR beta fexp (Znearest choice') (-v) at symmetry
+  linarith
 
 /-- Bridge lemma: If {lit}`u ∈ F` and {lit}`u ≤ round_N v`, then {lit}`v` lies on or above
 the lower midpoint {lit}`(u + pred u)/2`. Requires {lit}`1 < beta` and excludes the
@@ -7680,7 +7592,7 @@ theorem round_N_ge_ge_midp
           have hpF := generic_format_pred (beta := beta) (fexp := fexp) u Fu
             ValidRadix.valid
           simpa [wp, PostCond.noThrow, pure, Id.run] using hpF True.intro
-        have hrle := round_N_le_midp_raw (beta := beta) (fexp := fexp)
+        have hrle := round_N_le_midp (beta := beta) (fexp := fexp)
           choice (pred beta fexp u) v Fp (by
             have hs := succ_pred (beta := beta) (fexp := fexp) u Fu
               ValidRadix.valid
@@ -7699,7 +7611,7 @@ theorem round_N_ge_ge_midp
       have hpF := generic_format_pred (beta := beta) (fexp := fexp) u Fu
         ValidRadix.valid
       simpa [wp, PostCond.noThrow, pure, Id.run] using hpF True.intro
-    have hrle := round_N_le_midp_raw (beta := beta) (fexp := fexp)
+    have hrle := round_N_le_midp (beta := beta) (fexp := fexp)
       choice (pred beta fexp u) v Fp (by
         have hs := succ_pred (beta := beta) (fexp := fexp) u Fu
           ValidRadix.valid
@@ -11690,134 +11602,34 @@ private theorem exp_not_FTZ_of_monotone
       ((FloatSpec.Core.Generic_fmt.Valid_exp.valid_exp
         (fexp := fexp) e).right hsmall).left
 
-/-- Direct nearest rounding is never more than one successor below its input. -/
-private theorem round_N_to_format_le_succ_theorem
-    (beta : Int) [ValidRadix beta] (fexp : Int → Int)
-    [FloatSpec.Core.Generic_fmt.Valid_exp fexp]
-    [Monotone_exp fexp]
-    (x : ℝ) (hβ : 1 < beta) :
-    x ≤ succ beta fexp
-      (FloatSpec.Core.Generic_fmt.round_N_to_format beta fexp x hβ) := by
-  classical
-  let d : ℝ :=
-    Classical.choose
-      (FloatSpec.Core.Generic_fmt.round_DN_exists
-        (beta := beta) (fexp := fexp) (x := x) (hβ := hβ))
-  let u : ℝ :=
-    Classical.choose
-      (FloatSpec.Core.Generic_fmt.round_UP_exists
-        (beta := beta) (fexp := fexp) (x := x) (hβ := hβ))
-  have hDN :=
-    Classical.choose_spec
-      (FloatSpec.Core.Generic_fmt.round_DN_exists
-        (beta := beta) (fexp := fexp) (x := x) (hβ := hβ))
-  have hUP :=
-    Classical.choose_spec
-      (FloatSpec.Core.Generic_fmt.round_UP_exists
-        (beta := beta) (fexp := fexp) (x := x) (hβ := hβ))
-  rcases hDN with ⟨hFd, hdn⟩
-  rcases hUP with ⟨hFu, hup⟩
-  rcases hdn with ⟨_, hd_le_x, _⟩
-  rcases hup with ⟨_, hx_le_u, _⟩
-  by_cases Fx : FloatSpec.Core.Generic_fmt.generic_format beta fexp x
-  · have hrx :
-        FloatSpec.Core.Generic_fmt.round_N_to_format beta fexp x hβ = x :=
-      round_N_to_format_generic_identity_theorem
-        (beta := beta) (fexp := fexp) (x := x) hβ Fx
-    simpa [hrx] using
-      succ_run_ge_self (beta := beta) (fexp := fexp) hβ x
-  · have hsucc_d_eq_u :
-        succ beta fexp d = u := by
-      have h :=
-        succ_DN_eq_UP_theorem
-          (beta := beta) (fexp := fexp) (x := x) Fx hβ
-      simpa [d, u] using h
-    have hround_cases :
-        FloatSpec.Core.Generic_fmt.round_N_to_format beta fexp x hβ = d ∨
-          FloatSpec.Core.Generic_fmt.round_N_to_format beta fexp x hβ = u := by
-      unfold FloatSpec.Core.Generic_fmt.round_N_to_format
-      dsimp only
-      by_cases hlt : x < (d + u) / 2
-      · left
-        simpa [d, u, hlt]
-      · by_cases hgt : (d + u) / 2 < x
-        · right
-          simpa [d, u, hlt, hgt]
-        · right
-          simpa [d, u, hlt, hgt]
-    rcases hround_cases with hrx | hrx
-    · have hx_le_succ_d : x ≤ succ beta fexp d := by
-        simpa [hsucc_d_eq_u] using hx_le_u
-      simpa [hrx]
-        using hx_le_succ_d
-    · have hx_le_succ_u : x ≤ succ beta fexp u :=
-        le_trans hx_le_u (succ_run_ge_self (beta := beta) (fexp := fexp) hβ u)
-      simpa [hrx]
-        using hx_le_succ_u
-
-/-- Local bridge theorem (nearest rounding after adding one ULP).
-
-This follows the Coq proof of {coq}`round_N_plus_ulp_ge`: first bound the input
-by the successor of the nearest rounded value, then bound that successor by one
-ULP, close the one-ULP increment in the generic format, and use nearest-rounding
-identity on generic-format values.
--/
-private theorem round_N_plus_ulp_ge_theorem
-    (beta : Int) [ValidRadix beta] (fexp : Int → Int)
-    [FloatSpec.Core.Generic_fmt.Valid_exp fexp]
-    [Monotone_exp fexp]
-    (x : ℝ) (hβ: 1 < beta) :
-    x ≤ (FloatSpec.Core.Generic_fmt.round_N_to_format beta fexp
-          ((FloatSpec.Core.Generic_fmt.round_N_to_format beta fexp x hβ) +
-           (ulp beta fexp ((FloatSpec.Core.Generic_fmt.round_N_to_format beta fexp x hβ)))) hβ) := by
-  classical
-  set rx : ℝ := FloatSpec.Core.Generic_fmt.round_N_to_format beta fexp x hβ
-  have hx_le_succ :
-      x ≤ succ beta fexp rx := by
-    simpa [rx] using
-      round_N_to_format_le_succ_theorem
-        (beta := beta) (fexp := fexp) (x := x) hβ
-  have hsucc_le_ulp :
-      succ beta fexp rx ≤ rx + ulp beta fexp rx :=
-    succ_le_plus_ulp_theorem (beta := beta) (fexp := fexp) (x := rx) hβ
-  have hx_le_ulp : x ≤ rx + ulp beta fexp rx :=
-    le_trans hx_le_succ hsucc_le_ulp
-  have Frx :
-      FloatSpec.Core.Generic_fmt.generic_format beta fexp rx := by
-    simpa [rx] using
-      round_N_to_format_generic_theorem
-        (beta := beta) (fexp := fexp) (x := x) hβ
-  have Fulp :
-      FloatSpec.Core.Generic_fmt.generic_format beta fexp
-        (rx + ulp beta fexp rx) :=
-    generic_format_plus_ulp_theorem
-      (beta := beta) (fexp := fexp) (x := rx) Frx hβ
-  have hround_id :
-      FloatSpec.Core.Generic_fmt.round_N_to_format beta fexp
-        (rx + ulp beta fexp rx) hβ =
-      rx + ulp beta fexp rx :=
-    round_N_to_format_generic_identity_theorem
-      (beta := beta) (fexp := fexp)
-      (x := rx + ulp beta fexp rx) hβ Fulp
-  simpa [rx, hround_id] using hx_le_ulp
 
 /-- Coq (Ulp.v):
 Lemma {coq}`round_N_plus_ulp_ge`:
   {lit}`forall {Hm : Monotone_exp fexp} choice1 choice2 x, let rx := round_N choice2 x in x ≤ round_N choice1 (rx + ulp rx)`.
 -/
-theorem round_N_plus_ulp_ge
-    [Monotone_exp fexp]
-    (choice1 choice2 : Int → Bool) (x : ℝ) (hβ: 1 < beta) :
-    ⦃⌜True⌝⦄
-    (pure
-      (let rx := FloatSpec.Core.Generic_fmt.round_N_to_format beta fexp x hβ
-       (rx,
-        FloatSpec.Core.Generic_fmt.round_N_to_format beta fexp (rx + ulp beta fexp rx) hβ))
-      : Id (ℝ × ℝ))
-    ⦃⇓r => ⌜x ≤ r.2⌝⦄ := by
-  intro _; classical
-  simp [wp, PostCond.noThrow, pure]
-  exact round_N_plus_ulp_ge_theorem (beta := beta) (fexp := fexp) (x := x) hβ
+@[flocq_source "src/Core/Ulp.v" 2634 "round_N_plus_ulp_ge"]
+theorem round_N_plus_ulp_ge [FloatSpec.Core.Ulp.Monotone_exp fexp]
+    (choice₁ choice₂ : Int → Bool) (x : ℝ) :
+    let rx := roundR beta fexp (Znearest choice₂) x
+    x ≤ roundR beta fexp (Znearest choice₁) (rx + ulp beta fexp rx) := by
+  let rx := roundR beta fexp (Znearest choice₂) x
+  have Frx : generic_format beta fexp rx :=
+    generic_format_roundR beta fexp (Znearest choice₂) x ValidRadix.valid
+  have Fsum : generic_format beta fexp (rx + ulp beta fexp rx) := by
+    simpa [wp, PostCond.noThrow, Id.run, bind, pure] using
+      (generic_format_plus_ulp beta fexp rx Frx) ValidRadix.valid
+  have identity := roundR_generic beta fexp (Znearest choice₁)
+    (rx + ulp beta fexp rx) ValidRadix.valid Fsum
+  change x ≤ roundR beta fexp (Znearest choice₁) (rx + ulp beta fexp rx)
+  rw [identity]
+  have lower : x ≤ succ beta fexp rx := by
+    simpa [rx, round_to_generic] using
+      succ_round_ge_id beta fexp (Znearest choice₂) x
+  have upper : succ beta fexp rx ≤ rx + ulp beta fexp rx := by
+    simpa [wp, PostCond.noThrow, Id.run, bind, pure] using
+      (succ_le_plus_ulp beta fexp rx) ValidRadix.valid
+  exact lower.trans upper
+
 
 end UnitInLastPlace
 

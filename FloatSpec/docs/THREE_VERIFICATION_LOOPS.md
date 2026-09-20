@@ -1080,6 +1080,37 @@ the 21 widened source laws and one compatibility wrapper. All 30 printed
 Lean fixture axiom lists exclude `sorryAx`. The preservation theorem still
 requires valid exponents; its negative control targets that theorem specifically.
 
+### Nearest-rounding policies must survive in the theorem type
+
+`scripts/fixtures/UlpNearestChoiceContracts.lean` and `.v` contain eight typed
+clients for the supplied-policy midpoint/neighbor laws. They also prove that
+rounding `1/2` to integers gives `0` with the false tie policy and `1` with the
+true policy. The real-valued example is a closed mathematical proof, not
+native real-number computation. A separate integer `round_N`/`cond_incr`
+example actually evaluates to `[0, 1]` in both assistants and has a closed
+kernel proof. All ten Lean axiom lists exclude `sorryAx`; the executable
+example uses no axioms.
+
+```sh
+lake env lean scripts/fixtures/UlpNearestChoiceContracts.lean
+FLOCQ_AUDIT_DIR=/path/to/pinned-flocq COQC=/opt/homebrew/bin/coqc \
+  uv run scripts/test_ulp_nearest_contracts.py -v
+```
+
+Four mutation tests first compile the unchanged fixtures, then reject either
+erasing the second choice from the expected contract or selecting the false
+policy while expecting the true-policy midpoint result. This protects the
+statement as well as its proof. The combined runner includes both fixtures
+and all four controls.
+
+The seed-861047 integrated-oracle runs completed on source `eb306bb5…722eb6`:
+1,104 native-arithmetic cases and 390 all-mode cases, every generated kernel
+equality, and 67,627 independent expected-field checks. The oracle's scope
+at that run was finite-input arithmetic: exceptional-input results still had
+pairwise cross-checking but were outside the independent expectation gate.
+The eight later theorem repairs have source hash `687aa7a8…395d2`; their full
+build, typed clients and mutation checks are separate evidence.
+
 ## 11. What this still does not establish
 
 The expanded combined runner completed at commit `ba3e2a8b`, seed `961703`,

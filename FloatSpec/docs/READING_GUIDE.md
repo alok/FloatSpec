@@ -15,7 +15,7 @@ This guide follows those jobs in order. The detailed
 [independent continuation audit](ASTRA_AUDIT_2026-09-19.md) retain the
 declaration-by-declaration findings and historical milestones.
 
-## Wake-up summary — September 20, 2026, 19:38 UTC
+## Wake-up summary — September 20, 2026, 20:18 UTC
 
 **The port builds and runs on macOS with Lean 4.34.0; it is not yet a fully
 source-audited port.** All 35 built Flocq module names have Lean counterparts,
@@ -25,8 +25,8 @@ percentage.
 
 Start with `lake exe floatspec_demo`, then read sections 1–6 below. The latest
 **6,226-job build and all seven demo examples pass**. Fresh compiled checks
-cover **13,568 declarations / 58 modules**, find exactly the four recorded
-debts, and validate **311 pinned source anchors**. Reviewable changes are on
+cover **13,565 declarations / 58 modules**, find exactly the four recorded
+debts, and validate **319 pinned source anchors**. Reviewable changes are on
 [your fork's audit branch](https://github.com/alok/FloatSpec/tree/codex/astra-flocq-audit);
 your fork is the default remote and BAIF remains `upstream`.
 
@@ -67,7 +67,7 @@ passes all three paths and every generated kernel equality.
 Each run retains its exact source fingerprint. Earlier interruptions and
 timeouts remain errors, not retroactive passes.
 The [machine-readable receipt](VERIFICATION_RECEIPT_2026-09-20.json) records
-the three snapshot groups separately, including their exact seeds and hashes.
+the snapshot groups separately, including their exact seeds and hashes.
 
 The four-hour continuation adds a stronger neighbor test: it independently
 checks the *nearest* representable values, not just canonical values on either
@@ -96,7 +96,20 @@ all-mode bridge runners, not just a standalone test. All **20 integrated
 harness tests** pass, including real programs deliberately given the same
 wrong operand order or the same wrong rounding mode. Those runs are rejected,
 their inputs are retained, and rejected logical outputs are not accepted as
-new regression expectations. A larger fresh-seed rerun is in progress.
+new regression expectations. The fresh seed-861047 runs now pass: **1,104
+native-arithmetic cases and 390 all-mode cases**, with all **1,494 generated
+kernel equalities** and **67,627 independent expected-field checks**. These
+runs use the preceding `eb306bb5` snapshot; the current `687aa7a8` snapshot
+additionally contains the theorem repairs described next.
+
+The latest source-contract repair restores **eight nearest-rounding statements**
+that accepted a tie-policy argument but referred to a fixed-policy chooser.
+The old two-policy equality even compared a value with itself. The corrected
+statements actually mention both supplied policies. Eight paired typed clients,
+a midpoint distinction, and an executable integer tie decision pass in both
+Lean and Rocq; four mutation tests reject the former mistake and a wrong tie
+answer. All corrected proofs are closed, and four obsolete private helpers
+are removed. Read [the small example](DEMO_EXEMPLARS.md#a-proved-statement-can-say-too-little).
 
 A second [small paired example](DEMO_EXEMPLARS.md#a-valid-format-can-have-decreasing-ulp)
 explains why assumption removal must be selective: a valid format can have

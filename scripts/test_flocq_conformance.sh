@@ -216,7 +216,7 @@ echo 'Pure Rocq order loop passed: 2,000 ordering-law checks and boundary exampl
 "$coqc_bin" -q -R "$flocq_dir/src" Flocq -o "$scratch/RoundingWalkthrough.vo" \
   "$repo_root/scripts/fixtures/RoundingWalkthrough.v"
 for fixture in BooleanComparison PrimitiveComparison PrimitiveConversion PrimitiveExecution RawIEEERounding RawOverflow SingleNaNArithmetic SingleNaNHelpers FrexpLaws Normalization MultiplicationErrorGrid DoubleRoundingWitness SingleNaNValidity RelativeErrorGrid \
-    SourcePremiseContracts CorePremiseBoundary ExponentValidityBoundary DoubleRoundingContracts LpoSourceContracts UlpSourceChoice PffLogTotality PffExecution PffAuxExecution PffRoundingSource NativeModelAdapters CalcBrackets ExactArithmeticLaws RoundingOracle IntegerRounding; do
+    SourcePremiseContracts CorePremiseBoundary ExponentValidityBoundary UlpNearestChoiceContracts DoubleRoundingContracts LpoSourceContracts UlpSourceChoice PffLogTotality PffExecution PffAuxExecution PffRoundingSource NativeModelAdapters CalcBrackets ExactArithmeticLaws RoundingOracle IntegerRounding; do
   "$coqc_bin" -q -R "$flocq_dir/src" Flocq -o "$scratch/$fixture.vo" \
     "$repo_root/scripts/fixtures/$fixture.v"
 done
@@ -240,7 +240,7 @@ run_lake env lean "$repo_root/FloatSpec/Test/DoubleRoundingContracts.lean"
 run_lake env lean "$repo_root/FloatSpec/Test/NativeModelAdapters.lean"
 run_lake env lean "$repo_root/FloatSpec/Test/LpoSourceContracts.lean"
 run_lake env lean "$repo_root/FloatSpec/Test/UlpSourceChoice.lean"
-for fixture in BooleanComparison PrimitiveComparison PrimitiveConversion PrimitiveExecution RawIEEERounding RawOverflow SingleNaNArithmetic SingleNaNHelpers FrexpLaws Normalization CalcBrackets NativeSingleNaNArithmetic MultiplicationErrorGrid DoubleRoundingWitness SingleNaNValidity RelativeErrorGrid ExactArithmeticLaws RoundingOracle IntegerRounding CorePremiseBoundary ExponentValidityBoundary; do
+for fixture in BooleanComparison PrimitiveComparison PrimitiveConversion PrimitiveExecution RawIEEERounding RawOverflow SingleNaNArithmetic SingleNaNHelpers FrexpLaws Normalization CalcBrackets NativeSingleNaNArithmetic MultiplicationErrorGrid DoubleRoundingWitness SingleNaNValidity RelativeErrorGrid ExactArithmeticLaws RoundingOracle IntegerRounding CorePremiseBoundary ExponentValidityBoundary UlpNearestChoiceContracts; do
   run_lake env lean "$repo_root/scripts/fixtures/$fixture.lean"
 done
 run_lake env lean --run "$repo_root/scripts/fixtures/GuidedDemo.lean"
@@ -304,6 +304,7 @@ FLOCQ_AUDIT_DIR="$flocq_dir" uv run "$repo_root/scripts/test_pff_rounding_contra
 FLOCQ_AUDIT_DIR="$flocq_dir" uv run "$repo_root/scripts/test_double_rounding_contracts.py" -v
 FLOCQ_AUDIT_DIR="$flocq_dir" uv run "$repo_root/scripts/test_lpo_contracts.py" -v
 FLOCQ_AUDIT_DIR="$flocq_dir" uv run "$repo_root/scripts/test_ulp_choice_contracts.py" -v
+FLOCQ_AUDIT_DIR="$flocq_dir" uv run "$repo_root/scripts/test_ulp_nearest_contracts.py" -v
 
 uv run "$repo_root/scripts/model_adapter_bridge.py" --flocq-dir "$flocq_dir" --coqc "$coqc_bin" \
   --seed "${FLOCQ_BRIDGE_SEED:-20260919}" --samples "${FLOCQ_MODEL_ADAPTER_SAMPLES:-100}" \

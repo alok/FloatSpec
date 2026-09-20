@@ -3513,6 +3513,60 @@ Logs: `/private/tmp/floatspec-integrated-native-oracle-tests-20260920.log`,
 `floatspec-integrated-oracle-build-20260920.log`.
 No Lean definition, theorem or proof debt changes in this integration.
 
+### September 20, 20:18 UTC — eight nearest-policy contracts restored
+
+Eight ULP exports accepted a nearest tie policy while their statements used
+the fixed `round_N_to_format` chooser: `round_N_eq_DN`, `round_N_eq_DN_pt`,
+`round_N_eq_UP`, `round_N_eq_UP_pt`, `round_N_eq_ties`, `round_N_plus_ulp_ge`,
+`round_N_le_midp` and `round_N_ge_midp`. In particular the old two-policy
+agreement proposition was a reflexive fixed-value equality. This is a source
+contract defect, not a counterexample to the old tautological proposition.
+
+All eight public source statements now preserve the supplied choices through
+`roundR`/`round_to_generic` and `Znearest`, with direct propositions and pinned
+source links. Six have new short closed proofs; the lower-midpoint bound is
+proved by negation, and the upper-midpoint bound reuses its previously private
+choice-preserving proof. Old payload compatibility exports receive explicit
+names; four now-unused private fixed-policy helpers are removed. The old
+chooser's body and type are unchanged, and its metadata/docstring explicitly
+describe a Lean-local ties-up policy. No arithmetic definition is changed.
+
+The final macOS Lean 4.34 build passes **6,226 jobs**, as do all seven demo
+examples and all **147 source-premise guards**. Fresh compiler metadata
+validates **319 pinned anchors**; compiled trust covers **13,565 declarations
+/ 58 modules / four exact manifest debts**, with no new debt. The paired
+fixtures compile eight typed clients, prove the `1/2 → 0` versus `1/2 → 1`
+choice distinction, and actually evaluate the integer decision `[0, 1]` in
+both assistants. All ten Lean axiom lists exclude `sorryAx`; the executable
+example is axiom-free. Complete final client LSP diagnostics contain no errors.
+All **four live mutation tests pass** in 32.011 seconds, rejecting erased
+second-choice types and incorrect midpoint answers in both assistants.
+
+This source has fingerprint
+`687aa7a88bdb9b5d4d3a7ac34b39b2b16efe7f265514e28b03039e76257395d2`
+in `codex/astra-ulp-nearest-boundary`. The separately frozen `eb306bb5` runs
+also finished: native arithmetic **1,104 cases / 1,104 kernel equalities /
+22,672 independent assertions**, and all modes **390 cases / 390 kernel
+equalities / 44,955 independent assertions**. Both exit zero with empty
+pairwise and oracle mismatches; seed **861047**. Reports preserve launch HEADs
+and dirty-path records rather than being retroactively relabeled. These
+1,494 executions are not a runtime receipt for the later eight theorem changes.
+The earlier `5d241916` aggregate is still running, not yet a pass.
+
+Final receipts: `/private/tmp/floatspec-eight-choice-full-build-20260920.log`,
+`floatspec-eight-choice-client-final-20260920.log`,
+`floatspec-eight-choice-trust-20260920.json`,
+`floatspec-eight-choice-anchors-20260920.log`,
+`floatspec-eight-choice-premises-final-20260920.log`,
+`floatspec-choice-mutation-tests-final-20260920.log`, and the
+`floatspec-integrated-{native,modes}-oracle-861047/report.json` directories.
+Initial namespace/rewrite errors were corrected and rechecked. One direct
+client run overlapped a build and failed on a temporarily missing import;
+the final run after build completion passed. An incorrectly named guard-file
+command failed and was rerun with the actual `SourcePremiseContracts.lean`.
+None of those failed attempts is counted as a pass. CI repair remains pending
+approval; the original checkout and modified Flocq dependency remain untouched.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In
