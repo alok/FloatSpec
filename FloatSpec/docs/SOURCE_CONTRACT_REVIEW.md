@@ -6,6 +6,31 @@ all declarations in the named modules. See the
 [running audit](ASTRA_AUDIT_2026-09-19.md) for execution receipts and the
 [reading guide](READING_GUIDE.md) for the mathematical story.
 
+## Generic rounding and ULP: 27 unnecessary validity assumptions
+
+A compiled-type survey of 266 same-named exports in Generic_fmt, Ulp,
+Round_NE and Float_prop found 27 selected Lean signatures carrying
+`Valid_exp` where the pinned Rocq type does not. Sixteen are in Generic_fmt
+(nearest symmetry and small values, bounded rounding, mantissa recovery and
+directed-rounding alternatives); eleven are in Ulp (negligible-exponent
+witnesses, neighbor/spacing inequalities and the floor/ceiling gap).
+
+The repaired types remove that assumption, including supporting helper
+premises. Three bounded-rounding proofs now use the exact magnitude
+determined by the given binade, rather than a weaker bound plus exponent
+validity. The floor/ceiling-gap proof reconstructs representability from an
+integer scaled mantissa, rather than invoking global rounding correctness.
+No arithmetic definition body changed and no proof was admitted.
+`succ_le_plus_ulp` still takes its genuine `Monotone_exp` hypothesis.
+
+The paired `CorePremiseBoundary` fixtures freeze all 27 expected client
+types, and 27 compiler-premise guards reject reintroducing `Valid_exp`.
+Every client compiles in its assistant and all Lean axiom lists exclude
+`sorryAx`. This is a focused extra-premise audit: it does not certify all
+266 surveyed declarations or compare their entire mathematical meaning.
+The separate `ExponentValidityBoundary` counterexample demonstrates why
+exponent validity and monotonicity cannot be conflated.
+
 ## Logical-model adapters and the integer bit-decoder domain
 
 `binary32OfModel` and `binary64OfModel` now execute after removal of two

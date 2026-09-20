@@ -15,7 +15,7 @@ This guide follows those jobs in order. The detailed
 [independent continuation audit](ASTRA_AUDIT_2026-09-19.md) retain the
 declaration-by-declaration findings and historical milestones.
 
-## Wake-up summary — September 20, 2026, 19:04 UTC
+## Wake-up summary — September 20, 2026, 19:38 UTC
 
 **The port builds and runs on macOS with Lean 4.34.0; it is not yet a fully
 source-audited port.** All 35 built Flocq module names have Lean counterparts,
@@ -24,9 +24,9 @@ native/decoder proof obligations remain. File coverage is not a completion
 percentage.
 
 Start with `lake exe floatspec_demo`, then read sections 1–6 below. The latest
-**6,227-job build and all seven demo examples pass**. Fresh compiled checks
+**6,226-job build and all seven demo examples pass**. Fresh compiled checks
 cover **13,568 declarations / 58 modules**, find exactly the four recorded
-debts, and validate **284 pinned source anchors**. Reviewable changes are on
+debts, and validate **311 pinned source anchors**. Reviewable changes are on
 [your fork's audit branch](https://github.com/alok/FloatSpec/tree/codex/astra-flocq-audit);
 your fork is the default remote and BAIF remains `upstream`.
 
@@ -56,10 +56,13 @@ completed: **8,128 cases**, seed `859003`, plus a **200-case** targeted
 neighbor replay, with every three-path comparison and generated kernel
 equality passing. The targeted generator closes a real coverage gap: broad
 random bounds rarely satisfy the neighbor theorems' premises.
-The following changes remove spurious assumptions from 22 source
-theorem interfaces and one compatibility helper; their arithmetic bodies
-are unchanged. The latest build passes **120 source-premise guards** and
-22 paired typed clients. The preceding interface snapshot's **360-case** runtime replay also
+Earlier changes removed spurious assumptions from 22 source theorem interfaces
+and one compatibility helper. The current continuation removes **27 more**
+unwanted exponent-validity assumptions from generic rounding and ULP laws.
+Four proofs now use more direct facts; no arithmetic definition changes and
+no new admitted proofs were needed. The latest build passes **147
+source-premise guards**, and all 27 new paired Lean/Rocq typed clients compile.
+The preceding interface snapshot's **360-case** runtime replay also
 passes all three paths and every generated kernel equality.
 Each run retains its exact source fingerprint. Earlier interruptions and
 timeouts remain errors, not retroactive passes.
@@ -76,14 +79,17 @@ shows why this matters.
 
 The same principle now strengthens IEEE arithmetic: an independent exact
 rational/grid oracle checks expected rounded results, including squared-midpoint
-selection for square root. Its first fresh run passes **47 cases, 47 generated
-Lean kernel equalities, and 6,738 independent field checks** on the current
-source fingerprint. Separately, checking the earlier saved 1,814-case IEEE
+selection for square root. The suite has been rerun on the corrected source:
+**14 tests pass**, including **47 live cases, 47 generated Lean kernel
+equalities, and 6,738 independent field checks**. Separately, checking the earlier saved 1,814-case IEEE
 observations passes 76,162 independent field checks; this is a new audit of
 old execution evidence, not a rerun. Deliberately shared wrong answers are
 rejected even when the language paths agree. See
 [the explanatory example](DEMO_EXEMPLARS.md#agreement-is-stronger-with-an-independent-expectation).
-The large fresh aggregate is still running, not yet a pass.
+The large aggregate is still running on its frozen, preceding snapshot,
+not yet a pass. Its source hash begins `5d241916`; the new contract
+snapshot begins `eb306bb5`. Keeping these separate prevents a long test
+from silently changing its subject while edits continue.
 
 A second [small paired example](DEMO_EXEMPLARS.md#a-valid-format-can-have-decreasing-ulp)
 explains why assumption removal must be selective: a valid format can have
@@ -578,7 +584,7 @@ Source links make that review navigable. `@[flocq_source]` records a pinned
 Coq path, line, and name; `@[flocq_local]` explains a Lean-only helper.
 Thirteen source files enable strict public-definition classification; a targeted
 section of `Binary.lean` additionally enables the same check.
-The compiler-backed validator checks all 277 registered anchors, including
+The compiler-backed validator checks all 311 registered anchors, including
 combined attributes and later attribute commands. These links are metadata,
 not a proof that bodies or theorem signatures correspond.
 

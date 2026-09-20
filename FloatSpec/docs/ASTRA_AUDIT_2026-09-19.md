@@ -3432,6 +3432,53 @@ remains `5d241916…974cfe`. The current Generic_fmt validity docstring loosely
 calls the large-regime condition monotonicity; its formula is correct, and
 that wording should be corrected after the source-frozen run.
 
+### September 20, 19:38 UTC — 27 further Core contracts restored
+
+Compiled types were surveyed for 266 same-named exports in Generic_fmt,
+Ulp, Round_NE and Float_prop (270 requests included four duplicate names).
+Manual inspection of the selected differences confirmed 27 extra
+`Valid_exp` premises: sixteen in Generic_fmt and eleven in Ulp. The full
+list is pinned by `scripts/fixtures/CorePremiseBoundary.lean` / `.v`;
+every expected client type compiles in its own assistant. This survey is
+not a full semantic review of all 266 exports.
+
+All 27 premises and the necessary supporting helper premises are removed.
+Three rounding proofs now exploit exact binade magnitude instead of a
+weaker bound plus exponent validity. The floor/ceiling ULP-gap proof
+directly reconstructs a generic value if the scaled mantissa is integral.
+Other proof bodies and all arithmetic definitions are unchanged.
+The genuine monotonicity premise on `succ_le_plus_ulp` remains. The
+Valid_exp docstring now states the actual transition/constancy conditions,
+not the incorrect shorthand “monotonicity.”
+
+Each changed mathematical proof was checked individually before proceeding.
+The full macOS Lean 4.34 build passes **6,226 jobs**; all seven demo examples
+pass. Complete final LSP diagnostics report no errors for the changed
+proofs and 27 clients. Every client axiom list excludes `sorryAx`.
+The direct source-premise run passes **147 guards**, including the 27 new
+ones. Fresh metadata validates **311 anchors**. The compiled trust audit
+still reports **13,568 declarations / 58 modules / four exact manifest
+debts**, with no new direct or propagated debt.
+
+The independent IEEE suite was rerun on this source: **14 tests pass**
+in 30.847 seconds, including 47 live cases, 47 generated kernel equalities
+and 6,738 independent expected-field checks. This is a fresh small
+execution, not completion of the separately running large aggregate.
+The new source fingerprint is
+`eb306bb511c7c42deea5750a87753ca53b8168e51ea701c4acde55319e722eb6`.
+Development uses a new isolated `codex/astra-premise-boundary` worktree;
+the `5d241916…974cfe` aggregate remains frozen in its earlier checkout.
+
+Receipts: `/private/tmp/floatspec-core-premise-full-build-20260920.log`,
+`floatspec-core-premise-client-27-20260920.log`,
+`floatspec-core-premise-clients-rocq-20260920.log`,
+`floatspec-core-premise-trust-20260920.json`,
+`floatspec-core-premise-anchors-20260920.log`, and
+`floatspec-core-premise-exact-oracle-20260920.log`, all in the same
+`/private/tmp` directory. Early helper-dependency and rewrite failures
+were corrected before the final successful builds; they are not passes.
+Hosted CI's cache-policy change remains approval-pending.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In

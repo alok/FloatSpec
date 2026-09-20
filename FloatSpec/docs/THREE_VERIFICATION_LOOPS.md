@@ -162,7 +162,7 @@ outside square root's exponent premise makes that domain boundary executable.
 Deliberately increasing the returned mantissa or replacing its location by
 exact must break both the closed finite assertions and compiled checks.
 
-`Test/SourcePremiseContracts.lean` additionally has 120 source-premise guards,
+`Test/SourcePremiseContracts.lean` additionally has 147 source-premise guards,
 paired typed consumers for the Prop, integer-rounding, canonical-exponent,
 real-comparison, division, square-root, FTZ inclusion, eleven FLT relationships,
 two unrestricted FLX unit laws, parity/symmetry contracts, and generic IEEE comparison exports, and seven deliberate negative guard
@@ -172,6 +172,13 @@ checks caught real section-instance leakage that the former bare `#check`
 regressions did not detect. The combined runner re-executes all these fixtures;
 the CI workflow also runs their Lean side. Local success is not a claim that
 hosted CI has run.
+
+The paired `scripts/fixtures/CorePremiseBoundary.lean` / `.v` add 27
+typed consumers without `Valid_exp`: sixteen generic-format/rounding exports
+and eleven ULP exports. They preserve the other parameters and conclusions;
+the successor upper bound still requires `Monotone_exp`. All 27 Lean
+axiom lists exclude `sorryAx`. This tests the selected premise boundary,
+not automatic cross-language equivalence of arbitrary theorem statements.
 
 The FTZ guards explicitly recognize legacy `Fact (0 < prec)` instances as well
 as named precision classes. A deliberate leaking instance tests that case.

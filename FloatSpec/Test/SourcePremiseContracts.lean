@@ -728,3 +728,32 @@ theorem one_bit_negate (x : Real) :
   round_NE_opp 2 (FloatSpec.Core.FLX.FLX_exp 1) x
 
 end RoundParitySourceContracts
+
+-- Broader compiled-type audit: these source contracts do not require exponent validity.
+#guard_no_source_premise FloatSpec.Core.Ulp.negligible_exp_spec FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.Ulp.negligible_exp_spec' FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.Ulp.succ_le_plus_ulp FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.Ulp.pred_lt_le FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.Ulp.succ_gt_ge FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.Ulp.pred_pos_plus_ulp_aux1 FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.Ulp.id_p_ulp_le_bpow FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.Ulp.ulp_succ_pos FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.Ulp.not_FTZ_generic_format_ulp FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.Ulp.id_m_ulp_ge_bpow FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.Ulp.round_UP_DN_ulp FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.Generic_fmt.generic_format_ge_bpow FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.Generic_fmt.round_N_middle FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.Generic_fmt.round_N_small_pos FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.Generic_fmt.round_N_opp FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.Generic_fmt.round_N0_opp FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.Generic_fmt.round_N_small FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.Generic_fmt.round_NA_opp FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.Generic_fmt.scaled_mantissa_generic FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.Generic_fmt.round_DN_or_UP FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.Generic_fmt.round_ZR_or_AW FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.Generic_fmt.round_bounded_small_pos FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.Generic_fmt.round_bounded_large_pos FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.Generic_fmt.round_DN_small_pos FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.Generic_fmt.round_UP_small_pos FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.Generic_fmt.round_large_pos_ge_bpow FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.Generic_fmt.exp_small_round_0_pos FloatSpec.Core.Generic_fmt.Valid_exp at fexp

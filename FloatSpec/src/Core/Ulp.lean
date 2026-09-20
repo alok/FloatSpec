@@ -124,7 +124,9 @@ inductive negligible_exp_prop (fexp : Int → Int) : Option Int → Prop where
   | negligible_None : (∀ n : Int, fexp n < n) → negligible_exp_prop fexp none
   | negligible_Some : ∀ n : Int, n ≤ fexp n → negligible_exp_prop fexp (some n)
 
+omit [Valid_exp fexp] in
 /-- Coq (Ulp.v): {name}`negligible_exp_spec`. -/
+@[flocq_source "src/Core/Ulp.v" 57 "negligible_exp_spec"]
 lemma negligible_exp_spec : negligible_exp_prop fexp (negligible_exp fexp) := by
   classical
   unfold negligible_exp
@@ -132,7 +134,9 @@ lemma negligible_exp_spec : negligible_exp_prop fexp (negligible_exp fexp) := by
   | inl witness => exact .negligible_Some witness.val witness.property
   | inr noWitness => exact .negligible_None (fun n => lt_of_not_ge (noWitness n))
 
+omit [Valid_exp fexp] in
 /-- Coq (Ulp.v): {name}`negligible_exp_spec'`. -/
+@[flocq_source "src/Core/Ulp.v" 65 "negligible_exp_spec'"]
 lemma negligible_exp_spec' :
     (negligible_exp fexp = none ∧ ∀ n : Int, fexp n < n)
     ∨ ∃ n : Int, negligible_exp fexp = some n ∧ n ≤ fexp n := by
@@ -559,7 +563,7 @@ theorem lt_succ_right
   exact lt_of_lt_of_le hxy (succ_run_ge_self (beta := beta) (fexp := fexp) hβ y)
 -- Local bridge theorem: successor is within one ULP above x (run form).
 private theorem succ_le_plus_ulp_theorem
-    (beta : Int) [ValidRadix beta] (fexp : Int → Int) [FloatSpec.Core.Generic_fmt.Valid_exp fexp]
+    (beta : Int) [ValidRadix beta] (fexp : Int → Int)
     [Monotone_exp fexp]
     (x : ℝ) (hβ : 1 < beta) :
     (succ beta fexp x) ≤ x + (ulp beta fexp x) := by
@@ -672,10 +676,12 @@ private theorem succ_le_plus_ulp_theorem
           _ = x + (ulp beta fexp x) := by simpa [hulp_neg_eq]
       exact le_of_eq hsucc_explicit
 
+omit [Valid_exp fexp] in
 /-- Coq (Ulp.v):
 Lemma {coq}`succ_le_plus_ulp`:
   {lit}`forall { Hm : Monotone_exp fexp } x, succ x <= x + ulp x`.
 -/
+@[flocq_source "src/Core/Ulp.v" 2041 "succ_le_plus_ulp"]
 theorem succ_le_plus_ulp
     [Monotone_exp fexp]
     (x : ℝ) :
@@ -3162,10 +3168,12 @@ theorem pred_0 :
   -- Unfold `pred` via `succ` at 0 and normalize the Id monad
   simp [wp, PostCond.noThrow, Id.run, bind, pure, pred, succ, ulp]
 
+omit [Valid_exp fexp] in
 /-- Coq (Ulp.v):
 Theorem pred_lt_le:
   forall x y, x <> 0 -> x <= y -> pred x < y.
 -/
+@[flocq_source "src/Core/Ulp.v" 1507 "pred_lt_le"]
 theorem pred_lt_le
     (x y : ℝ) (hx : x ≠ 0) (hxy : x ≤ y) :
     ⦃⌜1 < beta⌝⦄
@@ -3177,10 +3185,12 @@ theorem pred_lt_le
   -- Strictly decrease by one ULP, then compare to y via x ≤ y
   exact lt_of_lt_of_le (pred_run_lt_self (beta := beta) (fexp := fexp) hβ x hx) hxy
 
+omit [Valid_exp fexp] in
 /-- Coq (Ulp.v):
 Theorem succ_gt_ge:
   forall x y, y <> 0 -> x <= y -> x < succ y.
 -/
+@[flocq_source "src/Core/Ulp.v" 1496 "succ_gt_ge"]
 theorem succ_gt_ge
     (x y : ℝ) (hy : y ≠ 0) (hxy : x ≤ y) :
     ⦃⌜1 < beta⌝⦄
@@ -3227,6 +3237,7 @@ Lemma pred_pos_plus_ulp_aux1:
 -- Early private copy of the Flocq spacing lemma needed by the direct proof
 -- below. The public `id_m_ulp_ge_bpow` theorem is ported later in this file,
 -- after this auxiliary lemma, so the target proof cannot depend on it by name.
+omit [Valid_exp fexp] in
 private theorem id_m_ulp_ge_bpow_early (x : ℝ) (e : Int)
     (Fx : (FloatSpec.Core.Generic_fmt.generic_format beta fexp x))
     (hne : x ≠ (ulp beta fexp x))
@@ -3384,7 +3395,6 @@ private theorem id_m_ulp_ge_bpow_early (x : ℝ) (e : Int)
 -- Local theorem (file‑scoped): non‑boundary positive case adds back one ULP.
 private theorem pred_pos_plus_ulp_aux1_theorem
     (beta : Int) [ValidRadix beta] (fexp : Int → Int)
-    [FloatSpec.Core.Generic_fmt.Valid_exp fexp]
     (x : ℝ) (hx : 0 < x)
     (Fx : (FloatSpec.Core.Generic_fmt.generic_format beta fexp x))
     (hne : x ≠ (beta : ℝ) ^ ((FloatSpec.Core.Raux.mag beta x) - 1))
@@ -3474,6 +3484,8 @@ private theorem pred_pos_plus_ulp_aux1_theorem
         ring
   simpa [hs, hu] using hmain
 
+omit [Valid_exp fexp] in
+@[flocq_source "src/Core/Ulp.v" 845 "pred_pos_plus_ulp_aux1"]
 theorem pred_pos_plus_ulp_aux1
     (x : ℝ) (hx : 0 < x)
     (Fx : (FloatSpec.Core.Generic_fmt.generic_format beta fexp x))
@@ -3982,6 +3994,8 @@ private theorem int_succ_le_of_lt_pow_theorem
   -- Strict < on integers gives the desired successor ≤ bound
   exact (Int.add_one_le_iff.mpr hm_lt_int)
 
+omit [Valid_exp fexp] in
+@[flocq_source "src/Core/Ulp.v" 500 "id_p_ulp_le_bpow"]
 theorem id_p_ulp_le_bpow (x : ℝ) (e : Int)
     (hx : 0 < x)
     (Fx : (FloatSpec.Core.Generic_fmt.generic_format beta fexp x))
@@ -4168,8 +4182,7 @@ Lemma ulp_succ_pos:
 -- This mirrors the Coq statement and will be discharged once the
 -- spacing lemmas (`id_p_ulp_le_bpow`, magnitude bounds, etc.) are ported.
 private theorem ulp_succ_pos_theorem
-  (beta : Int) [ValidRadix beta] (fexp : Int → Int)
-  [FloatSpec.Core.Generic_fmt.Valid_exp fexp]
+    (beta : Int) [ValidRadix beta] (fexp : Int → Int)
   (x : ℝ)
   (Fx : (FloatSpec.Core.Generic_fmt.generic_format beta fexp x))
   (hx : 0 < x)
@@ -4303,6 +4316,8 @@ private theorem ulp_succ_pos_theorem
         _ = (ulp beta fexp x) := hulp_x_run.symm
     exact hulp_eq
 
+omit [Valid_exp fexp] in
+@[flocq_source "src/Core/Ulp.v" 2272 "ulp_succ_pos"]
 theorem ulp_succ_pos
     (x : ℝ)
     (Fx : (FloatSpec.Core.Generic_fmt.generic_format beta fexp x))
@@ -8994,6 +9009,7 @@ theorem round_UP_plus_eps
     (u := (succ (beta := beta) (fexp := fexp) x))
     Fsuccx ⟨hlt_left, hle_right⟩ hβ
 
+omit [Valid_exp fexp] in
 /-- Coq (Ulp.v):
 Lemma not_FTZ_generic_format_ulp : (forall x,  F (ulp x)) -> Exp_not_FTZ fexp.
 
@@ -9007,6 +9023,7 @@ private theorem generic_format_bpow_inv_shift
   exact FloatSpec.Core.Generic_fmt.generic_format_bpow_inv'
     (beta := beta) (fexp := fexp) (e := e) hβ hfmt
 
+omit [Valid_exp fexp] in
 private theorem ulp_bpow_plain
     (e : Int)
     (hβ : 1 < beta) :
@@ -9067,6 +9084,8 @@ private theorem generic_format_bpow_ge_ulp_0_plain
     (beta := beta) (fexp := fexp) (e := e) ⟨hβ, h_e1_le⟩
   simpa [wp, PostCond.noThrow, Id.run, bind, pure] using htrip
 
+omit [Valid_exp fexp] in
+@[flocq_source "src/Core/Ulp.v" 281 "not_FTZ_generic_format_ulp"]
 theorem not_FTZ_generic_format_ulp :
     (∀ x : ℝ, FloatSpec.Core.Generic_fmt.generic_format beta fexp (ulp beta fexp x)) →
     (hβ : 1 < beta) →
@@ -9663,8 +9682,10 @@ theorem pred_bpow (e : Int) (hβ : 1 < beta) :
   simpa [wp, PostCond.noThrow, Id.run, bind, pure, x] using hrun
 
 
+omit [Valid_exp fexp] in
 /-- Coq (Ulp.v): Theorem `id_m_ulp_ge_bpow`
     forall x e, F x -> x ≠ ulp x -> bpow e < x -> bpow e ≤ x - ulp x. -/
+@[flocq_source "src/Core/Ulp.v" 460 "id_m_ulp_ge_bpow"]
 theorem id_m_ulp_ge_bpow (x : ℝ) (e : Int)
     (Fx : (FloatSpec.Core.Generic_fmt.generic_format beta fexp x))
     (hne : x ≠ (ulp beta fexp x))
@@ -10244,8 +10265,10 @@ theorem round_UP_DN_ulp_from_choice_payload [Exp_not_FTZ fexp] (x : ℝ)
   simpa using
     (round_UP_DN_ulp_theorem (beta := beta) (fexp := fexp) (x := x) Fx hβ)
 
-/-- Exact source contract.  This is a direct consequence of the adjacent
-integer floor/ceiling mantissas; no `Exp_not_FTZ` hypothesis is involved. -/
+omit [Valid_exp fexp] in
+/-- Exact source contract. This follows from adjacent integer floor/ceiling
+mantissas, without exponent validity or a no-flush-to-zero assumption. -/
+@[flocq_source "src/Core/Ulp.v" 180 "round_UP_DN_ulp"]
 theorem round_UP_DN_ulp (x : ℝ)
     (Fx : ¬ FloatSpec.Core.Generic_fmt.generic_format beta fexp x) :
     FloatSpec.Core.Generic_fmt.roundR beta fexp
@@ -10266,24 +10289,25 @@ theorem round_UP_DN_ulp (x : ℝ)
     FloatSpec.Core.Generic_fmt.rnd_floor x with hdn
   set up := FloatSpec.Core.Generic_fmt.roundR beta fexp
     FloatSpec.Core.Generic_fmt.rnd_ceil x with hup
-  have hDN := FloatSpec.Core.Generic_fmt.roundR_DN_pt
-    (beta := beta) (fexp := fexp) x hβ
-  have hUP := FloatSpec.Core.Generic_fmt.roundR_UP_pt
-    (beta := beta) (fexp := fexp) x hβ
-  have hd_ne_up : dn ≠ up := by
-    intro heq
-    have hx_eq : x = dn := le_antisymm (by simpa [dn, up, hdn, hup, heq] using hUP.2.1)
-      (by simpa [dn, hdn] using hDN.2.1)
-    apply Fx
-    rw [hx_eq]
-    simpa [dn] using hDN.1
   have hceil_ne_floor :
       FloatSpec.Core.Raux.Zceil sm ≠ FloatSpec.Core.Raux.Zfloor sm := by
     intro h
-    apply hd_ne_up
-    simp [dn, up, hdn, hup, FloatSpec.Core.Generic_fmt.roundR,
-      FloatSpec.Core.Generic_fmt.rnd_floor,
-      FloatSpec.Core.Generic_fmt.rnd_ceil, sm, hsm, e, he, h]
+    have hupper : sm ≤ (FloatSpec.Core.Raux.Zceil sm : ℝ) := Int.le_ceil sm
+    rw [h] at hupper
+    have hsm_eq : sm = (FloatSpec.Core.Raux.Zfloor sm : ℝ) :=
+      le_antisymm hupper (Int.floor_le sm)
+    have htrunc : FloatSpec.Core.Raux.Ztrunc sm = FloatSpec.Core.Raux.Zfloor sm := by
+      calc
+        FloatSpec.Core.Raux.Ztrunc sm =
+            FloatSpec.Core.Raux.Ztrunc (FloatSpec.Core.Raux.Zfloor sm : ℝ) :=
+          congrArg FloatSpec.Core.Raux.Ztrunc hsm_eq
+        _ = FloatSpec.Core.Raux.Zfloor sm := FloatSpec.Core.Generic_fmt.Ztrunc_intCast _
+    have reconstruct := FloatSpec.Core.Generic_fmt.scaled_mantissa_mult_bpow beta fexp x hβ
+    change sm * (beta : ℝ) ^ e = x at reconstruct
+    apply Fx
+    change x = (FloatSpec.Core.Raux.Ztrunc sm : ℝ) * (beta : ℝ) ^ e
+    rw [htrunc, ← hsm_eq]
+    exact reconstruct.symm
   have hfloor_le :
       FloatSpec.Core.Raux.Zfloor sm ≤ FloatSpec.Core.Raux.Zceil sm := by
     simpa [FloatSpec.Core.Raux.Zfloor, FloatSpec.Core.Raux.Zceil] using
