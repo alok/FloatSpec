@@ -32,9 +32,9 @@ LEAN_LOC = [".loc_Exact", ".loc_Inexact .lt", ".loc_Inexact .eq", ".loc_Inexact 
 COQ_LOC = ["loc_Exact", "loc_Inexact Lt", "loc_Inexact Eq", "loc_Inexact Gt"]
 OPS = ("power", "div_eucl", "location", "round", "truncate", "div", "plus", "sqrt",
        "formats", "digits", "operations", "format_calc", "overflow", "bits32", "bits64",
-       "bit_fields", "order32", "order64", "validity", "nearby", "neighbors")
-ARITIES = dict(zip(OPS, (2, 2, 3, 3, 5, 6, 6, 4, 3, 2, 5, 8, 4, 1, 1, 6, 2, 2, 5, 6, 6), strict=True))
-WIDTHS = dict(zip(OPS, (1, 2, 3, 6, 3, 2, 2, 2, 4, 1, 13, 12, 5, 9, 9, 8, 12, 12, 15, 7, 17), strict=True))
+       "bit_fields", "order32", "order64", "validity", "nearby", "neighbors", "comparison")
+ARITIES = dict(zip(OPS, (2, 2, 3, 3, 5, 6, 6, 4, 3, 2, 5, 8, 4, 1, 1, 6, 2, 2, 5, 6, 6, 10), strict=True))
+WIDTHS = dict(zip(OPS, (1, 2, 3, 6, 3, 2, 2, 2, 4, 1, 13, 12, 5, 9, 9, 8, 14, 14, 15, 7, 17, 11), strict=True))
 RADIX_OPS = {"truncate", "div", "plus", "sqrt", "digits", "operations", "format_calc"}
 
 
@@ -72,6 +72,35 @@ class Case:
             prec, emax, kind, sign, mantissa, _ = self.args
             if not 0 < prec < emax or kind not in range(4) or sign not in (0, 1) or mantissa <= 0:
                 raise ValueError("neighbors requires 0 < prec < emax, kind 0..3, sign 0/1, positive mantissa")
+        if self.op == "comparison":
+            for offset in (2, 6):
+                kind, sign, mantissa, _ = self.args[offset:offset+4]
+                if kind not in range(4) or sign not in (0, 1) or mantissa <= 0:
+                    raise ValueError("comparison requires kind 0..3, sign 0/1, positive source mantissa")
+
+
+def comparison_corpus(seed: int, samples: int) -> list[Case]:
+    """Canonical comparison includes degenerate formats, without extra premises."""
+    cases: list[Case] = []
+    rng = random.Random(seed)
+    for p, emax in ((-1, 1), (0, 1), (1, 1), (1, 2), (2, 3), (3, 4), (4, 9), (8, 9), (24, 128), (53, 1024)):
+        emin = 3 - emax - p
+        values = [(0, 0, 1, 0), (0, 1, 1, 0), (1, 0, 1, 0), (1, 1, 1, 0), (2, 0, 1, 0)]
+        for s in (0, 1):
+            values.extend([(3, s, 1, emin), (3, s, 1, 0),
+                           (3, s, 1 << max(0, p-1), emin),
+                           (3, s, (1 << max(1, p))-1, emax-p)])
+        for x in values:
+            for y in values:
+                cases.append(Case('comparison', (p, emax, *x, *y)))
+        for _ in range(samples):
+            operands = []
+            for _ in range(2):
+                operands.extend((rng.randrange(4), rng.randrange(2), rng.randint(1, 1 << max(1, p)),
+                                 rng.randint(emin-1, emax+1)))
+            cases.append(Case('comparison', (p, emax, *operands)))
+    return list(dict.fromkeys(cases))
+
 
 
 def corpus(seed: int, samples: int) -> list[Case]:
@@ -179,7 +208,10 @@ def corpus(seed: int, samples: int) -> list[Case]:
                     for exponent in sorted({2-emax-prec, 3-emax-prec, 4-emax-prec, -prec, 0,
                                             emax-prec-1, emax-prec, emax-prec+1}):
                         cases.append(Case("neighbors", (prec, emax, 3, sign, mantissa, exponent)))
+    cases.extend(comparison_corpus(seed, samples))
     for op in OPS:
+        if op == "comparison":
+            continue
         for _ in range(samples):
             base = rng.choice((2, 3, 10, 16))
             m1, m2 = (rng.randint(-1024, 1024) for _ in range(2))
@@ -243,6 +275,32 @@ def expressions(case: Case) -> tuple[str, str]:
     """Translate inputs only; all arithmetic is performed by imported APIs."""
     a = [f"({n})" for n in case.args]
     op = case.op
+    if op == "comparison":
+        p, emax, *words = case.args
+        operands = [words[:4], words[4:]]
+        if any(k not in range(4) or s not in (0, 1) or m <= 0 for k, s, m, e in operands):
+            raise ValueError('invalid raw constructor')
+        lean, rocq = '', ''
+        for name, (kind, sign, mantissa, exponent) in zip(('x', 'y'), operands, strict=True):
+            s = 'true' if sign else 'false'
+            lr = (f'.S754_zero {s}', f'.S754_infinity {s}', '.S754_nan',
+                  f'.S754_finite {s} ({mantissa}) ({exponent})')[kind]
+            cr = (f'SpecFloat.S754_zero {s}', f'SpecFloat.S754_infinity {s}', 'SpecFloat.S754_nan',
+                  f'SpecFloat.S754_finite {s} ({mantissa})%positive ({exponent})')[kind]
+            lean += (f'let raw_{name} : StandardFloat := {lr}; '
+                     f"let {name} := BinarySingleNaN.SF2B' (prec := ({p})) (emax := ({emax})) raw_{name}; ")
+            rocq += (f'let raw_{name} := {cr} in '
+                     f"let {name} := @BinarySingleNaN.SF2B' ({p}) ({emax}) raw_{name} in ")
+        lean += '[' + ', '.join(f'boolean (validBinarySingleNaNStandardFloat '
+                                f'(prec := ({p})) (emax := ({emax})) raw_{name})' for name in ('x', 'y')) + ']'
+        rocq += '[' + '; '.join(f'boolean (SpecFloat.valid_binary ({p}) ({emax}) raw_{name})'
+                               for name in ('x', 'y')) + ']'
+        for name in ('x', 'y'):
+            lean += f' ++ standard (BinarySingleNaN.B2SF {name})'
+            rocq += f' ++ standard (@BinarySingleNaN.B2SF ({p}) ({emax}) {name})'
+        lean += ' ++ [((BinarySingleNaN.Bcompare x y).map comparisonCode).getD 2]'
+        rocq += f' ++ [comparison_code (@BinarySingleNaN.Bcompare ({p}) ({emax}) x y)]'
+        return lean, rocq
     if op == "neighbors":
         prec, emax, kind, sign, mantissa, exponent = case.args
         p, e, n = f"({prec})", f"({exponent})", f"({mantissa})"
@@ -330,6 +388,11 @@ def expressions(case: Case) -> tuple[str, str]:
             lean_columns.append(f"bits_of_b{width} (Binary.{name} x)")
             coq_columns.append(f"Bits.bits_of_b{width} (@Binary.{name} {prec} {emax} "
                                "(ltac:(compute; reflexivity)) (ltac:(compute; reflexivity)) x)")
+        lean_columns.extend(["((Binary.Bcompare x y).map comparisonCode).getD 2",
+                             "((BinarySingleNaN.Bcompare (Binary.B2BSN x) (Binary.B2BSN y)).map comparisonCode).getD 2"])
+        coq_columns.extend([f"comparison_code (@Binary.Bcompare {prec} {emax} x y)",
+                            f"comparison_code (@BinarySingleNaN.Bcompare {prec} {emax} "
+                            f"(@Binary.B2BSN {prec} {emax} x) (@Binary.B2BSN {prec} {emax} y))"])
         return lean + "[" + ", ".join(lean_columns) + "]", rocq + "[" + "; ".join(coq_columns) + "]"
     if op == "power":
         return (f"[Zaux.Zpower {a[0]} {a[1]}]", f"[Zpower {a[0]} {a[1]}]")

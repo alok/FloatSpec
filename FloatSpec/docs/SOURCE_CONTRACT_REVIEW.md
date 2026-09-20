@@ -38,6 +38,45 @@ it became clean only after the successful build and a server restart.
 The compiled validator checks 135 source anchors, and the trust audit checks
 13,574 declarations in 58 modules with the same four manifest debts.
 
+## Generic IEEE comparison: type, execution, and premise boundary
+
+The previous `Binary.Bcompare` returned `Option Int` and compared mathematical
+reals, while pinned `Binary.v:773` exports `option comparison`. The SingleNaN
+facade returned `Option Ordering` but was likewise noncomputable. A typed Lean
+consumer failed where the equivalent Rocq consumer compiled.
+
+Both public exports now return `Option Ordering` and use the pinned
+constructor/sign/exponent/mantissa comparison algorithm. Their real-value and
+operand-reversal theorems have closed proofs. None gains a positive-precision
+or `prec < emax` premise: paired typed consumers and four additional compiler
+guards enforce that boundary, bringing the total to 45. The old raw-carrier
+integer encoding remains only under the explicitly named compatibility API.
+
+Binary32/64 comparison delegates to the generic source algorithm, matching
+the source alias. The former independent fixed-width implementation was
+removed; current generic/fixed-width agreement is therefore a wiring check.
+Native Float/Float32 and pinned Rocq remain independent execution checks.
+The new generic corpus includes raw invalid carriers and degenerate formats.
+
+At source SHA-256
+`ef0fbd7b679679ce0bccc073d2b732fd31741f101f7067887c3b4b69e10fbb1a`,
+the full macOS Lean 4.34.0 build passed 6,215 jobs. Fresh complete LSP error
+diagnostics were empty for BinarySingleNaN, its source facade, Bits,
+SourcePremiseContracts, and BitOrderExecution. The paired Rocq consumers and
+independent ordering fixture compiled. The validator checks 142 source
+anchors; the compiled trust audit checks 13,591 declarations in 58 modules
+with the same four manifest debts and no new project axioms or runtime
+overrides. These checks do not certify every declaration in the modules.
+
+The public-API differential run passed 3,567 cases and 3,567 generated kernel
+equalities (seed 668019, 100 random samples per family), including generic
+comparison and both fixed-width order families. Artifacts are retained at
+`/private/tmp/floatspec-comparison-public-20260920`. All 29 core harness tests
+passed, including the new live operand-swap mutation. The initial standalone
+Rocq fixture command used a different output basename, then omitted explicit
+arguments to source definitions; those setup failures were corrected before
+the passing paired-consumer run and are not counted as semantic mismatches.
+
 ## Elaborated premises, not just displayed theorem text
 
 An additional compiler-assisted review found **31 unwanted premises across

@@ -261,10 +261,14 @@ removing unnecessary `noncomputable` markers and moving square root's
 real-valued witness inside its erased validity proof; the arithmetic itself
 still uses integers. A separate 100,100-comparison runtime grid checks the
 port's own binary32/binary64 arithmetic against native Float/Float32.
-Fixed-width comparison now executes the source's constructor/sign/
+Generic and fixed-width comparison now execute the source's constructor/sign/
 exponent/mantissa algorithm with result type `Option Ordering`, not arbitrary
 integer codes or noncomputable real comparison. It is also checked against
-native Float/Float32 comparisons. The direct decoder and integer-width packing families avoid
+native Float/Float32 comparisons. Binary32/64 delegate to the proved generic
+comparison, so agreement between those two Lean entry points checks wiring,
+not two independent algorithms. Generic comparison needs no positive-precision
+instance; tests include degenerate formats as well as ordinary IEEE formats.
+The direct decoder and integer-width packing families avoid
 using `Float.Model.ofBits` as a substitute for the port's own decoder.
 
 Generic successor, predecessor, and ulp now execute too, using the integer
@@ -311,7 +315,7 @@ changed surfaces have been checked.
 Source links make that review navigable. `@[flocq_source]` records a pinned
 Coq path, line, and name; `@[flocq_local]` explains a Lean-only helper.
 Eleven modules currently enforce strict public-definition classification.
-The compiler-backed validator checks all 135 registered anchors, including
+The compiler-backed validator checks all 142 registered anchors, including
 combined attributes and later attribute commands. These links are metadata,
 not a proof that bodies or theorem signatures correspond.
 

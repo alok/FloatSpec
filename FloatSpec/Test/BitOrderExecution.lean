@@ -86,6 +86,15 @@ theorem orderBoundaryRegressions :
      bits_of_b64 (b64_succ (b64_of_bits 0x8000000000000001))) =
     (some .eq, some .lt, none, 0x8000000000000000) := by decide +kernel
 
+/-- Generic source comparisons retain their four outcomes even when there is
+no positive-precision or precision-below-emax instance. -/
+theorem genericComparisonBoundaryRegressions :
+    (Binary.Bcompare (prec := 0) (emax := -1) (.B754_zero true) (.B754_zero false),
+     BinarySingleNaN.Bcompare (prec := 0) (emax := -1) .B754_nan (.B754_zero false),
+     BinarySingleNaN.Bcompare (prec := 1) (emax := 1) (.B754_infinity true) (.B754_zero false),
+     Binary.Bcompare (b64_of_bits 0xc000000000000000) (b64_of_bits 0xbff0000000000000)) =
+    (some .eq, none, some .lt, some .lt) := by decide +kernel
+
 /-- The generic integer algorithms retain signed-zero and overflow boundaries,
 including exact signaling-NaN payloads. These are kernel checks, not FFI calls. -/
 theorem genericNeighborBoundaryRegressions :

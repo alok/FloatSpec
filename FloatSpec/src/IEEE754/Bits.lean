@@ -1114,27 +1114,6 @@ def b32_abs (x : binary32) : binary32 :=
   | binary_float.B754_finite _ mantissa exponent hBounded =>
       binary_float.B754_finite false mantissa exponent hBounded
 
--- Flocq Binary.Bcompare delegates to SpecFloat.SFcompare. Its finite branch
--- compares exponents first, then positive mantissas, reversing for negatives.
--- The proof-carrying inputs enforce canonical finite representations; this is
--- not a real-number comparator for arbitrary unnormalized mantissa/exponent pairs.
-private def binaryCompareCanonical {prec emax : Int}
-    (x y : binary_float prec emax) : Option Ordering :=
-  match x, y with
-  | .B754_nan .., _ | _, .B754_nan .. => none
-  | .B754_infinity sx, .B754_infinity sy =>
-      some (if sx == sy then .eq else if sx then .lt else .gt)
-  | .B754_infinity sx, _ => some (if sx then .lt else .gt)
-  | _, .B754_infinity sy => some (if sy then .gt else .lt)
-  | .B754_finite sx _ _ _, .B754_zero _ => some (if sx then .lt else .gt)
-  | .B754_zero _, .B754_finite sy _ _ _ => some (if sy then .gt else .lt)
-  | .B754_zero _, .B754_zero _ => some .eq
-  | .B754_finite sx mx ex _, .B754_finite sy my ey _ =>
-      some (if sx != sy then (if sx then .lt else .gt) else
-        let c := if ex = ey then
-            FloatSpec.Core.Zaux.Zcompare (FloatSpec.Core.Zaux.Zpos mx) (FloatSpec.Core.Zaux.Zpos my)
-          else FloatSpec.Core.Zaux.Zcompare ex ey
-        if sx then c.swap else c)
 
 -- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/IEEE754/Bits.v#L676
 /-- Source binary32 comparison: unordered NaNs, equal signed zeros, and integer
@@ -1142,13 +1121,13 @@ comparison of canonical finite representations. The result type preserves
 Coq's three-constructor comparison, rather than allowing arbitrary integers. -/
 @[flocq_source "src/IEEE754/Bits.v" 676 "b32_compare"]
 def b32_compare (x y : binary32) : Option Ordering :=
-  binaryCompareCanonical x y
+  Binary.Bcompare x y
 
 -- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/IEEE754/Bits.v#L743
 /-- Source binary64 comparison, with the same four outcomes as binary32. -/
 @[flocq_source "src/IEEE754/Bits.v" 743 "b64_compare"]
 def b64_compare (x y : binary64) : Option Ordering :=
-  binaryCompareCanonical x y
+  Binary.Bcompare x y
 
 -- Coq: `Definition bits_of_b32 : binary32 -> Z := bits_of_binary_float 23 8.`
 def bits_of_b32 (x : binary32) : Int :=

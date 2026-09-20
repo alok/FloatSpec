@@ -62,9 +62,11 @@ The standalone paired fixtures add independent contract and error checks:
   Lean executes the full grid and proves 95 boundary cases in the kernel;
   Rocq closes its full grid with `vm_compute`.
 
-`Test/SourcePremiseContracts.lean` additionally has 31 elaborated-type guards,
-six typed theorem consumers, and four deliberate negative guard examples.
-The corresponding Rocq fixture checks those six consumer signatures. These
+`Test/SourcePremiseContracts.lean` additionally has 45 source-premise guards,
+paired typed consumers for the Prop, integer-rounding, canonical-exponent,
+real-comparison, and generic IEEE comparison exports, and four deliberate
+negative guard examples. The corresponding Rocq fixture checks the paired
+consumer signatures. These
 checks caught real section-instance leakage that the former bare `#check`
 regressions did not detect. The combined runner re-executes all these fixtures;
 the CI workflow also runs their Lean side. Local success is not a claim that
@@ -129,11 +131,14 @@ the roundtrip theorem outside its width/field hypotheses. An 836-case run
 and Rocq and generated 836 passing kernel regression equalities.
 
 Two further families execute the fixed-width comparison APIs, negation,
-absolute value, proof erasure, predecessor, and successor. Their twelve output
+absolute value, proof erasure, predecessor, and successor. Their fourteen output
 columns retain both decoded input words, both comparison directions, the
 five fixed-width unary results, and the generic `Binary.Bpred`, `Bsucc`, and
-`Bulp` results. The generic algorithms are now compiled rather than replaced
-by the fixed-width wrappers. Comparison has type `Option Ordering`; only the
+`Bulp` results, followed by full-float and SingleNaN comparison results.
+The generic neighbor algorithms are compiled rather than replaced by the
+fixed-width wrappers. Fixed-width and generic comparison now share the proved
+source algorithm; their agreement is an API wiring check, not independent
+implementation evidence. Comparison has type `Option Ordering`; only the
 serialization adapter uses integers (`lt=-1`, `eq=0`, `gt=1`, unordered `2`).
 Signed zeros compare equal; NaNs remain unordered and unary source operations
 preserve their exact signs and payloads. The boundary corpus crosses all
@@ -163,6 +168,17 @@ carriers. Invalid raw inputs are visibly rejected to NaN before arithmetic;
 they are not mislabeled as valid arithmetic inputs. The operation's precision
 premises `0 < prec < emax` remain enforced. A successor-to-predecessor mutation
 must fail in both compiled Lean and kernel reduction against Rocq.
+
+The twenty-second family executes generic comparison over ten formats,
+including nonpositive precision and `emax <= prec`. These exports have no
+precision premises in Flocq. Eleven columns retain both raw validity flags,
+both converted values, and the ordering result. Invalid raw finite carriers
+are explicitly converted to NaN; signed zeros, infinities, and unordered NaNs
+are preserved. An operand-swap mutation must fail in both Lean execution
+paths. The public `Binary.Bcompare` and `BinarySingleNaN.Bcompare` now return
+`Option Ordering` and execute integer comparisons, with closed value and
+reversal proofs. The legacy raw-carrier integer-coded adapter is named
+`BcompareIntCompat` rather than presented as the source interface.
 
 Lean both executes compiled calls with `--run` and reduces them with `#reduce`;
 Rocq uses `vm_compute`. Enabling compiled execution required removing

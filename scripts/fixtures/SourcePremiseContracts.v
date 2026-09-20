@@ -65,6 +65,22 @@ Definition compare_gt_contract (x y : R) (H : y < x) : Rcompare x y = Gt := Rcom
 Definition compare_not_lt_contract (x y : R) (H : y <= x) : Rcompare x y <> Lt := Rcompare_not_Lt x y H.
 Definition compare_not_gt_contract (x y : R) (H : x <= y) : Rcompare x y <> Gt := Rcompare_not_Gt x y H.
 
+Definition binary_comparison_contract (prec emax : Z)
+    (x y : Binary.binary_float prec emax) : option comparison := @Binary.Bcompare prec emax x y.
+Definition single_comparison_contract (prec emax : Z)
+    (x y : BinarySingleNaN.binary_float prec emax) : option comparison := @BinarySingleNaN.Bcompare prec emax x y.
+Definition binary_comparison_correct_contract (prec emax : Z)
+    (x y : Binary.binary_float prec emax)
+    (Hx : Binary.is_finite prec emax x = true) (Hy : Binary.is_finite prec emax y = true) :
+    @Binary.Bcompare prec emax x y = Some (Rcompare (Binary.B2R prec emax x) (Binary.B2R prec emax y)) :=
+  @Binary.Bcompare_correct prec emax x y Hx Hy.
+Definition single_comparison_correct_contract (prec emax : Z)
+    (x y : BinarySingleNaN.binary_float prec emax)
+    (Hx : @BinarySingleNaN.is_finite prec emax x = true) (Hy : @BinarySingleNaN.is_finite prec emax y = true) :
+    @BinarySingleNaN.Bcompare prec emax x y =
+      Some (Rcompare (@BinarySingleNaN.B2R prec emax x) (@BinarySingleNaN.B2R prec emax y)) :=
+  @BinarySingleNaN.Bcompare_correct prec emax x y Hx Hy.
+
 Definition binary_trunc_without_precision (prec emax : Z)
     (x : Binary.binary_float prec emax) : Z := @Binary.Btrunc prec emax x.
 

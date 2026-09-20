@@ -226,10 +226,10 @@ private theorem B2R_toCompat {prec emax : Int} (x : binary_float prec emax) :
   rw [FF2R_SF2FF]
   cases x <;> rfl
 
-/-! The integrated `Binary` implementation still uses the historical integer
-comparison codes.  Keep that endpoint explicit, then bridge the three source
-codes to Lean's `Ordering`, which is the direct counterpart of Coq's
-`comparison`. -/
+/-! The weak legacy `Binary754` implementation still uses integer comparison
+codes. Keep that compatibility endpoint explicit. The proof-carrying
+SingleNaN and Binary source APIs now execute the integer constructor algorithm
+and return `Ordering` directly. -/
 
 noncomputable def BcompareIntCompat {prec emax : Int}
     (x y : binary_float prec emax) : Option Int :=
@@ -265,8 +265,6 @@ def orderingOfCompareCode (c : Int) : Ordering :=
       have hnegneg : -c < 0 := by omega
       simp [orderingOfCompareCode, hcneg, hczero, hcpos, hnegneg]
 
-noncomputable def RcompareOrdering (x y : ℝ) : Ordering :=
-  if x < y then Ordering.lt else if x = y then Ordering.eq else Ordering.gt
 
 theorem orderingOfCompareCode_Rcompare (x y : ℝ) :
     orderingOfCompareCode (FloatSpec.Core.Raux.Rcompare x y) =
@@ -280,34 +278,6 @@ theorem orderingOfCompareCode_Rcompare (x y : ℝ) :
     · simp [FloatSpec.Core.Raux.Rcompare, RcompareOrdering,
         orderingOfCompareCode, hxy, heq]
 
-noncomputable def Bcompare {prec emax : Int}
-    (x y : binary_float prec emax) : Option Ordering :=
-  (BcompareIntCompat x y).map orderingOfCompareCode
-
-theorem Bcompare_correct {prec emax : Int} (x y : binary_float prec emax)
-    (hx : is_finite x = true) (hy : is_finite y = true) :
-    Bcompare x y = some (RcompareOrdering (B2R x) (B2R y)) := by
-  have h := _root_.Bcompare_correct_compat (toCompat x) (toCompat y)
-    (by simpa [is_finite_toCompat] using hx)
-    (by simpa [is_finite_toCompat] using hy)
-  have hcode : BcompareIntCompat x y =
-      some (FloatSpec.Core.Raux.Rcompare (B2R x) (B2R y)) := by
-    simpa [BcompareIntCompat, B2R_toCompat, wp, Std.Do.PostCond.noThrow,
-      pure, _root_.Bcompare_check] using h trivial
-  simp [Bcompare, hcode, orderingOfCompareCode_Rcompare]
-
-theorem Bcompare_swap {prec emax : Int} (x y : binary_float prec emax) :
-    Bcompare y x = match Bcompare x y with
-      | some c => some c.swap
-      | none => none := by
-  have h := _root_.Bcompare_swap_compat (toCompat x) (toCompat y)
-  have hcode : BcompareIntCompat y x = match BcompareIntCompat x y with
-      | some c => some (-c)
-      | none => none := by
-    exact h trivial
-  unfold Bcompare
-  rw [hcode]
-  cases BcompareIntCompat x y <;> simp
 
 theorem B2R_inj {prec emax : Int}
     (x y : binary_float prec emax)

@@ -102,6 +102,11 @@ end FloatSpec.Test.SourcePremiseGuard
 #guard_no_source_premise FloatSpec.Core.Generic_fmt.cexp_le_bpow FloatSpec.Core.Generic_fmt.Valid_exp at fexp
 #guard_no_source_premise FloatSpec.Core.Generic_fmt.cexp_ge_bpow FloatSpec.Core.Generic_fmt.Valid_exp at fexp
 
+#guard_no_source_premise Binary.Bcompare Prec_gt_0 at prec
+#guard_no_source_premise Binary.Bcompare_correct Prec_gt_0 at prec
+#guard_no_source_premise BinarySingleNaN.Bcompare Prec_gt_0 at prec
+#guard_no_source_premise BinarySingleNaN.Bcompare_correct Prec_gt_0 at prec
+
 /-! Typed consumers deliberately omit proof-only section assumptions.
 Unlike a bare `#check`, each example fails if a public theorem accidentally
 inherits a stronger premise than its pinned Rocq counterpart. -/
@@ -221,6 +226,21 @@ example (x y : ℝ) (hy : 0 < y)
   FloatSpec.Core.Generic_fmt.lt_cexp_pos 2 badExponent x y (by decide) hy h
 
 end CanonicalExponentPremiseControls
+
+-- Both source comparisons work without any precision/exponent instances.
+example (prec emax : Int) (x y : binary_float prec emax) : Option Ordering :=
+  Binary.Bcompare x y
+example (prec emax : Int) (x y : BinarySingleNaN.binary_float prec emax) : Option Ordering :=
+  BinarySingleNaN.Bcompare x y
+example (prec emax : Int) (x y : binary_float prec emax)
+    (hx : Binary.is_finite x = true) (hy : Binary.is_finite y = true) :
+    Binary.Bcompare x y = some (BinarySingleNaN.RcompareOrdering (Binary.B2R x) (Binary.B2R y)) :=
+  Binary.Bcompare_correct x y hx hy
+example (prec emax : Int) (x y : BinarySingleNaN.binary_float prec emax)
+    (hx : BinarySingleNaN.is_finite x = true) (hy : BinarySingleNaN.is_finite y = true) :
+    BinarySingleNaN.Bcompare x y =
+      some (BinarySingleNaN.RcompareOrdering (BinarySingleNaN.B2R x) (BinarySingleNaN.B2R y)) :=
+  BinarySingleNaN.Bcompare_correct x y hx hy
 
 -- Source theorem names must denote propositions, not numeric doc-link wrappers.
 -- Raux still uses an explicitly documented integer comparison encoding.
