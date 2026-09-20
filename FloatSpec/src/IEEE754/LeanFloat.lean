@@ -97,8 +97,6 @@ private theorem positiveFiniteValue_lt_of_exp_lt
     SF2R 2 (StandardFloat.S754_finite false mx ex) <
       SF2R 2 (StandardFloat.S754_finite false my ey) := by
   let fexp := FLT_exp (3 - emax - prec) prec
-  let hvalid : FloatSpec.Core.Generic_fmt.Valid_exp fexp :=
-    @FloatSpec.Core.FLT.FLT_exp_valid prec (3 - emax - prec) (inferInstance)
   let hmono : FloatSpec.Core.Generic_fmt.Monotone_exp fexp :=
     FloatSpec.Core.FLT.FLT_exp_monotone prec (3 - emax - prec)
   let fx : FloatSpec.Core.Defs.FlocqFloat 2 := ⟨mx, ex⟩
@@ -124,7 +122,7 @@ private theorem positiveFiniteValue_lt_of_exp_lt
     rw [hcex, hcey]
     exact he
   have hlt := @FloatSpec.Core.Generic_fmt.lt_cexp_pos 2 (inferInstance) fexp
-    hvalid hmono (F2R fx) (F2R fy) (by norm_num) hfy hcexpLt
+    hmono (F2R fx) (F2R fy) (by norm_num) hfy hcexpLt
   simpa [SF2R, fx, fy] using hlt
 
 private theorem positiveFiniteValue_lt_of_mantissa_lt

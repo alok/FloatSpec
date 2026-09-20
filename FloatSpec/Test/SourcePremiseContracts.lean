@@ -96,6 +96,12 @@ end FloatSpec.Test.SourcePremiseGuard
 #guard_no_source_premise BinarySingleNaN.Btrunc Prec_gt_0 at prec
 #guard_no_source_premise BinarySingleNaN.Btrunc_correct Prec_gt_0 at prec
 
+-- Magnitude comparisons need monotonicity, not validity as a rounding format.
+#guard_no_source_premise FloatSpec.Core.Generic_fmt.lt_cexp_pos FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.Generic_fmt.lt_cexp FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.Generic_fmt.cexp_le_bpow FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+#guard_no_source_premise FloatSpec.Core.Generic_fmt.cexp_ge_bpow FloatSpec.Core.Generic_fmt.Valid_exp at fexp
+
 /-! Typed consumers deliberately omit proof-only section assumptions.
 Unlike a bare `#check`, each example fails if a public theorem accidentally
 inherits a stronger premise than its pinned Rocq counterpart. -/
@@ -103,6 +109,28 @@ inherits a stronger premise than its pinned Rocq counterpart. -/
 namespace SourcePremiseContracts
 
 variable (beta : Int) [ValidRadix beta] (hβ : 1 < beta)
+
+example (fexp : Int → Int) [FloatSpec.Core.Generic_fmt.Monotone_exp fexp]
+    (x y : ℝ) (hy : 0 < y)
+    (h : FloatSpec.Core.Generic_fmt.cexp beta fexp x <
+      FloatSpec.Core.Generic_fmt.cexp beta fexp y) : x < y :=
+  FloatSpec.Core.Generic_fmt.lt_cexp_pos beta fexp x y hβ hy h
+
+example (fexp : Int → Int) [FloatSpec.Core.Generic_fmt.Monotone_exp fexp]
+    (x y : ℝ) (hy : y ≠ 0)
+    (h : FloatSpec.Core.Generic_fmt.cexp beta fexp x <
+      FloatSpec.Core.Generic_fmt.cexp beta fexp y) : |x| < |y| :=
+  FloatSpec.Core.Generic_fmt.lt_cexp beta fexp x y hβ hy h
+
+example (fexp : Int → Int) [FloatSpec.Core.Generic_fmt.Monotone_exp fexp]
+    (x : ℝ) (e : Int) (hx : x ≠ 0) (h : |x| < (beta : ℝ) ^ e) :
+    FloatSpec.Core.Generic_fmt.cexp beta fexp x ≤ fexp e :=
+  FloatSpec.Core.Generic_fmt.cexp_le_bpow beta fexp x e hβ hx h
+
+example (fexp : Int → Int) [FloatSpec.Core.Generic_fmt.Monotone_exp fexp]
+    (x : ℝ) (e : Int) (h : (beta : ℝ) ^ (e - 1) ≤ |x|) :
+    fexp e ≤ FloatSpec.Core.Generic_fmt.cexp beta fexp x :=
+  FloatSpec.Core.Generic_fmt.cexp_ge_bpow beta fexp x e hβ h
 
 example (fexp : Int → Int) (rnd : ℝ → Int)
     [FloatSpec.Core.Generic_fmt.Valid_rnd rnd] (m e : Int) :
@@ -174,3 +202,35 @@ example : BinarySingleNaN.Bnearbyint (prec := 0) (emax := 1) .RNE (.B754_zero tr
     .B754_zero true := rfl
 
 end IntegerSourcePremiseContracts
+
+namespace CanonicalExponentPremiseControls
+
+private def badExponent (e : Int) : Int := e + 1
+
+private instance : FloatSpec.Core.Generic_fmt.Monotone_exp badExponent :=
+  ⟨by intro x y h; dsimp [badExponent]; grind⟩
+
+example : ¬FloatSpec.Core.Generic_fmt.Valid_exp badExponent := by
+  intro h
+  have impossible := (h.valid_exp 0).2 (by decide)
+  norm_num [badExponent] at impossible
+
+example (x y : ℝ) (hy : 0 < y)
+    (h : FloatSpec.Core.Generic_fmt.cexp 2 badExponent x <
+      FloatSpec.Core.Generic_fmt.cexp 2 badExponent y) : x < y :=
+  FloatSpec.Core.Generic_fmt.lt_cexp_pos 2 badExponent x y (by decide) hy h
+
+end CanonicalExponentPremiseControls
+
+-- Source theorem names must denote propositions, not numeric doc-link wrappers.
+-- Raux still uses an explicitly documented integer comparison encoding.
+example (x y : ℝ) (h : x < y) : FloatSpec.Core.Raux.Rcompare x y = -1 :=
+  FloatSpec.Core.Raux.Rcompare_Lt x y h
+example (x y : ℝ) (h : x = y) : FloatSpec.Core.Raux.Rcompare x y = 0 :=
+  FloatSpec.Core.Raux.Rcompare_Eq x y h
+example (x y : ℝ) (h : y < x) : FloatSpec.Core.Raux.Rcompare x y = 1 :=
+  FloatSpec.Core.Raux.Rcompare_Gt x y h
+example (x y : ℝ) (h : y ≤ x) : FloatSpec.Core.Raux.Rcompare x y ≠ -1 :=
+  FloatSpec.Core.Raux.Rcompare_not_Lt x y h
+example (x y : ℝ) (h : x ≤ y) : FloatSpec.Core.Raux.Rcompare x y ≠ 1 :=
+  FloatSpec.Core.Raux.Rcompare_not_Gt x y h

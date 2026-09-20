@@ -158,6 +158,13 @@ power preserves FLX format without assuming positive precision. Typed
 consumers and compiler-backed premise guards now enforce these corrected
 interfaces; merely printing a name with `#check` would not do that.
 
+The same issue affected four canonical-exponent ordering lemmas: they need
+only a monotone exponent function, not a valid rounding format. The tests
+deliberately use `e ↦ e + 1`, which is monotone but invalid as a rounding
+exponent. Five real-comparison theorem names also used to be numeric wrappers
+introduced just for documentation links. They now state actual propositions;
+the older integer encoding of real comparison is still called out explicitly.
+
 For example, the old `valid_binary_SF2FF` statement compared validity after
 a conversion with a wrapper defined to be that same expression. It was
 provable but missed the intended relationship. The repaired theorem compares
@@ -304,7 +311,7 @@ changed surfaces have been checked.
 Source links make that review navigable. `@[flocq_source]` records a pinned
 Coq path, line, and name; `@[flocq_local]` explains a Lean-only helper.
 Eleven modules currently enforce strict public-definition classification.
-The compiler-backed validator checks all 126 registered anchors, including
+The compiler-backed validator checks all 135 registered anchors, including
 combined attributes and later attribute commands. These links are metadata,
 not a proof that bodies or theorem signatures correspond.
 

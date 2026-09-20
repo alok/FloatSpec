@@ -991,19 +991,35 @@ end Rcompare
 
 section RcompareMore
 
-/-- Return the comparison code; used in specialized specs below -/
-/-  Coq names like `Rcompare_Lt` refer to the comparison on reals; we provide a
-    tiny wrapper returning the Int code, so cross-references to these names
-    type-check in documentation. -/
-noncomputable def Rcompare_Lt (x y : ℝ) : Int := Rcompare x y
-/-- Carrier for {coq}`Rcompare_Eq`: comparison yielding Eq code. -/
-noncomputable def Rcompare_Eq (x y : ℝ) : Int := Rcompare x y
-/-- Carrier for {coq}`Rcompare_Gt`: comparison yielding Gt code. -/
-noncomputable def Rcompare_Gt (x y : ℝ) : Int := Rcompare x y
-/-- Carrier for {coq}`Rcompare_not_Lt`: comparison when not Lt. -/
-noncomputable def Rcompare_not_Lt (x y : ℝ) : Int := Rcompare x y
-/-- Carrier for {coq}`Rcompare_not_Gt`: comparison when not Gt. -/
-noncomputable def Rcompare_not_Gt (x y : ℝ) : Int := Rcompare x y
+/-- Source strict-order proposition, expressed in the legacy integer encoding
+of comparison: Lt is -1, Eq is 0, and Gt is 1. -/
+@[flocq_source "src/Core/Raux.v" 371 "Rcompare_Lt"]
+theorem Rcompare_Lt (x y : ℝ) (hxy : x < y) : Rcompare x y = -1 := by
+  simp [Rcompare, hxy]
+
+/-- Source equality proposition in the legacy comparison encoding. -/
+@[flocq_source "src/Core/Raux.v" 411 "Rcompare_Eq"]
+theorem Rcompare_Eq (x y : ℝ) (hxy : x = y) : Rcompare x y = 0 := by
+  subst y
+  simp [Rcompare]
+
+/-- Source reverse strict-order proposition in the legacy comparison encoding. -/
+@[flocq_source "src/Core/Raux.v" 428 "Rcompare_Gt"]
+theorem Rcompare_Gt (x y : ℝ) (hyx : y < x) : Rcompare x y = 1 := by
+  simp [Rcompare, not_lt_of_ge hyx.le, ne_of_gt hyx]
+
+/-- Source non-Lt proposition in the legacy comparison encoding. -/
+@[flocq_source "src/Core/Raux.v" 392 "Rcompare_not_Lt"]
+theorem Rcompare_not_Lt (x y : ℝ) (hyx : y ≤ x) : Rcompare x y ≠ -1 := by
+  simp [Rcompare, not_lt_of_ge hyx]
+  split_ifs <;> norm_num
+
+/-- Source non-Gt proposition in the legacy comparison encoding. -/
+@[flocq_source "src/Core/Raux.v" 449 "Rcompare_not_Gt"]
+theorem Rcompare_not_Gt (x y : ℝ) (hxy : x ≤ y) : Rcompare x y ≠ 1 := by
+  rcases lt_or_eq_of_le hxy with h | h
+  · simp [Rcompare, h]
+  · subst y; simp [Rcompare]
 /-- Carrier for {coq}`Rcompare`: generic comparison. -/
 noncomputable def Rcompare_val (x y : ℝ) : Int := Rcompare x y
 
@@ -3930,8 +3946,8 @@ theorem mag_le_abs_from_bpow_payload (beta : Int) (x : ℝ) (e : Int)
 
 /-- Monotonicity: if x ≠ 0 and |x| ≤ |y| then mag x ≤ mag y
 
-    Note: with our definition {lean}`mag 0 = 0`, the claim with x = 0 is false in general
-    (e.g. for 1 < beta and 0 < |y| < 1, we have mag 0 = 0 > mag y). We therefore
+    The chosen zero magnitude is one, so the claim with x = 0 is false in general
+    (for 1 < beta and 0 < |y| < 1, we have mag 0 = 1 > mag y). We therefore
     assume x ≠ 0; this also forces y ≠ 0 under |x| ≤ |y|.
 -/
 theorem mag_le_from_abs_payload (beta : Int) (x y : ℝ)

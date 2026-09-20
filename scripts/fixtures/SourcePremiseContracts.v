@@ -6,6 +6,22 @@ Open Scope R_scope.
 Section Contracts.
 Variable beta : radix.
 
+Definition canonical_positive_contract (fexp : Z -> Z) (Hmono : Monotone_exp fexp)
+    (x y : R) (Hy : 0 < y) (Hexp : (cexp beta fexp x < cexp beta fexp y)%Z) :
+    x < y := @lt_cexp_pos beta fexp Hmono x y Hy Hexp.
+
+Definition canonical_absolute_contract (fexp : Z -> Z) (Hmono : Monotone_exp fexp)
+    (x y : R) (Hy : y <> 0) (Hexp : (cexp beta fexp x < cexp beta fexp y)%Z) :
+    Rabs x < Rabs y := @lt_cexp beta fexp Hmono x y Hy Hexp.
+
+Definition canonical_upper_contract (fexp : Z -> Z) (Hmono : Monotone_exp fexp)
+    (x : R) (e : Z) (Hx : x <> 0) (Hbound : Rabs x < bpow beta e) :
+    (cexp beta fexp x <= fexp e)%Z := @cexp_le_bpow beta fexp Hmono x e Hx Hbound.
+
+Definition canonical_lower_contract (fexp : Z -> Z) (Hmono : Monotone_exp fexp)
+    (x : R) (e : Z) (Hbound : bpow beta (e - 1) <= Rabs x) :
+    (fexp e <= cexp beta fexp x)%Z := @cexp_ge_bpow beta fexp Hmono x e Hbound.
+
 Definition round_repr_contract (fexp : Z -> Z) (rnd : R -> Z)
     (Hr : Valid_rnd rnd) (m e : Z) :
     exists m', round beta fexp rnd (F2R (Float beta m e)) = F2R (Float beta m' e) :=
@@ -42,6 +58,12 @@ Definition sqrt_decompose_contract (prec : Z) (x : R)
   @sqrt_error_N_FLX_aux1 beta prec x Hx Hpos.
 
 End Contracts.
+
+Definition compare_lt_contract (x y : R) (H : x < y) : Rcompare x y = Lt := Rcompare_Lt x y H.
+Definition compare_eq_contract (x y : R) (H : x = y) : Rcompare x y = Eq := Rcompare_Eq x y H.
+Definition compare_gt_contract (x y : R) (H : y < x) : Rcompare x y = Gt := Rcompare_Gt x y H.
+Definition compare_not_lt_contract (x y : R) (H : y <= x) : Rcompare x y <> Lt := Rcompare_not_Lt x y H.
+Definition compare_not_gt_contract (x y : R) (H : x <= y) : Rcompare x y <> Gt := Rcompare_not_Gt x y H.
 
 Definition binary_trunc_without_precision (prec emax : Z)
     (x : Binary.binary_float prec emax) : Z := @Binary.Btrunc prec emax x.

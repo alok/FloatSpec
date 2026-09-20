@@ -6,6 +6,38 @@ all declarations in the named modules. See the
 [running audit](ASTRA_AUDIT_2026-09-19.md) for execution receipts and the
 [reading guide](READING_GUIDE.md) for the mathematical story.
 
+## Canonical exponents and real comparison names
+
+Four further Generic_fmt exports now omit a source-absent `Valid_exp`
+instance: `lt_cexp_pos`, `lt_cexp`, `cexp_le_bpow`, and `cexp_ge_bpow`.
+Pinned Generic_fmt.v lines 1560–1600 use only monotonicity of the exponent
+function. The existing Lean proofs remain closed after removing validity;
+the one fully explicit downstream application was updated with the signature.
+Four new elaborated-type guards bring the premise-guard total to 41.
+Paired Lean/Rocq typed consumers enforce the actual source hypotheses. A Lean
+control both proves that `e ↦ e + 1` is not a valid rounding exponent and
+uses its monotonicity with the corrected theorem.
+
+Five Raux source names previously denoted numeric wrappers solely for
+documentation links: `Rcompare_Lt`, `Rcompare_Eq`, `Rcompare_Gt`,
+`Rcompare_not_Lt`, and `Rcompare_not_Gt`. They now denote the corresponding
+ordinary propositions, with closed proofs and paired typed consumers.
+The legacy `Raux.Rcompare` representation still encodes Lt/Eq/Gt as -1/0/1;
+this change does **not** claim a whole-Raux migration to `Ordering`.
+The old `_spec` triples remain compatibility interfaces. A source link
+identifies the source theorem but does not conceal this representation
+adaptation.
+
+Verification at source SHA-256
+`f090bf1b61a88787880f7f091255bc7307fa803b0c2d645edadaa18587d1bcd1`:
+the full macOS Lean 4.34.0 build passed 6,215 jobs; paired Rocq consumers and
+the previously failing Lean consumers pass. Fresh complete LSP diagnostics
+are clean for Raux, Generic_fmt, LeanFloat, and SourcePremiseContracts.
+The test module's first editor session reported stale failed dependencies;
+it became clean only after the successful build and a server restart.
+The compiled validator checks 135 source anchors, and the trust audit checks
+13,574 declarations in 58 modules with the same four manifest debts.
+
 ## Elaborated premises, not just displayed theorem text
 
 An additional compiler-assisted review found **31 unwanted premises across

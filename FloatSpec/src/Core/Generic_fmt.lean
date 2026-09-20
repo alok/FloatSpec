@@ -5601,7 +5601,7 @@ private theorem lt_of_mag_lt_pos
 /-- Positivity-monotone cexp order implies value order (positive right argument).
     Requires base positivity and a monotone exponent function, as in Coq. -/
 theorem lt_cexp_pos_ax
-    (beta : Int) [ValidRadix beta] (fexp : Int → Int) [Valid_exp fexp]
+    (beta : Int) [ValidRadix beta] (fexp : Int → Int)
     [Monotone_exp fexp] (x y : ℝ) :
     1 < beta → 0 < y → (cexp beta fexp x) < (cexp beta fexp y) → x < y := by
   classical
@@ -5626,7 +5626,7 @@ theorem lt_cexp_pos_ax
     is at least fexp e. Mirrors Coq's {lit}`cexp_ge_bpow` under the
     {name}`Monotone_exp` assumption. -/
 theorem cexp_ge_bpow_ax
-    (beta : Int) [ValidRadix beta] (fexp : Int → Int) [Valid_exp fexp]
+    (beta : Int) [ValidRadix beta] (fexp : Int → Int)
     [Monotone_exp fexp]
     (x : ℝ) (e : Int) :
     1 < beta → (beta : ℝ) ^ (e - 1) ≤ abs x → fexp e ≤ (cexp beta fexp x) := by
@@ -6268,8 +6268,9 @@ theorem generic_format_precision_bound
 /-- Coq {lit}`Generic_fmt.v`: {lean}`lt_cexp_pos`
 
     If y > 0 and cexp x < cexp y, then x < y. -/
+@[flocq_source "src/Core/Generic_fmt.v" 1583 "lt_cexp_pos"]
 theorem lt_cexp_pos
-    (beta : Int) [ValidRadix beta] (fexp : Int → Int) [Valid_exp fexp] [Monotone_exp fexp]
+    (beta : Int) [ValidRadix beta] (fexp : Int → Int) [Monotone_exp fexp]
     (x y : ℝ) :
     1 < beta → 0 < y → (cexp beta fexp x) < (cexp beta fexp y) → x < y := by
   intro hβ hy hlt
@@ -7772,8 +7773,9 @@ theorem subnormal_exponent
 /-- Coq {lit}`Generic_fmt.v`: {lean}`cexp_le_bpow`
     If x ≠ 0 and |x| < β^e, then cexp x ≤ fexp e.
  -/
+@[flocq_source "src/Core/Generic_fmt.v" 1560 "cexp_le_bpow"]
 theorem cexp_le_bpow
-    (beta : Int) [ValidRadix beta] (fexp : Int → Int) [Valid_exp fexp]
+    (beta : Int) [ValidRadix beta] (fexp : Int → Int)
     [Monotone_exp fexp]
     (x : ℝ) (e : Int) :
     1 < beta → x ≠ 0 → abs x < (beta : ℝ) ^ e → (cexp beta fexp x) ≤ fexp e := by
@@ -7795,8 +7797,9 @@ theorem cexp_le_bpow
 /-- Coq {lit}`Generic_fmt.v`: {lean}`cexp_ge_bpow`
     If β^(e-1) ≤ |x|, then fexp e ≤ cexp x.
  -/
+@[flocq_source "src/Core/Generic_fmt.v" 1571 "cexp_ge_bpow"]
 theorem cexp_ge_bpow
-    (beta : Int) [ValidRadix beta] (fexp : Int → Int) [Valid_exp fexp]
+    (beta : Int) [ValidRadix beta] (fexp : Int → Int)
     [Monotone_exp fexp]
     (x : ℝ) (e : Int) :
     1 < beta → (beta : ℝ) ^ (e - 1) ≤ abs x → fexp e ≤ (cexp beta fexp x) := by
@@ -7806,8 +7809,9 @@ theorem cexp_ge_bpow
 /-- Coq {lit}`Generic_fmt.v`: {lean}`lt_cexp`
     If y ≠ 0 and cexp x < cexp y, then |x| < |y|.
  -/
+@[flocq_source "src/Core/Generic_fmt.v" 1596 "lt_cexp"]
 theorem lt_cexp
-    (beta : Int) [ValidRadix beta] (fexp : Int → Int) [Valid_exp fexp]
+    (beta : Int) [ValidRadix beta] (fexp : Int → Int)
     [Monotone_exp fexp]
     (x y : ℝ) :
     1 < beta → y ≠ 0 → (cexp beta fexp x) < (cexp beta fexp y) → abs x < abs y := by
