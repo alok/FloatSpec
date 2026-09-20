@@ -3371,6 +3371,41 @@ is identifying their old Lean target with the actual raw source API.
 The fresh full three-loop run remains in progress on `5d241916…974cfe`;
 this review changes documentation only and does not disturb that snapshot.
 
+### September 20, 19:04 UTC — independent exact IEEE expectations
+
+Added a separately runnable finite-input IEEE oracle based on exact rational
+grid selection, not a translation of the source rounding algorithm. Square
+root compares squared integer midpoints rather than approximating a root.
+The oracle handles all five rounding modes, both IEEE widths, gradual
+underflow, finite overflow, signed zero, and fused single-rounding semantics.
+NaN/infinite-input arithmetic, zero divisors and negative roots are explicitly
+excluded; no result is invented for those cases.
+
+All **14 tests** pass with the pinned reference enabled (30.742 seconds):
+twelve unit/receipt controls and two actual live Lean/Rocq tests. Controls
+compare selection with enumerated six-bit representable grids, check known
+IEEE boundaries, reject common wrong-rounding/input mutations across every
+path, and reject incomplete saved reports. The live tests freshly execute
+**40 all-mode cases and seven native pairs**, check **6,738 expected fields**,
+and generate **47 Lean kernel regression proofs**.
+
+A separate retained initial live run also passed those 47 cases (30.257 seconds),
+with report `/private/var/folders/gn/1hqqc7pn3nz5s_p0dxnn9h300000gp/T/floatspec-exact-oracle-live-51edbt8o/report.json`.
+It is bound to current Lean/configuration fingerprint `5d241916…974cfe`.
+The reproducible live test log is
+`/private/tmp/floatspec-exact-oracle-tests-20260920.log`.
+
+The saved-report checker separately audits earlier source snapshot
+`32ec11b5…5dfbf`: 1,424 native arithmetic cases pass **31,072** independent
+field assertions, and 390 all-mode cases pass **45,090**. These are new checks
+of retained old observations, not fresh execution of today's source. The
+original report paths remain in the machine-readable historical receipt.
+
+No running bridge script or Lean source was changed, so the large seed-859733
+aggregate keeps its frozen source and harness. The new oracle and receipt
+checker are standalone pending integration after that run. CI's narrow
+cache-policy repair still awaits approval. No proof debt was added.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In

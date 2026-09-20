@@ -139,6 +139,43 @@ when Lean and Rocq observations are both mutated to agree on the wrong answer.
 This makes a useful small lesson in testing specifications: checking an
 inequality is weaker than checking nearest adjacency.
 
+## Agreement is stronger with an independent expectation
+
+Three implementations can agree because their adapters share a mistake.
+The [exact IEEE oracle](../../scripts/ieee_exact_oracle.py) therefore answers
+a different question: which representable grid point is closest to the exact
+result, under the requested rounding policy? It uses rational arithmetic and
+integer comparisons, not a copy of Flocq's rounding program. For square root,
+it compares **squared midpoints**, so it never approximates an irrational root.
+
+For example, binary32 upward rounding of `1 + 2^-24` must produce word
+`0x3f800001`. Nearest-even produces `0x3f800000`. A control deliberately changes
+every observed language path to the latter word; pairwise agreement survives,
+but the independent expectation rejects it. Another control changes all input
+echoes together, checking that the test actually ran the requested input.
+
+Run the oracle's exhaustive small-format and mutation controls with:
+
+```sh
+uv run scripts/test_ieee_exact_oracle.py -v
+```
+
+Setting `FLOCQ_AUDIT_DIR` to the built pinned checkout also runs the two live
+Lean/Rocq tests and their generated Lean kernel proofs. Without it, those two
+tests are explicitly skipped. The standalone checker can strengthen a retained
+receipt without pretending it is a new execution:
+
+```sh
+uv run scripts/check_ieee_exact_oracle.py --profile modes /path/to/report.json
+uv run scripts/check_ieee_exact_oracle.py --profile native /path/to/report.json
+```
+
+The oracle covers finite-input arithmetic, signed zeros, gradual underflow,
+overflow, all five modes, and fused single-rounding semantics. NaN/infinite-input
+arithmetic, division by zero, and negative square root remain outside its
+numeric scope; the differential paths still observe them. Finite checks and
+an independent oracle are not universal conformance proofs.
+
 ## One operation, three interfaces
 
 Run `lake env lean scripts/fixtures/PrimitiveExecution.lean` and read the paired

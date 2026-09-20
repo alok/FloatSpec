@@ -15,7 +15,7 @@ This guide follows those jobs in order. The detailed
 [independent continuation audit](ASTRA_AUDIT_2026-09-19.md) retain the
 declaration-by-declaration findings and historical milestones.
 
-## Wake-up summary — September 20, 2026, 18:36 UTC
+## Wake-up summary — September 20, 2026, 19:04 UTC
 
 **The port builds and runs on macOS with Lean 4.34.0; it is not yet a fully
 source-audited port.** All 35 built Flocq module names have Lean counterparts,
@@ -73,6 +73,17 @@ side. The same 200 targeted inputs pass another three-path replay, now including
 even if all three language observations agree on the wrong answer.
 The [small explanatory example](DEMO_EXEMPLARS.md#nearest-is-stronger-than-larger)
 shows why this matters.
+
+The same principle now strengthens IEEE arithmetic: an independent exact
+rational/grid oracle checks expected rounded results, including squared-midpoint
+selection for square root. Its first fresh run passes **47 cases, 47 generated
+Lean kernel equalities, and 6,738 independent field checks** on the current
+source fingerprint. Separately, checking the earlier saved 1,814-case IEEE
+observations passes 76,162 independent field checks; this is a new audit of
+old execution evidence, not a rerun. Deliberately shared wrong answers are
+rejected even when the language paths agree. See
+[the explanatory example](DEMO_EXEMPLARS.md#agreement-is-stronger-with-an-independent-expectation).
+The large fresh aggregate is still running, not yet a pass.
 
 A [review of the three concurrent Claude comparison commits](CLAUDE_COMPARISON_REVIEW_2026-09-20.md)
 finds another important distinction: proving an executable backend equal to

@@ -10,6 +10,25 @@ The aim is not to trust two matching programs blindly. We check mathematical
 invariants on each side, then compare the implementations on identical inputs,
 then turn the reference observations into checked Lean regression statements.
 
+An additional independent IEEE grid oracle now audits finite-input arithmetic
+without copying the Flocq algorithm. It selects adjacent exact rational points;
+square root uses squared midpoint comparisons. Run
+`uv run scripts/test_ieee_exact_oracle.py -v`: twelve oracle/receipt controls
+always run, and two live Lean/Rocq tests run when `FLOCQ_AUDIT_DIR` is set.
+The live tests cover 40 all-mode cases plus seven native arithmetic pairs,
+produce 47 kernel regression proofs, and check 6,738 expected fields.
+This standalone suite is not yet part of the already-running frozen aggregate.
+
+To audit **saved** observations independently, use
+`uv run scripts/check_ieee_exact_oracle.py --profile modes /path/report.json`
+(or `--profile native`). It requires a completed report, exact case/proof counts,
+and every saved output path. It rejects common input/rounding corruption even
+if all paths agree. Its output retains the historical source hash and explicitly
+says it is not a fresh execution. Current scope excludes NaN/infinite-input
+arithmetic, zero divisors and negative square roots, while retaining finite
+overflow/underflow and signed-zero rules. The paired differential paths still
+cover the excluded exceptional cases; no universal equivalence is inferred.
+
 ## 1. Lean checks itself
 
 `lake build FloatSpec.Test FloatSpecTests floatspec` builds the port, its tests,
