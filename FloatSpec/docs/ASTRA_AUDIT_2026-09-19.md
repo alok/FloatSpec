@@ -1235,7 +1235,84 @@ finished before the complete passing harness run and the frozen grid began.
 A **27,771-case**, fresh-seed all-24-family run is in progress, seed `828431`
 with 40 supplemental samples. It is not yet a passed milestone. Its retained
 receipt is `/private/tmp/floatspec-single-nan-all-families-20260920/report.json`.
-No source edits or builds will overlap that frozen run.
+No port/library source edits or builds will overlap that frozen run.
+
+#### Independent tests added without changing the frozen library snapshot
+
+The independent multiplication-error probe now passes in both languages:
+**55 exact inputs and 5,385 conditional cases** in the three-bit format,
+checking all five rounding modes. Inputs are independently enumerated; error
+membership is checked against that enumeration in exact integer units, not
+by asking the rounder to re-round its own output. The smallest positive
+subnormal squared supplies a checked counterexample when the underflow
+premise is omitted. The persistent fixtures are
+`scripts/fixtures/MultiplicationErrorGrid.lean` and `.v`; explicit cardinality
+assertions prevent an empty grid from passing vacuously. Lean checks the grid
+by kernel reduction and compiled execution; Rocq checks it by `vm_compute`.
+Both are wired into the conformance runner, and the Lean fixture into CI.
+
+`scripts/fixtures/NativeSingleNaNArithmetic.lean` separately runs **200,200
+native comparisons**: five operations through both direct and source-mode
+SingleNaN APIs, for 10 boundary pairs plus 10,000 seeded pairs in each of
+binary32 and binary64. Seed `831557` and exact input words are retained in
+failure messages. Signed zeros are compared bit-for-bit; all NaNs are
+explicitly quotiented. This tests nearest-even only, not directed rounding,
+FMA, NaN payload propagation, or universal compiler/hardware correctness.
+The persistent run passes in
+`/private/tmp/floatspec-native-single-nan-persistent-20260920.log`.
+Complete LSP error diagnostics are clean for both new Lean fixtures.
+
+Deliberate mutations also fail as intended. Replacing multiplication with
+addition makes the independent property grid fail both kernel reduction and
+compiled execution (`/private/tmp/MultiplicationErrorGridMutation.out`).
+Replacing only source-mode addition with subtraction breaks the native test
+on `-0 + +0`, returning negative rather than positive zero
+(`/private/tmp/NativeSingleNaNArithmeticMutation.out`). The replay row is
+`[32,0,2147483648,0,0]`; the exact SingleNaN path is replayable through the
+fixture's `observations32`, while `ieee_modes_bridge.py` can cross-check the
+full-payload baseline on the same words.
+
+These are standalone test fixtures and documentation edits. The ongoing
+all-family run's port/library source SHA-256 remains
+`17689e21deca9fc135815da4c8f10276cb6099dcc9c5b1568bc6b98d51e8ef66`;
+there is no overlapping rebuild or port-source edit.
+
+#### Contract repairs prepared outside the frozen snapshot
+
+Comparing all eight compiled `Mult_error` signatures found that
+`mult_error_FLT_ge_bpow` still requires `Prec_gt_0` in Lean, absent in Rocq.
+The Pff nearest-even specialization has the same extra premise. The first
+proof recompiles unchanged without it in a scratch module. The second proof
+also closes after replacing an unnecessarily restricted zero-rounding helper.
+The other seven multiplication signatures and four Sterbenz signatures match
+the inspected source premises/conclusions, accounting for the redundant Lean
+radix witness and representation conventions. This is a signature inspection,
+not a review of every underlying definition or every proof step.
+
+The restriction also occurs in the source-facing `round_to_generic` wrapper:
+it requires `Valid_exp fexp`, whereas compiled Rocq `Generic_fmt.round` takes
+an arbitrary exponent function and integer-rounding function. `round_0`
+requires only validity of the integer-rounding function in Rocq. A paired
+scratch example proves `fexp(e) = e + 1` is **not** a valid exponent function,
+yet source rounding of zero is zero; an unrestricted copy of the identical
+Lean rounding body and zero proof succeeds. Files:
+`/private/tmp/RoundZeroNoValidity.lean` and `.v`.
+
+Compiled source inspection additionally confirms no `Valid_exp` premise on
+`round_generic`, `round_ext`, `round_opp`, `round_DN_opp`, `round_UP_opp`,
+`round_ZR_opp`, `round_AW_opp`, `round_ZR_DN`, `round_ZR_UP`, `round_AW_UP`,
+or `round_AW_DN`; their current Lean wrappers require it. This is not grounds
+for blanket premise deletion: the inspected source `round_ZR_abs`,
+`round_AW_abs`, and `round_abs_abs` **do** retain `Valid_exp`.
+The source snapshots are retained in `/private/tmp/GenericRoundContracts.*`.
+These contract repairs remain pending until the frozen run finishes.
+An isolated copy of the complete 8,280-line `Generic_fmt` module now compiles
+after removing **17** unnecessary `Valid_exp` binders from the raw wrapper,
+its structural laws, and corresponding compatibility helpers. Proof bodies
+are unchanged. This is a successful preparation check, not yet a repository
+integration build; the copy and diagnostics are
+`/private/tmp/GenericFmtNoPremises.lean` and `.out`. The source-required
+absolute-value and monotonicity premises are left intact.
 
 ### Unreviewed scope
 

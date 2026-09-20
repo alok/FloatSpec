@@ -215,7 +215,7 @@ echo 'Pure Rocq bit loop passed: 20,000 binary32/binary64 roundtrip checks'
 echo 'Pure Rocq order loop passed: 2,000 ordering-law checks and boundary examples'
 "$coqc_bin" -q -R "$flocq_dir/src" Flocq -o "$scratch/RoundingWalkthrough.vo" \
   "$repo_root/scripts/fixtures/RoundingWalkthrough.v"
-for fixture in BooleanComparison RawIEEERounding RawOverflow SingleNaNArithmetic DoubleRoundingWitness SingleNaNValidity RelativeErrorGrid \
+for fixture in BooleanComparison RawIEEERounding RawOverflow SingleNaNArithmetic MultiplicationErrorGrid DoubleRoundingWitness SingleNaNValidity RelativeErrorGrid \
     SourcePremiseContracts ExactArithmeticLaws RoundingOracle IntegerRounding; do
   "$coqc_bin" -q -R "$flocq_dir/src" Flocq -o "$scratch/$fixture.vo" \
     "$repo_root/scripts/fixtures/$fixture.v"
@@ -232,7 +232,7 @@ run_lake env lean "$repo_root/FloatSpec/Test/BitOrderExecution.lean"
 run_lake env lean "$repo_root/FloatSpec/Test/NativeSourceArithmetic.lean"
 run_lake env lean "$repo_root/FloatSpec/Test/RoundingWalkthrough.lean"
 run_lake env lean "$repo_root/FloatSpec/Test/SourcePremiseContracts.lean"
-for fixture in BooleanComparison RawIEEERounding RawOverflow SingleNaNArithmetic DoubleRoundingWitness SingleNaNValidity RelativeErrorGrid ExactArithmeticLaws RoundingOracle IntegerRounding; do
+for fixture in BooleanComparison RawIEEERounding RawOverflow SingleNaNArithmetic NativeSingleNaNArithmetic MultiplicationErrorGrid DoubleRoundingWitness SingleNaNValidity RelativeErrorGrid ExactArithmeticLaws RoundingOracle IntegerRounding; do
   run_lake env lean "$repo_root/scripts/fixtures/$fixture.lean"
 done
 run_lake env lean --run "$repo_root/scripts/fixtures/GuidedDemo.lean"
@@ -240,6 +240,8 @@ echo 'Pure Lean loop passed: examples and 10,734 kernel-checked arithmetic invar
 echo 'Lean bit/order loops passed: 20,000 roundtrips, 2,000 pure laws, 200,000 native comparisons'
 echo 'Boolean ordering passed: eight boundary assertions and 600,000 native Boolean comparisons'
 echo 'Native source-arithmetic loop passed: 100,100 binary32/binary64 comparisons'
+echo 'Native SingleNaN arithmetic loop passed: 200,200 direct/source-mode comparisons'
+echo 'Multiplication-error loop passed: 5,385 conditional cases and a required-underflow-premise counterexample'
 echo 'Lean contract loop passed: 52 premise guards, typed consumers, finite error laws, 35,845 format-rounding and 5,125 integer-rounding oracle cases'
 
 uv run "$repo_root/scripts/flocq_bridge.py" --flocq-dir "$flocq_dir" --coqc "$coqc_bin" \

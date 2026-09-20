@@ -80,6 +80,23 @@ The standalone paired fixtures add independent contract and error checks:
   unrounded intermediate product would overflow if evaluated separately.
   Lean checks both APIs by kernel reduction and compiled execution; the paired
   Rocq fixture proves the same literal results independently.
+- `MultiplicationErrorGrid`: 55 independently enumerated exact inputs and
+  5,385 multiplication-error representability checks in all five modes.
+  Products satisfy the source underflow premise and stay below overflow;
+  error membership is tested against the enumeration, without re-rounding
+  the error. Both languages close the full grid by reduction, and Lean also
+  executes it. A subnormal-product counterexample checks why the hypothesis
+  cannot simply be omitted.
+
+`NativeSingleNaNArithmetic.lean` additionally executes **200,200** nearest-even
+comparisons against native Float32/Float, calling both direct and source-mode
+SingleNaN APIs. Seed `831557` supplies 10,000 pairs at each width, plus ten
+explicit boundary pairs per width; five operations are observed through each
+API. Signed zeros are preserved and NaNs are quotiented. A reported failing
+word pair can be replayed through the fixture's public `observations32` or
+`observations64`; the full-payload mode bridge supplies a separate Rocq
+baseline for those words. This is finite native execution, not a hardware
+correctness proof or a native FMA/directed-rounding test.
 
 `Test/SourcePremiseContracts.lean` additionally has 52 source-premise guards,
 paired typed consumers for the Prop, integer-rounding, canonical-exponent,

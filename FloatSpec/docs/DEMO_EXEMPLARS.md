@@ -105,6 +105,23 @@ follow the selected policy. These examples call the proof-carrying SingleNaN
 API itself, including its separate source-mode facade, rather than a native
 hardware float or a full-payload compatibility wrapper.
 
+## A second follow-on: can the rounding error itself be a float?
+
+The [multiplication-error Lean](../../scripts/fixtures/MultiplicationErrorGrid.lean)
+and [Rocq](../../scripts/fixtures/MultiplicationErrorGrid.v) fixtures enumerate
+all 55 finite real values of the three-bit format with minimum subnormal
+`1/16` and maximum finite value `14`. They test a source theorem's sufficient
+condition: a nonzero exact product is at least `2` in magnitude, and the
+fixture additionally keeps it at most `14` to exclude IEEE overflow.
+Across all five modes, 5,385 cases have a representable rounding error.
+Membership is checked against the independently enumerated values, not by
+feeding the error back into the same rounder.
+
+The condition matters. `(1/16) × (1/16) = 1/256` rounds to zero under
+nearest-even, so the rounding error is `-1/256`. That is smaller in magnitude
+than this format's smallest nonzero value and is not representable. This does
+not contradict the conditional theorem; it explains one of its hypotheses.
+
 ## Exemplars inspected
 
 These are reading recommendations, not dependencies adopted by FloatSpec.

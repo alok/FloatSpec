@@ -15,7 +15,7 @@ This guide follows those jobs in order. The detailed
 [independent continuation audit](ASTRA_AUDIT_2026-09-19.md) retain the
 declaration-by-declaration findings and historical milestones.
 
-## Wake-up summary — September 20, 2026, 07:50 UTC
+## Wake-up summary — September 20, 2026, 08:18 UTC
 
 **What changed most recently:** actually running the raw IEEE rounding APIs
 found a semantic bug. A helper replaced signed shifting with floor division
@@ -86,6 +86,22 @@ run is in progress. Its arithmetic rows now observe all three public APIs
 separately. This paragraph is a work-in-progress status, not a claim that the
 ongoing run has passed. Successful finite tests do not settle every theorem
 signature or every total-function input.
+
+**New independent checks:** both SingleNaN APIs also pass **200,200 native
+binary32/binary64 comparisons**, seed `831557`, with signed zeros retained and
+NaNs explicitly treated as one class. Separately, Lean and Rocq each pass
+**5,385 multiplication-error cases** against an independently enumerated
+format. A checked tiny-product example shows why the error-representability
+theorem needs an underflow hypothesis. Deliberately changing multiplication
+to addition breaks the property fixture; changing the source-mode addition
+to subtraction breaks the native check on signed zero.
+
+**Next repair, prepared but not applied:** source inspection found extra
+valid-exponent premises on raw rounding and structural rounding laws, plus
+extra positive-precision premises on two multiplication-error bounds. An
+isolated copy of the complete generic-format module compiles with 17 such
+binders removed and all proof bodies unchanged. The library snapshot stays
+frozen until the ongoing 27,771-case run finishes.
 
 ## 1. Start with one small rounding problem
 
@@ -347,6 +363,12 @@ removing unnecessary `noncomputable` markers and moving square root's
 real-valued witness inside its erased validity proof; the arithmetic itself
 still uses integers. A separate 100,100-comparison runtime grid checks the
 port's own binary32/binary64 arithmetic against native Float/Float32.
+The separate [SingleNaN native fixture](../../scripts/fixtures/NativeSingleNaNArithmetic.lean)
+adds 200,200 comparisons through the direct and source-mode public APIs, using
+seed `831557`. These are nearest-even runtime checks, not kernel proofs of
+hardware behavior or tests of native directed rounding. The one-bit fixture
+and Rocq bridge separately cover all five modes and FMA.
+
 Generic and fixed-width comparison now execute the source's constructor/sign/
 exponent/mantissa algorithm with result type `Option Ordering`, not arbitrary
 integer codes or noncomputable real comparison. It is also checked against
