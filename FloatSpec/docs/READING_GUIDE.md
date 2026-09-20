@@ -15,7 +15,7 @@ This guide follows those jobs in order. The detailed
 [independent continuation audit](ASTRA_AUDIT_2026-09-19.md) retain the
 declaration-by-declaration findings and historical milestones.
 
-## Wake-up summary — September 20, 2026, 14:12 UTC
+## Wake-up summary — September 20, 2026, 14:24 UTC
 
 **The port builds and runs on macOS with Lean 4.34.0, but it is not yet a
 fully source-audited port.** All 35 built Flocq module names have Lean
@@ -23,7 +23,7 @@ counterparts. Four native/decoder proof obligations remain explicit, and
 much of the existing theorem-by-theorem source comparison remains undone.
 File coverage is not a completion percentage.
 
-The current code checkpoint is
+The current library checkpoint is
 [`2282a69b`](https://github.com/alok/FloatSpec/commit/2282a69b).
 Run `lake exe floatspec_demo` for the seven-part native executable.
 Its examples and the **6,219-job build** pass. Fresh compiled checks cover
@@ -54,12 +54,16 @@ Those are four executions inside the three verification loops, not four
 independent proofs. Earlier 522-word and 1,224-pair scratch runs remain
 separate evidence on the older snapshot.
 
-**Running now, not yet passed:** a fresh combined run started at 13:57 UTC
-on `2282a69b`. Source/trust gates, the pure Rocq suites, the Lean fixed
-fixtures, and the demo have completed; the **48,614-case**, seed-`848933`
-core bridge is underway, followed by the native and specialized bridges.
-Code remains frozen during that run. Timeouts are errors, not partial
-successes; the earlier 200-case primitive timeout is retained alongside its
+**The broad rerun is being prepared, not counted as passed.** The 13:57 run
+on `2282a69b` passed source/trust gates, pure Rocq suites, Lean fixed fixtures,
+and the demo, but was explicitly interrupted after a scheduling bottleneck
+was identified. It retains an error result: 1,755 compared cases and 1,754
+completed generated proofs, not a successful full run.
+The exact **48,614-case**, seed-`848933` corpus will run again with 378
+batches instead of 2,502; no inputs are removed or reordered. The integrated
+87-case mixed-family pilot already passes in all three paths with all
+87 generated proofs. Timeouts and interruptions remain errors.
+The earlier 200-case primitive timeout is also retained alongside its
 successful explicit smaller-batch replay. The
 [audit ledger](ASTRA_AUDIT_2026-09-19.md) keeps exact snapshots and receipts.
 

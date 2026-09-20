@@ -79,8 +79,35 @@ class BatchTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'positive'):
                 list(bridge.case_batches([], size))
 
-    def check_driver(self, fail_batch=None):
-        cases = bridge.prim_arithmetic_corpus(844763, 0)[:61]
+    def test_mixed_light_families_share_batches(self):
+        cases = [bridge.Case('power', (2, 3)), bridge.Case('div_eucl', (-7, 3))] * 103
+        batches = list(bridge.case_batches(cases, 200))
+        self.assertEqual([offset for offset, _ in batches], [0, 200])
+        self.assertEqual([len(batch) for _, batch in batches], [200, 6])
+        self.assertEqual([case for _, batch in batches for case in batch], cases)
+        self.assertTrue(all(len({case.op for case in batch}) == 2 for _, batch in batches))
+
+    def test_full_corpus_order_offsets_and_caps(self):
+        cases = bridge.corpus(848933, 100)
+        batches = list(bridge.case_batches(cases, 200))
+        self.assertEqual(len(cases), 48614)
+        self.assertEqual(len(batches), 378)
+        self.assertEqual([case for _, batch in batches for case in batch], cases)
+        offset = 0
+        for actual, batch in batches:
+            self.assertEqual(actual, offset)
+            heavy_limit = bridge.BATCH_LIMITS.get(batch[0].op)
+            self.assertLessEqual(len(batch), heavy_limit or 200)
+            if heavy_limit is None:
+                self.assertTrue(all(case.op not in bridge.BATCH_LIMITS for case in batch))
+            else:
+                self.assertEqual(len({case.op for case in batch}), 1)
+            offset += len(batch)
+        self.assertEqual(offset, len(cases))
+
+    def check_driver(self, fail_batch=None, cases=None):
+        if cases is None:
+            cases = bridge.prim_arithmetic_corpus(844763, 0)[:61]
         with tempfile.TemporaryDirectory() as directory:
             folder = Path(directory)
             replay = folder / 'replay.json'
@@ -113,7 +140,9 @@ class BatchTests(unittest.TestCase):
             report = json.loads((output / 'report.json').read_text())
             self.assertEqual(report['requested_batch_size'], 200)
             self.assertEqual(report['batch_size_limits'], bridge.BATCH_LIMITS)
-            self.assertEqual(len(json.loads((output / 'cases.json').read_text())), 61)
+            self.assertEqual(len(json.loads((output / 'cases.json').read_text())), len(cases))
+            self.assertEqual(report['batch_policy'],
+                             'ordered mixed-light and homogeneous capped-heavy')
             self.assertEqual(observed, bootstrapped)
             return report, observed, cases
 
@@ -132,6 +161,15 @@ class BatchTests(unittest.TestCase):
         self.assertEqual(len(batches), 1)
         for count in ('compared_cases', 'compiled_cases', 'bootstrapped_lean_cases'):
             self.assertEqual(report[count], 25)
+
+    def test_driver_batches_mixed_light_families(self):
+        cases = [bridge.Case('power', (2, 3)), bridge.Case('div_eucl', (-7, 3))] * 103
+        report, batches, replay = self.check_driver(cases=cases)
+        self.assertEqual(report['status'], 'passed')
+        self.assertEqual([len(batch) for batch in batches], [200, 6])
+        self.assertEqual([case for batch in batches for case in batch], replay)
+        for count in ('compared_cases', 'compiled_cases', 'bootstrapped_lean_cases'):
+            self.assertEqual(report[count], len(cases))
 
 
 class ParserTests(unittest.TestCase):
@@ -390,6 +428,24 @@ class ParserTests(unittest.TestCase):
 
 @unittest.skipUnless(os.environ.get("FLOCQ_AUDIT_DIR"), "live test requires FLOCQ_AUDIT_DIR")
 class LiveTests(unittest.TestCase):
+
+    def test_mixed_light_families_and_bootstrap(self):
+        counts, cases = {}, []
+        for case in bridge.corpus(848933, 0):
+            if case.op not in bridge.BATCH_LIMITS and counts.get(case.op, 0) < 3:
+                cases.append(case)
+                counts[case.op] = counts.get(case.op, 0) + 1
+        self.assertEqual(len(counts), 29)
+        self.assertEqual(len(cases), 87)
+        batches = list(bridge.case_batches(cases, 200))
+        self.assertEqual(len(batches), 1)
+        self.assertEqual(batches[0], (0, cases))
+        flocq = Path(os.environ['FLOCQ_AUDIT_DIR']).resolve()
+        with tempfile.TemporaryDirectory(prefix='floatspec-mixed-light-live-') as directory:
+            folder = Path(directory)
+            rows = bridge.execute(cases, flocq, bridge.configured_coqc(flocq), folder)
+            self.assertEqual(bridge.compare(cases, rows), [])
+            bridge.bootstrap_lean(cases, rows['rocq'], folder)
 
     def test_primitive_execution_literal_columns(self):
         flocq = Path(os.environ['FLOCQ_AUDIT_DIR']).resolve()

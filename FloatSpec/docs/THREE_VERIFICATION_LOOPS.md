@@ -507,7 +507,13 @@ one large compiler input. The three primitive families are capped at 25 cases
 per homogeneous batch: a saved 200-case arithmetic input exceeded the kernel
 runner's 120-second limit, while the same inputs passed in eight smaller
 batches. Input order, duplicates, global case indices, and replay contents are
-preserved. Reports record `requested_batch_size` and `batch_size_limits`.
+preserved. Ordinary families may share a batch: each result row is still
+validated against its own operation's exact column count. For seed `848933`
+and 100 samples, this reduces 48,614 unchanged inputs from 2,502 mostly tiny
+batches to 378 batches. Heavy families remain isolated and capped. An actual
+87-case mixed-family replay observes all 29 ordinary families in one batch
+and checks all three paths plus generated kernel equalities.
+Reports record `requested_batch_size`, `batch_size_limits`, and `batch_policy`.
 Timeouts still fail the entire run; the runner does not silently retry or call
 a completed prefix a pass.
 

@@ -2525,6 +2525,48 @@ chronological mix of obsolete counts. The focused ledger records the
 proof-carrying constructors, unrestricted FLX laws, and all 40 primitive
 mutations. Earlier smaller counts remain explicitly historical.
 
+### September 20, 14:31 UTC — preserve failures and make the broad corpus practical
+
+The 13:57 combined run was deliberately interrupted after an avoidable
+scheduling problem was measured. Homogeneous batching fragmented the
+48,614-case corpus into **2,502 batches**, including **1,653 singletons**.
+The parent exits **130** and the retained core report records
+`status: error`, `KeyboardInterrupt`, **1,755 compared/compiled cases**
+and **1,754 completed bootstrap proofs**, after **1,150.071 seconds**.
+It is not a passed aggregate run; the differing counters correctly preserve
+the interruption during the next bootstrap proof. Its processes stopped
+before any production source/tool changes.
+
+Ordinary families can now share a batch; each row still has its own exact
+operation-specific width check. The three expensive primitive families remain
+homogeneous and capped at 25. No case is reordered, deduplicated, or dropped.
+The identical corpus now uses **378 batches**, retaining the same seed and
+inputs. New unit/driver tests check exact global offsets, input preservation,
+caps, family boundaries, and mixed light-family execution.
+
+Verification on the unchanged `2cb288c3…` library snapshot:
+
+- All **75 existing-plus-batching harness tests pass**, including the live
+  prover mutations, in **385.059 seconds**:
+  `/private/tmp/floatspec-efficient-batch-harness-v2-20260920.log`.
+- A newly permanent 76th live regression separately passes: one mixed batch
+  with **87 cases / all 29 ordinary families**, all three execution paths,
+  and all 87 generated kernel equalities.
+  Receipt: `/private/tmp/floatspec-mixed-light-live-regression-20260920.log`.
+  The 76th test was added after the 75-test run; these are separate receipts.
+- The actual integrated CLI replay also passes the same 87 cases in
+  **6.160 seconds**:
+  `/private/tmp/floatspec-mixed-light-batch-integrated-20260920/report.json`.
+  Its preliminary scratch pilot passed in 6.734 seconds, separately.
+- `git diff --check` passes; no Lean/configuration files changed.
+
+The first harness invocation used a module-import form incompatible with
+the scripts' import layout and failed before testing. Its log is retained as
+`floatspec-efficient-batch-harness-20260920.log`, not a pass.
+The next complete three-loop run will restart the entire corpus after the
+separately scratch-verified parity/symmetry contract repairs are integrated;
+no completed prefix is silently promoted into a full run.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In

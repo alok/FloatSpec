@@ -1369,15 +1369,20 @@ BATCH_LIMITS = {"prim_arithmetic": 25, "prim_helpers": 25, "prim_round": 25}
 
 
 def case_batches(cases: list[Case], requested_size: int):
-    """Yield ordered homogeneous batches without dropping or duplicating inputs."""
+    """Mix light families; isolate capped heavy families, preserving every input."""
     if requested_size < 1:
         raise ValueError("batch size must be positive")
     offset = 0
     while offset < len(cases):
         operation = cases[offset].op
-        limit = min(requested_size, BATCH_LIMITS.get(operation, requested_size))
+        heavy_limit = BATCH_LIMITS.get(operation)
+        limit = min(requested_size, heavy_limit or requested_size)
         end = offset + 1
-        while end < len(cases) and end - offset < limit and cases[end].op == operation:
+        while end < len(cases) and end - offset < limit:
+            next_operation = cases[end].op
+            if (heavy_limit is None and next_operation in BATCH_LIMITS) or (
+                    heavy_limit is not None and next_operation != operation):
+                break
             end += 1
         yield offset, cases[offset:end]
         offset = end
@@ -1424,6 +1429,7 @@ def main() -> None:
               "operations": dict(Counter(case.op for case in cases)), "status": "running",
               "fresh_build": not args.skip_build,
               "requested_batch_size": args.batch_size, "batch_size_limits": BATCH_LIMITS,
+              "batch_policy": "ordered mixed-light and homogeneous capped-heavy",
               "method": "Lean compiled execution and kernel reduction versus Rocq vm_compute; finite tests only",
               "compared_cases": 0, "compiled_cases": 0, "bootstrapped_lean_cases": 0, "mismatches": []}
     report_path = output / "report.json"
