@@ -148,6 +148,8 @@ lines.extend([
     "## Interpretation",
     "",
     "The default build covers the unified FloatSpec target. Any future placeholder finding is a merge blocker, not a separate build tier.",
+    "",
+    "These are textual heuristics, not a semantic audit. Zero placeholder findings does not establish faithful Flocq correspondence or absence of unreviewed mistakes. Use the compiled trust audit for proof dependencies and SOURCE_CONTRACT_REVIEW.md for the reviewed source-contract boundary.",
 ])
 
 with open(md_path, "w", encoding="utf-8") as f:

@@ -42,6 +42,23 @@ Read the paired [Lean](../../scripts/fixtures/DoubleRoundingWitness.lean) and
 [Rocq](../../scripts/fixtures/DoubleRoundingWitness.v) witnesses before the
 larger `Prop/Double_rounding` development.
 
+### A remainder example with a necessary premise
+
+At two-bit precision, both `1` and `8` are exactly representable. If we use
+upward rounding for the quotient, `ceil(1/8)=1`, so the remainder is `-7`.
+But seven needs three significant binary bits (`111`): that remainder is not
+representable in the same format. Truncation or nearest rounding gives quotient
+zero here and leaves remainder `1`, which is representable.
+
+Read and run [RemainderContracts.lean](../../scripts/fixtures/RemainderContracts.lean)
+with `lake env lean scripts/fixtures/RemainderContracts.lean`, then compare the
+[Rocq proof](../../scripts/fixtures/RemainderContracts.v). The theorem states a
+negation of the overbroad claim directly; its trivial numerical side conditions
+are discharged inside the proof rather than put in the conclusion as clutter.
+[RemainderGrid.lean](../../scripts/fixtures/RemainderGrid.lean) then expands this
+lesson into a complete small finite test. These are additional standalone
+examples, not an eighth section silently added to the seven-part demo command.
+
 ## 4. Separate bits, comparison, and real value
 
 Positive and negative zero have different words but compare equal. NaN is

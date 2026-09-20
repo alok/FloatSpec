@@ -3728,6 +3728,65 @@ Logs: `/private/tmp/floatspec-main-round-ne-{full-build,trust,anchors,mutations}
 The previous Pff execution remains bound to `21a75295`; theorem/API changes
 are not relabeled as a fresh run of the arithmetic bridge.
 
+### September 20, 21:50 UTC — remainder premises and completed full aggregate
+
+The four remainder exports `format_REM_aux`, `format_REM`, `format_REM_ZR`
+and `format_REM_N` match the pinned source contracts at lines 638, 772, 837
+and 858. Their production bodies, types and proofs are unchanged; four
+source anchors are added. Paired typed clients retain exponent validity,
+monotonicity and the actual small-quotient condition. The general and
+specialized theorems do not acquire a spurious nonzero-denominator premise.
+
+Both assistants prove that upward quotient rounding does not preserve
+representability in general: with two-bit precision, `1` and `8` are
+representable, but `1 - ceil(1/8)*8 = -7` is not. The Lean proofs and the four
+imported contracts have no `sorryAx`. A separate finite grid proves and
+executes all 12,100 combinations of 55 signed inputs and four integer
+quotient test modes: 11,582 meet the premise, 518 do not, and 380 outside
+the premise actually have inexact remainders. There are 220 mathematical
+zero-divisor cases. No claim is made that these test quotient models are
+universal executable refinements of the real-valued definitions.
+
+The new three-way bridge executes actual source `binary_round`, compares
+six observations, independently enumerates an exact rational representable
+grid, and bootstraps kernel Lean equalities. Seed **862513** passes
+**12,100 cases**, **12,100 generated equalities**, and **84,182 independent
+assertions**, without mismatches, in **453.569 seconds**. It saves both the
+Lean source hash and paired protocol hash. Six contract mutation controls
+pass in 122.313 seconds; six bridge tests pass in 15.984 seconds, including
+shared actual-program mutations from truncation to floor and from rounding
+to an unrounded raw constructor. The independent oracle rejects the shared
+wrong outputs and prevents generating misleading regressions.
+
+Initial fixture elaboration errors and two overly narrow expected-error
+matchers remain recorded failures. In particular, a false kernel assertion
+can be followed by a runtime success message: the nonzero compiler exit is
+still an error, never a pass. Accepted fixture LSP diagnostics are complete
+and clean. Production-file LSP remained incomplete; the full compiler build
+is its verification evidence. The full macOS Lean 4.34 build passes
+**6,226 jobs**; trust checks **13,680 source declarations / 59 modules** and
+the same four manifest-only direct/transitive debts. **332 anchors** validate.
+Source hash: `3c5a913de4d373b323c56b8f5b805417766a6644a5e175ea0308e17488fce127`.
+Report: `/private/tmp/floatspec-remainder-862513/report.json`.
+Logs: `/private/tmp/floatspec-remainder-{full-build,trust,anchors}-20260920.log`,
+`floatspec-remainder-mutations-accepted-20260920.log` and
+`floatspec-remainder-bridge-harness-20260920.log`.
+
+The separately frozen **5d241916** aggregate also completed with exit zero
+at 21:43 UTC. Its thirteen differential reports total **60,639 executions
+and generated kernel equalities**, including replays; **168 harness tests**
+pass. Those reports cover core, native unary/arithmetic, all modes,
+scale/decomposition, integer rounding, Pff, Pff auxiliary and model adapters.
+They do not run current main and their older IEEE profiles do not include
+the later independent exceptional oracle. All report paths, seeds, exact
+hashes and per-profile timings are in the verification receipt. Aggregate
+log: `/private/tmp/floatspec-four-hour-full-three-loop-859733-20260920.log`.
+Do not sum overlapping snapshot groups into unique-input coverage.
+
+The generated status report is refreshed to 102 Lean files and now explains
+that its textual placeholder heuristics are not a semantic source audit.
+No existing `noncomputable` marker was changed in this slice.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In

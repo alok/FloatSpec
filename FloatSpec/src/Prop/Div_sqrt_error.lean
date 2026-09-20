@@ -1677,6 +1677,7 @@ private lemma valid_rnd_abs_sub_le_one
   · nlinarith
 
 /-- Auxiliary remainder formatting under generic exponent function. -/
+@[flocq_source "src/Prop/Div_sqrt_error.v" 638 "format_REM_aux"]
 theorem format_REM_aux
   (rnd : ℝ → Int) [FloatSpec.Core.Generic_fmt.Valid_rnd rnd]
   (x y : ℝ)
@@ -1857,6 +1858,7 @@ theorem format_REM_aux
         omega
 
 /-- Remainder formatting under a small-argument rounding hypothesis. -/
+@[flocq_source "src/Prop/Div_sqrt_error.v" 772 "format_REM"]
 theorem format_REM
   (rnd : ℝ → Int) [FloatSpec.Core.Generic_fmt.Valid_rnd rnd]
   (x y : ℝ)
@@ -1950,6 +1952,7 @@ theorem format_REM
     simpa [htarget] using haux
 
 /-- Specialization: remainder formatting with truncation `Ztrunc`. -/
+@[flocq_source "src/Prop/Div_sqrt_error.v" 837 "format_REM_ZR"]
 theorem format_REM_ZR
   (x y : ℝ)
   (hβ : 1 < beta)
@@ -1961,6 +1964,7 @@ theorem format_REM_ZR
     hx hy
 
 /-- Specialization: remainder formatting with nearest `Znearest`. -/
+@[flocq_source "src/Prop/Div_sqrt_error.v" 858 "format_REM_N"]
 theorem format_REM_N
   (choice : Int → Bool)
   (x y : ℝ)

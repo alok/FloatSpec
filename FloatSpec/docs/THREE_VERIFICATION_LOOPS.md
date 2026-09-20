@@ -48,6 +48,40 @@ real-arithmetic execution claim. The next aggregate runs this paired fixture,
 along with the 27-client `CorePremiseBoundary` fixture; the preceding frozen
 aggregate does not include them.
 
+## Exact remainders: one premise, three checks
+
+The paired `RemainderContracts.lean` / `.v` fixtures consume the four source
+remainder types and prove the two-bit counterexample `1 - ceil(1/8)*8 = -7`.
+The paired `RemainderGrid` fixtures prove and execute a complete finite grid:
+55 signed inputs including zero, all pairs, and four quotient policies.
+Run the compiler fixtures through `scripts/test_flocq_conformance.sh`, or:
+
+```sh
+lake env lean scripts/fixtures/RemainderContracts.lean
+lake env lean scripts/fixtures/RemainderGrid.lean
+uv run scripts/remainder_bridge.py --flocq-dir "$FLOCQ_AUDIT_DIR" \
+  --coqc coqc --samples 0 --seed 862513
+FLOCQ_AUDIT_DIR="$FLOCQ_AUDIT_DIR" uv run scripts/test_remainder_contracts.py -v
+FLOCQ_AUDIT_DIR="$FLOCQ_AUDIT_DIR" uv run scripts/test_remainder_bridge.py -v
+```
+
+The bridge compares quotient, integer remainder and all four rounded-constructor
+fields, then creates checked Lean equalities from the Rocq observations.
+Its independent oracle uses exact rational quotient rules and enumeration of
+the representable grid, not a second copy of the port's rounding algorithm.
+The seed shuffles the exhaustive 12,100 inputs; nonzero random sample counts
+are rejected rather than mislabeled additional coverage. Saved reports also
+fingerprint the paired quotient protocol. These integer quotient routines are
+test models, not established refinements of the noncomputable real operations.
+Zero division here is mathematical total division, not IEEE infinity/NaN.
+
+The seed-862513 run on `3c5a913d` passes 12,100 differential and generated
+kernel checks plus 84,182 independent assertions in 453.569 seconds. Six
+contract controls reject missing premises and false exactness; six bridge
+tests validate the protocol and reject shared actual-program mutations of
+signed division and the rounding stage. A failing compiler exit always wins,
+even if a later runtime command prints a success line.
+
 ## 1. Lean checks itself
 
 `lake build FloatSpec.Test FloatSpecTests floatspec` builds the port, its tests,

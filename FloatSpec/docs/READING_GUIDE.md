@@ -15,7 +15,7 @@ This guide follows those jobs in order. The detailed
 [independent continuation audit](ASTRA_AUDIT_2026-09-19.md) retain the
 declaration-by-declaration findings and historical milestones.
 
-## Wake-up summary — September 20, 2026, 21:21 UTC
+## Wake-up summary — September 20, 2026, 21:50 UTC
 
 **The port builds and runs on macOS with Lean 4.34.0, but is not yet a fully
 source-audited port.** All 35 built Flocq module names have Lean counterparts.
@@ -43,6 +43,10 @@ The important recent changes are:
 - **The correct hypotheses.** Recent repairs removed 27 unnecessary
   exponent-validity assumptions, while a paired counterexample shows that
   exponent monotonicity really is needed for a different ULP law.
+  The remainder audit preserves a different genuine premise: tiny quotients
+  must round to zero. With two-bit precision, rounding `1/8` upward gives
+  remainder `1 - 8 = -7`, which is not representable. Both assistants prove
+  this counterexample; an exhaustive small-format bridge tests its boundary.
 - **Independent expected answers.** IEEE bridges now check exact rational/grid
   expectations, including infinities, zero divisors, signed zero, negative
   square roots and source NaN-payload priority. Deliberately shared wrong
@@ -60,14 +64,16 @@ Current verification is deliberately separated by source snapshot:
 
 | Snapshot | Completed evidence |
 |---|---|
-| Current direct nearest-even API, `b9b5abb6` | Full 6,226-job build; 13,680 compiled source declarations / 59 modules; four manifest-only debts; 328 validated source anchors; four paired typed exports and four live mutation controls. Arithmetic bodies are unchanged from the Pff snapshot below. |
+| Current remainder audit, `3c5a913d` | Full 6,226-job build; 13,680 compiled source declarations / 59 modules; four manifest-only debts; 332 validated source anchors. Four paired remainder contracts; 12,100 three-way cases/kernel equalities and 84,182 independent assertions, seed 862513. Twelve live-enabled harness tests pass. |
+| Direct nearest-even API, `b9b5abb6` | Full build; four paired typed exports and four live mutation controls. Arithmetic bodies are unchanged from the Pff snapshot below. |
 | Pff addition, `21a75295` | Full build; paired basic Pff clients; all 20 expanded Pff harness tests. Fresh bridge: 3,072 cases/kernel equalities and 65,846 independent assertions, seed 862307. |
 | Integrated comparison API, `4b714ddb` | Full build and seven demos; 20,000 executable dyadic pairs; 24 paired raw-comparison fixture cases; 1,237 fresh raw-comparison bridge cases and kernel equalities, seed 862149. |
 | Pre-integration IEEE snapshot, `687aa7a8` | 1,104 native plus 470 all-mode cases, all 1,574 generated kernel equalities, and 111,282 independent expected-field checks; seeds 862081 and 862073. |
+| Frozen full aggregate, `5d241916` | Complete three-loop run: 60,639 differential executions/kernel equalities across thirteen reports, and 168 harness tests. Its older IEEE profiles predate the expanded independent exceptional oracle. |
 | Earlier broad snapshot, `32ec11b5` | Complete three-loop run: 55,162 differential executions/kernel equalities and 119 bridge-harness tests. |
 
-The newer full aggregate on frozen `5d241916` is still running and is not
-a pass yet. Historical stress groups, exact fingerprints, seeds, failures and
+The frozen `5d241916` aggregate completed successfully at 21:43 UTC; it is
+not an execution of current main. Historical stress groups, exact fingerprints, seeds, failures and
 replay artifacts are retained in the [verification receipt](VERIFICATION_RECEIPT_2026-09-20.json)
 and [audit ledger](ASTRA_AUDIT_2026-09-19.md); these snapshots are not interchangeable.
 

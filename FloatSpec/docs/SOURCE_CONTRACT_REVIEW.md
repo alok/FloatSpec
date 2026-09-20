@@ -6,6 +6,32 @@ all declarations in the named modules. See the
 [running audit](ASTRA_AUDIT_2026-09-19.md) for execution receipts and the
 [reading guide](READING_GUIDE.md) for the mathematical story.
 
+## Exact remainder contracts
+
+Four exports in `Prop/Div_sqrt_error.v` are now paired with typed Lean/Rocq
+clients and pinned anchors: `format_REM_aux` (638), `format_REM` (772),
+`format_REM_ZR` (837), and `format_REM_N` (858). Their existing definitions,
+theorem types and closed proofs are unchanged. The auxiliary theorem requires
+nonnegative dividend and positive divisor; the general theorem covers both
+signs and mathematical total division by zero. The small-quotient premise
+`|x/y| < 1/2 → rnd(x/y) = 0` is genuine, not removable clutter.
+
+Both assistants prove a counterexample to dropping that premise: in two-bit
+binary FLX, `1` and `8` are representable but upward quotient rounding produces
+the nonrepresentable remainder `-7`. Truncation and either nearest tie policy
+satisfy the premise; their source specializations need no nonzero-divisor
+assumption. Exponent validity and monotonicity remain explicit.
+
+An exhaustive three-bit bounded-format grid checks 12,100 inputs in kernel
+Lean, compiled Lean and pinned Rocq. Of these, 11,582 meet the pointwise
+small-quotient condition; 518 do not, with 380 actually inexact remainders.
+The grid includes 220 mathematical zero-divisor cases. The quotient modes
+are explicit integer test models, not proved executable refinements of the
+real-valued `Ztrunc`/`Znearest` definitions. The actual `binary_round` exports
+are executed and every constructor field checked against an independent exact
+finite-grid oracle. This finite experiment is separate from the closed real
+counterexample and from the four theorem contracts.
+
 ## Nearest-even concrete-point interface
 
 `round_NE_pt` now exposes the same direct proposition as the pinned
