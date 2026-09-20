@@ -897,6 +897,28 @@ helpers are not separately invented Flocq exports. Paired Rocq fixtures
 check the source bounds and a nontrivial normalization. The legacy identity
 helper's idempotence theorem is explicitly not a normalization theorem.
 
+### Real-valued Pff signed rounding
+
+`PffRoundingSource.lean` and `.v` check ten identical literal observations
+through the actual upward, downward and nearest-even definitions. Both
+proof checkers cover positive/negative halfway ties, both strict-distance
+branches, exact input, zero, negative radix and precision zero. The last
+two test total definitions outside the general correctness premises; they
+do not assert those parameters describe a valid floating-point format.
+The Lean statements print their axiom dependencies, with no `sorryAx`.
+
+```sh
+lake env lean FloatSpec/Test/PffRoundingSource.lean
+FLOCQ_AUDIT_DIR=/path/to/pinned-flocq uv run scripts/test_pff_rounding_contracts.py -v
+```
+
+Each live negative control checks the original halfway claim, substitutes
+downward for nearest-even observation and requires semantic rejection, then
+positively proves the altered expected answer. This distinguishes a detected
+wrong answer from a broken compiler invocation. These are mathematical
+kernel checks of noncomputable real-valued definitions, not native executions
+and not a three-path runtime bridge.
+
 ## 11. What this still does not establish
 
 The expanded combined runner completed at commit `ba3e2a8b`, seed `961703`,

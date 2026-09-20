@@ -406,6 +406,23 @@ coqc -R src Flocq -o /tmp/floatspec-exemplars/Average.vo examples/Average.v
 Use the same Rocq version that built that checkout. This Mac used
 `/opt/homebrew/bin/coqc` (9.2), not the different project-local compiler.
 
+## A proof-checker example: signed nearest-even
+
+Run `lake env lean FloatSpec/Test/PffRoundingSource.lean`, then read its
+`positive_half` and `negative_half` statements alongside
+`scripts/fixtures/PffRoundingSource.v`. At radix three, precision two, bound
+`(9,0)`, the input `3/2` has lower/upper/nearest records `(1,0)`, `(2,0)`,
+`(2,0)`. The negative input has `(-2,0)`, `(-1,0)`, `(-2,0)`. Nearest-even
+uses mantissa parity, whereas downward rounding follows numerical order.
+Continue through strict-distance, exact, zero and invalid-premise cases.
+
+This is deliberately a different kind of example from the native demo:
+both assistants check closed propositions about real-valued definitions.
+There is no claim that a runtime computes arbitrary real logarithms.
+`scripts/test_pff_rounding_contracts.py` also demonstrates the testing idea:
+replace nearest-even with downward rounding, observe rejection, and prove
+the mutant's actual different answer.
+
 ## After the demo
 
 Read [the linear guide](READING_GUIDE.md), then

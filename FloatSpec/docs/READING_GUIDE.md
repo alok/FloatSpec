@@ -15,7 +15,7 @@ This guide follows those jobs in order. The detailed
 [independent continuation audit](ASTRA_AUDIT_2026-09-19.md) retain the
 declaration-by-declaration findings and historical milestones.
 
-## Wake-up summary — September 20, 2026, 16:16 UTC
+## Wake-up summary — September 20, 2026, 16:40 UTC
 
 **The port builds and runs on macOS with Lean 4.34.0, but it is not yet a
 fully source-audited port.** All 35 built Flocq module names have Lean
@@ -26,9 +26,9 @@ File coverage is not a completion percentage.
 The latest verified library and tests are on the
 [review branch](https://github.com/alok/FloatSpec/tree/codex/astra-flocq-audit).
 Run `lake exe floatspec_demo` for the seven-part native executable.
-Its examples and the **6,222-job build** pass. Fresh compiled checks cover
-**13,553 declarations / 58 modules**, find exactly the four recorded proof
-debts, and validate **265 pinned source anchors**.
+Its examples and the **6,223-job build** pass. Fresh compiled checks cover
+**13,557 declarations / 58 modules**, find exactly the four recorded proof
+debts, and validate **269 pinned source anchors**.
 
 The main conceptual repair is separating a **raw encoding**, a **canonical
 value**, and a **native machine float**. Raw `(3,-1)` denotes 1.5 but is not
@@ -61,14 +61,16 @@ separate evidence on the older snapshot.
 **The broad rerun is running, not counted as passed.** It started at
 14:38 UTC on pushed commit `5a6d16df`. The source/trust gates, pure Rocq
 suites, pure Lean suites, and seven-part demo have passed on this snapshot;
-the differential corpus and harness stages are still in progress.
+the **48,614-case core corpus and all 48,614 generated kernel equalities**
+have now passed, as have all **76 core-harness tests**. Native IEEE and the
+remaining differential/harness stages are still in progress.
 The 13:57 run
 on `2282a69b` passed source/trust gates, pure Rocq suites, Lean fixed fixtures,
 and the demo, but was explicitly interrupted after a scheduling bottleneck
 was identified. It retains an error result: 1,755 compared cases and 1,754
 completed generated proofs, not a successful full run.
-The exact **48,614-case**, seed-`848933` corpus is running again with 378
-batches instead of 2,502; no inputs are removed or reordered. The integrated
+That exact seed-`848933` corpus completed with 378 batches instead of 2,502;
+no inputs were removed or reordered. The integrated
 87-case mixed-family pilot already passes in all three paths with all
 87 generated proofs. Timeouts and interruptions remain errors.
 The earlier 200-case primitive timeout is also retained alongside its
@@ -128,6 +130,17 @@ helper called `pff_normalize` is merely the identity, not normalization.
 Its old misleading comment is corrected, and a closed example shows that
 it leaves `(1,0)` unchanged where actual normalization yields `(4,-2)`.
 No proof about identity is counted as a normalization proof.
+
+The source-facing real-rounding family now also includes upward, downward,
+and nearest-even rounding through **one explicit radix**. Ten paired closed
+Lean/Rocq examples check signed halfway ties, both strict-distance branches,
+exact inputs, zero, negative radix, and precision zero. For example, in the
+base-three example, `1.5` rounds down to one, up to two, and nearest-even to
+two; `-1.5` rounds down to minus two, up to minus one, and nearest-even to
+minus two. Deliberately replacing nearest-even with downward rounding makes
+both proof checkers reject the first result; both then prove the changed
+answer. These are kernel-checked mathematical examples, **not native
+execution of real logarithms or general rounding-correctness proofs**.
 
 Reviewable work is on
 [`alok/FloatSpec:codex/astra-flocq-audit`](https://github.com/alok/FloatSpec/tree/codex/astra-flocq-audit).

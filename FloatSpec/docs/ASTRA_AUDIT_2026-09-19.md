@@ -2881,6 +2881,47 @@ arguments, and Lean-only exact-value helpers. They do not establish a whole
 auxiliary-module source equivalence. The separate older full runner is still
 active on its frozen snapshot; its aggregate result remains pending.
 
+### September 20, 16:40 UTC — one-radix signed rounding; paired semantic negative controls
+
+Added four source-facing real-valued definitions: `RND_Max_Pos`, `RND_Min`,
+`RND_Max`, and `RND_EvenClosest`. Their bodies were compared directly with
+pinned source lines 27523–27641. Every branch shares the same explicit
+integer radix; exact upward rounding retains the lower record, inexact uses
+its raw successor, negative wrappers exchange positive directions, and the
+nearest tie tests the lower mantissa's parity. The old indexed counterparts
+are explicitly local compatibility interfaces. Real comparison/logarithm
+definitions remain noncomputable; no native-execution claim is made.
+
+Verified source/configuration SHA-256:
+`b8e888c0b96594f1e59e0657eab46cf160d504db47e1823b3d64b9a837e3b1c6`.
+
+- Full macOS Lean 4.34 build passes **6,223 jobs**; receipt
+  `/private/tmp/floatspec-pff-rounding-full-build-20260920.log`.
+- Ten paired closed Lean/Rocq rows pass: four signed/parity halfway cases,
+  two strict-distance cases, exact integer, zero, negative radix and zero
+  precision. All ten Lean axiom lists exclude `sorryAx`. Receipts:
+  `/private/tmp/floatspec-pff-rounding-{lean,rocq}-20260920.log`.
+- Both live mutation tests pass: original halfway result accepted,
+  nearest-even replaced by downward rejected for a semantic mismatch,
+  altered expected result positively proved. Receipt
+  `/private/tmp/floatspec-pff-rounding-controls-20260920.log`, 8.634 seconds.
+  The controls and paired fixtures are permanent combined-runner stages.
+- Complete zero-error LSP diagnostics for the source facade and Lean fixture;
+  compiled trust **13,557 declarations / 58 modules / four unchanged debts**;
+  fresh metadata export and validation **269 pinned anchors**. Receipts use
+  prefix `/private/tmp/floatspec-pff-rounding-{trust,source-metadata,anchors}-20260920`.
+- Seven-part executable demo, shell syntax, Python compilation and generated
+  status pass. Status counts 96 Lean files, four sorries, no explicit axioms
+  or admits. No proof debt was added.
+
+Separately, the frozen `32ec11b5…` broad run completed all **48,614** core
+comparisons and generated kernel equalities in 6,122.028 seconds, then its
+saved replays and **76-test** live core harness passed. Native stages remain
+in progress. This is not yet an aggregate pass and does not cover the newer
+Pff definitions above. Exact core artifacts are retained under
+`/private/var/folders/gn/1hqqc7pn3nz5s_p0dxnn9h300000gp/T/floatspec-bridge-1vtmvy__`;
+the aggregate log is `/private/tmp/floatspec-full-three-loop-5a6d16df-20260920.log`.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In

@@ -393,6 +393,41 @@ noncomputable def RND_Min_Pos (b : Fbound) (radix : Int)
     ⟨IRNDD (r * (radix : Real) ^ (b.dExp : Int)), -(b.dExp : Int)⟩
 
 
+/-- Source upper rounding of a positive input; exact inputs retain the lower
+record, while inexact inputs use its raw successor. -/
+@[flocq_source "src/Pff/Pff.v" 27523 "RND_Max_Pos"]
+noncomputable def RND_Max_Pos (b : Fbound) (radix : Int)
+    (precision : Nat) (r : Real) : float :=
+  let lower := RND_Min_Pos b radix precision r
+  if r = FtoR radix lower then lower
+  else FSucc b radix precision lower
+
+/-- Source signed downward rounding, with the same explicit radix throughout. -/
+@[flocq_source "src/Pff/Pff.v" 27588 "RND_Min"]
+noncomputable def RND_Min (b : Fbound) (radix : Int)
+    (precision : Nat) (r : Real) : float :=
+  if 0 ≤ r then RND_Min_Pos b radix precision r
+  else Fopp (RND_Max_Pos b radix precision (-r))
+
+/-- Source signed upward rounding, with the same explicit radix throughout. -/
+@[flocq_source "src/Pff/Pff.v" 27611 "RND_Max"]
+noncomputable def RND_Max (b : Fbound) (radix : Int)
+    (precision : Nat) (r : Real) : float :=
+  if 0 ≤ r then RND_Max_Pos b radix precision r
+  else Fopp (RND_Min_Pos b radix precision (-r))
+
+/-- Source nearest-even selector. At an equal-distance tie it tests the
+lower result's integer mantissa, not a different indexed normalization. -/
+@[flocq_source "src/Pff/Pff.v" 27641 "RND_EvenClosest"]
+noncomputable def RND_EvenClosest (b : Fbound) (radix : Int)
+    (precision : Nat) (r : Real) : float :=
+  let upper := RND_Max b radix precision r
+  let lower := RND_Min b radix precision r
+  if |FtoR radix upper - r| ≤ |FtoR radix lower - r| then
+    if |FtoR radix upper - r| < |FtoR radix lower - r| then upper
+    else if Odd lower.Fnum then upper else lower
+  else lower
+
 -- These older indexed entry points are compatibility APIs, not the total
 -- unindexed source exports above. Their legacy radix argument is ignored.
 attribute [flocq_local "Indexed normalized-even compatibility predicate; use FloatSpec.Pff.Source.FNeven for the explicit-radix source export"] _root_.FNeven
@@ -403,5 +438,9 @@ attribute [flocq_local "Indexed normalized-predecessor compatibility adapter; us
 -- This distinct legacy signature also has integer precision and an independent
 -- Core radix. Its positive/matching-radix proof domain is not a total-source claim.
 attribute [flocq_local "Legacy indexed rounding implementation; the total source interface is FloatSpec.Pff.Source.RND_Min_Pos"] _root_.RND_Min_Pos
+attribute [flocq_local "Legacy indexed rounding adapter; use the single-radix source RND_Max_Pos"] _root_.RND_Max_Pos
+attribute [flocq_local "Legacy indexed signed downward-rounding adapter; use FloatSpec.Pff.Source.RND_Min"] _root_.RND_Min
+attribute [flocq_local "Legacy indexed signed upward-rounding adapter; use FloatSpec.Pff.Source.RND_Max"] _root_.RND_Max
+attribute [flocq_local "Legacy indexed nearest-even adapter; use FloatSpec.Pff.Source.RND_EvenClosest"] _root_.RND_EvenClosest
 
 end FloatSpec.Pff.Source

@@ -858,6 +858,27 @@ remain explicit; these adapters are not upgraded into source theorems. A later
 addition proof had passed validity using `rfl` at two observer calls. It now
 uses the actual validity theorem of `binary_round`, with no new sorry.
 
+## Pff source-facing signed rounding family
+
+`Source.RND_Max_Pos`, `RND_Min`, `RND_Max` and `RND_EvenClosest` now match
+the inspected definition bodies at pinned `Pff/Pff.v:27523`, `27588`,
+`27611` and `27641`. Every path uses the explicit integer radix and the
+unindexed source record. Upper rounding retains the exact lower record or
+uses its **raw** successor. Signed downward/upward wrappers exchange the
+positive rules under negation. Nearest-even compares distances and checks
+the lower record's mantissa parity; it does not substitute normalized parity
+under another radix. The old indexed interfaces remain explicitly local
+compatibility APIs, not source exports.
+
+Paired permanent `PffRoundingSource` fixtures close ten equalities in each
+assistant. The negative-radix observation retains the repaired logarithm
+convention. At bound `(1,0)`, radix two, precision zero, input two, the three
+raw results are `(0,2)`, `(1,3)`, `(0,2)`; this is total source behavior
+outside normal rounding-correctness premises, not a valid-format guarantee.
+Both assistants reject nearest-even replaced by downward rounding at `3/2`
+and positively prove the resulting different record. No universal correctness
+or normalized-carrier equivalence theorem is added or claimed here.
+
 ## Independent finite arithmetic laws and selection oracle
 
 `ExactArithmeticLaws.lean` / `.v` enumerate the 55 finite mathematical values
