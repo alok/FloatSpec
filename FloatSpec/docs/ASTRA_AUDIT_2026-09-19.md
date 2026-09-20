@@ -2922,6 +2922,41 @@ Pff definitions above. Exact core artifacts are retained under
 `/private/var/folders/gn/1hqqc7pn3nz5s_p0dxnn9h300000gp/T/floatspec-bridge-1vtmvy__`;
 the aggregate log is `/private/tmp/floatspec-full-three-loop-5a6d16df-20260920.log`.
 
+### September 20, 16:44 UTC — permanent double-rounding contracts and a separating example
+
+Promoted the previously checked scratch clients into permanent paired
+`DoubleRoundingContracts` fixtures: nine literal definition-body equalities
+and six clients with the reviewed exported premises. Added a closed paired
+example using exponent functions `e - 1` and `e - 3`; the radix-at-least-four
+square-root condition holds while the ordinary condition fails. Thus its
+one-radix-digit improvement is an observable contract distinction.
+
+Final source/configuration SHA-256:
+`81babc5076d5c6222e1a463b5f5ae39feb64d94b1b3e81e755a5bd7d497d5116`.
+The **6,224-job** macOS Lean 4.34 build passes; complete LSP diagnostics
+have zero errors. Both assistants close the paired fixtures; all six Lean
+client axiom lists and the separating example exclude `sorryAx`. Three
+live negative controls pass: changing the radix-four offset is rejected by
+both assistants, and requiring additional unavailable `Valid_exp` premises
+breaks the Lean multiplication client. The original unmutated fixture is
+checked before every negative control. Compiled source trust remains
+**13,557 declarations / 58 modules / four unchanged debts**. No product
+definition, product proof, or source anchor changed in this slice.
+
+Receipts: `/private/tmp/floatspec-double-contract-full-build-v3-20260920.log`,
+`floatspec-double-contract-lean-v2-20260920.log`,
+`floatspec-double-contract-rocq-v3-20260920.log`,
+`floatspec-double-contract-controls-20260920.log` (three tests, 10.514 seconds),
+and `floatspec-double-contract-trust-20260920.json` in the same directory.
+The first separating-example draft needed explicit Lean beta reduction and
+Rocq's `Lia` import; those failed attempts were corrected before verification
+and are not passes. Generated status now counts 97 Lean files, still four
+sorries and no explicit axioms/admit. Shell/Python/whitespace checks pass.
+
+This protects the bounded source review already documented; it does not
+upgrade it into an exhaustive audit of every double-rounding theorem.
+The separate frozen broad runner remains active in its native stages.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In

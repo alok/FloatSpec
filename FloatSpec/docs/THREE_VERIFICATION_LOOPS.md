@@ -919,6 +919,24 @@ wrong answer from a broken compiler invocation. These are mathematical
 kernel checks of noncomputable real-valued definitions, not native executions
 and not a three-path runtime bridge.
 
+### Double-rounding definitions and premise contracts
+
+The paired permanent `DoubleRoundingContracts` fixtures check nine exact
+definition bodies and six theorem clients. Multiplication uses no
+`Valid_exp` assumptions; addition/subtraction, square root and division
+retain the reviewed assumptions. Both assistants prove a concrete pair of
+exponent functions separates the ordinary and radix-at-least-four square-root
+hypotheses. Three live controls reject off-by-one body drift in both languages
+and reintroduced extra multiplication premises in Lean.
+
+```sh
+lake env lean FloatSpec/Test/DoubleRoundingContracts.lean
+FLOCQ_AUDIT_DIR=/path/to/pinned-flocq uv run scripts/test_double_rounding_contracts.py -v
+```
+
+These are persistent checks of the reviewed exports, not native real-valued
+execution, exhaustive theorem auditing, or a proof of whole-module equivalence.
+
 ## 11. What this still does not establish
 
 The expanded combined runner completed at commit `ba3e2a8b`, seed `961703`,

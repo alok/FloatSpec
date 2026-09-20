@@ -15,7 +15,7 @@ This guide follows those jobs in order. The detailed
 [independent continuation audit](ASTRA_AUDIT_2026-09-19.md) retain the
 declaration-by-declaration findings and historical milestones.
 
-## Wake-up summary — September 20, 2026, 16:40 UTC
+## Wake-up summary — September 20, 2026, 16:44 UTC
 
 **The port builds and runs on macOS with Lean 4.34.0, but it is not yet a
 fully source-audited port.** All 35 built Flocq module names have Lean
@@ -26,7 +26,7 @@ File coverage is not a completion percentage.
 The latest verified library and tests are on the
 [review branch](https://github.com/alok/FloatSpec/tree/codex/astra-flocq-audit).
 Run `lake exe floatspec_demo` for the seven-part native executable.
-Its examples and the **6,223-job build** pass. Fresh compiled checks cover
+Its examples and the **6,224-job build** pass. Fresh compiled checks cover
 **13,557 declarations / 58 modules**, find exactly the four recorded proof
 debts, and validate **269 pinned source anchors**.
 
@@ -141,6 +141,14 @@ minus two. Deliberately replacing nearest-even with downward rounding makes
 both proof checkers reject the first result; both then prove the changed
 answer. These are kernel-checked mathematical examples, **not native
 execution of real logarithms or general rounding-correctness proofs**.
+
+Double-rounding review now has permanent paired guards too: nine exact
+definition bodies and six source-shaped theorem clients. A closed example
+shows that the radix-at-least-four square-root condition really differs by
+one radix digit of intermediate precision; changing its offset makes both
+contract checkers fail. Reintroducing unnecessary exponent-validity premises
+also breaks the multiplication client. These protect the reviewed interfaces,
+not every theorem in the large double-rounding module.
 
 Reviewable work is on
 [`alok/FloatSpec:codex/astra-flocq-audit`](https://github.com/alok/FloatSpec/tree/codex/astra-flocq-audit).

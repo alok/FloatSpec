@@ -762,6 +762,16 @@ and `-rocq-v3.out`. Earlier scratch drafts failed on import/name/coercion
 syntax and are not passes. This reinforces the bounded interface review
 above; it is not an additional whole-module proof review.
 
+These nine body guards and six typed clients are now permanent:
+`FloatSpec/Test/DoubleRoundingContracts.lean` and
+`scripts/fixtures/DoubleRoundingContracts.v`, both in the combined runner.
+A paired closed counterexample uses exponent functions `e - 1` and `e - 3`:
+the radix-at-least-four square-root hypothesis holds, while the ordinary
+square-root hypothesis fails. Thus the `-1` versus `-2` offset is not merely
+notation. Live controls reject an off-by-one body guard in both assistants
+and an unnecessarily strengthened multiplication client in Lean. All six
+typed clients and the counterexample have axiom lists excluding `sorryAx`.
+
 The [paired double-rounding witness](../../scripts/fixtures/DoubleRoundingWitness.lean)
 executes `binary_round` directly and has a closed Lean kernel equality and
 Rocq `vm_compute` proof: `73/64` rounds directly to three-bit `1.25`, but
