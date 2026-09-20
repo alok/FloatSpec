@@ -2192,6 +2192,92 @@ passes, with identity-relation examples and an impossible empty relation:
 `/private/tmp/RoundPredicateWitnessDraft20260920.lean/.out`.
 No production change is applied during the frozen arithmetic run.
 
+
+### September 20, 12:52 UTC — standalone macOS demo execution
+
+The seven-part guided demo also passes as a standalone **Mach-O arm64**
+executable, not only through `lean --run`. The existing source was compiled
+with `lean -c`, compiled to an object with the toolchain's `leanc`, and
+linked using the successful `floatspec` target's response-file dependencies,
+replacing only its no-op Main object with the demo object. All outputs stayed
+in `/private/tmp`; no library build or source edit overlapped the frozen grid.
+
+The executable `/private/tmp/GuidedDemoAOT20260920` exits zero and prints all
+seven expected examples, including the exact one-subnormal-unit double-rounding
+difference. Receipts use `/private/tmp/floatspec-guided-demo-aot-` with
+`elaborate-20260920.log`, `cc-20260920.log`, `link-20260920.log`, and
+`run-20260920.log`. The generated C, object, and adjusted response file are
+retained beside the binary. The first response-file read was truncated and
+rejected before linking; chunked reads reproduced all 479,965 source bytes.
+
+Demo source SHA-256:
+`4b436c2e1c6909581fb5b8d47ced02f52f27aef8d77c3b242d8c43716deed6d1`.
+Executable SHA-256:
+`577909200ec5b56658870b96785ea95f849124b08b17136a2bc982b604404f00`.
+Generated C SHA-256:
+`8c83fcc363c793d1dbc7d50c7ce3d4bffb766f75c8a86f781505ace8cfdbfbc6`.
+
+This confirms the demonstrated cases across the C compiler/linker execution
+path, not a universal compiler-correctness theorem. A persistent Lake demo
+target is a useful next integration step after the current source snapshot
+is unfrozen; the existing `floatspec` main is still a no-op.
+
+### September 20, 13:09 UTC — tested runner repair and stronger execution drafts
+
+The default-sized primitive batch has a reproducible resource failure.
+`prim_arithmetic_corpus(844763, 500)[965:1165]` supplies 200 random cases
+after the deterministic grid. Requesting one 200-case batch times out during
+Lean kernel reduction after 120 seconds, exits one, and records **error /
+zero compared cases**, not a partial pass:
+`/private/tmp/floatspec-primitive-default-batch-20260920/report.json`.
+Input `/private/tmp/PrimitiveDefaultBatch20260920.json` has SHA-256
+`162425dfa954b9d9b2ae1f0a36b6bd9a50b60621fc3c5ef033505e236996abff`.
+
+A scratch scheduling repair caps the three heavy primitive families at 25
+cases while retaining the requested maximum for other families. It preserves
+input order, duplicates, global offsets, and all replay inputs; timeout errors
+still propagate without automatic retry. The **same 200 inputs pass all three
+execution paths and 200 generated kernel equalities in 529.109 seconds**:
+`/private/tmp/floatspec-primitive-capped-batch-draft-20260920/report.json`.
+The report records the requested batch size and the cap table. Five scratch
+unit tests also pass, including a timeout in a later batch that retains the
+completed count but leaves the whole run in error.
+Draft code/tests: `/private/tmp/FlocqBatchDraft20260920.py` and
+`FlocqBatchTests20260920.py`. These are not yet the production runner.
+
+The primitive mutation suite was independently expanded from 14 to **40**
+replacements: one for each of 33 APIs and four arithmetic instances, plus
+three standalone decomposition-exponent mutations. Every replacement is
+detected in **both** Lean paths, with columns outside its designated result
+unchanged. This scratch suite passes in **117.492 seconds**:
+`/private/tmp/PrimitiveAllMutations20260920.py` and
+`/private/tmp/floatspec-primitive-all-mutations-draft-20260920.log`.
+
+The next native-IEEE bridge improvement is also exercised without changing
+the frozen library. The current `modelObservation` marker still prevents a
+compiled caller; `...-native-model-client-before-20260920.out` records that
+failure. Removing only the marker in a separate namespace makes the same
+body execute, with a closed universal `rfl` equality to the current model.
+There is no algorithm rewrite or extra proof debt.
+
+A scratch four-path bridge then compares native FFI, that compiled model
+body, the original kernel model, and pinned Rocq on **522 binary64 words**,
+seed `845791`. All comparisons and **522 generated kernel equalities pass
+in 141.354 seconds**:
+`/private/tmp/floatspec-native-four-path-draft-20260920/report.json`.
+Sixteen exceptional frexp observations are retained; their native fraction
+and exponent are explicitly outside the asserted equivalence, while their
+decode/successor/predecessor observations and both complete model outputs
+are still compared. Draft sources and the retained runner are
+`/private/tmp/NativeFourPathDraft20260920.py` and
+`NativeFourPathRun20260920.py`.
+
+All these runs use the unchanged library fingerprint
+`4ad5cb5325f15839c048fc2655e483f084a2ba395d2c556269e5c56144b35ba3`.
+They prepare integration after the **still-running** 4,970-case production
+grid; none is a claim that a draft already ships or that the larger grid
+has finished. Only documentation changes during that frozen run.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In

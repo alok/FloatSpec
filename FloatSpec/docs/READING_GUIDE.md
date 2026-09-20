@@ -15,7 +15,7 @@ This guide follows those jobs in order. The detailed
 [independent continuation audit](ASTRA_AUDIT_2026-09-19.md) retain the
 declaration-by-declaration findings and historical milestones.
 
-## Wake-up summary — September 20, 2026, 12:48 UTC
+## Wake-up summary — September 20, 2026, 13:09 UTC
 
 **The port builds and runs on macOS with Lean 4.34.0, but it is not yet a
 fully source-audited port.** All 35 built Flocq module names have Lean
@@ -33,6 +33,10 @@ The full **6,216-job macOS build**, **67-test harness**, paired Lean/Rocq
 37-entry fixture, three decomposition-exponent checks, and fourteen deliberate
 API/exponent mutations pass. Compiled trust still finds exactly four named
 proof debts; 218 pinned source anchors validate.
+The seven-part demo additionally passes as a standalone linked macOS arm64
+executable; the ledger retains its build/run receipts and exact hashes.
+A subsequent scratch check detects all **40** deliberately wrong API/instance
+or exponent observations; integration waits for the frozen run to finish.
 
 **The idea that makes the latest work understandable:** a raw encoding, a
 canonical floating-point value, and a native machine float are different
@@ -55,6 +59,9 @@ The [audit ledger](ASTRA_AUDIT_2026-09-19.md) records its source hash,
 completion status, earlier broad tests, and failed attempts. Counts from
 different snapshots must not be silently added into a claim that every
 test ran on the latest commit.
+Separately, the runner's 200-case default batch hit its timeout. The exact
+saved inputs pass in eight 25-case batches; this scheduling repair is tested
+in scratch, not yet applied to the running production harness.
 
 **Next confirmed interface finding:** Flocq's predicate-to-rounding
 constructors return a value/function *with its proof*. The current Lean
