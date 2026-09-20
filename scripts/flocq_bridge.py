@@ -34,7 +34,7 @@ OPS = ("power", "div_eucl", "location", "round", "truncate", "div", "plus", "sqr
        "formats", "digits", "operations", "format_calc", "overflow", "bits32", "bits64",
        "bit_fields", "order32", "order64", "validity", "nearby")
 ARITIES = dict(zip(OPS, (2, 2, 3, 3, 5, 6, 6, 4, 3, 2, 5, 8, 4, 1, 1, 6, 2, 2, 5, 6), strict=True))
-WIDTHS = dict(zip(OPS, (1, 2, 3, 6, 3, 2, 2, 2, 4, 1, 13, 12, 5, 9, 9, 8, 9, 9, 14, 7), strict=True))
+WIDTHS = dict(zip(OPS, (1, 2, 3, 6, 3, 2, 2, 2, 4, 1, 13, 12, 5, 9, 9, 8, 9, 9, 15, 7), strict=True))
 RADIX_OPS = {"truncate", "div", "plus", "sqrt", "digits", "operations", "format_calc"}
 
 
@@ -249,12 +249,13 @@ def expressions(case: Case) -> tuple[str, str]:
                  f"standard (B2SF_BSN (_root_.SF2B' (prec := {prec}) (emax := {emax}) x)) ++ "
                  f"standard (BinarySingleNaN.B2SF (BinarySingleNaN.SF2B' "
                  f"(prec := {prec}) (emax := {emax}) x)) ++ "
-                 f"standard (B2SF_BSN (SF2BSpec' (prec := {prec}) (emax := {emax}) x))")
+                 f"standard (B2SF_BSN (SF2BSpec' (prec := {prec}) (emax := {emax}) x)) ++ "
+                 f"[boolean (valid_binary_SF (prec := {prec}) (emax := {emax}) x)]")
         rocq = f"let x := SpecFloat.S754_finite {sign} {mantissa}%positive {exponent} in "
         rocq += (f"let valid := boolean (SpecFloat.valid_binary {prec} {emax} x) in "
                  f"let converted := standard (@BinarySingleNaN.B2SF {prec} {emax} "
                  f"(@BinarySingleNaN.SF2B' {prec} {emax} x)) in "
-                 "[valid; valid] ++ converted ++ converted ++ converted")
+                 "[valid; valid] ++ converted ++ converted ++ converted ++ [valid]")
         return lean, rocq
     if op in ("bits32", "bits64"):
         width = op[4:]

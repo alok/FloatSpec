@@ -164,6 +164,13 @@ provable but missed the intended relationship. The repaired theorem compares
 full-float validity with an independently defined SingleNaN validity
 predicate, under the source's non-NaN premise.
 
+The legacy name `valid_binary_SF` now uses this same genuine finite validity
+test too. In a three-bit format with maximum exponent four, mantissa one at
+exponent zero denotes one but is not its canonical representation; mantissa
+four at exponent minus two is canonical. The old check accepted both because
+it returned `true` for every input. A retained failing cross-test motivated
+the repair, and the permanent kernel fixture rejects the malformed case.
+
 Assumptions matter for error bounds too. In the three-bit format with minimum
 exponent -4, the usual nearest-rounding relative bound is `1/8`. But the tiny
 value `2^-8` rounds to zero, so its relative error is one. Below normal

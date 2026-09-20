@@ -157,6 +157,11 @@ def validBinarySingleNaNStandardFloat {prec emax : Int} (x : StandardFloat) : Bo
   | StandardFloat.S754_infinity _ => true
   | StandardFloat.S754_nan => true
 
+private theorem valid_binary_SF_eq {prec emax : Int} (x : StandardFloat) :
+    valid_binary_SF (prec := prec) (emax := emax) x =
+      validBinarySingleNaNStandardFloat (prec := prec) (emax := emax) x := by
+  cases x <;> rfl
+
 /-- Conversion preserves the independently defined validity test on non-NaNs.
 Unlike the legacy image-predicate wrapper, this is the direct source equality. -/
 @[flocq_source "src/IEEE754/Binary.v" 173 "valid_binary_SF2FF"]
@@ -3209,12 +3214,14 @@ def bxor (a b : Bool) : Bool :=
 -- FLoCq's `Bfrexp_correct_aux`: the caller supplies the normalization fact.
 noncomputable def Bfrexp_correct_aux_check_from_normalization_payload
   (sx : Bool) (mx : Nat) (ex : Int)
-  (Hx : bounded (prec:=prec) (emax:=emax) mx ex = true) : (StandardFloat × Int) :=
+  (Hx : valid_binary_SF (prec:=prec) (emax:=emax)
+    (StandardFloat.S754_finite sx mx ex) = true) : (StandardFloat × Int) :=
   (StandardFloat.S754_finite sx mx ex, 0)
 
 theorem Bfrexp_correct_aux_from_normalization_payload
   (sx : Bool) (mx : Nat) (ex : Int)
-  (Hx : bounded (prec:=prec) (emax:=emax) mx ex = true)
+  (Hx : valid_binary_SF (prec:=prec) (emax:=emax)
+    (StandardFloat.S754_finite sx mx ex) = true)
   (hnorm : (2 : Int) < emax → ((1 : ℝ) / 2 ≤ |SF2R 2 (StandardFloat.S754_finite sx mx ex)| ∧
                                |SF2R 2 (StandardFloat.S754_finite sx mx ex)| < 1)) :
   ⦃⌜True⌝⦄
@@ -3230,7 +3237,7 @@ theorem Bfrexp_correct_aux_from_normalization_payload
   simp only [wp, PostCond.noThrow, pure]
   unfold Bfrexp_correct_aux_check_from_normalization_payload
   constructor
-  · rfl
+  · exact Hx
   constructor
   · simp only [Id.run]
     exact hnorm
@@ -3242,9 +3249,8 @@ def Bmax_float : B754 :=
 
 -- Coq: Bmax_float_proof
 --
--- The local `valid_binary_SF` surface is currently permissive, so the faithful
--- payload is stated over the nontrivial finite validity pieces: boundedness and
--- canonical mantissa for the maximal finite mantissa/exponent pair.
+-- This compatibility payload states its finite validity pieces separately:
+-- range boundedness and canonical mantissa for the maximal finite pair.
 theorem Bmax_float_proof :
     bounded (prec:=prec) (emax:=emax) ((2 : Nat) ^ prec.toNat - 1) (emax - prec) = true ∧
     canonical_mantissa (prec:=prec) (emax:=emax)
@@ -3370,7 +3376,7 @@ private theorem validBinarySingleNaNStandardFloat_bsn_binary_overflow
       hm_pos, hmax_spec]
 
 -- Coq: IEEE754/BinarySingleNaN.v:1195. Use the real bounded/canonical validity
--- predicate, not the always-true compatibility predicate valid_binary_SF.
+-- predicate, shared with the repaired compatibility name valid_binary_SF.
 theorem _root_.binary_overflow_correct (mode : RoundingMode) (s : Bool) :
     validBinarySingleNaNStandardFloat (prec:=prec) (emax:=emax)
       (bsn_binary_overflow (prec:=prec) (emax:=emax) mode s) = true := by
@@ -4095,14 +4101,16 @@ noncomputable def Bsqrt_correct_aux_from_assumed_rounding_check {prec emax : Int
   [Prec_gt_0 prec] [Prec_lt_emax prec emax]
   (mode : RoundingMode)
   (mx : Nat) (ex : Int)
-  (Hx : bounded (prec:=prec) (emax:=emax) mx ex = true) : StandardFloat :=
+  (Hx : valid_binary_SF (prec:=prec) (emax:=emax)
+    (StandardFloat.S754_finite false mx ex) = true) : StandardFloat :=
   StandardFloat.S754_finite false mx ex
 
 theorem Bsqrt_correct_aux_from_assumed_rounding {prec emax : Int}
   [Prec_gt_0 prec] [Prec_lt_emax prec emax]
   (mode : RoundingMode) (rnd : ℝ → Int) (hrnd0 : rnd 0 = 0)
   (mx : Nat) (ex : Int)
-  (Hx : bounded (prec:=prec) (emax:=emax) mx ex = true)
+  (Hx : valid_binary_SF (prec:=prec) (emax:=emax)
+    (StandardFloat.S754_finite false mx ex) = true)
   (hsqrt : SF2R 2 (StandardFloat.S754_finite false mx ex) =
            FloatSpec.Calc.Round.round 2 (FLT_exp (3 - emax - prec) prec) ⟨rnd, hrnd0⟩
            (Real.sqrt (SF2R 2 (StandardFloat.S754_finite false mx ex)))) :
@@ -4118,7 +4126,7 @@ theorem Bsqrt_correct_aux_from_assumed_rounding {prec emax : Int}
   simp only [wp, PostCond.noThrow, pure]
   unfold Bsqrt_correct_aux_from_assumed_rounding_check
   constructor
-  · rfl
+  · exact Hx
   constructor
   · simp only [Id.run]
     exact hsqrt
@@ -12526,11 +12534,14 @@ private theorem Bplus_finite_nonnegative_correct {prec emax : Int}
     have hviewTrip := B2SF_SF2B z
     have hview : B2SF_BSN (SF2B z) = z := by
       simpa [B2SF_SF2B_check, wp, PostCond.noThrow, pure] using hviewTrip trivial
-    have hfiniteTrip := is_finite_SF2B (prec:=prec) (emax:=emax) z (by rfl)
+    have hzvalid : valid_binary_SF (prec := prec) (emax := emax) z = true := by
+      rw [valid_binary_SF_eq]
+      exact hround.1
+    have hfiniteTrip := is_finite_SF2B (prec:=prec) (emax:=emax) z hzvalid
     have hfinite : BSN_is_finite (SF2B z) = is_finite_SF z := by
       simpa [is_finite_SF2B_check, wp, PostCond.noThrow, pure] using
         hfiniteTrip trivial
-    have hsignTrip := Bsign_SF2B (prec:=prec) (emax:=emax) z (by rfl)
+    have hsignTrip := Bsign_SF2B (prec:=prec) (emax:=emax) z hzvalid
     have hsign : BSN_sign (SF2B z) = sign_SF z := by
       simpa [Bsign_SF2B_check, wp, PostCond.noThrow, pure] using hsignTrip trivial
     constructor

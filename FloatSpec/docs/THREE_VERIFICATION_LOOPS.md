@@ -145,6 +145,11 @@ constructor requirement. Seed `860213` found 240 mismatches in 1,180 inputs
 before the raw-boundary repair and none afterwards. All 1,180 repaired cases
 also pass as generated kernel equalities. A deliberate conversion mutation
 must reproduce the noncanonical `(mantissa=1, exponent=0)` failure.
+The fifteenth observation column now checks the repaired legacy
+`valid_binary_SF` name independently too. Its always-true predecessor disagreed
+with Rocq on three of a five-case red corpus; that corpus is retained for
+replay. A separate deliberate always-true mutation must be rejected in both
+compiled Lean and kernel reduction.
 
 Lean both executes compiled calls with `--run` and reduces them with `#reduce`;
 Rocq uses `vm_compute`. Enabling compiled execution required removing

@@ -2,9 +2,25 @@ import FloatSpec.src.IEEE754.BinarySingleNaNSourceFacade
 
 /-! A raw carrier can contain a finite representation that is not canonical.
 The source predicate must reject it even though it denotes a harmless real.
-These checks deliberately do not use the permissive legacy validity predicate. -/
+Both public validity predicates must reject the same malformed inputs. -/
 
 namespace SingleNaNValidity
+
+/-- The former always-true predicate agrees with the independent source view
+for every carrier, precision, and exponent bound, without domain premises. -/
+theorem root_validity_agrees (prec emax : Int) (x : StandardFloat) :
+    valid_binary_SF (prec := prec) (emax := emax) x =
+      validBinarySingleNaNStandardFloat (prec := prec) (emax := emax) x := by
+  cases x <;> rfl
+
+/-- Permanent kernel regressions from the differential red test. -/
+theorem root_validity_regressions :
+    valid_binary_SF (prec := 3) (emax := 4) (.S754_finite false 1 0) = false ∧
+    valid_binary_SF (prec := 3) (emax := 4) (.S754_finite false 4 (-2)) = true ∧
+    valid_binary_SF (prec := 3) (emax := 4) (.S754_finite true 1 (-5)) = false ∧
+    valid_binary_SF (prec := 3) (emax := 4) (.S754_finite false 0 (-4)) = false ∧
+    valid_binary_SF (prec := -1) (emax := 1) (.S754_finite false 1 0) = false := by
+  decide +kernel
 
 private def valid (m : Nat) (e : Int) : Bool :=
   validBinarySingleNaNStandardFloat (prec := 3) (emax := 4) (.S754_finite false m e)

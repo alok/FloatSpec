@@ -165,10 +165,28 @@ class LiveTests(unittest.TestCase):
             observations = bridge.execute(cases, flocq, bridge.configured_coqc(flocq), Path(directory))
             bridge.bootstrap_lean(cases, observations["rocq"], Path(directory))
         self.assertEqual(bridge.compare(cases, observations), [])
-        self.assertEqual(observations["lean"][0], [0, 0] + [2, 0, 0, 0] * 3)
-        self.assertEqual(observations["lean"][1], [1, 1] + [3, 0, 4, -2] * 3)
-        self.assertEqual(observations["lean"][2], [1, 1] + [3, 1, 1, -4] * 3)
-        self.assertEqual(observations["lean"][3], [0, 0] + [2, 0, 0, 0] * 3)
+        self.assertEqual(observations["lean"][0], [0, 0] + [2, 0, 0, 0] * 3 + [0])
+        self.assertEqual(observations["lean"][1], [1, 1] + [3, 0, 4, -2] * 3 + [1])
+        self.assertEqual(observations["lean"][2], [1, 1] + [3, 1, 1, -4] * 3 + [1])
+        self.assertEqual(observations["lean"][3], [0, 0] + [2, 0, 0, 0] * 3 + [0])
+
+    def test_always_true_validity_mutation_is_rejected(self):
+        flocq = Path(os.environ["FLOCQ_AUDIT_DIR"]).resolve()
+        original = bridge.expressions
+        def mutated(case):
+            lean, rocq = original(case)
+            old = "boolean (valid_binary_SF (prec := (3)) (emax := (4)) x)"
+            self.assertIn(old, lean)
+            return lean.replace(old, "boolean true"), rocq
+        case = bridge.Case("validity", (3, 4, 0, 1, 0))
+        with (tempfile.TemporaryDirectory(prefix="floatspec-vacuous-validity-") as directory,
+              patch.object(bridge, "expressions", mutated)):
+            rows = bridge.execute([case], flocq, bridge.configured_coqc(flocq), Path(directory))
+        failures = bridge.compare([case], rows)
+        self.assertEqual(len(failures), 1)
+        self.assertEqual(failures[0]["paths"], ["lean", "compiled"])
+        self.assertEqual(rows["lean"][0][-1], 1)
+        self.assertEqual(rows["rocq"][0][-1], 0)
 
     def test_range_only_conversion_mutation_is_rejected(self):
         original = bridge.expressions

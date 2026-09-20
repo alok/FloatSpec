@@ -990,11 +990,13 @@ theorem valid_binary_B2FF_compat {prec emax} (x : Binary754 prec emax)
   unfold valid_binary_B2FF_check
   exact hvalid
 
--- Legacy compatibility predicate, not Coq's StandardFloat validity test.
--- The direct source theorem `valid_binary_SF2FF` is exported from
--- BinarySingleNaN, where its independent SingleNaN predicate is available.
+/-- StandardFloat validity: finite values require a positive mantissa and
+the canonical source bounds; exceptional constructors are valid. The positive
+check accounts for Lean's Nat carrier versus Rocq's positive constructor. -/
 def valid_binary_SF {prec emax : Int} (x : StandardFloat) : Bool :=
-  true
+  match x with
+  | .S754_finite _ m e => decide (0 < m) && specFloat_bounded (prec := prec) (emax := emax) m e
+  | _ => true
 
 -- StandardFloat-side payload validity induced by the fixed local `SF2FF`
 -- encoding.  `StandardFloat` has no NaN payload field, so this is the exact

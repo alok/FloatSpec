@@ -541,7 +541,7 @@ premise is needed, while `make_bound_p` retains positive precision.
 Receipts: `/private/tmp/PffBoundsProbe.lean`, `/private/tmp/PffBoundsProbe.v`,
 and `/private/tmp/PffBoundsProbe.receipt.json`.
 
-The remaining legacy `valid_binary_SF := true` is now also reproduced as an
+The former legacy `valid_binary_SF := true` was also reproduced as an
 executable discrepancy: precision 3, maximum exponent 4, positive mantissa 1,
 exponent 0 returns `true`, while both the repaired source-shaped predicate and
 Rocq return `false`. The issue is already disclosed above, but these probes
@@ -552,6 +552,29 @@ Probe files: `/private/tmp/LegacyValidityProbe.lean` and `.v`.
 `git show 158263e9:FloatSpec/src/IEEE754/Binary.lean` confirms the same
 always-true definition at upstream; its introduction is `e9746f40` from
 October 2025, not one of the 23 later Sol audit commits.
+
+That predicate is now repaired, including positive mantissa, canonicality,
+and upper exponent checks. The two experimental payload adapter contracts
+require actual input validity. The full build exposed two further `by rfl`
+validity arguments inside a downstream addition proof; they now consume
+`binary_round_correct`'s real validity conjunct via a closed predicate-equality
+lemma. Initial failed builds (missing validity, then predicate unfolding) are
+not passes. The final full `lake build` passes (3,101 jobs), and fresh complete
+LSP diagnostics for both edited modules report no errors. No proof debt was added.
+
+The original five-case red corpus had three mismatches, retained at
+`/private/tmp/floatspec-legacy-validity-before-20260919`. Replaying all five
+after the repair passes compiled Lean, kernel reduction, Rocq, and generated
+kernel regressions (`/private/tmp/floatspec-legacy-validity-after-20260920`).
+An expanded 1,280-case grid (seed `294883`, 89.785 seconds) also passes all
+paths and all 1,280 bootstrapped proofs at source SHA-256
+`2b22892ed1bd50a27e2914b7b9c11fe7cb82bcec81821f9f6164640dac061a4e`.
+Artifact: `/private/tmp/floatspec-validity-public-20260920`.
+The permanent pure Lean fixture proves the two validity names agree for every
+local constructor and parameter choice, and rejects zero mantissas which the
+source positive carrier cannot represent.
+All 25 core harness tests pass, including a live mutation restoring the
+always-true result; both Lean execution paths reject that mutation against Rocq.
 
 The subprocess cancellation defect is now repaired: on macOS/Linux the runner
 owns a process group and kills/reaps it on timeout or interruption, rather than
@@ -578,7 +601,7 @@ two root validity exports, and raw validation/conversion repairs are now
 implemented with the slice-specific receipts above. The expanded aggregate
 has now verified all those later fixtures and scale/validity additions at
 `ba3e2a8b`; it predates the now separately verified public integer-truncation
-slice and the still-pending legacy validity repair. Generic real-valued
+slice and the now separately verified legacy validity repair. Generic real-valued
 comparisons and further theorem-contract audits remain separate slices.
 Do not replace mathematical reals with machine floats or bypass proof
 obligations merely to make a declaration compile.
@@ -593,9 +616,9 @@ or skipped command cannot silently produce a green result.
 ## Still unreviewed
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In
-particular, root compatibility predicates such as `valid_binary_SF := true`
-still exist: the repaired overflow export does not certify every legacy user
-of that predicate. Source anchors now use compiler metadata, but the linter is opt-in,
+particular, repairing `valid_binary_SF` and its consumers does not certify
+every legacy compatibility theorem or experimental carrier. Source anchors
+now use compiler metadata, but the linter is opt-in,
 and many public declarations are outside its current gate. Next work includes
 native execution of integer-only algorithms, more IEEE arithmetic cross-tests,
 and further source-signature checks. Passing compilation, finite agreement,

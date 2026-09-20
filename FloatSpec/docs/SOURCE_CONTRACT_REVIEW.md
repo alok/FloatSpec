@@ -190,6 +190,21 @@ Both also prove that `2^-8` rounds to zero, invalidating an unconditional
 `discriminate` tactic for the arithmetic negation; `lia` closed the actual
 proposition in the passing rerun. No failed attempt is counted as a pass.
 
+## Legacy StandardFloat validity closure
+
+`valid_binary_SF` no longer returns `true` unconditionally. It checks positive
+mantissa, canonical exponent, and the upper exponent bound for finite inputs;
+zeros, infinities, and the single NaN remain valid. This matches the independent
+source-facing predicate for every precision/exponent parameter and every local
+constructor, as checked by a closed constructor-case theorem in the fixture.
+Positivity compensates for Lean's Nat mantissa versus Rocq's positive carrier.
+
+Two explicitly experimental payload adapters now require actual input validity
+instead of mere range bounds. Their existing normalization/rounding assumptions
+remain explicit; these adapters are not upgraded into source theorems. A later
+addition proof had passed validity using `rfl` at two observer calls. It now
+uses the actual validity theorem of `binary_round`, with no new sorry.
+
 ## Independent finite arithmetic laws and selection oracle
 
 `ExactArithmeticLaws.lean` / `.v` enumerate the 55 finite mathematical values
