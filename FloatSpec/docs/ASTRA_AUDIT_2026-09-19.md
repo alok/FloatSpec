@@ -2487,6 +2487,44 @@ previous snapshot. The next all-family combined run is still pending here;
 neither launching it nor these targeted successes constitute a whole-port
 semantic-equivalence proof. Hosted-CI cache/toolchain mismatch remains separate.
 
+### September 20, 14:12 UTC — readable current checkpoint and paired double-rounding clients
+
+The fresh combined three-loop run launched at 13:57:25 UTC on clean commit
+`2282a69b`, with frozen Lean/configuration fingerprint
+`2cb288c3347dc66b2324b2ac6ad02ebfa84bd839affbde4d811789d6b7f40958`.
+It is **running, not passed**. Its core corpus has **48,614 cases**, seed
+`848933`; native sampling is 200 and arithmetic sampling is 100.
+Fresh source/trust gates and their harnesses pass. The pure Rocq arithmetic,
+bits, order, premise/contract, rounding-oracle suites pass; the Lean fixed
+fixtures and seven-part demo also complete before the core bridge.
+The later native/specialized bridges and final aggregate result remain pending.
+
+Log: `/private/tmp/floatspec-full-three-loop-2282a69b-20260920.log`.
+Core artifacts:
+`/private/var/folders/gn/1hqqc7pn3nz5s_p0dxnn9h300000gp/T/floatspec-bridge-3r49wz16`.
+Library, configuration, fixtures, and test tools remain unchanged during the
+run. This checkpoint changes explanation only.
+
+While frozen, paired scratch clients reinforced the existing bounded
+double-rounding review: nine source-body equalities by reflexivity and six
+theorem clients with source-shaped premises. Both files now compile;
+the six Lean client axiom lists contain only `propext`, `Classical.choice`,
+and `Quot.sound`. This adds executable interface evidence, not a new review
+of every internal proof in the large module.
+
+Sources: `/private/tmp/DoubleRoundingSourceClients20260920.lean` and `.v`.
+Successful receipts: `-lean-v2.out` and `-rocq-v3.out` beside them.
+The first Lean draft had ambiguous compatibility aliases. The first Rocq
+draft had an invalid import form, the next needed an explicit radix-to-integer
+coercion; those failed attempts are retained and not counted as passes.
+The definition comparison's division clause was also aligned with the exact
+source premise order before its reflexivity check.
+
+The reading guide now leads with one current checkpoint rather than a
+chronological mix of obsolete counts. The focused ledger records the
+proof-carrying constructors, unrestricted FLX laws, and all 40 primitive
+mutations. Earlier smaller counts remain explicitly historical.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In

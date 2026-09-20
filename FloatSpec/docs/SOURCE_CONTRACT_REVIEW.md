@@ -36,12 +36,48 @@ This does not violate raw multiplication's validity theorem: its premise
 requires canonical inputs. The fixture also checks all three decomposition
 exponents, rather than accepting a correct fraction with a wrong exponent.
 
-Fourteen deliberate replacements independently corrupt raw operations,
-primitive operations, notation, proof-carrying operations, or decomposition
-exponents. Each is detected in both Lean execution paths while unrelated
-columns stay equal. A separate test restores a noncomputable client and
-requires compilation failure. Counts and the running/completed distinction
-for the broad seeded grid are recorded in the audit ledger.
+Forty deliberate replacements independently corrupt every one of the 33
+API observations, four notation instances, and three decomposition exponents.
+Each is detected in both Lean execution paths while unrelated columns stay
+equal. A separate test restores a noncomputable client and requires
+compilation failure. Heavy primitive families now use batches of at most 25;
+the saved 200-case timeout remains an error, and all its inputs pass when
+explicitly replayed in smaller batches. Counts and the running/completed
+distinction for the broad seeded grid are recorded in the audit ledger.
+
+## Predicate witnesses: the proof belongs in the result type
+
+Pinned `Core/Round_pred.v:51,78` exports `round_val_of_pred` and
+`round_fun_of_pred` with both a `round_pred rnd` input and a dependent pair
+result. The old Lean API omitted the input, returned a bare real/function,
+and chose zero when no witness existed. It proved a conditional property,
+but did not expose the source's proof-carrying interface.
+
+The repaired constructors return `{f : ℝ // rnd x f}` and
+`{f : ℝ → ℝ // ∀ x, rnd x (f x)}`. The two local specification adapters
+project the carried proofs. Paired compiled clients check those shapes,
+identity examples, and the impossibility of supplying the empty relation.
+Two additional closed Lean theorems universally preserve the former selected
+value/function on valid inputs. No arithmetic body was made executable:
+these are genuinely noncomputable mathematical witnesses using classical
+choice. Five printed regression-theorem axiom lists contain no `sorryAx`.
+
+## FLX unit laws: unrestricted precision is intentional
+
+Pinned `Core/FLX.v:240,246` states `ulp_FLX_1` and `succ_FLX_1` for
+every integer precision. Lean now does too, without its former positive
+precision instance or pure-value Hoare wrapper. Both proofs remain closed,
+and the two production callers consume ordinary equalities. The redundant
+radix inequality follows from the existing `ValidRadix` carrier.
+
+Paired Lean/Rocq clients prove that at base two and precision zero the ULP
+at one is two and the defined successor is three; at precision minus one
+they are four and five. These are laws of total definitions, not assertions
+about adjacent values in a valid floating-point format. Positive precision
+is still required by `negligible_exp_FLX` and the ULP-at-zero theorem.
+Four new guards reject both the named precision class and the legacy
+positivity `Fact` on the unrestricted laws. The current combined premise
+guard count is **90**; earlier counts below describe earlier checkpoints.
 
 ## Total primitive conversion: wrapping and two rounding stages
 
@@ -592,6 +628,19 @@ precision's positivity, and both same-place midpoint lemmas require validity
 only of the first exponent function. The stronger `_from_..._payload`
 helpers are compatibility endpoints, not the source exports. Receipt:
 `/private/tmp/DoubleRoundCompiledContracts-v2.out`.
+
+A further paired compilation on September 20 checks all nine displayed
+definition bodies by reflexivity and source-shaped clients for
+`round_round_mult_aux`, `round_round_mult`, `round_round_plus`,
+`round_round_minus`, `round_round_sqrt`, and `round_round_div`.
+The multiplication clients need no `Valid_exp`; the remaining four retain
+validity of both exponent functions. Square root introduces no extra
+nonnegative-input premise, and division retains even radix and nonzero
+denominator. All six Lean client axiom lists exclude `sorryAx`.
+Receipts are `/private/tmp/DoubleRoundingSourceClients20260920-lean-v2.out`
+and `-rocq-v3.out`. Earlier scratch drafts failed on import/name/coercion
+syntax and are not passes. This reinforces the bounded interface review
+above; it is not an additional whole-module proof review.
 
 The [paired double-rounding witness](../../scripts/fixtures/DoubleRoundingWitness.lean)
 executes `binary_round` directly and has a closed Lean kernel equality and
