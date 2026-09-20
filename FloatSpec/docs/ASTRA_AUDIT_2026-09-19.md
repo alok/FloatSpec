@@ -910,12 +910,70 @@ The integer-cast comparison mismatch was reproduced before the repair above:
 `/private/tmp/RcompareIZRContract.lean` failed with `Int` versus `Prop` while
 the paired Rocq consumer passed. The same Lean client passes after `0f3f2550`.
 
-`BinarySingleNaN.Beqb`, `Bltb`, and `Bleb` still use real-valued decisions.
+At the end of the September 19 block, `BinarySingleNaN.Beqb`, `Bltb`, and
+`Bleb` still used real-valued decisions.
 `/private/tmp/BooleanComparisonExecutionGap.lean` confirms even a compiled
 signed-zero equality client fails on `noncomputable`. Their inspected finite
 correctness statements agree with the source Boolean contracts, but the new
 executable `Bcompare` does not by itself make those separate APIs executable.
 This is an execution gap, not a demonstrated incorrect Boolean result.
+
+### September 20 continuation: executable Boolean comparison
+
+The continuation beginning 06:13 UTC fixes that reproduced execution gap.
+`Beqb`, `Bltb`, and `Bleb` now inspect the source-shaped integer comparator.
+The root definitions and namespace aliases retain their public types, and
+the three finite correctness theorems plus NaN-aware reflexivity remain closed.
+Their axiom reports contain only `propext`, `Classical.choice`, and
+`Quot.sound`; no `sorryAx` was introduced. Six new source links refer to the
+exact pinned Boolean exports. Pinned `Binary.v` has no corresponding Boolean
+trio, so no full-payload exports were invented.
+
+Verification on the unchanged implementation snapshot:
+
+- Full macOS Lean 4.34.0 library/test/executable build: **6,216 jobs**, exit 0.
+  Log: `/private/tmp/floatspec-boolean-full-build-20260920.log`.
+- Complete LSP error diagnostics: clean for BinarySingleNaN, BitOrderExecution,
+  BooleanComparison, and GuidedDemo. One earlier editor probe retained a stale
+  imported `.olean` and reported the old noncomputable declaration; the fresh
+  CLI fixture and subsequent diagnostics passed after the module build.
+- Eight literal boundary expectations execute independently in the paired
+  `BooleanComparison.lean` / `.v` fixtures. Lean additionally kernel-checks
+  the table. The first Rocq fixture invocation omitted `@` on implicit source
+  arguments and failed elaboration; the corrected invocation passed.
+- **4,210** shared-input comparison cases, seed **702061**, 300 supplemental
+  samples per each of ten formats, **14 columns** each: compiled Lean,
+  kernel reduction, and pinned Rocq agree. All **4,210** generated Lean
+  assertions also pass. Source SHA-256:
+  `53593e9a2aedc6a490a35f735d00a35033837eaaa9eae3bbe1384c7a9f620212`.
+  Report and replayable inputs:
+  `/private/tmp/floatspec-boolean-comparison-20260920/` (312.467 seconds).
+- **34** live core harness tests pass in 105.106 seconds, including NaN
+  equality and strict/non-strict comparison mutations rejected in both Lean
+  paths. Log: `/private/tmp/floatspec-boolean-harness-20260920.log`.
+- The standalone ordering loop passes its existing 200,000 native order
+  comparisons plus **600,000 native Boolean comparisons** of the three
+  public APIs; seed **388312**. Native agreement is finite runtime evidence,
+  not a proof of the primitive implementations.
+- The updated five-part demo runs successfully. The compiled trust audit
+  checks **13,594 declarations in 58 modules**, with exactly the same four
+  named debts and no project axioms, runtime overrides, or unexpected axiom
+  dependencies. **149** compiled source anchors validate. The generated
+  status is unchanged. A mistyped audit-script path and an unsupported
+  status-script flag were failed setup invocations, not passing checks.
+
+The linear guide now starts with a maintained wake-up summary. It explains
+the difference between a correct noncomputable specification and an executable
+implementation, gives the four-outcome Boolean table, and keeps CI and proof
+boundaries visible.
+
+The next contract mismatch was independently reproduced without editing the
+running test snapshot: `Binary.B2R_inj` and `Binary.B2R_Bsign_inj` require
+`Prec_gt_0` and `Prec_lt_emax` in Lean, but neither premise occurs in the
+compiled pinned Rocq types. `/private/tmp/IEEEInjectionContract.lean` fails to
+synthesize `Prec_gt_0`; the Rocq inspection client succeeds. The SingleNaN
+counterparts already omit both. This finding remains pending correction at
+this milestone.
 
 ### Unreviewed scope
 

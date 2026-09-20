@@ -772,81 +772,6 @@ def BSN_sign (x : B754) : Bool :=
   | B754.B754_finite s _ _ => s
   | B754.B754_nan => false
 
-/-- Coq `BinarySingleNaN.Beqb`, on the proof-carrying single-NaN carrier. -/
-noncomputable def Beqb {prec emax : Int}
-    (f1 f2 : BinarySingleNaNFloat prec emax) : Bool :=
-  match binarySingleNaNFloatToStandardFloat f1,
-      binarySingleNaNFloatToStandardFloat f2 with
-  | StandardFloat.S754_nan, _ => false
-  | _, StandardFloat.S754_nan => false
-  | StandardFloat.S754_infinity s1, StandardFloat.S754_infinity s2 => s1 == s2
-  | StandardFloat.S754_infinity _, _ => false
-  | _, StandardFloat.S754_infinity _ => false
-  | _, _ => FloatSpec.Core.Raux.Req_bool
-      (B754_to_R (binarySingleNaNFloatToB754 f1))
-      (B754_to_R (binarySingleNaNFloatToB754 f2))
-
-/-- Coq `BinarySingleNaN.Beqb_correct`. -/
-theorem Beqb_correct {prec emax : Int}
-    (f1 f2 : BinarySingleNaNFloat prec emax)
-    (h1 : BSN_is_finite (binarySingleNaNFloatToB754 f1) = true)
-    (h2 : BSN_is_finite (binarySingleNaNFloatToB754 f2) = true) :
-    Beqb f1 f2 = FloatSpec.Core.Raux.Req_bool
-      (B754_to_R (binarySingleNaNFloatToB754 f1))
-      (B754_to_R (binarySingleNaNFloatToB754 f2)) := by
-  cases f1 <;> cases f2 <;>
-    simp [BSN_is_finite, Beqb, binarySingleNaNFloatToB754,
-      binarySingleNaNFloatToStandardFloat] at h1 h2 ⊢
-
-/-- Coq `BinarySingleNaN.Beqb_refl`; only NaN is non-reflexive. -/
-theorem Beqb_refl {prec emax : Int} (f : BinarySingleNaNFloat prec emax) :
-    Beqb f f = !(BSN_is_nan (binarySingleNaNFloatToB754 f)) := by
-  cases f <;>
-    simp [Beqb, BSN_is_nan, B754_to_R, binarySingleNaNFloatToB754,
-      binarySingleNaNFloatToStandardFloat, FloatSpec.Core.Raux.Req_bool]
-
-/-- Coq `BinarySingleNaN.Bltb`, on the proof-carrying single-NaN carrier. -/
-noncomputable def Bltb {prec emax : Int}
-    (f1 f2 : BinarySingleNaNFloat prec emax) : Bool :=
-  match binarySingleNaNFloatToStandardFloat f1,
-      binarySingleNaNFloatToStandardFloat f2 with
-  | StandardFloat.S754_nan, _ => false
-  | _, StandardFloat.S754_nan => false
-  | StandardFloat.S754_infinity s1, StandardFloat.S754_infinity s2 => s1 && !s2
-  | StandardFloat.S754_infinity s1, _ => s1
-  | _, StandardFloat.S754_infinity s2 => !s2
-  | _, _ => FloatSpec.Core.Raux.Rlt_bool
-      (B754_to_R (binarySingleNaNFloatToB754 f1))
-      (B754_to_R (binarySingleNaNFloatToB754 f2))
-
-/-- Coq `BinarySingleNaN.Bltb_correct`. -/
-theorem Bltb_correct {prec emax : Int}
-    (f1 f2 : BinarySingleNaNFloat prec emax)
-    (h1 : BSN_is_finite (binarySingleNaNFloatToB754 f1) = true)
-    (h2 : BSN_is_finite (binarySingleNaNFloatToB754 f2) = true) :
-    Bltb f1 f2 = FloatSpec.Core.Raux.Rlt_bool
-      (B754_to_R (binarySingleNaNFloatToB754 f1))
-      (B754_to_R (binarySingleNaNFloatToB754 f2)) := by
-  cases f1 <;> cases f2 <;>
-    simp [BSN_is_finite, Bltb, binarySingleNaNFloatToB754,
-      binarySingleNaNFloatToStandardFloat] at h1 h2 ⊢
-
-/-- Coq `BinarySingleNaN.Bleb`. -/
-noncomputable def Bleb {prec emax : Int}
-    (f1 f2 : BinarySingleNaNFloat prec emax) : Bool :=
-  Bltb f1 f2 || Beqb f1 f2
-
-/-- Coq `BinarySingleNaN.Bleb_correct`. -/
-theorem Bleb_correct {prec emax : Int}
-    (f1 f2 : BinarySingleNaNFloat prec emax)
-    (h1 : BSN_is_finite (binarySingleNaNFloatToB754 f1) = true)
-    (h2 : BSN_is_finite (binarySingleNaNFloatToB754 f2) = true) :
-    Bleb f1 f2 = FloatSpec.Core.Raux.Rle_bool
-      (B754_to_R (binarySingleNaNFloatToB754 f1))
-      (B754_to_R (binarySingleNaNFloatToB754 f2)) := by
-  rw [Bleb, Bltb_correct f1 f2 h1 h2, Beqb_correct f1 f2 h1 h2]
-  simp [FloatSpec.Core.Raux.Rlt_bool, FloatSpec.Core.Raux.Req_bool,
-    FloatSpec.Core.Raux.Rle_bool, le_iff_lt_or_eq]
 
 -- Strict finiteness on StandardFloat (true iff finite, not considering zeros specially)
 def is_finite_strict_SF (x : StandardFloat) : Bool :=
@@ -10086,31 +10011,6 @@ def is_finite_strict {prec emax : Int} (x : binary_float prec emax) : Bool :=
 def is_nan {prec emax : Int} (x : binary_float prec emax) : Bool :=
   BSN_is_nan (binarySingleNaNFloatToB754 x)
 
-noncomputable abbrev Beqb {prec emax : Int} := @_root_.Beqb prec emax
-noncomputable abbrev Bltb {prec emax : Int} := @_root_.Bltb prec emax
-noncomputable abbrev Bleb {prec emax : Int} := @_root_.Bleb prec emax
-
-theorem Beqb_correct {prec emax : Int}
-    (f1 f2 : binary_float prec emax)
-    (h1 : is_finite f1 = true) (h2 : is_finite f2 = true) :
-    Beqb f1 f2 = FloatSpec.Core.Raux.Req_bool (B2R f1) (B2R f2) := by
-  exact _root_.Beqb_correct f1 f2 h1 h2
-
-theorem Beqb_refl {prec emax : Int} (f : binary_float prec emax) :
-    Beqb f f = !(is_nan f) := by
-  exact _root_.Beqb_refl f
-
-theorem Bltb_correct {prec emax : Int}
-    (f1 f2 : binary_float prec emax)
-    (h1 : is_finite f1 = true) (h2 : is_finite f2 = true) :
-    Bltb f1 f2 = FloatSpec.Core.Raux.Rlt_bool (B2R f1) (B2R f2) := by
-  exact _root_.Bltb_correct f1 f2 h1 h2
-
-theorem Bleb_correct {prec emax : Int}
-    (f1 f2 : binary_float prec emax)
-    (h1 : is_finite f1 = true) (h2 : is_finite f2 = true) :
-    Bleb f1 f2 = FloatSpec.Core.Raux.Rle_bool (B2R f1) (B2R f2) := by
-  exact _root_.Bleb_correct f1 f2 h1 h2
 
 theorem canonical_canonical_mantissa {prec emax : Int}
     (sx : Bool) (mx : FloatSpec.Core.Zaux.Positive) (ex : Int)
@@ -15994,3 +15894,122 @@ theorem Bcompare_swap {prec emax : Int} (x y : binary_float prec emax) :
   exact BinarySingleNaN.Bcompare_swap (B2BSN x) (B2BSN y)
 
 end Binary
+
+/-- Coq `BinarySingleNaN.Beqb`, on the proof-carrying single-NaN carrier. -/
+@[flocq_source "src/IEEE754/BinarySingleNaN.v" 628 "Beqb"]
+def Beqb {prec emax : Int}
+    (f1 f2 : BinarySingleNaNFloat prec emax) : Bool :=
+  match BinarySingleNaN.Bcompare f1 f2 with
+  | some .eq => true
+  | _ => false
+
+/-- Coq `BinarySingleNaN.Beqb_correct`. -/
+theorem Beqb_correct {prec emax : Int}
+    (f1 f2 : BinarySingleNaNFloat prec emax)
+    (h1 : BSN_is_finite (binarySingleNaNFloatToB754 f1) = true)
+    (h2 : BSN_is_finite (binarySingleNaNFloatToB754 f2) = true) :
+    Beqb f1 f2 = FloatSpec.Core.Raux.Req_bool
+      (B754_to_R (binarySingleNaNFloatToB754 f1))
+      (B754_to_R (binarySingleNaNFloatToB754 f2)) := by
+  unfold Beqb
+  rw [BinarySingleNaN.Bcompare_correct f1 f2 h1 h2]
+  by_cases hlt : BinarySingleNaN.B2R f1 < BinarySingleNaN.B2R f2
+  · simp [BinarySingleNaN.RcompareOrdering, FloatSpec.Core.Raux.Req_bool,
+      BinarySingleNaN.B2R, hlt, ne_of_lt hlt]
+  · by_cases heq : BinarySingleNaN.B2R f1 = BinarySingleNaN.B2R f2
+    · simp [BinarySingleNaN.RcompareOrdering, FloatSpec.Core.Raux.Req_bool,
+        BinarySingleNaN.B2R, hlt, heq]
+    · simp [BinarySingleNaN.RcompareOrdering, FloatSpec.Core.Raux.Req_bool,
+        BinarySingleNaN.B2R, hlt, heq]
+
+/-- Coq `BinarySingleNaN.Beqb_refl`; only NaN is non-reflexive. -/
+theorem Beqb_refl {prec emax : Int} (f : BinarySingleNaNFloat prec emax) :
+    Beqb f f = !(BSN_is_nan (binarySingleNaNFloatToB754 f)) := by
+  cases f <;>
+    simp [Beqb, BinarySingleNaN.Bcompare, BSN_is_nan, B754_to_R, binarySingleNaNFloatToB754,
+      binarySingleNaNFloatToStandardFloat, FloatSpec.Core.Raux.Req_bool]
+
+/-- Coq `BinarySingleNaN.Bltb`, on the proof-carrying single-NaN carrier. -/
+@[flocq_source "src/IEEE754/BinarySingleNaN.v" 652 "Bltb"]
+def Bltb {prec emax : Int}
+    (f1 f2 : BinarySingleNaNFloat prec emax) : Bool :=
+  match BinarySingleNaN.Bcompare f1 f2 with
+  | some .lt => true
+  | _ => false
+
+/-- Coq `BinarySingleNaN.Bltb_correct`. -/
+theorem Bltb_correct {prec emax : Int}
+    (f1 f2 : BinarySingleNaNFloat prec emax)
+    (h1 : BSN_is_finite (binarySingleNaNFloatToB754 f1) = true)
+    (h2 : BSN_is_finite (binarySingleNaNFloatToB754 f2) = true) :
+    Bltb f1 f2 = FloatSpec.Core.Raux.Rlt_bool
+      (B754_to_R (binarySingleNaNFloatToB754 f1))
+      (B754_to_R (binarySingleNaNFloatToB754 f2)) := by
+  unfold Bltb
+  rw [BinarySingleNaN.Bcompare_correct f1 f2 h1 h2]
+  by_cases hlt : BinarySingleNaN.B2R f1 < BinarySingleNaN.B2R f2
+  · simp [BinarySingleNaN.RcompareOrdering, FloatSpec.Core.Raux.Rlt_bool,
+      BinarySingleNaN.B2R, hlt]
+  · by_cases heq : BinarySingleNaN.B2R f1 = BinarySingleNaN.B2R f2
+    · simp [BinarySingleNaN.RcompareOrdering, FloatSpec.Core.Raux.Rlt_bool,
+        BinarySingleNaN.B2R, hlt, heq]
+    · simp [BinarySingleNaN.RcompareOrdering, FloatSpec.Core.Raux.Rlt_bool,
+        BinarySingleNaN.B2R, hlt, heq]
+
+/-- Coq `BinarySingleNaN.Bleb`. -/
+@[flocq_source "src/IEEE754/BinarySingleNaN.v" 666 "Bleb"]
+def Bleb {prec emax : Int}
+    (f1 f2 : BinarySingleNaNFloat prec emax) : Bool :=
+  match BinarySingleNaN.Bcompare f1 f2 with
+  | some .lt | some .eq => true
+  | _ => false
+
+/-- Coq `BinarySingleNaN.Bleb_correct`. -/
+theorem Bleb_correct {prec emax : Int}
+    (f1 f2 : BinarySingleNaNFloat prec emax)
+    (h1 : BSN_is_finite (binarySingleNaNFloatToB754 f1) = true)
+    (h2 : BSN_is_finite (binarySingleNaNFloatToB754 f2) = true) :
+    Bleb f1 f2 = FloatSpec.Core.Raux.Rle_bool
+      (B754_to_R (binarySingleNaNFloatToB754 f1))
+      (B754_to_R (binarySingleNaNFloatToB754 f2)) := by
+  have compare_bool : Bleb f1 f2 = (Bltb f1 f2 || Beqb f1 f2) := by
+    unfold Bleb Bltb Beqb
+    cases BinarySingleNaN.Bcompare f1 f2 with
+    | none => rfl
+    | some ord => cases ord <;> rfl
+  rw [compare_bool, Bltb_correct f1 f2 h1 h2, Beqb_correct f1 f2 h1 h2]
+  simp [FloatSpec.Core.Raux.Rlt_bool, FloatSpec.Core.Raux.Req_bool,
+    FloatSpec.Core.Raux.Rle_bool, le_iff_lt_or_eq]
+
+namespace BinarySingleNaN
+
+@[flocq_source "src/IEEE754/BinarySingleNaN.v" 628 "Beqb"]
+abbrev Beqb {prec emax : Int} := @_root_.Beqb prec emax
+@[flocq_source "src/IEEE754/BinarySingleNaN.v" 652 "Bltb"]
+abbrev Bltb {prec emax : Int} := @_root_.Bltb prec emax
+@[flocq_source "src/IEEE754/BinarySingleNaN.v" 666 "Bleb"]
+abbrev Bleb {prec emax : Int} := @_root_.Bleb prec emax
+
+theorem Beqb_correct {prec emax : Int}
+    (f1 f2 : binary_float prec emax)
+    (h1 : is_finite f1 = true) (h2 : is_finite f2 = true) :
+    Beqb f1 f2 = FloatSpec.Core.Raux.Req_bool (B2R f1) (B2R f2) := by
+  exact _root_.Beqb_correct f1 f2 h1 h2
+
+theorem Beqb_refl {prec emax : Int} (f : binary_float prec emax) :
+    Beqb f f = !(is_nan f) := by
+  exact _root_.Beqb_refl f
+
+theorem Bltb_correct {prec emax : Int}
+    (f1 f2 : binary_float prec emax)
+    (h1 : is_finite f1 = true) (h2 : is_finite f2 = true) :
+    Bltb f1 f2 = FloatSpec.Core.Raux.Rlt_bool (B2R f1) (B2R f2) := by
+  exact _root_.Bltb_correct f1 f2 h1 h2
+
+theorem Bleb_correct {prec emax : Int}
+    (f1 f2 : binary_float prec emax)
+    (h1 : is_finite f1 = true) (h2 : is_finite f2 = true) :
+    Bleb f1 f2 = FloatSpec.Core.Raux.Rle_bool (B2R f1) (B2R f2) := by
+  exact _root_.Bleb_correct f1 f2 h1 h2
+
+end BinarySingleNaN

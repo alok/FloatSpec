@@ -46,6 +46,13 @@ unordered, represented by `none : Option Ordering`. The successor of the
 negative smallest subnormal is negative zero. These are examples where
 real-valued equality alone cannot describe the whole interface.
 
+The demo also prints the public Boolean APIs as `[=, <, <=]`. For `+0`
+versus `-0`, that is `[true,false,true]`; for `+0` versus NaN, all three are
+false. Follow `BinarySingleNaN.Beqb`, `Bltb`, and `Bleb` to `Bcompare`:
+an unordered result must stay unordered rather than being coerced into
+equality. These APIs are now executable; the previous real-based definitions
+had valid finite correctness proofs but could not run in compiled clients.
+
 ## 5. Reproduce an actual audit lesson
 
 The raw pairs `(1,0)` and `(4,-2)` both denote one. Only the latter is canonical

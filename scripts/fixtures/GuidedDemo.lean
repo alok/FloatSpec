@@ -40,11 +40,19 @@ private def zeroComparison : Option Ordering :=
 private def nanComparison : Option Ordering :=
   b64_compare (b64_of_bits 0x7ff8000000000000) (b64_of_bits 0)
 
+private def booleanComparison : List (List Bool) :=
+  let positiveZero : BinarySingleNaN.binary_float 3 4 := .B754_zero false
+  let negativeZero : BinarySingleNaN.binary_float 3 4 := .B754_zero true
+  [negativeZero, .B754_nan].map fun y =>
+    [BinarySingleNaN.Beqb positiveZero y,
+     BinarySingleNaN.Bltb positiveZero y, BinarySingleNaN.Bleb positiveZero y]
+
 private def negativeTinySuccessor : Nat :=
   (bits_of_b64 (b64_succ (b64_of_bits 0x8000000000000001))).toNat
 
 example : zeroComparison = some .eq ∧ nanComparison = none ∧
-    negativeTinySuccessor = 0x8000000000000000 := by decide +kernel
+    negativeTinySuccessor = 0x8000000000000000 ∧
+    booleanComparison = [[true, false, true], [false, false, false]] := by decide +kernel
 
 private def rawValidity : List Bool :=
   [valid_binary_SF (prec := 3) (emax := 4) (.S754_finite false 1 0),
@@ -69,9 +77,11 @@ def run : IO Unit := do
     throw (IO.userError "double rounding witness failed")
   IO.println "4. +0 and -0 compare equal; NaN is unordered; successor of negative tiniest is -0."
   IO.println s!"   Zero comparison: {repr zeroComparison}; NaN: {repr nanComparison}."
+  IO.println s!"   Boolean [=, <, <=] for +0 versus [-0, NaN]: {booleanComparison}."
   IO.println s!"   Successor word: {negativeTinySuccessor} (negative zero)."
   unless zeroComparison == some .eq && nanComparison == none &&
-      negativeTinySuccessor == 0x8000000000000000 do
+      negativeTinySuccessor == 0x8000000000000000 &&
+      booleanComparison == [[true, false, true], [false, false, false]] do
     throw (IO.userError "special values failed")
   IO.println "5. Same real value does not mean canonical representation."
   IO.println s!"   (mantissa 1, exponent 0) versus (4, -2): validity = {rawValidity}."

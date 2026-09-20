@@ -15,6 +15,45 @@ This guide follows those jobs in order. The detailed
 [independent continuation audit](ASTRA_AUDIT_2026-09-19.md) retain the
 declaration-by-declaration findings and historical milestones.
 
+## Wake-up summary — updated September 20, 2026
+
+**What changed most recently:** the public SingleNaN Boolean operations
+`Beqb`, `Bltb`, and `Bleb` now execute. Previously even comparing two zeros
+failed in a compiled client because these definitions went through mathematical
+reals. They now inspect the source-shaped integer comparator's result. Their
+finite real-value correctness theorems and NaN-aware reflexivity theorem are
+still closed proofs; this change introduced no proof holes.
+
+**Why it matters:** a theorem can correctly describe a noncomputable value
+without giving you a program you can run. This repair connects the actual
+Boolean API to executable code while retaining that mathematical contract.
+The demo now prints equality, less-than, and less-or-equal for signed zeros
+and NaN. Section 5 below explains the tests without treating them as proofs
+of universal source equivalence.
+
+**Verified in this continuation:** the full Lean 4.34.0 macOS build (6,216
+jobs), the five-part demo, and the same eight boundary cases independently in
+Lean and pinned Rocq pass. All 4,210 differential comparison cases agree;
+Rocq's outputs also became 4,210 kernel-checked Lean assertions. The 34 live
+harness tests, including deliberate mutations, pass. A separate run checked
+600,000 Boolean observations against native Float/Float32. The compiled trust
+audit still finds exactly four named proof debts. The
+[ledger](ASTRA_AUDIT_2026-09-19.md#september-20-continuation-executable-boolean-comparison)
+records the replay seed, source fingerprint, and local receipts.
+
+**What is not done:** whole-library source-signature review remains incomplete,
+and the four native/decoder proof obligations remain. Fork CI has a separate
+known dependency-cache/toolchain mismatch; a local macOS pass is not a green
+CI claim. Reviewable work is on
+[`alok/FloatSpec`, branch `codex/astra-flocq-audit`](https://github.com/alok/FloatSpec/tree/codex/astra-flocq-audit),
+with BAIF retained as the optional `upstream` remote.
+
+**Next active correction:** the full-payload real-value injectivity theorems
+still require two precision assumptions absent from pinned Rocq. The equivalent
+SingleNaN theorems already have the right interface. A typed consumer reproduced
+the full-payload mismatch; the next patch will remove only those unsupported
+premises and retain the finite/nonzero and sign hypotheses that matter.
+
 ## 1. Start with one small rounding problem
 
 Imagine binary floating point with three significant bits. Around one, the
@@ -272,6 +311,24 @@ native Float/Float32 comparisons. Binary32/64 delegate to the proved generic
 comparison, so agreement between those two Lean entry points checks wiring,
 not two independent algorithms. Generic comparison needs no positive-precision
 instance; tests include degenerate formats as well as ordinary IEEE formats.
+The SingleNaN Boolean APIs use the same comparator:
+
+| Comparison outcome | `Beqb` (=) | `Bltb` (<) | `Bleb` (≤) |
+|---|---:|---:|---:|
+| less | false | true | true |
+| equal | true | false | true |
+| greater | false | false | false |
+| unordered (NaN) | false | false | false |
+
+Thus `+0` and `-0` are equal, while `NaN ≤ NaN` is false. The finite
+correctness theorems relate these results to comparisons of represented reals;
+they explicitly require finite inputs. The reflexivity theorem separately
+includes infinities and excludes only NaN. The paired
+[`BooleanComparison.lean`](../../scripts/fixtures/BooleanComparison.lean) and
+[Rocq fixture](../../scripts/fixtures/BooleanComparison.v) keep these boundaries
+visible and executable. Checking several Lean wrappers of this shared
+algorithm is a wiring check, not several independent numerical oracles.
+
 The direct decoder and integer-width packing families avoid
 using `Float.Model.ofBits` as a substitute for the port's own decoder.
 
@@ -321,7 +378,7 @@ changed surfaces have been checked.
 Source links make that review navigable. `@[flocq_source]` records a pinned
 Coq path, line, and name; `@[flocq_local]` explains a Lean-only helper.
 Eleven modules currently enforce strict public-definition classification.
-The compiler-backed validator checks all 143 registered anchors, including
+The compiler-backed validator checks all 149 registered anchors, including
 combined attributes and later attribute commands. These links are metadata,
 not a proof that bodies or theorem signatures correspond.
 

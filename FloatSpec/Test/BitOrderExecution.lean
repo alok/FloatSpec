@@ -74,6 +74,22 @@ def checkNativeOrder : IO Unit := do
     unless b32_compare (b32_of_bits left.toUInt32.toNat) (b32_of_bits right.toUInt32.toNat) ==
         native32 left.toUInt32 right.toUInt32 do
       throw (IO.userError s!"native binary32 comparison disagreement: {left.toUInt32}, {right.toUInt32}")
+    let x64 := Binary.B2BSN (b64_of_bits left.toNat)
+    let y64 := Binary.B2BSN (b64_of_bits right.toNat)
+    let nx64 := Float.ofBits left
+    let ny64 := Float.ofBits right
+    unless BinarySingleNaN.Beqb x64 y64 == (nx64 == ny64) &&
+        BinarySingleNaN.Bltb x64 y64 == decide (nx64 < ny64) &&
+        BinarySingleNaN.Bleb x64 y64 == decide (nx64 ≤ ny64) do
+      throw (IO.userError s!"native binary64 Boolean disagreement: {left}, {right}")
+    let x32 := Binary.B2BSN (b32_of_bits left.toUInt32.toNat)
+    let y32 := Binary.B2BSN (b32_of_bits right.toUInt32.toNat)
+    let nx32 := Float32.ofBits left.toUInt32
+    let ny32 := Float32.ofBits right.toUInt32
+    unless BinarySingleNaN.Beqb x32 y32 == (nx32 == ny32) &&
+        BinarySingleNaN.Bltb x32 y32 == decide (nx32 < ny32) &&
+        BinarySingleNaN.Bleb x32 y32 == decide (nx32 ≤ ny32) do
+      throw (IO.userError s!"native binary32 Boolean disagreement: {left.toUInt32}, {right.toUInt32}")
 
 set_option maxRecDepth 10000
 

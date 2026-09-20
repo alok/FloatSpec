@@ -186,11 +186,17 @@ must fail in both compiled Lean and kernel reduction against Rocq.
 
 The twenty-second family executes generic comparison over ten formats,
 including nonpositive precision and `emax <= prec`. These exports have no
-precision premises in Flocq. Eleven columns retain both raw validity flags,
-both converted values, and the ordering result. Invalid raw finite carriers
+precision premises in Flocq. Fourteen columns retain both raw validity flags,
+both converted values, the ordering result, and the public `Beqb`, `Bltb`,
+and `Bleb` results. Invalid raw finite carriers
 are explicitly converted to NaN; signed zeros, infinities, and unordered NaNs
-are preserved. An operand-swap mutation must fail in both Lean execution
-paths. The public `Binary.Bcompare` and `BinarySingleNaN.Bcompare` now return
+are preserved. Operand-swap, NaN-equality, and strict/non-strict Boolean
+mutations must fail in both Lean execution paths. The paired
+`scripts/fixtures/BooleanComparison.lean` and `.v` independently check eight
+boundary cases with literal expected answers. `Test/BitOrderExecution.lean`
+also checks the three Boolean APIs against 600,000 native Float/Float32
+Boolean observations using the existing seed `388312`.
+The public `Binary.Bcompare` and `BinarySingleNaN.Bcompare` now return
 `Option Ordering` and execute integer comparisons, with closed value and
 reversal proofs. The legacy raw-carrier integer-coded adapter is named
 `BcompareIntCompat` rather than presented as the source interface.

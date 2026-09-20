@@ -82,6 +82,34 @@ Rocq fixture command used a different output basename, then omitted explicit
 arguments to source definitions; those setup failures were corrected before
 the passing paired-consumer run and are not counted as semantic mismatches.
 
+## SingleNaN Boolean comparison execution
+
+Pinned `BinarySingleNaN.v:628,652,666` defines `Beqb`, `Bltb`, and `Bleb`
+through `SpecFloat.SFeqb`, `SFltb`, and `SFleb`. Inspecting the compiled Rocq
+definitions confirms they inspect `SFcompare`: equality accepts only `Eq`,
+strict order only `Lt`, and non-strict order `Lt` or `Eq`; `None` yields false
+for all three. The old Lean definitions had correct finite real-value
+contracts but were noncomputable. A compiled signed-zero equality client
+reproduced this execution gap before the change.
+
+The root definitions and `BinarySingleNaN` aliases now use the already proved
+integer `Bcompare`, with no additional precision premise. The three finite
+correctness proofs and `Beqb_refl` remain closed and depend only on standard
+Lean/mathlib axioms, not `sorryAx`. The definitions were moved after their
+comparator dependency; public names and theorem signatures are preserved.
+Six new source anchors cover the implementations and source-facing aliases.
+Pinned `Binary.v` does not export an analogous trio of full-payload Boolean
+names; this patch does not invent those source declarations.
+
+At source fingerprint
+`53593e9a2aedc6a490a35f735d00a35033837eaaa9eae3bbe1384c7a9f620212`,
+4,210 ten-format comparison rows agree in compiled Lean, kernel reduction,
+and pinned Rocq (seed `702061`, 300 supplemental samples per format). All
+4,210 Rocq observations also check as individual Lean kernel equalities.
+Eight paired boundary assertions, 600,000 native Boolean comparisons, and
+34 harness tests including real mutations pass. This is targeted source/body
+review and finite execution evidence, not whole-library semantic certification.
+
 ## Elaborated premises, not just displayed theorem text
 
 An additional compiler-assisted review found **31 unwanted premises across

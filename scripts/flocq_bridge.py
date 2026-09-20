@@ -34,7 +34,7 @@ OPS = ("power", "div_eucl", "location", "round", "truncate", "div", "plus", "sqr
        "formats", "digits", "operations", "format_calc", "overflow", "bits32", "bits64",
        "bit_fields", "order32", "order64", "validity", "nearby", "neighbors", "comparison", "small_ieee")
 ARITIES = dict(zip(OPS, (2, 2, 3, 3, 5, 6, 6, 4, 3, 2, 5, 8, 4, 1, 1, 6, 2, 2, 5, 6, 6, 10, 15), strict=True))
-WIDTHS = dict(zip(OPS, (1, 2, 3, 6, 3, 2, 2, 2, 4, 1, 13, 12, 5, 9, 9, 8, 14, 14, 15, 7, 17, 11, 39), strict=True))
+WIDTHS = dict(zip(OPS, (1, 2, 3, 6, 3, 2, 2, 2, 4, 1, 13, 12, 5, 9, 9, 8, 14, 14, 15, 7, 17, 14, 39), strict=True))
 RADIX_OPS = {"truncate", "div", "plus", "sqrt", "digits", "operations", "format_calc"}
 
 
@@ -394,6 +394,9 @@ def expressions(case: Case) -> tuple[str, str]:
             rocq += f' ++ standard (@BinarySingleNaN.B2SF ({p}) ({emax}) {name})'
         lean += ' ++ [((BinarySingleNaN.Bcompare x y).map comparisonCode).getD 2]'
         rocq += f' ++ [comparison_code (@BinarySingleNaN.Bcompare ({p}) ({emax}) x y)]'
+        for name in ('Beqb', 'Bltb', 'Bleb'):
+            lean += f' ++ [boolean (BinarySingleNaN.{name} x y)]'
+            rocq += f' ++ [boolean (@BinarySingleNaN.{name} ({p}) ({emax}) x y)]'
         return lean, rocq
     if op == "neighbors":
         prec, emax, kind, sign, mantissa, exponent = case.args

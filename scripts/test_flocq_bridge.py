@@ -209,8 +209,59 @@ class LiveTests(unittest.TestCase):
             rows = bridge.execute(cases, flocq, bridge.configured_coqc(flocq), Path(directory))
             bridge.bootstrap_lean(cases, rows["rocq"], Path(directory))
         self.assertEqual(bridge.compare(cases, rows), [])
-        self.assertEqual([row[-1] for row in rows["lean"]], [-1, 2, 0, 2, 1])
+        self.assertEqual([row[10] for row in rows["lean"]], [-1, 2, 0, 2, 1])
         self.assertEqual(rows["lean"][1][:6], [0, 1, 2, 0, 0, 0])
+        self.assertEqual([row[-3:] for row in rows["lean"]],
+                         [[0, 1, 1], [0, 0, 0], [1, 0, 1], [0, 0, 0], [0, 0, 0]])
+
+    def test_boolean_comparison_special_values_and_finite_boundaries(self):
+        flocq = Path(os.environ["FLOCQ_AUDIT_DIR"]).resolve()
+        # Each expectation is [equal, strictly less, less-or-equal].
+        # Constructor tags are zero=0, infinity=1, NaN=2, finite=3.
+        examples = [
+            ((0, 0, 1, 0), (0, 1, 1, 0), [1, 0, 1]),
+            ((2, 0, 1, 0), (2, 0, 1, 0), [0, 0, 0]),
+            ((2, 0, 1, 0), (0, 0, 1, 0), [0, 0, 0]),
+            ((0, 0, 1, 0), (2, 0, 1, 0), [0, 0, 0]),
+            ((1, 0, 1, 0), (1, 0, 1, 0), [1, 0, 1]),
+            ((1, 1, 1, 0), (1, 1, 1, 0), [1, 0, 1]),
+            ((1, 1, 1, 0), (1, 0, 1, 0), [0, 1, 1]),
+            ((1, 0, 1, 0), (3, 0, 7, 1), [0, 0, 0]),
+            ((3, 1, 7, 1), (3, 1, 1, -4), [0, 1, 1]),
+            ((3, 0, 3, -4), (3, 0, 4, -4), [0, 1, 1]),
+            ((3, 1, 3, -4), (3, 1, 4, -4), [0, 0, 0]),
+            ((3, 0, 1, 0), (3, 0, 4, -2), [0, 0, 0]),
+        ]
+        cases = [bridge.Case("comparison", (3, 4, *x, *y)) for x, y, _ in examples]
+        with tempfile.TemporaryDirectory(prefix="floatspec-boolean-comparison-") as directory:
+            rows = bridge.execute(cases, flocq, bridge.configured_coqc(flocq), Path(directory))
+            bridge.bootstrap_lean(cases, rows["rocq"], Path(directory))
+        self.assertEqual(bridge.compare(cases, rows), [])
+        self.assertEqual([row[-3:] for row in rows["rocq"]],
+                         [expected for _, _, expected in examples])
+
+    def test_boolean_comparison_mutations_are_rejected(self):
+        flocq = Path(os.environ["FLOCQ_AUDIT_DIR"]).resolve()
+        original = bridge.expressions
+        mutations = [
+            # Treating NaN as reflexively equal must fail on both Lean paths.
+            ("BinarySingleNaN.Beqb x y", "true", (2, 0, 1, 0)),
+            # Confusing <= with < must fail even on differently signed zeros.
+            ("BinarySingleNaN.Bleb x y", "BinarySingleNaN.Bltb x y", (0, 1, 1, 0)),
+        ]
+        for old, new, operand in mutations:
+            with self.subTest(mutation=old):
+                def mutated(case):
+                    lean, rocq = original(case)
+                    self.assertIn(old, lean)
+                    return lean.replace(old, new), rocq
+                case = bridge.Case("comparison", (3, 4, *operand, 0, 0, 1, 0))
+                with (tempfile.TemporaryDirectory(prefix="floatspec-boolean-mutation-") as directory,
+                      patch.object(bridge, "expressions", mutated)):
+                    rows = bridge.execute([case], flocq, bridge.configured_coqc(flocq), Path(directory))
+                failures = bridge.compare([case], rows)
+                self.assertEqual(len(failures), 1)
+                self.assertEqual(failures[0]["paths"], ["lean", "compiled"])
 
     def test_generic_comparison_operand_swap_mutation_is_rejected(self):
         flocq = Path(os.environ["FLOCQ_AUDIT_DIR"]).resolve()
