@@ -67,6 +67,22 @@ one. Truncating the quotient `1.75 / 1` leaves remainder `0.75`, which it cannot
 represent. Both assistants prove this too. This explains why merely changing
 the integer rounding mode cannot remove the exponent-monotonicity assumption.
 
+### An integer example: executable does not mean approximate
+
+Run `lake env lean scripts/fixtures/PffIntegerExecution.lean`. It uses the
+actual Pff operations and checks its answers, including 4096 positive-division
+cases. Read it from the small observation helpers to the kernel equalities,
+then the `#eval` loops.
+
+`Zquotient (-7) 3 = -2`: truncate toward zero, rather than rounding down to
+`-3`. `maxDiv 2 8 7 = 3`: among exponents up to seven, the largest power of two
+dividing eight is `2^3`. `maxDiv 2 0 7 = 7`: every such power divides zero.
+Those boundary answers are part of the source's total behavior, not numerical
+approximations. The constructive-versus-classical equality theorem explains
+why making this function executable does not change its mathematical answer.
+
+These are extra standalone examples, not new sections of the seven-part demo.
+
 ## 4. Separate bits, comparison, and real value
 
 Positive and negative zero have different words but compare equal. NaN is

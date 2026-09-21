@@ -3888,6 +3888,53 @@ assertions in 17.550 seconds. It has no conditional neighbor coverage.
 Report: `/private/tmp/floatspec-pff-addition-863101/report.json`.
 No new sorry or axiom was added; the four manifest debts remain unchanged.
 
+### September 21 — executable Pff integers and constructive bounded divisibility
+
+Four previously unnecessary `noncomputable` annotations are removed from
+`Pdiv`, `oZ`, `oZ1` and `Zquotient`; their bodies and types are unchanged.
+`maxDiv` now selects its decision with the existing `ZdividesP`, as the source
+does, instead of `Classical.propDecidable`. A closed Lean fixture theorem proves
+equality with the old classical definition for all integer radices/values and
+natural bounds. No new proof debt is used. Six pinned links identify these
+executable exports, including the existing divisibility checker.
+
+Paired standalone fixtures cover signed and zero-divisor quotients, full
+optional-positive records, smallest positives, divisibility argument order,
+and negative/zero/one-radix bounded divisibility. The Lean native fixture also
+checks 4096 positive divisions. The independent bridge oracle uses rational
+truncation, natural division, and finite enumeration of divisible powers.
+Seed **863307** passes **2172** compiled/reduced/Rocq cases and generated kernel
+equalities, with **6198** independent assertions including twelve zero-divisor
+quotient cases, in **160.604 seconds**. Source fingerprint:
+`b2e86f6337767c162831fba5e81932fe970324448d9d10b02967e020d54ad975`.
+Report: `/private/tmp/floatspec-pff-integer-863307/report.json`.
+
+Eight harness tests pass in 53.406 seconds. Five live mutations corrupt both
+actual prover programs together (floor division, swapped quotient/remainder,
+false option tag, reversed divisibility, zero search bound); the independent
+gate rejects each before bootstrap and retains its replay. Error/interrupt
+controls and batching guards also pass. These tests are integrated into the
+three-loop script; hosted CI runs the independent Lean fixture and non-live
+harness tests, not an invented Rocq installation.
+
+Development failures are not passes: the first fixture needed explicit Nat-to-Int
+casts; a mock test initially lacked a compiler override; random zero denominators
+required counting fixed boundaries separately. The first corpus interleaved
+capped families and was explicitly interrupted after 278 checked cases; its
+report remains `error` with `KeyboardInterrupt`. Grouping inputs fixes the
+excessive per-case prover startups without dropping cases. The first maxDiv
+mutation triggered an unused-variable warning rejected by the strict parser;
+the corrected executable mutation uses `bound - bound` and is rejected for
+its wrong numerical result. The successful receipts above are fresh reruns.
+
+Final local gates pass: the full macOS Lean 4.34 build completes 6226 jobs;
+compiled trust checks 13692 source declarations across 59 modules with exactly
+the four existing manifest-only debts; fresh metadata validates 344 pinned
+anchors. Generated status is unchanged and whitespace/actionlint/shell syntax
+checks pass. Production Pff LSP queries remain partial on this large file;
+the completed compiler build, not those partial responses, is the decisive
+whole-file diagnostic result. The new fixture has complete clean LSP diagnostics.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In

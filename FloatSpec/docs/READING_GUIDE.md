@@ -73,6 +73,7 @@ Current verification is deliberately separated by source snapshot:
 
 | Snapshot | Completed evidence |
 |---|---|
+| Executable Pff integers/divisibility, `b2e86f63` | Four marker-only changes and constructive `maxDiv`; a universal Lean equality proof against its old classical definition. Paired standalone fixtures and 4,096 native positive-division checks. Fresh 2,172 three-way cases/kernel equalities and 6,198 independent assertions, seed 863307; eight harness tests including five shared-program mutations. |
 | Pff addition/subtraction contracts, `1fb9f135` | Full 6,226-job build; closed proofs with paired exact source types and radix-zero counterexamples; eight live contract mutations. Fresh 72-input three-way replay/kernel equalities and 1,272 independent assertions, seed 863101. Numerical bodies unchanged. |
 | Current Pff sign laws, `d0ab66b2` | Full 6,226-job build; 13,687 compiled source declarations / 59 modules; four manifest-only debts; 336 validated source anchors. Four paired source laws and four live mutations; fresh 72-input three-way replay with generated kernel equalities, seed 862619. Only four closed theorem exports were added to the previous production snapshot; operation bodies are unchanged. |
 | Remainder audit, `3c5a913d` | Full build; 12,100 three-way cases/kernel equalities and 84,182 independent assertions, seed 862513. Eight contract controls plus six bridge tests pass; eleven paired exponent-boundary declarations explain the necessary hypotheses. Final standalone sweep re-executed 14 Lean modules, 26 Lean fixtures, 38 Rocq fixtures and all seven demo examples on this snapshot. |
@@ -91,18 +92,22 @@ and [audit ledger](ASTRA_AUDIT_2026-09-19.md); these snapshots are not interchan
 **About `noncomputable`:** arbitrary-real specifications and executable
 integer algorithms are different layers in both provers. Some legacy integer
 helpers are unnecessarily marked, which is a real execution-capability gap.
-The unchanged `Zquotient (-7) 3` returns −2 in Rocq and Lean kernel reduction,
-but Lean's `#eval` rejects its marker. Read
+The September 20 probe found `Zquotient (-7) 3` returned −2 in Rocq and Lean
+kernel reduction, while Lean's `#eval` rejected its marker. That specific gap
+is now fixed: `Zquotient`, `Pdiv`, `oZ` and `oZ1` execute with unchanged bodies
+and types. `maxDiv` now uses constructive divisibility, with a universal Lean
+proof that its answer is unchanged. Arbitrary-real specifications remain as
+they were. Read
 [the explanation and concrete probes](COMPUTABLE_COMPARE_GUIDE.md#5-what-noncomputable-does-and-what-it-does-not-do).
-No existing marker was changed in answering that question.
+The original explanatory answer was read-only; these are subsequent tested fixes.
 
 **CI repair is now approved and implemented; hosted verification is pending.**
 The last failed run requested the pinned Mathlib rc2 cache under Lean 4.34.0
 final. The workflow now keeps stable 4.34.0, builds the reviewed dependency
 sources without that incompatible binary cache, and saves completed artifacts
 through the action's GitHub cache. A local macOS pass is not a hosted/Linux
-pass. The [continuation plan](FIXUP_PLAN_2026-09-21.md) tracks the remaining
-Pff observer contracts and integer execution gaps.
+pass. The [continuation plan](FIXUP_PLAN_2026-09-21.md) tracks completed Pff
+repairs, verification and the pending hosted result.
 
 For the remaining fidelity work, read [SOURCE_FIDELITY_GAPS.md](SOURCE_FIDELITY_GAPS.md).
 Finite agreement, closed proofs, source links and correct source correspondence

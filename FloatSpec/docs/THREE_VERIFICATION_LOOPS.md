@@ -102,6 +102,31 @@ and positive/negative odd/even exponents. Replay it with `scripts/pff_bridge.py`
 to observe all 61 profile columns in all three paths. These executions do not
 replace the universal Lean observer proofs or certify the whole Pff facade.
 
+## Pff integer execution and constructive divisibility
+
+`PffIntegerExecution.lean` and `.v` execute the actual `Pdiv`, `oZ`, `oZ1`,
+`Zquotient`, `ZdividesP` and `maxDiv` exports. The Lean fixture also proves that
+the constructive `maxDiv` agrees universally with its prior classical body.
+That preservation theorem is separate from cross-assistant finite agreement.
+Integer-only marker removals preserve the other four bodies and types.
+
+```sh
+lake env lean scripts/fixtures/PffIntegerExecution.lean
+uv run scripts/pff_integer_bridge.py --flocq-dir "$FLOCQ_AUDIT_DIR" \
+  --seed 863307 --samples 300 --output /tmp/pff-integer-results
+FLOCQ_AUDIT_DIR="$FLOCQ_AUDIT_DIR" uv run scripts/test_pff_integer_bridge.py -v
+```
+
+The independent oracle uses exact rational truncation, Euclidean natural
+division and finite enumeration of divisible powers. Complete optional records
+are observed, not only their numeric payload. The corpus includes signed
+127-bit quotients, zero divisors, smallest positives, zero/one/negative radices,
+and truncated search bounds. Invalid positive carriers are rejected before
+transport. Replay `scripts/fixtures/PffIntegerReplay.json` for a small boundary
+set. Live mutations change both provers' programs together: floor division,
+swapped quotient/remainder, a false option tag, reversed divisibility arguments,
+and an always-zero search bound must still fail the independent oracle.
+
 ## 1. Lean checks itself
 
 `lake build FloatSpec.Test FloatSpecTests floatspec` builds the port, its tests,

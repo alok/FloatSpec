@@ -43,15 +43,18 @@ support radix one. Both assistants prove radix-zero counterexamples.
 Eight live contract mutations reject missing premises and incorrect signs.
 This closes these two interface gaps, not the rest of the unreviewed Pff API.
 
-The existing Pdiv, oZ, oZ1 and Zquotient bodies use only integer/natural
-arithmetic but still carry noncomputable markers. maxDiv additionally selects
-a classical divisibility decision. Exposing execution and cross-testing signed
-quotients, zero divisors, positive-carrier boundaries and divisibility is a
-useful next slice. Do not infer arithmetic failure merely from those markers.
+Pdiv, oZ, oZ1 and Zquotient now execute with unchanged integer/natural bodies
+and types. maxDiv uses the existing constructive ZdividesP rather than a
+classical decision, with a closed universal equality proof against its old
+definition. Paired fixtures and 2172 three-way cases test signed quotients,
+zero divisors, full optional records, smallest positives and bounded
+divisibility at negative/zero/one radices too. Five shared-program mutations
+are rejected independently. Other noncomputable declarations still need
+individual review; mathematical real specifications should remain mathematical.
 
 ## Priority 3: make provenance coverage a gate everywhere
 
-The latest compiled metadata validates 336 source anchors. Strict public-definition
+The latest compiled metadata validates 344 source anchors. Strict public-definition
 classification is enabled in fourteen source files plus a section of Binary;
 unclassified definitions elsewhere are not yet rejected. The current linter
 checks public def/abbrev declarations, not every theorem. Expand classification

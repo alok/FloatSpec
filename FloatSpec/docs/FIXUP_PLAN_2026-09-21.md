@@ -27,17 +27,25 @@ Lean theorem validity, and source equivalence remain separate claims.
    caller compatibility, and test zero/negative-radix exclusions explicitly.
    Both closed proofs, paired typed clients/counterexamples, eight live mutations,
    full build and the 72-case replay (seed 863101) pass. No numerical body changed.
-3. **In progress — enable native execution for selected integer-only definitions.**
+3. Complete — enable native execution for selected integer-only definitions.
    Start with `Zquotient`, `Pdiv`, `oZ`, and `oZ1`; preserve their existing
    bodies/types where possible. Treat classical divisibility in `maxDiv` as
    a separate decision-procedure issue, not an annotation-only fix.
-4. Pending — execute each changed slice in Lean and pinned Rocq, compare the
+   The user then explicitly encouraged bolder fixes. The selected extension is
+   constructive `maxDiv` using the existing source-shaped `ZdividesP`, with a
+   closed equality proof against the old classical definition and cross-tests
+   at negative/zero/one radices as well as ordinary radices.
+4. Complete — execute each changed slice in Lean and pinned Rocq, compare the
    actual exported operations with replayable inputs, bootstrap Lean kernel
    equalities, and reject deliberately wrong implementations with mutations.
    Do not edit/build imported sources during a frozen bridge run.
-5. Pending — run full macOS build, compiled trust, source-anchor and generated
-   status checks; distinguish hosted results from local results by commit/hash.
-6. Pending — update the reading guide, fidelity ledger and Linear CFS-3; commit
+   Seed 863307 passes 2172 cases and kernel equalities with 6198 independent
+   assertions; eight harness tests include five live shared-program mutations.
+   The initial ungrouped run was deliberately interrupted and remains an error.
+5. Complete locally — full macOS build (6226 jobs), compiled trust (13692 source
+   declarations / 59 modules / four debts), 344 pinned anchors and generated
+   status checks pass. Hosted status is still pending as recorded in step 1.
+6. **In progress — update the reading guide, fidelity ledger and Linear CFS-3; commit**
    only verified coherent slices, write the repository's post-commit logs, and
    push to the user's origin/main.
 

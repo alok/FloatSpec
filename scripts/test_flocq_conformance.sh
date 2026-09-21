@@ -221,6 +221,8 @@ for fixture in BooleanComparison PrimitiveComparison PrimitiveConversion Primiti
     "$repo_root/scripts/fixtures/$fixture.v"
 done
 echo 'Pure Rocq contract loop passed: typed premises, counterexamples, finite error laws, 35,845 rounding-oracle cases'
+"$coqc_bin" -q -R "$flocq_dir/src" Flocq -o "$scratch/PffIntegerExecution.vo" \
+  "$repo_root/scripts/fixtures/PffIntegerExecution.v"
 
 run_lake build FloatSpec.Test.FlocqConformance FloatSpec.Test.ArithmeticProperties \
   FloatSpec.Test.BitsExecution FloatSpec.Test.BitOrderExecution FloatSpec.Test.NativeSourceArithmetic \
@@ -244,6 +246,7 @@ for fixture in BooleanComparison PrimitiveComparison PrimitiveConversion Primiti
   run_lake env lean "$repo_root/scripts/fixtures/$fixture.lean"
 done
 run_lake env lean --run "$repo_root/scripts/fixtures/GuidedDemo.lean"
+run_lake env lean "$repo_root/scripts/fixtures/PffIntegerExecution.lean"
 run_lake env lean --run "$repo_root/scripts/fixtures/PffWalkthrough.lean"
 echo 'Pure Lean loop passed: examples and 10,734 kernel-checked arithmetic invariant cases'
 run_lake exe floatspec_demo
@@ -308,6 +311,11 @@ FLOCQ_AUDIT_DIR="$flocq_dir" uv run "$repo_root/scripts/test_ulp_nearest_contrac
 FLOCQ_AUDIT_DIR="$flocq_dir" uv run "$repo_root/scripts/test_round_ne_point_contracts.py" -v
 FLOCQ_AUDIT_DIR="$flocq_dir" uv run "$repo_root/scripts/test_remainder_contracts.py" -v
 FLOCQ_AUDIT_DIR="$flocq_dir" uv run "$repo_root/scripts/test_pff_basic_contracts.py" -v
+
+uv run "$repo_root/scripts/pff_integer_bridge.py" --flocq-dir "$flocq_dir" --coqc "$coqc_bin" \
+  --seed "${FLOCQ_BRIDGE_SEED:-20260919}" --samples "${FLOCQ_PFF_INTEGER_SAMPLES:-100}" \
+  --batch-size "${FLOCQ_PFF_INTEGER_BATCH_SIZE:-100}"
+FLOCQ_AUDIT_DIR="$flocq_dir" uv run "$repo_root/scripts/test_pff_integer_bridge.py" -v
 
 uv run "$repo_root/scripts/remainder_bridge.py" --flocq-dir "$flocq_dir" --coqc "$coqc_bin" \
   --seed "${FLOCQ_BRIDGE_SEED:-20260919}" --samples 0 \

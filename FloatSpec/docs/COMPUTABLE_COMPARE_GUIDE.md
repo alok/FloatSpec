@@ -134,7 +134,24 @@ Lean #eval:     Int.tdiv (-7) 3   --> -2
 Lean #print axioms Zquotient     --> no axioms
 ```
 
-No `Zquotient` annotation or body was changed for that explanation.
+No `Zquotient` annotation or body was changed for that original explanation.
+The follow-up implementation on September 21 removes its unnecessary marker:
+`#eval Zquotient (-7) 3` now runs and returns `-2`, with the same body and type.
+`Pdiv`, `oZ` and `oZ1` are executable for the same reason. This closes those
+specific execution gaps; the real-valued specifications remain mathematical.
+
+`maxDiv` needed one more step. Its old definition used classical choice to
+decide integer divisibility despite an existing constructive `ZdividesP`.
+It now uses that checker. A closed Lean theorem proves equality with the old
+definition for every radix, value and bound; paired execution probes also run
+the actual pinned Rocq function. This is not replacing a real-number spec with
+machine floats, nor pretending that finite tests prove source equivalence.
+
+Run the self-checking examples with:
+
+```sh
+lake env lean scripts/fixtures/PffIntegerExecution.lean
+```
 
 Conversely, Rocq's `Definition` keyword does not promise executable extraction.
 The pinned `Zfloor` and `mag` reference classical real-number infrastructure;

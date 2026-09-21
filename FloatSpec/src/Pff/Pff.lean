@@ -15250,7 +15250,8 @@ def nat_of_P (p : Positive) : Nat :=
 -- Coq: Pdiv and its correctness properties over positive numbers
 
 -- Optional-positive to Nat (Coq oZ)
-noncomputable def oZ (h : Option Positive) : Nat :=
+@[flocq_source "src/Pff/Pff.v" 5392 "oZ"]
+def oZ (h : Option Positive) : Nat :=
   match h with
   | none => 0
   | some p => nat_of_P p
@@ -15264,7 +15265,8 @@ theorem oZ_nat_to_positive_option (n : Nat) :
   cases n <;> rfl
 
 -- Coq: Pdiv — division with remainder on positives, returning quotient/remainder
-noncomputable def Pdiv (p q : Positive) : Option Positive × Option Positive :=
+@[flocq_source "src/Pff/Pff.v" 5337 "Pdiv"]
+def Pdiv (p q : Positive) : Option Positive × Option Positive :=
   (nat_to_positive_option (nat_of_P p / nat_of_P q),
     nat_to_positive_option (nat_of_P p % nat_of_P q))
 
@@ -15294,7 +15296,8 @@ theorem Pdiv_correct (p q : Positive) :
     simpa [Pdiv, oZ_nat_to_positive_option] using Nat.mod_lt (nat_of_P p) hq
 
 -- Bridge Option Positive to Int (Coq oZ1)
-noncomputable def oZ1 (h : Option Positive) : Int :=
+@[flocq_source "src/Pff/Pff.v" 5594 "oZ1"]
+def oZ1 (h : Option Positive) : Int :=
   match h with
   | none => 0
   | some p => Int.ofNat (nat_of_P p)
@@ -15316,7 +15319,8 @@ theorem inj_oZ1 (z : Option Positive) :
   | some p => simp [oZ1, oZ]
 
 -- Coq: Zquotient — integer quotient using positive division on magnitudes
-noncomputable def Zquotient (m n : Int) : Int := m.tdiv n
+@[flocq_source "src/Pff/Pff.v" 5601 "Zquotient"]
+def Zquotient (m n : Int) : Int := m.tdiv n
 
 -- Coq: `ZquotientProp` — decomposition m = (Zquotient m n) * n + r with bounds
 noncomputable def ZquotientProp_check (m n : Int) : Unit :=
@@ -15426,6 +15430,7 @@ theorem ZdividesDiv (n m p : Int) :
   exact ⟨q, mul_left_cancel₀ hp (by rw [hq]; ring)⟩
 
 -- Coq: `ZdividesP`
+@[flocq_source "src/Pff/Pff.v" 5771 "ZdividesP"]
 def ZdividesP (n m : Int) : Decidable (Zdivides n m) :=
   if h : m ∣ n then
     isTrue (by
@@ -21984,12 +21989,13 @@ noncomputable def pff_to_flocq_rnd (mode : PffRounding) : ℝ → Int :=
 -- Minimal LSB/MSB infrastructure
 
 -- Coq: `Fixpoint maxDiv (v : Z) (p : nat) {struct p}` in the radix section.
-noncomputable def maxDiv (radix : Int) (v : Int) : Nat → Nat
+@[flocq_source "src/Pff/Pff.v" 5854 "maxDiv"]
+def maxDiv (radix : Int) (v : Int) : Nat → Nat
   | 0 => 0
   | Nat.succ p' =>
       let p := Nat.succ p'
       letI : Decidable (Zdivides v (Zpower_nat radix p)) :=
-        Classical.propDecidable (Zdivides v (Zpower_nat radix p))
+        ZdividesP v (Zpower_nat radix p)
       if _h : Zdivides v (Zpower_nat radix p) then p else maxDiv radix v p'
 
 -- Number of significant digits of a float at a given radix.
