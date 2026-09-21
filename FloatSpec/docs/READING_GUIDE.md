@@ -126,16 +126,20 @@ they were. Read
 [the explanation and concrete probes](COMPUTABLE_COMPARE_GUIDE.md#5-what-noncomputable-does-and-what-it-does-not-do).
 The original explanatory answer was read-only; these are subsequent tested fixes.
 
-**The hosted Linux Lean 4.34.0 build passed; the complete CI job is not green yet.**
-[Run 35548504304](https://github.com/alok/FloatSpec/actions/runs/35548504304)
-completed both the source build and standalone Lean regressions, and saved a
-compatible GitHub cache. It then failed because the audit runner lacked ripgrep.
-The workflow now installs that prerequisite before the build. The scanner also
-fails explicitly on missing tools or search errors instead of accepting them
-as an empty scan; five injected-failure tests cover those paths.
-The reviewed rc2 dependency sources remain pinned under stable Lean 4.34.0.
-The [continuation plan](FIXUP_PLAN_2026-09-21.md) tracks the follow-up hosted run;
-passing build/regression steps does not imply the remaining trust gates passed.
+**The CI repair has a complete green hosted Linux run on Lean 4.34.0.**
+[Run 35553327541](https://github.com/alok/FloatSpec/actions/runs/35553327541)
+at `ca7eb4f7` passed the build, standalone regressions, trust checks, generated
+status and source hygiene on September 21 at 02:37 UTC. The original binary-
+cache incompatibility and subsequent missing-ripgrep failure are both resolved.
+Search/tool failures now fail explicitly; five injected-failure tests cover
+those paths. The reviewed rc2 dependency sources remain pinned under stable
+Lean 4.34.0. Hosted CI runs Lean and non-live harness tests; the live pinned-Rocq
+and differential receipts above are separate local verification.
+
+The newer power/division audit commits (`a0fd6e45`, `aeae41fa`) have completed
+local checks, but their own hosted runs were still in progress at this update.
+Do not transfer the older green run to an unobserved newer revision. The
+[continuation plan](FIXUP_PLAN_2026-09-21.md) keeps that boundary explicit.
 
 For the remaining fidelity work, read [SOURCE_FIDELITY_GAPS.md](SOURCE_FIDELITY_GAPS.md).
 Finite agreement, closed proofs, source links and correct source correspondence

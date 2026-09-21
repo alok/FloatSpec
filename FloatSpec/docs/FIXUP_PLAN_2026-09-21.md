@@ -15,7 +15,7 @@ Lean theorem validity, and source equivalence remain separate claims.
 
 ## Ordered work
 
-1. Awaiting hosted result — repair CI on stable 4.34.0. Disable only the incompatible
+1. Complete — repair CI on stable 4.34.0. Disable only the incompatible
    Mathlib binary cache; build all targets inside lean-action so its compatible
    GitHub cache saves completed artifacts. Preserve trust/hygiene gates and
    execute the recent standalone contract fixtures. Validate workflow syntax,
@@ -24,7 +24,9 @@ Lean theorem validity, and source equivalence remain separate claims.
    GitHub run `35548504304` passed the Linux build and standalone regressions,
    saved a compatible cache, then failed on missing ripgrep in the trust scan.
    Install ripgrep explicitly and reject search/tool errors (five new injected
-   failure tests pass). Full hosted success remains pending the follow-up run.
+   failure tests pass). Follow-up run `35553327541` at `ca7eb4f7` is fully green:
+   build, regressions, trust, generated status and hygiene passed at 02:37 UTC.
+   Later source-audit commits have their own still-pending hosted runs.
 2. Complete — add source-shaped `Pff.Source.Fplus_correct` and `Fminus_correct`.
    Confirm compiled Rocq types, retain positive radix including one, check
    caller compatibility, and test zero/negative-radix exclusions explicitly.
@@ -47,7 +49,8 @@ Lean theorem validity, and source equivalence remain separate claims.
    The initial ungrouped run was deliberately interrupted and remains an error.
 5. Complete locally — full macOS build (6226 jobs), compiled trust (13692 source
    declarations / 59 modules / four debts), 344 pinned anchors and generated
-   status checks pass. Hosted status is still pending as recorded in step 1.
+   status checks pass. The CI-repair revision now also passes hosted checks;
+   later audit revisions are recorded separately in step 1.
 6. Complete — update the reading guide, fidelity ledger and Linear CFS-3; commit
    only verified coherent slices, write the repository's post-commit logs, and
    push to the user's origin/main.
@@ -73,8 +76,8 @@ Lean theorem validity, and source equivalence remain separate claims.
    now pass exact typed clients, six mutants, paired 1377-input grids and an
    811-case differential/kernel replay (seed 864503). Sixteen more unused wrappers
    are removed; floor/truncating/Euclidean domains are explicit. The queue has
-   36 dispositions. Next: `Zsame_sign_trans`, while checking the real hosted CI
-   result (follow-up run `35553327541`).
+   36 dispositions. Next: `Zsame_sign_trans`; inspect the latest audit revisions'
+   hosted checks separately from the now-green CI-repair revision.
    Do not turn candidate-name counts into equivalence claims. Publish coherent
    verified slices and keep the linear reading guide current.
 

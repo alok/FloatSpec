@@ -4128,6 +4128,21 @@ separate receipts. Initial fixture elaboration/notation errors were corrected
 before any pass was recorded. Aggregate all-profile and latest hosted CI
 success remain separate from these completed local/targeted checks.
 
+### September 21, 02:37 UTC: complete hosted CI repair verified
+
+GitHub run `35553327541` at commit `ca7eb4f7182547a727bf65e765a4f5434901e390`
+completed successfully. All job steps passed: stable Lean 4.34.0 build,
+standalone regressions, trust/placeholder tests, generated-status consistency
+and source hygiene. Its Linux review-drift gate also validated the eight entries
+present at that revision, providing a cross-platform check of their structural
+hashes. The later audit revisions have additional entries and separate pending
+runs; this green run is not attributed to them.
+
+Receipt: `/private/tmp/floatspec-ci-35553327541-success.log` and
+<https://github.com/alok/FloatSpec/actions/runs/35553327541>.
+Hosted CI does not install/run the live Rocq profiles: their skipped live tests
+are not passes, and the local pinned-Rocq/differential receipts remain separate.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In
