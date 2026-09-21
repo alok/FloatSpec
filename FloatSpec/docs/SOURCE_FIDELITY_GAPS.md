@@ -1,6 +1,6 @@
 # What still separates this from a faithful port
 
-Checked September 20, 2026, 22:07 UTC, against Flocq
+Updated September 21, 2026, against Flocq
 `7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f`.
 
 The target is the same domain, result type, branches, and theorem hypotheses
@@ -35,12 +35,13 @@ which the indexed valid-radix carrier cannot express. Other source exports must
 still be compared individually; analogous indexed operations do not establish
 complete unindexed API coverage.
 
-Four further sign laws now cover negation, involution, absolute-value
+Four further sign laws cover negation, involution, absolute-value
 interpretation and nonzero preservation. The source-shaped `Fplus_correct`
-and `Fminus_correct` laws are still absent from the facade, although their
-operations exist and have finite cross-tests. Compiled Rocq types confirm
-those two laws need only `0 < radix`, not `1 < radix`; existing indexed
-theorems cannot simply be relabeled as complete substitutes.
+and `Fminus_correct` laws are now present with closed Lean proofs and paired
+Rocq clients. They need only `0 < radix`, not `1 < radix`, and explicitly
+support radix one. Both assistants prove radix-zero counterexamples.
+Eight live contract mutations reject missing premises and incorrect signs.
+This closes these two interface gaps, not the rest of the unreviewed Pff API.
 
 The existing Pdiv, oZ, oZ1 and Zquotient bodies use only integer/natural
 arithmetic but still carry noncomputable markers. maxDiv additionally selects
@@ -76,7 +77,7 @@ letting their names imply established universal refinement.
 
 ## Build/review usability
 
-macOS Lean 4.34 builds and runs the checked snapshots. Hosted CI currently
+macOS Lean 4.34 builds and runs the checked snapshots. Hosted CI
 previously failed before source compilation because it requested a pinned rc2
 Mathlib cache under final Lean 4.34. The approved workflow repair now skips
 that incompatible cache and builds the reviewed sources with stable 4.34.0;

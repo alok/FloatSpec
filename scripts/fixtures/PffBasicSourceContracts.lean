@@ -1,7 +1,8 @@
 import FloatSpec.src.Pff.SourceFacade
 
 /-! Typed clients for the unindexed source operations. Radix one is deliberately
-accepted by multiplication correctness, while zero-observer laws have no radix premise. -/
+accepted by addition, subtraction and multiplication correctness, while
+zero-observer laws have no radix premise. -/
 
 namespace PffBasicSourceContracts
 
@@ -35,6 +36,13 @@ open FloatSpec.Pff
 #check Source.Fopp_correct (-2)
 #check Source.Fabs_correct 1 (by decide)
 
+#check (Source.Fplus_correct : ∀ (radix : Int), 0 < radix → ∀ x y : Source.float,
+  Source.FtoR radix (Source.Fplus radix x y) = Source.FtoR radix x + Source.FtoR radix y)
+#check (Source.Fminus_correct : ∀ (radix : Int), 0 < radix → ∀ x y : Source.float,
+  Source.FtoR radix (Source.Fminus radix x y) = Source.FtoR radix x - Source.FtoR radix y)
+#check Source.Fplus_correct 1 (by decide)
+#check Source.Fminus_correct 1 (by decide)
+
 #guard Source.Fzero (-7) == ⟨0, -7⟩
 #guard Source.Fmult ⟨-3, -7⟩ ⟨5, 9⟩ == ⟨-15, 2⟩
 #guard @decide (Source.is_Fzero (Source.Fzero (-7)))
@@ -64,5 +72,21 @@ theorem negative_radix_is_not_an_absolute_value_model :
 #print axioms Source.Fopp_Fopp
 #print axioms Source.Fabs_correct
 #print axioms Source.Fabs_Fzero
+
+/-- Alignment at radix zero loses a nonzero value when the common exponent is negative. -/
+theorem zero_radix_is_not_an_addition_model :
+    Source.FtoR 0 (Source.Fplus 0 ⟨1, 0⟩ ⟨0, -1⟩) ≠
+      Source.FtoR 0 ⟨1, 0⟩ + Source.FtoR 0 ⟨0, -1⟩ := by
+  norm_num [Source.FtoR, Source.Fplus]
+
+theorem zero_radix_is_not_a_subtraction_model :
+    Source.FtoR 0 (Source.Fminus 0 ⟨1, 0⟩ ⟨0, -1⟩) ≠
+      Source.FtoR 0 ⟨1, 0⟩ - Source.FtoR 0 ⟨0, -1⟩ := by
+  norm_num [Source.FtoR, Source.Fminus, Source.Fplus, Source.Fopp]
+
+#print axioms zero_radix_is_not_an_addition_model
+#print axioms zero_radix_is_not_a_subtraction_model
+#print axioms Source.Fplus_correct
+#print axioms Source.Fminus_correct
 
 end PffBasicSourceContracts

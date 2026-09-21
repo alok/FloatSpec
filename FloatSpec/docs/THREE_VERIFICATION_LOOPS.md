@@ -86,13 +86,16 @@ tests validate the protocol and reject shared actual-program mutations of
 signed division and the rounding stage. A failing compiler exit always wins,
 even if a later runtime command prints a success line.
 
-## Unindexed Pff sign-law boundary
+## Unindexed Pff arithmetic-contract boundary
 
-`PffBasicSourceContracts` now includes the four negation/absolute-value laws,
-with exact source types and a negative-radix counterexample in both assistants.
+`PffBasicSourceContracts` includes the four negation/absolute-value laws
+and two addition/subtraction observer laws, with exact source types and
+negative/zero-radix counterexamples in both assistants. Addition and subtraction
+retain the source's positive-radix premise, including radix one.
 Run `FLOCQ_AUDIT_DIR="$FLOCQ_AUDIT_DIR" uv run scripts/test_pff_basic_contracts.py -v`
-for four live mutation controls. The test deliberately removes the positive
-radix premise and replaces negation by identity; both checkers reject them.
+for eight live mutation controls. The test deliberately removes positive-radix
+premises, replaces negation by identity and subtraction by addition; both
+checkers reject them.
 `scripts/fixtures/PffSignLawsReplay.json` retains 72 focused raw-record inputs
 across negative, zero, one and ordinary radices, both mantissa signs, zero,
 and positive/negative odd/even exponents. Replay it with `scripts/pff_bridge.py`

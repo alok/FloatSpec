@@ -22,6 +22,18 @@ Check (Pff.Fabs_correct : forall radix : Z, 0 < radix -> forall x : Pff.float,
 Check (Pff.Fabs_Fzero : forall x : Pff.float,
   ~ Pff.is_Fzero x -> ~ Pff.is_Fzero (Pff.Fabs x)).
 
+Check (Pff.Fplus_correct : forall radix : Z, 0 < radix -> forall x y : Pff.float,
+  Pff.FtoR radix (Pff.Fplus radix x y) = (Pff.FtoR radix x + Pff.FtoR radix y)%R).
+Check (Pff.Fminus_correct : forall radix : Z, 0 < radix -> forall x y : Pff.float,
+  Pff.FtoR radix (Pff.Fminus radix x y) = (Pff.FtoR radix x - Pff.FtoR radix y)%R).
+
+Example radix_one_addition : forall x y : Pff.float,
+  Pff.FtoR 1 (Pff.Fplus 1 x y) = (Pff.FtoR 1 x + Pff.FtoR 1 y)%R.
+Proof. apply Pff.Fplus_correct. lia. Qed.
+Example radix_one_subtraction : forall x y : Pff.float,
+  Pff.FtoR 1 (Pff.Fminus 1 x y) = (Pff.FtoR 1 x - Pff.FtoR 1 y)%R.
+Proof. apply Pff.Fminus_correct. lia. Qed.
+
 Example zero_retains_exponent : Pff.Fzero (-7) = Pff.Float 0 (-7).
 Proof. reflexivity. Qed.
 Example multiplication_fields :
@@ -48,3 +60,18 @@ Print Assumptions Pff.Fopp_correct.
 Print Assumptions Pff.Fopp_Fopp.
 Print Assumptions Pff.Fabs_correct.
 Print Assumptions Pff.Fabs_Fzero.
+
+Example zero_radix_is_not_an_addition_model :
+  Pff.FtoR 0 (Pff.Fplus 0 (Pff.Float 1 0) (Pff.Float 0 (-1))) <>
+  (Pff.FtoR 0 (Pff.Float 1 0) + Pff.FtoR 0 (Pff.Float 0 (-1)))%R.
+Proof. unfold Pff.FtoR, Pff.Fplus; simpl. lra. Qed.
+
+Example zero_radix_is_not_a_subtraction_model :
+  Pff.FtoR 0 (Pff.Fminus 0 (Pff.Float 1 0) (Pff.Float 0 (-1))) <>
+  (Pff.FtoR 0 (Pff.Float 1 0) - Pff.FtoR 0 (Pff.Float 0 (-1)))%R.
+Proof. unfold Pff.FtoR, Pff.Fminus, Pff.Fplus, Pff.Fopp; simpl. lra. Qed.
+
+Print Assumptions zero_radix_is_not_an_addition_model.
+Print Assumptions zero_radix_is_not_a_subtraction_model.
+Print Assumptions Pff.Fplus_correct.
+Print Assumptions Pff.Fminus_correct.

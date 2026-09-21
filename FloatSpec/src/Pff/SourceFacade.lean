@@ -195,9 +195,29 @@ def Fplus (radix : Int) (x y : float) : float :=
       y.Fnum * radix ^ Int.natAbs (y.Fexp - commonExp),
     commonExp⟩
 
+/-- Exact addition preserves the source real interpretation at every positive radix. -/
+@[flocq_source "src/Pff/Pff.v" 1489 "Fplus_correct"]
+theorem Fplus_correct (radix : Int) (hradix : 0 < radix) (x y : float) :
+    FtoR radix (Fplus radix x y) = FtoR radix x + FtoR radix y := by
+  have hradix_pos : (0 : Real) < radix := by exact_mod_cast hradix
+  have hx : 0 ≤ x.Fexp - min x.Fexp y.Fexp := sub_nonneg.mpr (min_le_left _ _)
+  have hy : 0 ≤ y.Fexp - min x.Fexp y.Fexp := sub_nonneg.mpr (min_le_right _ _)
+  simp only [FtoR, Fplus, Int.cast_add, Int.cast_mul, Int.cast_pow]
+  rw [← zpow_natCast, ← zpow_natCast,
+    Int.natAbs_of_nonneg hx, Int.natAbs_of_nonneg hy]
+  rw [add_mul, mul_assoc, mul_assoc,
+    FloatSpec.Core.Generic_fmt.zpow_sub_add (ne_of_gt hradix_pos),
+    FloatSpec.Core.Generic_fmt.zpow_sub_add (ne_of_gt hradix_pos)]
+
 @[flocq_source "src/Pff/Pff.v" 1605 "Fminus"]
 def Fminus (radix : Int) (x y : float) : float :=
   Fplus radix x (Fopp y)
+
+/-- Exact subtraction preserves the source real interpretation, including radix one. -/
+@[flocq_source "src/Pff/Pff.v" 1607 "Fminus_correct"]
+theorem Fminus_correct (radix : Int) (hradix : 0 < radix) (x y : float) :
+    FtoR radix (Fminus radix x y) = FtoR radix x - FtoR radix y := by
+  rw [Fminus, Fplus_correct radix hradix, Fopp_correct, sub_eq_add_neg]
 
 /-- Source multiplication uses only the unindexed integer fields. -/
 @[flocq_source "src/Pff/Pff.v" 1628 "Fmult"]

@@ -15,15 +15,19 @@ Lean theorem validity, and source equivalence remain separate claims.
 
 ## Ordered work
 
-1. **In progress — repair CI on stable 4.34.0.** Disable only the incompatible
+1. Awaiting hosted result — repair CI on stable 4.34.0. Disable only the incompatible
    Mathlib binary cache; build all targets inside lean-action so its compatible
    GitHub cache saves completed artifacts. Preserve trust/hygiene gates and
    execute the recent standalone contract fixtures. Validate workflow syntax,
    push, inspect the real hosted build, and fix any subsequent failures.
-2. Pending — add source-shaped `Pff.Source.Fplus_correct` and `Fminus_correct`.
+   Pushed as `40a336d7`; local 6226-job build, actionlint and YAML assertions pass.
+   GitHub run `35548504304` is building; it is not yet a pass.
+2. Complete — add source-shaped `Pff.Source.Fplus_correct` and `Fminus_correct`.
    Confirm compiled Rocq types, retain positive radix including one, check
    caller compatibility, and test zero/negative-radix exclusions explicitly.
-3. Pending — enable native execution for selected integer-only definitions.
+   Both closed proofs, paired typed clients/counterexamples, eight live mutations,
+   full build and the 72-case replay (seed 863101) pass. No numerical body changed.
+3. **In progress — enable native execution for selected integer-only definitions.**
    Start with `Zquotient`, `Pdiv`, `oZ`, and `oZ1`; preserve their existing
    bodies/types where possible. Treat classical divisibility in `maxDiv` as
    a separate decision-procedure issue, not an annotation-only fix.

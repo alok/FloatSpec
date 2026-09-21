@@ -15,7 +15,7 @@ This guide follows those jobs in order. The detailed
 [independent continuation audit](ASTRA_AUDIT_2026-09-19.md) retain the
 declaration-by-declaration findings and historical milestones.
 
-## Wake-up summary — September 20, 2026, 22:08 UTC
+## Wake-up summary — September 21, 2026
 
 **The port builds and runs on macOS with Lean 4.34.0, but is not yet a fully
 source-audited port.** All 35 built Flocq module names have Lean counterparts.
@@ -65,11 +65,15 @@ The important recent changes are:
   Four further closed laws now cover negation, double negation, absolute-value
   interpretation and nonzero preservation. Negation is unrestricted; absolute
   value needs a positive radix, as a paired negative-radix counterexample shows.
+  The missing addition/subtraction observer laws are now also proved with the
+  exact positive-radix premise, including radix one. Paired radix-zero
+  counterexamples explain why dropping that premise is invalid.
 
 Current verification is deliberately separated by source snapshot:
 
 | Snapshot | Completed evidence |
 |---|---|
+| Pff addition/subtraction contracts, `1fb9f135` | Full 6,226-job build; closed proofs with paired exact source types and radix-zero counterexamples; eight live contract mutations. Fresh 72-input three-way replay/kernel equalities and 1,272 independent assertions, seed 863101. Numerical bodies unchanged. |
 | Current Pff sign laws, `d0ab66b2` | Full 6,226-job build; 13,687 compiled source declarations / 59 modules; four manifest-only debts; 336 validated source anchors. Four paired source laws and four live mutations; fresh 72-input three-way replay with generated kernel equalities, seed 862619. Only four closed theorem exports were added to the previous production snapshot; operation bodies are unchanged. |
 | Remainder audit, `3c5a913d` | Full build; 12,100 three-way cases/kernel equalities and 84,182 independent assertions, seed 862513. Eight contract controls plus six bridge tests pass; eleven paired exponent-boundary declarations explain the necessary hypotheses. Final standalone sweep re-executed 14 Lean modules, 26 Lean fixtures, 38 Rocq fixtures and all seven demo examples on this snapshot. |
 | Direct nearest-even API, `b9b5abb6` | Full build; four paired typed exports and four live mutation controls. Arithmetic bodies are unchanged from the Pff snapshot below. |

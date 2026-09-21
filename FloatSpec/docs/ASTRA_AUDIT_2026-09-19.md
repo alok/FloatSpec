@@ -3865,6 +3865,29 @@ definitions and abbreviations. The generated status matches a fresh scan.
 No existing noncomputable annotation was changed during the user's explanatory
 question or these final slices. No new proof debt was introduced.
 
+### September 21 — stable 4.34 CI repair and exact Pff arithmetic observers
+
+The user approved the stable Lean 4.34 CI repair. Commit `40a336d7` disables
+the incompatible rc2 Mathlib binary cache without changing reviewed source
+pins, and builds inside lean-action so completed artifacts can be cached.
+Actionlint, YAML assertions and the local 6226-job build pass. Hosted run
+`35548504304` is still in progress; no hosted success is claimed yet.
+
+The facade now supplies `Fplus_correct` and `Fminus_correct`, both with closed
+proofs and the pinned source's `0 < radix` premise. These are genuinely
+unindexed clients, including radix one, not renamed Core indexed theorems.
+Paired Lean/Rocq fixtures check exact types and prove that radix zero invalidates
+the observer laws when exponent alignment crosses zero. Eight live contract
+mutations pass (29.359 seconds), rejecting missing positivity and incorrect signs.
+Numerical bodies are unchanged. Full macOS build passes 6226 jobs; LSP reports
+no errors for production and fixture. The source fingerprint is
+`1fb9f1359ff3faa895fa68e8340a58a31c63eb194db6cdfcd2e61c04b1160510`.
+Fresh seed 863101 executes the persistent 72-input Pff replay in all three
+paths and proves all generated kernel equalities, with 1272 independent
+assertions in 17.550 seconds. It has no conditional neighbor coverage.
+Report: `/private/tmp/floatspec-pff-addition-863101/report.json`.
+No new sorry or axiom was added; the four manifest debts remain unchanged.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In
