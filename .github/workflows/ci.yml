@@ -41,6 +41,7 @@ jobs:
           lake env lean scripts/fixtures/ZauxPowerRadixContracts.lean
           lake env lean scripts/fixtures/ZauxDivisionContracts.lean
           lake env lean scripts/fixtures/RoundPredSourceContracts.lean
+          lake env lean scripts/fixtures/RoundPredTieContracts.lean
           lake env lean --run scripts/fixtures/GuidedDemo.lean
 
       - name: Reject proof and semantic placeholders

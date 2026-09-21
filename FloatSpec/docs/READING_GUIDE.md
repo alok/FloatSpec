@@ -40,17 +40,21 @@ review ledger for the latest explicit review state.
 
 The important recent changes are:
 
-- **Finishing the public rounding interface.** Twenty Flocq laws now have
-  direct Lean exports, and five misleadingly source-named Hoare exports now
-  return the actual mathematical propositions. The old proofs were mostly
-  present but hidden behind noncomputable Boolean checks; this repair makes
-  the source API usable without that detour. Start at
+- **The public rounding-predicate interface is now filled in.** Across two
+  slices, 53 Flocq laws gained direct Lean exports, and six misleadingly
+  source-named Hoare exports now return the actual mathematical propositions.
+  The old proofs were mostly present but hidden behind noncomputable Boolean
+  checks; this repair makes the source API usable without that detour. Start at
   [the direct rounding laws](../src/Core/Round_pred.lean), then read
   [the paired contract examples](../../scripts/fixtures/RoundPredSourceContracts.lean).
+  Then read [tie policies and totality](../../scripts/fixtures/RoundPredTieContracts.lean).
   Both assistants prove why nearest rounding needs strict input order without
-  a tie rule, and why pointwise truncation monotonicity needs zero in the format.
-  This adds 25 explicit contract reviews, for 61 total dispositions; it is not
-  a claim that the intervening unreviewed source modules are finished.
+  a tie rule, and why truncation monotonicity and the two zero-directed tie
+  policies need zero in the format. All 78 top-level source contracts in this
+  module now have paired typed clients and explicit reviews; its constructor
+  and four generated eliminators are accounted for separately. There are
+  119 total review dispositions. This does not certify unreviewed imports or
+  the other modules, nor identify Rocq and Lean proof terms.
 
 - **A systematic source-order queue.** [Read the dependency-ordered queue](SOURCE_REVIEW_QUEUE.md)
   from the top. It uses actual module dependencies, then compiled declaration
@@ -106,6 +110,7 @@ Current verification is deliberately separated by source snapshot:
 
 | Snapshot | Completed evidence |
 |---|---|
+| Complete rounding-predicate interface, `8aa8e9e3` | Full 6,225-job macOS Lean 4.34 build; remaining 34 direct laws and all other public source contracts checked against pinned Rocq. Paired tie-uniqueness counterexamples and 20 rejected contract mutations across both fixtures. Fresh 3,260 three-way cases and kernel equalities (140 rounding decisions, 3,120 nearby-integer cases), seed 865307. Compiled trust: 13,774 declarations / 59 modules / four unchanged debts; 453 anchors. Numerical bodies unchanged; source-module interfaces reviewed, not a universal cross-system certificate. |
 | Direct rounding-predicate API, `8b16a912` | Full 6,225-job macOS Lean 4.34 build; 25 direct contracts checked against pinned Rocq; three paired counterexamples and eight rejected premise mutations. Fresh 3,539 three-way rounding cases and kernel equalities (279 rounding decisions, 3,260 nearby-integer cases), seed 865103. Compiled trust: 13,720 declarations / 59 modules / four unchanged debts; 402 anchors. This is an API repair; numerical operation bodies are unchanged. |
 | Zaux division/remainder review, `949e91ee` | Full 6,225-job macOS build; 13,695 compiled source declarations / 59 modules, four debts, 377 anchors. Eight more source contracts and six rejected mutations; 1,377 signed-input triples in each assistant. Fresh 811 floor-division cases/kernel equalities (seed 864503), including 33 zero and 386 negative divisors; saved outputs also checked against an independent Python floor oracle. The mathematical theorems remain unchanged. |
 | Zaux parity/power/radix review, `f2fb5d00` | Full 6,225-job macOS build; 13,713 compiled source declarations / 59 modules, four debts, 369 anchors. Twenty more source sites dispositioned with paired exact clients, including the Boolean/proposition radix bridge. Eight contract mutations rejected; 228 three-way cases and generated kernel equalities, seed 864307. Two live runner mutations detected; numerical bodies unchanged. |

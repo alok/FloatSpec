@@ -2,6 +2,1230 @@
   "flocq_commit": "7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f",
   "reviews": [
     {
+      "source_id": "src/Core/Round_pred.v:Rnd_DN@844",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.Rnd_DN"
+      ],
+      "scope": "Same pointwise lifting of the corresponding source rounding predicate, with identical arbitrary-format/function domains. Paired definitional-shape clients; no numerical algorithm or additional premise.",
+      "evidence": [
+        "scripts/fixtures/RoundPredTieContracts.lean",
+        "scripts/fixtures/RoundPredTieContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.Rnd_DN": {
+          "type_hash": "1021788542",
+          "value_hash": "3465451271",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:Rnd_UP@936",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.Rnd_UP"
+      ],
+      "scope": "Same pointwise lifting of the corresponding source rounding predicate, with identical arbitrary-format/function domains. Paired definitional-shape clients; no numerical algorithm or additional premise.",
+      "evidence": [
+        "scripts/fixtures/RoundPredTieContracts.lean",
+        "scripts/fixtures/RoundPredTieContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.Rnd_UP": {
+          "type_hash": "1021788542",
+          "value_hash": "796813196",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:Rnd_ZR@1028",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.Rnd_ZR"
+      ],
+      "scope": "Same pointwise lifting of the corresponding source rounding predicate, with identical arbitrary-format/function domains. Paired definitional-shape clients; no numerical algorithm or additional premise.",
+      "evidence": [
+        "scripts/fixtures/RoundPredTieContracts.lean",
+        "scripts/fixtures/RoundPredTieContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.Rnd_ZR": {
+          "type_hash": "1021788542",
+          "value_hash": "1990240368",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:Rnd_N@1120",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.Rnd_N"
+      ],
+      "scope": "Same pointwise lifting of the corresponding source rounding predicate, with identical arbitrary-format/function domains. Paired definitional-shape clients; no numerical algorithm or additional premise.",
+      "evidence": [
+        "scripts/fixtures/RoundPredTieContracts.lean",
+        "scripts/fixtures/RoundPredTieContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.Rnd_N": {
+          "type_hash": "1021788542",
+          "value_hash": "3735375328",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:Rnd_NG@1210",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.Rnd_NG"
+      ],
+      "scope": "Same pointwise lifting of the corresponding source rounding predicate, with identical arbitrary-format/function domains. Paired definitional-shape clients; no numerical algorithm or additional premise.",
+      "evidence": [
+        "scripts/fixtures/RoundPredTieContracts.lean",
+        "scripts/fixtures/RoundPredTieContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.Rnd_NG": {
+          "type_hash": "2146892049",
+          "value_hash": "4001903030",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:Rnd_NA@1325",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.Rnd_NA"
+      ],
+      "scope": "Same pointwise lifting of the corresponding source rounding predicate, with identical arbitrary-format/function domains. Paired definitional-shape clients; no numerical algorithm or additional premise.",
+      "evidence": [
+        "scripts/fixtures/RoundPredTieContracts.lean",
+        "scripts/fixtures/RoundPredTieContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.Rnd_NA": {
+          "type_hash": "1021788542",
+          "value_hash": "2513266576",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:Rnd_N0@1417",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.Rnd_N0"
+      ],
+      "scope": "Same pointwise lifting of the corresponding source rounding predicate, with identical arbitrary-format/function domains. Paired definitional-shape clients; no numerical algorithm or additional premise.",
+      "evidence": [
+        "scripts/fixtures/RoundPredTieContracts.lean",
+        "scripts/fixtures/RoundPredTieContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.Rnd_N0": {
+          "type_hash": "1021788542",
+          "value_hash": "609822476",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:round_val_of_pred@1506",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.round_val_of_pred"
+      ],
+      "scope": "Same dependent result {f | rnd x f}, requiring a proper rounding relation. Lean chooses an existence witness; Rocq uses real completeness. Monotonicity gives unique result. Constructor method differs; exact dependent client checks the source contract, not identical proof terms.",
+      "evidence": [
+        "scripts/fixtures/RoundPredTieContracts.lean",
+        "scripts/fixtures/RoundPredTieContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.round_val_of_pred": {
+          "type_hash": "3402989391",
+          "value_hash": "4078461952",
+          "noncomputable": true
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:round_fun_of_pred@2043",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.round_fun_of_pred"
+      ],
+      "scope": "Same dependent function result carrying forall x, rnd x (f x). Constructed pointwise from the witnessed value; exact dependent client checks no lost proof payload.",
+      "evidence": [
+        "scripts/fixtures/RoundPredTieContracts.lean",
+        "scripts/fixtures/RoundPredTieContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.round_fun_of_pred": {
+          "type_hash": "2340796471",
+          "value_hash": "335387136",
+          "noncomputable": true
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:Rnd_N_pt_0@12046",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.Rnd_N_pt_0"
+      ],
+      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations.",
+      "evidence": [
+        "scripts/fixtures/RoundPredTieContracts.lean",
+        "scripts/fixtures/RoundPredTieContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.Rnd_N_pt_0": {
+          "type_hash": "2821356836",
+          "value_hash": "2351411635",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:Rnd_N_pt_ge_0@12220",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.Rnd_N_pt_ge_0"
+      ],
+      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations.",
+      "evidence": [
+        "scripts/fixtures/RoundPredTieContracts.lean",
+        "scripts/fixtures/RoundPredTieContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.Rnd_N_pt_ge_0": {
+          "type_hash": "1874941508",
+          "value_hash": "1146378895",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:Rnd_N_pt_le_0@12518",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.Rnd_N_pt_le_0"
+      ],
+      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations.",
+      "evidence": [
+        "scripts/fixtures/RoundPredTieContracts.lean",
+        "scripts/fixtures/RoundPredTieContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.Rnd_N_pt_le_0": {
+          "type_hash": "1465334945",
+          "value_hash": "2710001251",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:Rnd_N_pt_abs@12805",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.Rnd_N_pt_abs"
+      ],
+      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations.",
+      "evidence": [
+        "scripts/fixtures/RoundPredTieContracts.lean",
+        "scripts/fixtures/RoundPredTieContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.Rnd_N_pt_abs": {
+          "type_hash": "4152876850",
+          "value_hash": "3408117147",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:Rnd_N_pt_DN_UP@13303",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.Rnd_N_pt_DN_UP"
+      ],
+      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations.",
+      "evidence": [
+        "scripts/fixtures/RoundPredTieContracts.lean",
+        "scripts/fixtures/RoundPredTieContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.Rnd_N_pt_DN_UP": {
+          "type_hash": "3196688007",
+          "value_hash": "1268772993",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:Rnd_N_pt_DN@14012",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.Rnd_N_pt_DN"
+      ],
+      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations.",
+      "evidence": [
+        "scripts/fixtures/RoundPredTieContracts.lean",
+        "scripts/fixtures/RoundPredTieContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.Rnd_N_pt_DN": {
+          "type_hash": "4245544349",
+          "value_hash": "754111752",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:Rnd_N_pt_UP@14415",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.Rnd_N_pt_UP"
+      ],
+      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations.",
+      "evidence": [
+        "scripts/fixtures/RoundPredTieContracts.lean",
+        "scripts/fixtures/RoundPredTieContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.Rnd_N_pt_UP": {
+          "type_hash": "3432433165",
+          "value_hash": "4210207193",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:Rnd_NG_pt_unique_prop@14797",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.Rnd_NG_pt_unique_prop"
+      ],
+      "scope": "Same Type-valued family domain and full directed/nearest/tie hypotheses. Lean Sort u generalizes the Rocq Type family; paired shape clients check Type-valued predicates, with Prop specialization tested by the actual generic rounding laws.",
+      "evidence": [
+        "scripts/fixtures/RoundPredTieContracts.lean",
+        "scripts/fixtures/RoundPredTieContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.Rnd_NG_pt_unique_prop": {
+          "type_hash": "3820589304",
+          "value_hash": "4100233208",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:Rnd_NG_pt_unique@14956",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.Rnd_NG_pt_unique"
+      ],
+      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations.",
+      "evidence": [
+        "scripts/fixtures/RoundPredTieContracts.lean",
+        "scripts/fixtures/RoundPredTieContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.Rnd_NG_pt_unique": {
+          "type_hash": "2897881679",
+          "value_hash": "643757632",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:Rnd_NG_pt_monotone@15559",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.Rnd_NG_pt_monotone"
+      ],
+      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations.",
+      "evidence": [
+        "scripts/fixtures/RoundPredTieContracts.lean",
+        "scripts/fixtures/RoundPredTieContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.Rnd_NG_pt_monotone": {
+          "type_hash": "1617817797",
+          "value_hash": "1319688960",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:Rnd_NG_pt_refl@15898",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.Rnd_NG_pt_refl"
+      ],
+      "scope": "No policy premise required at representable inputs: the unique-nearest alternative suffices even when P is always False. Paired exact clients and a concrete always-false-policy example.",
+      "evidence": [
+        "scripts/fixtures/RoundPredTieContracts.lean",
+        "scripts/fixtures/RoundPredTieContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.Rnd_NG_pt_refl": {
+          "type_hash": "141887985",
+          "value_hash": "39902246",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:Rnd_NG_pt_opp_inv@16130",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.Rnd_NG_pt_opp_inv"
+      ],
+      "scope": "Both format and policy negation closure retained, with the actual P in premise and conclusion. Repaired from the source-named Hoare return to the direct proposition; old spec remains compatible.",
+      "evidence": [
+        "scripts/fixtures/RoundPredTieContracts.lean",
+        "scripts/fixtures/RoundPredTieContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.Rnd_NG_pt_opp_inv": {
+          "type_hash": "2381238653",
+          "value_hash": "755937644",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:Rnd_NG_unique@16707",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.Rnd_NG_unique"
+      ],
+      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations.",
+      "evidence": [
+        "scripts/fixtures/RoundPredTieContracts.lean",
+        "scripts/fixtures/RoundPredTieContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.Rnd_NG_unique": {
+          "type_hash": "2307913191",
+          "value_hash": "3885074248",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:Rnd_NA_NG_pt@16992",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.Rnd_NA_NG_pt"
+      ],
+      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations.",
+      "evidence": [
+        "scripts/fixtures/RoundPredTieContracts.lean",
+        "scripts/fixtures/RoundPredTieContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.Rnd_NA_NG_pt": {
+          "type_hash": "1313149894",
+          "value_hash": "2569475725",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:Rnd_NA_pt_unique_prop@19275",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.Rnd_NA_pt_unique_prop"
+      ],
+      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations.",
+      "evidence": [
+        "scripts/fixtures/RoundPredTieContracts.lean",
+        "scripts/fixtures/RoundPredTieContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.Rnd_NA_pt_unique_prop": {
+          "type_hash": "3523269823",
+          "value_hash": "2436545000",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:Rnd_NA_pt_unique@19838",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.Rnd_NA_pt_unique"
+      ],
+      "scope": "Retains F 0; paired certified counterexamples on {-1,1} refute uniqueness without zero, even for the named ties-away rule.",
+      "evidence": [
+        "scripts/fixtures/RoundPredTieContracts.lean",
+        "scripts/fixtures/RoundPredTieContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.Rnd_NA_pt_unique": {
+          "type_hash": "409947136",
+          "value_hash": "3590395438",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:Rnd_NA_pt_N@20128",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.Rnd_NA_pt_N"
+      ],
+      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations.",
+      "evidence": [
+        "scripts/fixtures/RoundPredTieContracts.lean",
+        "scripts/fixtures/RoundPredTieContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.Rnd_NA_pt_N": {
+          "type_hash": "2883257050",
+          "value_hash": "1706322996",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:Rnd_NA_unique@21233",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.Rnd_NA_unique"
+      ],
+      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations.",
+      "evidence": [
+        "scripts/fixtures/RoundPredTieContracts.lean",
+        "scripts/fixtures/RoundPredTieContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.Rnd_NA_unique": {
+          "type_hash": "1256687692",
+          "value_hash": "2312419525",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:Rnd_NA_pt_monotone@21467",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.Rnd_NA_pt_monotone"
+      ],
+      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations.",
+      "evidence": [
+        "scripts/fixtures/RoundPredTieContracts.lean",
+        "scripts/fixtures/RoundPredTieContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.Rnd_NA_pt_monotone": {
+          "type_hash": "3916451976",
+          "value_hash": "672063238",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:Rnd_NA_pt_refl@21742",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.Rnd_NA_pt_refl"
+      ],
+      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations.",
+      "evidence": [
+        "scripts/fixtures/RoundPredTieContracts.lean",
+        "scripts/fixtures/RoundPredTieContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.Rnd_NA_pt_refl": {
+          "type_hash": "505246364",
+          "value_hash": "261069760",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:Rnd_NA_pt_idempotent@21983",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.Rnd_NA_pt_idempotent"
+      ],
+      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations.",
+      "evidence": [
+        "scripts/fixtures/RoundPredTieContracts.lean",
+        "scripts/fixtures/RoundPredTieContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.Rnd_NA_pt_idempotent": {
+          "type_hash": "3391396349",
+          "value_hash": "2953213024",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:Rnd_N0_NG_pt@22168",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.Rnd_N0_NG_pt"
+      ],
+      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations.",
+      "evidence": [
+        "scripts/fixtures/RoundPredTieContracts.lean",
+        "scripts/fixtures/RoundPredTieContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.Rnd_N0_NG_pt": {
+          "type_hash": "3402619903",
+          "value_hash": "1915880048",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:Rnd_N0_pt_unique_prop@24469",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.Rnd_N0_pt_unique_prop"
+      ],
+      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations.",
+      "evidence": [
+        "scripts/fixtures/RoundPredTieContracts.lean",
+        "scripts/fixtures/RoundPredTieContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.Rnd_N0_pt_unique_prop": {
+          "type_hash": "1572400916",
+          "value_hash": "4073906354",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:Rnd_N0_pt_unique@25073",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.Rnd_N0_pt_unique"
+      ],
+      "scope": "Retains F 0; paired certified counterexamples on {-1,1} refute uniqueness without zero, even for the named ties-toward-zero rule.",
+      "evidence": [
+        "scripts/fixtures/RoundPredTieContracts.lean",
+        "scripts/fixtures/RoundPredTieContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.Rnd_N0_pt_unique": {
+          "type_hash": "569280810",
+          "value_hash": "1034246876",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:Rnd_N0_pt_N@25363",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.Rnd_N0_pt_N"
+      ],
+      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations.",
+      "evidence": [
+        "scripts/fixtures/RoundPredTieContracts.lean",
+        "scripts/fixtures/RoundPredTieContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.Rnd_N0_pt_N": {
+          "type_hash": "342954005",
+          "value_hash": "1080463072",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:Rnd_N0_unique@26468",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.Rnd_N0_unique"
+      ],
+      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations.",
+      "evidence": [
+        "scripts/fixtures/RoundPredTieContracts.lean",
+        "scripts/fixtures/RoundPredTieContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.Rnd_N0_unique": {
+          "type_hash": "3808801630",
+          "value_hash": "2731635884",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:Rnd_N0_pt_monotone@26702",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.Rnd_N0_pt_monotone"
+      ],
+      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations.",
+      "evidence": [
+        "scripts/fixtures/RoundPredTieContracts.lean",
+        "scripts/fixtures/RoundPredTieContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.Rnd_N0_pt_monotone": {
+          "type_hash": "3112866588",
+          "value_hash": "2633339440",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:Rnd_N0_pt_refl@26977",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.Rnd_N0_pt_refl"
+      ],
+      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations.",
+      "evidence": [
+        "scripts/fixtures/RoundPredTieContracts.lean",
+        "scripts/fixtures/RoundPredTieContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.Rnd_N0_pt_refl": {
+          "type_hash": "1881115560",
+          "value_hash": "1961450948",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:Rnd_N0_pt_idempotent@27226",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.Rnd_N0_pt_idempotent"
+      ],
+      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations.",
+      "evidence": [
+        "scripts/fixtures/RoundPredTieContracts.lean",
+        "scripts/fixtures/RoundPredTieContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.Rnd_N0_pt_idempotent": {
+          "type_hash": "1615957980",
+          "value_hash": "1048081416",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:round_pred_ge_0@27414",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.round_pred_ge_0"
+      ],
+      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations.",
+      "evidence": [
+        "scripts/fixtures/RoundPredTieContracts.lean",
+        "scripts/fixtures/RoundPredTieContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.round_pred_ge_0": {
+          "type_hash": "1846541212",
+          "value_hash": "2642826550",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:round_pred_gt_0@27609",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.round_pred_gt_0"
+      ],
+      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations.",
+      "evidence": [
+        "scripts/fixtures/RoundPredTieContracts.lean",
+        "scripts/fixtures/RoundPredTieContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.round_pred_gt_0": {
+          "type_hash": "953478309",
+          "value_hash": "1468498932",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:round_pred_le_0@27864",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.round_pred_le_0"
+      ],
+      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations.",
+      "evidence": [
+        "scripts/fixtures/RoundPredTieContracts.lean",
+        "scripts/fixtures/RoundPredTieContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.round_pred_le_0": {
+          "type_hash": "892641492",
+          "value_hash": "2082450618",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:round_pred_lt_0@28059",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.round_pred_lt_0"
+      ],
+      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations.",
+      "evidence": [
+        "scripts/fixtures/RoundPredTieContracts.lean",
+        "scripts/fixtures/RoundPredTieContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.round_pred_lt_0": {
+          "type_hash": "1132961404",
+          "value_hash": "2822488303",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:Rnd_DN_pt_equiv_format@28314",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.Rnd_DN_pt_equiv_format"
+      ],
+      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations.",
+      "evidence": [
+        "scripts/fixtures/RoundPredTieContracts.lean",
+        "scripts/fixtures/RoundPredTieContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.Rnd_DN_pt_equiv_format": {
+          "type_hash": "1983794384",
+          "value_hash": "3321929141",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:Rnd_UP_pt_equiv_format@28891",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.Rnd_UP_pt_equiv_format"
+      ],
+      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations.",
+      "evidence": [
+        "scripts/fixtures/RoundPredTieContracts.lean",
+        "scripts/fixtures/RoundPredTieContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.Rnd_UP_pt_equiv_format": {
+          "type_hash": "3621153434",
+          "value_hash": "478502909",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:satisfies_any@29521",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.satisfies_any",
+        "FloatSpec.Core.Round_pred.satisfies_any.intro"
+      ],
+      "scope": "Same Prop-valued single-constructor package: zero membership, negation closure and total downward rounding. Rocq sort and large-elimination type checked live; paired constructor/dependent-eliminator clients check fields and elimination.",
+      "evidence": [
+        "scripts/fixtures/RoundPredTieContracts.lean",
+        "scripts/fixtures/RoundPredTieContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.satisfies_any": {
+          "type_hash": "3737635811",
+          "value_hash": null,
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Round_pred.satisfies_any.intro": {
+          "type_hash": "862836091",
+          "value_hash": null,
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:satisfies_any_ind@29521",
+      "status": "adapted-proof-infrastructure",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.satisfies_any.rec"
+      ],
+      "scope": "Rocq-generated elimination scheme is represented by Lean's generic dependent recursor, not by a synthetic same-named declaration. Paired dependent Type-valued eliminator clients check the single-constructor proof fields; Lean Sort u includes the Prop/Set/Type specializations. Not a literal port of generated proof terms.",
+      "evidence": [
+        "scripts/fixtures/RoundPredTieContracts.lean",
+        "scripts/fixtures/RoundPredTieContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.satisfies_any.rec": {
+          "type_hash": "246108877",
+          "value_hash": null,
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:satisfies_any_rec@29521",
+      "status": "adapted-proof-infrastructure",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.satisfies_any.rec"
+      ],
+      "scope": "Rocq-generated elimination scheme is represented by Lean's generic dependent recursor, not by a synthetic same-named declaration. Paired dependent Type-valued eliminator clients check the single-constructor proof fields; Lean Sort u includes the Prop/Set/Type specializations. Not a literal port of generated proof terms.",
+      "evidence": [
+        "scripts/fixtures/RoundPredTieContracts.lean",
+        "scripts/fixtures/RoundPredTieContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.satisfies_any.rec": {
+          "type_hash": "246108877",
+          "value_hash": null,
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:satisfies_any_rect@29521",
+      "status": "adapted-proof-infrastructure",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.satisfies_any.rec"
+      ],
+      "scope": "Rocq-generated elimination scheme is represented by Lean's generic dependent recursor, not by a synthetic same-named declaration. Paired dependent Type-valued eliminator clients check the single-constructor proof fields; Lean Sort u includes the Prop/Set/Type specializations. Not a literal port of generated proof terms.",
+      "evidence": [
+        "scripts/fixtures/RoundPredTieContracts.lean",
+        "scripts/fixtures/RoundPredTieContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.satisfies_any.rec": {
+          "type_hash": "246108877",
+          "value_hash": null,
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:satisfies_any_sind@29521",
+      "status": "adapted-proof-infrastructure",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.satisfies_any.rec"
+      ],
+      "scope": "Rocq-generated elimination scheme is represented by Lean's generic dependent recursor, not by a synthetic same-named declaration. Paired dependent Type-valued eliminator clients check the single-constructor proof fields; Lean Sort u includes the Prop/Set/Type specializations. Not a literal port of generated proof terms.",
+      "evidence": [
+        "scripts/fixtures/RoundPredTieContracts.lean",
+        "scripts/fixtures/RoundPredTieContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.satisfies_any.rec": {
+          "type_hash": "246108877",
+          "value_hash": null,
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:Satisfies_any@29556",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.satisfies_any.intro"
+      ],
+      "scope": "Source constructor maps to Lean satisfies_any.intro with the same three proof fields; Lean infers F implicitly. Paired exact constructor clients and dependent elimination check this representation adaptation.",
+      "evidence": [
+        "scripts/fixtures/RoundPredTieContracts.lean",
+        "scripts/fixtures/RoundPredTieContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.satisfies_any.intro": {
+          "type_hash": "862836091",
+          "value_hash": null,
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:satisfies_any_eq@29682",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.satisfies_any_eq"
+      ],
+      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations.",
+      "evidence": [
+        "scripts/fixtures/RoundPredTieContracts.lean",
+        "scripts/fixtures/RoundPredTieContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.satisfies_any_eq": {
+          "type_hash": "1878244938",
+          "value_hash": "1766684885",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:satisfies_any_imp_DN@30105",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.satisfies_any_imp_DN"
+      ],
+      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations.",
+      "evidence": [
+        "scripts/fixtures/RoundPredTieContracts.lean",
+        "scripts/fixtures/RoundPredTieContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.satisfies_any_imp_DN": {
+          "type_hash": "1059345650",
+          "value_hash": "3185364418",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:satisfies_any_imp_UP@30288",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.satisfies_any_imp_UP"
+      ],
+      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations.",
+      "evidence": [
+        "scripts/fixtures/RoundPredTieContracts.lean",
+        "scripts/fixtures/RoundPredTieContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.satisfies_any_imp_UP": {
+          "type_hash": "976735910",
+          "value_hash": "4208461555",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:satisfies_any_imp_ZR@30615",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.satisfies_any_imp_ZR"
+      ],
+      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations.",
+      "evidence": [
+        "scripts/fixtures/RoundPredTieContracts.lean",
+        "scripts/fixtures/RoundPredTieContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.satisfies_any_imp_ZR": {
+          "type_hash": "195195140",
+          "value_hash": "198691717",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:NG_existence_prop@31319",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.NG_existence_prop"
+      ],
+      "scope": "Same nonrepresentability and downward/upward endpoint premises, concluding P x u or P x d in the source order. Paired definitional-shape clients.",
+      "evidence": [
+        "scripts/fixtures/RoundPredTieContracts.lean",
+        "scripts/fixtures/RoundPredTieContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.NG_existence_prop": {
+          "type_hash": "2847269120",
+          "value_hash": "1081006057",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:satisfies_any_imp_NG@31464",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.satisfies_any_imp_NG"
+      ],
+      "scope": "Same format and endpoint-policy existence hypotheses; conclusion is totality only, not monotonicity. Paired exact clients and a mutation reject strengthening it silently to round_pred.",
+      "evidence": [
+        "scripts/fixtures/RoundPredTieContracts.lean",
+        "scripts/fixtures/RoundPredTieContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.satisfies_any_imp_NG": {
+          "type_hash": "2685258716",
+          "value_hash": "143349043",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:satisfies_any_imp_NA@34289",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.satisfies_any_imp_NA"
+      ],
+      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations.",
+      "evidence": [
+        "scripts/fixtures/RoundPredTieContracts.lean",
+        "scripts/fixtures/RoundPredTieContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.satisfies_any_imp_NA": {
+          "type_hash": "4082841849",
+          "value_hash": "1770742175",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:satisfies_any_imp_N0@35011",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.satisfies_any_imp_N0"
+      ],
+      "scope": "Retains both the source's explicit F 0 and satisfies_any premises, even though the latter already carries zero membership.",
+      "evidence": [
+        "scripts/fixtures/RoundPredTieContracts.lean",
+        "scripts/fixtures/RoundPredTieContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.satisfies_any_imp_N0": {
+          "type_hash": "1440828472",
+          "value_hash": "1357895249",
+          "noncomputable": false
+        }
+      }
+    },
+    {
       "source_id": "src/Core/Round_pred.v:round_unique@2301",
       "status": "reviewed-contract",
       "lean_names": [

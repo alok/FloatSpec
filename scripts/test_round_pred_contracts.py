@@ -26,10 +26,33 @@ MUTATIONS = {
     ],
 }
 
+TIE_MUTATIONS = {
+    "lean": [
+        ("∀ F P, Rnd_NG_pt_unique_prop F P → ∀ x f g,", "∀ F P x f g,"),
+        ("∀ F, F 0 → ∀ x f g, Rnd_NA_pt", "∀ F x f g, Rnd_NA_pt"),
+        ("∀ F, F 0 → ∀ x f g, Rnd_N0_pt", "∀ F x f g, Rnd_N0_pt"),
+        ("∀ F1 F2 a b, F1 a →", "∀ F1 F2 a b,"),
+        ("round_pred_total (Rnd_NG_pt F P) := satisfies_any_imp_NG",
+         "round_pred (Rnd_NG_pt F P) := satisfies_any_imp_NG"),
+        ("Rnd_NA_pt F x f ↔ Rnd_NG_pt F (fun x f ↦ |x| ≤ |f|)",
+         "Rnd_NA_pt F x f ↔ Rnd_NG_pt F (fun x f ↦ |f| ≤ |x|)"),
+    ],
+    "v": [
+        ("Rnd_NG_pt_unique_prop F P -> forall x f g,", "forall x f g,"),
+        ("forall F, F 0 -> forall x f g,\n  Rnd_NA_pt", "forall F x f g,\n  Rnd_NA_pt"),
+        ("forall F, F 0 -> forall x f g,\n  Rnd_N0_pt", "forall F x f g,\n  Rnd_N0_pt"),
+        ("F1 a -> (forall x, a <= x <= b", "(forall x, a <= x <= b"),
+        ("round_pred_total (Rnd_NG_pt F P) := satisfies_any_imp_NG",
+         "round_pred (Rnd_NG_pt F P) := satisfies_any_imp_NG"),
+        ("Rnd_NA_pt F x f <-> Rnd_NG_pt F (fun x f => Rabs x <= Rabs f)",
+         "Rnd_NA_pt F x f <-> Rnd_NG_pt F (fun x f => Rabs f <= Rabs x)"),
+    ],
+}
+
 
 class RoundPredContracts(unittest.TestCase):
-    def check_mutations(self, language):
-        source = (ROOT / "scripts/fixtures" / f"RoundPredSourceContracts.{language}").read_text()
+    def check_mutations(self, language, fixture="RoundPredSourceContracts", mutations=MUTATIONS):
+        source = (ROOT / "scripts/fixtures" / f"{fixture}.{language}").read_text()
         with tempfile.TemporaryDirectory(prefix="floatspec-round-pred-contracts-") as directory:
             path = Path(directory) / f"Control.{language}"
             if language == "lean":
@@ -44,7 +67,7 @@ class RoundPredContracts(unittest.TestCase):
             # error, not successful rejection of a mutant.
             path.write_text(source)
             core.run(command)
-            for old, new in MUTATIONS[language]:
+            for old, new in mutations[language]:
                 with self.subTest(old=old):
                     self.assertEqual(source.count(old), 1)
                     path.write_text(source.replace(old, new))
@@ -57,6 +80,13 @@ class RoundPredContracts(unittest.TestCase):
     @unittest.skipUnless(os.environ.get("FLOCQ_AUDIT_DIR"), "requires pinned built Rocq")
     def test_rocq_exact_rounding_contracts(self):
         self.check_mutations("v")
+
+    def test_lean_tie_and_totality_contracts(self):
+        self.check_mutations("lean", "RoundPredTieContracts", TIE_MUTATIONS)
+
+    @unittest.skipUnless(os.environ.get("FLOCQ_AUDIT_DIR"), "requires pinned built Rocq")
+    def test_rocq_tie_and_totality_contracts(self):
+        self.check_mutations("v", "RoundPredTieContracts", TIE_MUTATIONS)
 
 
 if __name__ == "__main__":

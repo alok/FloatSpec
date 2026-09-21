@@ -4196,6 +4196,63 @@ Next substantive port slice: remaining nearest/generic tie-policy interfaces,
 then format-transfer and totality contracts; do not confuse a matching name
 with a matching public proposition.
 
+### September 21, 18:18 UTC: complete the public Round_pred interface
+
+The second slice adds 33 direct laws and repairs the source-named generic
+negation law, completing 59 direct theorem exports across the two slices.
+Nearest sign/absolute-value laws, generic tie uniqueness, ties away/toward
+zero, sign preservation and local format transfer now expose the actual
+source propositions. Numerical operation bodies are unchanged; closed legacy
+proofs are reused where faithful, and simpler laws compose direct proofs.
+No new `sorry` or executable classical decision is introduced.
+
+Paired Lean/Rocq clients also check the existing function liftings, dependent
+witness constructors, format hypotheses, totality statements and generated
+elimination interface. All 78 top-level source sites, the constructor and
+four generated schemes have explicit manifest dispositions. Generated schemes
+are adapted proof infrastructure, not identical Rocq proof terms. The witness
+construction uses Lean's classical choice; its source-shaped dependent contract
+does not claim that this is the same term as Rocq's completeness construction.
+The manifest now has 114 reviewed contracts and five infrastructure adaptations;
+2597 source sites remain unreviewed by that manifest. Earlier prose reviews
+are not silently reclassified, and these counts are not a completion fraction.
+
+Both assistants prove that the format `{−1, 1}` defeats uniqueness for both
+zero-directed tie policies without zero membership. Another exact client
+checks the permitted always-false generic policy at representable inputs.
+The auxiliary uniqueness condition's Type-valued domain is preserved separately
+from the Prop-valued actual rounding relation. The source's explicit `F 0`
+premise for `satisfies_any_imp_N0` remains, even though it is also derivable.
+Twenty live premise/conclusion mutations across four methods pass their positive
+controls and are rejected (38.006 s). Initial fixture failures involving an
+implicit constructor parameter and a Rocq policy inferred as Type instead of
+Prop were corrected before the recorded successful runs; failures are not passes.
+
+Verified snapshot:
+`8aa8e9e323ead2804b7e839e6a350a591d4bcdfa3ea66032c148342ed4fddf27`.
+Complete LSP diagnostics, full macOS Lean 4.34 build (6225 jobs), compiled trust
+(13774 source declarations / 59 modules / four unchanged debts), all 453 source
+anchors, all 119 compiled review fingerprints, nine queue tests, placeholder
+gates, actionlint, shell syntax and unchanged generated status pass.
+Fresh seed 865307 passes 3260 three-way cases and bootstrapped kernel equalities
+(140 `round`, 3120 `nearby`; 242.362 s). This profile compares compiled Lean,
+Lean reduction and pinned Rocq; it has no separate independent rational oracle.
+It is finite arithmetic regression evidence, not execution of arbitrary reals
+or a universal predicate/source correspondence certificate.
+
+Receipts: `/private/tmp/floatspec-round-pred-complete-build-20260921.log`,
+`/private/tmp/floatspec-round-pred-ties-20260921/lean.log`,
+`/private/tmp/floatspec-round-pred-ties-20260921/rocq.log`,
+`/private/tmp/floatspec-round-pred-complete-mutations-20260921.log`,
+`/private/tmp/floatspec-round-pred-865307/report.json`,
+`/private/tmp/floatspec-round-pred-complete-trust-20260921.json`,
+`/private/tmp/floatspec-round-pred-complete-queue-20260921.json`.
+
+The first slice is pushed as `60096e0c`. Its hosted run `35635101867` passed
+the stable Lean 4.34 build at 18:10 UTC; later steps were still running when
+this entry was written. The second slice has local evidence, not yet a hosted
+CI pass. The user's `Deps/flocq` state and seven untracked artifacts are unchanged.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In

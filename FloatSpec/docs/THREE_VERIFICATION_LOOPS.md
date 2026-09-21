@@ -1306,19 +1306,27 @@ build, typed clients and mutation checks are separate evidence.
 
 ### Direct rounding-predicate contracts
 
-The port-completion slice in `Round_pred` supplies 25 ordinary Flocq
-propositions instead of requiring Boolean/Hoare unpacking. Test them with:
+The two port-completion slices in `Round_pred` supply 59 ordinary Flocq
+propositions instead of requiring Boolean/Hoare unpacking, and check the
+remaining definitions, totality contracts and eliminators. Test them with:
 
 ```sh
 lake env lean scripts/fixtures/RoundPredSourceContracts.lean
+lake env lean scripts/fixtures/RoundPredTieContracts.lean
 coqc -q -R "$FLOCQ_AUDIT_DIR/src" Flocq scripts/fixtures/RoundPredSourceContracts.v
+coqc -q -R "$FLOCQ_AUDIT_DIR/src" Flocq scripts/fixtures/RoundPredTieContracts.v
 FLOCQ_AUDIT_DIR=/path/to/pinned-built-flocq uv run scripts/test_round_pred_contracts.py -v
 ```
 
 The pure Lean and Rocq clients check exact theorem interfaces and independently
 prove three counterexamples: nonstrict nearest monotonicity, unconditional
 nearest uniqueness, and truncation monotonicity without zero membership.
-Eight mutations check that necessary hypotheses cannot silently disappear.
+The tie-policy fixture adds exact clients for the remaining public interface,
+including dependent elimination and the distinction between a `Type`-valued
+auxiliary uniqueness condition and `Prop`-valued rounding policies. It proves
+that both zero-directed tie rules need zero membership for uniqueness.
+Twenty mutations across both assistants check omitted premises, changed
+inequalities, missing endpoint membership and a false monotonicity claim.
 These are kernel-checked real propositions, not native evaluation of arbitrary
 reals. The existing executable `round,nearby` bridge is a separate regression
 loop for rounding implementations; finite agreement there is not a proof of

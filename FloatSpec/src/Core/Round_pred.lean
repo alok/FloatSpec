@@ -49,6 +49,7 @@ section RoundingFunctionProperties
     rnd(x) is the round down value according to format F.
     This lifts the pointwise property to functions.
 -/
+@[flocq_source "src/Core/Round_pred.v" 30 "Rnd_DN"]
 def Rnd_DN (F : ℝ → Prop) (rnd : ℝ → ℝ) : Prop :=
   (∀ x : ℝ, Rnd_DN_pt F x (rnd x))
 
@@ -71,6 +72,7 @@ theorem Rnd_DN_spec (F : ℝ → Prop) (rnd : ℝ → ℝ) :
     rnd(x) is the round up value according to format F.
     This provides the functional counterpart to round-up.
 -/
+@[flocq_source "src/Core/Round_pred.v" 33 "Rnd_UP"]
 def Rnd_UP (F : ℝ → Prop) (rnd : ℝ → ℝ) : Prop :=
   (∀ x : ℝ, Rnd_UP_pt F x (rnd x))
 
@@ -93,6 +95,7 @@ theorem Rnd_UP_spec (F : ℝ → Prop) (rnd : ℝ → ℝ) :
     round toward zero for all inputs. This combines round-down
     for positive values and round up for negative values.
 -/
+@[flocq_source "src/Core/Round_pred.v" 36 "Rnd_ZR"]
 def Rnd_ZR (F : ℝ → Prop) (rnd : ℝ → ℝ) : Prop :=
   -- Use the Coq-accurate predicate from Defs to ensure both directions (x ≥ 0 and x ≤ 0)
   (∀ x : ℝ, FloatSpec.Core.Defs.Rnd_ZR_pt F x (rnd x))
@@ -116,6 +119,7 @@ theorem Rnd_ZR_spec (F : ℝ → Prop) (rnd : ℝ → ℝ) :
     representable value. This is the base property for all
     `round-to-nearest` modes without specifying tie breaking.
 -/
+@[flocq_source "src/Core/Round_pred.v" 39 "Rnd_N"]
 def Rnd_N (F : ℝ → Prop) (rnd : ℝ → ℝ) : Prop :=
   (∀ x : ℝ, Rnd_N_pt F x (rnd x))
 
@@ -138,6 +142,7 @@ theorem Rnd_N_spec (F : ℝ → Prop) (rnd : ℝ → ℝ) :
     to nearest and uses P to break ties. This generalizes
     all `round-to-nearest` variants with different tie policies.
 -/
+@[flocq_source "src/Core/Round_pred.v" 42 "Rnd_NG"]
 def Rnd_NG (F : ℝ → Prop) (P : ℝ → ℝ → Prop) (rnd : ℝ → ℝ) : Prop :=
   (∀ x : ℝ, Rnd_NG_pt F P x (rnd x))
 
@@ -160,6 +165,7 @@ theorem Rnd_NG_spec (F : ℝ → Prop) (P : ℝ → ℝ → Prop) (rnd : ℝ →
     breaking ties by choosing the value farther from zero.
     This implements IEEE 754's "away from zero" tie breaking.
 -/
+@[flocq_source "src/Core/Round_pred.v" 45 "Rnd_NA"]
 def Rnd_NA (F : ℝ → Prop) (rnd : ℝ → ℝ) : Prop :=
   (∀ x : ℝ, Rnd_NA_pt F x (rnd x))
 
@@ -182,6 +188,7 @@ theorem Rnd_NA_spec (F : ℝ → Prop) (rnd : ℝ → ℝ) :
     breaking ties by choosing the value closer to zero.
     This provides an alternative tie breaking strategy.
 -/
+@[flocq_source "src/Core/Round_pred.v" 48 "Rnd_N0"]
 def Rnd_N0 (F : ℝ → Prop) (rnd : ℝ → ℝ) : Prop :=
   (∀ x : ℝ, Rnd_N0_pt F x (rnd x))
 
@@ -2081,6 +2088,62 @@ theorem Rnd_N_pt_UP_spec (F : ℝ → Prop) (x d u : ℝ) :
         simpa [abs_of_nonneg (sub_nonneg_of_le hx_le_u)] using h_sub
       simpa [abs_of_nonneg (sub_nonneg_of_le hxle)] using this
 
+/-- Zero is its own nearest value whenever it is representable. -/
+@[flocq_source "src/Core/Round_pred.v" 559 "Rnd_N_pt_0"]
+theorem Rnd_N_pt_0 (F : ℝ → Prop) (hF0 : F 0) : Rnd_N_pt F 0 0 :=
+  Rnd_N_pt_refl F 0 hF0
+
+/-- Nearest rounding preserves nonnegativity in a format containing zero. -/
+@[flocq_source "src/Core/Round_pred.v" 572 "Rnd_N_pt_ge_0"]
+theorem Rnd_N_pt_ge_0 (F : ℝ → Prop) (hF0 : F 0) (x f : ℝ)
+    (hx : 0 ≤ x) (hf : Rnd_N_pt F x f) : 0 ≤ f := by
+  classical
+  simpa [Rnd_N_pt_ge_0_check, pure, decide_eq_true_iff]
+    using Rnd_N_pt_ge_0_spec F x f ⟨hF0, hx, hf⟩
+
+/-- Nearest rounding preserves nonpositivity in a format containing zero. -/
+@[flocq_source "src/Core/Round_pred.v" 588 "Rnd_N_pt_le_0"]
+theorem Rnd_N_pt_le_0 (F : ℝ → Prop) (hF0 : F 0) (x f : ℝ)
+    (hx : x ≤ 0) (hf : Rnd_N_pt F x f) : f ≤ 0 := by
+  classical
+  simpa [Rnd_N_pt_le_0_check, pure, decide_eq_true_iff]
+    using Rnd_N_pt_le_0_spec F x f ⟨hF0, hx, hf⟩
+
+/-- Absolute values preserve nearest rounding in a symmetric format containing zero. -/
+@[flocq_source "src/Core/Round_pred.v" 603 "Rnd_N_pt_abs"]
+theorem Rnd_N_pt_abs (F : ℝ → Prop) (hF0 : F 0) (hsym : ∀ x, F x → F (-x))
+    (x f : ℝ) (hf : Rnd_N_pt F x f) : Rnd_N_pt F |x| |f| := by
+  classical
+  simpa [Rnd_N_pt_abs_check, pure, decide_eq_true_iff]
+    using Rnd_N_pt_abs_spec F x f ⟨hF0, hsym, hf⟩
+
+/-- A representable point no farther than either directed endpoint is nearest. -/
+@[flocq_source "src/Core/Round_pred.v" 627 "Rnd_N_pt_DN_UP"]
+theorem Rnd_N_pt_DN_UP (F : ℝ → Prop) (x d u f : ℝ) (hf : F f)
+    (hd : Rnd_DN_pt F x d) (hu : Rnd_UP_pt F x u)
+    (hfd : |f - x| ≤ x - d) (hfu : |f - x| ≤ u - x) : Rnd_N_pt F x f := by
+  classical
+  simpa [Rnd_N_pt_DN_UP_check, pure, decide_eq_true_iff]
+    using Rnd_N_pt_DN_UP_spec F x d u f ⟨hf, hd, hu, hfd, hfu⟩
+
+/-- The downward endpoint is nearest when its distance is no larger. -/
+@[flocq_source "src/Core/Round_pred.v" 660 "Rnd_N_pt_DN"]
+theorem Rnd_N_pt_DN (F : ℝ → Prop) (x d u : ℝ)
+    (hd : Rnd_DN_pt F x d) (hu : Rnd_UP_pt F x u)
+    (hdist : x - d ≤ u - x) : Rnd_N_pt F x d := by
+  classical
+  simpa [Rnd_N_pt_DN_check, pure, decide_eq_true_iff]
+    using Rnd_N_pt_DN_spec F x d u ⟨hd, hu, hdist⟩
+
+/-- The upward endpoint is nearest when its distance is no larger. -/
+@[flocq_source "src/Core/Round_pred.v" 681 "Rnd_N_pt_UP"]
+theorem Rnd_N_pt_UP (F : ℝ → Prop) (x d u : ℝ)
+    (hd : Rnd_DN_pt F x d) (hu : Rnd_UP_pt F x u)
+    (hdist : u - x ≤ x - d) : Rnd_N_pt F x u := by
+  classical
+  simpa [Rnd_N_pt_UP_check, pure, decide_eq_true_iff]
+    using Rnd_N_pt_UP_spec F x d u ⟨hd, hu, hdist⟩
+
 end RoundNearestAuxiliary
 
 section RoundNearestGeneric
@@ -2090,6 +2153,7 @@ universe u
 noncomputable section
 
 /-- FLoCq's uniqueness condition for a generic nearest tie predicate. -/
+@[flocq_source "src/Core/Round_pred.v" 701 "Rnd_NG_pt_unique_prop"]
 def Rnd_NG_pt_unique_prop (F : ℝ → Prop) (P : ℝ → ℝ → Sort u) : Prop :=
   ∀ x d u,
     Rnd_DN_pt F x d → Rnd_N_pt F x d →
@@ -2464,12 +2528,13 @@ theorem Rnd_NG_pt_opp_inv_spec (F : ℝ → Prop) (P : ℝ → ℝ → Prop)
       exact this
 
 /-- Coq-compatible name: NG-point invariance under negation -/
+@[flocq_source "src/Core/Round_pred.v" 753 "Rnd_NG_pt_opp_inv"]
 theorem Rnd_NG_pt_opp_inv (F : ℝ → Prop) (P : ℝ → ℝ → Prop)
-    (x f : ℝ) :
-    ⦃⌜(∀ y, F y → F (-y)) ∧ (∀ x f, P x f → P (-x) (-f)) ∧ Rnd_NG_pt F P (-x) (-f)⌝⦄
-    Rnd_NG_pt_opp_inv_check F P x f
-    ⦃⇓result => ⌜result = true⌝⦄ := by
-  exact Rnd_NG_pt_opp_inv_spec F P x f
+    (hF : ∀ y, F y → F (-y)) (hP : ∀ x f, P x f → P (-x) (-f))
+    (x f : ℝ) (h : Rnd_NG_pt F P (-x) (-f)) : Rnd_NG_pt F P x f := by
+  classical
+  simpa [Rnd_NG_pt_opp_inv_check, pure, decide_eq_true_iff]
+    using Rnd_NG_pt_opp_inv_spec F P x f ⟨hF, hP, h⟩
 
 /-- Check uniqueness of NG-based rounding functions
 
@@ -2508,6 +2573,37 @@ theorem Rnd_NG_unique_spec (F : ℝ → Prop) (P : ℝ → ℝ → Prop)
     using huniq ⟨hTie, H1 x, H2 x⟩
 
 end
+
+/-- A generic nearest policy gives unique results under its tie-uniqueness condition. -/
+@[flocq_source "src/Core/Round_pred.v" 707 "Rnd_NG_pt_unique"]
+theorem Rnd_NG_pt_unique (F : ℝ → Prop) (P : ℝ → ℝ → Prop)
+    (hP : Rnd_NG_pt_unique_prop F P) (x f g : ℝ)
+    (hf : Rnd_NG_pt F P x f) (hg : Rnd_NG_pt F P x g) : f = g := by
+  classical
+  simpa [Rnd_NG_pt_unique_check, pure, decide_eq_true_iff]
+    using Rnd_NG_pt_unique_spec F P x f g ⟨hP, hf, hg⟩
+
+/-- A unique generic nearest policy is monotone, including equal inputs. -/
+@[flocq_source "src/Core/Round_pred.v" 729 "Rnd_NG_pt_monotone"]
+theorem Rnd_NG_pt_monotone (F : ℝ → Prop) (P : ℝ → ℝ → Prop)
+    (hP : Rnd_NG_pt_unique_prop F P) : round_pred_monotone (Rnd_NG_pt F P) := by
+  intro x y f g hf hg hxy
+  rcases lt_or_eq_of_le hxy with hlt | rfl
+  · exact Rnd_N_pt_monotone F x y f g hf.1 hg.1 hlt
+  · exact le_of_eq (Rnd_NG_pt_unique F P hP x f g hf hg)
+
+/-- Every generic nearest policy fixes representable inputs, even if its predicate is false. -/
+@[flocq_source "src/Core/Round_pred.v" 741 "Rnd_NG_pt_refl"]
+theorem Rnd_NG_pt_refl (F : ℝ → Prop) (P : ℝ → ℝ → Prop)
+    (x : ℝ) (hx : F x) : Rnd_NG_pt F P x x :=
+  ⟨Rnd_N_pt_refl F x hx, Or.inr (fun f hf ↦ Rnd_N_pt_idempotent F x f hf hx)⟩
+
+/-- Two generic nearest functions with a unique tie policy agree pointwise. -/
+@[flocq_source "src/Core/Round_pred.v" 778 "Rnd_NG_unique"]
+theorem Rnd_NG_unique (F : ℝ → Prop) (P : ℝ → ℝ → Prop)
+    (hP : Rnd_NG_pt_unique_prop F P) (rnd1 rnd2 : ℝ → ℝ)
+    (h1 : Rnd_NG F P rnd1) (h2 : Rnd_NG F P rnd2) (x : ℝ) : rnd1 x = rnd2 x :=
+  Rnd_NG_pt_unique F P hP x _ _ (h1 x) (h2 x)
 
 end RoundNearestGeneric
 
@@ -3828,6 +3924,124 @@ theorem Rnd_N0_pt_idempotent_spec (F : ℝ → Prop) (x f : ℝ) :
   have hsub0 : f - x = 0 := by simpa using (abs_eq_zero.mp heq0)
   exact sub_eq_zero.mp hsub0
 
+/-- Nearest ties away from zero are the corresponding generic nearest policy. -/
+@[flocq_source "src/Core/Round_pred.v" 789 "Rnd_NA_NG_pt"]
+theorem Rnd_NA_NG_pt (F : ℝ → Prop) (hF0 : F 0) (x f : ℝ) :
+    Rnd_NA_pt F x f ↔ Rnd_NG_pt F (fun x f ↦ |x| ≤ |f|) x f := by
+  classical
+  simpa [Rnd_NA_NG_pt_check, pure, decide_eq_true_iff]
+    using Rnd_NA_NG_pt_spec F x f hF0
+
+/-- The ties-away from zero predicate satisfies generic tie uniqueness. -/
+@[flocq_source "src/Core/Round_pred.v" 890 "Rnd_NA_pt_unique_prop"]
+theorem Rnd_NA_pt_unique_prop (F : ℝ → Prop) (hF0 : F 0) :
+    Rnd_NG_pt_unique_prop F (fun x f ↦ |x| ≤ |f|) := by
+  classical
+  simpa [Rnd_NA_pt_unique_prop_check, Rnd_NG_pt_unique_prop, pure, decide_eq_true_iff]
+    using Rnd_NA_pt_unique_prop_spec F hF0
+
+/-- Nearest ties toward zero are the corresponding generic nearest policy. -/
+@[flocq_source "src/Core/Round_pred.v" 1030 "Rnd_N0_NG_pt"]
+theorem Rnd_N0_NG_pt (F : ℝ → Prop) (hF0 : F 0) (x f : ℝ) :
+    Rnd_N0_pt F x f ↔ Rnd_NG_pt F (fun x f ↦ |f| ≤ |x|) x f := by
+  classical
+  simpa [Rnd_N0_NG_pt_check, pure, decide_eq_true_iff]
+    using Rnd_N0_NG_pt_spec F x f hF0
+
+/-- The ties-toward-zero predicate satisfies generic tie uniqueness. -/
+@[flocq_source "src/Core/Round_pred.v" 1131 "Rnd_N0_pt_unique_prop"]
+theorem Rnd_N0_pt_unique_prop (F : ℝ → Prop) (hF0 : F 0) :
+    Rnd_NG_pt_unique_prop F (fun x f ↦ |f| ≤ |x|) := by
+  classical
+  simpa [Rnd_N0_pt_unique_prop_check, Rnd_NG_pt_unique_prop, pure, decide_eq_true_iff]
+    using Rnd_N0_pt_unique_prop_spec F hF0
+
+/-- Nearest rounding with ties away from zero has a unique result. -/
+@[flocq_source "src/Core/Round_pred.v" 917 "Rnd_NA_pt_unique"]
+theorem Rnd_NA_pt_unique (F : ℝ → Prop) (hF0 : F 0) (x f g : ℝ)
+    (hf : Rnd_NA_pt F x f) (hg : Rnd_NA_pt F x g) : f = g :=
+  Rnd_NG_pt_unique F (fun x f ↦ |x| ≤ |f|) (Rnd_NA_pt_unique_prop F hF0) x f g
+    ((Rnd_NA_NG_pt F hF0 x f).mp hf) ((Rnd_NA_NG_pt F hF0 x g).mp hg)
+
+/-- A nearest value satisfying the absolute-value bound obeys ties away from zero. -/
+@[flocq_source "src/Core/Round_pred.v" 930 "Rnd_NA_pt_N"]
+theorem Rnd_NA_pt_N (F : ℝ → Prop) (hF0 : F 0) (x f : ℝ)
+    (hf : Rnd_N_pt F x f) (habs : |x| ≤ |f|) : Rnd_NA_pt F x f := by
+  classical
+  simpa [Rnd_NA_pt_N_check, pure, decide_eq_true_iff]
+    using Rnd_NA_pt_N_spec F x f ⟨hF0, hf, habs⟩
+
+/-- Two nearest functions with ties away from zero agree pointwise. -/
+@[flocq_source "src/Core/Round_pred.v" 983 "Rnd_NA_unique"]
+theorem Rnd_NA_unique (F : ℝ → Prop) (hF0 : F 0) (rnd1 rnd2 : ℝ → ℝ)
+    (h1 : Rnd_NA F rnd1) (h2 : Rnd_NA F rnd2) (x : ℝ) : rnd1 x = rnd2 x :=
+  Rnd_NA_pt_unique F hF0 x _ _ (h1 x) (h2 x)
+
+/-- Nearest rounding with ties away from zero is monotone when zero is representable. -/
+@[flocq_source "src/Core/Round_pred.v" 994 "Rnd_NA_pt_monotone"]
+theorem Rnd_NA_pt_monotone (F : ℝ → Prop) (hF0 : F 0) :
+    round_pred_monotone (Rnd_NA_pt F) := by
+  intro x y f g hf hg hxy
+  exact Rnd_NG_pt_monotone F (fun x f ↦ |x| ≤ |f|) (Rnd_NA_pt_unique_prop F hF0)
+    x y f g ((Rnd_NA_NG_pt F hF0 x f).mp hf)
+    ((Rnd_NA_NG_pt F hF0 y g).mp hg) hxy
+
+/-- Representable inputs are fixed by nearest rounding with ties away from zero. -/
+@[flocq_source "src/Core/Round_pred.v" 1006 "Rnd_NA_pt_refl"]
+theorem Rnd_NA_pt_refl (F : ℝ → Prop) (x : ℝ) (hx : F x) : Rnd_NA_pt F x x := by
+  refine ⟨Rnd_N_pt_refl F x hx, ?_⟩
+  intro f hf
+  rw [Rnd_N_pt_idempotent F x f hf hx]
+
+/-- Nearest rounding with ties away from zero fixes representable inputs. -/
+@[flocq_source "src/Core/Round_pred.v" 1020 "Rnd_NA_pt_idempotent"]
+theorem Rnd_NA_pt_idempotent (F : ℝ → Prop) (x f : ℝ)
+    (hf : Rnd_NA_pt F x f) (hx : F x) : f = x :=
+  Rnd_N_pt_idempotent F x f hf.1 hx
+
+/-- Nearest rounding with ties toward zero has a unique result. -/
+@[flocq_source "src/Core/Round_pred.v" 1159 "Rnd_N0_pt_unique"]
+theorem Rnd_N0_pt_unique (F : ℝ → Prop) (hF0 : F 0) (x f g : ℝ)
+    (hf : Rnd_N0_pt F x f) (hg : Rnd_N0_pt F x g) : f = g :=
+  Rnd_NG_pt_unique F (fun x f ↦ |f| ≤ |x|) (Rnd_N0_pt_unique_prop F hF0) x f g
+    ((Rnd_N0_NG_pt F hF0 x f).mp hf) ((Rnd_N0_NG_pt F hF0 x g).mp hg)
+
+/-- A nearest value satisfying the absolute-value bound obeys ties toward zero. -/
+@[flocq_source "src/Core/Round_pred.v" 1172 "Rnd_N0_pt_N"]
+theorem Rnd_N0_pt_N (F : ℝ → Prop) (hF0 : F 0) (x f : ℝ)
+    (hf : Rnd_N_pt F x f) (habs : |f| ≤ |x|) : Rnd_N0_pt F x f := by
+  classical
+  simpa [Rnd_N0_pt_N_check, pure, decide_eq_true_iff]
+    using Rnd_N0_pt_N_spec F x f ⟨hF0, hf, habs⟩
+
+/-- Two nearest functions with ties toward zero agree pointwise. -/
+@[flocq_source "src/Core/Round_pred.v" 1225 "Rnd_N0_unique"]
+theorem Rnd_N0_unique (F : ℝ → Prop) (hF0 : F 0) (rnd1 rnd2 : ℝ → ℝ)
+    (h1 : Rnd_N0 F rnd1) (h2 : Rnd_N0 F rnd2) (x : ℝ) : rnd1 x = rnd2 x :=
+  Rnd_N0_pt_unique F hF0 x _ _ (h1 x) (h2 x)
+
+/-- Nearest rounding with ties toward zero is monotone when zero is representable. -/
+@[flocq_source "src/Core/Round_pred.v" 1236 "Rnd_N0_pt_monotone"]
+theorem Rnd_N0_pt_monotone (F : ℝ → Prop) (hF0 : F 0) :
+    round_pred_monotone (Rnd_N0_pt F) := by
+  intro x y f g hf hg hxy
+  exact Rnd_NG_pt_monotone F (fun x f ↦ |f| ≤ |x|) (Rnd_N0_pt_unique_prop F hF0)
+    x y f g ((Rnd_N0_NG_pt F hF0 x f).mp hf)
+    ((Rnd_N0_NG_pt F hF0 y g).mp hg) hxy
+
+/-- Representable inputs are fixed by nearest rounding with ties toward zero. -/
+@[flocq_source "src/Core/Round_pred.v" 1248 "Rnd_N0_pt_refl"]
+theorem Rnd_N0_pt_refl (F : ℝ → Prop) (x : ℝ) (hx : F x) : Rnd_N0_pt F x x := by
+  refine ⟨Rnd_N_pt_refl F x hx, ?_⟩
+  intro f hf
+  rw [Rnd_N_pt_idempotent F x f hf hx]
+
+/-- Nearest rounding with ties toward zero fixes representable inputs. -/
+@[flocq_source "src/Core/Round_pred.v" 1262 "Rnd_N0_pt_idempotent"]
+theorem Rnd_N0_pt_idempotent (F : ℝ → Prop) (x f : ℝ)
+    (hf : Rnd_N0_pt F x f) (hx : F x) : f = x :=
+  Rnd_N_pt_idempotent F x f hf.1 hx
+
 end RoundNearestTies
 
 section MonotoneImplications
@@ -3969,6 +4183,30 @@ theorem round_pred_lt_0_spec (P : ℝ → ℝ → Prop) (x f : ℝ) :
   -- Reduce to the propositional goal about `decide (x < 0)`.
   simpa [ pure, decide_eq_true_iff, hxneg]
 
+/-- A monotone relation fixing zero preserves nonnegative inputs. -/
+@[flocq_source "src/Core/Round_pred.v" 1275 "round_pred_ge_0"]
+theorem round_pred_ge_0 (P : ℝ → ℝ → Prop) (hP : round_pred_monotone P)
+    (h0 : P 0 0) (x f : ℝ) (hf : P x f) (hx : 0 ≤ x) : 0 ≤ f :=
+  hP 0 x 0 f h0 hf hx
+
+/-- Positive rounded output implies positive input for a monotone relation fixing zero. -/
+@[flocq_source "src/Core/Round_pred.v" 1285 "round_pred_gt_0"]
+theorem round_pred_gt_0 (P : ℝ → ℝ → Prop) (hP : round_pred_monotone P)
+    (h0 : P 0 0) (x f : ℝ) (hf : P x f) (hpos : 0 < f) : 0 < x :=
+  lt_of_not_ge (fun hx ↦ not_le_of_gt hpos (hP x 0 f 0 hf h0 hx))
+
+/-- A monotone relation fixing zero preserves nonpositive inputs. -/
+@[flocq_source "src/Core/Round_pred.v" 1298 "round_pred_le_0"]
+theorem round_pred_le_0 (P : ℝ → ℝ → Prop) (hP : round_pred_monotone P)
+    (h0 : P 0 0) (x f : ℝ) (hf : P x f) (hx : x ≤ 0) : f ≤ 0 :=
+  hP x 0 f 0 hf h0 hx
+
+/-- Negative rounded output implies negative input for a monotone relation fixing zero. -/
+@[flocq_source "src/Core/Round_pred.v" 1308 "round_pred_lt_0"]
+theorem round_pred_lt_0 (P : ℝ → ℝ → Prop) (hP : round_pred_monotone P)
+    (h0 : P 0 0) (x f : ℝ) (hf : P x f) (hneg : f < 0) : x < 0 :=
+  lt_of_not_ge (fun hx ↦ not_le_of_gt hneg (hP 0 x 0 f h0 hf hx))
+
 end MonotoneImplications
 
 section FormatEquivalence
@@ -4072,6 +4310,24 @@ theorem Rnd_UP_pt_equiv_format_spec (F1 F2 : ℝ → Prop) (a b x f : ℝ) :
   · have hb_lt_k : b < k := lt_of_not_ge hk_le_b
     exact le_trans hf_le_b (le_of_lt hb_lt_k)
 
+/-- Local format agreement transfers downward rounding when the lower endpoint belongs. -/
+@[flocq_source "src/Core/Round_pred.v" 1321 "Rnd_DN_pt_equiv_format"]
+theorem Rnd_DN_pt_equiv_format (F1 F2 : ℝ → Prop) (a b : ℝ) (ha : F1 a)
+    (hF : ∀ x, a ≤ x ∧ x ≤ b → (F1 x ↔ F2 x)) (x f : ℝ)
+    (hx : a ≤ x ∧ x ≤ b) (hf : Rnd_DN_pt F1 x f) : Rnd_DN_pt F2 x f := by
+  classical
+  simpa [Rnd_DN_pt_equiv_format_check, pure, decide_eq_true_iff]
+    using Rnd_DN_pt_equiv_format_spec F1 F2 a b x f ⟨ha, hF, hx.1, hx.2, hf⟩
+
+/-- Local format agreement transfers upward rounding when the upper endpoint belongs. -/
+@[flocq_source "src/Core/Round_pred.v" 1351 "Rnd_UP_pt_equiv_format"]
+theorem Rnd_UP_pt_equiv_format (F1 F2 : ℝ → Prop) (a b : ℝ) (hb : F1 b)
+    (hF : ∀ x, a ≤ x ∧ x ≤ b → (F1 x ↔ F2 x)) (x f : ℝ)
+    (hx : a ≤ x ∧ x ≤ b) (hf : Rnd_UP_pt F1 x f) : Rnd_UP_pt F2 x f := by
+  classical
+  simpa [Rnd_UP_pt_equiv_format_check, pure, decide_eq_true_iff]
+    using Rnd_UP_pt_equiv_format_spec F1 F2 a b x f ⟨hb, hF, hx.1, hx.2, hf⟩
+
 end FormatEquivalence
 
 section SatisfiesAnyConsequences
@@ -4080,6 +4336,7 @@ section SatisfiesAnyConsequences
 
     This is the Lean counterpart of Flocq's `Round_pred.satisfies_any`.
 -/
+@[flocq_source "src/Core/Round_pred.v" 1382 "satisfies_any"]
 inductive satisfies_any (F : ℝ → Prop) : Prop where
   | intro :
       F 0 →
@@ -4091,6 +4348,7 @@ inductive satisfies_any (F : ℝ → Prop) : Prop where
 
     This restores Flocq theorem `satisfies_any_eq`.
 -/
+@[flocq_source "src/Core/Round_pred.v" 1387 "satisfies_any_eq"]
 theorem satisfies_any_eq :
     ∀ F1 F2 : ℝ → Prop,
       (∀ x, F1 x ↔ F2 x) →
@@ -4140,6 +4398,7 @@ noncomputable def satisfies_any_imp_DN_check (F : ℝ → Prop) : Id Bool :=
     exact (pure (decide (round_pred (Rnd_DN_pt F))) : Id Bool)
 
 /-- Flocq theorem `satisfies_any_imp_DN`. -/
+@[flocq_source "src/Core/Round_pred.v" 1413 "satisfies_any_imp_DN"]
 theorem satisfies_any_imp_DN (F : ℝ → Prop) :
     satisfies_any F →
     round_pred (Rnd_DN_pt F) := by
@@ -4176,6 +4435,7 @@ noncomputable def satisfies_any_imp_UP_check (F : ℝ → Prop) : Id Bool :=
     exact (pure (decide (round_pred (Rnd_UP_pt F))) : Id Bool)
 
 /-- Flocq theorem `satisfies_any_imp_UP`. -/
+@[flocq_source "src/Core/Round_pred.v" 1424 "satisfies_any_imp_UP"]
 theorem satisfies_any_imp_UP (F : ℝ → Prop) :
     satisfies_any F →
     round_pred (Rnd_UP_pt F) := by
@@ -4216,6 +4476,7 @@ noncomputable def satisfies_any_imp_ZR_check (F : ℝ → Prop) : Id Bool :=
     exact (pure (decide (round_pred (FloatSpec.Core.Defs.Rnd_ZR_pt F))) : Id Bool)
 
 /-- Flocq theorem `satisfies_any_imp_ZR`. -/
+@[flocq_source "src/Core/Round_pred.v" 1441 "satisfies_any_imp_ZR"]
 theorem satisfies_any_imp_ZR (F : ℝ → Prop) :
     satisfies_any F →
     round_pred (Rnd_ZR_pt F) := by
@@ -4281,6 +4542,7 @@ theorem satisfies_any_imp_ZR_spec (F : ℝ → Prop) (hAny : satisfies_any F) :
     For a non-representable real number `x`, any DN/UP bracket must let the
     generic nearest predicate choose at least one endpoint.
 -/
+@[flocq_source "src/Core/Round_pred.v" 1478 "NG_existence_prop"]
 def NG_existence_prop (F : ℝ → Prop) (P : ℝ → ℝ → Prop) : Prop :=
   ∀ x d u, ¬ F x → Rnd_DN_pt F x d → Rnd_UP_pt F x u → P x u ∨ P x d
 
@@ -4294,6 +4556,7 @@ noncomputable def satisfies_any_imp_NG_check (F : ℝ → Prop) (P : ℝ → ℝ
     exact (pure (decide (round_pred_total (Rnd_NG_pt F P))) : Id Bool)
 
 /-- Flocq theorem `satisfies_any_imp_NG`. -/
+@[flocq_source "src/Core/Round_pred.v" 1481 "satisfies_any_imp_NG"]
 theorem satisfies_any_imp_NG (F : ℝ → Prop) (P : ℝ → ℝ → Prop) :
     satisfies_any F →
     NG_existence_prop F P →
@@ -4373,6 +4636,7 @@ noncomputable def satisfies_any_imp_NA_check (F : ℝ → Prop) : Id Bool :=
     exact (pure (decide (round_pred (Rnd_NA_pt F))) : Id Bool)
 
 /-- Flocq theorem `satisfies_any_imp_NA`. -/
+@[flocq_source "src/Core/Round_pred.v" 1623 "satisfies_any_imp_NA"]
 theorem satisfies_any_imp_NA (F : ℝ → Prop) :
     satisfies_any F →
     round_pred (Rnd_NA_pt F) := by
@@ -4426,6 +4690,7 @@ noncomputable def satisfies_any_imp_N0_check (F : ℝ → Prop) : Id Bool :=
     exact (pure (decide (round_pred (Rnd_N0_pt F))) : Id Bool)
 
 /-- Flocq theorem `satisfies_any_imp_N0`. -/
+@[flocq_source "src/Core/Round_pred.v" 1659 "satisfies_any_imp_N0"]
 theorem satisfies_any_imp_N0 (F : ℝ → Prop) :
     F 0 →
     satisfies_any F →

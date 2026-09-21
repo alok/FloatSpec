@@ -42,10 +42,39 @@ The mutation control must compile first, and tool/import/warning failures are
 errors, not detected semantic mutants. The tests run in the aggregate harness;
 hosted CI runs the Lean half and explicitly skips the unavailable live Rocq half.
 
-These 25 source sites have manual manifest entries tied to compiled Lean
-type/body fingerprints. The first 36 contiguous source-order dispositions
-remain unchanged; this additional module slice does not reclassify its
-unreviewed imports or the rest of `Round_pred`. No new proof debt is introduced.
+The follow-up completes the module's public interface: 33 more direct laws
+and a repaired `Rnd_NG_pt_opp_inv`, all with closed proofs. It covers nearest
+sign/absolute-value laws, generic policy uniqueness, ties away from/toward
+zero, general rounding sign laws and format transfer. Existing function
+liftings, dependent witness constructors, totality statements and predicate
+bodies were also compared to the pinned source and checked with typed clients.
+
+Important distinctions checked in `RoundPredTieContracts.lean/.v`:
+
+- The auxiliary `Rnd_NG_pt_unique_prop` accepts `Type`-valued policies in
+  Rocq; Lean's `Sort u` generalizes this without restriction. Actual rounding
+  relations use `Prop`-valued policies. Both interfaces have explicit clients.
+- An always-false generic tie predicate is permitted at an exactly
+  representable point: uniqueness supplies the other disjunct. Requiring the
+  tie predicate unconditionally would strengthen the source incorrectly.
+- Both ties-away and ties-toward-zero uniqueness require `F 0`. In format
+  `{−1, 1}`, the two midpoint candidates have equal absolute values, so either
+  policy accepts both. Both assistants prove this counterexample.
+- `satisfies_any` has the source's three proof fields and supports dependent
+  elimination. Its four generated Rocq schemes are explicitly classified as
+  adapted proof infrastructure using Lean's recursor, not four missing APIs.
+- `satisfies_any_imp_NG` gives totality, not nonstrict monotonicity. The source's
+  explicit zero-membership argument to `satisfies_any_imp_N0` is retained even
+  though the format assumption can also supply it.
+
+All 78 top-level sites, the constructor and four generated schemes now have
+explicit manifest dispositions. The paired fixtures check their interfaces;
+20 live mutations across the two fixtures are rejected. The first 36
+contiguous source-order dispositions remain unchanged. This review covers
+these mathematical contracts and defining bodies, not every proof term or
+the unreviewed imports. In particular, Lean's classical witness selection is
+not the same proof term as Rocq's completeness construction. No new proof
+debt is introduced, and no numerical operation body changed.
 
 The review now also has a [dependency-ordered queue](SOURCE_REVIEW_QUEUE.md),
 generated from actual `coqdep` and matching-digest `.glob` metadata. Its manual

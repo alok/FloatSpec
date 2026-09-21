@@ -93,11 +93,22 @@ Lean theorem validity, and source equivalence remain separate claims.
    25 paired exact clients, three paired counterexamples, eight rejected
    mutations, full 6225-job build and 3539 differential/kernel cases pass.
    Snapshot `8b16a912`, seed 865103. No new debt; four existing debts remain.
-10. **In progress — finish the remaining Round_pred source interface.**
+10. Complete locally — finish the remaining Round_pred source interface.
     Nearest sign/absolute-value laws, generic tie uniqueness, ties away/toward
     zero, format equivalence and totality must expose the actual source
     propositions. Preserve exact premises; reuse closed proofs where faithful,
     and test changed interfaces in both assistants before pushing each slice.
+    The remaining 34 direct laws and all other public contracts pass paired
+    clients; 20 contract mutants, full 6225-job build and 3260 three-way/kernel
+    cases pass (seed 865307, snapshot `8aa8e9e3`). All 83 module source sites
+    have explicit dispositions, including four adapted generated eliminators.
+    Four existing debts remain unchanged; no arithmetic body changed.
+11. **In progress — publish the complete rounding-interface milestone and
+    advance the next substantive source-API gap.** Keep each verified slice
+    reviewable on origin/main, inspect hosted CI, then use the source-order
+    queue to choose the next missing or incorrectly typed contract. Prefer
+    completing mathematical APIs to cosmetic wrapper removal. Transitive
+    source equivalence remains a separate open task.
 
 ## Constraints and open obligations
 
