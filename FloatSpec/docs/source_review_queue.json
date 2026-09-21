@@ -160,6 +160,846 @@
           "noncomputable": false
         }
       }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zeven_ex@1804",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zeven_ex"
+      ],
+      "scope": "Same unrestricted integer parity decomposition. Source Z.even is represented by decidable Lean Even; the paired client checks the Boolean conditional specialization, including negative inputs through the universal theorem.",
+      "evidence": [
+        "scripts/fixtures/ZauxPowerRadixContracts.lean",
+        "scripts/fixtures/ZauxPowerRadixContracts.v",
+        "scripts/test_zaux_power_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zeven_ex": {
+          "type_hash": "4076891675",
+          "value_hash": "1256808831",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zpower_plus@2149",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zpower_plus",
+        "FloatSpec.Core.Zaux.Zpower"
+      ],
+      "scope": "Same unrestricted integer base and two nonnegative exponent premises, with multiplication on the right. Integer-power body is reviewed separately and fingerprinted here; weakening either exponent domain is not silently accepted.",
+      "evidence": [
+        "scripts/fixtures/ZauxPowerRadixContracts.lean",
+        "scripts/fixtures/ZauxPowerRadixContracts.v",
+        "scripts/test_zaux_power_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zpower_plus": {
+          "type_hash": "3623464832",
+          "value_hash": "2940870232",
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Zpower": {
+          "type_hash": "2368803762",
+          "value_hash": "3401477521",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zpower_Zpower_nat@2346",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zpower_Zpower_nat",
+        "FloatSpec.Core.Zaux.Zpower"
+      ],
+      "scope": "Same nonnegative exponent premise. Source Z.abs_nat corresponds to Int.natAbs; negative integer powers are zero and are not absolute-exponent powers.",
+      "evidence": [
+        "scripts/fixtures/ZauxPowerRadixContracts.lean",
+        "scripts/fixtures/ZauxPowerRadixContracts.v",
+        "scripts/test_zaux_power_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zpower_Zpower_nat": {
+          "type_hash": "1620675588",
+          "value_hash": "3006236094",
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Zpower": {
+          "type_hash": "2368803762",
+          "value_hash": "3401477521",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zpower_nat_S@2545",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zpower_nat_S"
+      ],
+      "scope": "Same natural-exponent successor equation and unrestricted signed integer base. Lean uses ordinary Nat-indexed integer power for the source Zpower_nat.",
+      "evidence": [
+        "scripts/fixtures/ZauxPowerRadixContracts.lean",
+        "scripts/fixtures/ZauxPowerRadixContracts.v",
+        "scripts/test_zaux_power_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zpower_nat_S": {
+          "type_hash": "3629942580",
+          "value_hash": "2339738756",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zpower_pos_gt_0@2740",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zpower_pos_gt_0",
+        "FloatSpec.Core.Zaux.Zpower",
+        "FloatSpec.Core.Zaux.Zpower_pos",
+        "FloatSpec.Core.Zaux.positiveToNat",
+        "FloatSpec.Core.Zaux.Positive",
+        "FloatSpec.Core.Zaux.Positive.xH",
+        "FloatSpec.Core.Zaux.Positive.xO",
+        "FloatSpec.Core.Zaux.Positive.xI"
+      ],
+      "scope": "Same positive base premise and genuine binary-positive exponent domain. Lean Zpower_pos uses its positiveToNat transport; paired typed clients check the source contract.",
+      "evidence": [
+        "scripts/fixtures/ZauxPowerRadixContracts.lean",
+        "scripts/fixtures/ZauxPowerRadixContracts.v",
+        "scripts/test_zaux_power_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zpower_pos_gt_0": {
+          "type_hash": "2443454401",
+          "value_hash": "3911502786",
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Zpower": {
+          "type_hash": "2368803762",
+          "value_hash": "3401477521",
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Zpower_pos": {
+          "type_hash": "1521704194",
+          "value_hash": "1856920564",
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.positiveToNat": {
+          "type_hash": "705539621",
+          "value_hash": "799578536",
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Positive": {
+          "type_hash": "3931117990",
+          "value_hash": null,
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Positive.xH": {
+          "type_hash": "78440476",
+          "value_hash": null,
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Positive.xO": {
+          "type_hash": "3330732635",
+          "value_hash": null,
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Positive.xI": {
+          "type_hash": "3330732635",
+          "value_hash": null,
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zeven_Zpower_odd@2952",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zeven_Zpower_odd",
+        "FloatSpec.Core.Zaux.Zpower"
+      ],
+      "scope": "Same nonnegative exponent and odd-base Boolean hypotheses. Source Z.even is transported to decidable Even; the result refers to actual integer Zpower, not an absolute-exponent substitute.",
+      "evidence": [
+        "scripts/fixtures/ZauxPowerRadixContracts.lean",
+        "scripts/fixtures/ZauxPowerRadixContracts.v",
+        "scripts/test_zaux_power_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zeven_Zpower_odd": {
+          "type_hash": "35563295",
+          "value_hash": "1816871071",
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Zpower": {
+          "type_hash": "2368803762",
+          "value_hash": "3401477521",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:radix@3232",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Radix",
+        "FloatSpec.Core.Zaux.Radix.mk",
+        "FloatSpec.Core.Zaux.Radix.val",
+        "FloatSpec.Core.Zaux.Radix.prop"
+      ],
+      "scope": "Source record has an integer field with Boolean proof Z.leb 2 value = true. Lean Radix has the same integer domain with proposition proof 2 <= value. Paired clients bridge both proof presentations; Lean projections are explicit rather than source coercions. Constructor and field types are fingerprinted, not only the empty record-type hash.",
+      "evidence": [
+        "scripts/fixtures/ZauxPowerRadixContracts.lean",
+        "scripts/fixtures/ZauxPowerRadixContracts.v",
+        "scripts/test_zaux_power_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Radix": {
+          "type_hash": "3931117990",
+          "value_hash": null,
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Radix.mk": {
+          "type_hash": "538193114",
+          "value_hash": null,
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Radix.val": {
+          "type_hash": "2409553425",
+          "value_hash": "775520561",
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Radix.prop": {
+          "type_hash": "3209148343",
+          "value_hash": "949551694",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:radix_val@3243",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Radix.val",
+        "FloatSpec.Core.Zaux.Radix",
+        "FloatSpec.Core.Zaux.Radix.mk",
+        "FloatSpec.Core.Zaux.Radix.prop"
+      ],
+      "scope": "Same unrestricted integer projection from an admissible radix record. The carrier's proposition-versus-Boolean proof adaptation is recorded at radix; Lean uses explicit .val where the source coerces a radix to Z.",
+      "evidence": [
+        "scripts/fixtures/ZauxPowerRadixContracts.lean",
+        "scripts/fixtures/ZauxPowerRadixContracts.v",
+        "scripts/test_zaux_power_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Radix.val": {
+          "type_hash": "2409553425",
+          "value_hash": "775520561",
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Radix": {
+          "type_hash": "3931117990",
+          "value_hash": null,
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Radix.mk": {
+          "type_hash": "538193114",
+          "value_hash": null,
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Radix.prop": {
+          "type_hash": "3209148343",
+          "value_hash": "949551694",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:radix_prop@3260",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Radix.prop",
+        "FloatSpec.Core.Zaux.Radix",
+        "FloatSpec.Core.Zaux.Radix.mk",
+        "FloatSpec.Core.Zaux.Radix.val"
+      ],
+      "scope": "Same at-least-two admissibility condition, expressed as a Lean proposition instead of source Z.leb Boolean equality. Both conversions are checked in paired clients; radix zero/one are not newly admitted.",
+      "evidence": [
+        "scripts/fixtures/ZauxPowerRadixContracts.lean",
+        "scripts/fixtures/ZauxPowerRadixContracts.v",
+        "scripts/test_zaux_power_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Radix.prop": {
+          "type_hash": "3209148343",
+          "value_hash": "949551694",
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Radix": {
+          "type_hash": "3931117990",
+          "value_hash": null,
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Radix.mk": {
+          "type_hash": "538193114",
+          "value_hash": null,
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Radix.val": {
+          "type_hash": "2409553425",
+          "value_hash": "775520561",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:radix_val_inj@3313",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.radix_val_inj",
+        "FloatSpec.Core.Zaux.Radix",
+        "FloatSpec.Core.Zaux.Radix.mk",
+        "FloatSpec.Core.Zaux.Radix.val",
+        "FloatSpec.Core.Zaux.Radix.prop"
+      ],
+      "scope": "Same implication from equal integer projections to equal records. Lean proof irrelevance replaces the source Boolean-equality helper without weakening admissibility.",
+      "evidence": [
+        "scripts/fixtures/ZauxPowerRadixContracts.lean",
+        "scripts/fixtures/ZauxPowerRadixContracts.v",
+        "scripts/test_zaux_power_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.radix_val_inj": {
+          "type_hash": "4068091800",
+          "value_hash": "3922354308",
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Radix": {
+          "type_hash": "3931117990",
+          "value_hash": null,
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Radix.mk": {
+          "type_hash": "538193114",
+          "value_hash": null,
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Radix.val": {
+          "type_hash": "2409553425",
+          "value_hash": "775520561",
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Radix.prop": {
+          "type_hash": "3209148343",
+          "value_hash": "949551694",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:radix2@3523",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.radix2",
+        "FloatSpec.Core.Zaux.Radix",
+        "FloatSpec.Core.Zaux.Radix.mk",
+        "FloatSpec.Core.Zaux.Radix.val",
+        "FloatSpec.Core.Zaux.Radix.prop"
+      ],
+      "scope": "Same radix value two and a checked proof of admissibility; paired definitional-equality clients.",
+      "evidence": [
+        "scripts/fixtures/ZauxPowerRadixContracts.lean",
+        "scripts/fixtures/ZauxPowerRadixContracts.v",
+        "scripts/test_zaux_power_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.radix2": {
+          "type_hash": "3478848313",
+          "value_hash": "2591096502",
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Radix": {
+          "type_hash": "3931117990",
+          "value_hash": null,
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Radix.mk": {
+          "type_hash": "538193114",
+          "value_hash": null,
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Radix.val": {
+          "type_hash": "2409553425",
+          "value_hash": "775520561",
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Radix.prop": {
+          "type_hash": "3209148343",
+          "value_hash": "949551694",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:radix_gt_0@3593",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.radix_gt_0",
+        "FloatSpec.Core.Zaux.Radix",
+        "FloatSpec.Core.Zaux.Radix.mk",
+        "FloatSpec.Core.Zaux.Radix.val",
+        "FloatSpec.Core.Zaux.Radix.prop"
+      ],
+      "scope": "Same positivity statement for every valid radix; explicit Lean .val replaces the source coercion.",
+      "evidence": [
+        "scripts/fixtures/ZauxPowerRadixContracts.lean",
+        "scripts/fixtures/ZauxPowerRadixContracts.v",
+        "scripts/test_zaux_power_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.radix_gt_0": {
+          "type_hash": "1642038988",
+          "value_hash": "3791960505",
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Radix": {
+          "type_hash": "3931117990",
+          "value_hash": null,
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Radix.mk": {
+          "type_hash": "538193114",
+          "value_hash": null,
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Radix.val": {
+          "type_hash": "2409553425",
+          "value_hash": "775520561",
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Radix.prop": {
+          "type_hash": "3209148343",
+          "value_hash": "949551694",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:radix_gt_1@3706",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.radix_gt_1",
+        "FloatSpec.Core.Zaux.Radix",
+        "FloatSpec.Core.Zaux.Radix.mk",
+        "FloatSpec.Core.Zaux.Radix.val",
+        "FloatSpec.Core.Zaux.Radix.prop"
+      ],
+      "scope": "Same strict lower bound one for every valid radix; explicit Lean .val replaces the source coercion.",
+      "evidence": [
+        "scripts/fixtures/ZauxPowerRadixContracts.lean",
+        "scripts/fixtures/ZauxPowerRadixContracts.v",
+        "scripts/test_zaux_power_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.radix_gt_1": {
+          "type_hash": "424638422",
+          "value_hash": "1993926224",
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Radix": {
+          "type_hash": "3931117990",
+          "value_hash": null,
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Radix.mk": {
+          "type_hash": "538193114",
+          "value_hash": null,
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Radix.val": {
+          "type_hash": "2409553425",
+          "value_hash": "775520561",
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Radix.prop": {
+          "type_hash": "3209148343",
+          "value_hash": "949551694",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zpower_gt_1@3844",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zpower_gt_1",
+        "FloatSpec.Core.Zaux.Radix",
+        "FloatSpec.Core.Zaux.Radix.mk",
+        "FloatSpec.Core.Zaux.Radix.val",
+        "FloatSpec.Core.Zaux.Radix.prop",
+        "FloatSpec.Core.Zaux.Zpower"
+      ],
+      "scope": "Same valid radix and strictly positive integer-exponent premise; conclusion is strictly greater than one.",
+      "evidence": [
+        "scripts/fixtures/ZauxPowerRadixContracts.lean",
+        "scripts/fixtures/ZauxPowerRadixContracts.v",
+        "scripts/test_zaux_power_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zpower_gt_1": {
+          "type_hash": "4083730167",
+          "value_hash": "229042364",
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Radix": {
+          "type_hash": "3931117990",
+          "value_hash": null,
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Radix.mk": {
+          "type_hash": "538193114",
+          "value_hash": null,
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Radix.val": {
+          "type_hash": "2409553425",
+          "value_hash": "775520561",
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Radix.prop": {
+          "type_hash": "3209148343",
+          "value_hash": "949551694",
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Zpower": {
+          "type_hash": "2368803762",
+          "value_hash": "3401477521",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zpower_gt_0@4370",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zpower_gt_0",
+        "FloatSpec.Core.Zaux.Radix",
+        "FloatSpec.Core.Zaux.Radix.mk",
+        "FloatSpec.Core.Zaux.Radix.val",
+        "FloatSpec.Core.Zaux.Radix.prop",
+        "FloatSpec.Core.Zaux.Zpower"
+      ],
+      "scope": "Same valid radix and nonnegative integer-exponent premise; zero exponent is allowed, negative exponents are not.",
+      "evidence": [
+        "scripts/fixtures/ZauxPowerRadixContracts.lean",
+        "scripts/fixtures/ZauxPowerRadixContracts.v",
+        "scripts/test_zaux_power_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zpower_gt_0": {
+          "type_hash": "133389422",
+          "value_hash": "1745436645",
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Radix": {
+          "type_hash": "3931117990",
+          "value_hash": null,
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Radix.mk": {
+          "type_hash": "538193114",
+          "value_hash": null,
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Radix.val": {
+          "type_hash": "2409553425",
+          "value_hash": "775520561",
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Radix.prop": {
+          "type_hash": "3209148343",
+          "value_hash": "949551694",
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Zpower": {
+          "type_hash": "2368803762",
+          "value_hash": "3401477521",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zpower_ge_0@4622",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zpower_ge_0",
+        "FloatSpec.Core.Zaux.Radix",
+        "FloatSpec.Core.Zaux.Radix.mk",
+        "FloatSpec.Core.Zaux.Radix.val",
+        "FloatSpec.Core.Zaux.Radix.prop",
+        "FloatSpec.Core.Zaux.Zpower"
+      ],
+      "scope": "Same valid radix and all-integer exponent quantification. The negative-exponent branch is zero, so no extra nonnegativity premise is introduced.",
+      "evidence": [
+        "scripts/fixtures/ZauxPowerRadixContracts.lean",
+        "scripts/fixtures/ZauxPowerRadixContracts.v",
+        "scripts/test_zaux_power_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zpower_ge_0": {
+          "type_hash": "3573630938",
+          "value_hash": "2343094588",
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Radix": {
+          "type_hash": "3931117990",
+          "value_hash": null,
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Radix.mk": {
+          "type_hash": "538193114",
+          "value_hash": null,
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Radix.val": {
+          "type_hash": "2409553425",
+          "value_hash": "775520561",
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Radix.prop": {
+          "type_hash": "3209148343",
+          "value_hash": "949551694",
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Zpower": {
+          "type_hash": "2368803762",
+          "value_hash": "3401477521",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zpower_le@4760",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zpower_le",
+        "FloatSpec.Core.Zaux.Radix",
+        "FloatSpec.Core.Zaux.Radix.mk",
+        "FloatSpec.Core.Zaux.Radix.val",
+        "FloatSpec.Core.Zaux.Radix.prop",
+        "FloatSpec.Core.Zaux.Zpower"
+      ],
+      "scope": "Same valid radix and exponent-order hypothesis over all integers. Both negative powers may be zero; non-strict monotonicity still holds.",
+      "evidence": [
+        "scripts/fixtures/ZauxPowerRadixContracts.lean",
+        "scripts/fixtures/ZauxPowerRadixContracts.v",
+        "scripts/test_zaux_power_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zpower_le": {
+          "type_hash": "706961080",
+          "value_hash": "3023822457",
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Radix": {
+          "type_hash": "3931117990",
+          "value_hash": null,
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Radix.mk": {
+          "type_hash": "538193114",
+          "value_hash": null,
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Radix.val": {
+          "type_hash": "2409553425",
+          "value_hash": "775520561",
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Radix.prop": {
+          "type_hash": "3209148343",
+          "value_hash": "949551694",
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Zpower": {
+          "type_hash": "2368803762",
+          "value_hash": "3401477521",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zpower_lt@5235",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zpower_lt",
+        "FloatSpec.Core.Zaux.Radix",
+        "FloatSpec.Core.Zaux.Radix.mk",
+        "FloatSpec.Core.Zaux.Radix.val",
+        "FloatSpec.Core.Zaux.Radix.prop",
+        "FloatSpec.Core.Zaux.Zpower"
+      ],
+      "scope": "Same valid radix, nonnegative UPPER exponent and strict exponent order. Lower exponent may be negative. Both assistants prove that removing the upper-exponent premise is false using -2 < -1 but zero equal powers.",
+      "evidence": [
+        "scripts/fixtures/ZauxPowerRadixContracts.lean",
+        "scripts/fixtures/ZauxPowerRadixContracts.v",
+        "scripts/test_zaux_power_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zpower_lt": {
+          "type_hash": "1427752370",
+          "value_hash": "4217211171",
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Radix": {
+          "type_hash": "3931117990",
+          "value_hash": null,
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Radix.mk": {
+          "type_hash": "538193114",
+          "value_hash": null,
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Radix.val": {
+          "type_hash": "2409553425",
+          "value_hash": "775520561",
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Radix.prop": {
+          "type_hash": "3209148343",
+          "value_hash": "949551694",
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Zpower": {
+          "type_hash": "2368803762",
+          "value_hash": "3401477521",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zpower_lt_Zpower@5789",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zpower_lt_Zpower",
+        "FloatSpec.Core.Zaux.Radix",
+        "FloatSpec.Core.Zaux.Radix.mk",
+        "FloatSpec.Core.Zaux.Radix.val",
+        "FloatSpec.Core.Zaux.Radix.prop",
+        "FloatSpec.Core.Zaux.Zpower"
+      ],
+      "scope": "Same all-integer exponent implication from power(e1-1) < power(e2) to e1 <= e2. The reviewed direct theorem uses Zpower; the unused former check/spec wrapper had an unrelated natAbs premise and has been removed.",
+      "evidence": [
+        "scripts/fixtures/ZauxPowerRadixContracts.lean",
+        "scripts/fixtures/ZauxPowerRadixContracts.v",
+        "scripts/test_zaux_power_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zpower_lt_Zpower": {
+          "type_hash": "2214111573",
+          "value_hash": "4277662654",
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Radix": {
+          "type_hash": "3931117990",
+          "value_hash": null,
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Radix.mk": {
+          "type_hash": "538193114",
+          "value_hash": null,
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Radix.val": {
+          "type_hash": "2409553425",
+          "value_hash": "775520561",
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Radix.prop": {
+          "type_hash": "3209148343",
+          "value_hash": "949551694",
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Zpower": {
+          "type_hash": "2368803762",
+          "value_hash": "3401477521",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zpower_gt_id@6013",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zpower_gt_id",
+        "FloatSpec.Core.Zaux.Radix",
+        "FloatSpec.Core.Zaux.Radix.mk",
+        "FloatSpec.Core.Zaux.Radix.val",
+        "FloatSpec.Core.Zaux.Radix.prop",
+        "FloatSpec.Core.Zaux.Zpower"
+      ],
+      "scope": "Same unrestricted integer index and valid radix. Negative indices are below the zero negative-power result; no natAbs exponent is substituted.",
+      "evidence": [
+        "scripts/fixtures/ZauxPowerRadixContracts.lean",
+        "scripts/fixtures/ZauxPowerRadixContracts.v",
+        "scripts/test_zaux_power_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zpower_gt_id": {
+          "type_hash": "740845418",
+          "value_hash": "1974099081",
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Radix": {
+          "type_hash": "3931117990",
+          "value_hash": null,
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Radix.mk": {
+          "type_hash": "538193114",
+          "value_hash": null,
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Radix.val": {
+          "type_hash": "2409553425",
+          "value_hash": "775520561",
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Radix.prop": {
+          "type_hash": "3209148343",
+          "value_hash": "949551694",
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Zpower": {
+          "type_hash": "2368803762",
+          "value_hash": "3401477521",
+          "noncomputable": false
+        }
+      }
     }
   ]
 }

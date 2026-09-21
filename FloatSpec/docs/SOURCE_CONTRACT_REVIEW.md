@@ -45,6 +45,41 @@ Two shared-program mutations still agree across the assistants but are rejected
 by that independent oracle. The next queue entry is `Zeven_ex`, not a claim
 that the rest of Zaux or earlier prose-ledger slices have been re-audited.
 
+### Second ordered slice: parity, integer powers and radix
+
+The next twenty source sites, from `Zeven_ex` through `Zpower_gt_id`, now have
+explicit dispositions. Paired typed clients cover the full hypotheses and
+conclusions. The direct Lean statements already matched this source slice;
+no mathematical theorem was weakened or numerical operation changed.
+Eighteen new pinned anchors make the correspondence navigable.
+
+The representation adaptations are explicit. Source `Z.even` corresponds to
+decidable Lean `Even`. Source `radix` stores an integer with proof that
+`Z.leb 2 value = true`; Lean `Radix` stores the same integer domain with proof
+`2 ≤ value`. The fixtures check both directions of this proof presentation,
+and the manifest fingerprints the constructor and both field types as well
+as the record. Lean uses `.val` explicitly where Rocq uses a coercion.
+
+Crucially, `Zpower` is **integer** power, not real reciprocal power: negative
+exponents return zero. Hence `Zpower 2 (-2) = Zpower 2 (-1) = 0`, and the strict
+monotonicity law needs a nonnegative upper exponent. Both assistants prove
+this counterexample; mutations reject removing that premise, removing an
+exponent premise from the addition law, admitting radix zero, or replacing
+the negative-exponent answer by the absolute-exponent answer.
+
+Thirty-eight unused named `*_check`/`*_spec` declarations were removed from
+the reviewed prelude and this slice, after checking for repository callers.
+Some were tautologies about an unrelated check result; the removed inversion
+wrapper even used a `natAbs` premise unlike the source. The real direct
+theorems and their existing proofs remain. This cleanup removes a misleading
+parallel API; it does not claim every removed helper was mathematically false.
+
+The next source entry is `Zmod_mod_mult` in the division/remainder section.
+The new manifest contains 28 dispositions total (27 reviewed contracts and
+one adapted proof-infrastructure entry); its other 2688 sites remain unreviewed,
+independently of earlier prose-ledger slices. Finite runtime agreement does
+not establish universal cross-assistant equivalence.
+
 ## Unindexed Pff negation and absolute value (earlier slice)
 
 The source facade now also exports `Fopp_correct`, `Fopp_Fopp`, `Fabs_correct`

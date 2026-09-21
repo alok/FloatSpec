@@ -38,6 +38,7 @@ jobs:
           done
           lake env lean scripts/fixtures/PffIntegerExecution.lean
           lake env lean scripts/fixtures/ZauxPreludeContracts.lean
+          lake env lean scripts/fixtures/ZauxPowerRadixContracts.lean
           lake env lean --run scripts/fixtures/GuidedDemo.lean
 
       - name: Reject proof and semantic placeholders
@@ -59,6 +60,7 @@ jobs:
           python3 scripts/test_flocq_port_queue.py -v
           python3 scripts/flocq_port_queue.py --check-lean-reviews --skip-build
           python3 scripts/test_zaux_prelude_bridge.py -v
+          python3 scripts/test_zaux_power_contracts.py -v
           python3 scripts/test_pff_basic_contracts.py -v
           python3 scripts/test_pff_integer_bridge.py -v
           python3 scripts/test_remainder_contracts.py -v

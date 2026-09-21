@@ -93,56 +93,10 @@ theorem positiveToNat_injective : Function.Injective positiveToNat := by
 
 section Zmissing
 
-/-- Cancellation law for opposite in integer inequalities
-
-    If -y ≤ -x, then x ≤ y. This is a basic property used throughout
-    the formalization for manipulating integer inequalities.
--/
-def Zopp_le_cancel_check (x y : Int) : Int :=
-  if x ≤ y then 1 else 0
-
-/-- Specification: Opposite cancellation preserves order
-
-    The cancellation operation ensures that if the negatives are ordered,
-    then the original values have the reverse order relationship.
--/
-theorem Zopp_le_cancel_spec (x y : Int) :
-    ⦃⌜-y ≤ -x⌝⦄
-    (pure (Zopp_le_cancel_check x y) : Id _)
-    ⦃⇓result => ⌜result = if x ≤ y then 1 else 0⌝⦄ := by
-  intro h
-  unfold Zopp_le_cancel_check
-  -- From -y ≤ -x, we can deduce x ≤ y
-  have : x ≤ y := Int.neg_le_neg_iff.mp h
-  simp [this, id_run]
-
 /-- FLoCq `Zopp_le_cancel`. -/
 @[flocq_source "src/Core/Zaux.v" 29 "Zopp_le_cancel"]
 theorem Zopp_le_cancel (x y : Int) (h : -y ≤ -x) : x ≤ y :=
   Int.neg_le_neg_iff.mp h
-
-/-- Greater-than implies not equal for integers
-
-    If y < x, then x ≠ y. This captures the asymmetry of the
-    less-than relation on integers.
--/
-def Zgt_not_eq_check (x y : Int) : Bool :=
-  decide (x ≠ y)
-
-/-- Specification: Strict inequality implies non-equality
-
-    The operation verifies that strict ordering relationships
-    guarantee distinctness of values.
--/
-theorem Zgt_not_eq_spec (x y : Int) :
-    ⦃⌜y < x⌝⦄
-    (pure (Zgt_not_eq_check x y) : Id _)
-    ⦃⇓result => ⌜result = (x ≠ y)⌝⦄ := by
-  intro h
-  unfold Zgt_not_eq_check
-  -- From y < x, we can deduce x ≠ y
-  have : x ≠ y := ne_of_gt h
-  simp [this, id_run]
 
 /-- FLoCq `Zgt_not_eq`. -/
 @[flocq_source "src/Core/Zaux.v" 38 "Zgt_not_eq"]
@@ -165,23 +119,6 @@ def eqbool_dep (P : Bool → Sort u) (h1 : P true) (b : Bool) : P b → Prop :=
   | true => fun h2 => h1 = h2
   | false => fun _ => False
 
-/-- Boolean equality irrelevance principle. -/
-def eqbool_irrelevance_check (b : Bool) (_h1 _h2 : b = true) : Bool :=
-  true
-
-/-- Specification: Boolean proof irrelevance
-
-    Any two proofs that a boolean equals true are themselves equal.
-    This captures the principle of proof irrelevance for booleans.
--/
-theorem eqbool_irrelevance_spec (b : Bool) (h1 h2 : b = true) :
-    ⦃⌜b = true⌝⦄
-    (pure (eqbool_irrelevance_check b h1 h2) : Id _)
-    ⦃⇓result => ⌜result = true⌝⦄ := by
-  intro _
-  unfold eqbool_irrelevance_check
-  rfl
-
 /-- FLoCq `eqbool_irrelevance`. -/
 @[flocq_source "src/Core/Zaux.v" 59 "eqbool_irrelevance"]
 theorem eqbool_irrelevance (b : Bool) (h1 h2 : b = true) : h1 = h2 :=
@@ -191,36 +128,8 @@ end ProofIrrelevance
 
 section EvenOdd
 
-/-- Existence of even/odd decomposition for integers. Every integer can be written as two times a number plus a remainder 0 or 1. -/
-def Zeven_ex_check (x : Int) : (Int × Int) :=
-  let p := x / 2
-  let r := x % 2
-  (p, r)
-
-/-- Specification: For any integer x, there exist p and r with r = 0 or r = 1 and x equals two times p plus r. -/
-theorem Zeven_ex_spec (x : Int) :
-    ⦃⌜True⌝⦄
-    (pure (Zeven_ex_check x) : Id _)
-    ⦃⇓result => ⌜let (p, r) := result
-                x = 2 * p + r ∧ (r = 0 ∨ r = 1)⌝⦄ := by
-  intro _
-  unfold Zeven_ex_check
-  -- After unfolding, the goal should be about (x / 2, x % 2)
-  -- We need to show x = 2 * (x / 2) + x % 2 ∧ (x % 2 = 0 ∨ x % 2 = 1)
-  show x = 2 * (Id.run (x / 2, x % 2)).1 + (Id.run (x / 2, x % 2)).2 ∧
-       ((Id.run (x / 2, x % 2)).2 = 0 ∨ (Id.run (x / 2, x % 2)).2 = 1)
-  simp only [Id.run]
-  constructor
-  · -- Prove: x = 2 * (x / 2) + (x % 2)
-    -- Use the current lemma name for the Euclidean division identity
-    have h := Int.emod_add_mul_ediv x 2
-    -- h: x % 2 + 2 * (x / 2) = x
-    rw [Int.add_comm] at h
-    exact h.symm
-  · -- Prove: x % 2 = 0 ∨ x % 2 = 1
-    exact Int.emod_two_eq_zero_or_one x
-
 /-- FLoCq `Zeven_ex`. -/
+@[flocq_source "src/Core/Zaux.v" 75 "Zeven_ex"]
 theorem Zeven_ex (x : Int) :
     ∃ p : Int, x = 2 * p + if Even x then 0 else 1 := by
   refine ⟨x / 2, ?_⟩
@@ -242,23 +151,8 @@ zero for negative exponents. -/
 def Zpower (b e : Int) : Int :=
   if 0 ≤ e then b ^ e.toNat else 0
 
-/-- Power addition formula for integers. -/
-def Zpower_plus_check (n k1 k2 : Int) : Int :=
-  if k1 ≥ 0 && k2 ≥ 0 then
-    n^(k1.natAbs + k2.natAbs)
-  else
-    0  -- Undefined for negative exponents in this context
-
-/-- Specification: Exponential addition rule for nonnegative exponents. -/
-theorem Zpower_plus_spec (n k1 k2 : Int) :
-    ⦃⌜0 ≤ k1 ∧ 0 ≤ k2⌝⦄
-    (pure (Zpower_plus_check n k1 k2) : Id _)
-    ⦃⇓result => ⌜result = n^(k1.natAbs + k2.natAbs)⌝⦄ := by
-  intro ⟨h1, h2⟩
-  unfold Zpower_plus_check
-  simp [h1, h2, id_run]
-
 /-- FLoCq `Zpower_plus`. -/
+@[flocq_source "src/Core/Zaux.v" 94 "Zpower_plus"]
 theorem Zpower_plus (n k1 k2 : Int) (h1 : 0 ≤ k1) (h2 : 0 ≤ k2) :
     Zpower n (k1 + k2) = Zpower n k1 * Zpower n k2 := by
   have hsum : 0 ≤ k1 + k2 := by omega
@@ -270,6 +164,7 @@ theorem Zpower_plus (n k1 k2 : Int) (h1 : 0 ≤ k1) (h2 : 0 ≤ k2) :
     constraint that floating-point number systems need a base
     greater than 1 for meaningful representation.
 -/
+@[flocq_source "src/Core/Zaux.v" 147 "radix"]
 structure Radix where
   /-- The radix value, must be at least 2 -/
   val : Int
@@ -281,32 +176,14 @@ structure Radix where
     The most common radix for floating-point arithmetic is base 2.
     This definition provides the standard binary radix.
 -/
+@[flocq_source "src/Core/Zaux.v" 161 "radix2"]
 def radix2 : Radix :=
   ⟨2, by simp⟩
 
 section RadixProps
 
-/-- Injectivity of {lit}`radix` from its value field
-
-    If two {lean}`Radix` structures have the same {lean}`Radix.val`, they are equal.
--/
-def radix_val_inj_check (r1 r2 : Radix) : Bool :=
-  decide ((r1.val = r2.val) → (r1.val = r2.val))
-
-/-- Specification: Injectivity of radix by value -/
-theorem radix_val_inj_spec (r1 r2 : Radix) :
-    ⦃⌜True⌝⦄
-    (pure (radix_val_inj_check r1 r2) : Id _)
-    ⦃⇓result => ⌜result = decide ((r1.val = r2.val) → (r1.val = r2.val))⌝⦄ := by
-  intro _
-  unfold radix_val_inj_check
-  rfl
-
-/-- Coq-compatible name: injectivity of radix from value field
-
-    This theorem uses the check function {lean}`radix_val_inj_check` and states
-    the intended Hoare-style specification under a trivial precondition.
--/
+/-- Two radices with the same integer value are equal. -/
+@[flocq_source "src/Core/Zaux.v" 149 "radix_val_inj"]
 theorem radix_val_inj (r1 r2 : Radix) :
     r1.val = r2.val → r1 = r2 := by
   cases r1 with
@@ -318,67 +195,22 @@ theorem radix_val_inj (r1 r2 : Radix) :
       subst v2
       rfl
 
-/-- Positivity of a radix value -/
-def radix_gt_0_check (r : Radix) : Bool :=
-  decide (0 < r.val)
-
-/-- Specification: Any radix is strictly positive -/
-theorem radix_gt_0_spec (r : Radix) :
-    ⦃⌜True⌝⦄
-    (pure (radix_gt_0_check r) : Id _)
-    ⦃⇓result => ⌜result = decide (0 < r.val)⌝⦄ := by
-  intro _
-  unfold radix_gt_0_check
-  rfl
-
 /-- Coq-compatible name: any radix is strictly positive -/
+@[flocq_source "src/Core/Zaux.v" 165 "radix_gt_0"]
 theorem radix_gt_0 (r : Radix) : 0 < r.val := by
   have hr := r.prop
   omega
 
-/-- Lower bound of any radix (strict): r > 1 -/
-def radix_gt_1_check (r : Radix) : Bool :=
-  decide (1 < r.val)
-
-/-- Specification: Any radix is strictly greater than 1 -/
-theorem radix_gt_1_spec (r : Radix) :
-    ⦃⌜True⌝⦄
-    (pure (radix_gt_1_check r) : Id _)
-    ⦃⇓result => ⌜result = decide (1 < r.val)⌝⦄ := by
-  intro _
-  unfold radix_gt_1_check
-  rfl
-
 /-- Coq-compatible name: any radix is strictly greater than 1 -/
+@[flocq_source "src/Core/Zaux.v" 173 "radix_gt_1"]
 theorem radix_gt_1 (r : Radix) : 1 < r.val := by
   have hr := r.prop
   omega
 
 end RadixProps
 
-/-- Relationship between integer power and natural power. -/
-def Zpower_Zpower_nat_check (b e : Int) : Int :=
-  if e ≥ 0 then
-    b^e.natAbs
-  else
-    0  -- Undefined for negative exponents
-
-/-- Specification: When 0 ≤ e, integer and natural powers coincide. -/
-theorem Zpower_Zpower_nat_spec (b e : Int) :
-    ⦃⌜0 ≤ e⌝⦄
-    (pure (Zpower_Zpower_nat_check b e) : Id _)
-    ⦃⇓result => ⌜result = b^e.natAbs⌝⦄ := by
-  intro h
-  unfold Zpower_Zpower_nat_check
-  split
-  · -- Case: e ≥ 0 (which is true given our precondition)
-    rfl
-  · -- Case: ¬(e ≥ 0) (impossible given our precondition)
-    rename_i h_neg
-    -- This case contradicts our precondition
-    exact absurd h h_neg
-
 /-- FLoCq `Zpower_Zpower_nat`. -/
+@[flocq_source "src/Core/Zaux.v" 102 "Zpower_Zpower_nat"]
 theorem Zpower_Zpower_nat (b e : Int) (h : 0 ≤ e) :
     Zpower b e = b ^ e.natAbs := by
   have hto : (e.toNat : Int) = e := Int.toNat_of_nonneg h
@@ -386,50 +218,18 @@ theorem Zpower_Zpower_nat (b e : Int) (h : 0 ≤ e) :
   have heq : e.toNat = e.natAbs := by omega
   simp [Zpower, h, heq]
 
-/-- Successor property for natural power. -/
-def Zpower_nat_S_check (b : Int) (e : Nat) : Int :=
-  b * b^e
-
-/-- Specification: Successor exponent formula for natural powers. -/
-theorem Zpower_nat_S_spec (b : Int) (e : Nat) :
-    ⦃⌜True⌝⦄
-    (pure (Zpower_nat_S_check b e) : Id _)
-    ⦃⇓result => ⌜result = b * b^e⌝⦄ := by
-  intro _
-  unfold Zpower_nat_S_check
-  rfl
-
 /-- FLoCq `Zpower_nat_S`. -/
+@[flocq_source "src/Core/Zaux.v" 113 "Zpower_nat_S"]
 theorem Zpower_nat_S (b : Int) (e : Nat) : b ^ (e + 1) = b * b ^ e := by
   rw [pow_succ, mul_comm]
 
-
-/-- Positivity of powers with positive base (check function)
-
-    For any natural exponent p and integer base b > 0,
-    the power b^p is strictly positive. This is the computational
-    carrier used in the hoare-style specification lemma below.
--/
-def Zpower_pos_gt_0_check (b : Int) (p : Positive) : Bool :=
-  decide (0 < Zpower_pos b p)
-
-/-- Specification: Positive base yields positive power
-
-    If 0 < b and p is a natural number, then b^p > 0.
--/
-theorem Zpower_pos_gt_0_spec (b : Int) (p : Positive) :
-    ⦃⌜0 < b⌝⦄
-    (pure (Zpower_pos_gt_0_check b p) : Id _)
-    ⦃⇓result => ⌜result = decide (0 < Zpower_pos b p)⌝⦄ := by
-  intro _
-  unfold Zpower_pos_gt_0_check
-  rfl
 
 /-- Coq-compatible name: positive base yields positive power
 
     If 0 < b and p is a natural number, then b^p > 0.
     This mirrors the Coq lemma {lit}`Zpower_pos_gt_0`.
 -/
+@[flocq_source "src/Core/Zaux.v" 123 "Zpower_pos_gt_0"]
 theorem Zpower_pos_gt_0 (b : Int) (p : Positive) :
     0 < b → 0 < Zpower_pos b p := fun hb => pow_pos hb (positiveToNat p)
 
@@ -437,26 +237,8 @@ end Zpower
 
 section ParityPower
 
-/-- Evenness of an odd base raised to a nonnegative exponent
-
-    If {lit}`e ≥ 0` and {lit}`b` is odd (i.e., not even), then {lit}`b^e` is odd.
--/
-def Zeven_Zpower_odd_check (b e : Int) : Bool :=
-  decide (((Zpower b e) % 2) ≠ 0)
-
-/-- Specification: Powers of odd remain odd for nonnegative exponents
-
-    Under {lit}`0 ≤ e` and {lit}`b` odd, {lit}`b^e` is odd (i.e., not divisible by 2).
--/
-theorem Zeven_Zpower_odd_spec (b e : Int) :
-    ⦃⌜0 ≤ e ∧ (decide ((b % 2) = 0) = false)⌝⦄
-    (pure (Zeven_Zpower_odd_check b e) : Id _)
-    ⦃⇓result => ⌜result = decide (((Zpower b e) % 2 ≠ 0))⌝⦄ := by
-  intro _
-  unfold Zeven_Zpower_odd_check
-  rfl
-
 /-- Coq-compatible name: an odd base to a nonnegative exponent remains odd -/
+@[flocq_source "src/Core/Zaux.v" 135 "Zeven_Zpower_odd"]
 theorem Zeven_Zpower_odd (b e : Int) :
     0 ≤ e → decide (Even b) = false → decide (Even (Zpower b e)) = false := by
   intro he hb
@@ -471,23 +253,8 @@ end ParityPower
 
 section RadixZpower
 
-/-- Power of radix greater than one for positive exponent
-
-    For any radix {lit}`r` and integer exponent {lit}`p > 0`, we have {lit}`1 < r^p`.
--/
-def Zpower_gt_1_check (r : Radix) (p : Int) : Bool :=
-  decide (1 < Zpower r.val p)
-
-/-- Specification: Radix powers exceed 1 for positive exponents -/
-theorem Zpower_gt_1_spec (r : Radix) (p : Int) :
-    ⦃⌜0 < p⌝⦄
-    (pure (Zpower_gt_1_check r p) : Id _)
-    ⦃⇓result => ⌜result = decide (1 < Zpower r.val p)⌝⦄ := by
-  intro _
-  unfold Zpower_gt_1_check
-  rfl
-
 /-- Coq-compatible name: power of radix greater than one for positive exponent -/
+@[flocq_source "src/Core/Zaux.v" 181 "Zpower_gt_1"]
 theorem Zpower_gt_1 (r : Radix) (p : Int) :
     0 < p → 1 < Zpower r.val p := by
   intro hp
@@ -496,60 +263,24 @@ theorem Zpower_gt_1 (r : Radix) (p : Int) :
   simp only [Zpower, le_of_lt hp, ite_true]
   exact one_lt_pow₀ hr (Nat.ne_of_gt hnat)
 
-/-- Positivity of radix powers for nonnegative exponents -/
-def Zpower_gt_0_check (r : Radix) (p : Int) : Bool :=
-  decide (0 < Zpower r.val p)
-
-/-- Specification: Any radix power with nonnegative exponent is positive -/
-theorem Zpower_gt_0_spec (r : Radix) (p : Int) :
-    ⦃⌜0 ≤ p⌝⦄
-    (pure (Zpower_gt_0_check r p) : Id _)
-    ⦃⇓result => ⌜result = decide (0 < Zpower r.val p)⌝⦄ := by
-  intro _
-  unfold Zpower_gt_0_check
-  rfl
-
 /-- Coq-compatible name: positivity of radix powers for nonnegative exponents -/
+@[flocq_source "src/Core/Zaux.v" 208 "Zpower_gt_0"]
 theorem Zpower_gt_0 (r : Radix) (p : Int) :
     0 ≤ p → 0 < Zpower r.val p := by
   intro hp
   simp only [Zpower, hp, ite_true]
   exact pow_pos (radix_gt_0 r) _
 
-/-- Nonnegativity of radix powers for all integer exponents (via natAbs) -/
-def Zpower_ge_0_check (r : Radix) (e : Int) : Bool :=
-  decide (0 ≤ Zpower r.val e)
-
-/-- Specification: Any radix power is nonnegative -/
-theorem Zpower_ge_0_spec (r : Radix) (e : Int) :
-    ⦃⌜True⌝⦄
-    (pure (Zpower_ge_0_check r e) : Id _)
-    ⦃⇓result => ⌜result = decide (0 ≤ Zpower r.val e)⌝⦄ := by
-  intro _
-  unfold Zpower_ge_0_check
-  rfl
-
 /-- Coq-compatible name: nonnegativity of radix powers -/
+@[flocq_source "src/Core/Zaux.v" 222 "Zpower_ge_0"]
 theorem Zpower_ge_0 (r : Radix) (e : Int) :
     0 ≤ Zpower r.val e := by
   by_cases he : 0 ≤ e
   · exact (Zpower_gt_0 r e he).le
   · simp [Zpower, he]
 
-/-- Monotonicity of radix power in the exponent (nondecreasing) -/
-def Zpower_le_check (r : Radix) (e1 e2 : Int) : Bool :=
-  decide (Zpower r.val e1 ≤ Zpower r.val e2)
-
-/-- Specification: If e1 ≤ e2 then r^e1 ≤ r^e2 -/
-theorem Zpower_le_spec (r : Radix) (e1 e2 : Int) :
-    ⦃⌜e1 ≤ e2⌝⦄
-    (pure (Zpower_le_check r e1 e2) : Id _)
-    ⦃⇓result => ⌜result = decide (Zpower r.val e1 ≤ Zpower r.val e2)⌝⦄ := by
-  intro _
-  unfold Zpower_le_check
-  rfl
-
 /-- FLoCq `Zpower_le`. -/
+@[flocq_source "src/Core/Zaux.v" 231 "Zpower_le"]
 theorem Zpower_le (r : Radix) (e1 e2 : Int) (h : e1 ≤ e2) :
     Zpower r.val e1 ≤ Zpower r.val e2 := by
   by_cases h1 : 0 ≤ e1
@@ -560,20 +291,8 @@ theorem Zpower_le (r : Radix) (e1 e2 : Int) (h : e1 ≤ e2) :
   · simp only [Zpower, h1, ite_false]
     exact Zpower_ge_0 r e2
 
-/-- Strict monotonicity for positive range: if 0 ≤ e2 and e1 < e2 then r^e1 < r^e2 -/
-def Zpower_lt_check (r : Radix) (e1 e2 : Int) : Bool :=
-  decide (Zpower r.val e1 < Zpower r.val e2)
-
-/-- Specification: Strict increase over exponent when upper exponent nonnegative -/
-theorem Zpower_lt_spec (r : Radix) (e1 e2 : Int) :
-    ⦃⌜0 ≤ e2 ∧ e1 < e2⌝⦄
-    (pure (Zpower_lt_check r e1 e2) : Id _)
-    ⦃⇓result => ⌜result = decide (Zpower r.val e1 < Zpower r.val e2)⌝⦄ := by
-  intro _
-  unfold Zpower_lt_check
-  rfl
-
 /-- Coq-compatible name: strict monotonicity of radix power in the exponent -/
+@[flocq_source "src/Core/Zaux.v" 251 "Zpower_lt"]
 theorem Zpower_lt (r : Radix) (e1 e2 : Int) :
     0 ≤ e2 → e1 < e2 → Zpower r.val e1 < Zpower r.val e2 := by
   intro h2 hlt
@@ -585,40 +304,16 @@ theorem Zpower_lt (r : Radix) (e1 e2 : Int) :
     simp only [h1, ite_false]
     exact Zpower_gt_0 r e2 h2
 
-/-- Inversion: if r^(e1-1) < r^e2 then e1 ≤ e2 -/
-def Zpower_lt_Zpower_check (_r : Radix) (e1 e2 : Int) : Bool :=
-  decide (e1 ≤ e2)
-
-/-- Specification: Power inequality implies exponent inequality -/
-theorem Zpower_lt_Zpower_spec (r : Radix) (e1 e2 : Int) :
-    ⦃⌜r.val ^ (e1 - 1).natAbs < r.val ^ e2.natAbs⌝⦄
-    (pure (Zpower_lt_Zpower_check r e1 e2) : Id _)
-    ⦃⇓result => ⌜result = decide (e1 ≤ e2)⌝⦄ := by
-  intro _
-  unfold Zpower_lt_Zpower_check
-  rfl
-
 /-- FLoCq `Zpower_lt_Zpower`. -/
+@[flocq_source "src/Core/Zaux.v" 278 "Zpower_lt_Zpower"]
 theorem Zpower_lt_Zpower (r : Radix) (e1 e2 : Int)
     (h : Zpower r.val (e1 - 1) < Zpower r.val e2) : e1 ≤ e2 := by
   by_contra hnot
   have hle : e2 ≤ e1 - 1 := by omega
   exact (not_lt_of_ge (Zpower_le r e2 (e1 - 1) hle)) h
 
-/-- Radix power dominates the exponent index (coarse bound) -/
-def Zpower_gt_id_check (r : Radix) (n : Int) : Bool :=
-  decide (n < Zpower r.val n)
-
-/-- Specification: n < r^n for any integer n (via natAbs exponent) -/
-theorem Zpower_gt_id_spec (r : Radix) (n : Int) :
-    ⦃⌜True⌝⦄
-    (pure (Zpower_gt_id_check r n) : Id _)
-    ⦃⇓result => ⌜result = decide (n < Zpower r.val n)⌝⦄ := by
-  intro _
-  unfold Zpower_gt_id_check
-  rfl
-
 /-- Coq-compatible name: radix powers dominate the index -/
+@[flocq_source "src/Core/Zaux.v" 291 "Zpower_gt_id"]
 theorem Zpower_gt_id (r : Radix) (n : Int) :
     n < Zpower r.val n := by
   by_cases hn : 0 ≤ n

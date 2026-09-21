@@ -64,8 +64,13 @@ Lean theorem validity, and source equivalence remain separate claims.
    eight sites are dispositioned; source-shaped binary-positive iteration
    preserves its old semantics by a closed proof. The 1244-case prelude bridge,
    exact contracts, shared-program mutants, full build and trust gates pass.
-8. **In progress — continue from the first outstanding source contract, `Zeven_ex`,**
-   then follow the queue through Zaux, while checking the real hosted CI result.
+8. **In progress — continue the source-ordered Zaux audit.**
+   The next twenty sites, `Zeven_ex` through `Zpower_gt_id`, are now reviewed.
+   Paired typed clients and eight contract mutations pass; 228 three-way power
+   cases/kernel equalities, full build, trust and source anchors pass. Thirty-eight
+   unused check/spec wrappers are removed without changing the mathematical
+   propositions or numerical bodies. Next: `Zmod_mod_mult` and division/remainder,
+   while checking the real hosted CI result (follow-up run `35553327541`).
    Do not turn candidate-name counts into equivalence claims. Publish coherent
    verified slices and keep the linear reading guide current.
 

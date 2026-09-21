@@ -15,7 +15,7 @@ External Rocq imports are recorded in the JSON report, not counted as Flocq decl
 | Order | Source module | Declarations | Anchored | Name candidates | Reviewed |
 |---:|---|---:|---:|---:|---:|
 | 1 | src/Version.v | 1 | 1 | 1 | 1 |
-| 2 | src/Core/Zaux.v | 102 | 6 | 91 | 7 |
+| 2 | src/Core/Zaux.v | 102 | 24 | 91 | 27 |
 | 3 | src/Core/Raux.v | 186 | 10 | 162 | 0 |
 | 4 | src/Core/Defs.v | 14 | 11 | 14 | 0 |
 | 5 | src/Core/Round_pred.v | 83 | 2 | 25 | 0 |
@@ -57,26 +57,26 @@ the full Lean type/body with Rocq, and add an evidence-bearing review entry.
 Resolve aliases and generated proof infrastructure explicitly; do not create
 unnecessary numerical APIs to satisfy a raw name count.
 
-- `src/Core/Zaux.v:75` — `Zeven_ex` (prf): `FloatSpec.Core.Zaux.Zeven_ex`.
-- `src/Core/Zaux.v:94` — `Zpower_plus` (prf): `FloatSpec.Core.Zaux.Zpower_plus`.
-- `src/Core/Zaux.v:102` — `Zpower_Zpower_nat` (prf): `FloatSpec.Core.Zaux.Zpower_Zpower_nat`.
-- `src/Core/Zaux.v:113` — `Zpower_nat_S` (prf): `FloatSpec.Core.Zaux.Zpower_nat_S`.
-- `src/Core/Zaux.v:123` — `Zpower_pos_gt_0` (prf): `FloatSpec.Core.Zaux.Zpower_pos_gt_0`.
-- `src/Core/Zaux.v:135` — `Zeven_Zpower_odd` (prf): `FloatSpec.Core.Zaux.Zeven_Zpower_odd`.
-- `src/Core/Zaux.v:147` — `radix` (rec): `FloatSpec.Core.Defs.FlocqFloat.radix`.
-- `src/Core/Zaux.v:147` — `radix_val` (proj): no exact-name candidate.
-- `src/Core/Zaux.v:147` — `radix_prop` (proj): no exact-name candidate.
-- `src/Core/Zaux.v:149` — `radix_val_inj` (prf): `FloatSpec.Core.Zaux.radix_val_inj`.
-- `src/Core/Zaux.v:161` — `radix2` (def): `FloatSpec.Core.Zaux.radix2`, `radix2`.
-- `src/Core/Zaux.v:165` — `radix_gt_0` (prf): `FloatSpec.Core.Zaux.radix_gt_0`.
-- `src/Core/Zaux.v:173` — `radix_gt_1` (prf): `FloatSpec.Core.Zaux.radix_gt_1`.
-- `src/Core/Zaux.v:181` — `Zpower_gt_1` (prf): `FloatSpec.Core.Zaux.Zpower_gt_1`.
-- `src/Core/Zaux.v:208` — `Zpower_gt_0` (prf): `FloatSpec.Core.Zaux.Zpower_gt_0`.
-- `src/Core/Zaux.v:222` — `Zpower_ge_0` (prf): `FloatSpec.Core.Zaux.Zpower_ge_0`.
-- `src/Core/Zaux.v:231` — `Zpower_le` (prf): `FloatSpec.Core.Zaux.Zpower_le`.
-- `src/Core/Zaux.v:251` — `Zpower_lt` (prf): `FloatSpec.Core.Zaux.Zpower_lt`.
-- `src/Core/Zaux.v:278` — `Zpower_lt_Zpower` (prf): `FloatSpec.Core.Zaux.Zpower_lt_Zpower`.
-- `src/Core/Zaux.v:291` — `Zpower_gt_id` (prf): `FloatSpec.Core.Zaux.Zpower_gt_id`.
+- `src/Core/Zaux.v:325` — `Zmod_mod_mult` (prf): `FloatSpec.Core.Zaux.Zmod_mod_mult`.
+- `src/Core/Zaux.v:335` — `ZOmod_eq` (prf): `FloatSpec.Core.Zaux.ZOmod_eq`.
+- `src/Core/Zaux.v:344` — `ZOmod_mod_mult` (prf): `FloatSpec.Core.Zaux.ZOmod_mod_mult`.
+- `src/Core/Zaux.v:359` — `Zdiv_mod_mult` (prf): `FloatSpec.Core.Zaux.Zdiv_mod_mult`.
+- `src/Core/Zaux.v:374` — `ZOdiv_mod_mult` (prf): `FloatSpec.Core.Zaux.ZOdiv_mod_mult`.
+- `src/Core/Zaux.v:394` — `ZOdiv_small_abs` (prf): `FloatSpec.Core.Zaux.ZOdiv_small_abs`.
+- `src/Core/Zaux.v:411` — `ZOmod_small_abs` (prf): `FloatSpec.Core.Zaux.ZOmod_small_abs`.
+- `src/Core/Zaux.v:428` — `ZOdiv_plus` (prf): `FloatSpec.Core.Zaux.ZOdiv_plus`.
+- `src/Core/Zaux.v:450` — `Zsame_sign_trans` (prf): `FloatSpec.Core.Zaux.Zsame_sign_trans`.
+- `src/Core/Zaux.v:457` — `Zsame_sign_trans_weak` (prf): `FloatSpec.Core.Zaux.Zsame_sign_trans_weak`.
+- `src/Core/Zaux.v:464` — `Zsame_sign_imp` (prf): `FloatSpec.Core.Zaux.Zsame_sign_imp`.
+- `src/Core/Zaux.v:483` — `Zsame_sign_odiv` (prf): `FloatSpec.Core.Zaux.Zsame_sign_odiv`.
+- `src/Core/Zaux.v:502` — `Zeq_bool_prop` (ind): `FloatSpec.Core.Zaux.Zeq_bool_prop`.
+- `src/Core/Zaux.v:502` — `Zeq_bool_prop_ind` (scheme): no exact-name candidate.
+- `src/Core/Zaux.v:502` — `Zeq_bool_prop_sind` (scheme): no exact-name candidate.
+- `src/Core/Zaux.v:503` — `Zeq_bool_true_` (constr): `FloatSpec.Core.Zaux.Zeq_bool_prop.Zeq_bool_true_`.
+- `src/Core/Zaux.v:504` — `Zeq_bool_false_` (constr): `FloatSpec.Core.Zaux.Zeq_bool_prop.Zeq_bool_false_`.
+- `src/Core/Zaux.v:506` — `Zeq_bool_spec` (prf): `FloatSpec.Core.Zaux.Zeq_bool_spec`.
+- `src/Core/Zaux.v:518` — `Zeq_bool_true` (prf): `FloatSpec.Core.Zaux.Zeq_bool_true`.
+- `src/Core/Zaux.v:525` — `Zeq_bool_false` (prf): `FloatSpec.Core.Zaux.Zeq_bool_false`.
 
 ## Reproduce
 

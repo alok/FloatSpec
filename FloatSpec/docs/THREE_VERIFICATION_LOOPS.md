@@ -1,5 +1,29 @@
 # Run the three verification loops
 
+## Integer-power/radix contracts (September 21)
+
+The source-ordered audit now covers Zaux through `Zpower_gt_id`. Integer
+negative powers are zero, unlike real reciprocals; both assistants prove
+that strict monotonicity without a nonnegative upper exponent is false.
+The paired fixtures also check the source Boolean-proof radix record against
+Lean's proposition-proof record. Neither admits a radix below two.
+
+```sh
+lake env lean scripts/fixtures/ZauxPowerRadixContracts.lean
+coqc -q -R "$FLOCQ_AUDIT_DIR/src" Flocq \
+  -o /tmp/ZauxPowerRadixContracts.vo scripts/fixtures/ZauxPowerRadixContracts.v
+uv run scripts/test_zaux_power_contracts.py -v
+uv run scripts/flocq_bridge.py --flocq-dir "$FLOCQ_AUDIT_DIR" \
+  --operations power --samples 250 --seed 864307
+```
+
+Select the compiler matching the pinned reference build (locally Rocq 9.2 at
+`/opt/homebrew/bin/coqc`). Export `FLOCQ_AUDIT_DIR` for the live contract tests.
+The tests reject four contract mutations per assistant. Snapshot `f2fb5d00`
+passes 228 deduplicated power cases in all three execution paths and 228
+generated kernel equalities. Existing live runner tests also reject a Lean
+negative-exponent/natAbs mutation and a compiled-only wrong answer.
+
 ## Source-ordered prelude (September 21)
 
 `scripts/flocq_port_queue.py` derives module order from actual `coqdep` output

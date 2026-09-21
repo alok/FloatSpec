@@ -4000,7 +4000,7 @@ eight fixed iterations and fourteen sign cases. The new profile passes 1244
 three-way executions, independent closed-form checks and generated kernel
 equalities (seed 864211, 103.192 s). Four harness tests include two live mutations
 applied to both assistants; their shared wrong results are rejected by the
-oracle. Eight queue tests cover ordering, stale digests, metadata ambiguity,
+oracle. Nine queue tests cover ordering, stale digests, metadata ambiguity,
 review/candidate separation and unsupported mutual declarations.
 
 Receipts: `/private/tmp/floatspec-zaux-prelude-864211-v2/report.json`,
@@ -4037,6 +4037,49 @@ while retaining passing empty/clean inputs. Existing real Lean placeholder
 fixtures, unused-mvcgen gate and four-debt manifest scan also pass locally.
 Hosted trust/status/hygiene stages were skipped in that run and remain unverified.
 Receipt: `/private/tmp/floatspec-ci-35548504304-failure.log`.
+
+### September 21: next twenty source sites, integer-power/radix contracts
+
+The ordered review now reaches `Zpower_gt_id`: parity, integer power laws,
+the radix record/projections and bounds. The direct Lean propositions already
+match the source domains. The paired fixture makes the source Boolean/proof
+adaptations explicit: `Z.even` versus decidable `Even`, and `Z.leb 2 value = true`
+versus `2 ≤ value`. Manifest fingerprints include record constructor/field types
+and the integer-power body where relevant, not merely the record's type name.
+Eighteen new source anchors are validated against compiled source declarations.
+
+Removed 38 unused named check/spec declarations from this reviewed prelude and
+power slice. The actual mathematical laws and closed proofs remain unchanged.
+Some wrappers only restated a definition, and one inversion wrapper carried a
+wrong `natAbs` premise without proving the advertised exponent implication.
+The remaining source-facing theorem uses actual integer `Zpower` and is correct.
+Both assistants prove the counterexample `-2 < -1` with both integer powers zero;
+the source's upper-exponent nonnegativity premise cannot be dropped.
+
+Source snapshot `f2fb5d00c990e08667c278a1c831086e2b4e45f2b8b5a26a9437b5db99a99764`
+passes full macOS Lean 4.34 (6225 jobs), complete LSP diagnostics, compiled trust
+(13713 source declarations / 59 modules / the same four debts), and 369 anchors.
+The queue has 28 explicit dispositions and 2688 unreviewed sites. Nine queue
+tests pass, and the old review fingerprints still match.
+
+Paired typed clients and eight live contract mutants pass (two unittest methods,
+14.614 s). The first mutation run failed on a too-case-sensitive diagnostic regex,
+not an accepted bad contract; its failure log is retained. The corrected run
+requires the expected type/kernel diagnostic rather than accepting any process
+failure. Fresh seed 864307 passes 228 power cases across compiled/reduced Lean
+and pinned Rocq plus 228 generated kernel equalities (18.648 s). Three existing
+live runner tests pass, including two actual wrong-program mutations (15.396 s).
+The ordinary harness reports 32 passing tests and 44 skipped live tests.
+
+Receipts: `/private/tmp/floatspec-zaux-power-build-20260921.log`,
+`/private/tmp/floatspec-zaux-powers-864307/report.json`,
+`/private/tmp/floatspec-zaux-power-mutations-v2-20260921.log`,
+`/private/tmp/floatspec-power-live-runner-tests-20260921.log`,
+`/private/tmp/floatspec-power-trust-20260921.json`,
+`/private/tmp/floatspec-power-source-queue-20260921.json`.
+No new proof debt or numerical operation rewrite was needed in this slice.
+The full aggregate all-profile suite was not rerun; the new fixtures and tests
+are integrated into its next run. Hosted follow-up CI is still pending.
 
 ### Unreviewed scope
 
