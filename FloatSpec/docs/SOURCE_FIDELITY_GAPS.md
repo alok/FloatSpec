@@ -77,7 +77,9 @@ letting their names imply established universal refinement.
 ## Build/review usability
 
 macOS Lean 4.34 builds and runs the checked snapshots. Hosted CI currently
-fails before source compilation because it requests a pinned rc2 Mathlib cache
-under final Lean 4.34. The narrow cache-policy repair is awaiting approval;
-local success is not a hosted/Linux pass. Exact source hashes and reviewable
-fork commits remain the authority for which snapshot each test exercised.
+previously failed before source compilation because it requested a pinned rc2
+Mathlib cache under final Lean 4.34. The approved workflow repair now skips
+that incompatible cache and builds the reviewed sources with stable 4.34.0;
+hosted verification is pending. Local success is not a hosted/Linux pass.
+Exact source hashes and reviewable fork commits remain the authority for
+which snapshot each test exercised.

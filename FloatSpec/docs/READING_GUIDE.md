@@ -92,10 +92,13 @@ but Lean's `#eval` rejects its marker. Read
 [the explanation and concrete probes](COMPUTABLE_COMPARE_GUIDE.md#5-what-noncomputable-does-and-what-it-does-not-do).
 No existing marker was changed in answering that question.
 
-**CI is not green.** The latest main run fails before compiling project
-sources: it requests the pinned Mathlib rc2 cache under Lean 4.34.0 final.
-The narrow cache-policy repair is awaiting approval. A local macOS pass is
-not a hosted/Linux pass.
+**CI repair is now approved and implemented; hosted verification is pending.**
+The last failed run requested the pinned Mathlib rc2 cache under Lean 4.34.0
+final. The workflow now keeps stable 4.34.0, builds the reviewed dependency
+sources without that incompatible binary cache, and saves completed artifacts
+through the action's GitHub cache. A local macOS pass is not a hosted/Linux
+pass. The [continuation plan](FIXUP_PLAN_2026-09-21.md) tracks the remaining
+Pff observer contracts and integer execution gaps.
 
 For the remaining fidelity work, read [SOURCE_FIDELITY_GAPS.md](SOURCE_FIDELITY_GAPS.md).
 Finite agreement, closed proofs, source links and correct source correspondence

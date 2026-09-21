@@ -17,22 +17,19 @@ jobs:
 
       - uses: leanprover/lean-action@v1
         with:
-          build: false
-
-      - name: Build library
-        run: lake build
+          # lean-toolchain selects stable 4.34.0. The reviewed dependency sources
+          # remain pinned at rc2, whose prebuilt Mathlib cache is incompatible.
+          use-mathlib-cache: false
+          build: true
+          build-args: FloatSpec.Test FloatSpecTests floatspec
+          # Build inside the action so its GitHub cache saves completed artifacts.
 
       - name: Build regression tests
         run: |
-          lake build FloatSpecTests
-          lake build FloatSpec.Test
-          for fixture in BooleanComparison PrimitiveComparison PrimitiveConversion PrimitiveExecution RawIEEERounding RawOverflow SingleNaNArithmetic SingleNaNHelpers FrexpLaws Normalization CalcBrackets NativeSingleNaNArithmetic MultiplicationErrorGrid DoubleRoundingWitness SingleNaNValidity RelativeErrorGrid ExactArithmeticLaws RoundingOracle IntegerRounding; do
+          for fixture in BooleanComparison PrimitiveComparison PrimitiveConversion PrimitiveExecution RawIEEERounding RawOverflow SingleNaNArithmetic SingleNaNHelpers FrexpLaws Normalization CalcBrackets NativeSingleNaNArithmetic MultiplicationErrorGrid DoubleRoundingWitness SingleNaNValidity RelativeErrorGrid ExactArithmeticLaws RoundingOracle IntegerRounding CorePremiseBoundary ExponentValidityBoundary UlpNearestChoiceContracts PffBasicSourceContracts RoundNEPointContracts RemainderContracts RemainderGrid; do
             lake env lean "scripts/fixtures/$fixture.lean"
           done
           lake env lean --run scripts/fixtures/GuidedDemo.lean
-
-      - name: Build executable
-        run: lake build floatspec
 
       - name: Reject proof and semantic placeholders
         run: |
@@ -49,6 +46,8 @@ jobs:
           python3 scripts/test_ieee_scale_bridge.py -v
           python3 scripts/test_ieee_integer_bridge.py -v
           python3 scripts/test_flocq_source_refs.py -v
+          python3 scripts/test_pff_basic_contracts.py -v
+          python3 scripts/test_remainder_contracts.py -v
 
       - name: Verify generated status is current
         run: |
