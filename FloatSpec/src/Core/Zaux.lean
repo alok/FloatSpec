@@ -19,6 +19,7 @@ COPYING file for more details.
 import Std.Do.Triple
 import Mathlib.Tactic
 import FloatSpec.src.SimprocWP
+import FloatSpec.Linter.CoqSourceLinter
 
 open Std.Do
 
@@ -116,6 +117,7 @@ theorem Zopp_le_cancel_spec (x y : Int) :
   simp [this, id_run]
 
 /-- FLoCq `Zopp_le_cancel`. -/
+@[flocq_source "src/Core/Zaux.v" 29 "Zopp_le_cancel"]
 theorem Zopp_le_cancel (x y : Int) (h : -y ≤ -x) : x ≤ y :=
   Int.neg_le_neg_iff.mp h
 
@@ -143,6 +145,7 @@ theorem Zgt_not_eq_spec (x y : Int) :
   simp [this, id_run]
 
 /-- FLoCq `Zgt_not_eq`. -/
+@[flocq_source "src/Core/Zaux.v" 38 "Zgt_not_eq"]
 theorem Zgt_not_eq (x y : Int) (h : y < x) : x ≠ y :=
   ne_of_gt h
 
@@ -156,6 +159,7 @@ section ProofIrrelevance
     the incoming proof/data with the distinguished value `h1`; at index
     `false`, the predicate is impossible.
 -/
+@[flocq_source "src/Core/Zaux.v" 53 "eqbool_dep"]
 def eqbool_dep (P : Bool → Sort u) (h1 : P true) (b : Bool) : P b → Prop :=
   match b with
   | true => fun h2 => h1 = h2
@@ -179,6 +183,7 @@ theorem eqbool_irrelevance_spec (b : Bool) (h1 h2 : b = true) :
   rfl
 
 /-- FLoCq `eqbool_irrelevance`. -/
+@[flocq_source "src/Core/Zaux.v" 59 "eqbool_irrelevance"]
 theorem eqbool_irrelevance (b : Bool) (h1 h2 : b = true) : h1 = h2 :=
   Subsingleton.elim _ _
 
@@ -1725,6 +1730,7 @@ section CondZopp
     This is used for conditional negation in floating-point
     sign handling.
 -/
+@[flocq_source "src/Core/Zaux.v" 23 "cond_Zopp"]
 def cond_Zopp (b : Bool) (x : Int) : Int :=
   if b then -x else x
 
@@ -2120,13 +2126,32 @@ theorem iter_nat_plus {A : Type} (f : A → A) (p q : Nat) (x : A) :
   | zero => simp [iter_nat]
   | succ p ih => simpa [iter_nat, Nat.succ_add] using congrArg f ih
 
-/-- Relationship between positive and natural iteration
-
-    For positive numbers, iter_pos equals iter_nat composed
-    with conversion to natural numbers.
--/
+/-- Binary-positive iteration, matching the Corelib `SpecFloat.iter_pos`
+    body imported by Flocq. It recurses on the positive constructors directly;
+    `iter_pos_nat` relates it to natural-count iteration. -/
+@[flocq_source "src/Core/Zaux.v" 24 "iter_pos"]
 def iter_pos {A : Type} (f : A → A) (p : Positive) (x : A) : A :=
-  iter_nat f (positiveToNat p) x
+  match p with
+  | .xH => f x
+  | .xO p => iter_pos f p (iter_pos f p x)
+  | .xI p => iter_pos f p (iter_pos f p (f x))
+
+private theorem iter_nat_apply {A : Type} (f : A → A) (n : Nat) (x : A) :
+    iter_nat f n (f x) = f (iter_nat f n x) := by
+  induction n with
+  | zero => rfl
+  | succ n ih => simpa [iter_nat] using congrArg f ih
+
+/-- FLoCq `iter_pos_nat`; also preserves the previous natural-count implementation. -/
+theorem iter_pos_nat {A : Type} (f : A → A) (p : Positive) (x : A) :
+    iter_pos f p x = iter_nat f (positiveToNat p) x := by
+  induction p generalizing x with
+  | xH => rfl
+  | xO p ih =>
+      simp only [iter_pos, positiveToNat, ih, ← iter_nat_plus, two_mul]
+  | xI p ih =>
+      simp only [iter_pos, positiveToNat, ih, ← iter_nat_plus, two_mul,
+        iter_nat_S, iter_nat_apply]
 
 def iter_pos_nat_check {A : Type} (f : A → A) (p : Positive) (x : A) : A :=
   iter_pos f p x
@@ -2142,12 +2167,7 @@ theorem iter_pos_nat_spec {A : Type} (f : A → A) (p : Positive) (x : A) :
     (pure (iter_pos_nat_check f p x) : Id _)
     ⦃⇓result => ⌜result = iter_nat f (positiveToNat p) x⌝⦄ := by
   intro _
-  unfold iter_pos_nat_check iter_pos
-  rfl
-
-/-- FLoCq `iter_pos_nat`. -/
-theorem iter_pos_nat {A : Type} (f : A → A) (p : Positive) (x : A) :
-    iter_pos f p x = iter_nat f (positiveToNat p) x := rfl
+  simpa [iter_pos_nat_check, wp, PostCond.noThrow, Id.run, pure] using iter_pos_nat f p x
 
 end Iteration
 

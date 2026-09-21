@@ -35,6 +35,14 @@ For code understanding, run `lake exe floatspec_demo`, then read sections
 
 The important recent changes are:
 
+- **A systematic source-order queue.** [Read the dependency-ordered queue](SOURCE_REVIEW_QUEUE.md)
+  from the top. It uses actual module dependencies, then compiled declaration
+  positions inside each source file. There are 2,716 declaration sites across
+  35 modules, including aliases and generated proof infrastructure—not 2,716
+  missing APIs. Existing Lean names are only candidates. The first eight sites
+  have explicit review dispositions; `iter_pos` now uses Flocq's binary-positive
+  recursion, with a closed proof preserving its previous semantics.
+
 - **Contracts that mention the actual rounding policy.** Eight ULP exports
   accepted a tie policy but referred to a fixed-policy result. One two-policy
   equality was merely reflexivity. Those statements now preserve the policies,
@@ -75,6 +83,7 @@ Current verification is deliberately separated by source snapshot:
 
 | Snapshot | Completed evidence |
 |---|---|
+| Source-ordered Zaux prelude, `55f57d90` | Full 6,225-job build; 13,753 compiled source declarations / 59 modules, four debts, 351 anchors. First eight source sites dispositioned; direct-declaration review drift checks. Paired exact contracts; 1,244 three-way cases/kernel equalities with an independent closed-form oracle, seed 864211; two shared-program mutations detected. |
 | Canonical comparison bridge, `7c2c0450` | Full 6,225-job build; 13,743 compiled source declarations / 59 modules, four existing debts and 344 source anchors. Twelve closed canonical/raw bridge theorems, 3,364 canonical pairs and the existing 20,000 dyadic pairs. Fresh 1,345 three-way cases/kernel equalities (26 observed fields each), seed 864101, and 24 detected output mutations. |
 | Executable Pff integers/divisibility, `b2e86f63` | Four marker-only changes and constructive `maxDiv`; a universal Lean equality proof against its old classical definition. Paired standalone fixtures and 4,096 native positive-division checks. Fresh 2,172 three-way cases/kernel equalities and 6,198 independent assertions, seed 863307; eight harness tests including five shared-program mutations. |
 | Pff addition/subtraction contracts, `1fb9f135` | Full 6,226-job build; closed proofs with paired exact source types and radix-zero counterexamples; eight live contract mutations. Fresh 72-input three-way replay/kernel equalities and 1,272 independent assertions, seed 863101. Numerical bodies unchanged. |

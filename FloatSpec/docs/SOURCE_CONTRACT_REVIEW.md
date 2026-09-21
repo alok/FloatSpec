@@ -6,7 +6,46 @@ all declarations in the named modules. See the
 [running audit](ASTRA_AUDIT_2026-09-19.md) for execution receipts and the
 [reading guide](READING_GUIDE.md) for the mathematical story.
 
-## Unindexed Pff negation and absolute value
+## Dependency-ordered review
+
+The review now also has a [dependency-ordered queue](SOURCE_REVIEW_QUEUE.md),
+generated from actual `coqdep` and matching-digest `.glob` metadata. Its manual
+manifest is conservative: older entries in this prose ledger are not silently
+reclassified merely because a matching Lean name exists.
+
+### First ordered slice: version and Zaux prelude
+
+The first eight source sites are reviewed: pinned `Flocq_version` (40202),
+the imported aliases `cond_Zopp` and `iter_pos`, the two integer propositions
+`Zopp_le_cancel` and `Zgt_not_eq`, and the Boolean proof-infrastructure trio
+`eq_dep_elim`, `eqbool_dep`, `eqbool_irrelevance`.
+
+The first two propositions retain their exact hypotheses and conclusions.
+`eqbool_dep` retains its true/false branches; Lean's `Sort u` family generalizes
+the source `Type` family without restricting it. The generated Coq equality
+eliminator is classified as adapted proof infrastructure, not a missing numeric
+API: Lean's existing proof irrelevance proves the same `eqbool_irrelevance` law.
+The paired typed fixtures check the precise source specializations.
+
+`iter_pos` now follows the actual Corelib binary-positive recursion imported by
+Flocq, instead of converting to a natural count before recursing. The closed
+`iter_pos_nat` theorem proves the same semantics as the former implementation
+for every function, positive count and initial value; its only listed axiom is
+`propext`. There is no new `sorry`, and no performance claim based merely on
+the source-shaped recursion. Seven anchors include the two simple source
+notation aliases. Their external Corelib bodies were inspected in Rocq 9.2.
+
+`ZauxPreludeContracts.lean/.v` execute fixed boundary examples. The new shared
+profile tests positive binary-constructor boundaries, signed values, zero and
+negative affine multipliers, and rejects nonpositive counts before transport.
+Its independent oracle uses a closed geometric-sum formula rather than copying
+the recursive algorithm. Seed 864211 passes 1244 compiled/reduced Lean versus
+Rocq cases, 1244 independent assertions and 1244 generated kernel equalities.
+Two shared-program mutations still agree across the assistants but are rejected
+by that independent oracle. The next queue entry is `Zeven_ex`, not a claim
+that the rest of Zaux or earlier prose-ledger slices have been re-audited.
+
+## Unindexed Pff negation and absolute value (earlier slice)
 
 The source facade now also exports `Fopp_correct`, `Fopp_Fopp`, `Fabs_correct`
 and `Fabs_Fzero`, matching the compiled Rocq types at Pff.v lines 1506, 1512,

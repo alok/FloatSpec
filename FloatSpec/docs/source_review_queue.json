@@ -1,0 +1,165 @@
+{
+  "flocq_commit": "7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f",
+  "reviews": [
+    {
+      "source_id": "src/Version.v:Flocq_version@816",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "Flocq_version.Flocq_version"
+      ],
+      "scope": "Pinned 4.2.2 source parser evaluates to 40202; Lean Nat literal and Rocq N result checked by reduction. Representation differs, value agrees.",
+      "evidence": [
+        "scripts/fixtures/ZauxPreludeContracts.lean",
+        "scripts/fixtures/ZauxPreludeContracts.v",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "Flocq_version.Flocq_version": {
+          "type_hash": "421340980",
+          "value_hash": "1648470144",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:cond_Zopp@765",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.cond_Zopp"
+      ],
+      "scope": "Flocq simple alias resolves to Corelib.SpecFloat.cond_Zopp. Same Boolean sign branch and unrestricted integer domain; paired typed law, runtime boundary cases and differential oracle.",
+      "evidence": [
+        "scripts/fixtures/ZauxPreludeContracts.lean",
+        "scripts/fixtures/ZauxPreludeContracts.v",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.cond_Zopp": {
+          "type_hash": "2015281128",
+          "value_hash": "3786945206",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:iter_pos@823",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.iter_pos"
+      ],
+      "scope": "Imported Corelib.SpecFloat.iter_pos has direct binary-positive recursion. Lean body now follows its three constructors, with a closed universal theorem preserving the previous natural-iteration semantics. Paired execution and independent affine closed-form oracle.",
+      "evidence": [
+        "scripts/fixtures/ZauxPreludeContracts.lean",
+        "scripts/fixtures/ZauxPreludeContracts.v",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.iter_pos": {
+          "type_hash": "725166370",
+          "value_hash": "976635785",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zopp_le_cancel@913",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zopp_le_cancel"
+      ],
+      "scope": "Same unrestricted integer arguments and implication from -y <= -x to x <= y. Closed exact-typed clients in both assistants.",
+      "evidence": [
+        "scripts/fixtures/ZauxPreludeContracts.lean",
+        "scripts/fixtures/ZauxPreludeContracts.v",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zopp_le_cancel": {
+          "type_hash": "3076527653",
+          "value_hash": "1692456315",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zgt_not_eq@1070",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zgt_not_eq"
+      ],
+      "scope": "Same unrestricted integer arguments and implication from y < x to x != y. Closed exact-typed clients in both assistants.",
+      "evidence": [
+        "scripts/fixtures/ZauxPreludeContracts.lean",
+        "scripts/fixtures/ZauxPreludeContracts.v",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zgt_not_eq": {
+          "type_hash": "1733592397",
+          "value_hash": "3623923814",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:eq_dep_elim@1255",
+      "status": "adapted-proof-infrastructure",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.eqbool_irrelevance"
+      ],
+      "scope": "Coq-generated equality eliminator is used locally to establish Boolean equality-proof irrelevance. Lean uses built-in proof irrelevance via Subsingleton.elim; no numeric algorithm or artificial same-named API is required. Not a literal port of the generated eliminator.",
+      "evidence": [
+        "scripts/fixtures/ZauxPreludeContracts.lean",
+        "scripts/fixtures/ZauxPreludeContracts.v",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.eqbool_irrelevance": {
+          "type_hash": "414733734",
+          "value_hash": "589064898",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:eqbool_dep@1310",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.eqbool_dep"
+      ],
+      "scope": "Same dependent true branch compares data/proofs with the distinguished element; false branch is False. Lean permits Sort u, extending the source Type-indexed interface; paired branch equations check the source specialization.",
+      "evidence": [
+        "scripts/fixtures/ZauxPreludeContracts.lean",
+        "scripts/fixtures/ZauxPreludeContracts.v",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.eqbool_dep": {
+          "type_hash": "434316405",
+          "value_hash": "1528696978",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:eqbool_irrelevance@1472",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.eqbool_irrelevance"
+      ],
+      "scope": "Same universal equality of two proofs of b=true. Lean uses Subsingleton.elim rather than the source-generated equality eliminator; exact theorem type preserved.",
+      "evidence": [
+        "scripts/fixtures/ZauxPreludeContracts.lean",
+        "scripts/fixtures/ZauxPreludeContracts.v",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.eqbool_irrelevance": {
+          "type_hash": "414733734",
+          "value_hash": "589064898",
+          "noncomputable": false
+        }
+      }
+    }
+  ]
+}

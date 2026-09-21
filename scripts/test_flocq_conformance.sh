@@ -59,7 +59,9 @@ fi
 
 uv run "$repo_root/scripts/validate_flocq_source_refs.py" "$flocq_dir"
 uv run "$repo_root/scripts/test_flocq_source_refs.py" -v
+uv run "$repo_root/scripts/test_flocq_port_queue.py" -v
 uv run "$repo_root/scripts/check_compiled_trust.py"
+uv run "$repo_root/scripts/flocq_port_queue.py" --check-lean-reviews --skip-build
 uv run "$repo_root/scripts/test_compiled_trust.py" -v
 
 if [[ "${FLOCQ_SKIP_BUILD:-0}" != "1" ]]; then
@@ -223,6 +225,8 @@ done
 echo 'Pure Rocq contract loop passed: typed premises, counterexamples, finite error laws, 35,845 rounding-oracle cases'
 "$coqc_bin" -q -R "$flocq_dir/src" Flocq -o "$scratch/PffIntegerExecution.vo" \
   "$repo_root/scripts/fixtures/PffIntegerExecution.v"
+"$coqc_bin" -q -R "$flocq_dir/src" Flocq -o "$scratch/ZauxPreludeContracts.vo" \
+  "$repo_root/scripts/fixtures/ZauxPreludeContracts.v"
 
 run_lake build FloatSpec.Test.FlocqConformance FloatSpec.Test.ArithmeticProperties \
   FloatSpec.Test.BitsExecution FloatSpec.Test.BitOrderExecution FloatSpec.Test.NativeSourceArithmetic \
@@ -247,6 +251,7 @@ for fixture in BooleanComparison PrimitiveComparison PrimitiveConversion Primiti
 done
 run_lake env lean --run "$repo_root/scripts/fixtures/GuidedDemo.lean"
 run_lake env lean "$repo_root/scripts/fixtures/PffIntegerExecution.lean"
+run_lake env lean "$repo_root/scripts/fixtures/ZauxPreludeContracts.lean"
 run_lake env lean --run "$repo_root/scripts/fixtures/PffWalkthrough.lean"
 echo 'Pure Lean loop passed: examples and 10,734 kernel-checked arithmetic invariant cases'
 run_lake exe floatspec_demo
@@ -316,6 +321,9 @@ uv run "$repo_root/scripts/pff_integer_bridge.py" --flocq-dir "$flocq_dir" --coq
   --seed "${FLOCQ_BRIDGE_SEED:-20260919}" --samples "${FLOCQ_PFF_INTEGER_SAMPLES:-100}" \
   --batch-size "${FLOCQ_PFF_INTEGER_BATCH_SIZE:-100}"
 FLOCQ_AUDIT_DIR="$flocq_dir" uv run "$repo_root/scripts/test_pff_integer_bridge.py" -v
+uv run "$repo_root/scripts/zaux_prelude_bridge.py" --flocq-dir "$flocq_dir" --coqc "$coqc_bin" \
+  --seed "${FLOCQ_BRIDGE_SEED:-864211}" --samples "${FLOCQ_ZAUX_PRELUDE_SAMPLES:-120}"
+FLOCQ_AUDIT_DIR="$flocq_dir" uv run "$repo_root/scripts/test_zaux_prelude_bridge.py" -v
 
 uv run "$repo_root/scripts/remainder_bridge.py" --flocq-dir "$flocq_dir" --coqc "$coqc_bin" \
   --seed "${FLOCQ_BRIDGE_SEED:-20260919}" --samples 0 \

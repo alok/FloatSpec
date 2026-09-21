@@ -3971,6 +3971,55 @@ is legitimate, and the compiler/runtime gates are the relevant check for
 executable declarations. `Print Assumptions` is an axiom audit, not a reliable
 test of whether erased proofs prevent execution.
 
+### September 21: actual dependency/declaration queue and first source slice
+
+At the user's suggestion the audit now uses actual `coqdep` order and compiled
+`.glob` declaration offsets. The tool validates the source pin, source digests,
+dependency precedence, source anchors and manual-review references. It handles
+same-token class facets and repeated scoped aliases; unknown metadata and
+unsupported mutual blocks fail explicitly. The pin has 2716 declaration sites
+across 35 modules. These include notations and generated proof infrastructure,
+so they are not a missing-work denominator. Historical prose-ledger reviews
+are not silently promoted into this new conservative manifest.
+
+The first eight sites now have dispositions: seven reviewed contracts and one
+adapted proof-infrastructure entry. Compiled direct type/body hashes and the
+noncomputable flag make subsequent direct-declaration drift a review failure.
+This is a noncryptographic change detector, not a transitive-dependency proof.
+The first actual rewrite is `Core.Zaux.iter_pos`, whose three binary-positive
+branches now match the imported Corelib body. The existing public
+`iter_pos_nat` theorem is proved for all functions/counts/initial values,
+preserving the former natural-iteration semantics. No source type was weakened.
+
+Snapshot `55f57d905da2ac4ad0e58388cf227ac14bf34778d2e25cd3a6d1b8d3ccd29a9a`
+passes the full macOS Lean 4.34 build (6225 jobs), compiled trust (13753 source
+declarations / 59 modules / four debts), and 351 source anchors. Zaux and the
+paired Lean fixture have complete clean LSP diagnostics. Both assistants check
+the prelude's exact propositions, version 40202, dependent Boolean branches,
+eight fixed iterations and fourteen sign cases. The new profile passes 1244
+three-way executions, independent closed-form checks and generated kernel
+equalities (seed 864211, 103.192 s). Four harness tests include two live mutations
+applied to both assistants; their shared wrong results are rejected by the
+oracle. Eight queue tests cover ordering, stale digests, metadata ambiguity,
+review/candidate separation and unsupported mutual declarations.
+
+Receipts: `/private/tmp/floatspec-zaux-prelude-864211-v2/report.json`,
+`/private/tmp/floatspec-zaux-source-build-20260921.log`,
+`/private/tmp/floatspec-zaux-trust-20260921.json`,
+`/private/tmp/floatspec-source-queue-final-20260921.json`.
+The first large prelude run lacked Lean's deep-term printing option: its
+abbreviated output was rejected before comparison. That initial report remains
+`error` with zero compared cases; the v2 run is the pass. Early queue generator
+failures on real class facets and reused aliases were fixed and regression-tested.
+Hosted Linux builds remain pending. The aggregate all-profile suite has not
+been rerun on this snapshot; the new profile is integrated for future runs.
+
+A fresh pinned-Rocq axiom probe confirms the computability distinction:
+`Zfloor` depends on `ClassicalDedekindReals.sig_forall_dec`; `mag` also depends
+on excluded middle and `sig_not_dec`. `SpecFloat.iter_pos` and `cond_Zopp`
+are closed under the global context. Total logical definitions do not imply
+an executable algorithm for arbitrary mathematical reals.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In

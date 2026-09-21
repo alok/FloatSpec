@@ -45,9 +45,26 @@ Lean theorem validity, and source equivalence remain separate claims.
 5. Complete locally — full macOS build (6226 jobs), compiled trust (13692 source
    declarations / 59 modules / four debts), 344 pinned anchors and generated
    status checks pass. Hosted status is still pending as recorded in step 1.
-6. **In progress — update the reading guide, fidelity ledger and Linear CFS-3; commit**
+6. Complete — update the reading guide, fidelity ledger and Linear CFS-3; commit
    only verified coherent slices, write the repository's post-commit logs, and
    push to the user's origin/main.
+   Pushed as `c3972539`; post-commit log recorded.
+7. Complete — use source dependency and declaration order for the audit.
+   Build a reproducible queue from pinned `coqdep` and compiled declaration
+   metadata; distinguish an existing candidate from a reviewed contract.
+   Make raw comparison the default import, retain the dyadic helper only as an
+   explicit opt-in with closed canonical bridges, and run the boundary cases.
+   Prefer compiler-backed execution checks to a keyword ban on `classical`:
+   proof-only classical reasoning and mathematical-real specifications are
+   legitimate; executable integer algorithms must actually compile and run.
+   The generated queue covers 2716 declaration sites / 35 modules. Its first
+   eight sites are dispositioned; source-shaped binary-positive iteration
+   preserves its old semantics by a closed proof. The 1244-case prelude bridge,
+   exact contracts, shared-program mutants, full build and trust gates pass.
+8. **In progress — continue from the first outstanding source contract, `Zeven_ex`,**
+   then follow the queue through Zaux, while checking the real hosted CI result.
+   Do not turn candidate-name counts into equivalence claims. Publish coherent
+   verified slices and keep the linear reading guide current.
 
 ## Constraints and open obligations
 

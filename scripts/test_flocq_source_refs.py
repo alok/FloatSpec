@@ -10,6 +10,16 @@ import validate_flocq_source_refs as validator
 
 
 class ReferenceTests(unittest.TestCase):
+    def test_imported_simple_notation_alias_is_a_real_source_anchor(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "src").mkdir()
+            (root / "src/Probe.v").write_text(
+                "Notation iter_pos := SpecFloat.iter_pos (only parsing).\n")
+            ref = {"lean_name": "probe", "path": "src/Probe.v", "line": 1, "name": "iter_pos"}
+            self.assertEqual(validator.validate_references([ref], root), [])
+            self.assertTrue(validator.validate_references([{**ref, "name": "iter"}], root))
+
     def test_apostrophes_are_part_of_the_declaration_name(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

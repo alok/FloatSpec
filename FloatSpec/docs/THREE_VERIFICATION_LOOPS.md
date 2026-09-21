@@ -1,5 +1,27 @@
 # Run the three verification loops
 
+## Source-ordered prelude (September 21)
+
+`scripts/flocq_port_queue.py` derives module order from actual `coqdep` output
+and declaration order from matching-digest Rocq `.glob` files. See the generated
+[queue](SOURCE_REVIEW_QUEUE.md). Its manual reviews bind direct Lean type/body
+hashes and the noncomputable flag; they do not certify transitive dependencies.
+
+```sh
+lake env lean scripts/fixtures/ZauxPreludeContracts.lean
+uv run scripts/zaux_prelude_bridge.py --flocq-dir "$FLOCQ_AUDIT_DIR" \
+  --seed 864211 --samples 120
+uv run scripts/test_zaux_prelude_bridge.py -v
+uv run scripts/flocq_port_queue.py --check-lean-reviews
+```
+
+The paired Rocq fixture checks the same typed contracts and fixed observations.
+The bridge calls actual conditional negation and positive iteration, compares
+three execution paths and a closed geometric-sum oracle, and bootstraps checked
+Lean equalities. The live test requires `FLOCQ_AUDIT_DIR` and rejects two
+mutations applied to both assistants simultaneously. Nonpositive counts are
+protocol errors, not silently converted into the positive integer one.
+
 ## Canonical comparison bridge (September 21)
 
 The `prim_comparison` profile now observes 26 fields, including all twelve
