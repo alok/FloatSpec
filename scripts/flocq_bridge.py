@@ -36,7 +36,7 @@ OPS = ("power", "div_eucl", "location", "round", "truncate", "div", "plus", "sqr
        "ieee_round", "single_helpers", "single_frexp", "normalize", "prim_comparison", "prim_conversion",
        "prim_arithmetic", "prim_helpers", "prim_round")
 ARITIES = dict(zip(OPS, (2, 2, 3, 3, 5, 6, 6, 4, 3, 2, 5, 8, 4, 1, 1, 6, 2, 2, 5, 6, 6, 10, 15, 8, 9, 6, 6, 8, 4, 9, 7, 6), strict=True))
-WIDTHS = dict(zip(OPS, (1, 2, 3, 6, 3, 2, 2, 2, 4, 1, 13, 12, 21, 9, 9, 8, 14, 14, 15, 7, 17, 14, 87, 21, 46, 11, 12, 14, 14, 70, 68, 16), strict=True))
+WIDTHS = dict(zip(OPS, (1, 2, 3, 6, 3, 2, 2, 2, 4, 1, 13, 12, 21, 9, 9, 8, 14, 14, 15, 7, 17, 14, 87, 21, 46, 11, 12, 26, 14, 70, 68, 16), strict=True))
 RADIX_OPS = {"truncate", "div", "plus", "sqrt", "digits", "operations", "format_calc"}
 
 
@@ -367,16 +367,20 @@ def prim_comparison_expressions(case: Case) -> tuple[str, str]:
 
     The raw observations must precede SF2B': conversion rejects noncanonical
     values as NaN. Rocq's middle group executes its native primitive; its raw
-    and final groups are integer algorithms. No value-order oracle is substituted.
+    and final groups are integer algorithms. The last twelve fields call the
+    opt-in dyadic APIs only on canonical inputs and compare to actual source
+    APIs. No claim is made that raw noncanonical records compare by value.
     """
     lean, coq = '', ''
     for name, raw in zip(('x', 'y'), (case.args[:4], case.args[4:]), strict=True):
         lean += (f'let raw_{name} : StandardFloat := {small_ieee_raw(raw)}; '
                  f"let {name} := BinarySingleNaN.SF2B' (prec := 53) (emax := 1024) raw_{name}; "
-                 f'let prim_{name} := FaithfulPrimFloat.B2Prim {name}; ')
+                 f'let prim_{name} := FaithfulPrimFloat.B2Prim {name}; '
+                 f'let canonical_{name} := FaithfulPrimFloat.B2SF {name}; ')
         coq += (f'let raw_{name} := {small_ieee_raw(raw, True)} in '
                 f"let {name} := @BinarySingleNaN.SF2B' 53 1024 raw_{name} in "
-                f'let prim_{name} := Flocq.IEEE754.PrimFloat.B2Prim {name} in ')
+                f'let prim_{name} := Flocq.IEEE754.PrimFloat.B2Prim {name} in '
+                f'let canonical_{name} := @BinarySingleNaN.B2SF 53 1024 {name} in ')
     ls = ['((FaithfulPrimFloat.SFcompare raw_x raw_y).map comparisonCode).getD 2']
     cs = ['comparison_code (SpecFloat.SFcompare raw_x raw_y)']
     for name in ('SFeqb', 'SFltb', 'SFleb'):
@@ -398,6 +402,23 @@ def prim_comparison_expressions(case: Case) -> tuple[str, str]:
     for name in ('Beqb', 'Bltb', 'Bleb'):
         ls.append(f'boolean (FaithfulPrimFloat.{name} x y)')
         cs.append(f'boolean (@BinarySingleNaN.{name} 53 1024 x y)')
+    value_api = 'FloatSpec.IEEE754.ComputableCompare'
+    ls.append(f'(({value_api}.SFcompareC canonical_x canonical_y).map comparisonCode).getD 2')
+    cs.append('comparison_code (SpecFloat.SFcompare canonical_x canonical_y)')
+    for name in ('SFeqb', 'SFltb', 'SFleb'):
+        ls.append(f'boolean ({value_api}.{name}C canonical_x canonical_y)')
+        cs.append(f'boolean (SpecFloat.{name} canonical_x canonical_y)')
+    ls.append(f'(match {value_api}.compareC prim_x prim_y with '
+              '| .FEq => 0 | .FLt => -1 | .FGt => 1 | .FNotComparable => 2)')
+    cs.append(cs[6])
+    for name, source_column in zip(('eqb', 'ltb', 'leb'), (7, 8, 9), strict=True):
+        ls.append(f'boolean ({value_api}.{name}C prim_x prim_y)')
+        cs.append(cs[source_column])
+    ls.append(f'(({value_api}.BcompareC x y).map comparisonCode).getD 2')
+    cs.append(cs[10])
+    for name, source_column in zip(('Beqb', 'Bltb', 'Bleb'), (11, 12, 13), strict=True):
+        ls.append(f'boolean ({value_api}.{name}C x y)')
+        cs.append(cs[source_column])
     return lean + '[' + ', '.join(ls) + ']', coq + '[' + '; '.join(cs) + ']'
 
 
@@ -1104,6 +1125,7 @@ import FloatSpec.src.Core.FTZ
 import FloatSpec.src.IEEE754.BinarySingleNaNSourceFacade
 import FloatSpec.src.IEEE754.BitsSourceFacade
 import FloatSpec.src.IEEE754.PrimFloat
+import FloatSpec.src.IEEE754.ComputableCompare
 import FloatSpec.Test.BitsExecution
 open FloatSpec.Core FloatSpec.Calc FloatSpec.Calc.Bracket
 set_option maxRecDepth 100000

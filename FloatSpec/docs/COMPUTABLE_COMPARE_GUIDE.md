@@ -6,8 +6,10 @@ The integration retains that work, but corrects its original claim: it is an
 
 Read [ComputableCompare.lean](../src/IEEE754/ComputableCompare.lean) beside this
 guide. The source-facing operations remain in
-[PrimFloat.lean](../src/IEEE754/PrimFloat.lean). Neither implementation replaces
-the other.
+[PrimFloat.lean](../src/IEEE754/PrimFloat.lean), imported by the normal aggregate.
+The dyadic helper now requires an explicit `ComputableCompare` import. Its
+reason to exist is exact comparison of arbitrary dyadic encodings, with a
+closed bridge to the raw API when canonical-format invariants hold.
 
 ## 1. Start with the counterexample
 
@@ -95,15 +97,28 @@ Non-strict order is less-than or equality. Three-way comparison tests the two
 strict orders and otherwise returns equality, while preserving NaN's unordered
 outcome.
 
-## 4. The wrapper layers do not change the contract
+## 4. The canonical bridge, and why its input type matters
+
+`SFcompareC_eq_raw_of_canonical` proves equality with `FaithfulPrimFloat.SFcompare`
+for any two `BinarySingleNaNFloat prec emax` inputs of the same format. The
+finite constructor carries positivity and canonical-format bounds; arbitrary
+`StandardFloat` records do not. Signed zero, infinities and NaN are included.
+The three Boolean operations have corresponding closed bridge theorems.
+
+The proof first uses the existing value theorem, then the source-shaped
+`BinarySingleNaN.Bcompare_correct` for finite inputs. Constructor cases handle
+the exceptional values. There are no new proof holes. This is a universal
+theorem between two Lean implementations, not a universal cross-language theorem.
 
 The `eqbC`, `ltbC`, `lebC` and `compareC` wrappers first project a
 `PrimitiveFloat` to a `StandardFloat`. The corresponding `B*C` wrappers
 project a `PrimBinaryFloat`.
 
-Their proofs now explicitly conclude equality to `ValueSpec` on those
-projected inputs. They do not claim that an unconstrained projection magically
-supplies canonical representation hypotheses.
+These two input types **do** carry canonical validity. In particular,
+`PrimitiveFloat.valid` supplies the proof; `B2SF_Prim2B` connects its projection
+to the generic canonical carrier. All eight wrappers now have `*C_eq_raw`
+theorems in addition to `*C_eq_value`. The earlier explanation that treated
+these typed projections as unconstrained was overly conservative and is corrected.
 
 Public definitions in this module carry `flocq_local` explanations and the
 source-classification linter is enabled. A local helper classification is an
@@ -173,6 +188,15 @@ trichotomy, reflexivity, order consistency and invariance under radix rescaling.
 Those finite checks are regression evidence, not universal source equivalence.
 The kernel proofs establish the stated value contracts; the explicit
 counterexample prevents confusing that contract with raw source comparison.
+
+The September 21 continuation also runs 3,364 canonical pairs across four
+ordinary/degenerate formats and four comparisons per pair. The shared-input
+`prim_comparison` profile now observes 26 fields: the original raw/validity/typed
+surfaces plus all twelve opt-in dyadic calls on canonical inputs. Seed 864101
+passes 1,345 cases in compiled Lean, reduced Lean and pinned Rocq, then generates
+1,345 checked kernel equalities. Twenty-four individual output mutations are
+detected. Noncanonical raw inputs are observed before the rejecting conversion;
+their value comparison is deliberately not substituted for the source answer.
 
 Run from the repository root:
 

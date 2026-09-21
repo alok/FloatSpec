@@ -3935,6 +3935,42 @@ checks pass. Production Pff LSP queries remain partial on this large file;
 the completed compiler build, not those partial responses, is the decisive
 whole-file diagnostic result. The new fixture has complete clean LSP diagnostics.
 
+### September 21: opt-in dyadic API with closed canonical/raw bridges
+
+The user required the raw-record API as default unless the dyadic API had an
+explicit bridge or compelling separate purpose. `ComputableCompare` is now
+an explicit opt-in import, retaining arbitrary-dyadic value comparison.
+Four `SF*C_eq_raw_of_canonical` theorems prove equality to the raw comparator
+on `BinarySingleNaNFloat prec emax`; eight typed-wrapper bridges follow.
+All proofs are closed. The real-value argument relies on the existing
+`Bcompare_correct` and checks special constructors separately. The proof-carrying
+primitive wrapper really does provide canonical validity; the previous guide's
+description of its projection as unconstrained is corrected.
+
+Source fingerprint `7c2c0450413b76bf33303a2aa80f5da967ada72f39dd503e4cf3a022bcad79ed`
+passes a full 6225-job build. Pure Lean runs 3364 canonical input pairs / four
+comparisons each and 20000 existing dyadic pairs. Compiled trust explicitly
+imports the opt-in module: 13743 declarations / 59 modules, the same four debts.
+Fresh source metadata validates 344 anchors. The expanded `prim_comparison`
+bridge observes 26 fields and passes 1345 cases in compiled/reduced Lean and
+pinned Rocq, plus 1345 generated kernel equalities (seed 864101, 388.072 s).
+Its six literal boundary clients and 24 individual API mutations pass in
+82.663 s. The non-live harness reports 32 passed / 44 live tests skipped.
+
+Receipts: `/private/tmp/floatspec-canonical-864101-v2/report.json`,
+`/private/tmp/floatspec-canonical-live-mutations-v2-20260921.log`, and
+`/private/tmp/floatspec-canonical-bridge-build2-20260921.log`.
+The first expanded adapter used the wrong Rocq namespace for the imported
+`B2SF`; it failed to compile. Its report remains `error` and its 25 test errors
+are retained in the initial logs; only the corrected v2 runs are passes.
+Hosted Linux builds are still pending, not claimed green.
+
+The user also suggested a classical-use linter, then explicitly allowed
+discarding it if unwise. No keyword ban was added: proof-only classical use
+is legitimate, and the compiler/runtime gates are the relevant check for
+executable declarations. `Print Assumptions` is an axiom audit, not a reliable
+test of whether erased proofs prevent execution.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In

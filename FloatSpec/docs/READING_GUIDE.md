@@ -56,8 +56,10 @@ The important recent changes are:
   programs are rejected even when their prover outputs agree.
 - **Preserving Claude's useful work without preserving a wrong source claim.**
   The exponent-alignment backend compares arbitrary dyadic values. It is
-  integrated as that explicit API, with twelve `*_eq_value` contracts. The
-  different raw Flocq comparator remains unchanged.
+  now opt-in, with twelve `*_eq_value` contracts and twelve closed bridges to
+  raw comparison on canonical inputs. The raw API remains the default import.
+  `PrimitiveFloat` already carries the needed validity proof; arbitrary raw
+  records do not. See the [worked comparison guide](COMPUTABLE_COMPARE_GUIDE.md).
 - **Restoring the unindexed Pff interface.** The latest addition supplies `Fzero`,
   `is_Fzero`, `Fmult` and four source-shaped laws. Multiplication correctness
   accepts radix one; zero's forward observer laws need no radix restriction.
@@ -73,6 +75,7 @@ Current verification is deliberately separated by source snapshot:
 
 | Snapshot | Completed evidence |
 |---|---|
+| Canonical comparison bridge, `7c2c0450` | Full 6,225-job build; 13,743 compiled source declarations / 59 modules, four existing debts and 344 source anchors. Twelve closed canonical/raw bridge theorems, 3,364 canonical pairs and the existing 20,000 dyadic pairs. Fresh 1,345 three-way cases/kernel equalities (26 observed fields each), seed 864101, and 24 detected output mutations. |
 | Executable Pff integers/divisibility, `b2e86f63` | Four marker-only changes and constructive `maxDiv`; a universal Lean equality proof against its old classical definition. Paired standalone fixtures and 4,096 native positive-division checks. Fresh 2,172 three-way cases/kernel equalities and 6,198 independent assertions, seed 863307; eight harness tests including five shared-program mutations. |
 | Pff addition/subtraction contracts, `1fb9f135` | Full 6,226-job build; closed proofs with paired exact source types and radix-zero counterexamples; eight live contract mutations. Fresh 72-input three-way replay/kernel equalities and 1,272 independent assertions, seed 863101. Numerical bodies unchanged. |
 | Current Pff sign laws, `d0ab66b2` | Full 6,226-job build; 13,687 compiled source declarations / 59 modules; four manifest-only debts; 336 validated source anchors. Four paired source laws and four live mutations; fresh 72-input three-way replay with generated kernel equalities, seed 862619. Only four closed theorem exports were added to the previous production snapshot; operation bodies are unchanged. |

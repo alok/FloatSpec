@@ -1,4 +1,6 @@
 import FloatSpec
+-- Audit opt-in helpers too; removing an aggregate import must not hide proof debt.
+import FloatSpec.src.IEEE754.ComputableCompare
 import Lean.Util.CollectAxioms
 import Lean.Compiler.ImplementedByAttr
 import Lean.Compiler.ExternAttr

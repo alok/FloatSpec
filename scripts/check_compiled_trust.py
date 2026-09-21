@@ -44,7 +44,7 @@ def main() -> None:
     args = parser.parse_args()
     snapshot = lean_source_fingerprint()
     if not args.skip_build:
-        run(["lake", "build", "FloatSpec"], timeout=600)
+        run(["lake", "build", "FloatSpec", "FloatSpec.src.IEEE754.ComputableCompare"], timeout=600)
     report = json.loads(run(["lake", "env", "lean", str(ROOT / "scripts/AuditCompiledTrust.lean")],
                             timeout=600))
     require_lean_source_snapshot(snapshot)

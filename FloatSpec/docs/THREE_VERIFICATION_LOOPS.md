@@ -1,5 +1,26 @@
 # Run the three verification loops
 
+## Canonical comparison bridge (September 21)
+
+The `prim_comparison` profile now observes 26 fields, including all twelve
+opt-in dyadic comparisons on proof-carrying canonical inputs. Raw comparisons
+are still observed before conversion; invalid raw records are rejected by
+`SF2B'`, not silently normalized. The main library defaults to the raw API.
+The trust audit explicitly imports the opt-in module so this separation cannot
+hide an axiom or a proof debt.
+
+```sh
+uv run scripts/flocq_bridge.py --flocq-dir "$FLOCQ_AUDIT_DIR" \
+  --operations prim_comparison --seed 864101 --samples 120
+uv run scripts/test_flocq_bridge.py \
+  LiveTests.test_primitive_comparison_raw_and_validated_boundaries \
+  LiveTests.test_primitive_comparison_every_api_is_independently_observed -v
+```
+
+The live tests require `FLOCQ_AUDIT_DIR`; the second deliberately changes each
+of 24 independently observed API results. Source snapshot `7c2c0450` passed
+1,345 cases and generated kernel equalities; the 24 mutants were rejected.
+
 The package sets `restoreAllArtifacts := true`: standalone `lake env lean`
 fixtures require import artifacts in the normal build directory. With a global
 `LAKE_ARTIFACT_CACHE=true` and restoration disabled, Lake can report a successful

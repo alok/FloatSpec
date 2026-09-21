@@ -227,7 +227,7 @@ class ParserTests(unittest.TestCase):
             args[position] = value
             with self.assertRaises(ValueError):
                 bridge.Case('prim_comparison', tuple(args))
-        self.assertEqual(bridge.WIDTHS['prim_comparison'], 14)
+        self.assertEqual(bridge.WIDTHS['prim_comparison'], 26)
 
     def test_normalization_domains_and_replayable_boundaries(self):
         cases = bridge.normalize_corpus(840691, 3)
@@ -619,6 +619,7 @@ class LiveTests(unittest.TestCase):
             [-1, 0, 1, 1, 1, 1, -1, 0, 1, 1, -1, 0, 1, 1],
             [0, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1],
             [2, 0, 0, 0, 1, 1, 2, 0, 0, 0, 2, 0, 0, 0]]
+        expected = [row + row[10:14] + row[6:10] + row[10:14] for row in expected]
         with tempfile.TemporaryDirectory(prefix='floatspec-prim-comparison-') as directory:
             folder = Path(directory)
             rows = bridge.execute(cases, flocq, bridge.configured_coqc(flocq), folder)
@@ -644,6 +645,18 @@ class LiveTests(unittest.TestCase):
                 token = f'boolean (FaithfulPrimFloat.{prefix + suffix} {operands})'
                 mutations.append((token, f'boolean (! (FaithfulPrimFloat.{prefix + suffix} {operands}))',
                                   start + delta))
+        value_api = 'FloatSpec.IEEE754.ComputableCompare'
+        for prefix, operands, start in (('SF', 'canonical_x canonical_y', 14),
+                                       ('', 'prim_x prim_y', 18), ('B', 'x y', 22)):
+            name = prefix + 'compareC'
+            token = f'{value_api}.{name} {operands}'
+            mutations.append((token, f'{value_api}.{name} ' +
+                              ' '.join(reversed(operands.split())), start))
+            for delta, suffix in enumerate(('eqbC', 'ltbC', 'lebC'), start=1):
+                token = f'boolean ({value_api}.{prefix + suffix} {operands})'
+                mutations.append((token, f'boolean (! ({value_api}.{prefix + suffix} {operands}))',
+                                  start + delta))
+        self.assertEqual(len(mutations), 24)
         for before, after, column in mutations:
             def mutated(case):
                 lean, rocq = original(case)

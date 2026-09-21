@@ -98,4 +98,43 @@ def checkInvariants : IO Unit := do
 
 #eval checkInvariants
 
+/-! ### Canonical inputs: the bridge is a theorem, not an assumed representation law. -/
+
+private theorem canonicalBridge {prec emax : Int} (x y : BinarySingleNaNFloat prec emax) :
+    SFcompareC (binarySingleNaNFloatToStandardFloat x) (binarySingleNaNFloatToStandardFloat y) =
+      FaithfulPrimFloat.SFcompare (binarySingleNaNFloatToStandardFloat x)
+        (binarySingleNaNFloatToStandardFloat y) :=
+  SFcompareC_eq_raw_of_canonical x y
+
+#print axioms canonicalBridge
+#print axioms eqbC_eq_raw
+#print axioms compareC_eq_raw
+
+/-- Run all four canonical comparison bridges on ordinary and degenerate formats. -/
+def checkCanonicalBridge : IO Unit := do
+  let mut raw : Array StandardFloat := #[.S754_zero false, .S754_zero true,
+    .S754_infinity false, .S754_infinity true, .S754_nan]
+  for s in [false, true] do
+    for m in [1, 3, 7, 8] do
+      for e in [-3, 0, 1] do
+        raw := raw.push (.S754_finite s m e)
+  let mut count := 0
+  for (prec, emax) in [(3, 4), (1, 2), (8, 2), (0, 0)] do
+    for a in raw do
+      for b in raw do
+        -- The conversion rejects invalid encodings as NaN, not by normalizing.
+        let x := binarySingleNaNFloatToStandardFloat
+          (BinarySingleNaN.SF2B' (prec := prec) (emax := emax) a)
+        let y := binarySingleNaNFloatToStandardFloat
+          (BinarySingleNaN.SF2B' (prec := prec) (emax := emax) b)
+        unless SFcompareC x y == FaithfulPrimFloat.SFcompare x y &&
+            SFeqbC x y == FaithfulPrimFloat.SFeqb x y &&
+            SFltbC x y == FaithfulPrimFloat.SFltb x y &&
+            SFlebC x y == FaithfulPrimFloat.SFleb x y do
+          throw (IO.userError s!"canonical bridge failed: format={prec},{emax}, pair={count}")
+        count := count + 1
+  IO.println s!"ComputableCompare: {count} canonical pairs, four comparisons each passed"
+
+#eval checkCanonicalBridge
+
 end FloatSpec.Test.ComputableCompareExecution
