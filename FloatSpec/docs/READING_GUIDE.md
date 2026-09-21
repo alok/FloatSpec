@@ -44,13 +44,15 @@ The important recent changes are:
   from the top. It uses actual module dependencies, then compiled declaration
   positions inside each source file. There are 2,716 declaration sites across
   35 modules, including aliases and generated proof infrastructure—not 2,716
-  missing APIs. Existing Lean names are only candidates. The first 28 sites
-  have explicit review dispositions, through Zaux's parity/power/radix laws;
+  missing APIs. Existing Lean names are only candidates. The first 36 sites
+  have explicit review dispositions, through Zaux's division/remainder laws;
   `iter_pos` now uses Flocq's binary-positive recursion, with a closed proof
-  preserving its previous semantics. The next entry is `Zmod_mod_mult`.
-  Thirty-eight unused check/spec wrappers have been removed from this reviewed
+  preserving its previous semantics. The next entry is `Zsame_sign_trans`.
+  Fifty-four unused check/spec wrappers have been removed from this reviewed
   slice, leaving the actual direct propositions and proofs. Negative integer
   powers return zero, not reciprocals: the tests explain why that matters.
+  Division tests also distinguish floor, truncating and Euclidean operations:
+  default Lean `/` is not a universal translation of Rocq `Z.div`.
 
 - **Contracts that mention the actual rounding policy.** Eight ULP exports
   accepted a tie policy but referred to a fixed-policy result. One two-policy
@@ -92,6 +94,7 @@ Current verification is deliberately separated by source snapshot:
 
 | Snapshot | Completed evidence |
 |---|---|
+| Zaux division/remainder review, `949e91ee` | Full 6,225-job macOS build; 13,695 compiled source declarations / 59 modules, four debts, 377 anchors. Eight more source contracts and six rejected mutations; 1,377 signed-input triples in each assistant. Fresh 811 floor-division cases/kernel equalities (seed 864503), including 33 zero and 386 negative divisors; saved outputs also checked against an independent Python floor oracle. The mathematical theorems remain unchanged. |
 | Zaux parity/power/radix review, `f2fb5d00` | Full 6,225-job macOS build; 13,713 compiled source declarations / 59 modules, four debts, 369 anchors. Twenty more source sites dispositioned with paired exact clients, including the Boolean/proposition radix bridge. Eight contract mutations rejected; 228 three-way cases and generated kernel equalities, seed 864307. Two live runner mutations detected; numerical bodies unchanged. |
 | Source-ordered Zaux prelude, `55f57d90` | Full 6,225-job build; 13,753 compiled source declarations / 59 modules, four debts, 351 anchors. First eight source sites dispositioned; direct-declaration review drift checks. Paired exact contracts; 1,244 three-way cases/kernel equalities with an independent closed-form oracle, seed 864211; two shared-program mutations detected. |
 | Canonical comparison bridge, `7c2c0450` | Full 6,225-job build; 13,743 compiled source declarations / 59 modules, four existing debts and 344 source anchors. Twelve closed canonical/raw bridge theorems, 3,364 canonical pairs and the existing 20,000 dyadic pairs. Fresh 1,345 three-way cases/kernel equalities (26 observed fields each), seed 864101, and 24 detected output mutations. |

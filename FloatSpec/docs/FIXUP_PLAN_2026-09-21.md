@@ -69,8 +69,12 @@ Lean theorem validity, and source equivalence remain separate claims.
    Paired typed clients and eight contract mutations pass; 228 three-way power
    cases/kernel equalities, full build, trust and source anchors pass. Thirty-eight
    unused check/spec wrappers are removed without changing the mathematical
-   propositions or numerical bodies. Next: `Zmod_mod_mult` and division/remainder,
-   while checking the real hosted CI result (follow-up run `35553327541`).
+   propositions or numerical bodies. A further eight division/remainder contracts
+   now pass exact typed clients, six mutants, paired 1377-input grids and an
+   811-case differential/kernel replay (seed 864503). Sixteen more unused wrappers
+   are removed; floor/truncating/Euclidean domains are explicit. The queue has
+   36 dispositions. Next: `Zsame_sign_trans`, while checking the real hosted CI
+   result (follow-up run `35553327541`).
    Do not turn candidate-name counts into equivalence claims. Publish coherent
    verified slices and keep the linear reading guide current.
 

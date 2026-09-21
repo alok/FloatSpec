@@ -1000,6 +1000,174 @@
           "noncomputable": false
         }
       }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zmod_mod_mult@6737",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zmod_mod_mult"
+      ],
+      "scope": "Same signed dividend, positive a and nonnegative b premises. Source floor modulo agrees with Lean Euclidean modulo on the resulting nonnegative divisor domain, including zero; paired clients and universal Lean floor/Euclidean bridges preserve that boundary.",
+      "evidence": [
+        "scripts/fixtures/ZauxDivisionContracts.lean",
+        "scripts/fixtures/ZauxDivisionContracts.v",
+        "scripts/test_zaux_division_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zmod_mod_mult": {
+          "type_hash": "3585062596",
+          "value_hash": "82155597",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:ZOmod_eq@7112",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.ZOmod_eq"
+      ],
+      "scope": "Same unconditional quotient/remainder decomposition over all signed integers, including divisor zero. Source Z.quot/Z.rem are Lean Int.tdiv/Int.tmod, not default division/modulo.",
+      "evidence": [
+        "scripts/fixtures/ZauxDivisionContracts.lean",
+        "scripts/fixtures/ZauxDivisionContracts.v",
+        "scripts/test_zaux_division_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.ZOmod_eq": {
+          "type_hash": "899018463",
+          "value_hash": "2972243938",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:ZOmod_mod_mult@7246",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.ZOmod_mod_mult"
+      ],
+      "scope": "Same unconditional nested truncating-remainder identity for all signed n,a,b, including zero factors. No spurious nonzero-divisor assumption.",
+      "evidence": [
+        "scripts/fixtures/ZauxDivisionContracts.lean",
+        "scripts/fixtures/ZauxDivisionContracts.v",
+        "scripts/test_zaux_division_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.ZOmod_mod_mult": {
+          "type_hash": "1149967730",
+          "value_hash": "234509806",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zdiv_mod_mult@7548",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zdiv_mod_mult"
+      ],
+      "scope": "Same arbitrary dividend and two nonnegative factor premises. Source floor division/modulo matches Lean Euclidean operations on these premises; zero cases retained, negative-divisor global alias explicitly rejected.",
+      "evidence": [
+        "scripts/fixtures/ZauxDivisionContracts.lean",
+        "scripts/fixtures/ZauxDivisionContracts.v",
+        "scripts/test_zaux_division_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zdiv_mod_mult": {
+          "type_hash": "1164618846",
+          "value_hash": "679823628",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:ZOdiv_mod_mult@8055",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.ZOdiv_mod_mult"
+      ],
+      "scope": "Same unconditional truncating nested-remainder/division identity for signed and zero inputs. Actual operations are tmod/tdiv, with no added positivity conditions.",
+      "evidence": [
+        "scripts/fixtures/ZauxDivisionContracts.lean",
+        "scripts/fixtures/ZauxDivisionContracts.v",
+        "scripts/test_zaux_division_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.ZOdiv_mod_mult": {
+          "type_hash": "287135123",
+          "value_hash": "3890857693",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:ZOdiv_small_abs@8499",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.ZOdiv_small_abs"
+      ],
+      "scope": "Same strict |a| < b premise and zero truncated quotient. Lean spells |a| as integer-cast natAbs; the paired Lean client uses absolute value and checks their equivalence without extra premises.",
+      "evidence": [
+        "scripts/fixtures/ZauxDivisionContracts.lean",
+        "scripts/fixtures/ZauxDivisionContracts.v",
+        "scripts/test_zaux_division_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.ZOdiv_small_abs": {
+          "type_hash": "3263998207",
+          "value_hash": "4269433643",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:ZOmod_small_abs@8807",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.ZOmod_small_abs"
+      ],
+      "scope": "Same strict |a| < b premise and remainder equal to a, with the same natAbs/absolute-value presentation bridge as the quotient law.",
+      "evidence": [
+        "scripts/fixtures/ZauxDivisionContracts.lean",
+        "scripts/fixtures/ZauxDivisionContracts.v",
+        "scripts/test_zaux_division_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.ZOmod_small_abs": {
+          "type_hash": "810100186",
+          "value_hash": "1515721654",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:ZOdiv_plus@9101",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.ZOdiv_plus"
+      ],
+      "scope": "Same all-signed inputs, genuine 0 <= a*b hypothesis and unrestricted divisor including zero. Conclusion uses truncating quotients/remainders. Both assistants prove that the premise-free claim is false at a=-2,b=1,c=2; obsolete Euclidean check wrapper was removed.",
+      "evidence": [
+        "scripts/fixtures/ZauxDivisionContracts.lean",
+        "scripts/fixtures/ZauxDivisionContracts.v",
+        "scripts/test_zaux_division_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.ZOdiv_plus": {
+          "type_hash": "871928187",
+          "value_hash": "4139837303",
+          "noncomputable": false
+        }
+      }
     }
   ]
 }

@@ -74,11 +74,48 @@ wrapper even used a `natAbs` premise unlike the source. The real direct
 theorems and their existing proofs remain. This cleanup removes a misleading
 parallel API; it does not claim every removed helper was mathematically false.
 
-The next source entry is `Zmod_mod_mult` in the division/remainder section.
-The new manifest contains 28 dispositions total (27 reviewed contracts and
-one adapted proof-infrastructure entry); its other 2688 sites remain unreviewed,
-independently of earlier prose-ledger slices. Finite runtime agreement does
-not establish universal cross-assistant equivalence.
+At the end of this slice the queue reached `Zmod_mod_mult`, with 28 dispositions.
+Finite runtime agreement does not establish universal cross-assistant equivalence.
+
+### Third ordered slice: division and remainder
+
+The next eight contracts, `Zmod_mod_mult` through `ZOdiv_plus`, preserve the
+source's exact domains. The operator translation matters:
+
+| Convention | Rocq operations | Lean operations |
+|---|---|---|
+| Quotient truncated toward zero | `Z.quot`, `Z.rem` | `Int.tdiv`, `Int.tmod` |
+| Quotient rounded down | `Z.div`, `Z.modulo` | `Int.fdiv`, `Int.fmod` |
+| Nonnegative Euclidean remainder | Not a universal alias for the floor pair | Default integer `/`, `%` |
+
+Lean's floor and Euclidean pairs agree for **nonnegative divisors**, including
+zero's total-function convention; two universal Lean clients check that bridge.
+The two reviewed source floor/modulo laws stay inside that domain. They do not
+license a global replacement of `Z.div` with Lean `/`: for `7` and `-3`, the
+floor answer is quotient `-3`, remainder `-2`, whereas Lean's default gives
+quotient `-2`, remainder `1`.
+
+The six truncating laws use explicit `tdiv`/`tmod`. The source permits divisor
+zero in the unrestricted identities, and the fixtures retain it. The small-
+absolute-value laws translate source `Z.abs` to integer-cast `natAbs`; paired
+typed clients use ordinary `|a|` to check that presentation. Quotient addition
+retains the genuine `0 ≤ a*b` premise: with `a=-2`, `b=1`, `c=2`, its left side
+is zero and its purported premise-free right side is minus one. Both assistants
+prove that counterexample; the Lean proof lists no axioms.
+
+Sixteen more unused check/spec wrappers were removed after checking callers.
+The obsolete `ZOdiv_plus_check` computed default Euclidean division while its
+name/docstring suggested truncation; the actual direct `ZOdiv_plus` theorem was
+already correct and remains unchanged. The remaining checked statements are
+the source laws themselves, not tautologies about a parallel check function.
+The paired fixtures also execute 1377 signed input triples per assistant.
+
+The queue now has 36 dispositions (35 reviewed contracts and one adapted proof
+infrastructure entry), leaving 2680 sites unreviewed in this conservative ledger.
+The next entry is `Zsame_sign_trans`; earlier prose-ledger reviews are still
+separate. The fresh `div_eucl` bridge checks 811 actual floor-division calls
+against Rocq and generates 811 kernel equalities; it does not execute a theorem
+as a numerical function or certify every division-mode identity universally.
 
 ## Unindexed Pff negation and absolute value (earlier slice)
 

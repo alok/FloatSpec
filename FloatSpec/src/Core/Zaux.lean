@@ -333,84 +333,20 @@ end RadixZpower
 
 section DivMod
 
-/-- Modulo simplification lemma. -/
-def Zmod_mod_mult_check (n _a b : Int) : Int :=
-  n % b
-
-/-- Specification: Nested modulo simplifies under side conditions. -/
-theorem Zmod_mod_mult_spec (n a b : Int) :
-    ⦃⌜0 < a ∧ 0 ≤ b⌝⦄
-    (pure (Zmod_mod_mult_check n a b) : Id _)
-    ⦃⇓result => ⌜result = n % b⌝⦄ := by
-  intro h
-  unfold Zmod_mod_mult_check
-  rfl
-
 /-- FLoCq `Zmod_mod_mult`. -/
+@[flocq_source "src/Core/Zaux.v" 325 "Zmod_mod_mult"]
 theorem Zmod_mod_mult (n a b : Int) (_ha : 0 < a) (_hb : 0 ≤ b) :
     n % (a * b) % b = n % b := by
   apply Int.emod_emod_of_dvd
   exact ⟨a, by ring⟩
 
-/-- Division and modulo relationship. -/
-def ZOmod_eq_check (a b : Int) : Int :=
-  a.tmod b
-
-/-- Specification: Quotient and remainder decomposition. -/
-theorem ZOmod_eq_spec (a b : Int) :
-    ⦃⌜b ≠ 0⌝⦄
-    (pure (ZOmod_eq_check a b) : Id _)
-    ⦃⇓result => ⌜result = a.tmod b⌝⦄ := by
-  intro h
-  unfold ZOmod_eq_check
-  rfl
-
 /-- FLoCq `ZOmod_eq`. -/
+@[flocq_source "src/Core/Zaux.v" 335 "ZOmod_eq"]
 theorem ZOmod_eq (a b : Int) : a.tmod b = a - a.tdiv b * b := by
   simpa [Int.mul_comm] using Int.tmod_def a b
 
-/-- Division of nested modulo. -/
-def Zdiv_mod_mult_check (n a b : Int) : Int :=
-  if a ≠ 0 && b ≠ 0 then
-    (n / a) % b
-  else
-    0
-
-/-- Specification: Division distributes over modulo for nonnegative inputs, i.e. {lean}`(n % (a * b)) / a = (n / a) % b`. -/
-theorem Zdiv_mod_mult_spec (n a b : Int) :
-    ⦃⌜0 ≤ a ∧ 0 ≤ b⌝⦄
-    (pure (Zdiv_mod_mult_check n a b) : Id _)
-    ⦃⇓result => ⌜result = if a = 0 || b = 0 then 0 else (n / a) % b⌝⦄ := by
-  intro ⟨ha, hb⟩
-  unfold Zdiv_mod_mult_check
-  -- Case split on whether a ≠ 0 && b ≠ 0
-  split
-  · -- Case: a ≠ 0 && b ≠ 0
-    rename_i h_both_nonzero
-    -- When both are nonzero, a = 0 || b = 0 is false and the RHS reduces to (n / a) % b
-    have ha_nonzero : a ≠ 0 := by
-      simp at h_both_nonzero
-      exact h_both_nonzero.1
-    have hb_nonzero : b ≠ 0 := by
-      simp at h_both_nonzero
-      exact h_both_nonzero.2
-    simp [ha_nonzero, hb_nonzero, id_run]
-  · -- Case: ¬(a ≠ 0 && b ≠ 0), which means a = 0 || b = 0
-    rename_i h_some_zero
-    -- When at least one is zero, a = 0 || b = 0 is true
-    -- So if a = 0 || b = 0 then 0 else (n / a) % b reduces to 0
-    simp at h_some_zero
-    push Not at h_some_zero
-    -- h_some_zero : a ≠ 0 → b = 0, which is equivalent to a = 0 ∨ b = 0
-    -- We need to show: if a = 0 ∨ b = 0 then 0 else (n / a) % b = 0
-    by_cases ha_zero : a = 0
-    · -- Case: a = 0
-      simp [ha_zero, id_run]
-    · -- Case: a ≠ 0, then by h_some_zero, b = 0
-      have hb_zero : b = 0 := h_some_zero ha_zero
-      simp [hb_zero, id_run]
-
 /-- FLoCq `Zdiv_mod_mult`. -/
+@[flocq_source "src/Core/Zaux.v" 359 "Zdiv_mod_mult"]
 theorem Zdiv_mod_mult (n a b : Int) (ha : 0 ≤ a) (hb : 0 ≤ b) :
     (n % (a * b)) / a = (n / a) % b := by
   rcases ha.eq_or_lt with rfl | ha
@@ -431,44 +367,13 @@ theorem Zdiv_mod_mult (n a b : Int) (ha : 0 ≤ a) (hb : 0 ≤ b) :
       rw [Int.ediv_ediv_of_nonneg ha.le]
     _ = (n / a) % b := by rw [Int.emod_def]
 
-/-- Nested modulo with multiplication: for integers n, a, b, the term
-    {lean}`(fun (n a b : Int) => (n % (a * b)) % b)` is extensionally equal to
-    {lean}`(fun (n b : Int) => n % b)` under standard side conditions. -/
-def ZOmod_mod_mult_check (n _a b : Int) : Int :=
-  n.tmod b
-
-/-- Specification: {lean}`(fun (n a b : Int) => (n % (a * b)) % b = n % b)`
-    (quotient-style statement). -/
-theorem ZOmod_mod_mult_spec (n a b : Int) :
-    ⦃⌜b ≠ 0⌝⦄
-    (pure (ZOmod_mod_mult_check n a b) : Id _)
-    ⦃⇓result => ⌜result = n.tmod b⌝⦄ := by
-  intro h
-  unfold ZOmod_mod_mult_check
-  rfl
-
 /-- FLoCq `ZOmod_mod_mult`. -/
+@[flocq_source "src/Core/Zaux.v" 344 "ZOmod_mod_mult"]
 theorem ZOmod_mod_mult (n a b : Int) :
     (n.tmod (a * b)).tmod b = n.tmod b := by
   apply Int.tmod_tmod_of_dvd
   exact ⟨a, by ring⟩
 
-/-- Truncated division over nested remainder and multiplication
-
-    Quotient distributes over remainder/multiplication in the truncated variant:
-    {lean}`(n % (a*b)) / a = (n / a) % b`.
--/
-def ZOdiv_mod_mult_check (n a b : Int) : Bool :=
-  decide (((n.tmod (a * b)).tdiv a) = ((n.tdiv a).tmod b))
-
-/-- Specification: Truncated division over remainder and multiplication -/
-theorem ZOdiv_mod_mult_spec (n a b : Int) :
-    ⦃⌜True⌝⦄
-    (pure (ZOdiv_mod_mult_check n a b) : Id _)
-    ⦃⇓result => ⌜result = decide (((n.tmod (a * b)).tdiv a) = ((n.tdiv a).tmod b))⌝⦄ := by
-  intro _
-  unfold ZOdiv_mod_mult_check
-  rfl
 
 private theorem ZOdiv_mod_mult_nonneg (n a b : Int)
     (hn : 0 ≤ n) (ha : 0 ≤ a) (hb : 0 ≤ b) :
@@ -488,6 +393,7 @@ private theorem ZOdiv_mod_mult_nonneg (n a b : Int)
         Int.tmod_eq_emod_of_nonneg (Int.ediv_nonneg hn ha.le)]
 
 /-- FLoCq `ZOdiv_mod_mult`. -/
+@[flocq_source "src/Core/Zaux.v" 374 "ZOdiv_mod_mult"]
 theorem ZOdiv_mod_mult (n a b : Int) :
     (n.tmod (a * b)).tdiv a = (n.tdiv a).tmod b := by
   have nonnegDividend : ∀ n a b : Int, 0 ≤ n →
@@ -508,23 +414,8 @@ theorem ZOdiv_mod_mult (n a b : Int) :
   · have h := nonnegDividend (-n) a b (by omega)
     simpa [Int.neg_tmod, Int.neg_tdiv] using h
 
-/-- Small-absolute-value truncated division is zero
-
-    If {lean}`|a| < b`, then {lean}`a / b = 0` in truncated division.
--/
-def ZOdiv_small_abs_check (a b : Int) : Bool :=
-  decide (a.tdiv b = 0)
-
-/-- Specification: Small absolute value implies zero quotient (truncated) -/
-theorem ZOdiv_small_abs_spec (a b : Int) :
-    ⦃⌜(Int.natAbs a : Int) < b⌝⦄
-    (pure (ZOdiv_small_abs_check a b) : Id _)
-    ⦃⇓result => ⌜result = decide (a.tdiv b = 0)⌝⦄ := by
-  intro _
-  unfold ZOdiv_small_abs_check
-  rfl
-
 /-- Coq-compatible name: small-absolute-value truncated division is zero -/
+@[flocq_source "src/Core/Zaux.v" 394 "ZOdiv_small_abs"]
 theorem ZOdiv_small_abs (a b : Int) (h : (Int.natAbs a : Int) < b) :
     a.tdiv b = 0 := by
   by_cases ha : 0 ≤ a
@@ -535,20 +426,8 @@ theorem ZOdiv_small_abs (a b : Int) (h : (Int.natAbs a : Int) < b) :
     have hz := Int.tdiv_eq_zero_of_lt hneg (by simpa [habs] using h)
     simpa [Int.neg_tdiv] using hz
 
-/-- Small-absolute-value remainder equals the number itself (truncated) -/
-def ZOmod_small_abs_check (a b : Int) : Bool :=
-  decide (a.tmod b = a)
-
-/-- Specification: Small absolute value implies remainder equals dividend -/
-theorem ZOmod_small_abs_spec (a b : Int) :
-    ⦃⌜(Int.natAbs a : Int) < b⌝⦄
-    (pure (ZOmod_small_abs_check a b) : Id _)
-    ⦃⇓result => ⌜result = decide (a.tmod b = a)⌝⦄ := by
-  intro _
-  unfold ZOmod_small_abs_check
-  rfl
-
 /-- Coq-compatible name: small-absolute-value modulo is identity -/
+@[flocq_source "src/Core/Zaux.v" 411 "ZOmod_small_abs"]
 theorem ZOmod_small_abs (a b : Int) (h : (Int.natAbs a : Int) < b) :
     a.tmod b = a := by
   by_cases ha : 0 ≤ a
@@ -559,26 +438,6 @@ theorem ZOmod_small_abs (a b : Int) (h : (Int.natAbs a : Int) < b) :
     have hz := Int.tmod_eq_of_lt hneg (by simpa [habs] using h)
     simpa [Int.neg_tmod] using hz
 
-/-- Quotient addition with sign consideration
-
-    Computes quot(a+b, c) in terms of individual quotients
-    and the quotient of remainders, considering signs.
--/
-def ZOdiv_plus_check (a b c : Int) : Int :=
-  if c ≠ 0 then
-    a / c + b / c + ((a % c + b % c) / c)
-  else
-    0
-
-/-- Specification: Decomposes the quotient of a sum into a sum of quotients plus the quotient of remainders, under a nonnegativity side condition. -/
-theorem ZOdiv_plus_spec (a b c : Int) :
-    ⦃⌜0 ≤ a * b ∧ c ≠ 0⌝⦄
-    (pure (ZOdiv_plus_check a b c) : Id _)
-    ⦃⇓result => ⌜result = a / c + b / c + ((a % c + b % c) / c)⌝⦄ := by
-  intro ⟨hab, hc⟩
-  unfold ZOdiv_plus_check
-  -- Since c ≠ 0, the if condition is true
-  simp [hc, id_run]
 
 private theorem ZOdiv_plus_nonneg (a b c : Int)
     (ha : 0 ≤ a) (hb : 0 ≤ b) (hc : 0 < c) :
@@ -610,6 +469,7 @@ private theorem ZOdiv_plus_nonneg (a b c : Int)
     Int.natAbs_of_nonneg hc.le, hsign, hcorr]
 
 /-- FLoCq `ZOdiv_plus`. -/
+@[flocq_source "src/Core/Zaux.v" 428 "ZOdiv_plus"]
 theorem ZOdiv_plus (a b c : Int) (hab : 0 ≤ a * b) :
     (a + b).tdiv c =
       a.tdiv c + b.tdiv c + (a.tmod c + b.tmod c).tdiv c := by

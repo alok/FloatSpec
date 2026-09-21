@@ -4081,6 +4081,53 @@ No new proof debt or numerical operation rewrite was needed in this slice.
 The full aggregate all-profile suite was not rerun; the new fixtures and tests
 are integrated into its next run. Hosted follow-up CI is still pending.
 
+### September 21: source division/remainder slice and signed rounding modes
+
+Eight more source contracts, `Zmod_mod_mult` through `ZOdiv_plus`, now have
+explicit dispositions and anchors. The existing direct propositions/proofs
+were already correct. The source's two floor-style laws constrain divisors to
+be nonnegative, where Lean's default Euclidean operations agree with floor
+division. The paired fixture checks both universal Lean bridges and the
+negative-divisor distinction: 7 divided by -3 is (-3,-2) in quotient/remainder
+floor convention but (-2,1) in Lean's default convention. The six truncating
+laws explicitly use `tdiv`/`tmod` and retain zero/negative cases. Both assistants
+prove the genuine sign-premise counterexample for quotient addition at -2,1,2;
+the Lean proof depends on no axioms.
+
+Sixteen unused check/spec wrappers were removed after verifying no callers.
+In particular the obsolete quotient-addition check used default division despite
+its truncating name/docstring; the actual direct theorem remains unchanged.
+This brings the reviewed-slice cleanup to 54 named wrappers, not 54 source laws.
+
+Snapshot `949e91ee425bc4671889c457b0584aca10df459eab4fc3280384e73b75a71a01`
+passes full macOS Lean 4.34 (6225 jobs), complete LSP diagnostics, paired 1377-
+input signed grids, six live contract mutants (11.363 s), and fresh seed 864503:
+811 compiled/reduced Lean versus Rocq floor-division calls and 811 generated
+kernel equalities (54.986 s). The corpus includes 33 zero and 386 negative
+divisors. A saved-output Python oracle independently checks all three observed
+paths using floor division and exact reconstruction. The existing pure Lean
+and pure Rocq ArithmeticProperties suites were also explicitly rerun.
+
+Compiled trust observes 13695 declarations / 59 modules / the same four debts.
+All 377 source anchors validate against compiled Rocq sites. The ordered queue
+has 36 dispositions and 2680 unreviewed sites; the next is `Zsame_sign_trans`.
+No arithmetic implementation or mathematical theorem type was changed, and no
+new proof was deferred.
+
+Receipts: `/private/tmp/floatspec-zaux-division-build-v2-20260921.log`,
+`/private/tmp/floatspec-zaux-division-mutations-v2-20260921.log`,
+`/private/tmp/floatspec-zaux-division-864503/report.json`,
+`/private/tmp/floatspec-zaux-division-independent-oracle-20260921.log`,
+`/private/tmp/floatspec-division-trust-20260921.json`,
+`/private/tmp/floatspec-division-source-queue-20260921.json`.
+The initial full build was interrupted to correct source-anchor line numbers;
+it is not a pass. A premature test invocation failed on its missing rebuilt
+Zaux object, and an extra Rocq-suite invocation failed because the requested
+output basename differed from its source. Both were rerun successfully with
+separate receipts. Initial fixture elaboration/notation errors were corrected
+before any pass was recorded. Aggregate all-profile and latest hosted CI
+success remain separate from these completed local/targeted checks.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In

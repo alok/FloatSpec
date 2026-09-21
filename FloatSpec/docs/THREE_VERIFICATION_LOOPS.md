@@ -1,5 +1,30 @@
 # Run the three verification loops
 
+## Signed division contracts (September 21)
+
+The next source-ordered slice runs all eight division/remainder contracts through
+paired exact typed clients. Two universal Lean floor/Euclidean bridges justify
+the nonnegative-divisor translation; a negative-divisor example proves it cannot
+be used globally. Source truncating laws retain negative and zero cases.
+
+```sh
+lake env lean scripts/fixtures/ZauxDivisionContracts.lean
+coqc -q -R "$FLOCQ_AUDIT_DIR/src" Flocq \
+  -o /tmp/ZauxDivisionContracts.vo scripts/fixtures/ZauxDivisionContracts.v
+uv run scripts/test_zaux_division_contracts.py -v
+uv run scripts/flocq_bridge.py --flocq-dir "$FLOCQ_AUDIT_DIR" \
+  --operations div_eucl --samples 250 --seed 864503
+```
+
+Export `FLOCQ_AUDIT_DIR` and use its matching Rocq compiler. The paired fixtures
+check 1377 signed triples per assistant and prove a counterexample to deleting
+the quotient-addition sign premise. Six contract mutants are rejected. Snapshot
+`949e91ee` passes 811 three-way floor-division calls and generated kernel
+equalities, including 33 zero and 386 negative divisors. A separate saved-output
+check validates every observed pair against Python's floor division and exact
+integer reconstruction; it is not a fresh execution. No universal cross-prover
+equivalence is claimed from the finite grid.
+
 ## Integer-power/radix contracts (September 21)
 
 The source-ordered audit now covers Zaux through `Zpower_gt_id`. Integer
