@@ -4020,6 +4020,24 @@ on excluded middle and `sig_not_dec`. `SpecFloat.iter_pos` and `cond_Zopp`
 are closed under the global context. Total logical definitions do not imply
 an executable algorithm for arbitrary mathematical reals.
 
+### September 21: hosted build succeeds, scanner prerequisite failure repaired
+
+Run `35548504304` completed its Linux Lean 4.34.0 source build, saved a 1.46 GB
+compatible action cache and passed the standalone regression step. It failed
+at the next gate: `rg: command not found`. The placeholder scanner's `|| true`
+had hidden the missing tool; its mutation fixture correctly rejected that
+apparent empty scan. This was a runner/scanner failure, not a Lean failure.
+
+The workflow now installs ripgrep before any expensive build. The scanner
+accepts only ripgrep status 1 as an empty result, and fails on unavailable tools,
+unreadable inputs or search errors. The mvcgen hygiene gate and workflow's Unit
+placeholder query use the same fail-closed distinction. Five new tests inject
+missing PATH tools, nonexistent input, statuses 2/127 and text-query failure,
+while retaining passing empty/clean inputs. Existing real Lean placeholder
+fixtures, unused-mvcgen gate and four-debt manifest scan also pass locally.
+Hosted trust/status/hygiene stages were skipped in that run and remain unverified.
+Receipt: `/private/tmp/floatspec-ci-35548504304-failure.log`.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In

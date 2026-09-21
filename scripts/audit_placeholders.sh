@@ -49,6 +49,27 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+for tool in rg python3; do
+  if ! command -v "$tool" >/dev/null 2>&1; then
+    echo "audit scanner prerequisite missing: $tool" >&2
+    exit 2
+  fi
+done
+
+# ripgrep distinguishes no matches (1) from search/tool failures (>1).
+# Never turn an unreadable source or failed tool into an empty successful scan.
+rg_or_empty() {
+  local status
+  if rg "$@"; then
+    return 0
+  else
+    status=$?
+    if [[ "$status" -eq 1 ]]; then return 0; fi
+    echo "audit scanner ripgrep failed (status $status)" >&2
+    return "$status"
+  fi
+}
+
 if [[ ${#paths[@]} -eq 0 ]]; then
   paths=(FloatSpec)
 fi
@@ -101,7 +122,7 @@ if "$diff_only"; then
       }
     ' >"$scan_file"
 else
-  rg -n -H --glob '*.lean' '.*' "${paths[@]}" >"$scan_file" || true
+  rg_or_empty -n -H --glob '*.lean' '.*' "${paths[@]}" >"$scan_file"
 fi
 
 filtered_scan_file="$(mktemp)"
@@ -224,9 +245,9 @@ else
   any=false
   while IFS=$'\t' read -r name pattern; do
     if [[ "$name" == "placeholder_text" || "$name" == "identity_hint" || "$name" == "conclusion_as_hypothesis" ]]; then
-      matches="$(rg -n -i "$pattern" "$scan_file" || true)"
+      matches="$(rg_or_empty -n -i "$pattern" "$scan_file")"
     else
-      matches="$(rg -n "$pattern" "$scan_file" || true)"
+      matches="$(rg_or_empty -n "$pattern" "$scan_file")"
     fi
     count="$(printf '%s\n' "$matches" | sed '/^$/d' | wc -l | tr -d ' ')"
     printf '%s: %s\n' "$name" "$count"

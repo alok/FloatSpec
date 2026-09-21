@@ -21,7 +21,10 @@ Lean theorem validity, and source equivalence remain separate claims.
    execute the recent standalone contract fixtures. Validate workflow syntax,
    push, inspect the real hosted build, and fix any subsequent failures.
    Pushed as `40a336d7`; local 6226-job build, actionlint and YAML assertions pass.
-   GitHub run `35548504304` is building; it is not yet a pass.
+   GitHub run `35548504304` passed the Linux build and standalone regressions,
+   saved a compatible cache, then failed on missing ripgrep in the trust scan.
+   Install ripgrep explicitly and reject search/tool errors (five new injected
+   failure tests pass). Full hosted success remains pending the follow-up run.
 2. Complete — add source-shaped `Pff.Source.Fplus_correct` and `Fminus_correct`.
    Confirm compiled Rocq types, retain positive radix including one, check
    caller compatibility, and test zero/negative-radix exclusions explicitly.

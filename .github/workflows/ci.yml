@@ -15,6 +15,13 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Install audit prerequisites
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes ripgrep
+          rg --version
+          python3 --version
+
       - uses: leanprover/lean-action@v1
         with:
           # lean-toolchain selects stable 4.34.0. The reviewed dependency sources
@@ -36,6 +43,7 @@ jobs:
       - name: Reject proof and semantic placeholders
         run: |
           scripts/test_audit_placeholders.sh
+          python3 scripts/test_scan_failures.py -v
           scripts/test_coq_source_linter.sh
           scripts/test_unused_mvcgen.sh
           python3 scripts/check_proof_debts.py
@@ -69,4 +77,7 @@ jobs:
             git diff --check HEAD^ HEAD
           fi
           test -z "$(git ls-files '.log/**' '.change_log/**' '.subagent_log/**')"
-          ! rg -n 'binary_(add|mul|sub|fma|div|sqrt)_correct.*: Unit' FloatSpec
+          status=0
+          rg -n 'binary_(add|mul|sub|fma|div|sqrt)_correct.*: Unit' FloatSpec || status=$?
+          # Only ripgrep's explicit no-match result is a pass, not a tool error.
+          test "$status" -eq 1
