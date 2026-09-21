@@ -1304,6 +1304,26 @@ pairwise cross-checking but were outside the independent expectation gate.
 The eight later theorem repairs have source hash `687aa7a8…395d2`; their full
 build, typed clients and mutation checks are separate evidence.
 
+### Direct rounding-predicate contracts
+
+The port-completion slice in `Round_pred` supplies 25 ordinary Flocq
+propositions instead of requiring Boolean/Hoare unpacking. Test them with:
+
+```sh
+lake env lean scripts/fixtures/RoundPredSourceContracts.lean
+coqc -q -R "$FLOCQ_AUDIT_DIR/src" Flocq scripts/fixtures/RoundPredSourceContracts.v
+FLOCQ_AUDIT_DIR=/path/to/pinned-built-flocq uv run scripts/test_round_pred_contracts.py -v
+```
+
+The pure Lean and Rocq clients check exact theorem interfaces and independently
+prove three counterexamples: nonstrict nearest monotonicity, unconditional
+nearest uniqueness, and truncation monotonicity without zero membership.
+Eight mutations check that necessary hypotheses cannot silently disappear.
+These are kernel-checked real propositions, not native evaluation of arbitrary
+reals. The existing executable `round,nearby` bridge is a separate regression
+loop for rounding implementations; finite agreement there is not a proof of
+the predicate-level source correspondence.
+
 ## 11. What this still does not establish
 
 The expanded combined runner completed at commit `ba3e2a8b`, seed `961703`,

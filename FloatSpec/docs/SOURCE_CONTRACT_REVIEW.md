@@ -8,6 +8,45 @@ all declarations in the named modules. See the
 
 ## Dependency-ordered review
 
+### Port-completion slice: direct rounding-predicate API
+
+The user reaffirmed that finishing the faithful port, rather than growing an
+audit report, is the main goal. This slice supplies 25 ordinary propositions
+from pinned `Core/Round_pred.v:89–539`: directed monotonicity/uniqueness,
+negation, endpoint exclusion, representable-input fixed points, truncation
+bounds, and the first nearest-rounding laws. Twenty direct exports were
+missing; five existing source-named exports still returned Boolean/Hoare
+contracts. Those five now return the actual propositions. Caller search found
+no uses of their former interfaces; compatibility `*_spec` wrappers remain.
+This is an API-fidelity repair, not a newly discovered arithmetic wrong answer:
+the underlying mathematics already had proofs inside the legacy wrappers.
+
+All 25 preserve arbitrary real formats and the source's precise premises.
+No valid-radix, representability-of-zero, totality, or tie-policy premise is
+silently added. In particular:
+
+- `Rnd_ZR_abs` assumes a total truncation function, and derives zero membership
+  from its value at zero. It does not ask the caller for an extra `F 0`.
+- `Rnd_ZR_pt_monotone` really does require `F 0`. For the two-point format
+  `{−1, 1}`, truncation sends `−1/2` to `1` and `1/2` to `−1`, reversing order.
+- `Rnd_N_pt_monotone` assumes `x < y`, not `x ≤ y`. At the midpoint zero of
+  that same format, both `−1` and `1` are nearest, so arbitrary nearest
+  selections need not preserve equality of inputs.
+- `Rnd_N_pt_unique` preserves the unequal-distance premise `x - d ≠ u - x`.
+  The midpoint example also refutes unconditional nearest uniqueness.
+
+`RoundPredSourceContracts.lean/.v` check the 25 exact interfaces and prove
+these three negative results in both assistants. Eight live mutations remove
+necessary premises or weaken strict input order; both compilers reject them.
+The mutation control must compile first, and tool/import/warning failures are
+errors, not detected semantic mutants. The tests run in the aggregate harness;
+hosted CI runs the Lean half and explicitly skips the unavailable live Rocq half.
+
+These 25 source sites have manual manifest entries tied to compiled Lean
+type/body fingerprints. The first 36 contiguous source-order dispositions
+remain unchanged; this additional module slice does not reclassify its
+unreviewed imports or the rest of `Round_pred`. No new proof debt is introduced.
+
 The review now also has a [dependency-ordered queue](SOURCE_REVIEW_QUEUE.md),
 generated from actual `coqdep` and matching-digest `.glob` metadata. Its manual
 manifest is conservative: older entries in this prose ledger are not silently

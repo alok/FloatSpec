@@ -4143,6 +4143,59 @@ Receipt: `/private/tmp/floatspec-ci-35553327541-success.log` and
 Hosted CI does not install/run the live Rocq profiles: their skipped live tests
 are not passes, and the local pinned-Rocq/differential receipts remain separate.
 
+### September 21, 17:55 UTC: port-completion focus, 25 direct rounding contracts
+
+The user reaffirmed that completing the port is the main goal. Instead of
+continuing Zaux wrapper cleanup, this slice restores the actual public
+mathematical interface in `Core/Round_pred.v:89–539`: twenty new direct
+exports and five repaired source-named exports that had still returned
+Boolean/Hoare contracts. Existing wrapper proofs supplied most of the
+mathematics; this is a source-API repair, not an arithmetic-algorithm repair.
+The old `*_spec` compatibility API remains, with no callers of the five
+changed interfaces found in repository source. All 25 reviewed laws retain
+their exact source premises and have pinned links and closed Lean proofs.
+
+Both assistants independently prove three counterexamples using format
+`{−1, 1}`: nearest selection is not nonstrictly monotone or unconditionally
+unique, and pointwise truncation is not monotone without zero membership.
+Eight live contract mutations are rejected (two test methods, 14.960 s).
+The first live harness attempt correctly failed on a Rocq deprecation warning;
+the fixture now imports `Stdlib`, and the separately recorded rerun passed.
+Initial fixture namespace and Rocq tactic/notation errors were corrected;
+they were not counted as successful semantic tests.
+
+Source snapshot `8b16a912af4114cd59820fd84582e56acca0945dfeee2a0ffde6476996a658de`
+passes complete LSP diagnostics, the full macOS Lean 4.34 build (6225 jobs),
+and fresh seed 865103: 3539 three-way executions plus generated kernel
+equalities (279 `round`, 3260 `nearby`; 235.593 s). The executable bridge
+is regression evidence for those algorithms, separate from the exact real-
+predicate clients and universal Lean proofs. It does not execute arbitrary
+real-valued specifications or establish whole-library source equivalence.
+
+Compiled trust: 13720 source declarations / 59 modules / the same four named
+debts. All 402 source anchors validate; 61 source sites now have explicit
+manifest dispositions (first 36 contiguous sites plus these 25), with 2655
+unreviewed sites. These are not missing-API counts or a completion percentage.
+Review drift, nine queue tests, five fail-closed scanner tests, placeholder
+gates, actionlint, shell syntax and unchanged generated-status checks pass.
+Core harness: 76 tests, 32 passed and 44 unavailable live tests explicitly
+skipped; the new paired live contract tests ran separately.
+
+Receipts: `/private/tmp/floatspec-round-pred-build-20260921.log`,
+`/private/tmp/floatspec-round-pred-contracts-20260921/lean.log`,
+`/private/tmp/floatspec-round-pred-contracts-20260921/rocq.log`,
+`/private/tmp/floatspec-round-pred-mutations-v2-20260921.log`,
+`/private/tmp/floatspec-round-pred-865103/report.json`,
+`/private/tmp/floatspec-round-pred-trust-20260921.json`,
+`/private/tmp/floatspec-round-pred-queue-20260921.json`.
+
+The hosted runs for `a0fd6e45`, `aeae41fa` and `20abab5e` were independently
+observed green at 17:37 UTC. This new slice has not yet been observed green
+on hosted CI. `Deps/flocq` and its seven untracked dpd artifacts are unchanged.
+Next substantive port slice: remaining nearest/generic tie-policy interfaces,
+then format-transfer and totality contracts; do not confuse a matching name
+with a matching public proposition.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In

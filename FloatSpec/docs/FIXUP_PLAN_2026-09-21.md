@@ -67,7 +67,7 @@ Lean theorem validity, and source equivalence remain separate claims.
    eight sites are dispositioned; source-shaped binary-positive iteration
    preserves its old semantics by a closed proof. The 1244-case prelude bridge,
    exact contracts, shared-program mutants, full build and trust gates pass.
-8. **In progress — continue the source-ordered Zaux audit.**
+8. Queued — continue the source-ordered Zaux audit.
    The next twenty sites, `Zeven_ex` through `Zpower_gt_id`, are now reviewed.
    Paired typed clients and eight contract mutations pass; 228 three-way power
    cases/kernel equalities, full build, trust and source anchors pass. Thirty-eight
@@ -80,6 +80,24 @@ Lean theorem validity, and source equivalence remain separate claims.
    hosted checks separately from the now-green CI-repair revision.
    Do not turn candidate-name counts into equivalence claims. Publish coherent
    verified slices and keep the linear reading guide current.
+9. Complete locally — directed and basic nearest source-facing APIs in Round_pred.
+   The user explicitly reaffirmed that finishing the port is the main goal.
+   Prioritize usable Flocq contracts over further wrapper cleanup or review
+   counts. Restore the direct directed-rounding laws currently available only
+   through Boolean/Hoare encodings, preserving the exact source hypotheses.
+   Then fill the nearest-rounding interface. Check paired exact clients and
+   genuine boundary counterexamples in Lean and Rocq, build all targets,
+   retain source links, update the reading guide, and push verified slices.
+   Latest hosted runs for `a0fd6e45`, `aeae41fa`, and `20abab5e` are now green.
+   Twenty direct exports added, five Hoare-returning source names repaired;
+   25 paired exact clients, three paired counterexamples, eight rejected
+   mutations, full 6225-job build and 3539 differential/kernel cases pass.
+   Snapshot `8b16a912`, seed 865103. No new debt; four existing debts remain.
+10. **In progress — finish the remaining Round_pred source interface.**
+    Nearest sign/absolute-value laws, generic tie uniqueness, ties away/toward
+    zero, format equivalence and totality must expose the actual source
+    propositions. Preserve exact premises; reuse closed proofs where faithful,
+    and test changed interfaces in both assistants before pushing each slice.
 
 ## Constraints and open obligations
 

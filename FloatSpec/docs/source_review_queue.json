@@ -2,6 +2,531 @@
   "flocq_commit": "7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f",
   "reviews": [
     {
+      "source_id": "src/Core/Round_pred.v:round_unique@2301",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.round_unique"
+      ],
+      "scope": "Same monotone relation hypothesis and same-input uniqueness; no totality or format premise.",
+      "evidence": [
+        "scripts/fixtures/RoundPredSourceContracts.lean",
+        "scripts/fixtures/RoundPredSourceContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.round_unique": {
+          "type_hash": "5082414",
+          "value_hash": "903164848",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:Rnd_DN_pt_monotone@2576",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.Rnd_DN_pt_monotone"
+      ],
+      "scope": "Same arbitrary real-valued format/relation, hypotheses and conclusion as pinned Flocq. Ordinary proposition with closed Lean proof; paired exact-typed clients check the source interface. Some explicit binders are reordered.",
+      "evidence": [
+        "scripts/fixtures/RoundPredSourceContracts.lean",
+        "scripts/fixtures/RoundPredSourceContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.Rnd_DN_pt_monotone": {
+          "type_hash": "184515996",
+          "value_hash": "3007141144",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:Rnd_DN_pt_unique@2788",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.Rnd_DN_pt_unique"
+      ],
+      "scope": "Same arbitrary real-valued format/relation, hypotheses and conclusion as pinned Flocq. Ordinary proposition with closed Lean proof; paired exact-typed clients check the source interface. Some explicit binders are reordered.",
+      "evidence": [
+        "scripts/fixtures/RoundPredSourceContracts.lean",
+        "scripts/fixtures/RoundPredSourceContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.Rnd_DN_pt_unique": {
+          "type_hash": "1283720354",
+          "value_hash": "552768581",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:Rnd_DN_unique@2983",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.Rnd_DN_unique"
+      ],
+      "scope": "Same arbitrary real-valued format/relation, hypotheses and conclusion as pinned Flocq. Ordinary proposition with closed Lean proof; paired exact-typed clients check the source interface. Some explicit binders are reordered.",
+      "evidence": [
+        "scripts/fixtures/RoundPredSourceContracts.lean",
+        "scripts/fixtures/RoundPredSourceContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.Rnd_DN_unique": {
+          "type_hash": "1394734788",
+          "value_hash": "641136689",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:Rnd_UP_pt_monotone@3195",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.Rnd_UP_pt_monotone"
+      ],
+      "scope": "Same arbitrary real-valued format/relation, hypotheses and conclusion as pinned Flocq. Ordinary proposition with closed Lean proof; paired exact-typed clients check the source interface. Some explicit binders are reordered.",
+      "evidence": [
+        "scripts/fixtures/RoundPredSourceContracts.lean",
+        "scripts/fixtures/RoundPredSourceContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.Rnd_UP_pt_monotone": {
+          "type_hash": "3657947601",
+          "value_hash": "2002972730",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:Rnd_UP_pt_unique@3407",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.Rnd_UP_pt_unique"
+      ],
+      "scope": "Same arbitrary real-valued format/relation, hypotheses and conclusion as pinned Flocq. Ordinary proposition with closed Lean proof; paired exact-typed clients check the source interface. Some explicit binders are reordered.",
+      "evidence": [
+        "scripts/fixtures/RoundPredSourceContracts.lean",
+        "scripts/fixtures/RoundPredSourceContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.Rnd_UP_pt_unique": {
+          "type_hash": "3802243021",
+          "value_hash": "2312113709",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:Rnd_UP_unique@3602",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.Rnd_UP_unique"
+      ],
+      "scope": "Same arbitrary real-valued format/relation, hypotheses and conclusion as pinned Flocq. Ordinary proposition with closed Lean proof; paired exact-typed clients check the source interface. Some explicit binders are reordered.",
+      "evidence": [
+        "scripts/fixtures/RoundPredSourceContracts.lean",
+        "scripts/fixtures/RoundPredSourceContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.Rnd_UP_unique": {
+          "type_hash": "2427652904",
+          "value_hash": "4241165085",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:Rnd_UP_pt_opp@3814",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.Rnd_UP_pt_opp"
+      ],
+      "scope": "Same arbitrary real-valued format/relation, hypotheses and conclusion as pinned Flocq. Ordinary proposition with closed Lean proof; paired exact-typed clients check the source interface. Some explicit binders are reordered.",
+      "evidence": [
+        "scripts/fixtures/RoundPredSourceContracts.lean",
+        "scripts/fixtures/RoundPredSourceContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.Rnd_UP_pt_opp": {
+          "type_hash": "3777806607",
+          "value_hash": "3115917986",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:Rnd_DN_pt_opp@4188",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.Rnd_DN_pt_opp"
+      ],
+      "scope": "Same arbitrary real-valued format/relation, hypotheses and conclusion as pinned Flocq. Ordinary proposition with closed Lean proof; paired exact-typed clients check the source interface. Some explicit binders are reordered.",
+      "evidence": [
+        "scripts/fixtures/RoundPredSourceContracts.lean",
+        "scripts/fixtures/RoundPredSourceContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.Rnd_DN_pt_opp": {
+          "type_hash": "4275149065",
+          "value_hash": "2439522721",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:Rnd_DN_opp@4562",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.Rnd_DN_opp"
+      ],
+      "scope": "Same arbitrary real-valued format/relation, hypotheses and conclusion as pinned Flocq. Ordinary proposition with closed Lean proof; paired exact-typed clients check the source interface. Some explicit binders are reordered.",
+      "evidence": [
+        "scripts/fixtures/RoundPredSourceContracts.lean",
+        "scripts/fixtures/RoundPredSourceContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.Rnd_DN_opp": {
+          "type_hash": "987814943",
+          "value_hash": "3388084617",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:Rnd_DN_UP_pt_split@4996",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.Rnd_DN_UP_pt_split"
+      ],
+      "scope": "Same arbitrary real-valued format/relation, hypotheses and conclusion as pinned Flocq. Ordinary proposition with closed Lean proof; paired exact-typed clients check the source interface. Some explicit binders are reordered.",
+      "evidence": [
+        "scripts/fixtures/RoundPredSourceContracts.lean",
+        "scripts/fixtures/RoundPredSourceContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.Rnd_DN_UP_pt_split": {
+          "type_hash": "557540195",
+          "value_hash": "3586630460",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:Rnd_DN_pt_refl@5286",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.Rnd_DN_pt_refl"
+      ],
+      "scope": "Same arbitrary real-valued format/relation, hypotheses and conclusion as pinned Flocq. Ordinary proposition with closed Lean proof; paired exact-typed clients check the source interface. Some explicit binders are reordered.",
+      "evidence": [
+        "scripts/fixtures/RoundPredSourceContracts.lean",
+        "scripts/fixtures/RoundPredSourceContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.Rnd_DN_pt_refl": {
+          "type_hash": "4080963676",
+          "value_hash": "47535516",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:Rnd_DN_pt_idempotent@5457",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.Rnd_DN_pt_idempotent"
+      ],
+      "scope": "Same arbitrary real-valued format/relation, hypotheses and conclusion as pinned Flocq. Ordinary proposition with closed Lean proof; paired exact-typed clients check the source interface. Some explicit binders are reordered.",
+      "evidence": [
+        "scripts/fixtures/RoundPredSourceContracts.lean",
+        "scripts/fixtures/RoundPredSourceContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.Rnd_DN_pt_idempotent": {
+          "type_hash": "1291625302",
+          "value_hash": "3580204970",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:Rnd_UP_pt_refl@5678",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.Rnd_UP_pt_refl"
+      ],
+      "scope": "Same arbitrary real-valued format/relation, hypotheses and conclusion as pinned Flocq. Ordinary proposition with closed Lean proof; paired exact-typed clients check the source interface. Some explicit binders are reordered.",
+      "evidence": [
+        "scripts/fixtures/RoundPredSourceContracts.lean",
+        "scripts/fixtures/RoundPredSourceContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.Rnd_UP_pt_refl": {
+          "type_hash": "597811389",
+          "value_hash": "3223309378",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:Rnd_UP_pt_idempotent@5849",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.Rnd_UP_pt_idempotent"
+      ],
+      "scope": "Same arbitrary real-valued format/relation, hypotheses and conclusion as pinned Flocq. Ordinary proposition with closed Lean proof; paired exact-typed clients check the source interface. Some explicit binders are reordered.",
+      "evidence": [
+        "scripts/fixtures/RoundPredSourceContracts.lean",
+        "scripts/fixtures/RoundPredSourceContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.Rnd_UP_pt_idempotent": {
+          "type_hash": "4084716742",
+          "value_hash": "1115825533",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:Only_DN_or_UP@6070",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.Only_DN_or_UP"
+      ],
+      "scope": "Same representability and endpoint-bound conjunction. The source-named Lean theorem now returns the endpoint disjunction directly, not a Boolean/Hoare triple.",
+      "evidence": [
+        "scripts/fixtures/RoundPredSourceContracts.lean",
+        "scripts/fixtures/RoundPredSourceContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.Only_DN_or_UP": {
+          "type_hash": "1608038434",
+          "value_hash": "1249030497",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:Rnd_ZR_abs@6444",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.Rnd_ZR_abs"
+      ],
+      "scope": "Same total function-level truncation hypothesis, with no separate zero-membership premise. The proof derives F 0 from rounding at zero.",
+      "evidence": [
+        "scripts/fixtures/RoundPredSourceContracts.lean",
+        "scripts/fixtures/RoundPredSourceContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.Rnd_ZR_abs": {
+          "type_hash": "451388138",
+          "value_hash": "483805345",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:Rnd_ZR_pt_monotone@7090",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.Rnd_ZR_pt_monotone"
+      ],
+      "scope": "Same required F 0 premise. Paired closed two-point-format counterexamples refute the premise-free variant.",
+      "evidence": [
+        "scripts/fixtures/RoundPredSourceContracts.lean",
+        "scripts/fixtures/RoundPredSourceContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.Rnd_ZR_pt_monotone": {
+          "type_hash": "3784382195",
+          "value_hash": "1612669175",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:Rnd_N_pt_DN_or_UP@7617",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.Rnd_N_pt_DN_or_UP"
+      ],
+      "scope": "Same arbitrary real-valued format/relation, hypotheses and conclusion as pinned Flocq. Ordinary proposition with closed Lean proof; paired exact-typed clients check the source interface. Some explicit binders are reordered.",
+      "evidence": [
+        "scripts/fixtures/RoundPredSourceContracts.lean",
+        "scripts/fixtures/RoundPredSourceContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.Rnd_N_pt_DN_or_UP": {
+          "type_hash": "4109915066",
+          "value_hash": "1438838585",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:Rnd_N_pt_DN_or_UP_eq@8294",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.Rnd_N_pt_DN_or_UP_eq"
+      ],
+      "scope": "Same arbitrary real-valued format/relation, hypotheses and conclusion as pinned Flocq. Ordinary proposition with closed Lean proof; paired exact-typed clients check the source interface. Some explicit binders are reordered.",
+      "evidence": [
+        "scripts/fixtures/RoundPredSourceContracts.lean",
+        "scripts/fixtures/RoundPredSourceContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.Rnd_N_pt_DN_or_UP_eq": {
+          "type_hash": "3072858429",
+          "value_hash": "2550986450",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:Rnd_N_pt_opp_inv@8654",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.Rnd_N_pt_opp_inv"
+      ],
+      "scope": "Same arbitrary real-valued format/relation, hypotheses and conclusion as pinned Flocq. Ordinary proposition with closed Lean proof; paired exact-typed clients check the source interface. Some explicit binders are reordered.",
+      "evidence": [
+        "scripts/fixtures/RoundPredSourceContracts.lean",
+        "scripts/fixtures/RoundPredSourceContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.Rnd_N_pt_opp_inv": {
+          "type_hash": "3400056284",
+          "value_hash": "78183811",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:Rnd_N_pt_monotone@9080",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.Rnd_N_pt_monotone"
+      ],
+      "scope": "Same strict x < y premise; not monotonicity for x <= y. Paired midpoint counterexamples refute the nonstrict variant.",
+      "evidence": [
+        "scripts/fixtures/RoundPredSourceContracts.lean",
+        "scripts/fixtures/RoundPredSourceContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.Rnd_N_pt_monotone": {
+          "type_hash": "3383686272",
+          "value_hash": "848296256",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:Rnd_N_pt_unique@10336",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.Rnd_N_pt_unique"
+      ],
+      "scope": "Same downward/upward endpoints and unequal-distance premise, with two nearest witnesses. Paired midpoint counterexample refutes unconditional uniqueness.",
+      "evidence": [
+        "scripts/fixtures/RoundPredSourceContracts.lean",
+        "scripts/fixtures/RoundPredSourceContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.Rnd_N_pt_unique": {
+          "type_hash": "4172921520",
+          "value_hash": "2299097476",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:Rnd_N_pt_refl@11448",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.Rnd_N_pt_refl"
+      ],
+      "scope": "Same arbitrary real-valued format/relation, hypotheses and conclusion as pinned Flocq. Ordinary proposition with closed Lean proof; paired exact-typed clients check the source interface. Some explicit binders are reordered.",
+      "evidence": [
+        "scripts/fixtures/RoundPredSourceContracts.lean",
+        "scripts/fixtures/RoundPredSourceContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.Rnd_N_pt_refl": {
+          "type_hash": "971246217",
+          "value_hash": "3808594339",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_pred.v:Rnd_N_pt_idempotent@11667",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Round_pred.Rnd_N_pt_idempotent"
+      ],
+      "scope": "Same arbitrary real-valued format/relation, hypotheses and conclusion as pinned Flocq. Ordinary proposition with closed Lean proof; paired exact-typed clients check the source interface. Some explicit binders are reordered.",
+      "evidence": [
+        "scripts/fixtures/RoundPredSourceContracts.lean",
+        "scripts/fixtures/RoundPredSourceContracts.v",
+        "scripts/test_round_pred_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Round_pred.Rnd_N_pt_idempotent": {
+          "type_hash": "130797381",
+          "value_hash": "1692094356",
+          "noncomputable": false
+        }
+      }
+    },
+    {
       "source_id": "src/Version.v:Flocq_version@816",
       "status": "reviewed-contract",
       "lean_names": [

@@ -232,6 +232,8 @@ echo 'Pure Rocq contract loop passed: typed premises, counterexamples, finite er
   "$repo_root/scripts/fixtures/ZauxPowerRadixContracts.v"
 "$coqc_bin" -q -R "$flocq_dir/src" Flocq -o "$scratch/ZauxDivisionContracts.vo" \
   "$repo_root/scripts/fixtures/ZauxDivisionContracts.v"
+"$coqc_bin" -q -R "$flocq_dir/src" Flocq -o "$scratch/RoundPredSourceContracts.vo" \
+  "$repo_root/scripts/fixtures/RoundPredSourceContracts.v"
 
 run_lake build FloatSpec.Test.FlocqConformance FloatSpec.Test.ArithmeticProperties \
   FloatSpec.Test.BitsExecution FloatSpec.Test.BitOrderExecution FloatSpec.Test.NativeSourceArithmetic \
@@ -259,6 +261,7 @@ run_lake env lean "$repo_root/scripts/fixtures/PffIntegerExecution.lean"
 run_lake env lean "$repo_root/scripts/fixtures/ZauxPreludeContracts.lean"
 run_lake env lean "$repo_root/scripts/fixtures/ZauxPowerRadixContracts.lean"
 run_lake env lean "$repo_root/scripts/fixtures/ZauxDivisionContracts.lean"
+run_lake env lean "$repo_root/scripts/fixtures/RoundPredSourceContracts.lean"
 run_lake env lean --run "$repo_root/scripts/fixtures/PffWalkthrough.lean"
 echo 'Pure Lean loop passed: examples and 10,734 kernel-checked arithmetic invariant cases'
 run_lake exe floatspec_demo
@@ -333,6 +336,7 @@ uv run "$repo_root/scripts/zaux_prelude_bridge.py" --flocq-dir "$flocq_dir" --co
 FLOCQ_AUDIT_DIR="$flocq_dir" uv run "$repo_root/scripts/test_zaux_prelude_bridge.py" -v
 FLOCQ_AUDIT_DIR="$flocq_dir" uv run "$repo_root/scripts/test_zaux_power_contracts.py" -v
 FLOCQ_AUDIT_DIR="$flocq_dir" uv run "$repo_root/scripts/test_zaux_division_contracts.py" -v
+FLOCQ_AUDIT_DIR="$flocq_dir" uv run "$repo_root/scripts/test_round_pred_contracts.py" -v
 
 uv run "$repo_root/scripts/remainder_bridge.py" --flocq-dir "$flocq_dir" --coqc "$coqc_bin" \
   --seed "${FLOCQ_BRIDGE_SEED:-20260919}" --samples 0 \

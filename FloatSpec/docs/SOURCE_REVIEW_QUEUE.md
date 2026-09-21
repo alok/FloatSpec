@@ -18,7 +18,7 @@ External Rocq imports are recorded in the JSON report, not counted as Flocq decl
 | 2 | src/Core/Zaux.v | 102 | 32 | 91 | 35 |
 | 3 | src/Core/Raux.v | 186 | 10 | 162 | 0 |
 | 4 | src/Core/Defs.v | 14 | 11 | 14 | 0 |
-| 5 | src/Core/Round_pred.v | 83 | 2 | 25 | 0 |
+| 5 | src/Core/Round_pred.v | 83 | 27 | 45 | 25 |
 | 6 | src/Core/Digits.v | 67 | 0 | 67 | 0 |
 | 7 | src/Core/Float_prop.v | 37 | 0 | 37 | 0 |
 | 8 | src/Core/Generic_fmt.v | 145 | 33 | 140 | 0 |
