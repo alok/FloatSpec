@@ -66,6 +66,7 @@ jobs:
           python3 scripts/test_zaux_power_contracts.py -v
           python3 scripts/test_zaux_division_contracts.py -v
           python3 scripts/test_round_pred_contracts.py -v
+          python3 scripts/test_round_ne_point_contracts.py -v
           python3 scripts/test_pff_basic_contracts.py -v
           python3 scripts/test_pff_integer_bridge.py -v
           python3 scripts/test_remainder_contracts.py -v

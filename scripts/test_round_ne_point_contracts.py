@@ -38,6 +38,13 @@ class LeanControls(unittest.TestCase):
     def test_existence_premise_cannot_be_dropped(self):
         self.reject("variable [Exists_NE beta fexp]", "-- Deliberately missing Exists_NE")
 
+    def test_format_validity_cannot_be_dropped(self):
+        self.reject("variable [Valid_exp fexp]", "-- Deliberately missing Valid_exp")
+
+    def test_rounding_contract_is_not_only_totality(self):
+        self.reject("FloatSpec.Core.Defs.round_pred (Rnd_NE_pt beta fexp))",
+                    "FloatSpec.Core.Defs.round_pred_total (Rnd_NE_pt beta fexp))")
+
 
 @unittest.skipUnless(os.environ.get("FLOCQ_AUDIT_DIR"), "live tests require FLOCQ_AUDIT_DIR")
 class RocqControls(unittest.TestCase):
@@ -64,6 +71,16 @@ class RocqControls(unittest.TestCase):
                     "  forall (beta : radix) (fexp : Z -> Z), Valid_exp fexp -> Exists_NE beta fexp ->",
                     "Definition point_contract :\n"
                     "  forall (beta : radix) (fexp : Z -> Z), Valid_exp fexp ->")
+
+    def test_format_validity_cannot_be_dropped(self):
+        self.reject("Definition total_contract :\n"
+                    "  forall (beta : radix) (fexp : Z -> Z), Valid_exp fexp -> Exists_NE beta fexp ->",
+                    "Definition total_contract :\n"
+                    "  forall (beta : radix) (fexp : Z -> Z), Exists_NE beta fexp ->")
+
+    def test_rounding_contract_is_not_only_totality(self):
+        self.reject("round_pred (Rnd_NE_pt beta fexp) := @Rnd_NE_pt_round",
+                    "round_pred_total (Rnd_NE_pt beta fexp) := @Rnd_NE_pt_round")
 
 
 if __name__ == "__main__":

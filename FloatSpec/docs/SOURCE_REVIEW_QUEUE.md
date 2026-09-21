@@ -25,7 +25,7 @@ External Rocq imports are recorded in the JSON report, not counted as Flocq decl
 | 9 | src/Calc/Operations.v | 17 | 6 | 17 | 0 |
 | 10 | src/Prop/Sterbenz.v | 6 | 0 | 5 | 0 |
 | 11 | src/Core/Ulp.v | 122 | 31 | 119 | 0 |
-| 12 | src/Core/Round_NE.v | 21 | 7 | 17 | 0 |
+| 12 | src/Core/Round_NE.v | 21 | 10 | 17 | 3 |
 | 13 | src/Core/FIX.v | 14 | 2 | 11 | 0 |
 | 14 | src/Core/FLX.v | 35 | 5 | 28 | 0 |
 | 15 | src/Core/FLT.v | 32 | 13 | 29 | 0 |

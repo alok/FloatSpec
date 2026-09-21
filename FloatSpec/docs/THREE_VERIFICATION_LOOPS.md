@@ -405,9 +405,12 @@ it does not claim the class is a necessary-and-sufficient totality criterion.
 The paired `RoundNEPointContracts.lean` / `.v` clients additionally require
 the concrete nearest-even result from `round_NE_pt`, now a direct proposition
 with its two production Pff callers migrated. They retain the genuine
-`Valid_exp` and `Exists_NE` assumptions. Four live mutation controls reject
-weaker existence-only result types or a missing existence premise in both
-assistants; each control first compiles its unchanged baseline.
+`Valid_exp` and `Exists_NE` assumptions. The same fixtures now check direct
+totality, monotonicity and combined rounding contracts without an extra
+`Monotone_exp` assumption. Eight live mutation controls reject weaker
+existence-only result types, missing format/parity premises or conflating
+totality with the combined contract; each compiles its unchanged baseline first.
+Run `FLOCQ_AUDIT_DIR=/path/to/pinned-built-flocq uv run scripts/test_round_ne_point_contracts.py -v`.
 
 `lake exe floatspec_demo` builds and runs the seven-part guided introduction
 as a native executable, with kernel assertions and runtime checks against

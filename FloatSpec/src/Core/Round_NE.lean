@@ -2043,16 +2043,10 @@ noncomputable def Rnd_NE_pt_monotone_check : Bool :=
 
 
 
-/-- Coq:
-    Theorem {name}`Rnd_NE_pt_monotone` :
-      {name (full := Defs.round_pred_monotone)}`round_pred_monotone`
-      applied to {name}`Rnd_NE_pt`.
-
-    Specification: Nearest-even rounding is monotone
-
-    The nearest-even rounding preserves the ordering of inputs.
+/-- Legacy Boolean/Hoare compatibility proof of nearest-even monotonicity.
+The direct source-facing proposition is exported below.
 -/
-theorem Rnd_NE_pt_monotone :
+theorem Rnd_NE_pt_monotone_spec :
     ⦃⌜beta > 1⌝⦄
     (pure (Rnd_NE_pt_monotone_check beta fexp) : Id Bool)
     ⦃⇓result => ⌜result = true⌝⦄ := by
@@ -2089,14 +2083,10 @@ noncomputable def Rnd_NE_pt_total_check : Bool :=
     exact @decide (round_pred_total (Rnd_NE_pt beta fexp)) (Classical.dec _)
 
 
-/-- Coq:
-    Theorem {name}`Rnd_NE_pt_total` :
-      {name (full := Defs.round_pred_total)}`round_pred_total`
-      applied to {name}`Rnd_NE_pt`.
-
-    Nearest-even rounding predicate is total.
+/-- Legacy Boolean/Hoare compatibility proof of nearest-even totality.
+The direct source-facing proposition is exported below.
 -/
-theorem Rnd_NE_pt_total :
+theorem Rnd_NE_pt_total_spec :
     ⦃⌜beta > 1⌝⦄
     (pure (Rnd_NE_pt_total_check beta fexp) : Id Bool)
     ⦃⇓result => ⌜result = true⌝⦄ := by
@@ -2278,13 +2268,10 @@ noncomputable def Rnd_NE_pt_round_check : Bool :=
     exact @decide (round_pred (Rnd_NE_pt beta fexp)) (Classical.dec _)
 
 
-/-- Coq:
-    Theorem Rnd_NE_pt_round :
-      round_pred Rnd_NE_pt.
-
-    Nearest-even rounding predicate satisfies totality and monotonicity.
+/-- Legacy Boolean/Hoare compatibility proof of the combined rounding contract.
+The direct source-facing proposition is exported below.
 -/
-theorem Rnd_NE_pt_round :
+theorem Rnd_NE_pt_round_spec :
     ⦃⌜beta > 1⌝⦄
     (pure (Rnd_NE_pt_round_check beta fexp) : Id Bool)
     ⦃⇓result => ⌜result = true⌝⦄ := by
@@ -2297,14 +2284,33 @@ theorem Rnd_NE_pt_round :
   -- It suffices to show totality and monotonicity separately.
   constructor
   · -- Totality from the dedicated lemma.
-    have hTot := Rnd_NE_pt_total (beta := beta) (fexp := fexp)
+    have hTot := Rnd_NE_pt_total_spec (beta := beta) (fexp := fexp)
     -- Consume the triple-style lemma to a pure proposition.
     simpa [Rnd_NE_pt_total_check, pure, decide_eq_true_iff]
       using (hTot ‹beta > 1›)
   · -- Monotonicity from the dedicated lemma.
-    have hMono := Rnd_NE_pt_monotone (beta := beta) (fexp := fexp)
+    have hMono := Rnd_NE_pt_monotone_spec (beta := beta) (fexp := fexp)
     simpa [Rnd_NE_pt_monotone_check, pure, decide_eq_true_iff]
       using (hMono ‹beta > 1›)
+
+/-- Nearest-even rounding is total under Flocq's exponent and parity conditions. -/
+@[flocq_source "src/Core/Round_NE.v" 263 "Rnd_NE_pt_total"]
+theorem Rnd_NE_pt_total : round_pred_total (Rnd_NE_pt beta fexp) := by
+  classical
+  simpa [Rnd_NE_pt_total_check, pure, decide_eq_true_iff]
+    using Rnd_NE_pt_total_spec beta fexp (ValidRadix.valid (beta := beta))
+
+/-- Nearest-even rounding preserves nonstrict input order, including ties. -/
+@[flocq_source "src/Core/Round_NE.v" 306 "Rnd_NE_pt_monotone"]
+theorem Rnd_NE_pt_monotone : round_pred_monotone (Rnd_NE_pt beta fexp) := by
+  classical
+  simpa [Rnd_NE_pt_monotone_check, pure, decide_eq_true_iff]
+    using Rnd_NE_pt_monotone_spec beta fexp (ValidRadix.valid (beta := beta))
+
+/-- Nearest-even rounding is a total monotone rounding relation. -/
+@[flocq_source "src/Core/Round_NE.v" 331 "Rnd_NE_pt_round"]
+theorem Rnd_NE_pt_round : round_pred (Rnd_NE_pt beta fexp) :=
+  ⟨Rnd_NE_pt_total beta fexp, Rnd_NE_pt_monotone beta fexp⟩
 
 end UniquenessProperties
 
@@ -2337,13 +2343,8 @@ theorem satisfies_any_imp_NE :
     ⦃⇓result => ⌜result = true⌝⦄ := by
   intro _
   classical
-  -- The goal is exactly `round_pred (Rnd_NE_pt beta fexp)`,
-  -- which was established in `Rnd_NE_pt_round` under `beta > 1`.
-  have hβ : beta > 1 := (show beta > 1 ∧ _ from ‹beta > 1 ∧ _›).left
-  have h := Rnd_NE_pt_round (beta := beta) (fexp := fexp)
-  -- Both checks compute the same boolean, so we can discharge by `simpa`.
-  simpa [satisfies_any_imp_NE_check, Rnd_NE_pt_round_check]
-    using (h hβ)
+  simpa [satisfies_any_imp_NE_check, pure, decide_eq_true_iff]
+    using Rnd_NE_pt_round beta fexp
 
 /-- Check nearest-even reflexivity
 -/
@@ -2746,18 +2747,6 @@ noncomputable def round_NE_pt_pos_check : Bool :=
     exact @decide (∀ x : ℝ, 0 < x → ∃ f : ℝ, Rnd_NE_pt beta fexp x f) (Classical.dec _)
 
 
--- Helper: consume `Rnd_NE_pt_total` (triple style) into a pure proposition form.
-private theorem Rnd_NE_pt_total_prop
-    (beta : Int) [ValidRadix beta] (fexp : Int → Int) [Valid_exp fexp] [Exists_NE beta fexp]
-    (hβ : beta > 1) : ∀ y : ℝ, ∃ f : ℝ, Rnd_NE_pt beta fexp y f := by
-  -- Use the triple-encoded totality lemma and eliminate the Hoare wrapper by `simp`.
-  have hTot := Rnd_NE_pt_total (beta := beta) (fexp := fexp)
-  have := hTot hβ
-  change @decide (∀ y : ℝ, ∃ f : ℝ, Rnd_NE_pt beta fexp y f)
-      (Classical.dec _) = true at this
-  exact @of_decide_eq_true _ (Classical.dec _) this
-
-
 /-- Coq:
     Lemma {coq}`round_NE_pt_pos`:
       for all x with 0 < x, Rnd_NE_pt x (round beta fexp ZnearestE x).
@@ -2780,7 +2769,7 @@ theorem round_NE_pt_pos_check_spec (x : ℝ) :
   intro x hxpos
   -- Obtain totality at this base from the previously established lemma.
   have hTotProp : ∀ y : ℝ, ∃ f : ℝ, Rnd_NE_pt beta fexp y f :=
-    Rnd_NE_pt_total_prop (beta := beta) (fexp := fexp) hβ
+    Rnd_NE_pt_total (beta := beta) (fexp := fexp)
   -- Specialize totality to the given positive x and conclude.
   exact hTotProp x
 

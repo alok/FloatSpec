@@ -4253,6 +4253,50 @@ the stable Lean 4.34 build at 18:10 UTC; later steps were still running when
 this entry was written. The second slice has local evidence, not yet a hosted
 CI pass. The user's `Deps/flocq` state and seven untracked artifacts are unchanged.
 
+### September 21, 18:31 UTC: direct nearest-even totality and monotonicity
+
+The next concrete source-API gap was `Round_NE.v:263,306,331`. Totality,
+monotonicity and the combined rounding contract still used source names for
+Boolean/Hoare interfaces. They now export the actual propositions, keeping
+`Valid_exp` and `Exists_NE`, without adding `Monotone_exp`. `ValidRadix`
+supplies the source's structured-radix invariant; an extra explicit `beta > 1`
+is unnecessary. Compatibility proofs remain under `*_spec`; local consumers
+use the direct laws, and an obsolete private unpacking helper is removed.
+No numerical definition, tie policy or proof-debt obligation changed.
+
+The paired nearest-even fixture now checks seven exact interfaces and proves
+a short composition example: ordering exact inputs orders their actual
+nearest-even rounded values. Eight live mutations reject missing format/parity
+premises, a bare-existence replacement for a concrete result, and confusing
+totality with the combined total/monotone contract (36.398 s, final fixtures).
+All listed Lean theorem dependencies are standard axioms, with no `sorryAx`.
+The Rocq assumption report is retained separately; no claim of axiom-free or
+identical cross-system foundations is inferred.
+
+Final snapshot:
+`cd22873cb11cf2d8f72aa29e9050b8888aff63c8debbf1ca62d19642314626dd`.
+The final full macOS Lean 4.34 build passes 6225 jobs, after the compatibility
+docstrings were clarified. Compiled trust passes 13778 source declarations /
+59 modules / four unchanged debts; 456 anchors validate, and the three new
+review entries bring the manifest to 122 (117 contracts, five infrastructure
+adaptations, 2594 unreviewed sites). Placeholder/linter guards, generated status,
+actionlint and source hygiene pass. This follow-up has no newly recorded
+differential bridge run: numerical definitions are unchanged, and the preceding
+3539/3260-case receipts retain their own source fingerprints.
+
+Receipts: `/private/tmp/floatspec-ne-totality-final-build-20260921.log`,
+`/private/tmp/floatspec-ne-totality-contracts-20260921/lean.log`,
+`/private/tmp/floatspec-ne-totality-contracts-20260921/rocq.log`,
+`/private/tmp/floatspec-ne-totality-contracts-final-20260921.log`,
+`/private/tmp/floatspec-ne-totality-trust-20260921.json`,
+`/private/tmp/floatspec-ne-totality-queue-20260921.json`.
+
+Hosted CI `35635101867` at the first slice `60096e0c` completed fully green
+at 18:23 UTC: stable Lean 4.34 build, regressions, trust, generated status and
+hygiene. The later `a3a84b81` run and this follow-up require their own receipts.
+One GitHub status request hit a TLS handshake timeout; that is an observation
+failure, not a failed CI job or a passing result. `Deps/flocq` is unchanged.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In

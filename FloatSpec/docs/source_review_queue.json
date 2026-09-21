@@ -2,6 +2,69 @@
   "flocq_commit": "7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f",
   "reviews": [
     {
+      "source_id": "src/Core/Round_NE.v:Rnd_NE_pt_total@6945",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.RoundNE.Rnd_NE_pt_total"
+      ],
+      "scope": "Same universal totality proposition for the nearest-even relation under Valid_exp and Exists_NE; ValidRadix carries the source radix invariant. No extra Monotone_exp or redundant explicit radix premise. Closed legacy proof exposed directly, paired typed clients and format/parity mutation controls.",
+      "evidence": [
+        "scripts/fixtures/RoundNEPointContracts.lean",
+        "scripts/fixtures/RoundNEPointContracts.v",
+        "scripts/test_round_ne_point_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.RoundNE.Rnd_NE_pt_total": {
+          "type_hash": "2919088964",
+          "value_hash": "1490587932",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_NE.v:Rnd_NE_pt_monotone@7982",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.RoundNE.Rnd_NE_pt_monotone"
+      ],
+      "scope": "Same nonstrict relational monotonicity proposition under Valid_exp and Exists_NE; ValidRadix carries the source radix invariant. No extra Monotone_exp premise. Paired exact clients and a closed composition example derive monotonicity of the concrete rounded-value function.",
+      "evidence": [
+        "scripts/fixtures/RoundNEPointContracts.lean",
+        "scripts/fixtures/RoundNEPointContracts.v",
+        "scripts/test_round_ne_point_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.RoundNE.Rnd_NE_pt_monotone": {
+          "type_hash": "2446094460",
+          "value_hash": "614338811",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Round_NE.v:Rnd_NE_pt_round@8623",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.RoundNE.Rnd_NE_pt_round"
+      ],
+      "scope": "Same conjunction of totality and relational monotonicity under Valid_exp and Exists_NE; not an existence-only contract. Closed direct composition of the two source laws, with paired clients and a mutation rejecting confusion with bare totality.",
+      "evidence": [
+        "scripts/fixtures/RoundNEPointContracts.lean",
+        "scripts/fixtures/RoundNEPointContracts.v",
+        "scripts/test_round_ne_point_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.RoundNE.Rnd_NE_pt_round": {
+          "type_hash": "3564020769",
+          "value_hash": "1191984708",
+          "noncomputable": false
+        }
+      }
+    },
+    {
       "source_id": "src/Core/Round_pred.v:Rnd_DN@844",
       "status": "reviewed-contract",
       "lean_names": [

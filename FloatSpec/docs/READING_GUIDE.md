@@ -53,7 +53,8 @@ The important recent changes are:
   policies need zero in the format. All 78 top-level source contracts in this
   module now have paired typed clients and explicit reviews; its constructor
   and four generated eliminators are accounted for separately. There are
-  119 total review dispositions. This does not certify unreviewed imports or
+  122 total review dispositions, including the three nearest-even laws below.
+  This does not certify unreviewed imports or
   the other modules, nor identify Rocq and Lean proof terms.
 
 - **A systematic source-order queue.** [Read the dependency-ordered queue](SOURCE_REVIEW_QUEUE.md)
@@ -75,6 +76,11 @@ The important recent changes are:
   equality was merely reflexivity. Those statements now preserve the policies,
   with paired Lean/Rocq clients and mutation controls. `round_NE_pt` now states
   correctness of the actual rounded value directly, with both Pff callers migrated.
+  Nearest-even totality and monotonicity now also have direct source-facing
+  propositions, retaining the format-validity and parity conditions. The combined
+  law supplies both properties, not merely existence of some rounded result.
+  [This short composed example](../../scripts/fixtures/RoundNEPointContracts.lean)
+  derives monotonicity of the actual rounded-value function from those APIs.
 - **The correct hypotheses.** Recent repairs removed 27 unnecessary
   exponent-validity assumptions, while a paired counterexample shows that
   exponent monotonicity really is needed for a different ULP law.
@@ -110,6 +116,7 @@ Current verification is deliberately separated by source snapshot:
 
 | Snapshot | Completed evidence |
 |---|---|
+| Nearest-even totality/monotonicity API, `cd22873c` | Full 6,225-job macOS Lean 4.34 build; seven paired source clients, a composed monotonicity example in both assistants, and eight rejected contract mutations. Compiled trust: 13,778 declarations / 59 modules / four unchanged debts; 456 anchors and 122 explicit reviews. Numerical definitions unchanged; fresh runtime bridge receipts belong to the preceding snapshots below, not this theorem-only follow-up. |
 | Complete rounding-predicate interface, `8aa8e9e3` | Full 6,225-job macOS Lean 4.34 build; remaining 34 direct laws and all other public source contracts checked against pinned Rocq. Paired tie-uniqueness counterexamples and 20 rejected contract mutations across both fixtures. Fresh 3,260 three-way cases and kernel equalities (140 rounding decisions, 3,120 nearby-integer cases), seed 865307. Compiled trust: 13,774 declarations / 59 modules / four unchanged debts; 453 anchors. Numerical bodies unchanged; source-module interfaces reviewed, not a universal cross-system certificate. |
 | Direct rounding-predicate API, `8b16a912` | Full 6,225-job macOS Lean 4.34 build; 25 direct contracts checked against pinned Rocq; three paired counterexamples and eight rejected premise mutations. Fresh 3,539 three-way rounding cases and kernel equalities (279 rounding decisions, 3,260 nearby-integer cases), seed 865103. Compiled trust: 13,720 declarations / 59 modules / four unchanged debts; 402 anchors. This is an API repair; numerical operation bodies are unchanged. |
 | Zaux division/remainder review, `949e91ee` | Full 6,225-job macOS build; 13,695 compiled source declarations / 59 modules, four debts, 377 anchors. Eight more source contracts and six rejected mutations; 1,377 signed-input triples in each assistant. Fresh 811 floor-division cases/kernel equalities (seed 864503), including 33 zero and 386 negative divisors; saved outputs also checked against an independent Python floor oracle. The mathematical theorems remain unchanged. |
@@ -157,8 +164,10 @@ and differential receipts above are separate local verification.
 The power/division audit commits (`a0fd6e45`, `aeae41fa`) and documentation
 head `20abab5e` now also have their own successful hosted runs, verified on
 September 21 at 17:37 UTC. The [current-base run 35554897660](https://github.com/alok/FloatSpec/actions/runs/35554897660)
-is green. The new rounding-interface slice still needs its own hosted run;
-do not transfer an older green run to a newer revision. The
+is green. The first rounding-interface slice `60096e0c` also passed its full
+[hosted run 35635101867](https://github.com/alok/FloatSpec/actions/runs/35635101867),
+observed on September 21 at 18:26 UTC. Later slices still need their own hosted
+results; do not transfer an older green run to a newer revision. The
 [continuation plan](FIXUP_PLAN_2026-09-21.md) keeps that boundary explicit.
 
 For the remaining fidelity work, read [SOURCE_FIDELITY_GAPS.md](SOURCE_FIDELITY_GAPS.md).

@@ -103,12 +103,25 @@ Lean theorem validity, and source equivalence remain separate claims.
     cases pass (seed 865307, snapshot `8aa8e9e3`). All 83 module source sites
     have explicit dispositions, including four adapted generated eliminators.
     Four existing debts remain unchanged; no arithmetic body changed.
-11. **In progress — publish the complete rounding-interface milestone and
-    advance the next substantive source-API gap.** Keep each verified slice
-    reviewable on origin/main, inspect hosted CI, then use the source-order
-    queue to choose the next missing or incorrectly typed contract. Prefer
-    completing mathematical APIs to cosmetic wrapper removal. Transitive
-    source equivalence remains a separate open task.
+11. Complete locally — nearest-even totality and monotonicity source contracts.
+    The complete Round_pred interface is pushed as `a3a84b81`. Inspecting its
+    underlying Defs bodies found no discrepancy in the rounding predicates;
+    that inspection alone does not reclassify the full foundation as reviewed.
+    The next concrete API gap is Round_NE's totality, monotonicity and combined
+    rounding contract. Replace those three source-named Hoare interfaces with
+    direct propositions, retain the exact Valid_exp/Exists_NE premises, migrate
+    callers and check paired clients/mutations and the full build before push.
+    Transitive source equivalence remains a separate open task.
+    All three direct contracts and their callers pass complete LSP diagnostics;
+    seven paired source clients, a composed rounded-value monotonicity example,
+    eight live mutations and the final 6225-job macOS build pass. Source snapshot
+    `cd22873c`; 13778 compiled declarations / 59 modules / four unchanged debts.
+    The first rounding slice's hosted run `35635101867` is fully green.
+12. **In progress — continue substantive source-API completion.** The next
+    bounded target is the remaining nearest-even definition/parity layer and
+    its source aliases, then the next dependency-ordered contract gap. Keep
+    actual missing APIs separate from generated names, retain exact premises,
+    publish verified slices on main and track each revision's own CI result.
 
 ## Constraints and open obligations
 
