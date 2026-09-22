@@ -1,4 +1,10 @@
-# Core Theorems Comparison (content-reviewed)
+# Historical Core Theorems Comparison (not current coverage)
+
+This older manual map is retained as historical porting context. Names and line
+numbers have drifted, including Zaux check/spec wrappers removed in September
+2026. Do not use it as the current API or source-equivalence inventory. Use the
+[compiled source-review queue](../../docs/SOURCE_REVIEW_QUEUE.md) and
+[explicit review ledger](../../docs/SOURCE_CONTRACT_REVIEW.md) instead.
 
 This file lists theorem-like declarations per file (Coq vs Lean) and records correspondences judged by statement intent. For Generic_fmt.v, Lean counterparts are consolidated in Generic_fmt.lean (Round_generic merged).
 

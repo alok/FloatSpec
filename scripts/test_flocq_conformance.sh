@@ -62,6 +62,7 @@ uv run "$repo_root/scripts/test_flocq_source_refs.py" -v
 uv run "$repo_root/scripts/test_flocq_port_queue.py" -v
 uv run "$repo_root/scripts/test_scan_failures.py" -v
 uv run "$repo_root/scripts/check_compiled_trust.py"
+uv run "$repo_root/scripts/check_compiled_trust.py" --scope tests
 uv run "$repo_root/scripts/flocq_port_queue.py" --check-lean-reviews --skip-build
 uv run "$repo_root/scripts/test_compiled_trust.py" -v
 

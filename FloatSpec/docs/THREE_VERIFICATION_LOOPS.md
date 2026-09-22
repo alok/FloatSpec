@@ -1,5 +1,61 @@
 # Run the three verification loops
 
+## Hosted CI and required prerequisites
+
+The workflow now installs **Rocq 9.1.0 and Stdlib 9.0.0**, initializes
+`Deps/flocq` at the exact tracked gitlink, and builds that reference before
+running live tests. Lean stays at **4.34.0**. This toolchain combination was
+rebuilt locally; a hosted pass is a separate per-revision result, not inferred
+from this configuration change.
+
+The previous hosted workflow was Lean-only. Its individual Python modules use
+`skipUnless(FLOCQ_AUDIT_DIR)` for optional local Rocq testing, which means a
+missing reference can yield `OK (skipped=...)`. Hosted CI now instead invokes:
+
+```sh
+uv run scripts/run_required_rocq_tests.py \
+  --flocq-dir /path/to/clean-built-pinned-flocq \
+  --output /tmp/fresh-required-tests.json
+```
+
+This runner sets the reference before loading the tests and rejects **any skip**,
+an empty suite, missing/dirty/wrong-pinned reference, unavailable compiler,
+failure or error. Eight runner-policy controls test these boundaries. It runs
+the existing core, native IEEE, mode/scale/integer, rounding, ULP, Zaux and Pff
+mutation suites; it is not a replacement for every deeper profile below.
+
+CI also runs seven pure Rocq fixtures, a 4,309-case core shared-input bridge
+(seed 865509, five random cases per selected family plus boundary grids),
+generated Lean kernel equalities and four permanent counterexample
+replays. A fresh run/attempt-specific directory under the CI runner's temporary
+directory is uploaded even on failure as
+`flocq-cross-check-<commit>` for 30 days. Download the artifact to inspect inputs,
+source/compiler identities, reports and batch programs. A report still marked
+`running` or `error`, including an interrupted job, is **not** a pass. Reports
+are kept outside `.lake` so build-cache restores cannot replay stale evidence.
+This
+retention is finite; older local receipts are not retroactively published.
+
+The per-push bridge selects `power`, `div_eucl`, `location`, `round`, `truncate`,
+`div`, `plus`, `sqrt`, `formats`, `digits`, `operations`, `bits32` and `bits64`.
+The 174-method live suite additionally exercises the IEEE/native adapters and
+mutation controls; the saved replays cover prior raw-IEEE counterexamples.
+Omit `--operations` for the larger 35,594-case grid at this seed/sample count.
+That is intentionally a separate longer run, not a claim that the per-push
+bridge covers every family. The initial all-family local run was interrupted
+for runtime budgeting and remains an error, not a partial pass.
+
+Compiled trust is checked separately for source and tests. The test scope
+imports every `FloatSpec/Test` module and allows no project axiom, unsafe
+declaration, runtime override, or direct/transitive sorry dependency. It does
+not turn native runtime assertions into kernel proofs, nor automatically cover
+standalone files outside `FloatSpec/Test`.
+
+Fresh clones can now use `git submodule update --init Deps/flocq`. Do not run
+that command in a checkout with intentional local dependency changes: build
+a separate clean reference instead. The audit continues to use a separate
+reference on this Mac and preserves the user's modified `Deps/flocq`.
+
 ## Signed division contracts (September 21)
 
 The next source-ordered slice runs all eight division/remainder contracts through

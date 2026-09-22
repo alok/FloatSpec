@@ -117,11 +117,27 @@ Lean theorem validity, and source equivalence remain separate claims.
     eight live mutations and the final 6225-job macOS build pass. Source snapshot
     `cd22873c`; 13778 compiled declarations / 59 modules / four unchanged debts.
     The first rounding slice's hosted run `35635101867` is fully green.
-12. **In progress — continue substantive source-API completion.** The next
+12. Queued — continue substantive source-API completion. The next
     bounded target is the remaining nearest-even definition/parity layer and
     its source aliases, then the next dependency-ordered contract gap. Keep
     actual missing APIs separate from generated names, retain exact premises,
     publish verified slices on main and track each revision's own CI result.
+13. **In progress — respond to Claude's cross-check and require hosted Rocq.**
+    Preserve the original independent audit, distinguish accepted findings from
+    scope clarifications, fix review-fingerprint regression coverage and missing
+    submodule metadata, and label stale documentation. Install Rocq and build
+    pinned Flocq in CI; missing prerequisites or skipped live tests must fail.
+    Execute the same workflow locally, persist differential evidence in hosted
+    artifacts, then push and inspect the real run. Update the reading guide and
+    CFS-3 for tonight's meetup without marking a presentation as delivered.
+    Setup was pushed in `b501cb14`. Its hosted run installed Rocq, built the pin
+    and passed all 174 required live tests with zero skips, then timed out in
+    the 35,594-case grid. The follow-up keeps the full suite but bounds the
+    per-push bridge to 4,309 core cases plus 292 saved IEEE counterexamples;
+    both complete locally with kernel checks. A fresh 6225-job macOS build and
+    compiled test-scope audit (311 declarations / 35 modules / zero debt) pass.
+    Source scope still has four registered debts. Follow-up hosted confirmation
+    remains open. Keep the family-facing Linear update brief and link details.
 
 ## Constraints and open obligations
 

@@ -10,6 +10,14 @@ from flocq_bridge import ROOT, run
 
 
 class CompiledTrustTests(unittest.TestCase):
+    def test_test_scope_imports_all_modules_and_checks_both_filters(self):
+        source = checker.audit_source('tests', {'FloatSpec.Test.Zed', 'FloatSpec.Test.First'})
+        self.assertTrue(source.startswith('import FloatSpec.Test.First\nimport FloatSpec.Test.Zed\n'))
+        self.assertEqual(source.count('"FloatSpec.Test."'), 2)
+        self.assertNotIn('"FloatSpec.src."', source)
+        with self.assertRaises(ValueError):
+            checker.audit_source('unrecognized', set())
+
     def clean_report(self):
         return {"project_declarations": 1, "source_modules": ["FloatSpec.src.Example"],
                 "project_axioms": [], "unsafe_declarations": [], "runtime_overrides": [],

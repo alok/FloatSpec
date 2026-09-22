@@ -2,8 +2,9 @@
 """Audit elaborated source declarations and transitive axiom dependencies.
 
 The textual gate still enforces named source markers. This complementary gate
-reads actual Lean declarations, requiring direct and propagated sorry dependence
-to match the manifest, and rejects project axioms, unsafe declarations, runtime
+reads actual Lean declarations, requiring source direct and propagated sorry
+dependence to match the manifest (or no debt at all in test scope), and rejects
+project axioms, unsafe declarations, runtime
 overrides, and nonstandard axiom dependencies. This is not a semantics audit of
 the standard library or the compiler/FFI.
 """
@@ -11,8 +12,24 @@ the standard library or the compiler/FFI.
 import argparse
 import json
 from pathlib import Path
+import tempfile
 
 from flocq_bridge import ROOT, lean_source_fingerprint, require_lean_source_snapshot, run
+
+
+def audit_source(scope: str, modules: set[str]) -> str:
+    """Reuse the compiled inspection for source or independently imported tests."""
+    source = (ROOT / 'scripts/AuditCompiledTrust.lean').read_text()
+    if scope == 'source':
+        return source
+    if scope != 'tests':
+        raise ValueError('unknown compiled trust scope')
+    # Both the declaration filter and module-coverage filter must change.
+    marker = '"FloatSpec.src."'
+    if source.count(marker) != 2:
+        raise ValueError('compiled audit template changed; review test-scope filters')
+    source = source.replace(marker, '"FloatSpec.Test."')
+    return ''.join(f'import {name}\n' for name in sorted(modules)) + source
 
 
 def validate(report: dict, debts: list[dict], expected_modules: set[str]) -> list[str]:
@@ -41,24 +58,33 @@ def main() -> None:
     parser.add_argument("--skip-build", action="store_true",
                         help="inspect existing artifacts; caller must already have built current sources")
     parser.add_argument("--output", type=Path, help="save the observed compiler report")
+    parser.add_argument('--scope', choices=('source', 'tests'), default='source',
+                        help='tests imports every FloatSpec/Test module and permits no proof debt')
     args = parser.parse_args()
     snapshot = lean_source_fingerprint()
+    directory = ROOT / ('FloatSpec/src' if args.scope == 'source' else 'FloatSpec/Test')
+    modules = {'.'.join(path.relative_to(ROOT).with_suffix('').parts)
+               for path in directory.rglob('*.lean')}
     if not args.skip_build:
-        run(["lake", "build", "FloatSpec", "FloatSpec.src.IEEE754.ComputableCompare"], timeout=600)
-    report = json.loads(run(["lake", "env", "lean", str(ROOT / "scripts/AuditCompiledTrust.lean")],
-                            timeout=600))
+        targets = (['FloatSpec', 'FloatSpec.src.IEEE754.ComputableCompare']
+                   if args.scope == 'source' else ['FloatSpecTests'])
+        run(['lake', 'build', *targets], timeout=600)
+    with tempfile.TemporaryDirectory(prefix='floatspec-compiled-trust-') as temporary:
+        path = Path(temporary) / 'TrustInspection.lean'
+        path.write_text(audit_source(args.scope, modules))
+        report = json.loads(run(['lake', 'env', 'lean', str(path)], timeout=600))
     require_lean_source_snapshot(snapshot)
     report["lean_source_sha256"] = snapshot
     report["fresh_build"] = not args.skip_build
+    report['scope'] = args.scope
     if args.output:
         args.output.write_text(json.dumps(report, indent=2) + "\n")
-    debts = json.loads((ROOT / "FloatSpec/docs/proof_debts.json").read_text())
-    modules = {".".join(path.relative_to(ROOT).with_suffix("").parts)
-               for path in (ROOT / "FloatSpec/src").rglob("*.lean")}
+    debts = (json.loads((ROOT / 'FloatSpec/docs/proof_debts.json').read_text())
+             if args.scope == 'source' else [])
     failures = validate(report, debts, modules)
     if failures:
         raise SystemExit("\n".join(failures))
-    print(f"Compiled trust audit passed: {report['project_declarations']} source declarations, "
+    print(f"Compiled trust audit passed: {report['project_declarations']} {args.scope} declarations, "
           f"{len(modules)} modules, {len(debts)} manifest-only direct/transitive proof debts.")
 
 

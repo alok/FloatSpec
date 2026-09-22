@@ -17,6 +17,18 @@ declaration-by-declaration findings and historical milestones.
 
 ## Wake-up summary — September 21, 2026
 
+For tonight's SF Lean meetup, use the
+[short walkthrough](MEETUP_WALKTHROUGH_2026-09-21.md). Claude has independently
+cross-checked an earlier production head: read the
+[audit and point-by-point response](CLAUDE_AUDIT_RESPONSE_2026-09-21.md), keeping
+the review scope separate from later changes and current CI results.
+
+CI now installs Rocq and builds pinned Flocq as well as Lean. Required live
+tests cannot silently skip a missing reference. The initial hosted run passed
+the 174 live tests but timed out in an oversized differential grid; the bounded
+follow-up is locally verified and still needs its own hosted result. See
+[the three-loop guide](THREE_VERIFICATION_LOOPS.md) for exact coverage and artifacts.
+
 **The port builds and runs on macOS with Lean 4.34.0, but is not yet a fully
 source-audited port.** All 35 built Flocq module names have Lean counterparts.
 That is file coverage, not a percentage of faithful definitions or theorems.
@@ -126,7 +138,7 @@ Current verification is deliberately separated by source snapshot:
 | Executable Pff integers/divisibility, `b2e86f63` | Four marker-only changes and constructive `maxDiv`; a universal Lean equality proof against its old classical definition. Paired standalone fixtures and 4,096 native positive-division checks. Fresh 2,172 three-way cases/kernel equalities and 6,198 independent assertions, seed 863307; eight harness tests including five shared-program mutations. |
 | Pff addition/subtraction contracts, `1fb9f135` | Full 6,226-job build; closed proofs with paired exact source types and radix-zero counterexamples; eight live contract mutations. Fresh 72-input three-way replay/kernel equalities and 1,272 independent assertions, seed 863101. Numerical bodies unchanged. |
 | Current Pff sign laws, `d0ab66b2` | Full 6,226-job build; 13,687 compiled source declarations / 59 modules; four manifest-only debts; 336 validated source anchors. Four paired source laws and four live mutations; fresh 72-input three-way replay with generated kernel equalities, seed 862619. Only four closed theorem exports were added to the previous production snapshot; operation bodies are unchanged. |
-| Remainder audit, `3c5a913d` | Full build; 12,100 three-way cases/kernel equalities and 84,182 independent assertions, seed 862513. Eight contract controls plus six bridge tests pass; eleven paired exponent-boundary declarations explain the necessary hypotheses. Final standalone sweep re-executed 14 Lean modules, 26 Lean fixtures, 38 Rocq fixtures and all seven demo examples on this snapshot. |
+| Remainder audit, `3c5a913d` | Full build; 12,100 three-way cases/kernel equalities and 84,182 independent assertions, seed 862513. Eight contract controls plus six bridge tests pass; eleven paired exponent-boundary propositions plus the zigzag exponent definition explain the necessary hypotheses. Final standalone sweep re-executed 14 Lean modules, 26 Lean fixtures, 38 Rocq fixtures and all seven demo examples on this snapshot. |
 | Direct nearest-even API, `b9b5abb6` | Full build; four paired typed exports and four live mutation controls. Arithmetic bodies are unchanged from the Pff snapshot below. |
 | Pff addition, `21a75295` | Full build; paired basic Pff clients; all 20 expanded Pff harness tests. Fresh bridge: 3,072 cases/kernel equalities and 65,846 independent assertions, seed 862307. |
 | Integrated comparison API, `4b714ddb` | Full build and seven demos; 20,000 executable dyadic pairs; 24 paired raw-comparison fixture cases; 1,237 fresh raw-comparison bridge cases and kernel equalities, seed 862149. |

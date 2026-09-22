@@ -16,10 +16,16 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Initialize fresh cross-check evidence directory
+        shell: bash
+        run: |
+          # Keep evidence outside lean-action's .lake cache, including on retries.
+          echo "FLOCQ_CI_OUTPUT=$RUNNER_TEMP/floatspec-cross-check-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" >> "$GITHUB_ENV"
+
       - name: Install audit prerequisites
         run: |
           sudo apt-get update
-          sudo apt-get install --yes ripgrep opam autoconf build-essential libgmp-dev pkg-config
+          sudo apt-get install --yes ripgrep opam autoconf automake build-essential libgmp-dev pkg-config
           rg --version
           python3 --version
 
@@ -33,7 +39,8 @@ jobs:
           # Build inside the action so its GitHub cache saves completed artifacts.
 
       - name: Cache Rocq toolchain
-        uses: actions/cache@v4
+        id: rocq-cache
+        uses: actions/cache/restore@v4
         with:
           path: ~/.opam
           key: rocq-${{ runner.os }}-${{ runner.arch }}-9.1.0-stdlib9.0.0-ocaml4.14.1-v1
@@ -48,10 +55,17 @@ jobs:
           opam install --switch=floatspec-rocq --yes --jobs=2 coq.9.1.0 rocq-stdlib.9.0.0
           opam exec --switch=floatspec-rocq -- coqc --version
 
+      - name: Save verified Rocq toolchain before long tests
+        if: steps.rocq-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ~/.opam
+          key: ${{ steps.rocq-cache.outputs.cache-primary-key }}
+
       - name: Build the pinned Flocq reference
         shell: bash
         run: |
-          mkdir -p .lake/flocq-ci
+          mkdir -p "$FLOCQ_CI_OUTPUT"
           git submodule update --init Deps/flocq
           test "$(git -C Deps/flocq rev-parse HEAD)" = "$(git rev-parse HEAD:Deps/flocq)"
           opam exec --switch=floatspec-rocq -- bash -euo pipefail -c '
@@ -59,7 +73,7 @@ jobs:
             autoreconf -i
             ./configure
             ./remake --jobs=2
-          ' 2>&1 | tee .lake/flocq-ci/reference-build.log
+          ' 2>&1 | tee "$FLOCQ_CI_OUTPUT/reference-build.log"
           python3 scripts/validate_flocq_source_refs.py Deps/flocq
 
       - name: Build regression tests
@@ -83,6 +97,7 @@ jobs:
           scripts/test_unused_mvcgen.sh
           python3 scripts/check_proof_debts.py
           python3 scripts/check_compiled_trust.py
+          python3 scripts/check_compiled_trust.py --scope tests
           python3 scripts/test_compiled_trust.py -v
           python3 scripts/test_flocq_source_refs.py -v
           python3 scripts/test_flocq_port_queue.py -v
@@ -92,35 +107,36 @@ jobs:
       - name: Run pure Rocq regressions
         shell: bash
         run: |
-          mkdir -p .lake/flocq-ci/rocq
+          mkdir -p "$FLOCQ_CI_OUTPUT/rocq"
           # The loop variables expand in the opam child shell, not this shell.
           # shellcheck disable=SC2016
           opam exec --switch=floatspec-rocq -- bash -euo pipefail -c '
             for fixture in ArithmeticProperties BitsProperties BitOrderProperties RoundingOracle IntegerRounding CorePremiseBoundary ExponentValidityBoundary; do
               coqc -q -R Deps/flocq/src Flocq \
-                -o ".lake/flocq-ci/rocq/$fixture.vo" "scripts/fixtures/$fixture.v"
+                -o "$FLOCQ_CI_OUTPUT/rocq/$fixture.vo" "scripts/fixtures/$fixture.v"
             done
-          ' 2>&1 | tee .lake/flocq-ci/rocq.log
+          ' 2>&1 | tee "$FLOCQ_CI_OUTPUT/rocq.log"
 
       - name: Run required live Lean and Rocq mutation tests (no skips)
         shell: bash
         run: |
           opam exec --switch=floatspec-rocq -- python3 scripts/run_required_rocq_tests.py \
-            --flocq-dir Deps/flocq --output .lake/flocq-ci/required-tests.json \
-            2>&1 | tee .lake/flocq-ci/required-tests.log
+            --flocq-dir Deps/flocq --output "$FLOCQ_CI_OUTPUT/required-tests.json" \
+            2>&1 | tee "$FLOCQ_CI_OUTPUT/required-tests.log"
 
       - name: Execute the differential bridge and kernel regressions
         shell: bash
         run: |
           opam exec --switch=floatspec-rocq -- python3 scripts/flocq_bridge.py \
             --flocq-dir Deps/flocq --seed 865509 --samples 5 --batch-size 100 \
-            --skip-build --output .lake/flocq-ci/bridge \
-            2>&1 | tee .lake/flocq-ci/bridge.log
+            --operations power,div_eucl,location,round,truncate,div,plus,sqrt,formats,digits,operations,bits32,bits64 \
+            --skip-build --output "$FLOCQ_CI_OUTPUT/bridge" \
+            2>&1 | tee "$FLOCQ_CI_OUTPUT/bridge.log"
           for replay in RawIEEERoundingReplay RawOverflowReplay PrimitiveComparisonReplay PrimitiveConversionReplay; do
             opam exec --switch=floatspec-rocq -- python3 scripts/flocq_bridge.py \
               --flocq-dir Deps/flocq --replay "scripts/fixtures/$replay.json" \
-              --skip-build --output ".lake/flocq-ci/$replay" \
-              2>&1 | tee ".lake/flocq-ci/$replay.log"
+              --skip-build --output "$FLOCQ_CI_OUTPUT/$replay" \
+              2>&1 | tee "$FLOCQ_CI_OUTPUT/$replay.log"
           done
 
       - name: Preserve cross-check evidence, including failed runs
@@ -128,7 +144,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: flocq-cross-check-${{ github.sha }}
-          path: .lake/flocq-ci/
+          path: ${{ env.FLOCQ_CI_OUTPUT }}/
           include-hidden-files: true
           if-no-files-found: warn
           retention-days: 30
