@@ -1,0 +1,3 @@
+[submodule "Deps/flocq"]
+	path = Deps/flocq
+	url = https://gitlab.inria.fr/flocq/flocq.git

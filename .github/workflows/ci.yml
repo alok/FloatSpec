@@ -10,6 +10,7 @@ permissions:
 jobs:
   build-and-trust:
     runs-on: ubuntu-latest
+    timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
         with:
@@ -18,7 +19,7 @@ jobs:
       - name: Install audit prerequisites
         run: |
           sudo apt-get update
-          sudo apt-get install --yes ripgrep
+          sudo apt-get install --yes ripgrep opam autoconf build-essential libgmp-dev pkg-config
           rg --version
           python3 --version
 
@@ -30,6 +31,36 @@ jobs:
           build: true
           build-args: FloatSpec.Test FloatSpecTests floatspec
           # Build inside the action so its GitHub cache saves completed artifacts.
+
+      - name: Cache Rocq toolchain
+        uses: actions/cache@v4
+        with:
+          path: ~/.opam
+          key: rocq-${{ runner.os }}-${{ runner.arch }}-9.1.0-stdlib9.0.0-ocaml4.14.1-v1
+
+      - name: Install Rocq and its standard library
+        shell: bash
+        run: |
+          opam init --bare --disable-sandboxing --yes --no-setup
+          if ! opam switch list --short | rg -x 'floatspec-rocq'; then
+            opam switch create floatspec-rocq ocaml-base-compiler.4.14.1 --yes
+          fi
+          opam install --switch=floatspec-rocq --yes --jobs=2 coq.9.1.0 rocq-stdlib.9.0.0
+          opam exec --switch=floatspec-rocq -- coqc --version
+
+      - name: Build the pinned Flocq reference
+        shell: bash
+        run: |
+          mkdir -p .lake/flocq-ci
+          git submodule update --init Deps/flocq
+          test "$(git -C Deps/flocq rev-parse HEAD)" = "$(git rev-parse HEAD:Deps/flocq)"
+          opam exec --switch=floatspec-rocq -- bash -euo pipefail -c '
+            cd Deps/flocq
+            autoreconf -i
+            ./configure
+            ./remake --jobs=2
+          ' 2>&1 | tee .lake/flocq-ci/reference-build.log
+          python3 scripts/validate_flocq_source_refs.py Deps/flocq
 
       - name: Build regression tests
         run: |
@@ -53,23 +84,54 @@ jobs:
           python3 scripts/check_proof_debts.py
           python3 scripts/check_compiled_trust.py
           python3 scripts/test_compiled_trust.py -v
-          python3 scripts/test_flocq_bridge.py -v
-          python3 scripts/test_native_ieee_bridge.py -v
-          python3 scripts/test_native_arithmetic_bridge.py -v
-          python3 scripts/test_ieee_modes_bridge.py -v
-          python3 scripts/test_ieee_scale_bridge.py -v
-          python3 scripts/test_ieee_integer_bridge.py -v
           python3 scripts/test_flocq_source_refs.py -v
           python3 scripts/test_flocq_port_queue.py -v
+          python3 scripts/test_required_rocq_tests.py -v
           python3 scripts/flocq_port_queue.py --check-lean-reviews --skip-build
-          python3 scripts/test_zaux_prelude_bridge.py -v
-          python3 scripts/test_zaux_power_contracts.py -v
-          python3 scripts/test_zaux_division_contracts.py -v
-          python3 scripts/test_round_pred_contracts.py -v
-          python3 scripts/test_round_ne_point_contracts.py -v
-          python3 scripts/test_pff_basic_contracts.py -v
-          python3 scripts/test_pff_integer_bridge.py -v
-          python3 scripts/test_remainder_contracts.py -v
+
+      - name: Run pure Rocq regressions
+        shell: bash
+        run: |
+          mkdir -p .lake/flocq-ci/rocq
+          # The loop variables expand in the opam child shell, not this shell.
+          # shellcheck disable=SC2016
+          opam exec --switch=floatspec-rocq -- bash -euo pipefail -c '
+            for fixture in ArithmeticProperties BitsProperties BitOrderProperties RoundingOracle IntegerRounding CorePremiseBoundary ExponentValidityBoundary; do
+              coqc -q -R Deps/flocq/src Flocq \
+                -o ".lake/flocq-ci/rocq/$fixture.vo" "scripts/fixtures/$fixture.v"
+            done
+          ' 2>&1 | tee .lake/flocq-ci/rocq.log
+
+      - name: Run required live Lean and Rocq mutation tests (no skips)
+        shell: bash
+        run: |
+          opam exec --switch=floatspec-rocq -- python3 scripts/run_required_rocq_tests.py \
+            --flocq-dir Deps/flocq --output .lake/flocq-ci/required-tests.json \
+            2>&1 | tee .lake/flocq-ci/required-tests.log
+
+      - name: Execute the differential bridge and kernel regressions
+        shell: bash
+        run: |
+          opam exec --switch=floatspec-rocq -- python3 scripts/flocq_bridge.py \
+            --flocq-dir Deps/flocq --seed 865509 --samples 5 --batch-size 100 \
+            --skip-build --output .lake/flocq-ci/bridge \
+            2>&1 | tee .lake/flocq-ci/bridge.log
+          for replay in RawIEEERoundingReplay RawOverflowReplay PrimitiveComparisonReplay PrimitiveConversionReplay; do
+            opam exec --switch=floatspec-rocq -- python3 scripts/flocq_bridge.py \
+              --flocq-dir Deps/flocq --replay "scripts/fixtures/$replay.json" \
+              --skip-build --output ".lake/flocq-ci/$replay" \
+              2>&1 | tee ".lake/flocq-ci/$replay.log"
+          done
+
+      - name: Preserve cross-check evidence, including failed runs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: flocq-cross-check-${{ github.sha }}
+          path: .lake/flocq-ci/
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 30
 
       - name: Verify generated status is current
         run: |

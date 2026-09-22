@@ -99,6 +99,23 @@ class QueueTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             annotate(*self.inputs(), [review, review])
 
+    def test_changed_compiled_fingerprint_invalidates_review(self):
+        review = {'source_id': 'src/Foo.v:foo', 'status': 'reviewed-contract',
+                  'scope': 'Test-only entry', 'lean_names': ['A.foo'],
+                  'evidence': ['scripts/test_flocq_port_queue.py'],
+                  'lean_fingerprints': {'A.foo': {'type_hash': '1', 'value_hash': '2',
+                                                'noncomputable': False}}}
+        # The same reviewed declaration passes before any mutation.
+        annotate(*self.inputs(), [review])
+        for field, changed in [('type_hash', 'different-type'),
+                               ('value_hash', 'different-body'),
+                               ('noncomputable', True)]:
+            modules, inventory = self.inputs()
+            inventory['declarations'][0][field] = changed
+            with self.subTest(field=field), self.assertRaisesRegex(
+                    ValueError, 'compiled declaration changed since manual review'):
+                annotate(modules, inventory, [review])
+
 
 if __name__ == '__main__':
     unittest.main()
