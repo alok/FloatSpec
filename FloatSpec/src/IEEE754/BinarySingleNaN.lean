@@ -56,8 +56,10 @@ def SF2B (x : StandardFloat) : B754 :=
   | StandardFloat.S754_zero s => B754.B754_zero s
   | StandardFloat.S754_nan => B754.B754_nan
 
--- Total bridge from StandardFloat to BinarySingleNaN (Coq: SF2B')
-@[flocq_source "src/IEEE754/BinarySingleNaN.v" 73 "SF2B'"]
+-- Raw-view total bridge from StandardFloat to the unindexed `B754`. It mirrors
+-- the body of Coq's `SF2B'`, but its codomain carries no boundedness proof;
+-- the faithful port is `BinarySingleNaN.SF2B'` below.
+@[flocq_local "raw B754 view of SF2B'; faithful port is BinarySingleNaN.SF2B'"]
 def SF2B' {prec emax : Int} (x : StandardFloat) : B754 :=
   match x with
   | StandardFloat.S754_zero s => B754.B754_zero s
@@ -10015,6 +10017,7 @@ namespace BinarySingleNaN
 abbrev SF2B {prec emax : Int} :=
   @standardFloatToBinarySingleNaNFloat prec emax
 
+@[flocq_source "src/IEEE754/BinarySingleNaN.v" 73 "SF2B'"]
 abbrev SF2B' {prec emax : Int} :=
   @standardFloatToBinarySingleNaNFloat' prec emax
 

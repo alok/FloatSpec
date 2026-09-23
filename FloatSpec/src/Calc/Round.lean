@@ -110,8 +110,12 @@ end Truncation
 
 section MainRounding
 
-/-- Rounding at zero: any `Calc.Round` mode sends zero to zero. -/
-@[flocq_source "src/Core/Generic_fmt.v" 763 "round_0"]
+/-- Rounding at zero: any `Calc.Round` mode sends zero to zero.
+
+This generalizes Flocq's `round_0` from `Valid_rnd` to the Lean-only `Mode`
+bundle (which only records `rnd 0 = 0`). The faithful port of Flocq's
+statement is `FloatSpec.Core.Generic_fmt.round_0`. -/
+@[flocq_local "Mode-bundled generalization of Generic_fmt.round_0"]
 theorem round_0 (mode : Mode) : round beta fexp mode 0 = 0 := by
   simp [round, FloatSpec.Core.Generic_fmt.roundR,
     FloatSpec.Core.Generic_fmt.scaled_mantissa, mode.rnd_zero]
