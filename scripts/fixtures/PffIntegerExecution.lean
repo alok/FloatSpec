@@ -95,9 +95,11 @@ theorem maxDiv_preserves_classical_definition (radix value : Int) (bound : Nat) 
 #print axioms option_literals
 #print axioms Zquotient
 #print axioms Pdiv
--- The source-shaped bodies equal the fast paths for every input.
-#print axioms Pdiv_eq_PdivFast
+#print axioms Pdiv_correct
+-- The transcribed Pdiv and Zquotient equal natural division and `Int.tdiv`.
+#print axioms Pdiv_eq_PdivNat
 #print axioms Zquotient_eq_tdiv
+-- Choice enters these only through erased proof fields; their decisions run.
 #print axioms ZdividesP
 #print axioms maxDiv
 #print axioms maxDiv_preserves_classical_definition

@@ -157,10 +157,13 @@ helpers are unnecessarily marked, which is a real execution-capability gap.
 The September 20 probe found `Zquotient (-7) 3` returned −2 in Rocq and Lean
 kernel reduction, while Lean's `#eval` rejected its marker. That specific gap
 is now fixed: `Zquotient`, `Pdiv`, `oZ` and `oZ1` execute with their source
-types. `Pdiv`, `Zquotient` and `ZdividesP` now transcribe the Coq bodies, with
-closed equations to natural division and `Int.tdiv`; `@[csimp]` keeps `Pdiv`'s
-compiled code on natural division. `maxDiv` now uses constructive
-divisibility, with a universal Lean proof that its answer is unchanged. Arbitrary-real specifications remain as
+types. `Pdiv`, `Zquotient` and `ZdividesP` now transcribe the Coq bodies, and
+compiled code runs those transcriptions; closed theorems equate the first two
+with natural division and `Int.tdiv`. `maxDiv` now decides divisibility with
+`ZdividesP` instead of `Classical.propDecidable`, with a universal Lean proof
+that its answer is unchanged. `#print axioms maxDiv` lists `Classical.choice`
+only through erased proofs; the decision executes. Arbitrary-real
+specifications remain as
 they were. Read
 [the explanation and concrete probes](COMPUTABLE_COMPARE_GUIDE.md#5-what-noncomputable-does-and-what-it-does-not-do).
 The original explanatory answer was read-only; these are subsequent tested fixes.

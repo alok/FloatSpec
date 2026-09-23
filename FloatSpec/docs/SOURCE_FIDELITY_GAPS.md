@@ -49,12 +49,15 @@ of the predecessor-encoded Positive, with the same option cases and
 Z0/Zpos/Zneg comparisons. Zquotient splits on signs and calls Pdiv. ZdividesP
 cases on m and tests Zquotient n m * m = n. Pdiv_correct is proved by
 induction on p, as in Coq. Closed theorems equate Pdiv with natural `/` and
-`%` and Zquotient with `Int.tdiv`. `@[csimp]` installs the natural-division
-path as Pdiv's compiled code. Kernel reduction and `#reduce` evaluate the
-transcriptions, including the bridge's 127-bit cases. oZ and oZ1 keep their
-source bodies. maxDiv uses ZdividesP rather than a classical decision, with a
-closed universal equality proof against its old definition. Paired fixtures
-and 2172 three-way cases test signed quotients,
+`%` and Zquotient with `Int.tdiv`; they are not runtime overrides. Compiled
+code, kernel reduction and `#reduce` all run the transcriptions, including the
+bridge's 127-bit quotients. ZdividesP and maxDiv now report propext,
+Classical.choice and Quot.sound rather than only propext, because ZdividesP's
+proof fields go through Pdiv_correct and core `Int.tdiv` lemmas. Those axioms
+sit in erased proofs; the decisions still execute and reduce in the kernel.
+oZ and oZ1 keep their source bodies. maxDiv uses ZdividesP rather than a
+classical decision, with a closed universal equality proof against its old
+definition. Paired fixtures and 2172 three-way cases test signed quotients,
 zero divisors, full optional records, smallest positives and bounded
 divisibility at negative/zero/one radices too. Five shared-program mutations
 are rejected independently. Other noncomputable declarations still need

@@ -15341,11 +15341,12 @@ private theorem nat_to_positive_option_oZ (x : Option Positive) :
     nat_to_positive_option (oZ x) = x := by
   rcases x with _ | ⟨n⟩ <;> rfl
 
-/-- Natural-number fast path for `Pdiv`: quotient and remainder by `/` and `%`.
-`Pdiv_eq_PdivFast` proves it equal to the source-shaped `Pdiv` and installs it
-as `Pdiv`'s compiled implementation. -/
-@[flocq_local "Proved-equal Nat division fast path installed for Pdiv by csimp"]
-def PdivFast (p q : Positive) : Option Positive × Option Positive :=
+/-- Natural-number characterization of `Pdiv`: quotient and remainder by `/`
+and `%`. `Pdiv_eq_PdivNat` proves the source-shaped `Pdiv` equal to it. No
+`csimp` substitutes it, so compiled code, the kernel and `#reduce` all run the
+transcribed `Pdiv`. -/
+@[flocq_local "Natural-division characterization proved equal to Pdiv; not a runtime override"]
+def PdivNat (p q : Positive) : Option Positive × Option Positive :=
   (nat_to_positive_option (nat_of_P p / nat_of_P q),
     nat_to_positive_option (nat_of_P p % nat_of_P q))
 
@@ -15402,9 +15403,11 @@ decreasing_by
   · exact Positive.view_xI_lt _hp
   · exact Positive.view_xO_lt _hp
 
-/-- Coq `Pdiv_correct` as a direct proposition, proved as Coq does: by
-induction on `p`, following each branch of `Pdiv`. -/
-theorem Pdiv_correct_direct (p q : Positive) :
+/-- Coq `Pdiv_correct`: `Pdiv` returns quotient and remainder, with the
+remainder below the divisor. Proved as Coq does, by induction on `p` through
+each branch of `Pdiv`. -/
+@[flocq_source "src/Pff/Pff.v" 5397 "Pdiv_correct"]
+theorem Pdiv_correct (p q : Positive) :
     nat_of_P p = oZ (Prod.fst (Pdiv p q)) * nat_of_P q + oZ (Prod.snd (Pdiv p q)) ∧
       oZ (Prod.snd (Pdiv p q)) < nat_of_P q := by
   fun_induction Pdiv p q <;>
@@ -15415,21 +15418,21 @@ theorem Pdiv_correct_direct (p q : Positive) :
       Nat.mul_one, Nat.zero_mul] at * <;>
     omega
 
-/-- The source-shaped `Pdiv` computes natural quotient and remainder, so its
-compiled code may use `PdivFast`. -/
-@[csimp] theorem Pdiv_eq_PdivFast : @Pdiv = @PdivFast := by
+/-- The source-shaped `Pdiv` computes natural quotient and remainder. -/
+theorem Pdiv_eq_PdivNat : @Pdiv = @PdivNat := by
   funext p q
-  obtain ⟨hdecomp, hlt⟩ := Pdiv_correct_direct p q
+  obtain ⟨hdecomp, hlt⟩ := Pdiv_correct p q
   obtain ⟨hquot, hrem⟩ := (Nat.div_mod_unique (a := nat_of_P p) (b := nat_of_P q)
     (d := oZ (Pdiv p q).1) (c := oZ (Pdiv p q).2) (Nat.succ_pos q.val)).mpr
     ⟨by rw [hdecomp, Nat.mul_comm, Nat.add_comm], hlt⟩
-  rw [PdivFast, hquot, hrem, nat_to_positive_option_oZ, nat_to_positive_option_oZ]
+  rw [PdivNat, hquot, hrem, nat_to_positive_option_oZ, nat_to_positive_option_oZ]
 
 -- Correctness of Pdiv (quotient-remainder form and remainder bound)
 noncomputable def Pdiv_correct_check (p q : Positive) : Unit :=
   ()
 
-theorem Pdiv_correct (p q : Positive) :
+/-- Legacy Hoare compatibility form of `Pdiv_correct`. -/
+theorem Pdiv_correct_spec (p q : Positive) :
     ⦃⌜True⌝⦄
     (pure (Pdiv_correct_check p q) : Id Unit)
     ⦃⇓_ => ⌜nat_of_P p = oZ (Prod.fst (Pdiv p q)) * nat_of_P q + oZ (Prod.snd (Pdiv p q)) ∧
@@ -15437,7 +15440,7 @@ theorem Pdiv_correct (p q : Positive) :
   intro _
   simp only [wp, PostCond.noThrow, pure, Pdiv_correct_check, Id.run,
     ULift.up_down]
-  exact Pdiv_correct_direct p q
+  exact Pdiv_correct p q
 
 -- Bridge Option Positive to Int (Coq oZ1)
 @[flocq_source "src/Pff/Pff.v" 5594 "oZ1"]
@@ -15481,7 +15484,7 @@ def Zquotient (n m : Int) : Int :=
 /-- `Zquotient` truncates toward zero: it is Lean's `Int.tdiv`. -/
 theorem Zquotient_eq_tdiv (n m : Int) : Zquotient n m = n.tdiv m := by
   rcases n with (_ | x) | x <;> rcases m with (_ | y) | y <;>
-    simp [Zquotient, Pdiv_eq_PdivFast, PdivFast, oZ1_nat_to_positive_option, nat_of_P,
+    simp [Zquotient, Pdiv_eq_PdivNat, PdivNat, oZ1_nat_to_positive_option, nat_of_P,
       Int.tdiv]
 
 -- Coq: `ZquotientProp` — decomposition m = (Zquotient m n) * n + r with bounds

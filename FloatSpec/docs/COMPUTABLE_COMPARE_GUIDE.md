@@ -136,7 +136,7 @@ There are three different cases in FloatSpec:
 | Case | Example | Interpretation |
 |---|---|---|
 | Arbitrary-real mathematics | logarithmic `mag`, real floor, real-valued rounding | Specification, not a native floating-point algorithm. |
-| Unnecessary marker on integer code | `Zquotient m n := m.tdiv n` | Genuine execution-capability gap; the body already computes. |
+| Unnecessary marker on integer code | `Zquotient m n := m.tdiv n` (September 20 body) | Genuine execution-capability gap; the body already computes. |
 | Classical decision inside an integer algorithm | some legacy divisibility code | An executable decision procedure must replace the classical one before native execution is available. |
 
 A read-only September 20 probe established:
@@ -151,16 +151,21 @@ Lean #print axioms Zquotient     --> no axioms
 
 No `Zquotient` annotation or body was changed for that original explanation.
 The follow-up implementation on September 21 removes its unnecessary marker:
-`#eval Zquotient (-7) 3` now runs and returns `-2`, with the same body and type.
+`#eval Zquotient (-7) 3` now runs and returns `-2`, keeping that body and type.
 `Pdiv`, `oZ` and `oZ1` are executable for the same reason. This closes those
 specific execution gaps; the real-valued specifications remain mathematical.
 A later change replaced the `Pdiv`, `Zquotient` and `ZdividesP` bodies with
-transcriptions of Coq's. Closed theorems equate them with the September 21
-bodies, and `@[csimp]` keeps `Pdiv`'s compiled code on natural division.
+transcriptions of Coq's, which compiled code, `#reduce` and the kernel all run.
+Closed theorems equate `Pdiv` and `Zquotient` with the September 21 bodies.
+`ZdividesP` returns a `Decidable`, which is a subsingleton, so its answers
+cannot differ from any other decision of the same proposition.
 
 `maxDiv` needed one more step. Its old definition used classical choice to
 decide integer divisibility despite an existing constructive `ZdividesP`.
-It now uses that checker. A closed Lean theorem proves equality with the old
+It now uses that checker. `#print axioms` lists `Classical.choice` for both,
+but only through `ZdividesP`'s erased proofs, which reuse core `Int.tdiv`
+lemmas; the decision executes and reduces in the kernel. A closed Lean
+theorem proves equality with the old
 definition for every radix, value and bound; paired execution probes also run
 the actual pinned Rocq function. This is not replacing a real-number spec with
 machine floats, nor pretending that finite tests prove source equivalence.
