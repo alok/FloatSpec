@@ -62,9 +62,6 @@ noncomputable instance valid_rnd_round_mode (m : mode) :
   unfold round_mode
   infer_instance
 
-/-- Compatibility name retained for the earlier facade API. -/
-noncomputable abbrev valid_round_mode := valid_rnd_round_mode
-
 end FloatSpec.IEEE754.BinarySingleNaN.Source
 
 /-! Source-qualified names for the remaining proof-carrying SingleNaN API.
@@ -209,73 +206,6 @@ def Babs {prec emax : Int} : binary_float prec emax → binary_float prec emax
 @[simp] theorem Babs_Bopp {prec emax : Int} (x : binary_float prec emax) :
     Babs (Bopp x) = Babs x := by
   cases x <;> rfl
-
-private def toCompat {prec emax : Int} (x : binary_float prec emax) :
-    Binary754 prec emax :=
-  { val := SF2FF (B2SF x), valid := by intro; trivial }
-
-private theorem is_finite_toCompat {prec emax : Int} (x : binary_float prec emax) :
-    is_finite_B (toCompat x) = is_finite x := by
-  cases x <;> rfl
-
-private theorem B2R_toCompat {prec emax : Int} (x : binary_float prec emax) :
-    _root_.B2R (toCompat x) = B2R x := by
-  unfold toCompat _root_.B2R
-  rw [FF2R_SF2FF]
-  cases x <;> rfl
-
-/-! The weak legacy `Binary754` implementation still uses integer comparison
-codes. Keep that compatibility endpoint explicit. The proof-carrying
-SingleNaN and Binary source APIs now execute the integer constructor algorithm
-and return `Ordering` directly. -/
-
-noncomputable def BcompareIntCompat {prec emax : Int}
-    (x y : binary_float prec emax) : Option Int :=
-  _root_.Bcompare (toCompat x) (toCompat y)
-
-def orderingOfCompareCode (c : Int) : Ordering :=
-  if c < 0 then Ordering.lt else if c = 0 then Ordering.eq else Ordering.gt
-
-@[simp] theorem orderingOfCompareCode_neg_one :
-    orderingOfCompareCode (-1) = Ordering.lt := by
-  simp [orderingOfCompareCode]
-
-@[simp] theorem orderingOfCompareCode_zero :
-    orderingOfCompareCode 0 = Ordering.eq := by
-  simp [orderingOfCompareCode]
-
-@[simp] theorem orderingOfCompareCode_one :
-    orderingOfCompareCode 1 = Ordering.gt := by
-  simp [orderingOfCompareCode]
-
-@[simp] theorem orderingOfCompareCode_neg (c : Int) :
-    orderingOfCompareCode (-c) = (orderingOfCompareCode c).swap := by
-  by_cases hcneg : c < 0
-  · have hnegpos : ¬ -c < 0 := by omega
-    have hcnonpos : c ≤ 0 := le_of_lt hcneg
-    have hcne : c ≠ 0 := by omega
-    have hnegne : -c ≠ 0 := by omega
-    simp [orderingOfCompareCode, hcneg, hnegpos, hcnonpos, hcne, hnegne]
-  · by_cases hczero : c = 0
-    · subst c
-      simp [orderingOfCompareCode]
-    · have hcpos : 0 < c := by omega
-      have hnegneg : -c < 0 := by omega
-      simp [orderingOfCompareCode, hcneg, hczero, hcpos, hnegneg]
-
-
-theorem orderingOfCompareCode_Rcompare (x y : ℝ) :
-    orderingOfCompareCode (FloatSpec.Core.Raux.Rcompare x y) =
-      RcompareOrdering x y := by
-  by_cases hxy : x < y
-  · simp [FloatSpec.Core.Raux.Rcompare, RcompareOrdering,
-      orderingOfCompareCode, hxy]
-  · by_cases heq : x = y
-    · simp [FloatSpec.Core.Raux.Rcompare, RcompareOrdering,
-        orderingOfCompareCode, hxy, heq]
-    · simp [FloatSpec.Core.Raux.Rcompare, RcompareOrdering,
-        orderingOfCompareCode, hxy, heq]
-
 
 theorem B2R_inj {prec emax : Int}
     (x y : binary_float prec emax)

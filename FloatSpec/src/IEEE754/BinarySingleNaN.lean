@@ -2574,108 +2574,11 @@ theorem Fplus_naive_correct (sx : Bool) (mx : Nat) (ex : Int)
 /-!
 Experimental SingleNaN arithmetic surface.
 
-The operations in this namespace remain a lightweight Lean model of the
-SingleNaN surface.  They now compute by rounding the real-valued operation into
-the existing binary representation instead of returning a fixed operand.
+The operations in this namespace run the integer `binary_round` /
+`binary_normalize` pipeline on the Nat-mantissa `B754` carrier. They are
+computable duplicates of the proof-carrying `BinarySingleNaN` operations and
+are not the source-facing API.
 -/
-
-noncomputable def B754_round_real (mode : RoundingMode) (x : ℝ) : B754 :=
-  let fexp := FloatSpec.Core.FLT.FLT_exp prec (3 - emax - prec)
-  let rounded := FloatSpec.Core.Generic_fmt.round_to_generic 2 fexp (rnd_of_mode mode) x
-  B2BSN (prec:=prec) (emax:=emax) (FF2B (prec:=prec) (emax:=emax) (real_to_FullFloat rounded fexp))
-
-noncomputable def B754_round_real_signed_zero (mode : RoundingMode) (s : Bool) (x : ℝ) : B754 :=
-  let fexp := FloatSpec.Core.FLT.FLT_exp prec (3 - emax - prec)
-  match mode with
-  | RoundingMode.RNE =>
-      let rounded := FloatSpec.Core.Generic_fmt.round_to_generic 2 fexp (rnd_of_mode mode) |x|
-      if rounded = 0 then
-        B754.B754_zero s
-      else
-        let exp := FloatSpec.Core.Generic_fmt.cexp 2 fexp rounded
-        let mantissa := FloatSpec.Core.Raux.Ztrunc (rounded * (2 : ℝ) ^ (-exp))
-        B754.B754_finite s mantissa.natAbs exp
-  | _ =>
-      let rounded := FloatSpec.Core.Generic_fmt.round_to_generic 2 fexp (rnd_of_mode mode) x
-      if rounded = 0 then
-        B754.B754_zero s
-      else
-        let exp := FloatSpec.Core.Generic_fmt.cexp 2 fexp rounded
-        let mantissa := FloatSpec.Core.Raux.Ztrunc (rounded * (2 : ℝ) ^ (-exp))
-        let sign := mantissa < 0
-        B754.B754_finite (decide sign) mantissa.natAbs exp
-
-private theorem BSN_is_nan_B754_round_real_signed_zero
-    (mode : RoundingMode) (s : Bool) (x : ℝ) :
-    BSN_is_nan (B754_round_real_signed_zero (prec:=prec) (emax:=emax) mode s x) = false := by
-  unfold B754_round_real_signed_zero
-  cases mode
-  · by_cases h :
-        FloatSpec.Core.Generic_fmt.round_to_generic 2
-          (FloatSpec.Core.FLT.FLT_exp prec (3 - emax - prec))
-          (rnd_of_mode RoundingMode.RNE) |x| = 0
-    · simp [h, BSN_is_nan]
-    · simp [h, BSN_is_nan]
-  · by_cases h :
-        FloatSpec.Core.Generic_fmt.round_to_generic 2
-          (FloatSpec.Core.FLT.FLT_exp prec (3 - emax - prec))
-          (rnd_of_mode RoundingMode.RNA) x = 0
-    · simp [h, BSN_is_nan]
-    · simp [h, BSN_is_nan]
-  · by_cases h :
-        FloatSpec.Core.Generic_fmt.round_to_generic 2
-          (FloatSpec.Core.FLT.FLT_exp prec (3 - emax - prec))
-          (rnd_of_mode RoundingMode.RTP) x = 0
-    · simp [h, BSN_is_nan]
-    · simp [h, BSN_is_nan]
-  · by_cases h :
-        FloatSpec.Core.Generic_fmt.round_to_generic 2
-          (FloatSpec.Core.FLT.FLT_exp prec (3 - emax - prec))
-          (rnd_of_mode RoundingMode.RTN) x = 0
-    · simp [h, BSN_is_nan]
-    · simp [h, BSN_is_nan]
-  · by_cases h :
-        FloatSpec.Core.Generic_fmt.round_to_generic 2
-          (FloatSpec.Core.FLT.FLT_exp prec (3 - emax - prec))
-          (rnd_of_mode RoundingMode.RTZ) x = 0
-    · simp [h, BSN_is_nan]
-    · simp [h, BSN_is_nan]
-
-private theorem abs_F2R_neg_mantissa_eq (m : Nat) (e : Int) :
-    |F2R ({ Fnum := -(m : Int), Fexp := e } : FloatSpec.Core.Defs.FlocqFloat 2)|
-      = |F2R ({ Fnum := (m : Int), Fexp := e } : FloatSpec.Core.Defs.FlocqFloat 2)| := by
-  unfold F2R FloatSpec.Core.Defs.F2R
-  simp [abs_mul]
-
-def B754_has_nan (x y : B754) : Bool :=
-  match x, y with
-  | B754.B754_nan, _ => true
-  | _, B754.B754_nan => true
-  | _, _ => false
-
--- Operations preserving single NaN
-noncomputable def B754_plus (mode : RoundingMode) (x y : B754) : B754 :=
-  if B754_has_nan x y then
-    B754.B754_nan
-  else
-    B754_round_real (prec:=prec) (emax:=emax) mode (B754_to_R x + B754_to_R y)
-
-noncomputable def B754_mult (mode : RoundingMode) (x y : B754) : B754 :=
-  if B754_has_nan x y then
-    B754.B754_nan
-  else
-    B754_round_real (prec:=prec) (emax:=emax) mode (B754_to_R x * B754_to_R y)
-
-noncomputable def B754_div (mode : RoundingMode) (x y : B754) : B754 :=
-  if B754_has_nan x y then
-    B754.B754_nan
-  else
-    B754_round_real (prec:=prec) (emax:=emax) mode (B754_to_R x / B754_to_R y)
-
-noncomputable def B754_sqrt (mode : RoundingMode) (x : B754) : B754 :=
-  match x with
-  | B754.B754_nan => B754.B754_nan
-  | _ => B754_round_real (prec:=prec) (emax:=emax) mode (Real.sqrt (B754_to_R x))
 
 -- Classification functions
 def B754_is_finite (x : B754) : Bool :=
@@ -2695,20 +2598,6 @@ def B754_sign (x : B754) : Bool :=
   | B754.B754_infinity s => s
   | B754.B754_finite s _ _ => s
   | B754.B754_nan => false
-
-/-- Predicate capturing when a B754 float is in generic format.
-    For finite floats, this requires the canonical exponent to be at most the float's exponent.
-    This is the key constraint that Coq's `bounded mx ex = true` proof provides.
--/
-noncomputable def B754_in_generic_format (x : B754) : Prop :=
-  match x with
-  | B754.B754_zero _ => True
-  | B754.B754_infinity _ => True
-  | B754.B754_nan => True
-  | B754.B754_finite s m e =>
-    let fnum : Int := if s then -(m : Int) else (m : Int)
-    let f : FloatSpec.Core.Defs.FlocqFloat 2 := FloatSpec.Core.Defs.FlocqFloat.mk fnum e
-    fnum ≠ 0 → FloatSpec.Core.Generic_fmt.cexp 2 (FLT_exp (3 - emax - prec) prec) (F2R f) ≤ e
 
 -- Exponent scaling (Coq: Bldexp) at the SingleNaN level.
 noncomputable def Bldexp (mode : RoundingMode) (x : B754) (e : Int) : B754 :=
@@ -3720,26 +3609,6 @@ theorem is_nan_Bpred (x : B754) :
         is_nan_Bsucc (prec:=prec) (emax:=emax) (Bopp_bsn x)
     _ = BSN_is_nan x := by
         cases x <;> rfl
-
--- Legacy compatibility endpoint: assumes the result equation instead of
--- deriving it; the adapter returns the input float unchanged. The
--- source-shaped theorem is `BinarySingleNaN.Bsqrt_correct_aux`.
-theorem Bsqrt_correct_aux_from_assumed_rounding {prec emax : Int}
-  [Prec_gt_0 prec] [Prec_lt_emax prec emax]
-  (_mode : RoundingMode) (rnd : ℝ → Int) (hrnd0 : rnd 0 = 0)
-  (mx : Nat) (ex : Int)
-  (Hx : valid_binary_SF (prec:=prec) (emax:=emax)
-    (StandardFloat.S754_finite false mx ex) = true)
-  (hsqrt : SF2R 2 (StandardFloat.S754_finite false mx ex) =
-           FloatSpec.Calc.Round.round 2 (FLT_exp (3 - emax - prec) prec) ⟨rnd, hrnd0⟩
-           (Real.sqrt (SF2R 2 (StandardFloat.S754_finite false mx ex)))) :
-    let z := StandardFloat.S754_finite false mx ex
-    let x := SF2R 2 (StandardFloat.S754_finite false mx ex)
-    valid_binary_SF (prec:=prec) (emax:=emax) z = true ∧
-    SF2R 2 z = FloatSpec.Calc.Round.round 2 (FLT_exp (3 - emax - prec) prec) ⟨rnd, hrnd0⟩
-      (Real.sqrt x) ∧
-    is_finite_SF z = true ∧ sign_SF z = false :=
-  ⟨Hx, hsqrt, rfl, rfl⟩
 
 end ExperimentalSingleNaNArithmetic
 

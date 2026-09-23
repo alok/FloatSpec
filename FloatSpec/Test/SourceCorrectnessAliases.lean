@@ -1,12 +1,5 @@
-import FloatSpec.src.IEEE754.SourceCorrectnessAliases
 import FloatSpec.src.IEEE754.BinarySingleNaNSourceFacade
 import FloatSpec.src.Core.Round_pred
-
-/-! Regression checks: compatibility correctness names must be exact aliases of
-the translated Flocq contracts, never independently inhabitable `Unit` values. -/
-
-example : @binary_add_correct = @Bplus_correct := rfl
-example : @binary_mul_correct = @Bmult_correct := rfl
 
 /-! Coq exports `Rnd_NG_pt_unique_prop` over a Type-valued tie payload. -/
 
@@ -14,9 +7,10 @@ example : Prop :=
   FloatSpec.Core.Round_pred.Rnd_NG_pt_unique_prop
     (fun _ : ℝ => True) (fun _ _ : ℝ => Nat)
 
-/-! The remaining source contracts are exported under their exact Flocq names;
-the older local `binary_*_correct` declarations remain compatibility results. -/
+/-! The source arithmetic contracts are exported under their exact Flocq names. -/
 
+#check @Bplus_correct
+#check @Bmult_correct
 #check @Bminus_correct
 #check @Bfma_correct
 #check @Bdiv_correct
@@ -229,12 +223,7 @@ example {prec emax : Int} :
       sign_SF StandardFloat.S754_nan :=
   @BinarySingleNaN.Bsign_SF2B prec emax StandardFloat.S754_nan rfl
 
-/-! Coq's `comparison` is represented by `Ordering`; NaN remains unordered,
-and the old integer implementation is connected by checked -1/0/1 cases. -/
-
-example : BinarySingleNaN.orderingOfCompareCode (-1) = Ordering.lt := by simp
-example : BinarySingleNaN.orderingOfCompareCode 0 = Ordering.eq := by simp
-example : BinarySingleNaN.orderingOfCompareCode 1 = Ordering.gt := by simp
+/-! Coq's `comparison` is represented by `Ordering`; NaN remains unordered. -/
 
 example :
     @BinarySingleNaN.Bcompare 1 1 BinarySingleNaNFloat.B754_nan

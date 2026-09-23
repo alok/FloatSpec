@@ -738,7 +738,7 @@
    "coq_name": "Rcompare",
    "lean_name": "BinarySingleNaN.RcompareOrdering",
    "verdict": "match",
-   "explanation": "Type R -> R -> comparison vs ℝ → ℝ → Ordering, where Ordering.lt/eq/gt correspond to Lt/Eq/Gt. The bodies agree: Coq matches `total_order_T x y` (x<y gives Lt, x=y gives Eq, y<x gives Gt), and Lean is `if x < y then .lt else if x = y then .eq else .gt`. This is the anchored definition. The Raux.v theorems above are stated over the separate Int-coded `FloatSpec.Core.Raux.Rcompare`, which `orderingOfCompareCode_Rcompare` links to this function."
+   "explanation": "Type R -> R -> comparison vs ℝ → ℝ → Ordering, where Ordering.lt/eq/gt correspond to Lt/Eq/Gt. The bodies agree: Coq matches `total_order_T x y` (x<y gives Lt, x=y gives Eq, y<x gives Gt), and Lean is `if x < y then .lt else if x = y then .eq else .gt`. This is the anchored definition. The Raux.v theorems above are stated over the separate Int-coded `FloatSpec.Core.Raux.Rcompare`, which returns -1, 0 or 1 exactly when this function returns lt, eq or gt (both branch on `x < y`, then `x = y`)."
   },
   {
    "coq_path": "src/Core/Raux.v",
@@ -766,14 +766,14 @@
    "coq_name": "Rcompare_Eq",
    "lean_name": "FloatSpec.Core.Raux.Rcompare_Eq",
    "verdict": "match",
-   "explanation": "Same hypothesis (x = y). The conclusion `Rcompare x y = 0` is Coq's `Rcompare x y = Eq` in the documented Int encoding (Lt=-1, Eq=0, Gt=1). It is equivalent via orderingOfCompareCode_Rcompare, and nothing is weakened or strengthened."
+   "explanation": "Same hypothesis (x = y). The conclusion `Rcompare x y = 0` is Coq's `Rcompare x y = Eq` in the documented Int encoding (Lt=-1, Eq=0, Gt=1). Decoding -1, 0 and 1 as Lt, Eq and Gt is injective on the three values Rcompare takes, so the statements are equivalent, and nothing is weakened or strengthened."
   },
   {
    "coq_path": "src/Core/Raux.v",
    "coq_name": "Rcompare_Gt",
    "lean_name": "FloatSpec.Core.Raux.Rcompare_Gt",
    "verdict": "match",
-   "explanation": "Same hypothesis (y < x). The conclusion `Rcompare x y = 1` is Coq's `= Gt` in the Int encoding, equivalent via orderingOfCompareCode_Rcompare. The argument order is x, y as in Coq."
+   "explanation": "Same hypothesis (y < x). The conclusion `Rcompare x y = 1` is Coq's `= Gt` in the Int encoding, equivalent under the injective decoding of -1, 0 and 1 as Lt, Eq and Gt. The argument order is x, y as in Coq."
   },
   {
    "coq_path": "src/Core/Raux.v",
@@ -787,7 +787,7 @@
    "coq_name": "Rcompare_Lt",
    "lean_name": "FloatSpec.Core.Raux.Rcompare_Lt",
    "verdict": "match",
-   "explanation": "Same hypothesis (x < y). The conclusion uses the Int-coded Lean `Raux.Rcompare` (`if x<y then -1 else if x=y then 0 else 1`, Raux.lean:683), not Coq's `comparison`: `= -1` stands for `= Lt`. The docstring documents this legacy encoding. It is not the anchored `RcompareOrdering`, but `BinarySingleNaN.orderingOfCompareCode_Rcompare` (compiled, no sorry) proves `orderingOfCompareCode (Rcompare x y) = RcompareOrdering x y`, so the two propositions are equivalent. The meaning is unchanged; only the encoding differs."
+   "explanation": "Same hypothesis (x < y). The conclusion uses the Int-coded Lean `Raux.Rcompare` (`if x<y then -1 else if x=y then 0 else 1`, Raux.lean:683), not Coq's `comparison`: `= -1` stands for `= Lt`. The docstring documents this legacy encoding. It is not the anchored `RcompareOrdering`, but both functions branch on `x < y` and then `x = y`, returning -1/0/1 and lt/eq/gt respectively, so under the injective decoding of -1, 0 and 1 as Lt, Eq and Gt the two propositions are equivalent. The meaning is unchanged; only the encoding differs."
   },
   {
    "coq_path": "src/Core/Raux.v",

@@ -783,8 +783,8 @@ also checks the three Boolean APIs against 600,000 native Float/Float32
 Boolean observations using the existing seed `388312`.
 The public `Binary.Bcompare` and `BinarySingleNaN.Bcompare` now return
 `Option Ordering` and execute integer comparisons, with closed value and
-reversal proofs. The legacy raw-carrier integer-coded adapter is named
-`BcompareIntCompat` rather than presented as the source interface.
+reversal proofs. They are the only `Bcompare` ports: the integer-coded
+comparison on the permissive `Binary754` carrier, and its adapter, were deleted.
 
 The twenty-third family, `small_ieee`, executes full-payload Lean arithmetic
 in precisions 2, 3, 4, and 8 with two exponent ranges each, against pinned

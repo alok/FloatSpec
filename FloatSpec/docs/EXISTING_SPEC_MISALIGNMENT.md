@@ -15,29 +15,23 @@ notation. Source-facing finite constructors and `canonical_bounded` use
 `specFloat_bounded`; Nat callers use the explicitly named
 `canonical_bounded_nat` bridge.
 
-## Local `binary_*` helpers
+## The deleted real-rounding `Binary754` layer
 
-`binary_add`, `binary_mul`, `binary_sub`, `binary_fma`, `binary_div`, and
-`binary_sqrt` predate the source-shaped NaN-handler operations. The Flocq
-operations are `Bplus`, `Bmult`, `Bminus`, `Bfma`, `Bdiv`, and `Bsqrt`.
-
-`binary_add_correct` and `binary_mul_correct` are exact aliases of the
-translated `Bplus_correct` and `Bmult_correct` contracts in
-`IEEE754/SourceCorrectnessAliases.lean`. The translated subtraction, fused
-multiply-add, division, and square-root contracts are exported directly as
+The permissive `Binary754` carrier used to carry its own arithmetic: `Bplus`,
+`Bminus`, `Bmult`, `Bfma`, `Bdiv`, `Bsqrt`, `Bnearbyint`, `Bfrexp`, `Bsucc`,
+`Bpred`, `Btrunc`, `Bulp`, `Bcompare` and the `binary_*` helpers, together with
+a `BinarySingleNaNBridge` namespace. These rounded the exact real result in ℝ
+and rebuilt a float from it, so they never overflowed, and all of them were
+noncomputable. They have been deleted, together with the `binary_add_correct`
+and `binary_mul_correct` aliases. Flocq's names now refer only to the
+computable, proof-carrying ports in namespaces `Binary` and `BinarySingleNaN`,
+whose contracts are exported as `Bplus_correct`, `Bmult_correct`,
 `Bminus_correct`, `Bfma_correct`, `Bdiv_correct`, and `Bsqrt_correct`.
-
-The current `binary_sub_correct`, `binary_fma_correct`, `binary_div_correct`,
-and `binary_sqrt_correct` theorems describe the older local compatibility
-operations. They are intentionally not aliases of the source-shaped `B*`
-theorems: the Coq declarations quantify over source operations and NaN
-handlers, while these compatibility results certify different local helpers.
 
 The shared overflow helper is mode-sensitive as in Coq: nearest modes choose
 infinity, round-toward-zero chooses the largest finite value, and directed
-modes choose according to the sign. This fixes the previously observable RTZ
-and directed-rounding mismatch. The four source-shaped contracts additionally
-connect that helper to the translated source operations.
+modes choose according to the sign. The source-shaped contracts connect that
+helper to the translated source operations.
 
 ## Audit interpretation
 
