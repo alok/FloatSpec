@@ -25,7 +25,7 @@ noncomputable abbrev F2R {beta : Int} [ValidRadix beta] (f : FlocqFloat beta) : 
   (FloatSpec.Core.Defs.F2R f)
 
 /-- Bridge: {name (full := FloatSpec.Core.Generic_fmt.generic_format)}`generic_format` as a plain Prop (unwraps Id) -/
-noncomputable abbrev generic_format (beta : Int) [ValidRadix beta] (fexp : Int → Int) (x : ℝ) : Prop :=
+abbrev generic_format (beta : Int) [ValidRadix beta] (fexp : Int → Int) (x : ℝ) : Prop :=
   FloatSpec.Core.Generic_fmt.generic_format beta fexp x
 
 /-- Bridge: magnitude function in root namespace -/

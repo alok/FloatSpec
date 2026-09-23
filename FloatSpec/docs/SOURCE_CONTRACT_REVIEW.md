@@ -121,12 +121,16 @@ conclusions. The direct Lean statements already matched this source slice;
 no mathematical theorem was weakened or numerical operation changed.
 Eighteen new pinned anchors make the correspondence navigable.
 
-The representation adaptations are explicit. Source `Z.even` corresponds to
-decidable Lean `Even`. Source `radix` stores an integer with proof that
-`Z.leb 2 value = true`; Lean `Radix` stores the same integer domain with proof
-`2 ≤ value`. The fixtures check both directions of this proof presentation,
-and the manifest fingerprints the constructor and both field types as well
-as the record. Lean uses `.val` explicitly where Rocq uses a coercion.
+The representation adaptations are explicit. Source `Z.even` is ported as
+`Zaux.Z.even : Int → Bool`, the decision of `2 ∣ z`, so `Zeven_ex` and
+`Zeven_Zpower_odd` state parity with the source's Boolean test. (They used
+decidable Lean `Even` until 2026-09-23; both were re-reviewed for the
+restatement, and their entries now fingerprint `Z.even` too.) Source `radix`
+stores an integer with proof that `Z.leb 2 value = true`; Lean `Radix` stores
+the same integer domain with proof `2 ≤ value`. The fixtures check both
+directions of this proof presentation, and the manifest fingerprints the
+constructor and both field types as well as the record. Lean uses `.val`
+explicitly where Rocq uses a coercion.
 
 Crucially, `Zpower` is **integer** power, not real reciprocal power: negative
 exponents return zero. Hence `Zpower 2 (-2) = Zpower 2 (-1) = 0`, and the strict

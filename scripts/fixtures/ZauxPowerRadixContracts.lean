@@ -6,15 +6,14 @@ Integer powers with negative exponent are zero, not real reciprocals. -/
 namespace ZauxPowerRadixContracts
 open FloatSpec.Core.Zaux
 
-example (x : Int) : ∃ p : Int, x = 2 * p + if decide (Even x) then 0 else 1 := by
-  simpa using Zeven_ex x
+example : ∀ x : Int, ∃ p : Int, x = 2 * p + if Z.even x then 0 else 1 := Zeven_ex
 example : ∀ n k₁ k₂ : Int, 0 ≤ k₁ → 0 ≤ k₂ →
     Zpower n (k₁ + k₂) = Zpower n k₁ * Zpower n k₂ := Zpower_plus
 example : ∀ b e : Int, 0 ≤ e → Zpower b e = b ^ e.natAbs := Zpower_Zpower_nat
 example : ∀ (b : Int) (e : Nat), b ^ (e + 1) = b * b ^ e := Zpower_nat_S
 example : ∀ (b : Int) (p : Positive), 0 < b → 0 < Zpower_pos b p := Zpower_pos_gt_0
-example : ∀ b e : Int, 0 ≤ e → decide (Even b) = false →
-    decide (Even (Zpower b e)) = false := Zeven_Zpower_odd
+example : ∀ b e : Int, 0 ≤ e → Z.even b = false →
+    Z.even (Zpower b e) = false := Zeven_Zpower_odd
 
 -- The source Boolean-proof record and Lean proposition-proof record have the
 -- same admissible values. Neither permits a radix less than two.

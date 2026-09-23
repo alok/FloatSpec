@@ -33,7 +33,7 @@ value, preserving NaN payloads and signed zeros.
 
 open FloatSpec.Core.Defs
 
-noncomputable section
+section
 
 namespace Binary64
 
@@ -46,7 +46,7 @@ def ofBits (w : UInt64) : Binary754 53 1023 :=
 
 /-- Decode a `UInt64` bit pattern into `ℝ` via the IEEE-754 binary64 format.
 Non-finite bit patterns (infinities, NaNs) map to `0`. -/
-def toReal (w : UInt64) : ℝ := B2R (ofBits w)
+noncomputable def toReal (w : UInt64) : ℝ := B2R (ofBits w)
 
 /-! ### Constants -/
 

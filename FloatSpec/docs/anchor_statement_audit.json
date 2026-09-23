@@ -1,8 +1,13 @@
 {
  "flocq_commit": "7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f",
  "rocq": "9.1",
- "floatspec_base": "6644539f",
- "anchors": 457,
+ "full_audit_base": "6644539f",
+ "updated_on": "b8e3b447",
+ "anchors": 542,
+ "superseded_rows": [
+  "FloatSpec.Calc.Round.round_0",
+  "SF2B'"
+ ],
  "verdicts": [
   {
    "coq_path": "src/Calc/Bracket.v",
@@ -738,7 +743,7 @@
    "coq_name": "Rcompare",
    "lean_name": "BinarySingleNaN.RcompareOrdering",
    "verdict": "match",
-   "explanation": "Type R -> R -> comparison vs ℝ → ℝ → Ordering, where Ordering.lt/eq/gt correspond to Lt/Eq/Gt. The bodies agree: Coq matches `total_order_T x y` (x<y gives Lt, x=y gives Eq, y<x gives Gt), and Lean is `if x < y then .lt else if x = y then .eq else .gt`. This is the anchored definition. The Raux.v theorems above are stated over the separate Int-coded `FloatSpec.Core.Raux.Rcompare`, which `orderingOfCompareCode_Rcompare` links to this function."
+   "explanation": "Type R -> R -> comparison vs ℝ → ℝ → Ordering, where Ordering.lt/eq/gt correspond to Lt/Eq/Gt. The bodies agree: Coq matches `total_order_T x y` (x<y gives Lt, x=y gives Eq, y<x gives Gt), and Lean is `if x < y then .lt else if x = y then .eq else .gt`. This is the anchored definition. The Raux.v theorems above are stated over the separate Int-coded `FloatSpec.Core.Raux.Rcompare`, which returns -1, 0 or 1 exactly when this function returns lt, eq or gt (both branch on `x < y`, then `x = y`)."
   },
   {
    "coq_path": "src/Core/Raux.v",
@@ -766,14 +771,14 @@
    "coq_name": "Rcompare_Eq",
    "lean_name": "FloatSpec.Core.Raux.Rcompare_Eq",
    "verdict": "match",
-   "explanation": "Same hypothesis (x = y). The conclusion `Rcompare x y = 0` is Coq's `Rcompare x y = Eq` in the documented Int encoding (Lt=-1, Eq=0, Gt=1). It is equivalent via orderingOfCompareCode_Rcompare, and nothing is weakened or strengthened."
+   "explanation": "Same hypothesis (x = y). The conclusion `Rcompare x y = 0` is Coq's `Rcompare x y = Eq` in the documented Int encoding (Lt=-1, Eq=0, Gt=1). Decoding -1, 0 and 1 as Lt, Eq and Gt is injective on the three values Rcompare takes, so the statements are equivalent, and nothing is weakened or strengthened."
   },
   {
    "coq_path": "src/Core/Raux.v",
    "coq_name": "Rcompare_Gt",
    "lean_name": "FloatSpec.Core.Raux.Rcompare_Gt",
    "verdict": "match",
-   "explanation": "Same hypothesis (y < x). The conclusion `Rcompare x y = 1` is Coq's `= Gt` in the Int encoding, equivalent via orderingOfCompareCode_Rcompare. The argument order is x, y as in Coq."
+   "explanation": "Same hypothesis (y < x). The conclusion `Rcompare x y = 1` is Coq's `= Gt` in the Int encoding, equivalent under the injective decoding of -1, 0 and 1 as Lt, Eq and Gt. The argument order is x, y as in Coq."
   },
   {
    "coq_path": "src/Core/Raux.v",
@@ -787,7 +792,7 @@
    "coq_name": "Rcompare_Lt",
    "lean_name": "FloatSpec.Core.Raux.Rcompare_Lt",
    "verdict": "match",
-   "explanation": "Same hypothesis (x < y). The conclusion uses the Int-coded Lean `Raux.Rcompare` (`if x<y then -1 else if x=y then 0 else 1`, Raux.lean:683), not Coq's `comparison`: `= -1` stands for `= Lt`. The docstring documents this legacy encoding. It is not the anchored `RcompareOrdering`, but `BinarySingleNaN.orderingOfCompareCode_Rcompare` (compiled, no sorry) proves `orderingOfCompareCode (Rcompare x y) = RcompareOrdering x y`, so the two propositions are equivalent. The meaning is unchanged; only the encoding differs."
+   "explanation": "Same hypothesis (x < y). The conclusion uses the Int-coded Lean `Raux.Rcompare` (`if x<y then -1 else if x=y then 0 else 1`, Raux.lean:683), not Coq's `comparison`: `= -1` stands for `= Lt`. The docstring documents this legacy encoding. It is not the anchored `RcompareOrdering`, but both functions branch on `x < y` and then `x = y`, returning -1/0/1 and lt/eq/gt respectively, so under the injective decoding of -1, 0 and 1 as Lt, Eq and Gt the two propositions are equivalent. The meaning is unchanged; only the encoding differs."
   },
   {
    "coq_path": "src/Core/Raux.v",
@@ -1697,14 +1702,14 @@
    "coq_name": "Zeven_Zpower_odd",
    "lean_name": "FloatSpec.Core.Zaux.Zeven_Zpower_odd",
    "verdict": "match",
-   "explanation": "`decide (Even b) = false` is equivalent to Coq's `Z.even b = false`. The hypotheses (0<=e and an odd base) and the conclusion (Z.even (b^e) = false) are the same, and Lean's Zpower agrees with Coq's Z.pow."
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (b e : ℤ), 0 ≤ e → Z.even b = false → Z.even (Zpower b e) = false. Rocq Check: forall b e : BinNums.Z, BinInt.Z.le BinNums.Z0 e -> BinInt.Z.even b = false -> BinInt.Z.even (BinInt.Z.pow b e) = false. Restated on the port of Rocq's Z.even (Zaux.Z.even), replacing the earlier `decide (Even b) = false`. Lean's Zpower agrees with Rocq's Z.pow (zero on negative exponents). Same hypotheses and conclusion."
   },
   {
    "coq_path": "src/Core/Zaux.v",
    "coq_name": "Zeven_ex",
    "lean_name": "FloatSpec.Core.Zaux.Zeven_ex",
    "verdict": "match",
-   "explanation": "Both state exists p, x = 2*p + (if even x then 0 else 1). Lean's decidable `Even x` plays the role of Coq's `Z.even x`, and both are true exactly for even integers."
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (x : ℤ), ∃ p, x = 2 * p + if Z.even x = true then 0 else 1. Rocq Check: forall x : BinNums.Z, exists p : BinNums.Z, x = BinInt.Z.add (BinInt.Z.mul (BinNums.Zpos (BinNums.xO BinNums.xH)) p) (if BinInt.Z.even x then BinNums.Z0 else BinNums.Zpos BinNums.xH). Restated on the port of Rocq's Z.even (Zaux.Z.even z := decide (2 ∣ z)), replacing the earlier decidable Mathlib Even; `if Z.even x then` is Rocq's `if Z.even x then` on a bool. Same proposition."
   },
   {
    "coq_path": "src/Core/Zaux.v",
@@ -2010,9 +2015,9 @@
   {
    "coq_path": "src/IEEE754/Binary.v",
    "coq_name": "valid_binary",
-   "lean_name": "valid_binary",
+   "lean_name": "Binary.valid_binary",
    "verdict": "match",
-   "explanation": "Same signature shape (prec emax, float, bool). The only difference is the carrier: Lean uses the Nat-payload FullFloat, Coq uses the positive-payload full_float. The body is the Coq body plus explicit `0 < m` and `0 < payload` guards. Finite values get specFloat_bounded (= SpecFloat.bounded, i.e. canonical_mantissa && e <= emax-prec, with fexp = max(e-prec, 3-emax-prec)). NaN gets Zlt_bool (digits2_pos pl) prec (= nan_pl). Zero and infinity give true. I checked in Lean that `valid_binary x.toFullFloat = valid_full_float_binary x` for every exact `full_float` x (`cases x <;> simp` closes it), so the two agree on the Coq image. Zero-mantissa junk values are rejected."
+   "explanation": "Checked with Lean #check/#print (pp.proofs false) and Rocq About/Print (batch 1D review). The anchor moved here from the root valid_binary on the Nat-payload FullFloat, which used neither full_float nor nan_pl. Coq: Z -> Z -> full_float -> bool (Arguments valid_binary (prec emax) x). Lean: {prec emax} (x : full_float) : Bool, an abbrev for valid_full_float_binary. Bodies agree constructor by constructor: F754_finite _ m e gives specFloat_bounded (positiveToNat m) e, which is SpecFloat.bounded prec emax m e; F754_nan _ pl gives nan_pl prec pl, the anchored nan_pl; zero and infinity give true. Carriers are the anchored full_float and Int for Z. FloatSpec/Test/SourceSurface.lean proves that the root valid_binary agrees with it on full_float.toFullFloat of every full_float. Binary.v gives prec and emax no Arguments line, so they are explicit there (Arguments valid_binary (prec emax) ...), while Lean takes {prec emax}; this is the E6(b) binder difference,."
   },
   {
    "coq_path": "src/IEEE754/Binary.v",
@@ -3204,6 +3209,615 @@
    "lean_name": "Flocq_version.Flocq_version",
    "verdict": "match",
    "explanation": "Both are unary-natural constants. The Coq type is N (binary naturals) and the Lean type is ℕ, which is the same carrier. The bodies also agree. Coq's compiled Print gives `Flocq_version = 40202%N`: its vm_compute'd parser reads \"4.2.2\" with each dotted component in base 100, so 4*10000 + 2*100 + 2 = 40202. The Lean definition is literally `def Flocq_version : Nat := 40202`, and an `example ... := rfl` checks that value. The declaration has no axioms and no sorry. The flocq_source anchor is (src/Version.v, 24), which matches Coq's declaration line 24."
+  },
+  {
+   "coq_path": "src/IEEE754/Binary.v",
+   "coq_name": "full_float",
+   "lean_name": "full_float",
+   "verdict": "match",
+   "explanation": "Checked with Lean #print and Rocq Print (batch 1D). Same four constructors in the same order, F754_zero (s : bool), F754_infinity (s : bool), F754_nan (s : bool) (m : positive), F754_finite (s : bool) (m : positive) (e : Z), with positive carried as FloatSpec.Core.Zaux.Positive and Z as Int. Coq's sort is Set, Lean's is Type."
+  },
+  {
+   "coq_path": "src/IEEE754/Binary.v",
+   "coq_name": "binary_float",
+   "lean_name": "binary_float",
+   "verdict": "match",
+   "explanation": "Checked with Lean #print and Rocq Print (batch 1D). Same two parameters and four constructors in the same order. B754_nan carries a positive payload with `nan_pl prec pl = true`, as in Coq. B754_finite carries `specFloat_bounded (positiveToNat m) e = true` for Coq's `SpecFloat.bounded prec emax m e = true`; specFloat_bounded is canonical_mantissa && e <= emax - prec, where canonical_mantissa compares e with FLT_exp (3 - emax - prec) prec (Zdigits 2 m + e), which is SpecFloat.fexp prec emax (Zpos (digits2_pos m) + e) for positive m. prec and emax are implicit in the Lean constructors because Lean makes inductive parameters implicit in constructors; Binary.v leaves them explicit."
+  },
+  {
+   "coq_path": "src/IEEE754/Binary.v",
+   "coq_name": "nan_pl",
+   "lean_name": "nan_pl",
+   "verdict": "match",
+   "explanation": "Checked with Lean #check/#print and Rocq Check/Print (batch 1D). Both have type Z -> positive -> bool with prec first. Coq's body is Z.ltb (Zpos (digits2_pos pl)) prec; Lean's is Zlt_bool (digits2_pos (positiveToNat pl)) prec, the same digit count of the positive payload compared strictly with prec."
+  },
+  {
+   "coq_path": "src/IEEE754/BinarySingleNaN.v",
+   "coq_name": "mode",
+   "lean_name": "FloatSpec.IEEE754.BinarySingleNaN.Source.mode",
+   "verdict": "match",
+   "explanation": "Checked with Lean #print and Rocq Print (batch 1D). Same five nullary constructors in the same order: mode_NE, mode_ZR, mode_DN, mode_UP, mode_NA."
+  },
+  {
+   "coq_path": "src/IEEE754/BinarySingleNaN.v",
+   "coq_name": "round_mode",
+   "lean_name": "FloatSpec.IEEE754.BinarySingleNaN.Source.round_mode",
+   "verdict": "match",
+   "explanation": "Checked with Lean #check/#print and Rocq Check/Print (batch 1D). Both have type mode -> R -> Z. Lean's body is rnd_of_mode m.toRoundingMode, which gives, constructor by constructor, Znearest (fun t => !decide (2 | t)) for mode_NE (Coq: ZnearestE, Znearest (fun x => negb (Z.even x))), Ztrunc for mode_ZR, Zfloor for mode_DN, Zceil for mode_UP, and Znearest ZnearestA with ZnearestA t = decide (0 <= t) for mode_NA (Coq: Znearest (Z.leb 0))."
+  },
+  {
+   "coq_path": "src/IEEE754/Binary.v",
+   "coq_name": "Bmult",
+   "lean_name": "Binary.Bmult",
+   "verdict": "match",
+   "explanation": "Checked with Lean #check/#print (pp.proofs false) and Rocq About/Print (batch 1D review). Coq: forall prec emax, Prec_gt_0 prec -> Prec_lt_emax prec emax -> (binary_float -> binary_float -> {x | is_nan x = true}) -> mode -> binary_float -> binary_float -> binary_float, with body BSN2B (mult_nan x y) (BinarySingleNaN.Bmult m (B2BSN x) (B2BSN y)). Lean: {prec emax} [Prec_gt_0 prec] [Prec_lt_emax prec emax] (Binary.BmultNaNHandler, an abbrev for the same function type into {nan // is_nan nan = true}) (mode : RoundingMode) x y : binary_float prec emax, in the same argument order. RoundingMode's five constructors correspond one to one with Coq's mode. The Lean body is a direct case split rather than the BSN2B composition. FloatSpec/Test/SourceSurface.lean proves, for every mode and every input including all NaN, zero and infinity cases, that the Lean definition equals BSN2B (mult_nan ...) (BinarySingleNaN.Bmult m (B2BSN x) ...), which is Coq's body. Binary.v gives prec and emax no Arguments line, so they are explicit there (Arguments Binary.X (prec emax) ...), while Lean takes {prec emax}; this is the E6(b) binder difference, and Coq's explicit Prec_gt_0/Prec_lt_emax arguments are Lean instance arguments (E6(a))."
+  },
+  {
+   "coq_path": "src/IEEE754/Binary.v",
+   "coq_name": "Bplus",
+   "lean_name": "Binary.Bplus",
+   "verdict": "match",
+   "explanation": "Checked with Lean #check/#print (pp.proofs false) and Rocq About/Print (batch 1D review). Coq: forall prec emax, Prec_gt_0 prec -> Prec_lt_emax prec emax -> (binary_float -> binary_float -> {x | is_nan x = true}) -> mode -> binary_float -> binary_float -> binary_float, with body BSN2B (plus_nan x y) (BinarySingleNaN.Bplus m (B2BSN x) (B2BSN y)). Lean: {prec emax} [Prec_gt_0 prec] [Prec_lt_emax prec emax] (Binary.BplusNaNHandler, an abbrev for the same function type into {nan // is_nan nan = true}) (mode : RoundingMode) x y : binary_float prec emax, in the same argument order. RoundingMode's five constructors correspond one to one with Coq's mode. The Lean body is a direct case split rather than the BSN2B composition. FloatSpec/Test/SourceSurface.lean proves, for every mode and every input including all NaN, zero and infinity cases, that the Lean definition equals BSN2B (plus_nan ...) (BinarySingleNaN.Bplus m (B2BSN x) ...), which is Coq's body. Binary.v gives prec and emax no Arguments line, so they are explicit there (Arguments Binary.X (prec emax) ...), while Lean takes {prec emax}; this is the E6(b) binder difference, and Coq's explicit Prec_gt_0/Prec_lt_emax arguments are Lean instance arguments (E6(a))."
+  },
+  {
+   "coq_path": "src/IEEE754/Binary.v",
+   "coq_name": "Bminus",
+   "lean_name": "Binary.Bminus",
+   "verdict": "match",
+   "explanation": "Checked with Lean #check/#print (pp.proofs false) and Rocq About/Print (batch 1D review). Coq: forall prec emax, Prec_gt_0 prec -> Prec_lt_emax prec emax -> (binary_float -> binary_float -> {x | is_nan x = true}) -> mode -> binary_float -> binary_float -> binary_float, with body BSN2B (minus_nan x y) (BinarySingleNaN.Bminus m (B2BSN x) (B2BSN y)). Lean: {prec emax} [Prec_gt_0 prec] [Prec_lt_emax prec emax] (Binary.BminusNaNHandler, an abbrev for the same function type into {nan // is_nan nan = true}) (mode : RoundingMode) x y : binary_float prec emax, in the same argument order. RoundingMode's five constructors correspond one to one with Coq's mode. The Lean body is a direct case split rather than the BSN2B composition. FloatSpec/Test/SourceSurface.lean proves, for every mode and every input including all NaN, zero and infinity cases, that the Lean definition equals BSN2B (minus_nan ...) (BinarySingleNaN.Bminus m (B2BSN x) ...), which is Coq's body. Binary.v gives prec and emax no Arguments line, so they are explicit there (Arguments Binary.X (prec emax) ...), while Lean takes {prec emax}; this is the E6(b) binder difference, and Coq's explicit Prec_gt_0/Prec_lt_emax arguments are Lean instance arguments (E6(a))."
+  },
+  {
+   "coq_path": "src/IEEE754/Binary.v",
+   "coq_name": "Bfma",
+   "lean_name": "Binary.Bfma",
+   "verdict": "match",
+   "explanation": "Checked with Lean #check/#print (pp.proofs false) and Rocq About/Print (batch 1D review). Coq: forall prec emax, Prec_gt_0 prec -> Prec_lt_emax prec emax -> (binary_float -> binary_float -> binary_float -> {x | is_nan x = true}) -> mode -> binary_float -> binary_float -> binary_float -> binary_float, with body BSN2B (fma_nan x y z) (BinarySingleNaN.Bfma m (B2BSN x) (B2BSN y) (B2BSN z)). Lean: {prec emax} [Prec_gt_0 prec] [Prec_lt_emax prec emax] (Binary.BfmaNaNHandler, an abbrev for the same function type into {nan // is_nan nan = true}) (mode : RoundingMode) x y z : binary_float prec emax, in the same argument order. RoundingMode's five constructors correspond one to one with Coq's mode. The Lean body is a direct case split rather than the BSN2B composition. FloatSpec/Test/SourceSurface.lean proves, for every mode and every input including all NaN, zero and infinity cases, that the Lean definition equals BSN2B (fma_nan ...) (BinarySingleNaN.Bfma m (B2BSN x) ...), which is Coq's body. Binary.v gives prec and emax no Arguments line, so they are explicit there (Arguments Binary.X (prec emax) ...), while Lean takes {prec emax}; this is the E6(b) binder difference, and Coq's explicit Prec_gt_0/Prec_lt_emax arguments are Lean instance arguments (E6(a))."
+  },
+  {
+   "coq_path": "src/IEEE754/Binary.v",
+   "coq_name": "Bdiv",
+   "lean_name": "Binary.Bdiv",
+   "verdict": "match",
+   "explanation": "Checked with Lean #check/#print (pp.proofs false) and Rocq About/Print (batch 1D review). Coq: forall prec emax, Prec_gt_0 prec -> Prec_lt_emax prec emax -> (binary_float -> binary_float -> {x | is_nan x = true}) -> mode -> binary_float -> binary_float -> binary_float, with body BSN2B (div_nan x y) (BinarySingleNaN.Bdiv m (B2BSN x) (B2BSN y)). Lean: {prec emax} [Prec_gt_0 prec] [Prec_lt_emax prec emax] (Binary.BdivNaNHandler, an abbrev for the same function type into {nan // is_nan nan = true}) (mode : RoundingMode) x y : binary_float prec emax, in the same argument order. RoundingMode's five constructors correspond one to one with Coq's mode. The Lean body is a direct case split rather than the BSN2B composition. FloatSpec/Test/SourceSurface.lean proves, for every mode and every input including all NaN, zero and infinity cases, that the Lean definition equals BSN2B (div_nan ...) (BinarySingleNaN.Bdiv m (B2BSN x) ...), which is Coq's body. Binary.v gives prec and emax no Arguments line, so they are explicit there (Arguments Binary.X (prec emax) ...), while Lean takes {prec emax}; this is the E6(b) binder difference, and Coq's explicit Prec_gt_0/Prec_lt_emax arguments are Lean instance arguments (E6(a))."
+  },
+  {
+   "coq_path": "src/IEEE754/Binary.v",
+   "coq_name": "Bsqrt",
+   "lean_name": "Binary.Bsqrt",
+   "verdict": "match",
+   "explanation": "Checked with Lean #check/#print (pp.proofs false) and Rocq About/Print (batch 1D review). Coq: forall prec emax, Prec_gt_0 prec -> Prec_lt_emax prec emax -> (binary_float -> {x | is_nan x = true}) -> mode -> binary_float -> binary_float, with body BSN2B (sqrt_nan x) (BinarySingleNaN.Bsqrt m (B2BSN x)). Lean: {prec emax} [Prec_gt_0 prec] [Prec_lt_emax prec emax] (Binary.BsqrtNaNHandler, an abbrev for the same function type into {nan // is_nan nan = true}) (mode : RoundingMode) x : binary_float prec emax, in the same argument order. RoundingMode's five constructors correspond one to one with Coq's mode. The Lean body is a direct case split rather than the BSN2B composition. FloatSpec/Test/SourceSurface.lean proves, for every mode and every input including all NaN, zero and infinity cases, that the Lean definition equals BSN2B (sqrt_nan ...) (BinarySingleNaN.Bsqrt m (B2BSN x) ...), which is Coq's body. Binary.v gives prec and emax no Arguments line, so they are explicit there (Arguments Binary.X (prec emax) ...), while Lean takes {prec emax}; this is the E6(b) binder difference, and Coq's explicit Prec_gt_0/Prec_lt_emax arguments are Lean instance arguments (E6(a))."
+  },
+  {
+   "coq_path": "src/IEEE754/Binary.v",
+   "coq_name": "Bfma_szero",
+   "lean_name": "Binary.Bfma_szero",
+   "verdict": "match",
+   "explanation": "Checked with Lean #check/#print (pp.proofs false) and Rocq About/Print (batch 1D review). Coq: forall prec emax, mode -> binary_float -> binary_float -> binary_float -> bool, with body BinarySingleNaN.Bfma_szero prec emax m (B2BSN x) (B2BSN y) (B2BSN z). Lean: {prec emax} (mode : RoundingMode) (x y z : binary_float prec emax) : Bool. Before this review the Lean body read the signs with Binary.Bsign, which returns a NaN's sign bit, whereas B2BSN maps every NaN to the signless SingleNaN NaN, whose Bsign is false. The two disagreed on NaN operands: for a negative NaN, +0 and -0 in mode_NE, Coq computes false (vm_compute) and the old Lean body gave true. The body now reads the signs through B2BSN, so it equals BinarySingleNaN.Bfma_szero m (B2BSN x) (B2BSN y) (B2BSN z) by rfl (FloatSpec/Test/SourceSurface.lean), and scripts/fixtures/Binary64Arithmetic.{lean,v} check the NaN case in both provers. Binary.Bfma only calls it on non-NaN operands, so Bfma's results are unchanged. Binary.v gives prec and emax no Arguments line, so they are explicit there (Arguments Binary.X (prec emax) ...), while Lean takes {prec emax}; this is the E6(b) binder difference,."
+  },
+  {
+   "coq_path": "src/IEEE754/Binary.v",
+   "coq_name": "Bmax_float",
+   "lean_name": "Binary.Bmax_float",
+   "verdict": "match",
+   "explanation": "Checked with Lean #check/#print (pp.proofs false) and Rocq About/Print (batch 1D review). Coq: forall prec emax, Prec_gt_0 prec -> Prec_lt_emax prec emax -> binary_float prec emax, with body BSN2B' BinarySingleNaN.Bmax_float eq_refl. Lean: {prec emax} [Prec_gt_0 prec] [Prec_lt_emax prec emax] : binary_float prec emax, with body BSN2B' BmaxFloatSingle rfl, and BmaxFloatSingle is the anchored BinarySingleNaN.Bmax_float; the equation holds by rfl (FloatSpec/Test/SourceSurface.lean). Binary.v gives prec and emax no Arguments line, so they are explicit there (Arguments Binary.X (prec emax) ...), while Lean takes {prec emax}; this is the E6(b) binder difference, and Coq's explicit Prec_gt_0/Prec_lt_emax arguments are Lean instance arguments (E6(a))."
+  },
+  {
+   "coq_path": "src/IEEE754/Binary.v",
+   "coq_name": "Bnormfr_mantissa",
+   "lean_name": "Binary.Bnormfr_mantissa",
+   "verdict": "match",
+   "explanation": "Checked with Lean #check/#print (pp.proofs false) and Rocq About/Print (batch 1D review). Coq: forall prec emax, binary_float prec emax -> N, with body BinarySingleNaN.Bnormfr_mantissa (B2BSN x). Lean: {prec emax} (x : binary_float prec emax) : Nat, with body BinarySingleNaNFloat.Bnormfr_mantissa (B2BSN x), which is the anchored BinarySingleNaN.Bnormfr_mantissa (rfl in FloatSpec/Test/SourceSurface.lean). N is Nat. Binary.v gives prec and emax no Arguments line, so they are explicit there (Arguments Binary.X (prec emax) ...), while Lean takes {prec emax}; this is the E6(b) binder difference,."
+  },
+  {
+   "coq_path": "src/IEEE754/BinarySingleNaN.v",
+   "coq_name": "Bmax_float",
+   "lean_name": "BinarySingleNaN.Bmax_float",
+   "verdict": "match",
+   "explanation": "Checked with Lean #check/#print (pp.proofs false) and Rocq About/Print (batch 1D review). Coq: forall {prec emax}, Prec_gt_0 prec -> Prec_lt_emax prec emax -> binary_float prec emax (prec, emax and both instances implicit), with body SF2B (S754_finite false (Pos.sub (shift_pos (Z.to_pos prec) 1) 1) (emax - prec)) Bmax_float_proof. Lean: {prec emax} [Prec_gt_0 prec] [Prec_lt_emax prec emax] : BinarySingleNaNFloat prec emax, an abbrev for Binary.BmaxFloatSingle = B754_finite false (2 ^ prec.toNat - 1) (emax - prec). shift_pos p 1 is 2^p, and Prec_gt_0 makes Z.to_pos prec = prec, so the mantissa is 2^prec - 1 on both sides and the exponent is emax - prec. Both provers give bits 0x7FEFFFFFFFFFFFFF for binary64 (scripts/fixtures/Binary64Arithmetic.{lean,v})."
+  },
+  {
+   "coq_path": "src/IEEE754/BinarySingleNaN.v",
+   "coq_name": "Bnormfr_mantissa",
+   "lean_name": "BinarySingleNaN.Bnormfr_mantissa",
+   "verdict": "match",
+   "explanation": "Checked with Lean #check/#print (pp.proofs false) and Rocq About/Print (batch 1D review). Coq: forall {prec emax}, binary_float prec emax -> N, with body SFnormfr_mantissa prec (B2SF x). Lean: {prec emax} : BinarySingleNaNFloat prec emax -> Nat, an abbrev for BinarySingleNaNFloat.Bnormfr_mantissa = SFnormfr_mantissa prec (binarySingleNaNFloatToStandardFloat x) (rfl in FloatSpec/Test/SourceSurface.lean). Lean's SFnormfr_mantissa returns m when e == -prec on a finite value and 0 otherwise, which is Rocq's SpecFloat.SFnormfr_mantissa (Npos mx if Z.eqb ex (-prec), else N0)."
+  },
+  {
+   "coq_path": "src/IEEE754/BinarySingleNaN.v",
+   "coq_name": "Bfma_szero",
+   "lean_name": "BinarySingleNaN.Bfma_szero",
+   "verdict": "match",
+   "explanation": "Checked with Lean #check/#print (pp.proofs false) and Rocq About/Print (batch 1D review). Coq: forall prec emax, mode -> binary_float -> binary_float -> binary_float -> bool; BinarySingleNaN.v's implicit-argument block does not cover it, so prec and emax are explicit (Arguments Bfma_szero (prec emax) m x y z), while Lean takes {prec emax}. Body: s_xy := xorb (Bsign x) (Bsign y); if Bool.eqb s_xy (Bsign z) then s_xy else (mode_DN => true | _ => false). Lean reads each sign as BSN_sign (binarySingleNaNFloatToB754 _), which returns false for NaN and the sign field otherwise, exactly Coq's BinarySingleNaN.Bsign; RTN is mode_DN."
+  },
+  {
+   "coq_path": "src/IEEE754/BinarySingleNaN.v",
+   "coq_name": "SF2B'",
+   "lean_name": "BinarySingleNaN.SF2B'",
+   "verdict": "match",
+   "explanation": "Checked with Lean #check/#print (pp.proofs false) and Rocq About/Print (batch 1D review). This is the anchor the 2026-09-22 audit moved here from the root SF2B' (see that row's resolution); it had no row of its own. Coq: forall {prec emax}, spec_float -> binary_float prec emax. Lean: {prec emax} : StandardFloat -> BinarySingleNaNFloat prec emax, an abbrev for standardFloatToBinarySingleNaNFloat'. Zero, infinity and NaN map to the same constructors. On S754_finite s m e, Coq returns B754_finite s m e when SpecFloat.bounded prec emax m e and B754_nan otherwise; Lean returns the finite value when validBinarySingleNaNStandardFloat holds, that is 0 < m and specFloat_bounded m e, and NaN otherwise. The 0 < m test stands in for Coq's positive mantissa, so the two agree on every spec_float."
+  },
+  {
+   "coq_path": "src/IEEE754/BinarySingleNaN.v",
+   "coq_name": "shl_align_fexp",
+   "lean_name": "BinarySingleNaN.shl_align_fexp",
+   "verdict": "match",
+   "explanation": "Checked with Lean #check/#print (pp.proofs false) and Rocq About/Print (batch 1D review). Coq: Z -> Z -> positive -> Z -> positive * Z with prec and emax explicit (Arguments shl_align_fexp (prec emax) mx ex), while Lean takes {prec emax} (Positive -> Int -> Positive × Int). Coq's body is SpecFloat.shl_align mx ex (SpecFloat.fexp prec emax (Zpos (digits2_pos mx) + ex)). Lean's abbrev is Binary.shl_align_fexp, which runs the Nat shl_align on positiveToNat mx with target FLT_exp (3 - emax - prec) prec (Zdigits 2 mx + ex) and converts the mantissa back to Positive. SpecFloat.fexp prec emax is max (e - prec) (3 - emax - prec), which is FLT_exp (3 - emax - prec) prec, and Zdigits 2 of a positive m is Zpos (digits2_pos m). shl_align shifts left by ex - e' when e' < ex and otherwise returns (mx, ex). Lean's test is e' <= ex, but at e' = ex it returns (mx * 2^0, ex), the same pair."
+  },
+  {
+   "coq_path": "src/IEEE754/BinarySingleNaN.v",
+   "coq_name": "choice_mode",
+   "lean_name": "choice_mode",
+   "verdict": "match",
+   "explanation": "Checked with Lean #check/#print (pp.proofs false) and Rocq About/Print (batch 1D review). Coq: mode -> bool -> Z -> location -> Z. Lean: RoundingMode -> Bool -> Int -> Loc -> Int, where Loc is Calc.Bracket.Location (loc_Exact | loc_Inexact Ordering), which is SpecFloat.location. Branch by branch: NE gives cond_incr (round_N (negb (Z.even mx)) lx) mx, and Lean's !decide (2 ∣ mx) is negb (Z.even mx); ZR gives mx; DN gives cond_incr (round_sign_DN sx lx) mx and matches RTN; UP gives cond_incr (round_sign_UP sx lx) mx and matches RTP; NA gives cond_incr (round_N true lx) mx. No section variables or instance arguments appear on either side."
+  },
+  {
+   "coq_path": "src/IEEE754/PrimFloat.v",
+   "coq_name": "B2Prim",
+   "lean_name": "FaithfulPrimFloat.B2Prim",
+   "verdict": "match",
+   "explanation": "Checked with Lean #check/#print (pp.proofs false) and Rocq About/Print (batch 1D review). Coq: binary_float FloatOps.prec FloatOps.emax -> PrimFloat.float, with body SF2Prim (B2SF x). Lean: PrimBinaryFloat -> PrimitiveFloat, with body SF2Prim (B2SF x). PrimBinaryFloat is BinarySingleNaNFloat 53 1024, which is FloatOps.prec and FloatOps.emax. Rocq's PrimFloat.float is a kernel primitive with no inductive definition, so Lean models it as PrimitiveFloat, a StandardFloat together with its validity proof. The argument B2SF x is always valid, so Lean's SF2Prim takes its first branch and returns B2SF x unchanged, which is what Rocq's Prim2SF_SF2Prim law says of the primitive. Only the carrier of the result differs, and the carrier is a model rather than the primitive."
+  },
+  {
+   "coq_path": "src/Core/Raux.v",
+   "coq_name": "Rabs_eq_Rabs",
+   "lean_name": "FloatSpec.Core.Raux.Rabs_eq_Rabs",
+   "verdict": "match",
+   "explanation": "Coq: forall x y : R, Rabs x = Rabs y -> x = y \\/ x = - y. Lean: (x y : ℝ) → |x| = |y| → x = y ∨ x = -y. The binders, the hypothesis and the disjunction are the same."
+  },
+  {
+   "coq_path": "src/Core/Raux.v",
+   "coq_name": "Rabs_minus_le",
+   "lean_name": "FloatSpec.Core.Raux.Rabs_minus_le",
+   "verdict": "match",
+   "explanation": "Coq: forall x y, 0 <= y -> y <= 2*x -> Rabs (x-y) <= x. Lean: (x y : ℝ) → 0 ≤ y → y ≤ 2 * x → |x - y| ≤ x. Identical."
+  },
+  {
+   "coq_path": "src/Core/Raux.v",
+   "coq_name": "Rabs_eq_R0",
+   "lean_name": "FloatSpec.Core.Raux.Rabs_eq_R0",
+   "verdict": "match",
+   "explanation": "Coq: forall x, Rabs x = 0 -> x = 0. Lean: (x : ℝ) → |x| = 0 → x = 0. Batch 1C restated it from the stronger Lean-only iff `Rabs_eq_R0_spec` (no callers) to Coq's one-way implication and name."
+  },
+  {
+   "coq_path": "src/Core/Raux.v",
+   "coq_name": "Rinv_lt",
+   "lean_name": "FloatSpec.Core.Raux.Rinv_lt",
+   "verdict": "match",
+   "explanation": "Coq: forall x y, 0 < x -> x < y -> /y < /x. Lean: (x y : ℝ) → 0 < x → x < y → y⁻¹ < x⁻¹. Batch 1C replaced the former `1 / y < 1 / x` spelling (no callers) with the inverse, which is Coq's Rinv."
+  },
+  {
+   "coq_path": "src/Core/Raux.v",
+   "coq_name": "Rinv_le",
+   "lean_name": "FloatSpec.Core.Raux.Rinv_le",
+   "verdict": "match",
+   "explanation": "Coq: forall x y, 0 < x -> x <= y -> /y <= /x. Lean: (x y : ℝ) → 0 < x → x ≤ y → y⁻¹ ≤ x⁻¹. Batch 1C replaced the former `1 / y ≤ 1 / x` spelling (no callers) with the inverse."
+  },
+  {
+   "coq_path": "src/Core/Raux.v",
+   "coq_name": "sqrt_neg",
+   "lean_name": "FloatSpec.Core.Raux.sqrt_neg",
+   "verdict": "match",
+   "explanation": "Coq: forall x, x <= 0 -> sqrt x = 0 (R_sqrt.sqrt). Lean: (x : ℝ) → x ≤ 0 → √x = 0 (Real.sqrt). Both square roots are defined as 0 on nonpositive arguments, so the propositions agree."
+  },
+  {
+   "coq_path": "src/Core/Raux.v",
+   "coq_name": "Rsqr_le_abs_0_alt",
+   "lean_name": "FloatSpec.Core.Raux.Rsqr_le_abs_0_alt",
+   "verdict": "match",
+   "explanation": "Coq: forall x y, Rsqr x <= Rsqr y -> x <= Rabs y, where Print gives Rsqr = fun r => r * r. Lean: (x y : ℝ) → x * x ≤ y * y → x ≤ |y|. Lean has no Rsqr, so batch 1C states its body (formerly `x ^ 2 ≤ y ^ 2`, no callers), as the anchored Rcompare_sqr twin does."
+  },
+  {
+   "coq_path": "src/Core/Raux.v",
+   "coq_name": "Rabs_le_inv",
+   "lean_name": "FloatSpec.Core.Raux.Rabs_le_inv",
+   "verdict": "match",
+   "explanation": "Coq: forall x y, Rabs x <= y -> -y <= x /\\ x <= y. Lean: |x| ≤ y → -y ≤ x ∧ x ≤ y. Identical."
+  },
+  {
+   "coq_path": "src/Core/Raux.v",
+   "coq_name": "Rabs_ge",
+   "lean_name": "FloatSpec.Core.Raux.Rabs_ge",
+   "verdict": "match",
+   "explanation": "Coq: forall x y, y <= -x \\/ x <= y -> x <= Rabs y. Lean: y ≤ -x ∨ x ≤ y → x ≤ |y|. Identical."
+  },
+  {
+   "coq_path": "src/Core/Raux.v",
+   "coq_name": "Rabs_ge_inv",
+   "lean_name": "FloatSpec.Core.Raux.Rabs_ge_inv",
+   "verdict": "match",
+   "explanation": "Coq: forall x y, x <= Rabs y -> y <= -x \\/ x <= y. Lean: x ≤ |y| → y ≤ -x ∨ x ≤ y. Identical."
+  },
+  {
+   "coq_path": "src/Core/Raux.v",
+   "coq_name": "Rabs_lt_inv",
+   "lean_name": "FloatSpec.Core.Raux.Rabs_lt_inv",
+   "verdict": "match",
+   "explanation": "Coq: forall x y, Rabs x < y -> -y < x /\\ x < y. Lean: |x| < y → -y < x ∧ x < y. Identical."
+  },
+  {
+   "coq_path": "src/Core/Raux.v",
+   "coq_name": "IZR_le_lt",
+   "lean_name": "FloatSpec.Core.Raux.IZR_le_lt",
+   "verdict": "match",
+   "explanation": "Coq: forall m n p : Z, m <= n < p -> IZR m <= IZR n < IZR p. Lean: (m n p : ℤ) → m ≤ n ∧ n < p → ↑m ≤ ↑n ∧ ↑n < ↑p, with IZR as the Int-to-ℝ cast. Identical."
+  },
+  {
+   "coq_path": "src/Core/Raux.v",
+   "coq_name": "le_lt_IZR",
+   "lean_name": "FloatSpec.Core.Raux.le_lt_IZR",
+   "verdict": "match",
+   "explanation": "Coq: forall m n p : Z, IZR m <= IZR n < IZR p -> m <= n < p. Lean: ↑m ≤ ↑n ∧ ↑n < ↑p → m ≤ n ∧ n < p. Identical."
+  },
+  {
+   "coq_path": "src/Core/Raux.v",
+   "coq_name": "eqb_false",
+   "lean_name": "FloatSpec.Core.Raux.eqb_false",
+   "verdict": "match",
+   "explanation": "Coq: forall x y : bool, x = negb y -> Bool.eqb x y = false. Lean: (a b : Bool) → a = !b → (a == b) = false, where `==` on Bool is boolean equality (Coq Bool.eqb). The premise is Coq's `x = negb y`, not the weaker `a ≠ b` the 2026-09-22 classification recorded."
+  },
+  {
+   "coq_path": "src/Core/Raux.v",
+   "coq_name": "eqb_true",
+   "lean_name": "FloatSpec.Core.Raux.eqb_true",
+   "verdict": "match",
+   "explanation": "Coq: forall x y : bool, x = y -> Bool.eqb x y = true. Lean: a = b → (a == b) = true. Identical up to Bool.eqb ↔ `==`."
+  },
+  {
+   "coq_path": "src/Core/Raux.v",
+   "coq_name": "abs_cond_Ropp",
+   "lean_name": "FloatSpec.Core.Raux.abs_cond_Ropp",
+   "verdict": "match",
+   "explanation": "Coq: forall b m, Rabs (cond_Ropp b m) = Rabs m. Lean: |cond_Ropp b x| = |x|. Lean cond_Ropp b m := if b then -m else m, which is Coq's body. Identical."
+  },
+  {
+   "coq_path": "src/Core/Raux.v",
+   "coq_name": "cond_Ropp_mult_l",
+   "lean_name": "FloatSpec.Core.Raux.cond_Ropp_mult_l",
+   "verdict": "match",
+   "explanation": "Coq: forall b x y, cond_Ropp b (x * y) = cond_Ropp b x * y. Lean: same equation over the same cond_Ropp body."
+  },
+  {
+   "coq_path": "src/Core/Raux.v",
+   "coq_name": "cond_Ropp_mult_r",
+   "lean_name": "FloatSpec.Core.Raux.cond_Ropp_mult_r",
+   "verdict": "match",
+   "explanation": "Coq: forall b x y, cond_Ropp b (x * y) = x * cond_Ropp b y. Lean: same equation."
+  },
+  {
+   "coq_path": "src/Core/Raux.v",
+   "coq_name": "cond_Ropp_plus",
+   "lean_name": "FloatSpec.Core.Raux.cond_Ropp_plus",
+   "verdict": "match",
+   "explanation": "Coq: forall b x y, cond_Ropp b (x + y) = cond_Ropp b x + cond_Ropp b y. Lean: same equation."
+  },
+  {
+   "coq_path": "src/Core/Generic_fmt.v",
+   "coq_name": "Zrnd_opp",
+   "lean_name": "FloatSpec.Core.Generic_fmt.Zrnd_opp",
+   "verdict": "match",
+   "explanation": "Coq: (R -> Z) -> R -> Z, Print: fun rnd x => Z.opp (rnd (- x)). Lean: (ℝ → ℤ) → ℝ → ℤ, body -(rnd (-x)). Identical type and body. Batch 1C removed its unneeded `noncomputable`: the higher-order body compiles, so the definition now has executable code."
+  },
+  {
+   "coq_path": "src/Prop/Double_rounding.v",
+   "coq_name": "round_round_eq",
+   "lean_name": "round_round_eq",
+   "verdict": "match",
+   "explanation": "Coq: radix -> (Z->Z) -> (Z->Z) -> (Z->bool) -> (Z->bool) -> R -> Prop, body round fexp1 (Znearest choice1) (round fexp2 (Znearest choice2) x) = round fexp1 (Znearest choice1) x. Lean: (beta : ℤ) [ValidRadix beta] with the same remaining binders and the same body, over roundR. A compiled `Iff.rfl` shows it equals the body over the anchored Flocq round (round_to_generic). Batch 4A merges the round names. Batch 1C removed the inert `noncomputable` (a Prop)."
+  },
+  {
+   "coq_path": "src/Prop/Double_rounding.v",
+   "coq_name": "midp",
+   "lean_name": "midp",
+   "verdict": "match",
+   "explanation": "Coq: radix -> (Z->Z) -> R -> R, body round beta fexp Zfloor x + / 2 * ulp beta fexp x. Lean: (beta : ℤ) [ValidRadix beta] → (ℤ → ℤ) → ℝ → ℝ, body roundR beta fexp rnd_floor x + (1 / 2) * ulp beta fexp x. A compiled example proves it equals round_to_generic beta fexp Zfloor x + 2⁻¹ * Ulp.ulp beta fexp x, which is Coq's body. The critic's correction keeps it (noncomputable, E1). Its literal respelling waits for 4A/4B, which retire roundR and rnd_floor."
+  },
+  {
+   "coq_path": "src/Prop/Double_rounding.v",
+   "coq_name": "midp'",
+   "lean_name": "midp'",
+   "verdict": "match",
+   "explanation": "Coq: radix -> (Z->Z) -> R -> R, body round beta fexp Zceil x - / 2 * ulp beta fexp x. Lean: roundR beta fexp rnd_ceil x - (1 / 2) * ulp beta fexp x. A compiled example proves it equals round_to_generic beta fexp Zceil x - 2⁻¹ * Ulp.ulp beta fexp x. It is kept as E1, and its literal respelling waits for 4A/4B."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zcompare_Eq",
+   "lean_name": "FloatSpec.Core.Zaux.Zcompare_Eq",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (x y : ℤ), x = y → compare x y = Ordering.eq. Rocq Check: forall x y : BinNums.Z, x = y -> BinInt.Z.compare x y = Eq. Z.compare is compare on Int and Eq is Ordering.eq; same premise and conclusion."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zcompare_Gt",
+   "lean_name": "FloatSpec.Core.Zaux.Zcompare_Gt",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (x y : ℤ), y < x → compare x y = Ordering.gt. Rocq Check: forall x y : BinNums.Z, BinInt.Z.lt y x -> BinInt.Z.compare x y = Gt. Z.compare is compare on Int and Gt is Ordering.gt; same premise (y < x) and conclusion."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zcompare_Lt",
+   "lean_name": "FloatSpec.Core.Zaux.Zcompare_Lt",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (x y : ℤ), x < y → compare x y = Ordering.lt. Rocq Check: forall x y : BinNums.Z, BinInt.Z.lt x y -> BinInt.Z.compare x y = Lt. Z.compare is compare on Int and Lt is Ordering.lt; same premise and conclusion."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zcompare_prop",
+   "lean_name": "FloatSpec.Core.Zaux.Zcompare_prop",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ℤ → ℤ → Ordering → Prop. Rocq Check: BinNums.Z -> BinNums.Z -> comparison -> Prop. Same inductive over Rocq comparison = Lean Ordering (Lt/Eq/Gt as .lt/.eq/.gt): Zcompare_Lt_ (x < y), Zcompare_Eq_ (x = y), Zcompare_Gt_ (y < x)."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zcompare_spec",
+   "lean_name": "FloatSpec.Core.Zaux.Zcompare_spec",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (x y : ℤ), Zcompare_prop x y (compare x y). Rocq Check: forall x y : BinNums.Z, Zcompare_prop x y (BinInt.Z.compare x y). Rocq's Z.compare is Lean's compare on Int (the deleted Lean-only Zaux.Zcompare was rfl-equal to it), and comparison is Ordering. Same graph statement."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zdiv_eucl_unique",
+   "lean_name": "FloatSpec.Core.Zaux.Zdiv_eucl_unique",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (a b : ℤ), Z_div_eucl a b = (a.fdiv b, a.fmod b). Rocq Check: forall a b : BinNums.Z, BinInt.Z.div_eucl a b = (BinInt.Z.div a b, BinInt.Z.modulo a b). Rocq's floor Z.div/Z.modulo are Int.fdiv/Int.fmod, and Z.div_eucl is the port's Z_div_eucl (fdiv quotient, remainder a - b * fdiv). The Lean statement previously spelled the remainder a - b * Int.fdiv a b; it now names Int.fmod as Rocq names Z.modulo."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zeq_bool_cond_Zopp",
+   "lean_name": "FloatSpec.Core.Zaux.Zeq_bool_cond_Zopp",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (s : Bool) (m n : ℤ), Zeq_bool (cond_Zopp s m) n = Zeq_bool m (cond_Zopp s n). Rocq Check: forall (s : bool) (m n : BinNums.Z), BinInt.Z.eqb (SpecFloat.cond_Zopp s m) n = BinInt.Z.eqb m (SpecFloat.cond_Zopp s n). Z.eqb is Zeq_bool; same statement. Rocq's Stdlib notations Zeq_bool/Zle_bool/Zlt_bool unfold to Z.eqb/Z.leb/Z.ltb, which the port defines as the Boolean decisions of =, <= and < on Int (equal on every input)."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zeq_bool_diag",
+   "lean_name": "FloatSpec.Core.Zaux.Zeq_bool_diag",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (x : ℤ), Zeq_bool x x = true. Rocq Check: forall x : BinNums.Z, BinInt.Z.eqb x x = true. Rocq's Stdlib notations Zeq_bool/Zle_bool/Zlt_bool unfold to Z.eqb/Z.leb/Z.ltb, which the port defines as the Boolean decisions of =, <= and < on Int (equal on every input). Same statement."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zeq_bool_false",
+   "lean_name": "FloatSpec.Core.Zaux.Zeq_bool_false",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (x y : ℤ), x ≠ y → Zeq_bool x y = false. Rocq Check: forall x y : BinNums.Z, x <> y -> BinInt.Z.eqb x y = false. Rocq's Stdlib notations Zeq_bool/Zle_bool/Zlt_bool unfold to Z.eqb/Z.leb/Z.ltb, which the port defines as the Boolean decisions of =, <= and < on Int (equal on every input). Same statement."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zeq_bool_opp",
+   "lean_name": "FloatSpec.Core.Zaux.Zeq_bool_opp",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (x y : ℤ), Zeq_bool (-x) y = Zeq_bool x (-y). Rocq Check: forall x y : BinNums.Z, BinInt.Z.eqb (BinInt.Z.opp x) y = BinInt.Z.eqb x (BinInt.Z.opp y). Rocq's Stdlib notations Zeq_bool/Zle_bool/Zlt_bool unfold to Z.eqb/Z.leb/Z.ltb, which the port defines as the Boolean decisions of =, <= and < on Int (equal on every input). Same statement."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zeq_bool_opp'",
+   "lean_name": "FloatSpec.Core.Zaux.Zeq_bool_opp'",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (x y : ℤ), Zeq_bool (-x) (-y) = Zeq_bool x y. Rocq Check: forall x y : BinNums.Z, BinInt.Z.eqb (BinInt.Z.opp x) (BinInt.Z.opp y) = BinInt.Z.eqb x y. Rocq's Stdlib notations Zeq_bool/Zle_bool/Zlt_bool unfold to Z.eqb/Z.leb/Z.ltb, which the port defines as the Boolean decisions of =, <= and < on Int (equal on every input). Same statement."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zeq_bool_prop",
+   "lean_name": "FloatSpec.Core.Zaux.Zeq_bool_prop",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ℤ → ℤ → Bool → Prop. Rocq Check: BinNums.Z -> BinNums.Z -> bool -> Prop. Same inductive: parameters x y : Z, index bool, constructors Zeq_bool_true_ (x = y) and Zeq_bool_false_ (x <> y). Lean's constructors live under Zeq_bool_prop and are exported unqualified, as in Rocq."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zeq_bool_spec",
+   "lean_name": "FloatSpec.Core.Zaux.Zeq_bool_spec",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (x y : ℤ), Zeq_bool_prop x y (Zeq_bool x y). Rocq Check: forall x y : BinNums.Z, Zeq_bool_prop x y (BinInt.Z.eqb x y). Rocq's Stdlib notations Zeq_bool/Zle_bool/Zlt_bool unfold to Z.eqb/Z.leb/Z.ltb, which the port defines as the Boolean decisions of =, <= and < on Int (equal on every input). Same statement."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zeq_bool_true",
+   "lean_name": "FloatSpec.Core.Zaux.Zeq_bool_true",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (x y : ℤ), x = y → Zeq_bool x y = true. Rocq Check: forall x y : BinNums.Z, x = y -> BinInt.Z.eqb x y = true. Rocq's Stdlib notations Zeq_bool/Zle_bool/Zlt_bool unfold to Z.eqb/Z.leb/Z.ltb, which the port defines as the Boolean decisions of =, <= and < on Int (equal on every input). Same statement."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zfast_pow_pos",
+   "lean_name": "FloatSpec.Core.Zaux.Zfast_pow_pos",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ℤ → Positive → ℤ. Rocq Check: BinNums.Z -> BinNums.positive -> BinNums.Z. Same type Z -> positive -> Z (Lean Zaux.Positive for positive). The body now follows Rocq's Fixpoint constructor by constructor: xH => v, xO e' => Z.square (rec), xI e' => v * Z.square (rec), with Z.square x written x ^ 2. It previously was v ^ positiveToNat e, the specification rather than the algorithm."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zfast_pow_pos_correct",
+   "lean_name": "FloatSpec.Core.Zaux.Zfast_pow_pos_correct",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (v : ℤ) (e : Positive), Zfast_pow_pos v e = Zpower_pos v e. Rocq Check: forall (v : BinNums.Z) (e : BinNums.positive), Zfast_pow_pos v e = BinInt.Z.pow_pos v e. Rocq's Z.pow_pos is the port's Zpower_pos (v ^ positiveToNat e). Same statement; now a real induction over the squaring algorithm instead of rfl."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zle_bool_false",
+   "lean_name": "FloatSpec.Core.Zaux.Zle_bool_false",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (x y : ℤ), y < x → Zle_bool x y = false. Rocq Check: forall x y : BinNums.Z, BinInt.Z.lt y x -> BinInt.Z.leb x y = false. Rocq's Stdlib notations Zeq_bool/Zle_bool/Zlt_bool unfold to Z.eqb/Z.leb/Z.ltb, which the port defines as the Boolean decisions of =, <= and < on Int (equal on every input). Same statement."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zle_bool_opp",
+   "lean_name": "FloatSpec.Core.Zaux.Zle_bool_opp",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (x y : ℤ), Zle_bool (-x) (-y) = Zle_bool y x. Rocq Check: forall x y : BinNums.Z, BinInt.Z.leb (BinInt.Z.opp x) (BinInt.Z.opp y) = BinInt.Z.leb y x. Rocq's Stdlib notations Zeq_bool/Zle_bool/Zlt_bool unfold to Z.eqb/Z.leb/Z.ltb, which the port defines as the Boolean decisions of =, <= and < on Int (equal on every input). Same statement."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zle_bool_opp_l",
+   "lean_name": "FloatSpec.Core.Zaux.Zle_bool_opp_l",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (x y : ℤ), Zle_bool (-x) y = Zle_bool (-y) x. Rocq Check: forall x y : BinNums.Z, BinInt.Z.leb (BinInt.Z.opp x) y = BinInt.Z.leb (BinInt.Z.opp y) x. Rocq's Stdlib notations Zeq_bool/Zle_bool/Zlt_bool unfold to Z.eqb/Z.leb/Z.ltb, which the port defines as the Boolean decisions of =, <= and < on Int (equal on every input). Same statement."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zle_bool_opp_r",
+   "lean_name": "FloatSpec.Core.Zaux.Zle_bool_opp_r",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (x y : ℤ), Zle_bool x (-y) = Zle_bool y (-x). Rocq Check: forall x y : BinNums.Z, BinInt.Z.leb x (BinInt.Z.opp y) = BinInt.Z.leb y (BinInt.Z.opp x). Rocq's Stdlib notations Zeq_bool/Zle_bool/Zlt_bool unfold to Z.eqb/Z.leb/Z.ltb, which the port defines as the Boolean decisions of =, <= and < on Int (equal on every input). Same statement."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zle_bool_prop",
+   "lean_name": "FloatSpec.Core.Zaux.Zle_bool_prop",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ℤ → ℤ → Bool → Prop. Rocq Check: BinNums.Z -> BinNums.Z -> bool -> Prop. Same inductive: constructors Zle_bool_true_ (x <= y) and Zle_bool_false_ (y < x)."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zle_bool_spec",
+   "lean_name": "FloatSpec.Core.Zaux.Zle_bool_spec",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (x y : ℤ), Zle_bool_prop x y (Zle_bool x y). Rocq Check: forall x y : BinNums.Z, Zle_bool_prop x y (BinInt.Z.leb x y). Rocq's Stdlib notations Zeq_bool/Zle_bool/Zlt_bool unfold to Z.eqb/Z.leb/Z.ltb, which the port defines as the Boolean decisions of =, <= and < on Int (equal on every input). Same statement."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zle_bool_true",
+   "lean_name": "FloatSpec.Core.Zaux.Zle_bool_true",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (x y : ℤ), x ≤ y → Zle_bool x y = true. Rocq Check: forall x y : BinNums.Z, BinInt.Z.le x y -> BinInt.Z.leb x y = true. Rocq's Stdlib notations Zeq_bool/Zle_bool/Zlt_bool unfold to Z.eqb/Z.leb/Z.ltb, which the port defines as the Boolean decisions of =, <= and < on Int (equal on every input). Same statement."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zlt_bool_false",
+   "lean_name": "FloatSpec.Core.Zaux.Zlt_bool_false",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (x y : ℤ), y ≤ x → Zlt_bool x y = false. Rocq Check: forall x y : BinNums.Z, BinInt.Z.le y x -> BinInt.Z.ltb x y = false. Rocq's Stdlib notations Zeq_bool/Zle_bool/Zlt_bool unfold to Z.eqb/Z.leb/Z.ltb, which the port defines as the Boolean decisions of =, <= and < on Int (equal on every input). Same statement."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zlt_bool_opp",
+   "lean_name": "FloatSpec.Core.Zaux.Zlt_bool_opp",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (x y : ℤ), Zlt_bool (-x) (-y) = Zlt_bool y x. Rocq Check: forall x y : BinNums.Z, BinInt.Z.ltb (BinInt.Z.opp x) (BinInt.Z.opp y) = BinInt.Z.ltb y x. Rocq's Stdlib notations Zeq_bool/Zle_bool/Zlt_bool unfold to Z.eqb/Z.leb/Z.ltb, which the port defines as the Boolean decisions of =, <= and < on Int (equal on every input). Same statement."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zlt_bool_opp_l",
+   "lean_name": "FloatSpec.Core.Zaux.Zlt_bool_opp_l",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (x y : ℤ), Zlt_bool (-x) y = Zlt_bool (-y) x. Rocq Check: forall x y : BinNums.Z, BinInt.Z.ltb (BinInt.Z.opp x) y = BinInt.Z.ltb (BinInt.Z.opp y) x. Rocq's Stdlib notations Zeq_bool/Zle_bool/Zlt_bool unfold to Z.eqb/Z.leb/Z.ltb, which the port defines as the Boolean decisions of =, <= and < on Int (equal on every input). Same statement."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zlt_bool_opp_r",
+   "lean_name": "FloatSpec.Core.Zaux.Zlt_bool_opp_r",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (x y : ℤ), Zlt_bool x (-y) = Zlt_bool y (-x). Rocq Check: forall x y : BinNums.Z, BinInt.Z.ltb x (BinInt.Z.opp y) = BinInt.Z.ltb y (BinInt.Z.opp x). Rocq's Stdlib notations Zeq_bool/Zle_bool/Zlt_bool unfold to Z.eqb/Z.leb/Z.ltb, which the port defines as the Boolean decisions of =, <= and < on Int (equal on every input). Same statement."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zlt_bool_prop",
+   "lean_name": "FloatSpec.Core.Zaux.Zlt_bool_prop",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ℤ → ℤ → Bool → Prop. Rocq Check: BinNums.Z -> BinNums.Z -> bool -> Prop. Same inductive: constructors Zlt_bool_true_ (x < y) and Zlt_bool_false_ (y <= x)."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zlt_bool_spec",
+   "lean_name": "FloatSpec.Core.Zaux.Zlt_bool_spec",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (x y : ℤ), Zlt_bool_prop x y (Zlt_bool x y). Rocq Check: forall x y : BinNums.Z, Zlt_bool_prop x y (BinInt.Z.ltb x y). Rocq's Stdlib notations Zeq_bool/Zle_bool/Zlt_bool unfold to Z.eqb/Z.leb/Z.ltb, which the port defines as the Boolean decisions of =, <= and < on Int (equal on every input). Same statement."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zlt_bool_true",
+   "lean_name": "FloatSpec.Core.Zaux.Zlt_bool_true",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (x y : ℤ), x < y → Zlt_bool x y = true. Rocq Check: forall x y : BinNums.Z, BinInt.Z.lt x y -> BinInt.Z.ltb x y = true. Rocq's Stdlib notations Zeq_bool/Zle_bool/Zlt_bool unfold to Z.eqb/Z.leb/Z.ltb, which the port defines as the Boolean decisions of =, <= and < on Int (equal on every input). Same statement."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zsame_sign_imp",
+   "lean_name": "FloatSpec.Core.Zaux.Zsame_sign_imp",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (u v : ℤ), (0 < u → 0 ≤ v) → (0 < -u → 0 ≤ -v) → 0 ≤ u * v. Rocq Check: forall u v : BinNums.Z, (BinInt.Z.lt BinNums.Z0 u -> BinInt.Z.le BinNums.Z0 v) -> (BinInt.Z.lt BinNums.Z0 (BinInt.Z.opp u) -> BinInt.Z.le BinNums.Z0 (BinInt.Z.opp v)) -> BinInt.Z.le BinNums.Z0 (BinInt.Z.mul u v). Same statement."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zsame_sign_odiv",
+   "lean_name": "FloatSpec.Core.Zaux.Zsame_sign_odiv",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (u v : ℤ), 0 ≤ v → 0 ≤ u * u.tdiv v. Rocq Check: forall u v : BinNums.Z, BinInt.Z.le BinNums.Z0 v -> BinInt.Z.le BinNums.Z0 (BinInt.Z.mul u (BinInt.Z.quot u v)). Rocq's truncating Z.quot is Lean's Int.tdiv; same premise 0 <= v and conclusion."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zsame_sign_trans",
+   "lean_name": "FloatSpec.Core.Zaux.Zsame_sign_trans",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (v u w : ℤ), v ≠ 0 → 0 ≤ u * v → 0 ≤ v * w → 0 ≤ u * w. Rocq Check: forall v u w : BinNums.Z, v <> BinNums.Z0 -> BinInt.Z.le BinNums.Z0 (BinInt.Z.mul u v) -> BinInt.Z.le BinNums.Z0 (BinInt.Z.mul v w) -> BinInt.Z.le BinNums.Z0 (BinInt.Z.mul u w). Same statement."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zsame_sign_trans_weak",
+   "lean_name": "FloatSpec.Core.Zaux.Zsame_sign_trans_weak",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (v u w : ℤ), (v = 0 → w = 0) → 0 ≤ u * v → 0 ≤ v * w → 0 ≤ u * w. Rocq Check: forall v u w : BinNums.Z, (v = BinNums.Z0 -> w = BinNums.Z0) -> BinInt.Z.le BinNums.Z0 (BinInt.Z.mul u v) -> BinInt.Z.le BinNums.Z0 (BinInt.Z.mul v w) -> BinInt.Z.le BinNums.Z0 (BinInt.Z.mul u w). Same statement."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "abs_cond_Zopp",
+   "lean_name": "FloatSpec.Core.Zaux.abs_cond_Zopp",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (b : Bool) (m : ℤ), |cond_Zopp b m| = |m|. Rocq Check: forall (b : bool) (m : BinNums.Z), BinInt.Z.abs (SpecFloat.cond_Zopp b m) = BinInt.Z.abs m. Z.abs is |.| on Int; same statement."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "cond_Zopp_0",
+   "lean_name": "FloatSpec.Core.Zaux.cond_Zopp_0",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (sx : Bool), cond_Zopp sx 0 = 0. Rocq Check: forall sx : bool, SpecFloat.cond_Zopp sx BinNums.Z0 = BinNums.Z0. cond_Zopp is Corelib SpecFloat.cond_Zopp (anchored at Zaux.v:23); same statement."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "cond_Zopp_Zlt_bool",
+   "lean_name": "FloatSpec.Core.Zaux.cond_Zopp_Zlt_bool",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (m : ℤ), cond_Zopp (Zlt_bool m 0) m = |m|. Rocq Check: forall m : BinNums.Z, SpecFloat.cond_Zopp (BinInt.Z.ltb m BinNums.Z0) m = BinInt.Z.abs m. Z.ltb m 0 is Zlt_bool m 0 and Z.abs is |.|; same statement."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "cond_Zopp_negb",
+   "lean_name": "FloatSpec.Core.Zaux.cond_Zopp_negb",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (x : Bool) (y : ℤ), cond_Zopp (!x) y = -cond_Zopp x y. Rocq Check: forall (x : bool) (y : BinNums.Z), SpecFloat.cond_Zopp (negb x) y = BinInt.Z.opp (SpecFloat.cond_Zopp x y). negb is Lean's !, Z.opp is unary minus; same statement."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "iter_nat_S",
+   "lean_name": "FloatSpec.Core.Zaux.iter_nat_S",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ {A : Type} (f : A → A) (p : ℕ) (x : A), iter_nat f (p + 1) x = f (iter_nat f p x). Rocq Check: forall (A : Type) (f : A -> A) (p : nat) (x : A), iter_nat f (S p) x = f (iter_nat f p x). Same statement (S p is p + 1)."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "iter_nat_plus",
+   "lean_name": "FloatSpec.Core.Zaux.iter_nat_plus",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ {A : Type} (f : A → A) (p q : ℕ) (x : A), iter_nat f (p + q) x = iter_nat f p (iter_nat f q x). Rocq Check: forall (A : Type) (f : A -> A) (p q : nat) (x : A), iter_nat f (p + q) x = iter_nat f p (iter_nat f q x). Same statement with A implicit (Rocq Context {A}). The port's iter_nat body applies f last where Rocq's applies it first; the two agree extensionally (iter_nat_S), so the definition itself stays unanchored."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "iter_pos_nat",
+   "lean_name": "FloatSpec.Core.Zaux.iter_pos_nat",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ {A : Type} (f : A → A) (p : Positive) (x : A), iter_pos f p x = iter_nat f (positiveToNat p) x. Rocq Check: forall (A : Type) (f : A -> A) (p : BinNums.positive) (x : A), SpecFloat.iter_pos f p x = iter_nat f (BinPos.Pos.to_nat p) x. Pos.to_nat is positiveToNat; same statement."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "negb_Zle_bool",
+   "lean_name": "FloatSpec.Core.Zaux.negb_Zle_bool",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (x y : ℤ), (!Zle_bool x y) = Zlt_bool y x. Rocq Check: forall x y : BinNums.Z, negb (BinInt.Z.leb x y) = BinInt.Z.ltb y x. negb is Lean's !. Before this anchor the Lean statement read `!Zle_bool x y = Zlt_bool y x`, which parses as !(Zle_bool x y = Zlt_bool y x); it is now parenthesized as Rocq's negb (Zle_bool x y) = Zlt_bool y x. Rocq's Stdlib notations Zeq_bool/Zle_bool/Zlt_bool unfold to Z.eqb/Z.leb/Z.ltb, which the port defines as the Boolean decisions of =, <= and < on Int (equal on every input)."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "negb_Zlt_bool",
+   "lean_name": "FloatSpec.Core.Zaux.negb_Zlt_bool",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (x y : ℤ), (!Zlt_bool x y) = Zle_bool y x. Rocq Check: forall x y : BinNums.Z, negb (BinInt.Z.ltb x y) = BinInt.Z.leb y x. negb is Lean's !. The Lean statement is now parenthesized as Rocq's negb (Zlt_bool x y) = Zle_bool y x (the unparenthesized form parsed as a negated equality). Rocq's Stdlib notations Zeq_bool/Zle_bool/Zlt_bool unfold to Z.eqb/Z.leb/Z.ltb, which the port defines as the Boolean decisions of =, <= and < on Int (equal on every input)."
   }
  ]
 }

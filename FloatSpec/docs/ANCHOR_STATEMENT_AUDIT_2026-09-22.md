@@ -54,3 +54,44 @@ compiled hashes and reopen on drift. They are the input that says where
 manual review should look first. The two confirmed mismatches were both
 anchor-placement errors that `validate_flocq_source_refs.py` could not see,
 because it checks names and lines, not propositions.
+
+## Later rows
+
+Anchors added since this audit get a row, checked the same way, when they
+land. The JSON header gives the base of the full audit (`full_audit_base`),
+the commit its latest rows were checked on (`updated_on`), and the number of
+live anchors (`anchors`), each of which has exactly one row. The two rows
+listed in `superseded_rows` are the mismatches above; each keeps its
+`resolution` and names a Lean declaration that no longer carries the anchor.
+
+The batch 1D review (conventions cutover) added rows for the 12 `Binary.v` and
+`BinarySingleNaN.v` operations it anchored, moved the `valid_binary` row to
+`Binary.valid_binary`, and filled in the four anchors that had no row:
+`BinarySingleNaN.SF2B'`, `BinarySingleNaN.shl_align_fexp`, `choice_mode` and
+`FaithfulPrimFloat.B2Prim`. All of them are `match`. `Binary.Bfma_szero` is a
+`match` only after its body was corrected: it had read NaN signs with `Bsign`,
+where Coq reads them through `B2BSN`.
+
+Batch 1C added 23 `match` rows: 19 `Raux.v` theorems (four of them,
+`Rabs_eq_R0`, `Rinv_lt`, `Rinv_le` and `Rsqr_le_abs_0_alt`, restated to Coq's
+form first), `Zrnd_opp`, and the `Double_rounding.v` definitions
+`round_round_eq`, `midp` and `midp'`.
+
+Batch 1E added 43 `Zaux.v` rows, all `match`: the 28
+`Zeq_bool`/`Zle_bool`/`Zlt_bool`/`Zcompare` declarations of Zaux.v:502–764,
+the four `Zsame_sign_*` lemmas, five `cond_Zopp` lemmas, `Zfast_pow_pos` and
+its correctness lemma, `Zdiv_eucl_unique`, `iter_nat_plus`, `iter_nat_S` and
+`iter_pos_nat`. `Zcompare_*` are now stated about Lean's `compare` on `Int`
+(Rocq's `Z.compare`); the Lean-only `Zaux.Zcompare` is gone. Anchoring exposed
+one statement bug: `negb_Zle_bool` and `negb_Zlt_bool` were written `!a = b`,
+which Lean parses as `!(a = b)`; they now read `(!a) = b`, as in Rocq.
+`Zfast_pow_pos` now follows Rocq's squaring recursion instead of computing
+`v ^ n`, and `Zdiv_eucl_unique` names `Int.fmod` for `Z.modulo`. `Zeven_ex`
+and `Zeven_Zpower_odd` were restated on the new `Zaux.Z.even` (Rocq's Boolean
+`Z.even`) and re-checked.
+
+The phase P1a integration merge `b8e3b447` joined 1C, 1D, 1E and 1F. Every
+`FloatSpec.src` declaration there has the same compiled type hash, value hash
+and `noncomputable` flag as on the lane commit where its row was checked
+(`ExportPortInventory.lean`, three-way against the lanes' base `8368e132`),
+so each row still holds, and `updated_on` names that merge.

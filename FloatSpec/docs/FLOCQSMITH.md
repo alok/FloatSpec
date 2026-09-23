@@ -187,9 +187,9 @@ parameters:
 
 Lean spells binary32 and binary64 as the lowercase `binary32`/`binary64` in
 `Bits.lean` (`binary_float 24 128`, `53 1024`). The capitalised `Binary32` and
-`Binary64` in `Binary.lean:3564-3565` are `Binary754 24 127` and `53 1023`, a
-different emax and a noncomputable carrier. The renderer must never emit
-them (§3.6).
+`Binary64` in `Binary.lean` are `Binary754 24 127` and `53 1023`, a
+different emax and the permissive compatibility carrier. The renderer must
+never emit them (§3.6).
 
 ### 3.2 Statements
 
@@ -339,11 +339,11 @@ namespaces:
 
 It never emits:
 
-- the root `Binary754` operations in `Binary.lean` (`Bplus`, `Bmult`, `Bfma`,
-  `Bdiv`, `Bsqrt`, `Bcompare`, `binary_normalize` and the rest);
+- root declarations, such as the raw `binary_normalize`;
 - `Binary32`/`Binary64`;
-- `BinarySingleNaNBridge.*`;
-- `ExperimentalBinaryRound.*`;
+- `BinarySingleNaNBridge.*` and `ExperimentalBinaryRound.*`, which have been
+  deleted together with the root real-rounding `Binary754` operations; the
+  table test still rejects them;
 - `ExperimentalSingleNaNArithmetic.*`. The one exception is
   `Ffrexp_core_binary`, which is the source-facing helper despite its
   namespace, so it gets an explicit allowlist row.
@@ -1090,7 +1090,7 @@ about names and domains:
 | `B2R`, `SF2R`, `FF2R`, `Round.round`, `round_mode`, `inbetween_*`, `Zrnd_FTZ` | Real-valued or `Prop`. Not executable on either side. | both |
 | `negligible_exp` | Uses LPO. | both |
 | Flocq `examples/Compute.v` | Not ported. Runs only as a client shim (§11). | Lean |
-| Root `Binary754` ops, `Binary32`/`Binary64`, `BinarySingleNaNBridge.*`, `ExperimentalBinaryRound.*`, `ExperimentalSingleNaNArithmetic.*` (except `Ffrexp_core_binary`) | Noncomputable or differently typed duplicates (§3.6). | Lean |
+| Root declarations, `Binary32`/`Binary64`, `ExperimentalSingleNaNArithmetic.*` (except `Ffrexp_core_binary`) | Differently typed duplicates (§3.6). The noncomputable root `Binary754` ops, `BinarySingleNaNBridge.*` and `ExperimentalBinaryRound.*` have been deleted. | Lean |
 | `Bldexp`/`shr`/`binary_normalize` with an exponent argument beyond `2·emax + 2·p` | Budget: the cost is linear in the argument on both sides. | both |
 | Native hardware floats | Deferred to `lean-native`. | Lean |
 

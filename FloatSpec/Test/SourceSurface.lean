@@ -1,12 +1,12 @@
-import FloatSpec.src.IEEE754.SourceCorrectnessAliases
 import FloatSpec.src.IEEE754.BinarySingleNaNSourceFacade
 import FloatSpec.src.Core.Round_pred
 
-/-! Regression checks: compatibility correctness names must be exact aliases of
-the translated Flocq contracts, never independently inhabitable `Unit` values. -/
+/-! # Source surface regressions
 
-example : @binary_add_correct = @Bplus_correct := rfl
-example : @binary_mul_correct = @Bmult_correct := rfl
+Flocq's declarations are exported under their Coq names and with their Coq
+shapes. The last section checks that each anchored `Binary.v` operation is
+the `BinarySingleNaN` operation lifted through `BSN2B`, which is how
+`Binary.v` defines it. -/
 
 /-! Coq exports `Rnd_NG_pt_unique_prop` over a Type-valued tie payload. -/
 
@@ -14,9 +14,10 @@ example : Prop :=
   FloatSpec.Core.Round_pred.Rnd_NG_pt_unique_prop
     (fun _ : ℝ => True) (fun _ _ : ℝ => Nat)
 
-/-! The remaining source contracts are exported under their exact Flocq names;
-the older local `binary_*_correct` declarations remain compatibility results. -/
+/-! The source arithmetic contracts are exported under their exact Flocq names. -/
 
+#check @Bplus_correct
+#check @Bmult_correct
 #check @Bminus_correct
 #check @Bfma_correct
 #check @Bdiv_correct
@@ -229,12 +230,7 @@ example {prec emax : Int} :
       sign_SF StandardFloat.S754_nan :=
   @BinarySingleNaN.Bsign_SF2B prec emax StandardFloat.S754_nan rfl
 
-/-! Coq's `comparison` is represented by `Ordering`; NaN remains unordered,
-and the old integer implementation is connected by checked -1/0/1 cases. -/
-
-example : BinarySingleNaN.orderingOfCompareCode (-1) = Ordering.lt := by simp
-example : BinarySingleNaN.orderingOfCompareCode 0 = Ordering.eq := by simp
-example : BinarySingleNaN.orderingOfCompareCode 1 = Ordering.gt := by simp
+/-! Coq's `comparison` is represented by `Ordering`; NaN remains unordered. -/
 
 example :
     @BinarySingleNaN.Bcompare 1 1 BinarySingleNaNFloat.B754_nan
@@ -244,7 +240,7 @@ example :
 /-! These function-type checks fail if an internal `Valid_exp` or
 `Monotone_exp` proof leaks into the source-facing arithmetic signatures. -/
 
-noncomputable section
+section
 
 namespace FloatSpec.IEEE754.BinarySingleNaN.Source
 
@@ -295,3 +291,194 @@ example {prec emax : Int} [Prec_gt_0 prec] [Prec_lt_emax prec emax] :
 end FloatSpec.IEEE754.BinarySingleNaN.Source
 
 end
+
+/-! Each `Binary.v` operation below is defined in Coq as the `BinarySingleNaN`
+operation on the `B2BSN` images, lifted back with `BSN2B` (with the caller's
+NaN) or `BSN2B'`. The Lean definitions are direct transcriptions, and these
+equalities hold for every input, including every NaN, zero and infinity
+case. -/
+
+section BinaryLift
+
+private theorem binaryPositiveOfNat_positiveToNat (p : FloatSpec.Core.Zaux.Positive)
+    (h : 0 < FloatSpec.Core.Zaux.positiveToNat p) :
+    binaryPositiveOfNat (FloatSpec.Core.Zaux.positiveToNat p) h = p :=
+  FloatSpec.Core.Zaux.positiveToNat_injective (binaryPositiveOfNat_spec _ _)
+
+private theorem BSN2B_B2BSN_of_not_nan {prec emax : Int}
+    (nan : {x : binary_float prec emax // Binary.is_nan x = true})
+    (x : binary_float prec emax) (hx : Binary.is_nan x = false) :
+    Binary.BSN2B nan (Binary.B2BSN x) = x := by
+  cases x with
+  | B754_nan s pl h => simp [Binary.is_nan] at hx
+  | B754_finite s m e h =>
+      simp [Binary.BSN2B, Binary.B2BSN, binaryFloatToBinarySingleNaNFloat,
+        binaryPositiveOfNat_positiveToNat]
+  | _ => rfl
+
+private theorem is_nan_standardFloatToBinaryFloatOfNotNaN {prec emax : Int}
+    (z : StandardFloat)
+    (h₁ : validBinarySingleNaNStandardFloat (prec:=prec) (emax:=emax) z = true)
+    (h₂ : is_nan_SF z = false) :
+    Binary.is_nan (Binary.standardFloatToBinaryFloatOfNotNaN z h₁ h₂) = false := by
+  cases z with
+  | S754_nan => simp [is_nan_SF] at h₂
+  | _ => rfl
+
+private theorem is_nan_normalize {prec emax : Int}
+    [Prec_gt_0 prec] [Prec_lt_emax prec emax]
+    (mode : RoundingMode) (m e : Int) (szero : Bool) :
+    Binary.is_nan (Binary.normalize (prec:=prec) (emax:=emax) mode m e szero) =
+      false := by
+  unfold Binary.normalize
+  split_ifs
+  · rfl
+  · exact is_nan_standardFloatToBinaryFloatOfNotNaN _ _ _
+  · exact is_nan_standardFloatToBinaryFloatOfNotNaN _ _ _
+
+private theorem BSN2B_standardFloat {prec emax : Int}
+    (nan : {x : binary_float prec emax // Binary.is_nan x = true})
+    (z : StandardFloat)
+    (h₁ : validBinarySingleNaNStandardFloat (prec:=prec) (emax:=emax) z = true)
+    (h₂ : is_nan_SF z = false) :
+    Binary.BSN2B nan (standardFloatToBinarySingleNaNFloat z h₁) =
+      Binary.standardFloatToBinaryFloatOfNotNaN z h₁ h₂ := by
+  cases z with
+  | S754_nan => simp [is_nan_SF] at h₂
+  | _ => rfl
+
+-- Binary.v:947
+example {prec emax : Int} [Prec_gt_0 prec] [Prec_lt_emax prec emax]
+    (mult_nan : Binary.BmultNaNHandler prec emax) (m : RoundingMode)
+    (x y : binary_float prec emax) :
+    Binary.Bmult mult_nan m x y =
+      Binary.BSN2B (mult_nan x y)
+        (BinarySingleNaN.Bmult m (Binary.B2BSN x) (Binary.B2BSN y)) := by
+  cases x <;> cases y
+  case B754_finite.B754_finite => exact (BSN2B_standardFloat _ _ _ _).symm
+  all_goals
+    simp [Binary.Bmult, BinarySingleNaN.Bmult, Binary.BSN2B, Binary.B2BSN,
+      binaryFloatToBinarySingleNaNFloat, Binary.build_nan]
+
+-- Binary.v:1049
+example {prec emax : Int} [Prec_gt_0 prec] [Prec_lt_emax prec emax]
+    (plus_nan : Binary.BplusNaNHandler prec emax) (m : RoundingMode)
+    (x y : binary_float prec emax) :
+    Binary.Bplus plus_nan m x y =
+      Binary.BSN2B (plus_nan x y)
+        (BinarySingleNaN.Bplus m (Binary.B2BSN x) (Binary.B2BSN y)) := by
+  cases x <;> cases y
+  case B754_finite.B754_finite =>
+    exact (BSN2B_B2BSN_of_not_nan _ _ (is_nan_normalize _ _ _ _)).symm
+  all_goals
+    simp [Binary.Bplus, BinarySingleNaN.Bplus, Binary.BSN2B, Binary.B2BSN,
+      binaryFloatToBinarySingleNaNFloat, Binary.build_nan,
+      binaryPositiveOfNat_positiveToNat]
+  all_goals first | done | (split_ifs <;> (try cases m) <;> rfl)
+
+-- Binary.v:1086
+example {prec emax : Int} [Prec_gt_0 prec] [Prec_lt_emax prec emax]
+    (minus_nan : Binary.BminusNaNHandler prec emax) (m : RoundingMode)
+    (x y : binary_float prec emax) :
+    Binary.Bminus minus_nan m x y =
+      Binary.BSN2B (minus_nan x y)
+        (BinarySingleNaN.Bminus m (Binary.B2BSN x) (Binary.B2BSN y)) := by
+  cases x <;> cases y
+  case B754_finite.B754_finite =>
+    exact (BSN2B_B2BSN_of_not_nan _ _ (is_nan_normalize _ _ _ _)).symm
+  all_goals
+    simp [Binary.Bminus, BinarySingleNaN.Bminus, BinarySingleNaN.Bplus,
+      BinarySingleNaN.Bopp, Binary.Bopp_preserve_nan, Binary.BSN2B, Binary.B2BSN,
+      binaryFloatToBinarySingleNaNFloat, Binary.build_nan,
+      binaryPositiveOfNat_positiveToNat]
+  all_goals first | done | (split_ifs <;> (try cases m) <;> rfl)
+
+-- Binary.v:1123
+example {prec emax : Int} (m : RoundingMode) (x y z : binary_float prec emax) :
+    Binary.Bfma_szero m x y z =
+      BinarySingleNaN.Bfma_szero m (Binary.B2BSN x) (Binary.B2BSN y)
+        (Binary.B2BSN z) :=
+  rfl
+
+/-- `B2BSN` forgets a NaN's sign, so `Bfma_szero` reads a negative NaN as
+positive, as Coq's `Binary.Bfma_szero` does. -/
+example :
+    Binary.Bfma_szero (prec:=53) (emax:=1024) RoundingMode.RNE
+      (binary_float.B754_nan true .xH (by decide +kernel))
+      (binary_float.B754_zero false) (binary_float.B754_zero true) = false :=
+  rfl
+
+-- Binary.v:1126
+example {prec emax : Int} [Prec_gt_0 prec] [Prec_lt_emax prec emax]
+    (fma_nan : Binary.BfmaNaNHandler prec emax) (m : RoundingMode)
+    (x y z : binary_float prec emax) :
+    Binary.Bfma fma_nan m x y z =
+      Binary.BSN2B (fma_nan x y z)
+        (BinarySingleNaN.Bfma m (Binary.B2BSN x) (Binary.B2BSN y)
+          (Binary.B2BSN z)) := by
+  cases x <;> cases y <;> cases z
+  case B754_finite.B754_finite.B754_zero =>
+    exact (BSN2B_B2BSN_of_not_nan _ _ (is_nan_normalize _ _ _ _)).symm
+  case B754_finite.B754_finite.B754_finite =>
+    exact (BSN2B_B2BSN_of_not_nan _ _ (is_nan_normalize _ _ _ _)).symm
+  all_goals
+    simp [Binary.Bfma, BinarySingleNaN.Bfma, Binary.BSN2B, Binary.B2BSN,
+      binaryFloatToBinarySingleNaNFloat, Binary.build_nan,
+      binaryPositiveOfNat_positiveToNat]
+  all_goals first | rfl | (split_ifs <;> rfl)
+
+-- Binary.v:1162
+example {prec emax : Int} [Prec_gt_0 prec] [Prec_lt_emax prec emax]
+    (div_nan : Binary.BdivNaNHandler prec emax) (m : RoundingMode)
+    (x y : binary_float prec emax) :
+    Binary.Bdiv div_nan m x y =
+      Binary.BSN2B (div_nan x y)
+        (BinarySingleNaN.Bdiv m (Binary.B2BSN x) (Binary.B2BSN y)) := by
+  cases x <;> cases y
+  case B754_finite.B754_finite => exact (BSN2B_standardFloat _ _ _ _).symm
+  all_goals
+    simp [Binary.Bdiv, BinarySingleNaN.Bdiv, Binary.BSN2B, Binary.B2BSN,
+      binaryFloatToBinarySingleNaNFloat, Binary.build_nan]
+
+-- Binary.v:1193
+example {prec emax : Int} [Prec_gt_0 prec] [Prec_lt_emax prec emax]
+    (sqrt_nan : Binary.BsqrtNaNHandler prec emax) (m : RoundingMode)
+    (x : binary_float prec emax) :
+    Binary.Bsqrt sqrt_nan m x =
+      Binary.BSN2B (sqrt_nan x) (BinarySingleNaN.Bsqrt m (Binary.B2BSN x)) := by
+  cases x with
+  | B754_finite s mx ex h =>
+      cases s
+      · exact (BSN2B_standardFloat _ _ _ _).symm
+      · rfl
+  | B754_infinity s => cases s <;> rfl
+  | _ => rfl
+
+-- Binary.v:1266
+example {prec emax : Int} [Prec_gt_0 prec] [Prec_lt_emax prec emax] :
+    (Binary.Bmax_float : binary_float prec emax) =
+      Binary.BSN2B' BinarySingleNaN.Bmax_float rfl :=
+  rfl
+
+-- Binary.v:1271
+example {prec emax : Int} (x : binary_float prec emax) :
+    Binary.Bnormfr_mantissa x =
+      BinarySingleNaN.Bnormfr_mantissa (Binary.B2BSN x) :=
+  rfl
+
+-- BinarySingleNaN.v:2820
+example {prec emax : Int} (x : BinarySingleNaN.binary_float prec emax) :
+    BinarySingleNaN.Bnormfr_mantissa x =
+      SFnormfr_mantissa prec (binarySingleNaNFloatToStandardFloat x) :=
+  rfl
+
+/-- `Binary.valid_binary` carries the Binary.v:166 anchor. The root
+`valid_binary` on the Nat-payload `FullFloat` agrees with it on every exact
+`full_float`. -/
+example {prec emax : Int} (x : full_float) :
+    valid_binary (prec:=prec) (emax:=emax) x.toFullFloat =
+      Binary.valid_binary (prec:=prec) (emax:=emax) x := by
+  cases x <;> simp [valid_binary, Binary.valid_binary, valid_full_float_binary,
+    full_float.toFullFloat, nan_pl, FloatSpec.Core.Zaux.positiveToNat_pos]
+
+end BinaryLift

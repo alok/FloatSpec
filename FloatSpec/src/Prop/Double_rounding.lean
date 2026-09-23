@@ -12,9 +12,10 @@ set_option linter.style.haveILetI false
 
 variable (beta : Int) [ValidRadix beta]
 
-/-! Midpoint helpers, corresponding to Coq's `midp` and `midp'`. -/
-
-noncomputable def round_round_eq (fexp1 fexp2 : Int → Int)
+/-- Coq `round_round_eq`: rounding to nearest in `fexp2` and then in `fexp1`
+gives the same value as rounding to nearest in `fexp1` directly. -/
+@[flocq_source "src/Prop/Double_rounding.v" 36 "round_round_eq"]
+def round_round_eq (fexp1 fexp2 : Int → Int)
     (choice1 choice2 : Int → Bool) (x : ℝ) : Prop :=
   FloatSpec.Core.Generic_fmt.roundR beta fexp1
       (FloatSpec.Core.Generic_fmt.Znearest choice1)
@@ -24,11 +25,19 @@ noncomputable def round_round_eq (fexp1 fexp2 : Int → Int)
     FloatSpec.Core.Generic_fmt.roundR beta fexp1
       (FloatSpec.Core.Generic_fmt.Znearest choice1) x
 
+/-! Midpoint helpers, corresponding to Coq's `midp` and `midp'`. -/
+
+/-- Coq `midp`: the midpoint between `x` rounded down in `fexp` and the next
+float, that is the round-down value plus half an ulp. -/
+@[flocq_source "src/Prop/Double_rounding.v" 67 "midp"]
 noncomputable def midp (fexp : Int → Int)
     (x : ℝ) : ℝ :=
   FloatSpec.Core.Generic_fmt.roundR beta fexp FloatSpec.Core.Generic_fmt.rnd_floor x
     + (1 / 2) * ulp beta fexp x
 
+/-- Coq `midp'`: the midpoint between `x` rounded up in `fexp` and the previous
+float, that is the round-up value minus half an ulp. -/
+@[flocq_source "src/Prop/Double_rounding.v" 70 "midp'"]
 noncomputable def midp' (fexp : Int → Int)
     (x : ℝ) : ℝ :=
   FloatSpec.Core.Generic_fmt.roundR beta fexp FloatSpec.Core.Generic_fmt.rnd_ceil x

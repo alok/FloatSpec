@@ -662,8 +662,6 @@ theorem canonical_bounded_nat
   exact canonical_canonical_mantissa_bsn (prec:=prec) (emax:=emax) sx mx ex hmx_pos
     (canonical_mantissa_of_specFloat_bounded h_bounded)
 
-alias canonical_bounded_of_specFloat_bounded := canonical_bounded_nat
-
 -- Coq `BinarySingleNaN.canonical_canonical_mantissa`, published on the
 -- proof-carrying carrier's positive mantissa boundary.
 omit [Prec_gt_0 prec] [Prec_lt_emax prec emax] in
@@ -2574,108 +2572,11 @@ theorem Fplus_naive_correct (sx : Bool) (mx : Nat) (ex : Int)
 /-!
 Experimental SingleNaN arithmetic surface.
 
-The operations in this namespace remain a lightweight Lean model of the
-SingleNaN surface.  They now compute by rounding the real-valued operation into
-the existing binary representation instead of returning a fixed operand.
+The operations in this namespace run the integer `binary_round` /
+`binary_normalize` pipeline on the Nat-mantissa `B754` carrier. They are
+computable duplicates of the proof-carrying `BinarySingleNaN` operations and
+are not the source-facing API.
 -/
-
-noncomputable def B754_round_real (mode : RoundingMode) (x : ℝ) : B754 :=
-  let fexp := FloatSpec.Core.FLT.FLT_exp prec (3 - emax - prec)
-  let rounded := FloatSpec.Core.Generic_fmt.round_to_generic 2 fexp (rnd_of_mode mode) x
-  B2BSN (prec:=prec) (emax:=emax) (FF2B (prec:=prec) (emax:=emax) (real_to_FullFloat rounded fexp))
-
-noncomputable def B754_round_real_signed_zero (mode : RoundingMode) (s : Bool) (x : ℝ) : B754 :=
-  let fexp := FloatSpec.Core.FLT.FLT_exp prec (3 - emax - prec)
-  match mode with
-  | RoundingMode.RNE =>
-      let rounded := FloatSpec.Core.Generic_fmt.round_to_generic 2 fexp (rnd_of_mode mode) |x|
-      if rounded = 0 then
-        B754.B754_zero s
-      else
-        let exp := FloatSpec.Core.Generic_fmt.cexp 2 fexp rounded
-        let mantissa := FloatSpec.Core.Raux.Ztrunc (rounded * (2 : ℝ) ^ (-exp))
-        B754.B754_finite s mantissa.natAbs exp
-  | _ =>
-      let rounded := FloatSpec.Core.Generic_fmt.round_to_generic 2 fexp (rnd_of_mode mode) x
-      if rounded = 0 then
-        B754.B754_zero s
-      else
-        let exp := FloatSpec.Core.Generic_fmt.cexp 2 fexp rounded
-        let mantissa := FloatSpec.Core.Raux.Ztrunc (rounded * (2 : ℝ) ^ (-exp))
-        let sign := mantissa < 0
-        B754.B754_finite (decide sign) mantissa.natAbs exp
-
-private theorem BSN_is_nan_B754_round_real_signed_zero
-    (mode : RoundingMode) (s : Bool) (x : ℝ) :
-    BSN_is_nan (B754_round_real_signed_zero (prec:=prec) (emax:=emax) mode s x) = false := by
-  unfold B754_round_real_signed_zero
-  cases mode
-  · by_cases h :
-        FloatSpec.Core.Generic_fmt.round_to_generic 2
-          (FloatSpec.Core.FLT.FLT_exp prec (3 - emax - prec))
-          (rnd_of_mode RoundingMode.RNE) |x| = 0
-    · simp [h, BSN_is_nan]
-    · simp [h, BSN_is_nan]
-  · by_cases h :
-        FloatSpec.Core.Generic_fmt.round_to_generic 2
-          (FloatSpec.Core.FLT.FLT_exp prec (3 - emax - prec))
-          (rnd_of_mode RoundingMode.RNA) x = 0
-    · simp [h, BSN_is_nan]
-    · simp [h, BSN_is_nan]
-  · by_cases h :
-        FloatSpec.Core.Generic_fmt.round_to_generic 2
-          (FloatSpec.Core.FLT.FLT_exp prec (3 - emax - prec))
-          (rnd_of_mode RoundingMode.RTP) x = 0
-    · simp [h, BSN_is_nan]
-    · simp [h, BSN_is_nan]
-  · by_cases h :
-        FloatSpec.Core.Generic_fmt.round_to_generic 2
-          (FloatSpec.Core.FLT.FLT_exp prec (3 - emax - prec))
-          (rnd_of_mode RoundingMode.RTN) x = 0
-    · simp [h, BSN_is_nan]
-    · simp [h, BSN_is_nan]
-  · by_cases h :
-        FloatSpec.Core.Generic_fmt.round_to_generic 2
-          (FloatSpec.Core.FLT.FLT_exp prec (3 - emax - prec))
-          (rnd_of_mode RoundingMode.RTZ) x = 0
-    · simp [h, BSN_is_nan]
-    · simp [h, BSN_is_nan]
-
-private theorem abs_F2R_neg_mantissa_eq (m : Nat) (e : Int) :
-    |F2R ({ Fnum := -(m : Int), Fexp := e } : FloatSpec.Core.Defs.FlocqFloat 2)|
-      = |F2R ({ Fnum := (m : Int), Fexp := e } : FloatSpec.Core.Defs.FlocqFloat 2)| := by
-  unfold F2R FloatSpec.Core.Defs.F2R
-  simp [abs_mul]
-
-def B754_has_nan (x y : B754) : Bool :=
-  match x, y with
-  | B754.B754_nan, _ => true
-  | _, B754.B754_nan => true
-  | _, _ => false
-
--- Operations preserving single NaN
-noncomputable def B754_plus (mode : RoundingMode) (x y : B754) : B754 :=
-  if B754_has_nan x y then
-    B754.B754_nan
-  else
-    B754_round_real (prec:=prec) (emax:=emax) mode (B754_to_R x + B754_to_R y)
-
-noncomputable def B754_mult (mode : RoundingMode) (x y : B754) : B754 :=
-  if B754_has_nan x y then
-    B754.B754_nan
-  else
-    B754_round_real (prec:=prec) (emax:=emax) mode (B754_to_R x * B754_to_R y)
-
-noncomputable def B754_div (mode : RoundingMode) (x y : B754) : B754 :=
-  if B754_has_nan x y then
-    B754.B754_nan
-  else
-    B754_round_real (prec:=prec) (emax:=emax) mode (B754_to_R x / B754_to_R y)
-
-noncomputable def B754_sqrt (mode : RoundingMode) (x : B754) : B754 :=
-  match x with
-  | B754.B754_nan => B754.B754_nan
-  | _ => B754_round_real (prec:=prec) (emax:=emax) mode (Real.sqrt (B754_to_R x))
 
 -- Classification functions
 def B754_is_finite (x : B754) : Bool :=
@@ -2696,22 +2597,8 @@ def B754_sign (x : B754) : Bool :=
   | B754.B754_finite s _ _ => s
   | B754.B754_nan => false
 
-/-- Predicate capturing when a B754 float is in generic format.
-    For finite floats, this requires the canonical exponent to be at most the float's exponent.
-    This is the key constraint that Coq's `bounded mx ex = true` proof provides.
--/
-noncomputable def B754_in_generic_format (x : B754) : Prop :=
-  match x with
-  | B754.B754_zero _ => True
-  | B754.B754_infinity _ => True
-  | B754.B754_nan => True
-  | B754.B754_finite s m e =>
-    let fnum : Int := if s then -(m : Int) else (m : Int)
-    let f : FloatSpec.Core.Defs.FlocqFloat 2 := FloatSpec.Core.Defs.FlocqFloat.mk fnum e
-    fnum ≠ 0 → FloatSpec.Core.Generic_fmt.cexp 2 (FLT_exp (3 - emax - prec) prec) (F2R f) ≤ e
-
 -- Exponent scaling (Coq: Bldexp) at the SingleNaN level.
-noncomputable def Bldexp (mode : RoundingMode) (x : B754) (e : Int) : B754 :=
+def Bldexp (mode : RoundingMode) (x : B754) (e : Int) : B754 :=
   match x with
   | B754.B754_finite s m ex =>
       SF2B (binary_round (prec:=prec) (emax:=emax) mode s m (ex + e))
@@ -3589,7 +3476,7 @@ theorem Bulp_correct_aux :
     grind
 
 -- Coq: Bulp
-noncomputable def Bulp (x : B754) : B754 :=
+def Bulp (x : B754) : B754 :=
   match x with
   | B754.B754_zero _ => B754.B754_finite false 1 (3 - emax - prec)
   | B754.B754_infinity _ => B754.B754_infinity false
@@ -3610,13 +3497,13 @@ theorem is_nan_Bulp (x : B754) :
           RoundingMode.RTZ 1 e false
 
 -- Coq: Bulp'
-noncomputable def Bulp' (x : B754) : B754 :=
+def Bulp' (x : B754) : B754 :=
   Bldexp (prec:=prec) (emax:=emax) RoundingMode.RNE Bone
     ((FLT_exp (3 - emax - prec) prec)
       (Bfrexp_bsn (prec:=prec) (emax:=emax) x).2)
 
 -- Coq: Bplus
-noncomputable def Bplus (mode : RoundingMode) (x y : B754) : B754 :=
+def Bplus (mode : RoundingMode) (x y : B754) : B754 :=
   match x, y with
   | B754.B754_nan, _ => B754.B754_nan
   | _, B754.B754_nan => B754.B754_nan
@@ -3642,11 +3529,11 @@ noncomputable def Bplus (mode : RoundingMode) (x y : B754) : B754 :=
 
 -- Coq: Bminus. This is extensionally the constructor match used upstream:
 -- subtraction is addition after flipping the second operand's sign.
-noncomputable def Bminus (mode : RoundingMode) (x y : B754) : B754 :=
+def Bminus (mode : RoundingMode) (x y : B754) : B754 :=
   Bplus (prec:=prec) (emax:=emax) mode x (Bopp_bsn y)
 
 -- Coq: Bpred_pos'
-noncomputable def Bpred_pos' (x : B754) : B754 :=
+def Bpred_pos' (x : B754) : B754 :=
   match x with
   | B754.B754_finite _ mx _ =>
       let d :=
@@ -3660,7 +3547,7 @@ noncomputable def Bpred_pos' (x : B754) : B754 :=
   | _ => x
 
 -- Coq: Bsucc'
-noncomputable def Bsucc' (x : B754) : B754 :=
+def Bsucc' (x : B754) : B754 :=
   match x with
   | B754.B754_zero _ =>
       Bldexp (prec:=prec) (emax:=emax) RoundingMode.RNE Bone (3 - emax - prec)
@@ -3675,7 +3562,7 @@ noncomputable def Bsucc' (x : B754) : B754 :=
       Bopp_bsn (Bpred_pos' (prec:=prec) (emax:=emax) (Bopp_bsn x))
 
 -- Coq: Bsucc
-noncomputable def Bsucc (x : B754) : B754 :=
+def Bsucc (x : B754) : B754 :=
   match x with
   | B754.B754_zero _ => B754.B754_finite false 1 (3 - emax - prec)
   | B754.B754_infinity false => x
@@ -3705,7 +3592,7 @@ theorem is_nan_Bsucc (x : B754) :
           RoundingMode.RTZ true (2 * mx - 1) (ex - 1)
 
 -- Coq: Bpred
-noncomputable def Bpred (x : B754) : B754 :=
+def Bpred (x : B754) : B754 :=
   Bopp_bsn (Bsucc (prec:=prec) (emax:=emax) (Bopp_bsn x))
 
 -- Coq: is_nan_Bpred
@@ -3720,26 +3607,6 @@ theorem is_nan_Bpred (x : B754) :
         is_nan_Bsucc (prec:=prec) (emax:=emax) (Bopp_bsn x)
     _ = BSN_is_nan x := by
         cases x <;> rfl
-
--- Legacy compatibility endpoint: assumes the result equation instead of
--- deriving it; the adapter returns the input float unchanged. The
--- source-shaped theorem is `BinarySingleNaN.Bsqrt_correct_aux`.
-theorem Bsqrt_correct_aux_from_assumed_rounding {prec emax : Int}
-  [Prec_gt_0 prec] [Prec_lt_emax prec emax]
-  (_mode : RoundingMode) (rnd : ℝ → Int) (hrnd0 : rnd 0 = 0)
-  (mx : Nat) (ex : Int)
-  (Hx : valid_binary_SF (prec:=prec) (emax:=emax)
-    (StandardFloat.S754_finite false mx ex) = true)
-  (hsqrt : SF2R 2 (StandardFloat.S754_finite false mx ex) =
-           FloatSpec.Calc.Round.round 2 (FLT_exp (3 - emax - prec) prec) ⟨rnd, hrnd0⟩
-           (Real.sqrt (SF2R 2 (StandardFloat.S754_finite false mx ex)))) :
-    let z := StandardFloat.S754_finite false mx ex
-    let x := SF2R 2 (StandardFloat.S754_finite false mx ex)
-    valid_binary_SF (prec:=prec) (emax:=emax) z = true ∧
-    SF2R 2 z = FloatSpec.Calc.Round.round 2 (FLT_exp (3 - emax - prec) prec) ⟨rnd, hrnd0⟩
-      (Real.sqrt x) ∧
-    is_finite_SF z = true ∧ sign_SF z = false :=
-  ⟨Hx, hsqrt, rfl, rfl⟩
 
 end ExperimentalSingleNaNArithmetic
 
@@ -4532,9 +4399,9 @@ theorem standardFloat_eq_of_valid_finite_sign_value
           have hyParts : 0 < my ∧
               specFloat_bounded (prec:=prec) (emax:=emax) my ey = true := by
             simpa [validBinarySingleNaNStandardFloat, Bool.and_eq_true] using hvalidY
-          have hcanonXTrip := canonical_bounded_of_specFloat_bounded
+          have hcanonXTrip := canonical_bounded_nat
             (prec:=prec) (emax:=emax) sx mx ex hxParts.1 hxParts.2
-          have hcanonYTrip := canonical_bounded_of_specFloat_bounded
+          have hcanonYTrip := canonical_bounded_nat
             (prec:=prec) (emax:=emax) sy my ey hyParts.1 hyParts.2
           have hcanonX : canonical_FF (prec:=prec) (emax:=emax)
               (SF2FF (StandardFloat.S754_finite sx mx ex)) := by
@@ -5896,7 +5763,10 @@ def standardFloatToBinaryFloatOfNotNaN {prec emax : Int}
       binary_float.B754_finite (prec:=prec) (emax:=emax) s p e (by
         simpa [hp] using h'.2)
 
--- Coq: `Binary.v:Bsqrt`.
+-- Coq `Binary.v:Bsqrt` is `BSN2B (sqrt_nan x) (BinarySingleNaN.Bsqrt m (B2BSN x))`.
+-- This direct transcription is equal to that composition on every input
+-- (checked in `FloatSpec/Test/SourceSurface.lean`).
+@[flocq_source "src/IEEE754/Binary.v" 1193 "Bsqrt"]
 def Bsqrt {prec emax : Int}
     [Prec_gt_0 prec] [Prec_lt_emax prec emax]
     (sqrt_nan : BsqrtNaNHandler prec emax)
@@ -6547,12 +6417,14 @@ def BmaxFloatSingle {prec emax : Int}
     (maxFloatMantissa_pos (prec:=prec)) (by
       simp [specFloat_bounded, m, hp.2])
 
--- Coq `Binary.v:Bmax_float`.
+-- Coq `Binary.v:Bmax_float`: `BSN2B' BinarySingleNaN.Bmax_float eq_refl`.
+@[flocq_source "src/IEEE754/Binary.v" 1266 "Bmax_float"]
 def Bmax_float {prec emax : Int}
     [Prec_gt_0 prec] [Prec_lt_emax prec emax] : binary_float prec emax :=
   BSN2B' (BmaxFloatSingle (prec:=prec) (emax:=emax)) (by rfl)
 
--- Coq `Binary.v:Bnormfr_mantissa`.
+-- Coq `Binary.v:Bnormfr_mantissa`: `BinarySingleNaN.Bnormfr_mantissa (B2BSN x)`.
+@[flocq_source "src/IEEE754/Binary.v" 1271 "Bnormfr_mantissa"]
 def Bnormfr_mantissa {prec emax : Int} (x : binary_float prec emax) : Nat :=
   BinarySingleNaNFloat.Bnormfr_mantissa (B2BSN x)
 
@@ -6942,6 +6814,10 @@ private theorem binarySingleNaNFloatToB754_of_is_nan {prec emax : Int}
     simp [is_nan, binaryFloatToBinarySingleNaNFloat,
       binarySingleNaNFloatToB754] at hx ⊢
 
+-- Coq `Binary.v:Bplus` is `BSN2B (plus_nan x y) (BinarySingleNaN.Bplus m (B2BSN x)
+-- (B2BSN y))`. This direct transcription is equal to that composition on every
+-- input (checked in `FloatSpec/Test/SourceSurface.lean`).
+@[flocq_source "src/IEEE754/Binary.v" 1049 "Bplus"]
 def Bplus {prec emax : Int}
     [Prec_gt_0 prec] [Prec_lt_emax prec emax]
     (plus_nan : BplusNaNHandler prec emax)
@@ -7178,9 +7054,12 @@ theorem binarySingleNaNFloatToB754_Bplus {prec emax : Int}
                 binaryFloatToBinarySingleNaNFloat, binarySingleNaNFloatToB754,
                 mxn, myn, ez, m, szero, hm0, hmpos, z] using hstd
 
--- Coq: Binary.v:Bminus
--- Upstream defines this by subtracting through the SingleNaN operation and
--- lifting NaN results with the original `(x, y)` payload handler.
+-- Coq `Binary.v:Bminus` is `BSN2B (minus_nan x y) (BinarySingleNaN.Bminus m
+-- (B2BSN x) (B2BSN y))`: it subtracts through the SingleNaN operation and
+-- lifts NaN results with the original `(x, y)` payload handler. This direct
+-- transcription is equal to that composition on every input (checked in
+-- `FloatSpec/Test/SourceSurface.lean`).
+@[flocq_source "src/IEEE754/Binary.v" 1086 "Bminus"]
 def Bminus {prec emax : Int}
     [Prec_gt_0 prec] [Prec_lt_emax prec emax]
     (minus_nan : BminusNaNHandler prec emax)
@@ -7246,6 +7125,10 @@ theorem Bminus_eq_Bplus_Bopp {prec emax : Int}
   cases x <;> cases y <;> cases mode <;>
     simp [Bminus, Bplus, Bopp_preserve_nan, Bool.xor]
 
+-- Coq `Binary.v:Bmult` is `BSN2B (mult_nan x y) (BinarySingleNaN.Bmult m (B2BSN x)
+-- (B2BSN y))`. This direct transcription is equal to that composition on every
+-- input (checked in `FloatSpec/Test/SourceSurface.lean`).
+@[flocq_source "src/IEEE754/Binary.v" 947 "Bmult"]
 def Bmult {prec emax : Int}
     [Prec_gt_0 prec] [Prec_lt_emax prec emax]
     (mult_nan : BmultNaNHandler prec emax)
@@ -7307,7 +7190,10 @@ def Bmult {prec emax : Int}
           exact is_nan_binary_overflow (prec:=prec) (emax:=emax) mode (Bool.xor sx sy)
       standardFloatToBinaryFloatOfNotNaN (prec:=prec) (emax:=emax) z haux.1 hnotnan
 
--- Coq: `Binary.v:Bdiv`.
+-- Coq `Binary.v:Bdiv` is `BSN2B (div_nan x y) (BinarySingleNaN.Bdiv m (B2BSN x)
+-- (B2BSN y))`. This direct transcription is equal to that composition on every
+-- input (checked in `FloatSpec/Test/SourceSurface.lean`).
+@[flocq_source "src/IEEE754/Binary.v" 1162 "Bdiv"]
 def Bdiv {prec emax : Int}
     [Prec_gt_0 prec] [Prec_lt_emax prec emax]
     (div_nan : BdivNaNHandler prec emax)
@@ -7370,12 +7256,17 @@ def Bdiv {prec emax : Int}
             (Bool.xor sx sy)
       standardFloatToBinaryFloatOfNotNaN (prec:=prec) (emax:=emax) z haux.1 hnotnan
 
--- Coq: `Binary.v:Bfma_szero`, on the proof-carrying Binary surface.
+-- Coq `Binary.v:Bfma_szero` is `BinarySingleNaN.Bfma_szero m (B2BSN x)
+-- (B2BSN y) (B2BSN z)`. `B2BSN` forgets a NaN's sign, so a NaN operand counts
+-- as positive here, whereas `Bsign` would read its sign bit. The signs are
+-- therefore read through `B2BSN`, which makes this definitionally equal to
+-- the SingleNaN rule (checked in `FloatSpec/Test/SourceSurface.lean`).
+@[flocq_source "src/IEEE754/Binary.v" 1123 "Bfma_szero"]
 def Bfma_szero {prec emax : Int} (mode : RoundingMode)
     (x y z : binary_float prec emax) : Bool :=
-  let sxy := Bool.xor (Bsign (prec:=prec) (emax:=emax) x)
-    (Bsign (prec:=prec) (emax:=emax) y)
-  if sxy == Bsign (prec:=prec) (emax:=emax) z then sxy
+  let sxy := Bool.xor (BSN_sign (binarySingleNaNFloatToB754 (B2BSN x)))
+    (BSN_sign (binarySingleNaNFloatToB754 (B2BSN y)))
+  if sxy == BSN_sign (binarySingleNaNFloatToB754 (B2BSN z)) then sxy
   else
     match mode with
     | RoundingMode.RTN => true
@@ -7642,7 +7533,10 @@ theorem normalize_correct {prec emax : Int}
             simp [binary_overflow, FloatSpec.Core.Raux.Rlt_bool, F2R,
               FloatSpec.Core.Defs.F2R, hinputNegRaw]
 
--- Coq: `Binary.v:Bfma`.
+-- Coq `Binary.v:Bfma` is `BSN2B (fma_nan x y z) (BinarySingleNaN.Bfma m
+-- (B2BSN x) (B2BSN y) (B2BSN z))`. This direct transcription is equal to that
+-- composition on every input (checked in `FloatSpec/Test/SourceSurface.lean`).
+@[flocq_source "src/IEEE754/Binary.v" 1126 "Bfma"]
 def Bfma {prec emax : Int}
     [Prec_gt_0 prec] [Prec_lt_emax prec emax]
     (fma_nan : BfmaNaNHandler prec emax)
@@ -7878,6 +7772,7 @@ def Bminus {prec emax : Int}
     binary_float prec emax :=
   Bplus mode x (Bopp y)
 
+@[flocq_source "src/IEEE754/BinarySingleNaN.v" 2089 "Bfma_szero"]
 def Bfma_szero {prec emax : Int} (mode : RoundingMode)
     (x y z : binary_float prec emax) : Bool :=
   let sxy := Bool.xor
@@ -10242,7 +10137,7 @@ private theorem binaryFiniteGenericFormat {prec emax : Int}
       (Binary.B2R (prec:=prec) (emax:=emax)
         (binary_float.B754_finite (prec:=prec) (emax:=emax) s m e hbounded)) := by
   have hpositive := positiveToNat_pos_bsn m
-  have hcanonTrip := canonical_bounded_of_specFloat_bounded
+  have hcanonTrip := canonical_bounded_nat
     (prec:=prec) (emax:=emax) s (FloatSpec.Core.Zaux.positiveToNat m) e
     hpositive hbounded
   have hcanon :
@@ -13662,6 +13557,9 @@ theorem B2FF_BSN2B' {prec emax : Int} (x : BinarySingleNaNFloat prec emax)
       simp [BSN2B', B2FF_exact, binaryFloatToFullFloat, SF2FF_exact,
         binarySingleNaNFloatToStandardFloat, hm, binaryPositiveOfNat_spec]
 
+/-- Flocq `valid_binary` on the exact `full_float` carrier: a finite value must
+satisfy `SpecFloat.bounded` and a NaN payload must satisfy `nan_pl`. -/
+@[flocq_source "src/IEEE754/Binary.v" 166 "valid_binary"]
 abbrev valid_binary {prec emax : Int} (x : full_float) : Bool :=
   valid_full_float_binary (prec:=prec) (emax:=emax) x
 
@@ -15399,9 +15297,9 @@ private theorem exp_lt {prec emax : Int} (mx my : Nat) (ex ey : Int)
   let fexp := _root_.FLT_exp (3 - emax - prec) prec
   let fx : FloatSpec.Core.Defs.FlocqFloat 2 := ⟨mx, ex⟩
   let fy : FloatSpec.Core.Defs.FlocqFloat 2 := ⟨my, ey⟩
-  have hcxTrip := canonical_bounded_of_specFloat_bounded
+  have hcxTrip := canonical_bounded_nat
     (prec := prec) (emax := emax) false mx ex hmx hx
-  have hcyTrip := canonical_bounded_of_specFloat_bounded
+  have hcyTrip := canonical_bounded_nat
     (prec := prec) (emax := emax) false my ey hmy hy
   have hcx : canonical 2 fexp fx := by
     simpa [fexp, fx] using hcxTrip

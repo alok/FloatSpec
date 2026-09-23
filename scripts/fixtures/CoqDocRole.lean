@@ -41,9 +41,9 @@ def markdownMentions : Unit := ()
 
 end CoqDocRole
 
--- A citation resolves in the current scope: at the root, `Bcompare` is an unanchored Lean
--- declaration (an error there), but inside `BinarySingleNaN` it is the anchored
--- `BinarySingleNaN.Bcompare`, and inside `Binary` the anchored `Binary.Bcompare`.
+-- A citation resolves in the current scope: at the root, `Bcompare` names two anchored Coq
+-- declarations and is ambiguous (an error there), but inside `BinarySingleNaN` it is the
+-- anchored `BinarySingleNaN.Bcompare`, and inside `Binary` the anchored `Binary.Bcompare`.
 namespace BinarySingleNaN
 
 set_option doc.verso true in
