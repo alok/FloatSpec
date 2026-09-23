@@ -51,9 +51,26 @@ def sourceRef? (env : Environment) (declName : Name) : Option SourceRef :=
 def localRef? (env : Environment) (declName : Name) : Option LocalRef :=
   (localExt.getState env).find? (·.declName == declName)
 
+/-- Every Rocq source file under `src/` at `flocqCommit`, in `git ls-tree` order.
+`scripts/validate_flocq_source_refs.py` checks this list against the pinned checkout. -/
+def flocqSourceFiles : Array String := #[
+  "src/Calc/Bracket.v", "src/Calc/Div.v", "src/Calc/Operations.v", "src/Calc/Plus.v",
+  "src/Calc/Round.v", "src/Calc/Sqrt.v", "src/Core/Core.v", "src/Core/Defs.v",
+  "src/Core/Digits.v", "src/Core/FIX.v", "src/Core/FLT.v", "src/Core/FLX.v", "src/Core/FTZ.v",
+  "src/Core/Float_prop.v", "src/Core/Generic_fmt.v", "src/Core/Raux.v", "src/Core/Round_NE.v",
+  "src/Core/Round_pred.v", "src/Core/Ulp.v", "src/Core/Zaux.v", "src/IEEE754/Binary.v",
+  "src/IEEE754/BinarySingleNaN.v", "src/IEEE754/Bits.v", "src/IEEE754/PrimFloat.v",
+  "src/Pff/Pff.v", "src/Pff/Pff2Flocq.v", "src/Pff/Pff2FlocqAux.v",
+  "src/Prop/Div_sqrt_error.v", "src/Prop/Double_rounding.v", "src/Prop/Mult_error.v",
+  "src/Prop/Plus_error.v", "src/Prop/Relative.v", "src/Prop/Round_odd.v", "src/Prop/Sterbenz.v"]
+
+/-- A clickable link to a whole Flocq source file at the pinned commit. -/
+def sourceFileUrl (path : String) : String :=
+  s!"https://gitlab.inria.fr/flocq/flocq/-/blob/{flocqCommit}/{path}"
+
 /-- A clickable link to the pinned source declaration. -/
 def sourceUrl (ref : SourceRef) : String :=
-  s!"https://gitlab.inria.fr/flocq/flocq/-/blob/{flocqCommit}/{ref.path}#L{ref.line}"
+  s!"{sourceFileUrl ref.path}#L{ref.line}"
 
 /-- Does a declaration have a pinned Flocq source reference? -/
 def hasSourceRef (env : Environment) (declName : Name) : Bool :=

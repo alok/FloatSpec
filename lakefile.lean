@@ -46,7 +46,8 @@ require mathlib from git "https://github.com/leanprover-community/mathlib4" @ "v
 lean_lib FloatSpecLinter where
   globs := #[.andSubmodules `FloatSpec.Linter]
 
-/-- Stub for doc-role registration (Verso/VersoCoq removed in this fork). -/
+/-- Flocq docstring extensions on Lean's built-in Verso docstrings: `{coq}`,
+    `{coq_file}`, and `coq` quote blocks linked to the pinned Flocq commit. -/
 lean_lib FloatSpecRoles where
   globs := #[.one `FloatSpecRoles]
 
