@@ -44,15 +44,15 @@ missing/dirty/wrong-pinned reference, an unavailable compiler, and any failure
 or error; its report records each module's test count. Eleven runner-policy
 controls in `scripts/test_required_rocq_tests.py` test these boundaries, and 14
 hermetic controls in `scripts/test_reference_policy.py` test the reference
-policy described in section 2. The runner covers all 26 test modules gated on
-`FLOCQ_AUDIT_DIR`: 310 tests spanning the core, native IEEE,
+policy described in section 2. The runner covers all 27 test modules gated on
+`FLOCQ_AUDIT_DIR`: 320 tests spanning the core, native IEEE,
 mode/scale/integer, exact-oracle, rounding, ULP, remainder, model-adapter,
 LPO, double-rounding, Zaux, Pff, exemplar and flocqsmith suites. It is not a
 replacement for every deeper profile below.
 
-CI also compiles every Rocq fixture (`scripts/fixtures/*.v`, 47 today) against
+CI also compiles every Rocq fixture (`scripts/fixtures/*.v`, 48 today) against
 the pinned build and elaborates every Lean fixture (`scripts/fixtures/*.lean`,
-36 today) with `-DwarningAsError=true`, both discovered by glob. `lake env lean`
+37 today) with `-DwarningAsError=true`, both discovered by glob. `lake env lean`
 does not read the lakefile, so fixtures meet Lean's default linters plus
 warnings-as-errors, which is stricter than the product build. The two fixtures
 that define `main`, `GuidedDemo` and `PffWalkthrough`, also execute, and
@@ -70,7 +70,7 @@ the compiled test library instead: `lake build` applies `warningAsError` there,
 and `scripts/check_compiled_trust.py --scope tests` audits it and replays its
 declarations through the kernel. Each Lean fixture's olean
 is written while it elaborates, and `scripts/KernelReplay.lean` then sends
-every declaration of all 36 back through the kernel (440 declarations, about
+every declaration of all 37 back through the kernel (440 declarations, about
 45 seconds here): a metaprogram can add a theorem the kernel never checked, which
 `#print axioms` reports as axiom-free, and only a replay sees that however it
 is spelled.
@@ -120,7 +120,7 @@ That puts a cold run at roughly 130-145 minutes, still inside the timeout.
 
 The per-push bridge selects `power`, `div_eucl`, `location`, `round`, `truncate`,
 `div`, `plus`, `sqrt`, `formats`, `digits`, `operations`, `bits32` and `bits64`.
-The 310-test live suite additionally exercises the IEEE/native adapters and
+The 320-test live suite additionally exercises the IEEE/native adapters and
 mutation controls; the saved replays cover prior raw-IEEE and Pff
 counterexamples.
 Omit `--operations` for the larger 35,594-case grid at this seed/sample count.
@@ -132,7 +132,7 @@ Compiled trust is checked separately for source and tests. The test scope
 imports every `FloatSpec/Test` module and allows no project axiom, unsafe
 declaration, runtime override, or direct/transitive sorry dependency. Each
 scope then replays every one of its modules through the kernel with
-`scripts/KernelReplay.lean` (14,252 source and 314 test declarations) and
+`scripts/KernelReplay.lean` (11,986 source and 328 test declarations) and
 fails unless the replayed modules are exactly the scope's files. It does not
 turn native runtime assertions into kernel proofs, nor cover standalone files
 outside `FloatSpec/Test`; those fixtures instead run with warnings as errors,

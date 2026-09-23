@@ -27,7 +27,7 @@ CI now installs Rocq and builds pinned Flocq as well as Lean. Required live
 tests cannot silently skip a missing reference. The initial hosted run passed
 the 174 live tests but timed out in an oversized differential grid; the bounded
 follow-up is locally verified and still needs its own hosted result. The
-required suite has since grown to all 26 reference-gated modules (310 tests),
+required suite has since grown to all 27 reference-gated modules (320 tests),
 CI now compiles every Lean and Rocq fixture by glob, and it replays every
 source, test and fixture declaration through the kernel; these changes, too,
 need their own hosted result. See
