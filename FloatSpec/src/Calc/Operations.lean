@@ -12,11 +12,8 @@ import FloatSpec.src.Core.Raux
 import FloatSpec.src.Core.Defs
 import FloatSpec.src.Core.Float_prop
 import Mathlib.Data.Real.Basic
-import Std.Do.Triple
-import FloatSpec.src.SimprocWP
 
 open Real FloatSpec.Core.Defs
-open Std.Do
 
 set_option linter.coqSource true
 set_option warningAsError true
@@ -146,11 +143,8 @@ def Fopp (f1 : FlocqFloat beta) : (FlocqFloat beta) :=
     The real value of the negated float is the negative of the original
 -/
 theorem F2R_opp (f1 : FlocqFloat beta) :
-    ⦃⌜True⌝⦄
-    (pure (Fopp beta f1) : Id _)
-    ⦃⇓result => ⌜(F2R result) = -((F2R f1))⌝⦄ := by
-  intro _
-  simp [Fopp, pure, F2R, neg_mul]
+    F2R (Fopp beta f1) = -(F2R f1) := by
+  simp [Fopp, F2R, neg_mul]
 
 end FloatNegation
 
@@ -170,12 +164,10 @@ def Fabs (f1 : FlocqFloat beta) : (FlocqFloat beta) :=
     The real value of the absolute float is the absolute value of the original
 -/
 theorem F2R_abs (f1 : FlocqFloat beta) :
-    ⦃⌜1 < beta⌝⦄
-    (pure (Fabs beta f1) : Id _)
-    ⦃⇓result => ⌜(F2R result) = |(F2R f1)|⌝⦄ := by
-  intro hβ
+    F2R (Fabs beta f1) = |F2R f1| := by
+  have hβ : 1 < beta := ValidRadix.valid
   -- Evaluate both sides and reduce to an absolute-value algebraic identity
-  simp [Fabs, pure, F2R]
+  simp [Fabs, F2R]
   -- It suffices to show the base power is nonnegative, so |β^e| = β^e
   have hbposℤ : 0 < beta := lt_trans (by decide) hβ
   have hbposR : 0 < (beta : ℝ) := by exact_mod_cast hbposℤ
@@ -201,10 +193,8 @@ def Fplus (f1 f2 : FlocqFloat beta) : (FlocqFloat beta) :=
     The real value of the sum equals the sum of the real values
 -/
 theorem F2R_plus (f1 f2 : FlocqFloat beta) :
-    ⦃⌜1 < beta⌝⦄
-    (pure (Fplus beta f1 f2) : Id _)
-    ⦃⇓result => ⌜(F2R result) = (F2R f1) + (F2R f2)⌝⦄ := by
-  intro hβ
+    F2R (Fplus beta f1 f2) = F2R f1 + F2R f2 := by
+  have hβ : 1 < beta := ValidRadix.valid
   -- Unfold and case on alignment branch; then reduce arithmetically
   unfold Fplus
   cases f1 with
@@ -214,7 +204,7 @@ theorem F2R_plus (f1 f2 : FlocqFloat beta) :
       -- Evaluate alignment depending on exponents
       by_cases hle : e1 ≤ e2
       · -- Aligned exponent is e1; second mantissa is scaled
-        simp [Falign, hle, pure, F2R, Int.cast_add,
+        simp [Falign, hle, F2R, Int.cast_add,
           Int.cast_mul]
         -- Show scaling identity: b^(|e2-e1|) * b^e1 = b^e2
         set b : ℝ := (beta : ℝ)
@@ -260,7 +250,7 @@ theorem F2R_plus (f1 f2 : FlocqFloat beta) :
         simpa [this, add_comm, add_left_comm, add_assoc, mul_comm, mul_left_comm, mul_assoc]
       · -- Symmetric case: aligned exponent is e2; first mantissa is scaled
         have hle' : e2 ≤ e1 := le_of_lt (lt_of_not_ge hle)
-        simp [Falign, hle, pure, F2R, Int.cast_add,
+        simp [Falign, hle, F2R, Int.cast_add,
           Int.cast_mul, add_comm]
         set b : ℝ := (beta : ℝ)
         have hbposInt : (0 : Int) < beta := lt_trans (by decide) hβ
@@ -318,34 +308,24 @@ theorem Fplus_same_exp_spec (m1 m2 e : Int) :
   -- With equal exponents, alignment keeps mantissas unchanged
   simp [Falign, Int.natAbs_zero, pow_zero, mul_one]
 
-/-- Extract exponent of sum
-
-    Returns the exponent of the sum of two floats
--/
-@[flocq_local "Lean-only projection of Fplus for source theorem Fexp_Fplus"]
-def Fexp_Fplus (f1 f2 : FlocqFloat beta) : Int :=
-  (Fplus beta f1 f2).Fexp
-
 /-- Specification: Sum exponent is minimum
 
     The exponent of a sum is the minimum of the input exponents
+    (Coq: `Fexp_Fplus`).
 -/
 theorem Fexp_Fplus_spec (f1 f2 : FlocqFloat beta) :
-    ⦃⌜True⌝⦄
-    (pure (Fexp_Fplus beta f1 f2) : Id _)
-    ⦃⇓result => ⌜result = min f1.Fexp f2.Fexp⌝⦄ := by
-  intro _
-  unfold Fexp_Fplus Fplus
+    (Fplus beta f1 f2).Fexp = min f1.Fexp f2.Fexp := by
+  unfold Fplus
   cases f1 with
   | mk m1 e1 =>
     cases f2 with
     | mk m2 e2 =>
       by_cases hle : e1 ≤ e2
       · -- exponent chosen is e1, which is min when e1 ≤ e2
-        simp [Falign, hle, pure]
+        simp [Falign, hle]
       · -- exponent chosen is e2, which is min when e2 ≤ e1
         have hle' : e2 ≤ e1 := le_of_lt (lt_of_not_ge hle)
-        simp [Falign, hle, pure, min_eq_right hle']
+        simp [Falign, hle, min_eq_right hle']
 
 end FloatAddition
 
@@ -365,10 +345,8 @@ def Fminus (f1 f2 : FlocqFloat beta) : (FlocqFloat beta) :=
     The real value of the difference equals the difference of real values
 -/
 theorem F2R_minus (f1 f2 : FlocqFloat beta) :
-    ⦃⌜1 < beta⌝⦄
-    (pure (Fminus beta f1 f2) : Id _)
-    ⦃⇓result => ⌜(F2R result) = (F2R f1) - (F2R f2)⌝⦄ := by
-  intro hβ
+    F2R (Fminus beta f1 f2) = F2R f1 - F2R f2 := by
+  have hβ : 1 < beta := ValidRadix.valid
   -- Unfold subtraction as addition of the negation, then reduce arithmetically
   unfold Fminus
   cases f1 with
@@ -378,7 +356,7 @@ theorem F2R_minus (f1 f2 : FlocqFloat beta) :
       -- After negation, alignment is identical to addition, with the second mantissa negated
       by_cases hle : e1 ≤ e2
       · -- Aligned exponent is e1; the second mantissa becomes scaled and negated
-        simp [Fopp, Falign, hle, Fplus, pure, F2R, Int.cast_add,
+        simp [Fopp, Falign, hle, Fplus, F2R, Int.cast_add,
           Int.cast_mul, Int.cast_neg, sub_eq_add_neg, neg_mul]
         -- Reuse the same scaling identity as in F2R_plus
         set b : ℝ := (beta : ℝ)
@@ -423,7 +401,7 @@ theorem F2R_minus (f1 f2 : FlocqFloat beta) :
                mul_comm, mul_left_comm, mul_assoc]
       · -- Symmetric case: aligned exponent is e2; the first mantissa is scaled
         have hle' : e2 ≤ e1 := le_of_lt (lt_of_not_ge hle)
-        simp [Fopp, Falign, hle, Fplus, pure, F2R, Int.cast_add,
+        simp [Fopp, Falign, hle, Fplus, F2R, Int.cast_add,
           Int.cast_mul, Int.cast_neg, sub_eq_add_neg, add_comm]
         set b : ℝ := (beta : ℝ)
         have hbposInt : (0 : Int) < beta := lt_trans (by decide) hβ
@@ -501,12 +479,10 @@ def Fmult (f1 f2 : FlocqFloat beta) : (FlocqFloat beta) :=
     The real value of the product equals the product of real values
 -/
 theorem F2R_mult (f1 f2 : FlocqFloat beta) :
-    ⦃⌜1 < beta⌝⦄
-    (pure (Fmult beta f1 f2) : Id _)
-    ⦃⇓result => ⌜(F2R result) = (F2R f1) * (F2R f2)⌝⦄ := by
-  intro hβ
+    F2R (Fmult beta f1 f2) = F2R f1 * F2R f2 := by
+  have hβ : 1 < beta := ValidRadix.valid
   -- Evaluate both sides and reduce to algebraic identities on ℝ
-  simp [Fmult, pure, F2R, Int.cast_mul]
+  simp [Fmult, F2R, Int.cast_mul]
   -- Set base and obtain non-zeroness to use zpow_add₀
   set b : ℝ := (beta : ℝ)
   have hbposInt : (0 : Int) < beta := lt_trans (by decide) hβ

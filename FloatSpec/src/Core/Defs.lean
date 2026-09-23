@@ -20,10 +20,8 @@ import FloatSpec.src.Core.Raux
 import FloatSpec.src.Core.Zaux
 import FloatSpec.Linter.CoqSourceLinter
 -- import Mathlib.Data.Real.Basic
-import Std.Do.Triple
 
 open Real
-open Std.Do
 
 set_option linter.coqSource true
 set_option warningAsError true
@@ -94,6 +92,10 @@ variable {beta : Int} [ValidRadix beta]
 noncomputable def F2R (f : FlocqFloat beta) : ℝ :=
   (f.Fnum * (beta : ℝ) ^ f.Fexp)
 
+-- ═══════════════════════════════════════════════════════════════════════════
+-- Simp/Grind infrastructure for F2R
+-- ═══════════════════════════════════════════════════════════════════════════
+
 /-- Specification: Float to real conversion
 
     The F2R function converts a floating-point representation
@@ -103,18 +105,6 @@ noncomputable def F2R (f : FlocqFloat beta) : ℝ :=
     This is the bridge between the discrete float representation
     and the continuous real numbers it approximates.
 -/
-theorem F2R_spec (f : FlocqFloat beta) :
-    ⦃⌜True⌝⦄
-    (pure (F2R f) : Id ℝ)
-    ⦃⇓result => ⌜result = f.Fnum * (beta : ℝ) ^ f.Fexp⌝⦄ := by
-  intro _
-  simp [wp, PostCond.noThrow, F2R, pure]
-
--- ═══════════════════════════════════════════════════════════════════════════
--- Simp/Grind infrastructure for F2R
--- ═══════════════════════════════════════════════════════════════════════════
-
-/-- Unfold F2R.run to its explicit formula. -/
 @[simp] theorem F2R_run (f : FlocqFloat beta) :
     (F2R f) = f.Fnum * (beta : ℝ) ^ f.Fexp := rfl
 
@@ -295,11 +285,7 @@ def Fnum_extract {beta : Int} [ValidRadix beta] (f : FlocqFloat beta) : Int :=
     The extraction returns the Fnum field unchanged.
 -/
 theorem Fnum_extract_spec {beta : Int} [ValidRadix beta] (f : FlocqFloat beta) :
-    ⦃⌜True⌝⦄
-    (pure (Fnum_extract f) : Id Int)
-    ⦃⇓result => ⌜result = f.Fnum⌝⦄ := by
-  intro _
-  simp [wp, PostCond.noThrow, Fnum_extract, pure]
+    Fnum_extract f = f.Fnum := rfl
 
 /-- Extract the exponent from a FlocqFloat
 
@@ -314,11 +300,7 @@ def Fexp_extract {beta : Int} [ValidRadix beta] (f : FlocqFloat beta) : Int :=
     The extraction returns the Fexp field unchanged.
 -/
 theorem Fexp_extract_spec {beta : Int} [ValidRadix beta] (f : FlocqFloat beta) :
-    ⦃⌜True⌝⦄
-    (pure (Fexp_extract f) : Id Int)
-    ⦃⇓result => ⌜result = f.Fexp⌝⦄ := by
-  intro _
-  simp [wp, PostCond.noThrow, Fexp_extract, pure]
+    Fexp_extract f = f.Fexp := rfl
 
 /-- Create a FlocqFloat from mantissa and exponent
 
@@ -333,11 +315,9 @@ def make_float {beta : Int} [ValidRadix beta] (num exp : Int) : FlocqFloat beta 
     The constructor properly sets both fields.
 -/
 theorem make_float_spec {beta : Int} [ValidRadix beta] (num exp : Int) :
-    ⦃⌜True⌝⦄
-    (pure (make_float (beta := beta) num exp) : Id (FlocqFloat beta))
-    ⦃⇓result => ⌜result.Fnum = num ∧ result.Fexp = exp⌝⦄ := by
-  intro _
-  simp [wp, PostCond.noThrow, make_float, pure]
+    (make_float (beta := beta) num exp).Fnum = num ∧
+      (make_float (beta := beta) num exp).Fexp = exp :=
+  ⟨rfl, rfl⟩
 
 end HelperFunctions
 
@@ -356,12 +336,9 @@ def FlocqFloat_eq {beta : Int} [ValidRadix beta] (f g : FlocqFloat beta) : Bool 
     Two FlocqFloats are equal iff their components are equal.
 -/
 theorem FlocqFloat_eq_spec {beta : Int} [ValidRadix beta] (f g : FlocqFloat beta) :
-    ⦃⌜True⌝⦄
-    (pure (FlocqFloat_eq f g) : Id Bool)
-    ⦃⇓result => ⌜result ↔ (f.Fnum = g.Fnum ∧ f.Fexp = g.Fexp)⌝⦄ := by
-  intro _
+    FlocqFloat_eq f g = true ↔ (f.Fnum = g.Fnum ∧ f.Fexp = g.Fexp) := by
   -- The boolean equality check returns true iff both components are equal
-  simp [wp, PostCond.noThrow, FlocqFloat_eq, pure, Bool.and_eq_true]
+  simp [FlocqFloat_eq, Bool.and_eq_true]
 
 /-- Convert zero float to real
 
@@ -376,11 +353,8 @@ noncomputable def F2R_zero_float {beta : Int} [ValidRadix beta] : ℝ :=
     The zero float (0, 0) converts to real zero.
 -/
 theorem F2R_zero_spec {beta : Int} [ValidRadix beta] :
-    ⦃⌜True⌝⦄
-    (pure (F2R_zero_float (beta := beta)) : Id ℝ)
-    ⦃⇓result => ⌜result = 0⌝⦄ := by
-  intro _
-  simp [wp, PostCond.noThrow, F2R_zero_float, F2R, pure]
+    F2R_zero_float (beta := beta) = 0 := by
+  simp [F2R_zero_float, F2R]
 
 /-- Add two floats with same exponent
 
@@ -401,11 +375,8 @@ noncomputable def F2R_add_same_exp {beta : Int} [ValidRadix beta] (f g : FlocqFl
 -/
 theorem F2R_add_same_exp_spec {beta : Int} [ValidRadix beta] (f g : FlocqFloat beta)
     (h_eq : f.Fexp = g.Fexp) :
-    ⦃⌜True⌝⦄
-    (pure (F2R_add_same_exp f g) : Id (ℝ × ℝ))
-    ⦃⇓result => ⌜result.1 = result.2⌝⦄ := by
-  intro _
-  simp [wp, PostCond.noThrow, F2R_add_same_exp, F2R, h_eq, pure, Int.cast_add, add_mul]
+    (F2R_add_same_exp f g).1 = (F2R_add_same_exp f g).2 := by
+  simp [F2R_add_same_exp, F2R, h_eq, Int.cast_add, add_mul]
   -- Now we have a pair where we need to prove the two components are equal
   -- The left component: (f.Fnum + g.Fnum) * beta^g.Fexp
   -- The right component: f.Fnum * beta^g.Fexp + g.Fnum * beta^g.Fexp

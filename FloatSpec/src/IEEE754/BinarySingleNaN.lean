@@ -11741,7 +11741,7 @@ theorem Bfma_correct {prec emax : Int}
           have hmulTrip := FloatSpec.Calc.Operations.F2R_mult (beta:=2) X Y
           have hmul : F2R product = F2R X * F2R Y := by
             simpa [wp, PostCond.noThrow, pure, product] using
-              hmulTrip (by norm_num)
+              hmulTrip
           have hproductEta :
               (FloatSpec.Core.Defs.FlocqFloat.mk product.Fnum product.Fexp :
                 FloatSpec.Core.Defs.FlocqFloat 2) = product := by
@@ -11776,7 +11776,7 @@ theorem Bfma_correct {prec emax : Int}
                 (beta:=2) product Z
               have hadd : F2R sum = F2R product + F2R Z := by
                 simpa [wp, PostCond.noThrow, pure, sum] using
-                  haddTrip (by norm_num)
+                  haddTrip
               have hsumEta :
                   (FloatSpec.Core.Defs.FlocqFloat.mk sum.Fnum sum.Fexp :
                     FloatSpec.Core.Defs.FlocqFloat 2) = sum := by
@@ -15353,7 +15353,7 @@ theorem Bfma_correct {prec emax : Int}
             (beta:=2) X Y
           have hmul : F2R product = F2R X * F2R Y := by
             simpa [wp, PostCond.noThrow, pure, product] using
-              hmulTrip (by norm_num)
+              hmulTrip
           have hproductEta : (FloatSpec.Core.Defs.FlocqFloat.mk
               product.Fnum product.Fexp : FloatSpec.Core.Defs.FlocqFloat 2) =
               product := by cases product <;> rfl
@@ -15381,7 +15381,7 @@ theorem Bfma_correct {prec emax : Int}
                 (beta:=2) product Z
               have hadd : F2R sum = F2R product + F2R Z := by
                 simpa [wp, PostCond.noThrow, pure, sum] using
-                  haddTrip (by norm_num)
+                  haddTrip
               have hsumEta : (FloatSpec.Core.Defs.FlocqFloat.mk
                   sum.Fnum sum.Fexp : FloatSpec.Core.Defs.FlocqFloat 2) =
                   sum := by cases sum <;> rfl

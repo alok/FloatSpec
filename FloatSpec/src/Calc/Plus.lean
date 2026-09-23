@@ -297,7 +297,7 @@ theorem Fplus_correct (x y : FlocqFloat beta) :
             F2R (FlocqFloat.mk m1 e1 : FlocqFloat beta) +
               F2R (FlocqFloat.mk m2 e2 : FlocqFloat beta) := by
           have h := (FloatSpec.Calc.Operations.F2R_plus (beta := beta)
-            (FlocqFloat.mk m1 e1) (FlocqFloat.mk m2 e2)) hβ
+            (FlocqFloat.mk m1 e1) (FlocqFloat.mk m2 e2))
           simpa [sum, wp, PostCond.noThrow, pure] using h
         simp only [Fplus_correct_obligation, Fplus, hm1, hm2, ite_false, p1, p2,
           hp]

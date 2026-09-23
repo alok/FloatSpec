@@ -44,15 +44,14 @@ lemma generic_format_plus_prec (fexp : Int → Int)
         FloatSpec.Core.Defs.F2R fxy =
           FloatSpec.Core.Defs.F2R fx + FloatSpec.Core.Defs.F2R fy := by
       have h :=
-        (FloatSpec.Calc.Operations.F2R_plus (beta := beta) fx fy) hβ
+        (FloatSpec.Calc.Operations.F2R_plus (beta := beta) fx fy)
       simpa [fxy, Std.Do.PostCond.noThrow, wp, pure] using h
     have hfxy_eq : FloatSpec.Core.Defs.F2R fxy = x + y := by
       simpa [F2R, hx, hy] using hFplus
     have hfxy_exp : fxy.Fexp = min fx.Fexp fy.Fexp := by
       have h :=
-        (FloatSpec.Calc.Operations.Fexp_Fplus_spec (beta := beta) fx fy) trivial
-      simpa [fxy, FloatSpec.Calc.Operations.Fexp_Fplus,
-        Std.Do.PostCond.noThrow, wp, pure] using h
+        (FloatSpec.Calc.Operations.Fexp_Fplus_spec (beta := beta) fx fy)
+      simpa [fxy, Std.Do.PostCond.noThrow, wp, pure] using h
     have hmag_x :
         FloatSpec.Core.Raux.mag beta (x + y) ≤ prec + fx.Fexp := by
       have htrip :=
@@ -316,14 +315,14 @@ theorem div_error_FLX (rnd : ℝ → Int) [FloatSpec.Core.Generic_fmt.Valid_rnd 
         _root_.F2R (FloatSpec.Calc.Operations.Fmult beta fr fy)
           = _root_.F2R fr * _root_.F2R fy := by
       have htrip := FloatSpec.Calc.Operations.F2R_mult (beta := beta) fr fy
-      simpa [wp, Std.Do.PostCond.noThrow, Id.run, pure] using htrip hβ
+      simpa [wp, Std.Do.PostCond.noThrow, Id.run, pure] using htrip
     have hopp :
         _root_.F2R (FloatSpec.Calc.Operations.Fopp beta
           (FloatSpec.Calc.Operations.Fmult beta fr fy))
           = -_root_.F2R (FloatSpec.Calc.Operations.Fmult beta fr fy) := by
       have htrip := FloatSpec.Calc.Operations.F2R_opp (beta := beta)
         (FloatSpec.Calc.Operations.Fmult beta fr fy)
-      simpa [wp, Std.Do.PostCond.noThrow, Id.run, pure] using htrip True.intro
+      simpa [wp, Std.Do.PostCond.noThrow, Id.run, pure] using htrip
     rw [hopp, hmult, ← hr_fr, ← hy_fy]
   have hfmt :=
     generic_format_plus_prec (beta := beta) (prec := prec) (fexp := fexp)
@@ -680,14 +679,14 @@ theorem sqrt_error_FLX_N (h_gt1 : 1 < prec) (x : ℝ)
             _root_.F2R (FloatSpec.Calc.Operations.Fmult beta fr fr)
               = _root_.F2R fr * _root_.F2R fr := by
           have htrip := FloatSpec.Calc.Operations.F2R_mult (beta := beta) fr fr
-          simpa [wp, Std.Do.PostCond.noThrow, Id.run, pure] using htrip hβ
+          simpa [wp, Std.Do.PostCond.noThrow, Id.run, pure] using htrip
         have hopp :
             _root_.F2R (FloatSpec.Calc.Operations.Fopp beta
               (FloatSpec.Calc.Operations.Fmult beta fr fr))
               = -_root_.F2R (FloatSpec.Calc.Operations.Fmult beta fr fr) := by
           have htrip := FloatSpec.Calc.Operations.F2R_opp (beta := beta)
             (FloatSpec.Calc.Operations.Fmult beta fr fr)
-          simpa [wp, Std.Do.PostCond.noThrow, Id.run, pure] using htrip True.intro
+          simpa [wp, Std.Do.PostCond.noThrow, Id.run, pure] using htrip
         rw [hopp, hmult, ← hr_fr]
       have hfmt :=
         generic_format_plus_prec (beta := beta) (prec := prec) (fexp := fexp)

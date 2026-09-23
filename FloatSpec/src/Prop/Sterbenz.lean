@@ -73,7 +73,7 @@ theorem generic_format_plus (x y : ℝ)
     have hFplus :
         FloatSpec.Core.Defs.F2R fxy =
           FloatSpec.Core.Defs.F2R fx + FloatSpec.Core.Defs.F2R fy := by
-      have h := (FloatSpec.Calc.Operations.F2R_plus (beta := beta) fx fy) hβ
+      have h := (FloatSpec.Calc.Operations.F2R_plus (beta := beta) fx fy)
       simpa [fxy, Std.Do.PostCond.noThrow, wp, pure] using h
     have hfxy_eq : FloatSpec.Core.Defs.F2R fxy = x + y := by
       calc
@@ -85,9 +85,8 @@ theorem generic_format_plus (x y : ℝ)
           min (FloatSpec.Core.Generic_fmt.cexp beta fexp x)
               (FloatSpec.Core.Generic_fmt.cexp beta fexp y) := by
       have h :=
-        (FloatSpec.Calc.Operations.Fexp_Fplus_spec (beta := beta) fx fy) trivial
-      simpa [fxy, fx, fy, FloatSpec.Calc.Operations.Fexp_Fplus,
-        Std.Do.PostCond.noThrow, wp, pure] using h
+        (FloatSpec.Calc.Operations.Fexp_Fplus_spec (beta := beta) fx fy)
+      simpa [fxy, fx, fy, Std.Do.PostCond.noThrow, wp, pure] using h
     have hmag_xy : mag beta (x + y) ≤ e := by
       have htrip :=
         FloatSpec.Core.Raux.mag_le_bpow (beta := beta) (x := x + y) (e := e)

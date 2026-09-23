@@ -92,20 +92,6 @@ def truncate_at_exp (beta : Int) [ValidRadix beta]
   else
     (f.Fnum, f.Fexp, l)
 
-/-- Scaffold marker for the executable truncation wrapper.
-
-    This is intentionally only a computational specification.  The semantic
-    preservation theorem needs the full Coq `Round.v` proof chain and must not
-    be claimed from the executable definition alone.
--/
-theorem truncate_at_exp_spec (f : FlocqFloat beta) (e : Int) (l : Location)
-    (He : f.Fexp ≤ e) (Hl : inbetween_float beta f.Fnum e ((F2R f)) l) :
-    ⦃⌜f.Fexp ≤ e ∧ inbetween_float beta f.Fnum e ((F2R f)) l⌝⦄
-    (pure (truncate_at_exp beta f e l) : Id (Int × Int × Location))
-    ⦃⇓result => ⌜result = truncate_at_exp beta f e l⌝⦄ := by
-  intro _
-  simp [wp, PostCond.noThrow, pure]
-
 end Truncation
 
 section MainRounding

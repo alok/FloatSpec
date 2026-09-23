@@ -3747,18 +3747,18 @@ private theorem F2R_sum3_ge_bpow
     simpa [_root_.F2R, FloatSpec.Core.Defs.F2R] using hfz
   have hfxy_val : _root_.F2R fxy = x + y := by
     have h := FloatSpec.Calc.Operations.F2R_plus (beta := beta) fx fy
-    simpa [fxy, _root_.F2R, FloatSpec.Core.Defs.F2R, hfx_raw, hfy_raw] using h hβ
+    simpa [fxy, _root_.F2R, FloatSpec.Core.Defs.F2R, hfx_raw, hfy_raw] using h
   have hfxy_raw : (fxy.Fnum : ℝ) * (beta : ℝ) ^ fxy.Fexp = x + y := by
     simpa [_root_.F2R, FloatSpec.Core.Defs.F2R] using hfxy_val
   have hfxyz_val : _root_.F2R fxyz = x + y + z := by
     have h := FloatSpec.Calc.Operations.F2R_plus (beta := beta) fxy fz
-    simpa [fxyz, _root_.F2R, FloatSpec.Core.Defs.F2R, hfxy_raw, hfz_raw, add_assoc] using h hβ
+    simpa [fxyz, _root_.F2R, FloatSpec.Core.Defs.F2R, hfxy_raw, hfz_raw, add_assoc] using h
   have hfxy_exp : fxy.Fexp = min fx.Fexp fy.Fexp := by
     have h := FloatSpec.Calc.Operations.Fexp_Fplus_spec (beta := beta) fx fy
-    exact h True.intro
+    exact h
   have hfxyz_exp : fxyz.Fexp = min fxy.Fexp fz.Fexp := by
     have h := FloatSpec.Calc.Operations.Fexp_Fplus_spec (beta := beta) fxy fz
-    exact h True.intro
+    exact h
   have hfx_exp : fx.Fexp = FloatSpec.Core.Generic_fmt.cexp beta fexp x := rfl
   have hfy_exp : fy.Fexp = FloatSpec.Core.Generic_fmt.cexp beta fexp y := rfl
   have hfz_exp : fz.Fexp = FloatSpec.Core.Generic_fmt.cexp beta fexp z := rfl
