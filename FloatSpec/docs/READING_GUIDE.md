@@ -28,8 +28,9 @@ tests cannot silently skip a missing reference. The initial hosted run passed
 the 174 live tests but timed out in an oversized differential grid; the bounded
 follow-up is locally verified and still needs its own hosted result. The
 required suite has since grown to all 24 reference-gated modules (238 tests),
-and CI now compiles every Lean and Rocq fixture by glob; that change, too,
-needs its own hosted result. See
+CI now compiles every Lean and Rocq fixture by glob, and it replays every
+source, test and fixture declaration through the kernel; these changes, too,
+need their own hosted result. See
 [the three-loop guide](THREE_VERIFICATION_LOOPS.md) for exact coverage and artifacts.
 
 **The port builds and runs on macOS with Lean 4.34.0, but is not yet a fully

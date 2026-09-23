@@ -39,15 +39,23 @@ that define `main`, `GuidedDemo` and `PffWalkthrough`, also execute, and
 `GuidedDemo` runs again as the compiled `floatspec_demo`. Two text gates in
 those steps reject what compiles without error but proves nothing: Lean
 `axiom`, `#guard_msgs`, `#exit`, `implemented_by`, `extern`, native decision
-procedures and kernel bypasses, and Rocq `Admitted`, `Admit`, `Abort`,
-`Axiom`, `Parameter`, `Declare`, `native_compute` and disabled checking.
+procedures, kernel bypasses (`skipKernelTC`, `addDeclCore`, `doCheck`,
+`addDeclWithoutChecking`) and environment writes (`setEnv`, `modifyEnv`,
+`run_cmd`), and Rocq `Admitted`, `Admit`, `Abort`, `Axiom`, `Parameter`,
+`Declare`, `native_compute` and disabled checking. Each Lean fixture's olean
+is written while it elaborates, and `scripts/KernelReplay.lean` then sends
+every declaration of all 35 back through the kernel (436 declarations, about
+45 seconds here): a metaprogram can add a theorem the kernel never checked, which
+`#print axioms` reports as axiom-free, and only a replay sees that however it
+is spelled.
 CI then runs a 4,309-case core shared-input bridge (seed 865509, five random
 cases per selected family plus boundary grids), generated Lean kernel
 equalities and six permanent counterexample replays: raw IEEE rounding, raw
 overflow, primitive comparison, primitive conversion, Pff sign laws and Pff
 integer division. A final step fails unless every piece of evidence exists: one
-`.vo` per Rocq fixture, one report per replay, and the reference build, fixture,
-required-suite and bridge logs and reports. A fresh run/attempt-specific
+`.vo` per Rocq fixture, one report per replay, the reference build, fixture,
+required-suite and bridge logs and reports, and a coverage-check log whose
+last line is unittest's `OK`. A fresh run/attempt-specific
 directory under the CI runner's temporary directory is uploaded even on failure
 as `flocq-cross-check-<commit>` for 30 days, and an empty upload fails the job.
 Download the artifact to inspect inputs,
@@ -57,17 +65,24 @@ are kept outside `.lake` so build-cache restores cannot replay stale evidence.
 This
 retention is finite; older local receipts are not retroactively published.
 
-`scripts/test_ci_coverage.py` keeps this coverage complete. It fails if a
+`scripts/test_ci_coverage.py` keeps this coverage complete. It runs first,
+right after checkout and in a step of its own, so a gap fails in seconds and
+switching the check off also takes an edit to the evidence step. It fails if a
 reference-gated test module is missing from the required runner, a test
-script or `*_bridge.py` never runs in CI, a replay is not replayed, a fixture
-defining `main` is only elaborated, a nested fixture has no consumer, or the
-local driver runs a check CI does not (only the random corpora it lists, with
-their measured cost, are exempt). It also parses the workflow and each step's
-shell, and fails on trigger filters, `if:` conditions other than the cache save
-and the evidence upload, a missing `shell: bash`, and constructs that can lose
-a failure (`|| true`, `&&`, backgrounding, `set +e`). The job timeout is 180
+script or `*_bridge.py` never runs in CI, a test module CI invokes lacks a
+closing `unittest.main()` or takes any argument but `-v`, a replay is not
+replayed, a fixture defining `main` is only elaborated, a nested fixture has
+no consumer, or the local driver runs a check CI does not (only the random
+corpora it lists, with their measured cost, are exempt). It also parses the
+workflow and each step's shell, and fails on trigger filters, `if:` conditions
+other than the cache save and the evidence upload, a missing `shell: bash`,
+and constructs that can lose a failure (`|| true`, `&&`, a leading `!`,
+backgrounding, `set +e`). The coverage, fixture, Rocq, live-suite, bridge,
+evidence and status steps are pinned command for command. The job timeout is 180
 minutes: a run takes about 50-60 minutes with lean-action's cache warm and
-about 125-135 minutes when a cold cache rebuilds Mathlib.
+about 125-135 minutes when a cold cache rebuilds Mathlib; the kernel replays
+add about two minutes on this Mac (40 s for the source modules, 20 s for the
+tests, 45 s for the fixtures), likely somewhat more on the four-core runner.
 
 The per-push bridge selects `power`, `div_eucl`, `location`, `round`, `truncate`,
 `div`, `plus`, `sqrt`, `formats`, `digits`, `operations`, `bits32` and `bits64`.
@@ -81,10 +96,16 @@ for runtime budgeting and remains an error, not a partial pass.
 
 Compiled trust is checked separately for source and tests. The test scope
 imports every `FloatSpec/Test` module and allows no project axiom, unsafe
-declaration, runtime override, or direct/transitive sorry dependency. It does
-not turn native runtime assertions into kernel proofs, nor automatically cover
-standalone files outside `FloatSpec/Test`; those fixtures instead run with
-warnings as errors and pass the text gate below.
+declaration, runtime override, or direct/transitive sorry dependency. Each
+scope then replays every one of its modules through the kernel with
+`scripts/KernelReplay.lean` (14,252 source and 314 test declarations) and
+fails unless the replayed modules are exactly the scope's files. It does not
+turn native runtime assertions into kernel proofs, nor cover standalone files
+outside `FloatSpec/Test`; those fixtures instead run with warnings as errors,
+pass the text gate below, and are replayed by the fixture step. The root,
+aggregator, linter and stub modules (`FloatSpec`, `FloatSpec.src`,
+`FloatSpec.Test`, `FloatSpec.Linter.*`, `FloatSpec.VersoExt`, `FloatSpecRoles`,
+`Main`) belong to neither scope and meet only the text gate.
 
 `scripts/check_proof_debts.py` runs `scripts/audit_placeholders.sh` over every
 Lean and Rocq source except `Deps/`, `_opam/` and hidden directories: the
@@ -100,8 +121,10 @@ lakefile's single option, or scoping exactly one manifest debt; and
 `#guard_msgs in` only over a `#` command whose expected output never mentions
 `sorry`. Unambiguous trust names are rejected even in comments and docstrings.
 It is a line-and-token text gate, not a parser: an escape a macro assembles from
-strings would still pass it. `scripts/status_report.sh` counts the approved
-`warningAsError` and `#guard_msgs` uses as reviewed, not as placeholders.
+strings would still pass it, and the kernel replays are what catch an
+unchecked declaration however it is spelled. `scripts/status_report.sh` counts
+the `warningAsError` and `#guard_msgs` uses this gate approves as reviewed;
+any other use counts as a placeholder.
 
 Fresh clones can now use `git submodule update --init Deps/flocq`. Do not run
 that command in a checkout with intentional local dependency changes: build
@@ -903,7 +926,8 @@ bash scripts/test_flocq_conformance.sh
 
 This creates and builds a detached reference worktree, verifying it before and
 after the build, then compiles every Rocq fixture and elaborates every Lean
-fixture with the same globs and warnings-as-errors flag as CI. It replays all
+fixture with the same globs and warnings-as-errors flag as CI, then sends every
+fixture's declarations back through the kernel. It replays all
 six saved counterexample corpora, runs the full corpus of each of the twelve
 differential bridges, and executes their own tests. Those corpora are the only
 checks this driver runs that per-push CI does not: `LOCAL_CORPORA` in

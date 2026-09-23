@@ -59,7 +59,10 @@ distinct.
   escapes in every Lean and Rocq source outside `Deps/`, standalone fixtures
   included; `scripts/status_report.sh` records the current counts under
   `FloatSpec/docs/status.{md,json}`. CI also runs every fixture, found by
-  glob, with Lean warnings as errors, and every live test module without skips.
+  glob, with Lean warnings as errors, and every live test module without skips,
+  and `scripts/KernelReplay.lean` sends every source, test and fixture
+  declaration back through the kernel, so one a metaprogram added unchecked
+  fails however it was spelled.
 - Source links: `@[flocq_source "src/Module.v" LINE "name"]` stores a pinned
   Coq correspondence, and the opt-in `linter.coqSource` checks public
   definitions in source-facing modules. An adjacent `Source:` URL is clickable
