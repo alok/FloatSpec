@@ -28,6 +28,14 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Check that CI runs every check
+        shell: bash
+        run: |
+          # First, so a coverage gap fails in seconds, not after the Lean build.
+          # Its own step, whose log the evidence step requires, so switching it
+          # off takes a second visible edit there.
+          python3 scripts/test_ci_coverage.py -v 2>&1 | tee "$FLOCQ_CI_OUTPUT/ci-coverage.log"
+
       - name: Install audit prerequisites
         shell: bash
         run: |
@@ -128,7 +136,6 @@ jobs:
           python3 scripts/test_flocq_port_queue.py -v
           python3 scripts/test_required_rocq_tests.py -v
           python3 scripts/test_reference_policy.py -v
-          python3 scripts/test_ci_coverage.py -v
           python3 scripts/flocq_port_queue.py --check-lean-reviews --skip-build
 
       - name: Run pure Rocq regressions
@@ -187,8 +194,12 @@ jobs:
         shell: bash
         run: |
           # A green job must leave the evidence it claims, one .vo per Rocq
-          # fixture and one report per replay; name every missing file.
+          # fixture and one report per replay; name every missing file. The
+          # coverage check's log must end in unittest's verdict OK.
           missing=()
+          if [[ "$(tail -n 1 "$FLOCQ_CI_OUTPUT/ci-coverage.log" 2>/dev/null)" != OK ]]; then
+            missing+=("passing ci-coverage.log")
+          fi
           for evidence in reference-build.log lean-fixtures.log rocq.log \
               required-tests.json bridge/report.json; do
             if [[ ! -s "$FLOCQ_CI_OUTPUT/$evidence" ]]; then missing+=("$evidence"); fi

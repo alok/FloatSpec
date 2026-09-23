@@ -4,10 +4,12 @@ CI discovers fixtures by glob and runs every live module listed by
 run_required_rocq_tests. These controls keep that coverage complete and
 unconditional: a new live test module, test script, fixture, replay or local
 conformance command cannot land unrun; a fixture that defines `main` cannot be
-merely elaborated; and no trigger filter, `if:` condition or shell construct
-can switch a required command off or swallow its failure. The workflow and
-the local driver are read with strict parsers for the YAML and bash subsets
-they use, so an unfamiliar construct fails here instead of being misread.
+merely elaborated; a test module CI invokes must run all of its tests; and no
+trigger filter, `if:` condition or shell construct can switch a required
+command off or swallow its failure. This module runs in CI's first step after
+checkout, whose log the evidence step requires. The workflow and the local
+driver are read with strict parsers for the YAML and bash subsets they use, so
+an unfamiliar construct fails here instead of being misread.
 """
 
 import ast
@@ -65,11 +67,15 @@ ALLOWED_CONDITIONS = {
 SKIP = re.compile(r'\bskip(?:If|Unless)?\s*\(|\.skipTest\s*\(|\bSkipTest\b|\bexpectedFailure\b')
 MAIN = re.compile(r'^(?:@\[[^\]]*\]\s*)?(?:(?:private|protected|unsafe|partial|noncomputable)\s+)*'
                   r'def\s+main\b', re.M)
-# Under `bash -eo pipefail`, these are the ways a command's failure is lost or skipped.
+# Under `bash -eo pipefail`, these are the ways a command's failure is lost or
+# skipped. A command negated with `!` never trips errexit, whatever its result;
+# an `if !`, `while !` or `until !` condition is exempt, like any condition.
 SWALLOWS = re.compile(r'&&|\|\|(?! status=\$\?$)|(?<![>&])&(?![>&])|<<|\w\s*\(\)|continue-on-error'
                       r'|(?:^|[;|({]|\b(?:then|do|else))\s*'
-                      r'(?:exit|return|set|shopt|trap|eval|source|function)\b', re.M)
+                      r'(?:(?:exit|return|set|shopt|trap|eval|source|function)\b|!(?=\s))', re.M)
 INVOCATION = r'(?:opam exec --switch=floatspec-rocq -- )?(?:python3 )?scripts/'
+# A test script invocation and its arguments, up to any output redirection.
+TEST_INVOCATION = re.compile(rf'{INVOCATION}(test_\w+\.(?:py|sh))((?:\s+[^\s|>]+)*?)(?:\s+2>&1)?(?:\s*\|.*)?')
 
 # Steps pinned command for command; `{executables}` is derived from the fixtures.
 LEAN_GATE = (r"rg -n 'warningAsError|#guard_msgs|#exit|\baxiom\b|implemented_by|\bextern\b"
@@ -80,6 +86,9 @@ ROCQ_GATE = (r"rg -n '\b(Admitted|Admit|admit|Abort|Axioms?|Parameters?|Conjectu
              r"|native_compute|native_cast_no_check|Unset (Guard|Positivity|Universe) Checking"
              r"|bypass_check' scripts/fixtures/*.v || status=$?")
 PINNED_STEPS = {
+    'Check that CI runs every check': [
+        'python3 scripts/test_ci_coverage.py -v 2>&1 | tee "$FLOCQ_CI_OUTPUT/ci-coverage.log"',
+    ],
     'Run every Lean regression fixture': [
         'status=0', LEAN_GATE, 'test "$status" -eq 1',
         "executable_fixtures='{executables}'",
@@ -106,8 +115,37 @@ PINNED_STEPS = {
         '-o "$FLOCQ_CI_OUTPUT/rocq/$fixture.vo" "$path" done '
         '\' 2>&1 | tee "$FLOCQ_CI_OUTPUT/rocq.log"',
     ],
+    'Run required live Lean and Rocq mutation tests (no skips)': [
+        'opam exec --switch=floatspec-rocq -- python3 scripts/run_required_rocq_tests.py '
+        '--flocq-dir Deps/flocq --output "$FLOCQ_CI_OUTPUT/required-tests.json" '
+        '2>&1 | tee "$FLOCQ_CI_OUTPUT/required-tests.log"',
+    ],
+    'Execute the differential bridge and kernel regressions': [
+        'opam exec --switch=floatspec-rocq -- python3 scripts/flocq_bridge.py '
+        '--flocq-dir Deps/flocq --seed 865509 --samples 5 --batch-size 100 '
+        '--operations power,div_eucl,location,round,truncate,div,plus,sqrt,formats,digits,'
+        'operations,bits32,bits64 --skip-build --output "$FLOCQ_CI_OUTPUT/bridge" '
+        '2>&1 | tee "$FLOCQ_CI_OUTPUT/bridge.log"',
+        'for replay in RawIEEERoundingReplay RawOverflowReplay PrimitiveComparisonReplay '
+        'PrimitiveConversionReplay; do',
+        'opam exec --switch=floatspec-rocq -- python3 scripts/flocq_bridge.py '
+        '--flocq-dir Deps/flocq --replay "scripts/fixtures/$replay.json" '
+        '--skip-build --output "$FLOCQ_CI_OUTPUT/$replay" 2>&1 | tee "$FLOCQ_CI_OUTPUT/$replay.log"',
+        'done',
+        'opam exec --switch=floatspec-rocq -- python3 scripts/pff_bridge.py '
+        '--flocq-dir Deps/flocq --replay scripts/fixtures/PffSignLawsReplay.json '
+        '--skip-build --output "$FLOCQ_CI_OUTPUT/PffSignLawsReplay" '
+        '2>&1 | tee "$FLOCQ_CI_OUTPUT/PffSignLawsReplay.log"',
+        'opam exec --switch=floatspec-rocq -- python3 scripts/pff_integer_bridge.py '
+        '--flocq-dir Deps/flocq --replay scripts/fixtures/PffIntegerReplay.json '
+        '--skip-build --output "$FLOCQ_CI_OUTPUT/PffIntegerReplay" '
+        '2>&1 | tee "$FLOCQ_CI_OUTPUT/PffIntegerReplay.log"',
+    ],
     'Require complete cross-check evidence': [
         'missing=()',
+        'if [[ "$(tail -n 1 "$FLOCQ_CI_OUTPUT/ci-coverage.log" 2>/dev/null)" != OK ]]; then',
+        'missing+=("passing ci-coverage.log")',
+        'fi',
         'for evidence in reference-build.log lean-fixtures.log rocq.log '
         'required-tests.json bridge/report.json; do',
         'if [[ ! -s "$FLOCQ_CI_OUTPUT/$evidence" ]]; then missing+=("$evidence"); fi',
@@ -124,6 +162,10 @@ PINNED_STEPS = {
         'echo "::error::missing cross-check evidence $evidence"',
         'done',
         'test "${#missing[@]}" -eq 0',
+    ],
+    'Verify generated status is current': [
+        'scripts/status_report.sh --write',
+        'git diff --exit-code -- FloatSpec/docs/status.json FloatSpec/docs/status.md',
     ],
 }
 
@@ -302,6 +344,14 @@ def skipped_without_reference() -> set[str]:
     return set(json.loads(process.stdout))
 
 
+def runs_every_test(path: Path) -> bool:
+    """The module ends by running unittest's main program, which runs every test."""
+    last = ast.parse(path.read_text()).body[-1]
+    return (isinstance(last, ast.If) and not last.orelse
+            and ast.unparse(last.test) == "__name__ == '__main__'"
+            and [ast.unparse(node) for node in last.body] == ['unittest.main()'])
+
+
 def executable_fixtures() -> set[str]:
     return {path.stem for path in FIXTURES.glob('*.lean') if MAIN.search(path.read_text())}
 
@@ -386,6 +436,29 @@ class ParserTests(unittest.TestCase):
             with self.subTest(shell=unsupported), self.assertRaises(ValueError):
                 shell_commands(unsupported)
 
+    def test_swallowed_failures(self):
+        for command in ('! python3 scripts/check_proof_debts.py', 'a; ! b', 'if c; then ! d; fi',
+                        'for e in f; do ! g; done', '( ! h )', 'i | ! j', 'k || true', 'l && m',
+                        'n &', 'set +e', 'trap x ERR', 'o || status=$?; p'):
+            with self.subTest(swallows=command):
+                self.assertIsNotNone(SWALLOWS.search(command))
+        for command in ('if ! opam switch list --short | rg -x x; then', 'while ! a; do b; done',
+                        'if [[ ! -s "$x" ]]; then y+=("$x"); fi', "rg -n '!x|y' z || status=$?",
+                        'a 2>&1 | tee b', 'test "$status" -eq 1'):
+            with self.subTest(keeps=command):
+                self.assertIsNone(SWALLOWS.search(command))
+
+    def test_test_invocations(self):
+        for command, expected in (('python3 scripts/test_a.py -v', ('test_a.py', ' -v')),
+                                  ('python3 scripts/test_a.py -v 2>&1 | tee "$x/y.log"',
+                                   ('test_a.py', ' -v')),
+                                  ('python3 scripts/test_a.py -k b', ('test_a.py', ' -k b')),
+                                  ('scripts/test_b.sh', ('test_b.sh', '')),
+                                  ('opam exec --switch=floatspec-rocq -- python3 scripts/test_c.py',
+                                   ('test_c.py', ''))):
+            with self.subTest(command=command):
+                self.assertEqual(TEST_INVOCATION.fullmatch(command).groups(), expected)
+
 
 class WorkflowShapeTests(unittest.TestCase):
     def test_every_event_runs_every_job(self):
@@ -437,6 +510,29 @@ class WorkflowTests(unittest.TestCase):
                                 f'run scripts/{path.name} as a top-level command in ci.yml')
         for name in NOT_INVOKED_BY_CI:
             self.assertTrue((SCRIPTS / name).is_file(), f'stale exception {name}')
+
+    def test_invoked_tests_run_every_test(self):
+        # `python3 scripts/test_x.py` runs nothing without a unittest.main()
+        # block, and a `-k` or test-name argument runs only a subset.
+        invoked = set()
+        for command in self.commands:
+            match = TEST_INVOCATION.fullmatch(command)
+            if match is None:
+                continue
+            script, arguments = match.groups()
+            invoked.add(script)
+            with self.subTest(command=command):
+                self.assertEqual(arguments.split(), ['-v'] if script.endswith('.py') else [])
+                if script.endswith('.py'):
+                    self.assertTrue(runs_every_test(SCRIPTS / script),
+                                    f'end scripts/{script} with if __name__ == "__main__": unittest.main()')
+        self.assertIn(THIS.name, invoked)
+        self.assertTrue(runs_every_test(THIS))
+
+    def test_coverage_check_runs_first(self):
+        # Right after checkout, before the long build, and in a step of its own.
+        names = [step.get('name', step.get('uses')) for step in steps()]
+        self.assertEqual(names[names.index('actions/checkout@v4') + 1], 'Check that CI runs every check')
 
     def test_pinned_steps(self):
         # Every Lean fixture runs with warnings as errors, every Rocq fixture
