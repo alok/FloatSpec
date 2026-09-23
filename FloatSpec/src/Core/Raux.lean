@@ -36,17 +36,20 @@ theorem Rle_0_minus (x y : ℝ) (hxy : x ≤ y) : 0 ≤ y - x :=
   sub_nonneg_of_le hxy
 
 /-- Coq {lit}`Rabs_eq_Rabs`: equal absolute values give equality up to sign. -/
+@[flocq_source "src/Core/Raux.v" 38 "Rabs_eq_Rabs"]
 theorem Rabs_eq_Rabs (x y : ℝ) (hxy : |x| = |y|) : x = y ∨ x = -y :=
   abs_eq_abs.mp hxy
 
 /-- Coq {lit}`Rabs_minus_le`: if {lit}`0 ≤ y` and {lit}`y ≤ 2 * x`, then
     {lit}`|x - y| ≤ x`. -/
+@[flocq_source "src/Core/Raux.v" 56 "Rabs_minus_le"]
 theorem Rabs_minus_le (x y : ℝ) (hy : 0 ≤ y) (hyx : y ≤ 2 * x) : |x - y| ≤ x := by
   have hx_upper : x - y ≤ x := sub_le_self x hy
   have hx_lower : -x ≤ x - y := by linarith
   exact abs_le.mpr ⟨hx_lower, hx_upper⟩
 
 /-- Coq {lit}`Rabs_ge`: if {lit}`y ≤ -x ∨ x ≤ y`, then {lit}`x ≤ |y|`. -/
+@[flocq_source "src/Core/Raux.v" 244 "Rabs_ge"]
 theorem Rabs_ge (x y : ℝ) (h : y ≤ -x ∨ x ≤ y) : x ≤ |y| := by
   rcases h with h1 | h2
   · -- Case y ≤ -x ⇒ x ≤ |y|
@@ -60,6 +63,7 @@ theorem Rabs_ge (x y : ℝ) (h : y ≤ -x ∨ x ≤ y) : x ≤ |y| := by
     exact h2.trans (le_abs_self y)
 
 /-- Coq {lit}`Rabs_ge_inv`: if {lit}`x ≤ |y|`, then {lit}`y ≤ -x ∨ x ≤ y`. -/
+@[flocq_source "src/Core/Raux.v" 258 "Rabs_ge_inv"]
 theorem Rabs_ge_inv (x y : ℝ) (hx : x ≤ |y|) : y ≤ -x ∨ x ≤ y := by
   by_cases hy : 0 ≤ y
   · -- If y ≥ 0, then |y| = y and the goal reduces to x ≤ y
@@ -76,6 +80,7 @@ theorem Rabs_ge_inv (x y : ℝ) (hx : x ≤ |y|) : y ≤ -x ∨ x ≤ y := by
     exact Or.inl this
 
 /-- Coq {lit}`Rabs_le_inv`: if {lit}`|x| ≤ y`, then {lit}`-y ≤ x ≤ y`. -/
+@[flocq_source "src/Core/Raux.v" 229 "Rabs_le_inv"]
 theorem Rabs_le_inv (x y : ℝ) (h : |x| ≤ y) : -y ≤ x ∧ x ≤ y :=
   abs_le.mp h
 
@@ -130,11 +135,13 @@ end Rmissing
 section IZR
 
 /-- Coq {lit}`IZR_le_lt`: integer bounds {lit}`m ≤ n < p` transfer to the real casts. -/
+@[flocq_source "src/Core/Raux.v" 318 "IZR_le_lt"]
 theorem IZR_le_lt (m n p : Int) (h : m ≤ n ∧ n < p) :
     (m : ℝ) ≤ (n : ℝ) ∧ (n : ℝ) < (p : ℝ) :=
   ⟨Int.cast_mono h.1, Int.cast_strictMono h.2⟩
 
 /-- Coq {lit}`le_lt_IZR`: real-cast bounds {lit}`m ≤ n < p` reflect to the integers. -/
+@[flocq_source "src/Core/Raux.v" 327 "le_lt_IZR"]
 theorem le_lt_IZR (m n p : Int) (h : (m : ℝ) ≤ (n : ℝ) ∧ (n : ℝ) < (p : ℝ)) :
     m ≤ n ∧ n < p :=
   ⟨Int.cast_le.1 h.1, Int.cast_lt.1 h.2⟩
@@ -148,12 +155,14 @@ end IZR
 section Rrecip
 
 /-- Coq {lit}`Rinv_lt`: the reciprocal reverses strict order on positive reals. -/
-theorem Rinv_lt (x y : ℝ) (hx : 0 < x) (hxy : x < y) : 1 / y < 1 / x :=
-  one_div_lt_one_div_of_lt hx hxy
+@[flocq_source "src/Core/Raux.v" 172 "Rinv_lt"]
+theorem Rinv_lt (x y : ℝ) (hx : 0 < x) (hxy : x < y) : y⁻¹ < x⁻¹ :=
+  inv_strictAnti₀ hx hxy
 
 /-- Coq {lit}`Rinv_le`: the reciprocal is antitone on positive reals. -/
-theorem Rinv_le (x y : ℝ) (hx : 0 < x) (hxy : x ≤ y) : 1 / y ≤ 1 / x :=
-  one_div_le_one_div_of_le hx hxy
+@[flocq_source "src/Core/Raux.v" 184 "Rinv_le"]
+theorem Rinv_le (x y : ℝ) (hx : 0 < x) (hxy : x ≤ y) : y⁻¹ ≤ x⁻¹ :=
+  inv_anti₀ hx hxy
 
 end Rrecip
 
@@ -164,6 +173,7 @@ theorem sqrt_ge_0 (x : ℝ) : 0 ≤ Real.sqrt x :=
   Real.sqrt_nonneg x
 
 /-- Coq {lit}`sqrt_neg`: the square root of a nonpositive real is zero. -/
+@[flocq_source "src/Core/Raux.v" 206 "sqrt_neg"]
 theorem sqrt_neg (x : ℝ) (hx : x ≤ 0) : Real.sqrt x = 0 :=
   Real.sqrt_eq_zero_of_nonpos hx
 
@@ -171,18 +181,21 @@ end Sqrt
 
 section Abs
 
-/-- The absolute value vanishes exactly at zero. This strengthens the one-way
-    Coq lemma {lit}`Rabs_eq_R0` to an equivalence. -/
-theorem Rabs_eq_R0_spec (x : ℝ) : |x| = 0 ↔ x = 0 :=
-  abs_eq_zero
+/-- Coq {lit}`Rabs_eq_R0`: a real with zero absolute value is zero. -/
+@[flocq_source "src/Core/Raux.v" 66 "Rabs_eq_R0"]
+theorem Rabs_eq_R0 (x : ℝ) : |x| = 0 → x = 0 :=
+  abs_eq_zero.mp
 
 end Abs
 
 section Squares
 
-/-- Coq {lit}`Rsqr_le_abs_0_alt`: from {lit}`x^2 ≤ y^2`, deduce {lit}`x ≤ |y|`. -/
-theorem Rsqr_le_abs_0_alt (x y : ℝ) (hxy : x ^ 2 ≤ y ^ 2) : x ≤ |y| :=
-  le_trans (le_abs_self x) (sq_le_sq.mp hxy)
+/-- Coq {lit}`Rsqr_le_abs_0_alt`: from {lit}`x² ≤ y²`, deduce {lit}`x ≤ |y|`.
+    Coq's {lit}`x²` is {lit}`Rsqr x`, defined as {lit}`x * x`; Lean has no
+    {lit}`Rsqr`, so the statement uses that body, as {name}`Rcompare_sqr` does. -/
+@[flocq_source "src/Core/Raux.v" 221 "Rsqr_le_abs_0_alt"]
+theorem Rsqr_le_abs_0_alt (x y : ℝ) (hxy : x * x ≤ y * y) : x ≤ |y| :=
+  le_trans (le_abs_self x) (abs_le_iff_mul_self_le.mpr hxy)
 
 end Squares
 
@@ -247,12 +260,6 @@ inductive Rcompare_prop (x y : ℝ) : Int → Prop where
   | Rcompare_Gt_ : y < x → Rcompare_prop x y 1
 
 export Rcompare_prop (Rcompare_Lt_ Rcompare_Eq_ Rcompare_Gt_)
-
-/-- Coq {lit}`Rcompare_prop_ind` (alias of the recursor). -/
-abbrev Rcompare_prop_ind := @Rcompare_prop.rec
-
-/-- Coq {lit}`Rcompare_prop_sind` (alias of the recursor). -/
-abbrev Rcompare_prop_sind := @Rcompare_prop.rec
 
 /-- Coq-style spec: {lit}`Rcompare_prop` holds for {lean}`Rcompare`. -/
 theorem Rcompare_prop_spec (x y : ℝ) : Rcompare_prop x y (Rcompare x y) := by
@@ -525,12 +532,6 @@ inductive Rle_bool_prop (x y : ℝ) : Bool → Prop where
 
 export Rle_bool_prop (Rle_bool_true_ Rle_bool_false_)
 
-/-- Coq {lit}`Rle_bool_prop_ind` (alias of the recursor). -/
-abbrev Rle_bool_prop_ind := @Rle_bool_prop.rec
-
-/-- Coq {lit}`Rle_bool_prop_sind` (alias of the recursor). -/
-abbrev Rle_bool_prop_sind := @Rle_bool_prop.rec
-
 /-- Coq-style spec: {lit}`Rle_bool_prop` holds for {lean}`Rle_bool`. -/
 theorem Rle_bool_prop_spec (x y : ℝ) : Rle_bool_prop x y (Rle_bool x y) := by
   by_cases hxy : x ≤ y
@@ -566,12 +567,6 @@ inductive Rlt_bool_prop (x y : ℝ) : Bool → Prop where
   | Rlt_bool_false_ : y ≤ x → Rlt_bool_prop x y false
 
 export Rlt_bool_prop (Rlt_bool_true_ Rlt_bool_false_)
-
-/-- Coq {lit}`Rlt_bool_prop_ind` (alias of the recursor). -/
-abbrev Rlt_bool_prop_ind := @Rlt_bool_prop.rec
-
-/-- Coq {lit}`Rlt_bool_prop_sind` (alias of the recursor). -/
-abbrev Rlt_bool_prop_sind := @Rlt_bool_prop.rec
 
 /-- Coq-style spec: {lit}`Rlt_bool_prop` holds for {lean}`Rlt_bool`. -/
 theorem Rlt_bool_prop_spec (x y : ℝ) : Rlt_bool_prop x y (Rlt_bool x y) := by
@@ -631,12 +626,6 @@ inductive Req_bool_prop (x y : ℝ) : Bool → Prop where
 
 export Req_bool_prop (Req_bool_true_ Req_bool_false_)
 
-/-- Coq {lit}`Req_bool_prop_ind` (alias of the recursor). -/
-abbrev Req_bool_prop_ind := @Req_bool_prop.rec
-
-/-- Coq {lit}`Req_bool_prop_sind` (alias of the recursor). -/
-abbrev Req_bool_prop_sind := @Req_bool_prop.rec
-
 /-- Coq-style spec: {lit}`Req_bool_prop` holds for {lean}`Req_bool`. -/
 theorem Req_bool_prop_spec (x y : ℝ) : Req_bool_prop x y (Req_bool x y) := by
   by_cases hxy : x = y
@@ -666,11 +655,13 @@ theorem eqb_sym (a b : Bool) : (a == b) = (b == a) :=
   Bool.beq_comm
 
 /-- Coq {lit}`eqb_true`: if {lit}`a = b`, then {lit}`(a == b) = true`. -/
+@[flocq_source "src/Core/Raux.v" 2169 "eqb_true"]
 theorem eqb_true (a b : Bool) (hEq : a = b) : (a == b) = true := by
   cases hEq
   cases a <;> rfl
 
 /-- Coq {lit}`eqb_false`: if {lit}`a = !b`, then {lit}`(a == b) = false`. -/
+@[flocq_source "src/Core/Raux.v" 2163 "eqb_false"]
 theorem eqb_false (a b : Bool) (h : a = !b) : (a == b) = false := by
   cases h
   cases b <;> rfl
@@ -707,20 +698,24 @@ end ConditionalOpposite
 section CondAbsMulAdd
 
 /-- Coq {lit}`abs_cond_Ropp`: absolute value ignores conditional negation. -/
+@[flocq_source "src/Core/Raux.v" 2190 "abs_cond_Ropp"]
 theorem abs_cond_Ropp (b : Bool) (x : ℝ) : |cond_Ropp b x| = |x| := by
   cases b <;> simp [cond_Ropp]
 
 /-- Coq {lit}`cond_Ropp_mult_l`: conditional negation of a product, left factor. -/
+@[flocq_source "src/Core/Raux.v" 2237 "cond_Ropp_mult_l"]
 theorem cond_Ropp_mult_l (b : Bool) (x y : ℝ) :
     cond_Ropp b (x * y) = cond_Ropp b x * y := by
   cases b <;> simp [cond_Ropp]
 
 /-- Coq {lit}`cond_Ropp_mult_r`: conditional negation of a product, right factor. -/
+@[flocq_source "src/Core/Raux.v" 2247 "cond_Ropp_mult_r"]
 theorem cond_Ropp_mult_r (b : Bool) (x y : ℝ) :
     cond_Ropp b (x * y) = x * cond_Ropp b y := by
   cases b <;> simp [cond_Ropp]
 
 /-- Coq {lit}`cond_Ropp_plus`: conditional negation distributes over addition. -/
+@[flocq_source "src/Core/Raux.v" 2257 "cond_Ropp_plus"]
 theorem cond_Ropp_plus (b : Bool) (x y : ℝ) :
     cond_Ropp b (x + y) = cond_Ropp b x + cond_Ropp b y := by
   cases b <;> simp [cond_Ropp, add_comm]
@@ -773,6 +768,7 @@ end IZRCond
 section AbsLtInv
 
 /-- Coq {lit}`Rabs_lt_inv`: if {lit}`|x| < y`, then {lit}`-y < x < y`. -/
+@[flocq_source "src/Core/Raux.v" 279 "Rabs_lt_inv"]
 theorem Rabs_lt_inv (x y : ℝ) (h : |x| < y) : -y < x ∧ x < y :=
   abs_lt.mp h
 

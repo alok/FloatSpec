@@ -48,7 +48,7 @@ noncomputable def nearestEvenMode : Mode where
 
 /-- Preserve a source integer-rounding function at the `Calc.Round` boundary. -/
 @[flocq_local "Lean-only adapter from Flocq integer rounding functions to Mode"]
-noncomputable def Mode.ofRnd (rnd : ℝ → Int)
+def Mode.ofRnd (rnd : ℝ → Int)
     [FloatSpec.Core.Generic_fmt.Valid_rnd rnd] : Mode where
   rnd := rnd
   rnd_zero := by
