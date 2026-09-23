@@ -2,14 +2,12 @@
 -- Translated from Coq file: flocq/src/IEEE754/Bits.v
 
 import FloatSpec.src.Core
-import Std.Do.Triple
 import FloatSpec.src.IEEE754.Binary
 import FloatSpec.src.IEEE754.BinarySingleNaN
 import Batteries.Data.Float.Lemmas
 import Mathlib.Data.Real.Basic
 
 open Real
-open Std.Do
 
 -- Number of bits for the fraction and exponent
 variable (mw ew : Nat)
@@ -557,21 +555,17 @@ theorem binary_bits_roundtrip (bits : Int) :
     _ = bits_to_binary prec emax bits := by
           simpa [hdecode_eq]
 
--- Auxillary constructor used in Coq: binary_float_of_bits_aux
--- We expose it here as a pure computation wrapped in Id to
--- mirror the hoare-triple specification pattern used across the project.
+-- Lean-model counterpart of Coq's auxiliary decoder `binary_float_of_bits_aux`,
+-- returning the permissive `Binary754` wrapper. The source-faithful decoder and
+-- its validity theorem live in `BitsSourceFacade.lean`.
 def binary_float_of_bits_aux (bits : Int) : (Binary754 prec emax) :=
   (bits_to_binary prec emax bits)
 
--- Coq lemma: binary_float_of_bits_aux_correct
--- We state it in hoare-triple style around the pure computation above.
+-- Lean-local unfolding lemma: the auxiliary decoder is `bits_to_binary`.
+-- (Coq's `binary_float_of_bits_aux_correct` states validity of the decoded
+-- float; that statement is ported in `BitsSourceFacade.lean`.)
 theorem binary_float_of_bits_aux_correct (bits : Int) :
-  ⦃⌜True⌝⦄
-  (pure (binary_float_of_bits_aux (prec:=prec) (emax:=emax) bits) : Id (Binary754 prec emax))
-  ⦃⇓result => ⌜result = bits_to_binary prec emax bits⌝⦄ := by
-  intro _
-  simp only [wp, PostCond.noThrow, pure]
-  unfold binary_float_of_bits_aux
+    binary_float_of_bits_aux (prec:=prec) (emax:=emax) bits = bits_to_binary prec emax bits :=
   rfl
 
 private abbrev ZPositive := FloatSpec.Core.Zaux.Positive
@@ -596,19 +590,39 @@ private theorem split_bits_exponent_range (mw ew : Nat) (x : Int) :
   simp [split_bits, Int.emod_nonneg (x / (2 : Int) ^ mw) (ne_of_gt hpos),
     Int.emod_lt_of_pos (x / (2 : Int) ^ mw) hpos]
 
+/-- A natural payload below `2 ^ k` has at most `k` binary digits
+(Coq `Zdigits_le_Zpower` at radix 2), derived from the direct digit bounds. -/
+private theorem zdigits_two_le_of_lt_pow {n k : Nat} (hn : n < 2 ^ k) :
+    FloatSpec.Core.Digits.Zdigits 2 (n : Int) ≤ (k : Int) := by
+  have hz := FloatSpec.Core.Digits.Zdigits_correct (beta := 2) (n : Int) (by decide)
+  have hpow : FloatSpec.Core.Zaux.Zpower 2 (k : Int) = (2 : Int) ^ k := by
+    simp [FloatSpec.Core.Zaux.Zpower]
+  have hlt : FloatSpec.Core.Zaux.Zpower 2 (FloatSpec.Core.Digits.Zdigits 2 (n : Int) - 1) <
+      FloatSpec.Core.Zaux.Zpower 2 (k : Int) := by
+    refine lt_of_le_of_lt hz.1 ?_
+    rw [hpow, abs_of_nonneg (Int.natCast_nonneg n)]
+    exact_mod_cast hn
+  exact FloatSpec.Core.Zaux.Zpower_lt_Zpower ⟨2, le_refl 2⟩ _ _ hlt
+
+/-- A natural payload in `[2 ^ d, 2 ^ (d + 1))` has exactly `d + 1` binary
+digits (Coq `Zdigits_unique` at radix 2). -/
+private theorem zdigits_two_eq_of_pow_bounds {n d : Nat}
+    (hlow : 2 ^ d ≤ n) (hhigh : n < 2 ^ (d + 1)) :
+    FloatSpec.Core.Digits.Zdigits 2 (n : Int) = (d : Int) + 1 := by
+  apply FloatSpec.Core.Digits.Zdigits_unique (beta := 2) (n : Int) ((d : Int) + 1) _ (by decide)
+  have hlowZ : FloatSpec.Core.Zaux.Zpower 2 ((d : Int) + 1 - 1) = (2 : Int) ^ d := by
+    simp [FloatSpec.Core.Zaux.Zpower]
+  have hhighZ : FloatSpec.Core.Zaux.Zpower 2 ((d : Int) + 1) = (2 : Int) ^ (d + 1) := by
+    simp only [FloatSpec.Core.Zaux.Zpower, show (0 : Int) ≤ (d : Int) + 1 by omega, ite_true]
+    congr 1
+  rw [hlowZ, hhighZ, abs_of_nonneg (Int.natCast_nonneg n)]
+  exact ⟨by exact_mod_cast hlow, by exact_mod_cast hhigh⟩
+
 private theorem digits2_pos_le_of_lt_pow_two {n k : Nat}
     (hnpos : 0 < n) (hn : n < 2 ^ k) :
     FloatSpec.Core.Digits.digits2_Pnat n + 1 ≤ k := by
-  have htrip := FloatSpec.Core.Digits.Zdigits_le_Zpower
-    (beta := 2) (hβ := by decide) (x := (n : Int)) (e := (k : Int))
-  have hpre :
-      0 ≤ (k : Int) ∧ Int.natAbs (n : Int) < (2 : Int) ^ (k : Int).natAbs := by
-    constructor
-    · exact Int.natCast_nonneg k
-    · simp
-      exact_mod_cast hn
-  have hzd : FloatSpec.Core.Digits.Zdigits 2 (n : Int) ≤ (k : Int) := by
-    simpa [wp, PostCond.noThrow, pure] using htrip (by decide) hpre
+  have hzd : FloatSpec.Core.Digits.Zdigits 2 (n : Int) ≤ (k : Int) :=
+    zdigits_two_le_of_lt_pow hn
   have heq := FloatSpec.Core.Digits.Z_of_nat_S_digits2_Pnat n hnpos
   have hle : ((FloatSpec.Core.Digits.digits2_Pnat n + 1 : Nat) : Int) ≤
       (k : Int) := by
@@ -671,15 +685,8 @@ private theorem specFloat_bounded_of_bits_subnormal
   simp only [Bool.and_eq_true, decide_eq_true_eq, beq_iff_eq]
   constructor
   · unfold FLT_exp FloatSpec.Core.FLT.FLT_exp
-    have hdigits_le : FloatSpec.Core.Digits.Zdigits 2 (n : Int) ≤ (mw : Int) := by
-      have htrip := FloatSpec.Core.Digits.Zdigits_le_Zpower (beta := 2)
-        (x := (n : Int)) (e := (mw : Int)) (by decide)
-      simp only [PostCond.noThrow, pure] at htrip
-      apply htrip
-      constructor
-      · exact Int.natCast_nonneg mw
-      · simp
-        exact_mod_cast hnlt
+    have hdigits_le : FloatSpec.Core.Digits.Zdigits 2 (n : Int) ≤ (mw : Int) :=
+      zdigits_two_le_of_lt_pow hnlt
     apply le_antisymm
     · exact le_max_right _ _
     · apply max_le
@@ -699,30 +706,8 @@ private theorem specFloat_bounded_of_bits_normal
   constructor
   · unfold FLT_exp FloatSpec.Core.FLT.FLT_exp
     have hzdigits : FloatSpec.Core.Digits.Zdigits 2 (n : Int) = prec := by
-      have htrip := FloatSpec.Core.Digits.Zdigits_unique_from_nonzero_payload (beta := 2)
-        (n := (n : Int)) (e := prec) (by decide)
-      simp only [PostCond.noThrow, pure] at htrip
-      apply htrip
-      constructor
-      · have hpow_pos : 0 < (2 : Nat) ^ mw := pow_pos (by norm_num : 0 < (2 : Nat)) mw
-        omega
-      constructor
-      · have hleft : ((2 : Int) ^ mw : Int) ≤ (n : Int) := by exact_mod_cast hnlow
-        have hprec_minus : prec - 1 = (mw : Int) := by omega
-        have hnonneg : 0 ≤ prec - 1 := by omega
-        have hnatAbs : Int.natAbs (prec - 1) = mw := by
-          apply Int.ofNat.inj
-          change (((prec - 1).natAbs : Int) = (mw : Int))
-          rw [Int.natAbs_of_nonneg hnonneg, hprec_minus]
-        simpa [hnatAbs] using hleft
-      · have hright : (n : Int) < ((2 : Int) ^ (mw + 1) : Int) := by exact_mod_cast hnlt
-        have hnonneg : 0 ≤ prec := by omega
-        have hnatAbs : Int.natAbs prec = mw + 1 := by
-          apply Int.ofNat.inj
-          change ((prec.natAbs : Int) = ((mw + 1 : Nat) : Int))
-          rw [Int.natAbs_of_nonneg hnonneg, hprec_eq]
-          simp
-        simpa [hnatAbs] using hright
+      rw [hprec_eq]
+      exact zdigits_two_eq_of_pow_bounds hnlow hnlt
     rw [hzdigits]
     have hfirst : prec + e - prec = e := by omega
     rw [hfirst]
@@ -2027,14 +2012,7 @@ theorem standardFloatOfModel64_model64OfStandardFloat
         have hmLt : m < 2 ^ 52 :=
           (Nat.log2_lt (Nat.ne_of_gt hm)).1 hlogLt
         have hzdigits : FloatSpec.Core.Digits.Zdigits 2 (m : Int) ≤ 52 := by
-          have htrip := FloatSpec.Core.Digits.Zdigits_le_Zpower
-            (beta := 2) (x := (m : Int)) (e := 52) (by decide)
-          simp only [PostCond.noThrow, pure] at htrip
-          apply htrip
-          constructor
-          · norm_num
-          · norm_num
-            exact_mod_cast hmLt
+          exact_mod_cast zdigits_two_le_of_lt_pow hmLt
         have hcanon := canonical_mantissa_of_specFloat_bounded hx'.2
         have heq :
             e = max (FloatSpec.Core.Digits.Zdigits 2 (m : Int) + e - 53) (-1074) := by
@@ -2137,14 +2115,7 @@ theorem standardFloatOfModel32_model32OfStandardFloat
         have hmLt : m < 2 ^ 23 :=
           (Nat.log2_lt (Nat.ne_of_gt hm)).1 hlogLt
         have hzdigits : FloatSpec.Core.Digits.Zdigits 2 (m : Int) ≤ 23 := by
-          have htrip := FloatSpec.Core.Digits.Zdigits_le_Zpower
-            (beta := 2) (x := (m : Int)) (e := 23) (by decide)
-          simp only [PostCond.noThrow, pure] at htrip
-          apply htrip
-          constructor
-          · norm_num
-          · norm_num
-            exact_mod_cast hmLt
+          exact_mod_cast zdigits_two_le_of_lt_pow hmLt
         have hcanon := canonical_mantissa_of_specFloat_bounded hx'.2
         have heq :
             e = max (FloatSpec.Core.Digits.Zdigits 2 (m : Int) + e - 24) (-149) := by
