@@ -155,7 +155,7 @@ The follow-up implementation on September 21 removes its unnecessary marker:
 `Pdiv`, `oZ` and `oZ1` are executable for the same reason. This closes those
 specific execution gaps; the real-valued specifications remain mathematical.
 A later change replaced the `Pdiv`, `Zquotient` and `ZdividesP` bodies with
-transcriptions of Coq's, which compiled code, `#reduce` and the kernel all run.
+transcriptions of Coq's, which `#eval`/`lean --run`, `#reduce` and the kernel all run.
 Closed theorems equate `Pdiv` and `Zquotient` with the September 21 bodies.
 `ZdividesP` returns a `Decidable`, which is a subsingleton, so its answers
 cannot differ from any other decision of the same proposition.
@@ -201,7 +201,7 @@ The September 21 continuation also runs 3,364 canonical pairs across four
 ordinary/degenerate formats and four comparisons per pair. The shared-input
 `prim_comparison` profile now observes 26 fields: the original raw/validity/typed
 surfaces plus all twelve opt-in dyadic calls on canonical inputs. Seed 864101
-passes 1,345 cases in compiled Lean, reduced Lean and pinned Rocq, then generates
+passes 1,345 cases on `lean --run`, `#reduce` and pinned Rocq, then generates
 1,345 checked kernel equalities. Twenty-four individual output mutations are
 detected. Noncanonical raw inputs are observed before the rejecting conversion;
 their value comparison is deliberately not substituted for the source answer.

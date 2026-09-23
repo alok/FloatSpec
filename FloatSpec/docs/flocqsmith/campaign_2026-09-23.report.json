@@ -1,0 +1,929 @@
+{
+ "schema": "flocqsmith-campaign-report-v1",
+ "id": "flocqsmith-campaign-2026-09-23",
+ "status": "passed",
+ "reasons": [],
+ "descriptor": {
+  "path": "scripts/fixtures/flocqsmith/campaign_2026-09-23.descriptor.json",
+  "sha256": "2bf7cb9564491ea3e686fe1da569b9575c3bf623a9a80419be40750c85a298a5",
+  "git_blob": "2d24d4dbd3ab7dbc2c2972d03f13a9e4c5cf792a",
+  "committed": true
+ },
+ "identities": {
+  "reference": {
+   "flocq_commit": "7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f",
+   "flocq_src": "/private/tmp/flocq-audit-rocq91-20260921/src"
+  },
+  "coqc": {
+   "path": "/Users/alokbeniwal/FloatSpec/_opam/bin/coqc",
+   "sha256": "00d32d468a62b465ffa42e62c6a8e3db7985dcfa9eaca7ae09b2f8da131b31b6",
+   "version": "The Rocq Prover, version 9.1.0\ncompiled with OCaml 4.14.1"
+  },
+  "lean": {
+   "path": "/Users/alokbeniwal/.elan/toolchains/leanprover--lean4---v4.34.0/bin/lean",
+   "sha256": "1b370cfcbf44e80d1b004ab1b1ab9a4c73951f9f7c242140bcff9bc577576554",
+   "version": "Lean (version 4.34.0, arm64-apple-darwin24.6.0, commit 293d5d0c0c3f3dded4688b3ccd6a33939ac5102b, Release)"
+  },
+  "lean_source_sha256": "cd22873cb11cf2d8f72aa29e9050b8888aff63c8debbf1ca62d19642314626dd",
+  "head": "a26c90a6d63464d346739da279cda86b148a7a37",
+  "dirty": false,
+  "dirty_status": [],
+  "dirty_diff_sha256": null,
+  "generator_rev": "bbe722a75cc047bdcc6031a732b402cfbd1094d1ff42e110f4d5687b0277d2fd"
+ },
+ "paths": [
+  "lean-meta",
+  "lean-ir",
+  "lean-kernel"
+ ],
+ "programs": 400,
+ "verdict_totals": {
+  "lean-meta": {
+   "match": 400
+  },
+  "lean-ir": {
+   "match": 400
+  },
+  "lean-kernel": {
+   "match": 400
+  }
+ },
+ "lanes": [
+  {
+   "name": "mixed-a",
+   "kind": "run",
+   "seed": 2026092301,
+   "n": 80,
+   "config": {
+    "format_weights": {
+     "t1_2": 1,
+     "t2_3": 2,
+     "t3_4": 4,
+     "t4_8": 4,
+     "t5_7": 2,
+     "t8_16": 3,
+     "b16": 5,
+     "bf16": 2,
+     "b32": 2,
+     "b64": 2
+    },
+    "min_size": 4,
+    "max_size": 12,
+    "budget_ms": 3000.0,
+    "force_ops": [],
+    "force_forms": [],
+    "corner_weight": 2,
+    "op_weight": 12,
+    "swarm_include": []
+   },
+   "status": "passed",
+   "report_status": "passed",
+   "verify": {
+    "status": "verified",
+    "rejudged_subjects": 80,
+    "problems": [],
+    "report_status": "passed"
+   },
+   "report_sha256": "7f84e0fe19286d10dd9cc95d76d34bc1b7b2aaca8210dcfceb7189a188b78dd4",
+   "complete_sha256": "88df36935e8f1bdd533c54cf15104c97b0969cb82728890295444876530a80ed",
+   "judged": {
+    "lean-meta": 80,
+    "lean-ir": 80,
+    "lean-kernel": 80
+   },
+   "verdicts": {
+    "lean-meta": {
+     "match": 80
+    },
+    "lean-ir": {
+     "match": 80
+    },
+    "lean-kernel": {
+     "match": 80
+    }
+   },
+   "infra_stages": {},
+   "mismatches": 0,
+   "infra": 0,
+   "harness_errors": 0,
+   "meta_ir_disagreements": [],
+   "controls": {},
+   "numeric_tags": {
+    "exact": 144,
+    "exact_zero_sum": 28,
+    "exact_zero_sum:DN": 8,
+    "exact_zero_sum:NA": 5,
+    "exact_zero_sum:NE": 4,
+    "exact_zero_sum:UP": 5,
+    "exact_zero_sum:ZR": 6,
+    "inexact": 90,
+    "nan_result": 41,
+    "negative_zero_result": 17,
+    "overflow_range": 28,
+    "subnormal_range": 21,
+    "tie": 66,
+    "tie:DN": 13,
+    "tie:NA": 13,
+    "tie:NE": 13,
+    "tie:UP": 14,
+    "tie:ZR": 13
+   },
+   "elapsed_seconds": 22.283
+  },
+  {
+   "name": "mixed-b",
+   "kind": "run",
+   "seed": 2026092302,
+   "n": 80,
+   "config": {
+    "format_weights": {
+     "t1_2": 1,
+     "t2_3": 2,
+     "t3_4": 4,
+     "t4_8": 4,
+     "t5_7": 2,
+     "t8_16": 3,
+     "b16": 5,
+     "bf16": 2,
+     "b32": 2,
+     "b64": 2
+    },
+    "min_size": 4,
+    "max_size": 12,
+    "budget_ms": 3000.0,
+    "force_ops": [],
+    "force_forms": [],
+    "corner_weight": 2,
+    "op_weight": 12,
+    "swarm_include": []
+   },
+   "status": "passed",
+   "report_status": "passed",
+   "verify": {
+    "status": "verified",
+    "rejudged_subjects": 80,
+    "problems": [],
+    "report_status": "passed"
+   },
+   "report_sha256": "01ec8a579a9a15fe218c476fb2efd0165c9324558a37c4c4d10a6d25a98edb00",
+   "complete_sha256": "5cdf0d129076c7800edda0687e9fda3dae1c378c9328dd65b7d06207a40b59a6",
+   "judged": {
+    "lean-meta": 80,
+    "lean-ir": 80,
+    "lean-kernel": 80
+   },
+   "verdicts": {
+    "lean-meta": {
+     "match": 80
+    },
+    "lean-ir": {
+     "match": 80
+    },
+    "lean-kernel": {
+     "match": 80
+    }
+   },
+   "infra_stages": {},
+   "mismatches": 0,
+   "infra": 0,
+   "harness_errors": 0,
+   "meta_ir_disagreements": [],
+   "controls": {},
+   "numeric_tags": {
+    "exact": 115,
+    "exact_zero_sum": 40,
+    "exact_zero_sum:DN": 12,
+    "exact_zero_sum:NA": 6,
+    "exact_zero_sum:NE": 8,
+    "exact_zero_sum:UP": 8,
+    "exact_zero_sum:ZR": 6,
+    "inexact": 85,
+    "nan_result": 69,
+    "negative_zero_result": 21,
+    "overflow_range": 27,
+    "subnormal_range": 16,
+    "tie": 54,
+    "tie:DN": 9,
+    "tie:NA": 13,
+    "tie:NE": 16,
+    "tie:UP": 8,
+    "tie:ZR": 8
+   },
+   "elapsed_seconds": 22.362
+  },
+  {
+   "name": "mixed-long",
+   "kind": "run",
+   "seed": 2026092303,
+   "n": 60,
+   "config": {
+    "format_weights": {
+     "t1_2": 1,
+     "t2_3": 2,
+     "t3_4": 4,
+     "t4_8": 4,
+     "t5_7": 2,
+     "t8_16": 3,
+     "b16": 5,
+     "bf16": 2,
+     "b32": 2,
+     "b64": 2
+    },
+    "min_size": 10,
+    "max_size": 20,
+    "budget_ms": 3000.0,
+    "force_ops": [],
+    "force_forms": [],
+    "corner_weight": 2,
+    "op_weight": 12,
+    "swarm_include": []
+   },
+   "status": "passed",
+   "report_status": "passed",
+   "verify": {
+    "status": "verified",
+    "rejudged_subjects": 60,
+    "problems": [],
+    "report_status": "passed"
+   },
+   "report_sha256": "beda77ef8c4cc31e509d59549e6a10b646633d7a14f40218353bed0d058d3357",
+   "complete_sha256": "dce7385b5c2f5dadd719db40783a5f38befea602ada2bb6c78cadd9dc3b9ba69",
+   "judged": {
+    "lean-meta": 60,
+    "lean-ir": 60,
+    "lean-kernel": 60
+   },
+   "verdicts": {
+    "lean-meta": {
+     "match": 60
+    },
+    "lean-ir": {
+     "match": 60
+    },
+    "lean-kernel": {
+     "match": 60
+    }
+   },
+   "infra_stages": {},
+   "mismatches": 0,
+   "infra": 0,
+   "harness_errors": 0,
+   "meta_ir_disagreements": [],
+   "controls": {},
+   "numeric_tags": {
+    "exact": 189,
+    "exact_zero_sum": 32,
+    "exact_zero_sum:DN": 7,
+    "exact_zero_sum:NA": 4,
+    "exact_zero_sum:NE": 5,
+    "exact_zero_sum:UP": 9,
+    "exact_zero_sum:ZR": 7,
+    "inexact": 153,
+    "nan_result": 50,
+    "negative_zero_result": 13,
+    "overflow_range": 59,
+    "subnormal_range": 37,
+    "tie": 90,
+    "tie:DN": 19,
+    "tie:NA": 19,
+    "tie:NE": 23,
+    "tie:UP": 13,
+    "tie:ZR": 16
+   },
+   "elapsed_seconds": 30.558
+  },
+  {
+   "name": "wide",
+   "kind": "run",
+   "seed": 2026092304,
+   "n": 60,
+   "config": {
+    "format_weights": {
+     "b16": 1,
+     "bf16": 1,
+     "b32": 1,
+     "b64": 1
+    },
+    "min_size": 4,
+    "max_size": 10,
+    "budget_ms": 3000.0,
+    "force_ops": [],
+    "force_forms": [],
+    "corner_weight": 2,
+    "op_weight": 12,
+    "swarm_include": []
+   },
+   "status": "passed",
+   "report_status": "passed",
+   "verify": {
+    "status": "verified",
+    "rejudged_subjects": 60,
+    "problems": [],
+    "report_status": "passed"
+   },
+   "report_sha256": "da5716a16ef8c9f779cf32ee490a3cc437b598ae0934a90136a14a81a570f469",
+   "complete_sha256": "78915b249c7369aa6311cab72476949d9f3d4b26d1da975beff6472432826ccf",
+   "judged": {
+    "lean-meta": 60,
+    "lean-ir": 60,
+    "lean-kernel": 60
+   },
+   "verdicts": {
+    "lean-meta": {
+     "match": 60
+    },
+    "lean-ir": {
+     "match": 60
+    },
+    "lean-kernel": {
+     "match": 60
+    }
+   },
+   "infra_stages": {},
+   "mismatches": 0,
+   "infra": 0,
+   "harness_errors": 0,
+   "meta_ir_disagreements": [],
+   "controls": {},
+   "numeric_tags": {
+    "exact": 63,
+    "exact_zero_sum": 13,
+    "exact_zero_sum:DN": 3,
+    "exact_zero_sum:NA": 4,
+    "exact_zero_sum:NE": 2,
+    "exact_zero_sum:UP": 1,
+    "exact_zero_sum:ZR": 3,
+    "inexact": 54,
+    "nan_result": 36,
+    "negative_zero_result": 14,
+    "overflow_range": 11,
+    "subnormal_range": 12,
+    "tie": 26,
+    "tie:DN": 4,
+    "tie:NA": 6,
+    "tie:NE": 7,
+    "tie:UP": 4,
+    "tie:ZR": 5
+   },
+   "elapsed_seconds": 22.39
+  },
+  {
+   "name": "tiny",
+   "kind": "run",
+   "seed": 2026092305,
+   "n": 80,
+   "config": {
+    "format_weights": {
+     "t1_2": 1,
+     "t2_3": 1,
+     "t3_4": 1,
+     "t4_8": 1,
+     "t5_7": 1,
+     "t8_16": 1
+    },
+    "min_size": 8,
+    "max_size": 20,
+    "budget_ms": 3000.0,
+    "force_ops": [],
+    "force_forms": [],
+    "corner_weight": 2,
+    "op_weight": 12,
+    "swarm_include": []
+   },
+   "status": "passed",
+   "report_status": "passed",
+   "verify": {
+    "status": "verified",
+    "rejudged_subjects": 80,
+    "problems": [],
+    "report_status": "passed"
+   },
+   "report_sha256": "6c83eb3d40bccd3f9a62a977cdf55d1964d469746f8f007ecedede247dafb601",
+   "complete_sha256": "6ef3acd2341cbd16730bf2d9521bd60d7230316e683a9f40693c781a10b3a817",
+   "judged": {
+    "lean-meta": 80,
+    "lean-ir": 80,
+    "lean-kernel": 80
+   },
+   "verdicts": {
+    "lean-meta": {
+     "match": 80
+    },
+    "lean-ir": {
+     "match": 80
+    },
+    "lean-kernel": {
+     "match": 80
+    }
+   },
+   "infra_stages": {},
+   "mismatches": 0,
+   "infra": 0,
+   "harness_errors": 0,
+   "meta_ir_disagreements": [],
+   "controls": {},
+   "numeric_tags": {
+    "exact": 262,
+    "exact_zero_sum": 83,
+    "exact_zero_sum:DN": 20,
+    "exact_zero_sum:NA": 17,
+    "exact_zero_sum:NE": 15,
+    "exact_zero_sum:UP": 16,
+    "exact_zero_sum:ZR": 15,
+    "inexact": 129,
+    "nan_result": 135,
+    "negative_zero_result": 33,
+    "overflow_range": 90,
+    "subnormal_range": 64,
+    "tie": 132,
+    "tie:DN": 27,
+    "tie:NA": 28,
+    "tie:NE": 34,
+    "tie:UP": 22,
+    "tie:ZR": 21
+   },
+   "elapsed_seconds": 26.456
+  },
+  {
+   "name": "controls",
+   "kind": "controls",
+   "seed": 2026092306,
+   "n": 40,
+   "config": {
+    "format_weights": {
+     "t1_2": 1,
+     "t2_3": 2,
+     "t3_4": 4,
+     "t4_8": 4,
+     "t5_7": 2,
+     "t8_16": 3,
+     "b16": 5,
+     "bf16": 2,
+     "b32": 2,
+     "b64": 2
+    },
+    "min_size": 4,
+    "max_size": 12,
+    "budget_ms": 3000.0,
+    "force_ops": [],
+    "force_forms": [],
+    "corner_weight": 2,
+    "op_weight": 12,
+    "swarm_include": []
+   },
+   "status": "controls-ok",
+   "report_status": "passed",
+   "verify": {
+    "status": "verified",
+    "rejudged_subjects": 348,
+    "problems": [],
+    "report_status": "passed"
+   },
+   "report_sha256": "effd7ddf5d76343b3aa2e21bcd20aeb76e1cbe2f50c41bb6ba7c7dad9ab3bf70",
+   "complete_sha256": "032bd1e12be2eb77faee5a0e6def2d591718201ae986dd23162f73ae5ae5d29f",
+   "judged": {
+    "lean-meta": 40,
+    "lean-ir": 40,
+    "lean-kernel": 40
+   },
+   "verdicts": {
+    "lean-meta": {
+     "match": 40
+    },
+    "lean-ir": {
+     "match": 40
+    },
+    "lean-kernel": {
+     "match": 40
+    }
+   },
+   "infra_stages": {},
+   "mismatches": 0,
+   "infra": 0,
+   "harness_errors": 0,
+   "meta_ir_disagreements": [],
+   "controls": {
+    "tie_rne_as_rna": {
+     "exposed": 36,
+     "detected": 4,
+     "detection_rate": 0.1111,
+     "detected_by_path": {
+      "lean-meta": 4,
+      "lean-ir": 4,
+      "lean-kernel": 4
+     },
+     "non_mismatch_verdicts": {},
+     "ok": true
+    },
+    "dn_zero_sign": {
+     "exposed": 32,
+     "detected": 4,
+     "detection_rate": 0.125,
+     "detected_by_path": {
+      "lean-meta": 4,
+      "lean-ir": 4,
+      "lean-kernel": 4
+     },
+     "non_mismatch_verdicts": {},
+     "ok": true
+    },
+    "updn_swap_negative": {
+     "exposed": 29,
+     "detected": 5,
+     "detection_rate": 0.1724,
+     "detected_by_path": {
+      "lean-meta": 5,
+      "lean-ir": 5,
+      "lean-kernel": 5
+     },
+     "non_mismatch_verdicts": {},
+     "ok": true
+    },
+    "zr_overflow_to_inf": {
+     "exposed": 36,
+     "detected": 6,
+     "detection_rate": 0.1667,
+     "detected_by_path": {
+      "lean-meta": 6,
+      "lean-ir": 6,
+      "lean-kernel": 6
+     },
+     "non_mismatch_verdicts": {},
+     "ok": true
+    },
+    "subnormal_exp_off_by_one": {
+     "exposed": 29,
+     "detected": 12,
+     "detection_rate": 0.4138,
+     "detected_by_path": {
+      "lean-meta": 12,
+      "lean-ir": 12,
+      "lean-kernel": 12
+     },
+     "non_mismatch_verdicts": {},
+     "ok": true
+    },
+    "fma_double_rounding": {
+     "exposed": 19,
+     "detected": 8,
+     "detection_rate": 0.4211,
+     "detected_by_path": {
+      "lean-meta": 8,
+      "lean-ir": 8,
+      "lean-kernel": 8
+     },
+     "non_mismatch_verdicts": {},
+     "ok": true
+    },
+    "succ_max_saturates": {
+     "exposed": 11,
+     "detected": 5,
+     "detection_rate": 0.4545,
+     "detected_by_path": {
+      "lean-meta": 5,
+      "lean-ir": 5,
+      "lean-kernel": 5
+     },
+     "non_mismatch_verdicts": {},
+     "ok": true
+    },
+    "ltb_as_leb": {
+     "exposed": 4,
+     "detected": 4,
+     "detection_rate": 1.0,
+     "detected_by_path": {
+      "lean-meta": 4,
+      "lean-ir": 4,
+      "lean-kernel": 4
+     },
+     "non_mismatch_verdicts": {},
+     "ok": true
+    },
+    "trunc_floor": {
+     "exposed": 8,
+     "detected": 4,
+     "detection_rate": 0.5,
+     "detected_by_path": {
+      "lean-meta": 4,
+      "lean-ir": 4,
+      "lean-kernel": 4
+     },
+     "non_mismatch_verdicts": {},
+     "ok": true
+    },
+    "nearbyint_na_as_ne": {
+     "exposed": 8,
+     "detected": 2,
+     "detection_rate": 0.25,
+     "detected_by_path": {
+      "lean-meta": 2,
+      "lean-ir": 2,
+      "lean-kernel": 2
+     },
+     "non_mismatch_verdicts": {},
+     "ok": true
+    },
+    "enc_sign_flip": {
+     "exposed": 40,
+     "detected": 40,
+     "detection_rate": 1.0,
+     "detected_by_path": {
+      "lean-meta": 40,
+      "lean-ir": 40,
+      "lean-kernel": 40
+     },
+     "non_mismatch_verdicts": {},
+     "ok": true
+    },
+    "enc_bool_negate": {
+     "exposed": 20,
+     "detected": 20,
+     "detection_rate": 1.0,
+     "detected_by_path": {
+      "lean-meta": 20,
+      "lean-ir": 20,
+      "lean-kernel": 20
+     },
+     "non_mismatch_verdicts": {},
+     "ok": true
+    },
+    "mode_swap_up_dn": {
+     "exposed": 36,
+     "detected": 28,
+     "detection_rate": 0.7778,
+     "detected_by_path": {
+      "lean-meta": 28,
+      "lean-ir": 28,
+      "lean-kernel": 28
+     },
+     "non_mismatch_verdicts": {},
+     "ok": true
+    }
+   },
+   "numeric_tags": {
+    "exact": 119,
+    "exact_zero_sum": 41,
+    "exact_zero_sum:DN": 9,
+    "exact_zero_sum:NA": 9,
+    "exact_zero_sum:NE": 7,
+    "exact_zero_sum:UP": 8,
+    "exact_zero_sum:ZR": 8,
+    "inexact": 87,
+    "nan_result": 16,
+    "negative_zero_result": 14,
+    "overflow_range": 33,
+    "subnormal_range": 56,
+    "tie": 62,
+    "tie:DN": 11,
+    "tie:NA": 15,
+    "tie:NE": 14,
+    "tie:UP": 10,
+    "tie:ZR": 12
+   },
+   "elapsed_seconds": 141.796
+  }
+ ],
+ "coverage": {
+  "basis": "cases whose every requested path returned match or observation-mismatch",
+  "generated": 400,
+  "judged_on_every_path": 400,
+  "formats": {
+   "b16": 58,
+   "b32": 35,
+   "b64": 28,
+   "bf16": 42,
+   "t1_2": 24,
+   "t2_3": 34,
+   "t3_4": 44,
+   "t4_8": 55,
+   "t5_7": 32,
+   "t8_16": 48
+  },
+  "ops": {
+   "B2SF": 63,
+   "Babs": 77,
+   "Bcompare": 80,
+   "Bdiv": 294,
+   "Beqb": 73,
+   "Bfma": 492,
+   "Bfma_szero": 72,
+   "Bfrexp.1": 60,
+   "Bfrexp.2": 67,
+   "Bldexp": 198,
+   "Bleb": 77,
+   "Bltb": 67,
+   "Bmax_float": 131,
+   "Bminus": 381,
+   "Bmult": 582,
+   "Bnearbyint": 172,
+   "Bnormfr_mantissa": 61,
+   "Bone": 114,
+   "Bopp": 71,
+   "Bplus": 654,
+   "Bpred": 275,
+   "Bpred_pos'": 71,
+   "Bsign": 80,
+   "Bsqrt": 194,
+   "Bsucc": 164,
+   "Bsucc'": 81,
+   "Btrunc": 91,
+   "Bulp": 65,
+   "Bulp'": 77,
+   "SF2B'": 1463,
+   "binary_normalize": 1066,
+   "binary_round": 80,
+   "erase": 66,
+   "is_finite": 76,
+   "is_finite_strict": 59,
+   "is_nan": 53
+  },
+  "forms": {
+   "branch": 86,
+   "case4": 251,
+   "corner": 288,
+   "fold": 225,
+   "op": 400,
+   "select": 247
+  },
+  "modes": {
+   "DN": 764,
+   "NA": 816,
+   "NE": 744,
+   "UP": 749,
+   "ZR": 728
+  },
+  "corners": {
+   "cancel": 162,
+   "equal_pair": 46,
+   "fma_error": 134,
+   "half_int": 144,
+   "max_succ": 41,
+   "overflow_edge": 168,
+   "sticky_gap": 92,
+   "tie_mult": 110,
+   "tie_plus": 238,
+   "tiny": 124
+  },
+  "format_family": {
+   "t1_2": {
+    "add-sub-fma": 134,
+    "classify": 27,
+    "compare": 32,
+    "constants": 40,
+    "construct-round": 159,
+    "div-sqrt": 25,
+    "integer-rounding": 11,
+    "mult": 37,
+    "scale": 13,
+    "sign-erase": 19,
+    "succ-pred-ulp": 65
+   },
+   "t2_3": {
+    "add-sub-fma": 160,
+    "classify": 42,
+    "compare": 24,
+    "constants": 32,
+    "construct-round": 249,
+    "div-sqrt": 34,
+    "integer-rounding": 27,
+    "mult": 33,
+    "scale": 27,
+    "sign-erase": 20,
+    "succ-pred-ulp": 74
+   },
+   "t3_4": {
+    "add-sub-fma": 166,
+    "classify": 42,
+    "compare": 38,
+    "constants": 17,
+    "construct-round": 327,
+    "div-sqrt": 56,
+    "integer-rounding": 42,
+    "mult": 110,
+    "scale": 56,
+    "sign-erase": 25,
+    "succ-pred-ulp": 74
+   },
+   "t4_8": {
+    "add-sub-fma": 269,
+    "classify": 45,
+    "compare": 34,
+    "constants": 35,
+    "construct-round": 384,
+    "div-sqrt": 70,
+    "integer-rounding": 30,
+    "mult": 77,
+    "scale": 48,
+    "sign-erase": 24,
+    "succ-pred-ulp": 96
+   },
+   "t5_7": {
+    "add-sub-fma": 149,
+    "classify": 32,
+    "compare": 23,
+    "constants": 21,
+    "construct-round": 240,
+    "div-sqrt": 48,
+    "integer-rounding": 29,
+    "mult": 55,
+    "scale": 28,
+    "sign-erase": 20,
+    "succ-pred-ulp": 51
+   },
+   "t8_16": {
+    "add-sub-fma": 173,
+    "classify": 43,
+    "compare": 25,
+    "constants": 22,
+    "construct-round": 307,
+    "div-sqrt": 64,
+    "integer-rounding": 31,
+    "mult": 77,
+    "scale": 48,
+    "sign-erase": 29,
+    "succ-pred-ulp": 86
+   },
+   "b16": {
+    "add-sub-fma": 251,
+    "classify": 60,
+    "compare": 46,
+    "constants": 25,
+    "construct-round": 392,
+    "div-sqrt": 65,
+    "integer-rounding": 19,
+    "mult": 66,
+    "scale": 33,
+    "sign-erase": 34,
+    "succ-pred-ulp": 105
+   },
+   "bf16": {
+    "add-sub-fma": 135,
+    "classify": 37,
+    "compare": 33,
+    "constants": 23,
+    "construct-round": 238,
+    "div-sqrt": 51,
+    "integer-rounding": 31,
+    "mult": 44,
+    "scale": 36,
+    "sign-erase": 18,
+    "succ-pred-ulp": 54
+   },
+   "b32": {
+    "add-sub-fma": 59,
+    "classify": 37,
+    "compare": 24,
+    "constants": 16,
+    "construct-round": 211,
+    "div-sqrt": 43,
+    "integer-rounding": 24,
+    "mult": 51,
+    "scale": 17,
+    "sign-erase": 11,
+    "succ-pred-ulp": 85
+   },
+   "b64": {
+    "add-sub-fma": 31,
+    "classify": 36,
+    "compare": 18,
+    "constants": 14,
+    "construct-round": 165,
+    "div-sqrt": 32,
+    "integer-rounding": 19,
+    "mult": 32,
+    "scale": 19,
+    "sign-erase": 14,
+    "succ-pred-ulp": 43
+   }
+  },
+  "gaps": [],
+  "format_op_cells": 360,
+  "format_op_empty": [
+   "t5_7/Bulp"
+  ]
+ },
+ "clusters": [],
+ "infra_clusters": [],
+ "shrinks": [],
+ "exemplar_lane": {
+  "command": [
+   "uv",
+   "run",
+   "scripts/test_flocq_exemplars.py",
+   "-v"
+  ],
+  "returncode": 0,
+  "timed_out": false,
+  "seconds": 42.816,
+  "tests": 29,
+  "skipped": 0,
+  "failures": 0,
+  "errors": 0,
+  "per_test": {
+   "ok": 29
+  },
+  "status": "passed"
+ },
+ "elapsed_seconds": 322.343,
+ "statement": "Finite differential testing: every observed binding of generated BinarySingleNaN programs on lean-meta, lean-ir and lean-kernel against pinned Rocq vm_compute. Infrastructure failures are never matches and are reported separately. Not a proof of equivalence."
+}

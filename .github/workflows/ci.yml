@@ -13,6 +13,8 @@ jobs:
     # About 50-60 min with lean-action's cache warm. A cold cache rebuilds
     # Mathlib (lean-action alone took 73-81 min in runs 35548504304 through
     # 35551453076), about 125-135 min in total, so keep headroom above that.
+    # The flocqsmith and exemplar live modules add about 5 min (measured
+    # locally), for roughly 130-145 min cold.
     timeout-minutes: 180
     steps:
       - name: Initialize fresh cross-check evidence directory
@@ -97,10 +99,11 @@ jobs:
           # linters plus warnings-as-errors, stricter than the product build.
           # Reject what would defeat that, assume a result, fake a run's output,
           # bypass the kernel or rewrite the environment; only ripgrep's explicit
-          # no-match result passes.
+          # no-match result passes. The exemplars run in the required suite
+          # below, which needs their special LEAN_PATH, but meet this gate too.
           status=0
           rg -n 'warningAsError|#guard_msgs|#exit|\baxiom\b|implemented_by|\bextern\b|native_decide|decide\s*\+native|native\s*:=\s*true|ofReduceBool|skipKernelTC|addDecl(WithoutChecking|Core)|doCheck|setEnv|modifyEnv|run_(cmd|elab|meta)|sorryAx|drop\s+(all|error|warning)' \
-            scripts/fixtures/*.lean || status=$?
+            scripts/fixtures/*.lean scripts/fixtures/exemplars/*.lean || status=$?
           test "$status" -eq 1
           # Discover fixtures by glob so none is left unrun. Those defining `main`
           # also execute, and GuidedDemo runs again as the compiled floatspec_demo;
@@ -143,10 +146,11 @@ jobs:
         run: |
           mkdir -p "$FLOCQ_CI_OUTPUT/rocq"
           # Rocq compiles admissions, axioms and aborted checks without error;
-          # only ripgrep's explicit no-match result passes.
+          # only ripgrep's explicit no-match result passes. The exemplars compile
+          # in the required suite below and meet this gate too.
           status=0
           rg -n '\b(Admitted|Admit|admit|Abort|Axioms?|Parameters?|Conjectures?|Declare)\b|native_compute|native_cast_no_check|Unset (Guard|Positivity|Universe) Checking|bypass_check' \
-            scripts/fixtures/*.v || status=$?
+            scripts/fixtures/*.v scripts/fixtures/exemplars/*.v || status=$?
           test "$status" -eq 1
           # Compile every fixture, discovered by glob, against the pinned build.
           # The loop variables expand in the opam child shell, not this shell.

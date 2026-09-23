@@ -27,7 +27,7 @@ CI now installs Rocq and builds pinned Flocq as well as Lean. Required live
 tests cannot silently skip a missing reference. The initial hosted run passed
 the 174 live tests but timed out in an oversized differential grid; the bounded
 follow-up is locally verified and still needs its own hosted result. The
-required suite has since grown to all 24 reference-gated modules (238 tests),
+required suite has since grown to all 26 reference-gated modules (310 tests),
 CI now compiles every Lean and Rocq fixture by glob, and it replays every
 source, test and fixture declaration through the kernel; these changes, too,
 need their own hosted result. See
@@ -158,11 +158,11 @@ and [audit ledger](ASTRA_AUDIT_2026-09-19.md); these snapshots are not interchan
 **About `noncomputable`:** arbitrary-real specifications and executable
 integer algorithms are different layers in both provers. Some legacy integer
 helpers are unnecessarily marked, which is a real execution-capability gap.
-The September 20 probe found `Zquotient (-7) 3` returned −2 in Rocq and Lean
-kernel reduction, while Lean's `#eval` rejected its marker. That specific gap
+The September 20 probe found `Zquotient (-7) 3` returned −2 in Rocq and under
+Lean's `#reduce`, while Lean's `#eval` rejected its marker. That specific gap
 is now fixed: `Zquotient`, `Pdiv`, `oZ` and `oZ1` execute with their source
 types. `Pdiv`, `Zquotient` and `ZdividesP` now transcribe the Coq bodies, and
-compiled code runs those transcriptions; closed theorems equate the first two
+`#eval` and `lean --run` run those transcriptions; closed theorems equate the first two
 with natural division and `Int.tdiv`. `maxDiv` now decides divisibility with
 `ZdividesP` instead of `Classical.propDecidable`, with a universal Lean proof
 that its answer is unchanged. `#print axioms maxDiv` lists `Classical.choice`
@@ -568,8 +568,11 @@ It executes 35,845 inputs/modes on each side without reusing the rounder's
 shift, digit-count, or rounding-decision algorithm. Its claim excludes
 overflow and exceptional encodings, which have separate IEEE tests.
 
-The core bridge now runs **compiled Lean, Lean kernel reduction, and Rocq
-computation**. It includes ordinary inputs and explicitly labeled inputs
+The core bridge now runs each input on Lean's IR interpreter (`lean --run`,
+lean-ir), on Lean's elaborator reducer (`#reduce`, lean-meta) and on Rocq's
+`vm_compute`. Neither Lean path is the kernel or native code; the kernel checks
+the generated `decide +kernel` equalities described below (lean-kernel). See
+[execution path names](THREE_VERIFICATION_LOOPS.md#execution-path-names). It includes ordinary inputs and explicitly labeled inputs
 outside theorem preconditions, such as negative shifts or zero divisors.
 Agreement on those inputs is a total-function observation, not permission
 to apply a theorem without its hypotheses.
@@ -585,8 +588,8 @@ runtime agreement fixture.
 
 A separate IEEE source-API bridge covers binary32/binary64 in all five
 rounding modes, including fused multiply-add and exact NaN payloads.
-That bridge checks compiled integer-only Lean, kernel reduction, and Rocq,
-not native hardware directed rounding. Enabling the compiled path required
+That bridge checks integer-only Lean on lean-ir and lean-meta, and Rocq,
+not native hardware directed rounding. Enabling the lean-ir path required
 removing unnecessary `noncomputable` markers and moving square root's
 real-valued witness inside its erased validity proof; the arithmetic itself
 still uses integers. A separate 100,100-comparison runtime grid checks the
@@ -635,8 +638,11 @@ algorithms as well as their agreement with the bit-level neighbors.
 These are the IEEE integer algorithms; `Core.Ulp.ulp` on arbitrary real
 numbers is still a noncomputable mathematical definition.
 
-For agreeing batches, Rocq's output becomes the expected value of generated
-Lean equality statements. Lean checks each with `decide +kernel`.
+Rocq's output becomes the expected value of generated Lean equality
+statements, and Lean checks each with `decide +kernel`. The core bridge does
+this for every case whose `#reduce` row agrees with Rocq's; the IEEE mode,
+scale, integer and native bridges still do it only for batches that agree
+throughout.
 This bootstraps a Lean regression oracle; it is not a universal equivalence
 proof. Seeds, input JSON, generated programs, outputs, and replay files are
 retained. Deliberate mutations must produce failures, and interrupted,

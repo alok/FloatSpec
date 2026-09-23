@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Cross-test IEEE nearby-integer rounding and unbounded integer truncation.
 
-Compiled Lean, kernel reduction, and pinned Rocq agree exactly, including NaN
-payloads. Native floor/ceil/round check directed and nearest-away modes. Native
+Lean on lean-ir (`lean --run`) and lean-meta (`#reduce`, not the kernel) and
+pinned Rocq agree exactly, including NaN payloads; a batch whose lean-meta rows
+all agree becomes lean-kernel (`decide +kernel`) regressions. Native floor/ceil/round check directed and nearest-away modes. Native
 unsigned conversion checks truncation only on finite inputs with |x| < 2^64;
 the source integer result is unbounded and remains checked elsewhere.
 """
@@ -213,7 +214,8 @@ def main():
               "fresh_build": not args.skip_build, "status": "running", "compared_cases": 0,
               "bootstrapped_lean_cases": 0, "mismatches": [], "native_scope_exceptions": [],
               "groups": dict(Counter(f"binary{c[0]}:{MODES[c[1]]}:{category(c[0], c[2])}" for c in cases)),
-              "method": "Exact compiled/kernel/Rocq nearby rounding and truncation; native checks with explicit scope"}
+              "method": "Exact lean-ir/lean-meta/Rocq nearby rounding and truncation, lean-kernel regressions "
+                        "of agreeing batches; native checks with explicit scope"}
     def save():
         (output / "report.json").write_text(json.dumps(report, indent=2) + "\n")
         if report["mismatches"]:
