@@ -3623,16 +3623,13 @@ theorem range_bounded_of_specFloat_bounded {prec emax : Int}
   have hm_int_ne : (m : Int) ≠ 0 := by
     exact_mod_cast (Nat.pos_iff_ne_zero.mp hm_pos)
   have hdigits_pos : 0 < FloatSpec.Core.Digits.Zdigits 2 (m : Int) := by
-    have htrip := FloatSpec.Core.Digits.Zdigits_gt_0 (beta := 2) (n := (m : Int))
+    exact FloatSpec.Core.Digits.Zdigits_gt_0 (beta := 2) (n := (m : Int)) hm_int_ne
       (by norm_num : (2 : Int) > 1)
-    simpa [wp, PostCond.noThrow, pure] using htrip hm_int_ne
   have hprec_nonneg : 0 ≤ prec := le_trans (le_of_lt hdigits_pos) hdigits_le_prec
   have hpow_bound :
       (m : Int) < (2 : Int) ^ prec.toNat := by
-    have htrip := FloatSpec.Core.Digits.Zpower_gt_Zdigits
-      (beta := 2) (h_beta := by norm_num) (e := prec) (x := (m : Int))
-    simp only [wp, PostCond.noThrow, pure, Id.run] at htrip
-    have hpow := htrip trivial hdigits_le_prec
+    have hpow := FloatSpec.Core.Digits.Zpower_gt_Zdigits
+      (beta := 2) (h_beta := by norm_num) (e := prec) (x := (m : Int)) hdigits_le_prec
     have hprec_abs : prec.natAbs = prec.toNat := by
       have h1 : (prec.natAbs : Int) = prec := Int.natAbs_of_nonneg hprec_nonneg
       have h2 : (prec.toNat : Int) = prec := Int.toNat_of_nonneg hprec_nonneg
@@ -4640,9 +4637,8 @@ theorem bounded_canonical_lt_emax {prec emax : Int}
     omega
 
   -- From Zdigits definition: 2^(Zdigits - 1) ≤ |mx| < 2^Zdigits
-  have hzdig_bound := FloatSpec.Core.Digits.Zdigits_correct_from_nonzero_payload 2 (mx : Int) h2gt1
-  simp only [wp, PostCond.noThrow, pure, Id.run] at hzdig_bound
-  have hzdig_spec := hzdig_bound hmx_int_ne
+  have hzdig_spec :=
+    FloatSpec.Core.Digits.Zdigits_correct_from_nonzero_payload 2 (mx : Int) hmx_int_ne h2gt1
   obtain ⟨hlow, hhi⟩ := hzdig_spec
   -- Since mx > 0, |mx| = mx
   simp only [abs_of_pos hmx_int_pos] at hlow hhi
@@ -4661,8 +4657,7 @@ theorem bounded_canonical_lt_emax {prec emax : Int}
         ring
 
       -- Zdigits ≥ 1 for mx > 0, so prec ≥ 1 > 0
-      have hprec_pos := FloatSpec.Core.Digits.Zdigits_gt_0 2 (mx : Int) h2gt1 hmx_int_ne
-      simp only [wp, PostCond.noThrow, pure] at hprec_pos
+      have hprec_pos := FloatSpec.Core.Digits.Zdigits_gt_0 2 (mx : Int) hmx_int_ne h2gt1
       rw [hzdig_prec] at hprec_pos
       have hprec_nonneg : 0 ≤ prec := le_of_lt hprec_pos
 
@@ -4707,8 +4702,7 @@ theorem bounded_canonical_lt_emax {prec emax : Int}
         omega
 
       -- Zdigits ≥ 1 for mx > 0
-      have hzdig_pos := FloatSpec.Core.Digits.Zdigits_gt_0 2 (mx : Int) h2gt1 hmx_int_ne
-      simp only [wp, PostCond.noThrow, pure] at hzdig_pos
+      have hzdig_pos := FloatSpec.Core.Digits.Zdigits_gt_0 2 (mx : Int) hmx_int_ne h2gt1
 
       have hprec_pos' : 0 < prec := lt_trans hzdig_pos hzdig_lt_prec
       have hprec_nonneg : 0 ≤ prec := le_of_lt hprec_pos'
@@ -4745,8 +4739,6 @@ theorem bounded_canonical_lt_emax {prec emax : Int}
         have hprec_cast : (↑prec.toNat : Int) = prec := Int.toNat_of_nonneg hprec_nonneg
         omega
 
-      -- Simplify hhi
-      simp only [Id.run] at hhi
       -- hhi : (mx : Int) < (2 : Int) ^ (Zdigits 2 mx).natAbs
 
       -- mx < 2^Zdigits.natAbs ≤ 2^(prec.natAbs - 1) < 2^prec.natAbs
@@ -4822,8 +4814,8 @@ def shl_align_fexp_check {prec emax : Int} (mx : Nat) (ex : Int) : (Nat × Int) 
 private lemma Zdigits_bounds_2 (n : Int) (hn : n ≠ 0) :
     2 ^ (FloatSpec.Core.Digits.Zdigits 2 n - 1).natAbs ≤ |n| ∧
     |n| < 2 ^ (FloatSpec.Core.Digits.Zdigits 2 n).natAbs := by
-  have h := FloatSpec.Core.Digits.Zdigits_correct_from_nonzero_payload 2 n (by norm_num : (2:Int) > 1)
-  exact h hn
+  exact FloatSpec.Core.Digits.Zdigits_correct_from_nonzero_payload 2 n hn
+    (by norm_num : (2:Int) > 1)
 
 -- Show Zdigits 2 n > 0 when n ≠ 0
 private lemma Zdigits_pos_of_ne_zero (n : Int) (hn : n ≠ 0) :

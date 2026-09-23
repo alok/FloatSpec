@@ -397,7 +397,6 @@ private theorem digits2_pos_le_of_lt_pow_two {n k : Nat}
     FloatSpec.Core.Digits.digits2_Pnat n + 1 ≤ k := by
   have htrip := FloatSpec.Core.Digits.Zdigits_le_Zpower
     (beta := 2) (x := (n : Int)) (e := (k : Int)) (by decide)
-  simp only [Std.Do.PostCond.noThrow, pure] at htrip
   have hzd : FloatSpec.Core.Digits.Zdigits 2 (n : Int) ≤ (k : Int) := by
     apply htrip
     constructor
@@ -431,7 +430,6 @@ private theorem spec_bounded_subnormal {prec emax : Int} {k n : Nat}
     have hd : FloatSpec.Core.Digits.Zdigits 2 (n : Int) ≤ (k : Int) := by
       have htrip := FloatSpec.Core.Digits.Zdigits_le_Zpower
         (beta:=2) (x:=(n:Int)) (e:=(k:Int)) (by decide)
-      simp only [Std.Do.PostCond.noThrow, pure] at htrip
       apply htrip
       constructor
       · exact Int.natCast_nonneg k
@@ -456,7 +454,6 @@ private theorem spec_bounded_normal {prec emax : Int} {k n : Nat} {e : Int}
     have hzd : FloatSpec.Core.Digits.Zdigits 2 (n : Int) = prec := by
       have htrip := FloatSpec.Core.Digits.Zdigits_unique_from_nonzero_payload
         (beta:=2) (n:=(n:Int)) (e:=prec) (by decide)
-      simp only [Std.Do.PostCond.noThrow, pure] at htrip
       apply htrip
       constructor
       · have : 0 < (2 : Nat) ^ k := pow_pos (by norm_num) k

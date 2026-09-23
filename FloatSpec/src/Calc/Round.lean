@@ -209,7 +209,7 @@ theorem cexp_inbetween_float
     have Hd_pos : 0 < d := by
       simpa [d, hd] using
         (FloatSpec.Core.Digits.Zdigits_gt_0
-          (beta := beta) m (by simpa using Hβ) Hm_ne)
+          (beta := beta) m Hm_ne (by simpa using Hβ))
     have Hd_nonneg : 0 ≤ d := le_of_lt Hd_pos
     have Hdm1_nonneg : 0 ≤ d - 1 := by omega
     have Hlow_int : FloatSpec.Core.Zaux.Zpower beta (d - 1) ≤ |m| := by
@@ -2246,25 +2246,21 @@ theorem generic_format_truncate
           by_contra hnot
           have hdigits_lt : FloatSpec.Core.Digits.Zdigits beta m < k := lt_of_not_ge hnot
           have hsmall : (Int.natAbs m : Int) < beta ^ k.natAbs := by
-            have hpow := (FloatSpec.Core.Digits.Zpower_gt_Zdigits
+            exact FloatSpec.Core.Digits.Zpower_gt_Zdigits
               (beta := beta) (h_beta := hβ_digits) (e := k) (x := m)
-              (hβ := hβ_digits)) True.intro
-            exact hpow (le_of_lt hdigits_lt)
+              (le_of_lt hdigits_lt) (hβ := hβ_digits)
           have hm_lt : m < beta ^ k.natAbs := by
             simpa [Int.natAbs_of_nonneg hm_nonneg] using hsmall
           have hq_zero : q = 0 := by
             rw [hq]
             exact Int.ediv_eq_zero_of_lt hm_nonneg hm_lt
           exact hq_ne hq_zero
-        have hdiv := (FloatSpec.Core.Digits.Zdigits_div_Zpower
-          (beta := beta) (m := m) (e := k) (h_beta := hβ_digits))
-          ⟨hm_nonneg, hk_nonneg,
-            ⟨FloatSpec.Core.Digits.Zdigits beta m, rfl, hk_le_digits⟩⟩
-        rcases hdiv with ⟨dm, hdm, hq_digits⟩
         have hq_digits' :
             FloatSpec.Core.Digits.Zdigits beta q =
               FloatSpec.Core.Digits.Zdigits beta m - k := by
-          simpa [q, hq, hdm] using hq_digits
+          simpa [q, hq] using FloatSpec.Core.Digits.Zdigits_div_Zpower
+            (beta := beta) (m := m) (e := k) hm_nonneg ⟨hk_nonneg, hk_le_digits⟩
+            (h_beta := hβ_digits)
         have hmagF := FloatSpec.Core.Float_prop.Raux_mag_F2R_Zdigits
           (beta := beta) (m := q) (e := e + k) hβ hq_ne
         have hmag :

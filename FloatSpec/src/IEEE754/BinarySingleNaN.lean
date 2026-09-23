@@ -410,9 +410,7 @@ theorem Bnormfr_mantissa_correct {prec emax : Int}
       have hzdigits_signed :
           FloatSpec.Core.Digits.Zdigits 2 (if s then -(m : Int) else (m : Int)) =
             FloatSpec.Core.Digits.Zdigits 2 (m : Int) := by
-        have htrip :=
-          FloatSpec.Core.Digits.Zdigits_cond_Zopp (beta := 2) (b := s) (n := (m : Int))
-        simpa [wp, PostCond.noThrow, pure] using htrip trivial
+        exact FloatSpec.Core.Digits.Zdigits_cond_Zopp (beta := 2) (b := s) (n := (m : Int))
       have hsum :
           FloatSpec.Core.Digits.Zdigits 2 (m : Int) + e = 0 := by
         simpa [hzdigits_signed] using hsum_signed
@@ -432,9 +430,8 @@ theorem Bnormfr_mantissa_correct {prec emax : Int}
           0 < FloatSpec.Core.Digits.Zdigits 2 (m : Int) := by
         have hm_int_ne : (m : Int) ≠ 0 := by
           exact_mod_cast (Nat.pos_iff_ne_zero.mp hm_pos)
-        have htrip := FloatSpec.Core.Digits.Zdigits_gt_0
-          (beta := 2) (n := (m : Int)) (by norm_num : (2 : Int) > 1) hm_int_ne
-        simpa [wp, PostCond.noThrow, pure] using htrip
+        exact FloatSpec.Core.Digits.Zdigits_gt_0
+          (beta := 2) (n := (m : Int)) hm_int_ne (by norm_num : (2 : Int) > 1)
       have hprec_pos : 0 < prec := by
         have hleft :
             FloatSpec.Core.Digits.Zdigits 2 (m : Int) + e - prec ≤ e := by
@@ -606,9 +603,7 @@ private theorem canonical_mantissa_bsn_of_canonical
   have hzdigits_signed :
       FloatSpec.Core.Digits.Zdigits 2 (if sx then -(mx : Int) else (mx : Int)) =
         FloatSpec.Core.Digits.Zdigits 2 (mx : Int) := by
-    have htrip :=
-      FloatSpec.Core.Digits.Zdigits_cond_Zopp (beta := 2) (b := sx) (n := (mx : Int))
-    simpa [wp, PostCond.noThrow, pure] using htrip trivial
+    exact FloatSpec.Core.Digits.Zdigits_cond_Zopp (beta := 2) (b := sx) (n := (mx : Int))
   have hmag_unsigned :
       FloatSpec.Core.Raux.mag 2
           (FloatSpec.Core.Defs.F2R (FloatSpec.Core.Defs.FlocqFloat.mk
@@ -1854,9 +1849,8 @@ private theorem SFnearbyint_shr_record_eq
         (prec:=prec) (emax:=emax) mx ex Hx
       have hdigits_pos : 0 < FloatSpec.Core.Digits.Zdigits 2 (mx : Int) := by
         have hmx_ne : (mx : Int) ≠ 0 := by exact_mod_cast (Nat.ne_of_gt hmx_pos)
-        have htrip := FloatSpec.Core.Digits.Zdigits_gt_0
-          (beta:=2) (n:=(mx : Int)) (by norm_num) hmx_ne
-        simpa [wp, PostCond.noThrow, pure] using htrip
+        exact FloatSpec.Core.Digits.Zdigits_gt_0
+          (beta:=2) (n:=(mx : Int)) hmx_ne (by norm_num)
       have hprec_nonneg : 0 ≤ prec := by omega
       have hshift_nonneg : 0 ≤ -ex - 1 := by omega
       have hnat_le : prec.toNat ≤ (-ex - 1).toNat := by
@@ -1888,9 +1882,8 @@ private theorem validBinarySingleNaNStandardFloat_shl_align_fexp_zero
   have hprec_pos : 0 < prec := by
     have hm_ne : (m : Int) ≠ 0 := by exact_mod_cast (Nat.ne_of_gt hm_pos)
     have hdigits_pos : 0 < FloatSpec.Core.Digits.Zdigits 2 (m : Int) := by
-      have htrip := FloatSpec.Core.Digits.Zdigits_gt_0
-        (beta:=2) (n:=(m : Int)) (by norm_num) hm_ne
-      simpa [wp, PostCond.noThrow, pure] using htrip
+      exact FloatSpec.Core.Digits.Zdigits_gt_0
+        (beta:=2) (n:=(m : Int)) hm_ne (by norm_num)
     omega
   have hemin_nonpos : 3 - emax - prec ≤ 0 := by
     have hprec_lt := (inferInstance : Prec_lt_emax prec emax).prec_lt_emax
@@ -1915,21 +1908,19 @@ private theorem validBinarySingleNaNStandardFloat_shl_align_fexp_zero
       FloatSpec.Core.Digits.Zdigits 2
           ((m * 2 ^ (0 - target).toNat : Nat) : Int) =
         FloatSpec.Core.Digits.Zdigits 2 (m : Int) + (0 - target) := by
-    have htrip := FloatSpec.Core.Digits.Zdigits_mult_Zpower
-      (beta := 2) (n := (m : Int)) (k := 0 - target) (by norm_num)
-    simp only [wp, PostCond.noThrow, pure] at htrip
-    rcases htrip ⟨hm_ne_int, hshift_nonneg⟩ with ⟨d, hd, hprod⟩
     have hprod' :
         FloatSpec.Core.Digits.Zdigits 2
             ((m : Int) * (2 : Int) ^ (0 - target).natAbs) =
-          d + (0 - target) := by
-      simpa using hprod
+          FloatSpec.Core.Digits.Zdigits 2 (m : Int) + (0 - target) :=
+      FloatSpec.Core.Digits.Zdigits_mult_Zpower
+        (beta := 2) (n := (m : Int)) (k := 0 - target) hm_ne_int hshift_nonneg
+        (by norm_num)
     have hcast :
         ((m * 2 ^ (0 - target).toNat : Nat) : Int) =
           (m : Int) * (2 : Int) ^ (0 - target).natAbs := by
       norm_num only [Nat.cast_mul, Nat.cast_pow, Nat.cast_ofNat]
       rw [hshift_abs]
-    rw [hcast, hprod', ← hd]
+    rw [hcast, hprod']
   have hcanon :
       canonical_mantissa (prec:=prec) (emax:=emax)
         (m * 2 ^ (0 - target).toNat) target = true := by
@@ -2014,9 +2005,8 @@ private theorem SFnearbyint_binary_aux_digits_le_prec
     (prec:=prec) (emax:=emax) mx ex Hx
   have hdigits_input_pos : 0 < FloatSpec.Core.Digits.Zdigits 2 (mx : Int) := by
     have hmx_ne : (mx : Int) ≠ 0 := by exact_mod_cast (Nat.ne_of_gt hmx_pos)
-    have htrip := FloatSpec.Core.Digits.Zdigits_gt_0
-      (beta:=2) (n:=(mx : Int)) (by norm_num) hmx_ne
-    simpa [wp, PostCond.noThrow, pure] using htrip
+    exact FloatSpec.Core.Digits.Zdigits_gt_0
+      (beta:=2) (n:=(mx : Int)) hmx_ne (by norm_num)
   have hprec_nonneg : 0 ≤ prec := by omega
   have hprec_nat_pos : 0 < prec.toNat := by
     have hcast : (prec.toNat : Int) = prec :=
@@ -2037,10 +2027,8 @@ private theorem SFnearbyint_binary_aux_digits_le_prec
   have hprec_abs : prec.natAbs = prec.toNat := by
     apply Nat.cast_injective (R := Int)
     rw [Int.natAbs_of_nonneg hprec_nonneg, Int.toNat_of_nonneg hprec_nonneg]
-  have htrip := FloatSpec.Core.Digits.Zdigits_le_Zpower
-    (beta := 2) (x := (rounded.toNat : Int)) (e := prec) (by norm_num)
-  simp only [wp, PostCond.noThrow, pure] at htrip
-  apply htrip
+  apply FloatSpec.Core.Digits.Zdigits_le_Zpower
+    (beta := 2) (x := (rounded.toNat : Int)) (e := prec) (h_beta := by norm_num)
   constructor
   · exact hprec_nonneg
   · simpa [hrounded_cast, hprec_abs, abs_of_pos hrounded_pos] using hrounded_lt
@@ -2325,16 +2313,13 @@ private theorem binary_fit_aux_bounded_of_canonical_le
   have hmx_ne : (mx : Int) ≠ 0 := by
     exact_mod_cast (Nat.pos_iff_ne_zero.mp hmx_pos)
   have hdigits_pos : 0 < FloatSpec.Core.Digits.Zdigits 2 (mx : Int) := by
-    have htrip := FloatSpec.Core.Digits.Zdigits_gt_0 (beta := 2) (n := (mx : Int))
+    exact FloatSpec.Core.Digits.Zdigits_gt_0 (beta := 2) (n := (mx : Int)) hmx_ne
       (by norm_num : (2 : Int) > 1)
-    simpa [wp, PostCond.noThrow, pure] using htrip hmx_ne
   have hprec_nonneg : 0 ≤ prec := le_trans (le_of_lt hdigits_pos) hdigits_le_prec
   have hpow_bound :
       (mx : Int) < (2 : Int) ^ prec.toNat := by
-    have htrip := FloatSpec.Core.Digits.Zpower_gt_Zdigits
-      (beta := 2) (h_beta := by norm_num) (e := prec) (x := (mx : Int))
-    simp only [wp, PostCond.noThrow, pure, Id.run] at htrip
-    have hpow := htrip trivial hdigits_le_prec
+    have hpow := FloatSpec.Core.Digits.Zpower_gt_Zdigits
+      (beta := 2) (h_beta := by norm_num) (e := prec) (x := (mx : Int)) hdigits_le_prec
     have hprec_abs : prec.natAbs = prec.toNat := by
       have h1 : (prec.natAbs : Int) = prec := Int.natAbs_of_nonneg hprec_nonneg
       have h2 : (prec.toNat : Int) = prec := Int.toNat_of_nonneg hprec_nonneg
@@ -3279,13 +3264,12 @@ theorem Bmax_float_proof :
                         rw [pow_succ]
                         omega
       exact_mod_cast hpow_pred_le
-    have hdigits :=
-      (FloatSpec.Core.Digits.Zdigits_unique_from_nonzero_payload (beta := 2) (h_beta := by norm_num)
-        (n := (((2 : Nat) ^ prec.toNat - 1 : Nat) : Int)) (e := prec) (hβ := by norm_num))
-        ⟨hm_nonzero, by simpa using hm_lower, by simpa [hprec_natAbs] using hm_upper⟩
     have hdigits_eq :
-        FloatSpec.Core.Digits.Zdigits 2 (((2 : Nat) ^ prec.toNat - 1 : Nat) : Int) = prec := by
-      simpa [wp, PostCond.noThrow, pure] using hdigits
+        FloatSpec.Core.Digits.Zdigits 2 (((2 : Nat) ^ prec.toNat - 1 : Nat) : Int) = prec :=
+      FloatSpec.Core.Digits.Zdigits_unique_from_nonzero_payload (beta := 2) (h_beta := by norm_num)
+        (n := (((2 : Nat) ^ prec.toNat - 1 : Nat) : Int)) (e := prec)
+        ⟨hm_nonzero, by simpa using hm_lower, by simpa [hprec_natAbs] using hm_upper⟩
+        (hβ := by norm_num)
     have hflt :
         FLT_exp (3 - emax - prec) prec
           (FloatSpec.Core.Digits.Zdigits 2 (((2 : Nat) ^ prec.toNat - 1 : Nat) : Int)
@@ -4531,30 +4515,24 @@ theorem Bmult_correct_aux {prec emax : Int}
       FloatSpec.Core.Digits.Zdigits 2 ((mx : Int) * (my : Int)) ≤
         FloatSpec.Core.Digits.Zdigits 2 (mx : Int) +
           FloatSpec.Core.Digits.Zdigits 2 (my : Int) := by
-    have htrip := FloatSpec.Core.Digits.Zdigits_mult
+    exact FloatSpec.Core.Digits.Zdigits_mult
       (beta := 2) (h_beta := by norm_num) (x := (mx : Int)) (y := (my : Int))
       (hβ := by norm_num)
-    rcases htrip trivial with ⟨dx, dy, hdx, hdy, hdxy⟩
-    simpa [hdx, hdy] using hdxy
   have hdigits_mult_ge :
       FloatSpec.Core.Digits.Zdigits 2 (mx : Int) +
           FloatSpec.Core.Digits.Zdigits 2 (my : Int) - 1 ≤
         FloatSpec.Core.Digits.Zdigits 2 ((mx : Int) * (my : Int)) := by
-    have htrip := FloatSpec.Core.Digits.Zdigits_mult_ge
-      (beta := 2) (h_beta := by norm_num) (x := (mx : Int)) (y := (my : Int))
-      (hβ := by norm_num)
     have hmx_ne : (mx : Int) ≠ 0 := ne_of_gt hmx_int_pos
     have hmy_ne : (my : Int) ≠ 0 := ne_of_gt hmy_int_pos
-    rcases htrip ⟨hmx_ne, hmy_ne⟩ with ⟨dx, dy, hdx, hdy, hdxy⟩
-    simpa [hdx, hdy] using hdxy
+    exact FloatSpec.Core.Digits.Zdigits_mult_ge
+      (beta := 2) (h_beta := by norm_num) (x := (mx : Int)) (y := (my : Int))
+      hmx_ne hmy_ne (hβ := by norm_num)
   have hdigits_x_pos : 0 < FloatSpec.Core.Digits.Zdigits 2 (mx : Int) := by
-    have h := FloatSpec.Core.Digits.Zdigits_gt_0
-      (beta := 2) (n := (mx : Int)) (by norm_num : (2 : Int) > 1)
-    exact h (ne_of_gt hmx_int_pos)
+    exact FloatSpec.Core.Digits.Zdigits_gt_0
+      (beta := 2) (n := (mx : Int)) (ne_of_gt hmx_int_pos) (by norm_num : (2 : Int) > 1)
   have hdigits_y_pos : 0 < FloatSpec.Core.Digits.Zdigits 2 (my : Int) := by
-    have h := FloatSpec.Core.Digits.Zdigits_gt_0
-      (beta := 2) (n := (my : Int)) (by norm_num : (2 : Int) > 1)
-    exact h (ne_of_gt hmy_int_pos)
+    exact FloatSpec.Core.Digits.Zdigits_gt_0
+      (beta := 2) (n := (my : Int)) (ne_of_gt hmy_int_pos) (by norm_num : (2 : Int) > 1)
   have hEx :
       ex + ey ≤
         FLT_exp (3 - emax - prec) prec
@@ -5090,12 +5068,10 @@ private theorem Bfrexp_exp_eq_mag_of_finite
   have hmagSigned := FloatSpec.Core.Float_prop.Raux_mag_F2R_Zdigits
     (beta:=2) (m:=if sx then -(mx : Int) else (mx : Int)) (e:=ex)
     (by norm_num : (1 : Int) < 2) hsignedInt
-  have hsignDigitsTrip := FloatSpec.Core.Digits.Zdigits_cond_Zopp
-    (beta:=2) (b:=sx) (n:=(mx : Int))
   have hsignDigits :
       FloatSpec.Core.Digits.Zdigits 2 (if sx then -(mx : Int) else (mx : Int)) =
-        FloatSpec.Core.Digits.Zdigits 2 (mx : Int) := by
-    simpa [wp, PostCond.noThrow, pure] using hsignDigitsTrip trivial
+        FloatSpec.Core.Digits.Zdigits 2 (mx : Int) :=
+    FloatSpec.Core.Digits.Zdigits_cond_Zopp (beta:=2) (b:=sx) (n:=(mx : Int))
   have hmag :
       FloatSpec.Core.Raux.mag 2
           (B754_to_R (B754.B754_finite sx mx ex)) =
@@ -5203,19 +5179,17 @@ theorem Bfrexp_correct_aux
         have hdigitShift :
             FloatSpec.Core.Digits.Zdigits 2
                 ((mx * 2 ^ d.toNat : Nat) : Int) = prec := by
-          have htrip := FloatSpec.Core.Digits.Zdigits_mult_Zpower
-            (beta:=2) (n:=(mx : Int)) (k:=d) (by norm_num)
-          simp only [wp, PostCond.noThrow, pure] at htrip
-          rcases htrip ⟨hmxIntNe, hdNonneg⟩ with ⟨dn, hdn, hshift⟩
           rw [hmulCast]
           have hpowNatAbs : d.natAbs = d.toNat := by
             apply Nat.cast_injective (R:=Int)
             rw [Int.natAbs_of_nonneg hdNonneg, Int.toNat_of_nonneg hdNonneg]
           have hshift' :
               FloatSpec.Core.Digits.Zdigits 2
-                  ((mx : Int) * (2 : Int) ^ d.natAbs) = dn + d := by
-            simpa only [Id.run] using hshift
-          rw [← hpowNatAbs, hshift', ← hdn, hdigit]
+                  ((mx : Int) * (2 : Int) ^ d.natAbs) =
+                FloatSpec.Core.Digits.Zdigits 2 (mx : Int) + d :=
+            FloatSpec.Core.Digits.Zdigits_mult_Zpower
+              (beta:=2) (n:=(mx : Int)) (k:=d) hmxIntNe hdNonneg (by norm_num)
+          rw [← hpowNatAbs, hshift', hdigit]
           simp [d]
         have hcanon : canonical_mantissa (prec:=prec) (emax:=emax)
             (mx * 2 ^ d.toNat) (-prec) = true := by
@@ -6218,10 +6192,9 @@ private theorem bmult_correct_nan_result {prec emax : Int}
 
 private theorem zdigits_one :
     FloatSpec.Core.Digits.Zdigits 2 (1 : Int) = 1 := by
-  have h := FloatSpec.Core.Digits.Zdigits_unique_from_nonzero_payload (beta := 2) (h_beta := by norm_num)
-    (n := (1 : Int)) (e := (1 : Int)) (hβ := by norm_num)
-  simpa [wp, PostCond.noThrow, pure] using
-    h ⟨by norm_num, by norm_num, by norm_num⟩
+  exact FloatSpec.Core.Digits.Zdigits_unique_from_nonzero_payload (beta := 2)
+    (h_beta := by norm_num) (n := (1 : Int)) (e := (1 : Int))
+    ⟨by norm_num, by norm_num, by norm_num⟩ (hβ := by norm_num)
 
 theorem specFloat_bounded_one_emin {prec emax : Int}
     [Prec_gt_0 prec] [Prec_lt_emax prec emax] :
