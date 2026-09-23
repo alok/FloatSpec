@@ -12,5 +12,6 @@ run_cmd do
     ("line", toJson ref.line), ("name", toJson ref.coqName)]
   let result := Json.mkObj [
     ("flocq_commit", toJson FloatSpec.Linter.CoqSource.flocqCommit),
+    ("source_files", toJson FloatSpec.Linter.CoqSource.flocqSourceFiles),
     ("references", Json.arr entries)]
   liftIO (IO.println result.compress)
