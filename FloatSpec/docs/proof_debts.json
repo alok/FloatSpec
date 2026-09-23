@@ -1,12 +1,5 @@
 [
   {
-    "id": "binary64_flip_sign",
-    "path": "FloatSpec/src/IEEE754/Decoder.lean",
-    "theorem": "ofBits_flipSign",
-    "lean_name": "Binary64.ofBits_flipSign",
-    "strategy": "Relate UInt64 XOR to split_bits and prove constructor equality for finite, zero, infinity, and NaN payloads."
-  },
-  {
     "id": "native_frexp",
     "path": "FloatSpec/src/IEEE754/PrimFloat.lean",
     "theorem": "native_frExp_equiv",

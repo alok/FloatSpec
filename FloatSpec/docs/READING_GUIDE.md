@@ -521,8 +521,10 @@ the Hoare-style linter were removed. New source-facing work prefers pure
 definitions and direct propositions. Existing triples are migrated with
 their callers, not removed indiscriminately.
 
-Four explicit proof debts remain in `proof_debts.json`: raw sign-bit
-negation, native `frExp`, native next-up, and native next-down.
+Three explicit proof debts remain in `proof_debts.json`: native `frExp`,
+native next-up, and native next-down. The former raw sign-bit negation debt
+is closed: `Binary64.ofBits_flipSign` proves, for every `UInt64`, that XOR
+with the sign mask decodes to `Bopp` of the decoded value.
 A theorem using `sorry` remains unproved even if its statement compiles.
 The lexical debt gate and compiler-level dependency audit check that these
 holes are named and that no additional source declarations silently depend

@@ -73,8 +73,11 @@ inputs and shared-bug mutation tests when expanding the executable surface.
 
 ## Priority 5: discharge the explicit native/decoder boundary obligations
 
-The four manifest obligations concern binary64 sign flipping, native frExp,
-and next-up/next-down refinement. Runtime agreement is not their proof.
+The three remaining manifest obligations concern native frExp and
+next-up/next-down refinement. Runtime agreement is not their proof. The
+binary64 sign-flip obligation is discharged: `Binary64.ofBits_flipSign` is
+proved over all `UInt64` patterns (sign, exponent and mantissa fields via
+`Nat.xor_mod_two_pow`/`Nat.xor_div_two_pow`), with its statement unchanged.
 See [proof_debts.json](proof_debts.json). Keep these explicit rather than
 letting their names imply established universal refinement.
 
