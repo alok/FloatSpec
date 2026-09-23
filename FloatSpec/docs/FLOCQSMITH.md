@@ -6,9 +6,13 @@
 end to end: generation, per-case execution on all four paths, the closed
 verdict taxonomy, replay, positive controls, shrinking and offline
 verification. The other worlds (full-payload `B`, `W`, raw `SF` kernels,
-`Fl(β)`), the exemplar lane, fix-pair campaigns and the ledger gate are
-still design only. Section 14 separates what has been run from what is only
-designed; §14.4 records where the implementation corrected this design. The
+`Fl(β)`), fix-pair campaigns and the ledger gate are still design only. The
+exemplar lane (§11) is implemented separately in `scripts/flocq_exemplars.py`.
+Pre-registered campaigns run from a committed descriptor
+(`run_flocqsmith.py campaign`); the first two are reported in
+[FLOCQSMITH_CAMPAIGN_2026-09-23.md](FLOCQSMITH_CAMPAIGN_2026-09-23.md).
+Section 14 separates what has been run from what is only designed; §14.4
+records where the implementation corrected this design. The
 pinned identities are Flocq `7aab8f55`, Rocq 9.1.0 (`_opam/bin/coqc`), and
 Lean `v4.34.0`.
 
@@ -1138,8 +1142,9 @@ kernel. So programs may be DAGs without blowing up exponentially.
 
 | Claim | Status |
 |---|---|
-| BSN generator (36 table rows, 10 formats, op/select/case4/fold/branch, 10 relational corners), per-case harness on four paths, closed verdicts, replay and mutated-tape sweep, 13 positive controls, shrinker (flatten, cut, pin, simplify, mode), staging/manifest/`complete.json`, offline `verify` | **Implemented and run** (§14.4). 33 tests in `scripts/test_flocqsmith.py`, 6 of them live. |
-| Worlds `B`, `W`, raw `SF` kernels, `Fl(β)`; raw-parameter lane; exemplar lane; fix-pair campaigns; degenerate clones (§10.3); ledger and gate; `lean-native`; format descent in the shrinker | **Not implemented.** Design only. |
+| BSN generator (36 table rows, 10 formats, op/select/case4/fold/branch, 10 relational corners), per-case harness on four paths, closed verdicts, replay and mutated-tape sweep, 13 positive controls, shrinker (flatten, cut, pin, simplify, mode), staging/manifest/`complete.json`, offline `verify` | **Implemented and run** (§14.4). 38 tests in `scripts/test_flocqsmith.py`, 6 of them live. |
+| Worlds `B`, `W`, raw `SF` kernels, `Fl(β)`; raw-parameter lane; fix-pair campaigns; degenerate clones (§10.3); ledger and gate; `lean-native`; format descent in the shrinker | **Not implemented.** Design only. |
+| Pre-registered campaigns agree (descriptor-driven, 2026-09-23) | **Observed**, twice. Descriptors committed before each run (`a26c90a6`, `c6c91837`), clean trees: 2,360 programs over 20 lanes on distinct seeds, all 10 formats, 36 ops, 11 op families per format, 6 forms, 5 modes, 10 corners; 2,360/2,360 `match` on `lean-meta`, `lean-ir` and `lean-kernel` (52,274 observed bindings per path); no mismatch, no infrastructure or harness verdict, so nothing to cluster or shrink. All 13 controls detected on all three paths on both fresh control seeds; exemplar lane test 29/29 with none skipped; every lane re-judged offline. See [FLOCQSMITH_CAMPAIGN_2026-09-23.md](FLOCQSMITH_CAMPAIGN_2026-09-23.md). |
 | Composed BSN programs agree (implemented generator) | **Observed once.** Seed `20260922`, 50 programs at `68f3de8a` (clean tree): 50/50 `match` on `lean-meta`, `lean-ir` and `lean-kernel`; 3,203 observed integers per path; all 36 ops; 20 s. Reference-side tags: 66 ties (13 under NE), 51 inexact, 24 exact zero sums, 32 overflow-range and 22 subnormal-range results, 31 NaN results. `verify` re-judged all 50. |
 | Every positive control is detected | **Observed** (deterministic live test). Seed 5, 40 programs, control-focused corpus: all 13 detected on all three Lean paths with no infrastructure or harness verdict and an all-match baseline; detections per control range from 2 (`ltb_as_leb`, 9 exposed) to 40 (`enc_sign_flip`). |
 | No Flocq-executable export in Binary/BSN/Bits/PrimFloat/Calc is missing from the Lean side | **Observed once.** Scratch probe, 2026-09-22: 40 groups, `#eval` and `#reduce` against Rocq `vm_compute`, all equal. Not committed, and not a gate. |
@@ -1283,6 +1288,9 @@ uv run scripts/run_flocqsmith.py replay DIR/cases/s17-000042.json --flocq-dir "$
 uv run scripts/run_flocqsmith.py shrink CASE.json --control fma_double_rounding \
     --flocq-dir "$FLOCQ_AUDIT_DIR" --out DIR3
 uv run scripts/run_flocqsmith.py verify DIR       # offline re-judgement from retained streams
+uv run scripts/run_flocqsmith.py campaign scripts/fixtures/flocqsmith/NAME.descriptor.json \
+    --flocq-dir "$FLOCQ_AUDIT_DIR" --out DIR4     # pre-registered lanes, coverage, clusters, shrinks
+uv run scripts/run_flocqsmith.py verify-campaign DIR4
 FLOCQ_AUDIT_DIR=... uv run scripts/test_flocqsmith.py -v
 ```
 
