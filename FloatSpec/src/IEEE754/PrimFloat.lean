@@ -1469,6 +1469,142 @@ theorem model32OfStandardFloat_SFabs (x : StandardFloat)
     unpackedOfStandardFloat, Float.Model.UnpackedFloat.abs, modelSignOfBool,
     validBinarySingleNaNStandardFloat]
 
+/-! Field-level decoding of raw binary64 words.  These lemmas read the three
+IEEE-754 fields of a `UInt64` (sign bit 63, biased exponent bits 52..62,
+fraction bits 0..51) as natural numbers, so that bit-level algorithms such as
+`FaithfulPrimFloat.PrimitiveFloat.frexpBits` can be compared with the FLoCq
+single-NaN carrier by ordinary arithmetic. -/
+
+section FieldDecoding
+
+open Float.Model
+
+theorem unpackExponent64_toNat (w : UInt64) :
+    (UnpackedFloat.unpackExponent (spec := Format.binary64) w.toBitVec).toNat =
+      w.toNat / 2 ^ 52 % 2 ^ 11 := by
+  simp [UnpackedFloat.unpackExponent, BitVec.extractLsb'_toNat, Nat.shiftRight_eq_div_pow]
+
+theorem unpackMantissa64_toNat (w : UInt64) :
+    (UnpackedFloat.unpackMantissa (spec := Format.binary64) w.toBitVec).toNat =
+      w.toNat % 2 ^ 52 := by
+  simp [UnpackedFloat.unpackMantissa, BitVec.extractLsb'_toNat]
+
+theorem unpackSign64_bool (w : UInt64) :
+    boolOfModelSign (UnpackedFloat.Sign.ofBitVec
+      (UnpackedFloat.unpackSign (spec := Format.binary64) w.toBitVec)) =
+      decide (2 ^ 63 ≤ w.toNat) := by
+  have hlt := w.toNat_lt
+  have h : (UnpackedFloat.unpackSign (spec := Format.binary64) w.toBitVec).toNat =
+      w.toNat / 2 ^ 63 := by
+    simp [UnpackedFloat.unpackSign, BitVec.extractLsb'_toNat, Nat.shiftRight_eq_div_pow]
+    omega
+  unfold UnpackedFloat.Sign.ofBitVec
+  by_cases hs : 2 ^ 63 ≤ w.toNat
+  · have hne : UnpackedFloat.unpackSign (spec := Format.binary64) w.toBitVec ≠ 0#1 := by
+      intro h0
+      rw [h0] at h
+      simp at h
+      omega
+    simp [hne, boolOfModelSign]
+    omega
+  · have heq : UnpackedFloat.unpackSign (spec := Format.binary64) w.toBitVec = 0#1 := by
+      apply BitVec.eq_of_toNat_eq
+      rw [h]
+      simp
+      omega
+    simp [heq, boolOfModelSign]
+    omega
+
+/-- Every binary64 bit pattern, decoded through Lean's logical model onto the
+FLoCq single-NaN surface, expressed by its sign, biased-exponent, and fraction
+fields.  Subnormals have exponent `-1074`; normals carry the implicit bit. -/
+theorem standardFloatOfUnpacked_unpack64 (w : UInt64) :
+    standardFloatOfUnpacked (UnpackedFloat.unpack Format.binary64 w.toBitVec) =
+      if w.toNat / 2 ^ 52 % 2 ^ 11 = 2047 then
+        (if w.toNat % 2 ^ 52 = 0 then .S754_infinity (decide (2 ^ 63 ≤ w.toNat))
+         else .S754_nan)
+      else if w.toNat / 2 ^ 52 % 2 ^ 11 = 0 then
+        (if w.toNat % 2 ^ 52 = 0 then .S754_zero (decide (2 ^ 63 ≤ w.toNat))
+         else .S754_finite (decide (2 ^ 63 ≤ w.toNat)) (w.toNat % 2 ^ 52) (-1074))
+      else .S754_finite (decide (2 ^ 63 ≤ w.toNat)) (2 ^ 52 + w.toNat % 2 ^ 52)
+        ((w.toNat / 2 ^ 52 % 2 ^ 11 : Nat) - 1075) := by
+  have hexp := unpackExponent64_toNat w
+  have hman := unpackMantissa64_toNat w
+  have hsign := unpackSign64_bool w
+  have hexpMax :
+      (UnpackedFloat.unpackExponent (spec := Format.binary64) w.toBitVec = -1#11) ↔
+        w.toNat / 2 ^ 52 % 2 ^ 11 = 2047 := by
+    rw [← BitVec.toNat_inj, hexp]
+    simp
+  have hexpZero :
+      (UnpackedFloat.unpackExponent (spec := Format.binary64) w.toBitVec = 0#11) ↔
+        w.toNat / 2 ^ 52 % 2 ^ 11 = 0 := by
+    rw [← BitVec.toNat_inj, hexp]
+    simp
+  have hmanZero :
+      (UnpackedFloat.unpackMantissa (spec := Format.binary64) w.toBitVec = 0#52) ↔
+        w.toNat % 2 ^ 52 = 0 := by
+    rw [← BitVec.toNat_inj, hman]
+    simp
+  unfold UnpackedFloat.unpack
+  dsimp only
+  by_cases h1 : w.toNat / 2 ^ 52 % 2 ^ 11 = 2047
+  · have h1' := hexpMax.mpr h1
+    by_cases h2 : w.toNat % 2 ^ 52 = 0
+    · have h2' := hmanZero.mpr h2
+      rw [ite_eq_left h1, ite_eq_left h2]
+      simp [h1', h2', standardFloatOfUnpacked, hsign]
+    · have h2' : ¬ _ := fun h => h2 (hmanZero.mp h)
+      rw [ite_eq_left h1, ite_eq_right h2]
+      simp [h1', h2', standardFloatOfUnpacked]
+  · have h1' : ¬ _ := fun h => h1 (hexpMax.mp h)
+    by_cases h3 : w.toNat / 2 ^ 52 % 2 ^ 11 = 0
+    · have h3' := hexpZero.mpr h3
+      by_cases h2 : w.toNat % 2 ^ 52 = 0
+      · have h2' := hmanZero.mpr h2
+        rw [ite_eq_right h1, ite_eq_left h3, ite_eq_left h2]
+        simp [h2', h3', standardFloatOfUnpacked, hsign]
+      · have h2' : ¬ _ := fun h => h2 (hmanZero.mp h)
+        rw [ite_eq_right h1, ite_eq_left h3, ite_eq_right h2]
+        simp [h2', h3', standardFloatOfUnpacked, hsign, hman, Format.exponentBias]
+    · have h3' : ¬ _ := fun h => h3 (hexpZero.mp h)
+      rw [ite_eq_right h1, ite_eq_right h3, ite_eq_right h1', ite_eq_right h3']
+      have hmEq :
+          (1#1 ++ UnpackedFloat.unpackMantissa (spec := Format.binary64) w.toBitVec).toNat =
+            2 ^ 52 + w.toNat % 2 ^ 52 := by
+        simp only [BitVec.toNat_append]
+        rw [← hman]
+        simpa [Nat.shiftLeft_eq] using
+          (Nat.shiftLeft_add_eq_or_of_lt
+            (UnpackedFloat.unpackMantissa (spec := Format.binary64) w.toBitVec).isLt 1).symm
+      simp only [standardFloatOfUnpacked, hsign, hmEq, hexp, Format.exponentBias]
+      norm_num
+
+/-- `Float.Model.ofBits` canonicalizes NaN payloads, which the single-NaN
+decoding already identifies, so the model sees exactly the raw fields. -/
+theorem unpack_ofBits64 (w : UInt64) :
+    (Float.Model.ofBits w).unpack = UnpackedFloat.unpack Format.binary64 w.toBitVec := by
+  change UnpackedFloat.unpack Format.binary64
+      (UInt64.ofBitVec (UnpackedFloat.pack Format.binary64
+        (UnpackedFloat.unpack Format.binary64 w.toBitVec))).toBitVec =
+    UnpackedFloat.unpack Format.binary64 w.toBitVec
+  rw [UInt64.toBitVec_ofBitVec, UnpackedFloat.pack_unpack]
+  split
+  · rename_i hnan
+    rw [UnpackedFloat.unpack_packedNaN]
+    simp only [UnpackedFloat.isNaNBits, Bool.decide_and, Bool.and_eq_true,
+      decide_eq_true_eq] at hnan
+    unfold UnpackedFloat.unpack
+    simp [hnan.1, hnan.2]
+  · rfl
+
+theorem standardFloatOfModel64_ofBits (w : UInt64) :
+    standardFloatOfModel64 (Float.Model.ofBits w) =
+      standardFloatOfUnpacked (UnpackedFloat.unpack Format.binary64 w.toBitVec) := by
+  rw [standardFloatOfModel64, unpack_ofBits64]
+
+end FieldDecoding
+
 end FloatSpec.IEEE754.Native
 
 namespace FaithfulPrimFloat
@@ -1496,15 +1632,42 @@ def ofModel (x : Float.Model) : FaithfulPrimFloat.PrimitiveFloat :=
 def ofFloat (x : Float) : FaithfulPrimFloat.PrimitiveFloat :=
   ofModel x.toModel
 
-set_option warningAsError false in
-/-- Native `Float.frExp` correspondence, restricted to nonzero finite inputs.
-The native operation is opaque to the Lean kernel; this is a proof obligation,
-not a consequence of the existing model-transported `frexp_equiv`. -/
-theorem native_frExp_equiv (x : FaithfulPrimFloat.PrimitiveFloat)
-    (hx : BinarySingleNaN.is_finite_strict (FaithfulPrimFloat.Prim2B x) = true) :
-    let result := Float.frExp (toFloat x)
-    (ofFloat result.1, result.2) = FaithfulPrimFloat.Z.frexp x := by
-  sorry -- FLOCQ-DEBT: native_frexp
+/-- IEEE-754 binary64 `frexp` on raw bits, following the C `frexp` contract
+that Lean's runtime `lean_float_frexp` implements.  For a nonzero finite
+input the result significand has the input's sign, magnitude in `[1/2, 1)`
+(biased exponent `1022`), and `x = significand * 2 ^ exponent`.  Normal
+inputs keep their fraction and unbias the exponent; subnormal inputs are
+normalized by shifting the leading fraction bit into the implicit-bit
+position.  Signed zeros, infinities, and NaNs are returned unchanged with
+exponent `0`, as `lean_float_frexp` does (C leaves the exponent unspecified
+for non-finite inputs; Lean's runtime reports `0`). -/
+def frexpBits (w : UInt64) : UInt64 × Int :=
+  let sign := (w >>> 63) <<< 63
+  let biased := (w >>> 52) &&& 0x7ff
+  let fraction := w &&& 0x000fffffffffffff
+  if biased = 0x7ff then (w, 0)
+  else if biased = 0 then
+    if fraction = 0 then (w, 0)
+    else
+      -- `top` indexes the leading fraction bit, so `top ≤ 51`.
+      let top := fraction.toNat.log2
+      let normalized := (fraction <<< (52 - top).toUInt64) &&& 0x000fffffffffffff
+      (sign ||| 0x3fe0000000000000 ||| normalized, (top : Int) - 1073)
+  else
+    (sign ||| 0x3fe0000000000000 ||| fraction, (biased.toNat : Int) - 1022)
+
+/-- Native-carrier `frexp` implemented through the binary64 bit layout.
+
+Lean 4.34 declares `Float.frExp` as an `@[extern "lean_float_frexp"] opaque`
+constant, so the kernel has no semantics for it and no theorem can mention its
+result without an axiom.  The proven bridge is `nativeFrExp_equiv`, about this
+kernel-visible function.  The opaque runtime `Float.frExp` is tied to
+`nativeFrExp` only by execution: `scripts/fixtures/NativeFrexpAgreement.lean`
+compares the two on every input class, and the native IEEE bridge compares
+`Float.frExp` with Rocq. That agreement is runtime-checked, not kernel-trusted. -/
+def nativeFrExp (x : Float) : Float × Int :=
+  let result := frexpBits x.toBits
+  (Float.ofBits result.1, result.2)
 
 /-- IEEE-754 binary64 successor on raw bits, with NaNs and positive infinity fixed. -/
 def nextUpBits (w : UInt64) : UInt64 :=
@@ -2344,6 +2507,237 @@ theorem nativeNextDown_equiv (x : FaithfulPrimFloat.PrimitiveFloat) :
     (FloatSpec.IEEE754.Native.model64OfStandardFloat (B2SF (Prim2B x))) = Prim2SF x
   rw [FloatSpec.IEEE754.Native.standardFloatOfModel64_model64OfStandardFloat
     (B2SF (Prim2B x)) (B2SF_valid (Prim2B x)), B2SF_Prim2B]
+
+private theorem frexpBits_sign_toNat (w : UInt64) :
+    ((w >>> 63) <<< 63).toNat = w.toNat / 2 ^ 63 * 2 ^ 63 := by
+  have hlt := w.toNat_lt
+  simp only [UInt64.toNat_shiftLeft, UInt64.toNat_shiftRight, Nat.shiftLeft_eq,
+    Nat.shiftRight_eq_div_pow, show (63 : UInt64).toNat = 63 from rfl]
+  norm_num
+  omega
+
+private theorem frexpBits_biased_toNat (w : UInt64) :
+    ((w >>> 52) &&& 0x7ff).toNat = w.toNat / 2 ^ 52 % 2 ^ 11 := by
+  simp only [UInt64.toNat_and, UInt64.toNat_shiftRight, Nat.shiftRight_eq_div_pow,
+    show (52 : UInt64).toNat = 52 from rfl]
+  rw [show (0x7ff : UInt64).toNat = 2 ^ 11 - 1 by decide, Nat.and_two_pow_sub_one_eq_mod]
+
+private theorem frexpBits_fraction_toNat (w : UInt64) :
+    (w &&& 0x000fffffffffffff).toNat = w.toNat % 2 ^ 52 := by
+  simp only [UInt64.toNat_and]
+  rw [show (0x000fffffffffffff : UInt64).toNat = 2 ^ 52 - 1 by decide,
+    Nat.and_two_pow_sub_one_eq_mod]
+
+/-- The assembled word has disjoint sign, exponent-`1022`, and fraction fields. -/
+private theorem frexpBits_assemble_toNat (w f : UInt64) (hf : f.toNat < 2 ^ 52) :
+    ((w >>> 63) <<< 63 ||| 0x3fe0000000000000 ||| f).toNat =
+      w.toNat / 2 ^ 63 * 2 ^ 63 + 1022 * 2 ^ 52 + f.toNat := by
+  have hlt := w.toNat_lt
+  have hk : w.toNat / 2 ^ 63 ≤ 1 := by omega
+  rw [UInt64.toNat_or, UInt64.toNat_or, frexpBits_sign_toNat,
+    show (0x3fe0000000000000 : UInt64).toNat = 1022 * 2 ^ 52 by decide]
+  have hsignExp : w.toNat / 2 ^ 63 * 2 ^ 63 ||| 1022 * 2 ^ 52 =
+      w.toNat / 2 ^ 63 * 2 ^ 63 + 1022 * 2 ^ 52 := by
+    rw [Nat.mul_comm (w.toNat / 2 ^ 63)]
+    exact (Nat.two_pow_add_eq_or_of_lt (by norm_num) _).symm
+  rw [hsignExp]
+  have hshift : w.toNat / 2 ^ 63 * 2 ^ 63 + 1022 * 2 ^ 52 =
+      2 ^ 52 * (w.toNat / 2 ^ 63 * 2 ^ 11 + 1022) := by ring
+  rw [hshift, ← Nat.two_pow_add_eq_or_of_lt hf]
+
+open FloatSpec.IEEE754.Native in
+private theorem frexpBits_assemble_decode (w f : UInt64) (hf : f.toNat < 2 ^ 52) :
+    standardFloatOfUnpacked (Float.Model.UnpackedFloat.unpack Float.Model.Format.binary64
+      ((w >>> 63) <<< 63 ||| 0x3fe0000000000000 ||| f).toBitVec) =
+      .S754_finite (decide (2 ^ 63 ≤ w.toNat)) (2 ^ 52 + f.toNat) (-53) := by
+  rw [standardFloatOfUnpacked_unpack64, frexpBits_assemble_toNat w f hf]
+  have hlt := w.toNat_lt
+  have hB : (w.toNat / 2 ^ 63 * 2 ^ 63 + 1022 * 2 ^ 52 + f.toNat) / 2 ^ 52 % 2 ^ 11 =
+      1022 := by
+    omega
+  have hF : (w.toNat / 2 ^ 63 * 2 ^ 63 + 1022 * 2 ^ 52 + f.toNat) % 2 ^ 52 = f.toNat := by
+    omega
+  have hS : decide (2 ^ 63 ≤ w.toNat / 2 ^ 63 * 2 ^ 63 + 1022 * 2 ^ 52 + f.toNat) =
+      decide (2 ^ 63 ≤ w.toNat) := by
+    apply decide_eq_decide.mpr
+    omega
+  rw [hB, hF, hS]
+  norm_num
+
+open FloatSpec.IEEE754.Native in
+private theorem prim2SF_ofFloat_ofBits (w : UInt64) :
+    Prim2SF (ofFloat (Float.ofBits w)) =
+      standardFloatOfUnpacked (Float.Model.UnpackedFloat.unpack Float.Model.Format.binary64
+        w.toBitVec) := by
+  change Prim2SF (ofModel (Float.Model.ofBits w)) = _
+  rw [prim2SF_ofModel, standardFloatOfModel64_ofBits]
+
+/-- Flocq's positive digit count is Lean's `Nat.log2` plus one. -/
+private theorem digits2_pos_eq_log2 (m : Nat) (hm : 0 < m) :
+    FloatSpec.Core.Digits.digits2_pos m = ((m.log2 + 1 : Nat) : Int) := by
+  have h := FloatSpec.Core.Digits.digits2_Pnat_correct m hm
+  have hlog : FloatSpec.Core.Digits.digits2_Pnat m = m.log2 :=
+    ((Nat.log2_eq_iff (Nat.pos_iff_ne_zero.mp hm)).mpr h).symm
+  simp [FloatSpec.Core.Digits.digits2_pos, hlog]
+
+private theorem prim2SF_B2Prim_finite (s : Bool) (m : Nat) (e : Int)
+    (hy : validBinarySingleNaNStandardFloat (prec := primPrec) (emax := primEmax)
+      (.S754_finite s m e) = true) :
+    Prim2SF (B2Prim (standardFloatToBinarySingleNaNFloat' (prec := primPrec)
+      (emax := primEmax) (.S754_finite s m e))) = .S754_finite s m e := by
+  simp only [standardFloatToBinarySingleNaNFloat', hy, ↓reduceDIte, B2Prim]
+  rw [show standardFloatToBinarySingleNaNFloat (prec := primPrec) (emax := primEmax)
+      (.S754_finite s m e) hy = SF2B (.S754_finite s m e) hy from rfl, B2SF_SF2B,
+    Prim2SF_SF2Prim _ hy]
+
+/-- Both finite cases end by comparing one assembled word with Flocq's result;
+validity of that result is inherited from the decoded native word. -/
+private theorem frexpBits_assemble_equiv (w f : UInt64) (hf : f.toNat < 2 ^ 52)
+    (M : Nat) (hM : 2 ^ 52 + f.toNat = M) :
+    ofFloat (Float.ofBits ((w >>> 63) <<< 63 ||| 0x3fe0000000000000 ||| f)) =
+      B2Prim (standardFloatToBinarySingleNaNFloat' (prec := primPrec) (emax := primEmax)
+        (.S754_finite (decide (2 ^ 63 ≤ w.toNat)) M (-primPrec))) := by
+  have hdecoded := prim2SF_ofFloat_ofBits ((w >>> 63) <<< 63 ||| 0x3fe0000000000000 ||| f)
+  rw [frexpBits_assemble_decode w f hf, hM] at hdecoded
+  have hvalid := Prim2SF_valid (ofFloat (Float.ofBits
+    ((w >>> 63) <<< 63 ||| 0x3fe0000000000000 ||| f)))
+  rw [hdecoded] at hvalid
+  apply primitiveFloat_ext
+  rw [hdecoded, show (-primPrec : Int) = -53 from rfl, prim2SF_B2Prim_finite _ _ _ hvalid]
+
+open FloatSpec.IEEE754.Native in
+/-- Bit-level `frexp` on the native carrier agrees with FLoCq's `frexp`
+(`Bfrexp`, via `Z.frexp`) on nonzero finite inputs, in both the significand and
+the exponent.
+
+This replaces the former proof debt `native_frExp_equiv`, which stated the same
+equation for Lean's `Float.frExp`.  That constant is an `@[extern]` `opaque`, so
+the kernel cannot see its result and the old statement was unprovable without an
+axiom.  The present theorem is proved for `nativeFrExp`, a pure bit-level
+function; `Float.frExp = nativeFrExp` is checked by execution
+(`scripts/fixtures/NativeFrexpAgreement.lean`), not by the kernel. -/
+theorem nativeFrExp_equiv (x : FaithfulPrimFloat.PrimitiveFloat)
+    (hx : BinarySingleNaN.is_finite_strict (FaithfulPrimFloat.Prim2B x) = true) :
+    let result := nativeFrExp (toFloat x)
+    (ofFloat result.1, result.2) = FaithfulPrimFloat.Z.frexp x := by
+  obtain ⟨s, m, e, hm, hb, hxB⟩ : ∃ s m e hm hb,
+      Prim2B x = BinarySingleNaNFloat.B754_finite s m e hm hb := by
+    revert hx
+    cases Prim2B x <;> simp_all [BinarySingleNaN.is_finite_strict, BSN_is_finite_strict,
+      binarySingleNaNFloatToB754]
+  -- The native input word decodes, field by field, to the source triple.
+  have hdecode :
+      standardFloatOfUnpacked (Float.Model.UnpackedFloat.unpack Float.Model.Format.binary64
+        (toFloat x).toBits.toBitVec) = .S754_finite s m e := by
+    rw [← prim2SF_ofFloat_ofBits, Float.ofBits_toBits]
+    change Prim2SF (ofModel (toModel x)) = _
+    rw [ofModel_toModel, ← B2SF_Prim2B, hxB]
+    rfl
+  rw [standardFloatOfUnpacked_unpack64] at hdecode
+  have hfirst :
+      FloatSpec.Core.Zaux.Zlt_bool (-primPrec) (3 - primEmax - primPrec) = false := by
+    decide
+  show (ofFloat (Float.ofBits (frexpBits (toFloat x).toBits).1),
+      (frexpBits (toFloat x).toBits).2) = Z.frexp x
+  simp only [Z.frexp, Bfrexp, hxB, ExperimentalSingleNaNArithmetic.Ffrexp_core_binary, hfirst,
+    Bool.false_eq_true, ↓reduceIte]
+  generalize (toFloat x).toBits = w at hdecode ⊢
+  have hbiased := frexpBits_biased_toNat w
+  have hfrac := frexpBits_fraction_toNat w
+  have hfracLt : w.toNat % 2 ^ 52 < 2 ^ 52 := Nat.mod_lt _ (by norm_num)
+  have hBLt : w.toNat / 2 ^ 52 % 2 ^ 11 < 2 ^ 11 := Nat.mod_lt _ (by norm_num)
+  -- Infinity and NaN encodings cannot decode to a finite triple.
+  have hB : ¬ w.toNat / 2 ^ 52 % 2 ^ 11 = 2047 := by
+    intro hB
+    rw [ite_eq_left hB] at hdecode
+    split at hdecode <;> cases hdecode
+  rw [ite_eq_right hB] at hdecode
+  have c1 : ¬ ((w >>> 52) &&& 0x7ff = 0x7ff) := by
+    rw [← UInt64.toNat_inj, hbiased]
+    simpa using hB
+  by_cases hZ : w.toNat / 2 ^ 52 % 2 ^ 11 = 0
+  · -- Subnormal input: the leading fraction bit becomes the implicit bit.
+    rw [ite_eq_left hZ] at hdecode
+    have hF : ¬ w.toNat % 2 ^ 52 = 0 := by
+      intro hF
+      rw [ite_eq_left hF] at hdecode
+      cases hdecode
+    rw [ite_eq_right hF] at hdecode
+    injection hdecode with hs hmF he
+    subst hs hmF he
+    have c2 : (w >>> 52) &&& 0x7ff = 0 := by
+      rw [← UInt64.toNat_inj, hbiased]
+      simpa using hZ
+    have c3 : ¬ (w &&& 0x000fffffffffffff = 0) := by
+      rw [← UInt64.toNat_inj, hfrac]
+      simpa using hF
+    simp only [frexpBits]
+    rw [ite_eq_right c1, ite_eq_left c2, ite_eq_right c3, hfrac]
+    have hF0 : w.toNat % 2 ^ 52 ≠ 0 := hF
+    have hL : (w.toNat % 2 ^ 52).log2 < 52 := (Nat.log2_lt hF0).mpr hfracLt
+    have hLlow : 2 ^ (w.toNat % 2 ^ 52).log2 ≤ w.toNat % 2 ^ 52 := Nat.log2_self_le hF0
+    have hLhigh : w.toNat % 2 ^ 52 < 2 ^ ((w.toNat % 2 ^ 52).log2 + 1) := Nat.lt_log2_self
+    generalize hLdef : (w.toNat % 2 ^ 52).log2 = L at hL hLlow hLhigh
+    generalize hFdef : w.toNat % 2 ^ 52 = F at hF0 hLlow hLhigh hfracLt hfrac
+    have hdigits : FloatSpec.Core.Digits.digits2_pos F = ((L + 1 : Nat) : Int) := by
+      rw [digits2_pos_eq_log2 F (Nat.pos_of_ne_zero hF0), ← hFdef, hLdef]
+    have hscaledLow : 2 ^ 52 ≤ F * 2 ^ (52 - L) := by
+      calc 2 ^ 52 = 2 ^ L * 2 ^ (52 - L) := by rw [← Nat.pow_add]; congr 1; omega
+        _ ≤ F * 2 ^ (52 - L) := Nat.mul_le_mul_right _ hLlow
+    have hscaledHigh : F * 2 ^ (52 - L) < 2 ^ 53 := by
+      calc F * 2 ^ (52 - L) < 2 ^ (L + 1) * 2 ^ (52 - L) :=
+            Nat.mul_lt_mul_of_pos_right hLhigh (Nat.two_pow_pos _)
+        _ = 2 ^ 53 := by rw [← Nat.pow_add]; congr 1; omega
+    have hnorm : (((w &&& 0x000fffffffffffff) <<< (52 - L).toUInt64) &&&
+        0x000fffffffffffff).toNat = F * 2 ^ (52 - L) - 2 ^ 52 := by
+      rw [UInt64.toNat_and, UInt64.toNat_shiftLeft, hfrac, UInt64.toNat_ofNat',
+        show (0x000fffffffffffff : UInt64).toNat = 2 ^ 52 - 1 by decide,
+        Nat.and_two_pow_sub_one_eq_mod, Nat.shiftLeft_eq]
+      have hshiftMod : (52 - L) % 2 ^ 64 % 64 = 52 - L := by omega
+      rw [hshiftMod, Nat.mod_eq_of_lt (by omega : F * 2 ^ (52 - L) < 2 ^ 64)]
+      omega
+    have hnormLt : (((w &&& 0x000fffffffffffff) <<< (52 - L).toUInt64) &&&
+        0x000fffffffffffff).toNat < 2 ^ 52 := by
+      rw [hnorm]
+      omega
+    rw [hdigits]
+    have hnotNormal : ¬ (primPrec ≤ ((L + 1 : Nat) : Int)) := by
+      simp only [primPrec]
+      omega
+    rw [ite_eq_right hnotNormal]
+    have hshift : (primPrec - ((L + 1 : Nat) : Int)).toNat = 52 - L := by
+      simp only [primPrec]
+      omega
+    rw [hshift]
+    simp only [Prod.mk.injEq]
+    constructor
+    · exact frexpBits_assemble_equiv w _ hnormLt _ (by rw [hnorm]; omega)
+    · simp only [primPrec]
+      omega
+  · -- Normal input: keep the fraction and replace the biased exponent by `1022`.
+    rw [ite_eq_right hZ] at hdecode
+    injection hdecode with hs hmF he
+    subst hs hmF he
+    have c2 : ¬ ((w >>> 52) &&& 0x7ff = 0) := by
+      rw [← UInt64.toNat_inj, hbiased]
+      simpa using hZ
+    simp only [frexpBits]
+    rw [ite_eq_right c1, ite_eq_right c2, hbiased]
+    have hdigits :
+        FloatSpec.Core.Digits.digits2_pos (2 ^ 52 + w.toNat % 2 ^ 52) = 53 := by
+      rw [digits2_pos_eq_log2 _ (by omega)]
+      have hlog : (2 ^ 52 + w.toNat % 2 ^ 52).log2 = 52 :=
+        (Nat.log2_eq_iff (by omega)).mpr ⟨by omega, by omega⟩
+      rw [hlog]
+      rfl
+    rw [hdigits]
+    have hnormal : primPrec ≤ (53 : Int) := by simp [primPrec]
+    rw [ite_eq_left hnormal]
+    simp only [Prod.mk.injEq]
+    constructor
+    · exact frexpBits_assemble_equiv w _ (by rw [hfrac]; exact hfracLt) _ (by rw [hfrac])
+    · simp only [primPrec]
+      omega
 
 @[simp] theorem toModel_neg (x : FaithfulPrimFloat.PrimitiveFloat) :
     toModel (-x) = Float.Model.neg (toModel x) := by

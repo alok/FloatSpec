@@ -38,12 +38,14 @@ revisions; this combination builds on macOS with stable 4.34.0.
 
 ## Current Progress
 
-The project is actively under development. Two named `sorry` obligations now
-mark the native `frExp` correspondence and the raw-bit sign proof that remain
-open; they are listed in `FloatSpec/docs/proof_debts.json`. The native
-next-up/next-down bit operations are proved equal to FLoCq's `Bsucc`/`Bpred`. A successful build checks
-the definitions and theorem statements, not these proofs or whole-library
-equivalence to Flocq. Source-facing APIs and compatibility helpers remain
+The project is actively under development. No named `sorry` obligations
+remain, and `FloatSpec/docs/proof_debts.json` is empty. The raw-bit sign flip
+and the native next-up/next-down operations are proved equal to Flocq's `Bopp`,
+`Bsucc` and `Bpred` over every binary64 bit pattern. The native `frExp`
+correspondence is proved for a bit-level `nativeFrExp`; its agreement with
+Lean's opaque runtime `Float.frExp` is checked by execution, not by the kernel.
+A successful build checks every proof against its statement; it does not by
+itself establish whole-library equivalence to Flocq. Source-facing APIs and compatibility helpers remain
 distinct.
 
 - Build: the checked-in toolchain is stable Lean 4 `v4.34.0`. The rc2 Lake

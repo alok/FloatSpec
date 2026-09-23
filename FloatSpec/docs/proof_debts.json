@@ -1,9 +1,1 @@
-[
-  {
-    "id": "native_frexp",
-    "path": "FloatSpec/src/IEEE754/PrimFloat.lean",
-    "theorem": "native_frExp_equiv",
-    "lean_name": "FaithfulPrimFloat.PrimitiveFloat.native_frExp_equiv",
-    "strategy": "Establish a trusted semantics for opaque Float.frExp on nonzero finite values, then compare mantissa and exponent through Float.Model."
-  }
-]
+[]

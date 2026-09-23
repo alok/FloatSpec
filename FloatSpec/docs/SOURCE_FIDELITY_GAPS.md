@@ -6,7 +6,7 @@ Updated September 21, 2026, against Flocq
 The target is the same domain, result type, branches, and theorem hypotheses
 and conclusions. Closed Lean proofs, file coverage, source links and finite
 agreement are useful evidence but do not substitute for that comparison.
-Four remaining sorries do not mean only four fidelity issues remain.
+Three remaining sorries do not mean only three fidelity issues remain.
 
 ## Priority 1: finish comparing source contracts
 
@@ -71,13 +71,30 @@ does not model hardware exception flags or directed hardware rounding.
 Keep invalid/precondition cases, complete output observations, reproducible
 inputs and shared-bug mutation tests when expanding the executable surface.
 
-## Priority 5: discharge the explicit native/decoder boundary obligations
+## Priority 5 (done): discharge the explicit native/decoder boundary obligations
 
-The two manifest obligations concern binary64 sign flipping and native frExp.
-Runtime agreement is not their proof. The native next-up/next-down refinement
-to `Bsucc`/`Bpred` is now a kernel-checked theorem over all binary64 inputs.
-See [proof_debts.json](proof_debts.json). Keep these explicit rather than
-letting their names imply established universal refinement.
+All four manifest obligations are discharged. Binary64 sign flipping
+(`Binary64.ofBits_flipSign`) and the native next-up/next-down refinement to
+`Bsucc`/`Bpred` are kernel-checked theorems over all binary64 inputs, and the
+native frExp obligation is replaced as described below. Runtime agreement was
+not their proof. [proof_debts.json](proof_debts.json) is now empty; any new
+obligation must be listed there explicitly rather than letting a name imply
+established universal refinement.
+
+The former `native_frexp` debt stated Flocq agreement for Lean's
+`Float.frExp`. Lean 4.34 declares that function as an
+`@[extern "lean_float_frexp"] opaque` constant, so the kernel cannot see its
+result and the statement was unprovable without an axiom. It is replaced by
+`FaithfulPrimFloat.PrimitiveFloat.nativeFrExp_equiv`, a closed theorem
+(axioms: `propext`, `Classical.choice`, `Quot.sound`) with the same
+precondition and conclusion about `nativeFrExp`. That function computes the C
+`frexp` contract from `Float.toBits`, with explicit subnormal normalization.
+The remaining gap is explicit: the opaque runtime `Float.frExp` equals
+`nativeFrExp` only on the evidence of execution. That evidence is
+[the runtime agreement fixture](../../scripts/fixtures/NativeFrexpAgreement.lean):
+200,556 inputs covering every encoding class, plus the native IEEE bridge
+against Rocq. The runtime function is checked by execution, not trusted by the
+kernel. No theorem mentions `Float.frExp`.
 
 ## Build/review usability
 

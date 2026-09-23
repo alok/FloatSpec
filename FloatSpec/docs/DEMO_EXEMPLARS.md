@@ -637,6 +637,5 @@ Read [the linear guide](READING_GUIDE.md), then
 [the review ledger](ASTRA_AUDIT_2026-09-19.md). The demo demonstrates seven
 behaviors; the seeded bridge checks larger finite corpora; closed Lean proofs
 establish their stated propositions. None is interchangeable with a universal
-proof that the entire port matches pinned Flocq. Four explicitly recorded
-native/decoder proof obligations remain, and the source-signature audit is
-not complete.
+proof that the entire port matches pinned Flocq. The former native/decoder
+proof obligations are closed, but the source-signature audit is not complete.

@@ -124,7 +124,7 @@ def compare(words: list[int], observations: dict[str, list[list[int]]]) -> tuple
             mismatches.append({**record, "path": "model-versus-rocq"})
         if compiled_model != rocq:
             mismatches.append({**record, "path": "compiled-model-versus-rocq"})
-        # Zero/nonfinite frexp results are outside native_frExp_equiv's domain,
+        # Zero/nonfinite frexp results are outside nativeFrExp_equiv's domain,
         # not an excuse to skip their decoding or successor/predecessor checks.
         width = 5 if kind in ("normal", "subnormal") else 3
         if native[:width] != rocq[:width]:

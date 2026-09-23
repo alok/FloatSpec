@@ -868,13 +868,13 @@ It also hashes project Lean sources and dependency configuration, rejecting a
 change observed after the build or any batch. This prevents a successful run
 from silently mixing edited source snapshots; it is not binary attestation.
 `uv run scripts/check_compiled_trust.py` independently checks all elaborated
-source declarations and their transitive axiom dependencies against the four
-named proof debts. Its regression fixture deliberately includes theorem and
+source declarations and their transitive axiom dependencies against the
+proof-debt manifest, which is now empty. Its regression fixture deliberately includes theorem and
 opaque sorries, a propagated sorry, a new axiom, an unsafe definition, and
 runtime overrides; the gate must observe and reject all of those hazards.
-An interrupted or errored run is not a pass. CI currently runs the Lean grids
-and fast harness-unit tests; the live Rocq bridge is separately executed on
-this Mac and is not yet installed as a hosted-CI job.
+An interrupted or errored run is not a pass. Hosted CI installs pinned Rocq
+9.1, builds the pinned Flocq checkout, and runs the Lean grids, the harness
+unit tests, and the required live Rocq bridge and paired-client suites.
 
 ## 5. Native binary64: four execution paths, one input
 
@@ -899,7 +899,10 @@ Two qualifications are deliberate and visible in the report:
 - NaNs are observed through the single-NaN model. All payloads and signs map to
   `0x7ff8000000000000`; agreement does **not** establish payload preservation.
 - Native `frExp` equivalence is asserted only for nonzero finite values, as in
-  the theorem's precondition. The observed exceptional exponent is `0` on this
+  the precondition of `nativeFrExp_equiv`. That theorem is proved for the
+  bit-level `nativeFrExp`. The runtime `Float.frExp` is an `@[extern]`
+  `opaque` constant, so its agreement with `nativeFrExp` is checked by
+  execution in `scripts/fixtures/NativeFrexpAgreement.lean`, not by the kernel. The observed exceptional exponent is `0` on this
   Mac, versus `-2101` in the logical Flocq model. Those exceptional observations
   remain in the report; their input decoding and successor/predecessor results
   are still compared. Both compiled-model and kernel-model versus Rocq
@@ -1403,7 +1406,7 @@ audit ledger; this is a receipt for that snapshot, not later changes.
 No finite grid or random corpus proves universal source equivalence. The bridge
 does not yet exercise all of IEEE arithmetic, every native primitive,
 real-valued noncomputable mathematics, or all theorem hypotheses/conclusions.
-The four named native/bit proof debts remain separate. Read the
+The former native/bit proof debts are closed by kernel-checked proofs. Read the
 [audit ledger](ASTRA_AUDIT_2026-09-19.md) for observed results and unreviewed scope.
 
 The larger frozen September 20 rerun also completed: **55,162 differential
