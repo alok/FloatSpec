@@ -3,10 +3,10 @@ import FloatSpec.src.IEEE754.PrimFloat
 /-! Runtime agreement between Lean's opaque native `Float.frExp` and the
 kernel-visible bit-level `nativeFrExp`.
 
-`Float.frExp` is `@[extern "lean_float_frexp"] opaque` in Lean 4.34: the C
-runtime calls `frexp` and reports exponent `0` for non-finite inputs.  The
-kernel cannot evaluate it, so no theorem can state its result without an axiom.
-The Flocq correspondence is instead proved for `nativeFrExp`
+In Lean 4.34 `Float.frExp` is an opaque constant bound to the C function
+`lean_float_frexp`, which calls `frexp` and reports exponent `0` for non-finite
+inputs.  The kernel cannot evaluate it, so its result can be postulated but
+never proved.  The Flocq correspondence is instead proved for `nativeFrExp`
 (`FaithfulPrimFloat.PrimitiveFloat.nativeFrExp_equiv`), and this fixture checks,
 by execution only, that the native runtime and `nativeFrExp` agree bit for bit
 (NaN payloads quotiented to the canonical NaN) on every encoding class: signed

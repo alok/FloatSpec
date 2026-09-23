@@ -2612,8 +2612,8 @@ the exponent.
 
 This replaces the former proof debt `native_frExp_equiv`, which stated the same
 equation for Lean's `Float.frExp`.  That constant is an `@[extern]` `opaque`, so
-the kernel cannot see its result and the old statement was unprovable without an
-axiom.  The present theorem is proved for `nativeFrExp`, a pure bit-level
+the kernel cannot see its result and the old statement was unprovable without
+an axiom.  The present theorem is proved for `nativeFrExp`, a pure bit-level
 function; `Float.frExp = nativeFrExp` is checked by execution
 (`scripts/fixtures/NativeFrexpAgreement.lean`), not by the kernel. -/
 theorem nativeFrExp_equiv (x : FaithfulPrimFloat.PrimitiveFloat)
