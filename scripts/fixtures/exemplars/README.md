@@ -57,6 +57,7 @@ definitions are equivalent.
 | `Choices` | shared | not upstream; derived from Flocq `src/Calc/Round.v` (`7aab8f55`) | choice functions, each proved to satisfy `Compute.v`'s `rnd_choice` via `inbetween_int_*_sign` | same functions, same proofs via the FloatSpec ports of those lemmas | (library) |
 | `ComputeGrid` | exemplar | driver over `Compute.v` (FloatSpec-authored) | radices 2/3/10 × FLX/FLT/FIX/FTZ × DN/UP/ZR/NE/NA × 16 input pairs | same | `plus/mult/div/sqrt_correct`: exact rounding of the exact result |
 | `CodyWaite` | exemplar | Flocq `examples/Cody_Waite.v` (`7aab8f55`) | `cw_exp` on binary64 via `Compute.v`, 30 inputs, every intermediate observed | same | `exp_correct` (relative error ≤ 2⁻⁵¹ against `exp` at 120 digits) and `argument_reduction` |
+| `DivisionU16` | exemplar | Flocq `examples/Division_u16.v` (`7aab8f55`) | `div_u16` in the 64-bit register format, four executable `frcpa` models × 38 pairs | same | `div_u16_spec` (= `a / b`) wherever the observed `y0` satisfies `frcpa_spec`; the 8-bit model is a positive control |
 
 ## Trim manifests
 
@@ -114,6 +115,22 @@ because guessing gets it wrong: the ZR choice is `m` itself, not
   `±355/1024`. Two more lie outside the domain (`-910.87…` and `1000`);
   they are compared across the two sides, but the oracle does not judge
   their `exp` error.
+
+### `DivisionU16` (Flocq `examples/Division_u16.v`, LGPL-3.0-or-later)
+
+- Kept verbatim: the register format `FLT_exp (-65597) 64` and the four
+  steps of `div_u16`.
+- Replaced:
+  - `fma`/`fnma`, single roundings in the register format, become `plus`
+    (NE) of the exact `Fmult` and the addend;
+  - `Zfloor q1` becomes `plus` at `FIX_exp 0` with DN.
+- The upstream `Axiom frcpa` is replaced by models, which is the only way
+  to run the program. Models 0–2 are `Compute.v` `div` of 1 by b at 11 bits
+  with NE, DN and UP. All three satisfy `frcpa_spec`: relative error at
+  most 2⁻¹⁰ ≤ 4433·2⁻²¹. Model 3 uses 8 bits (NE) and is a positive
+  control. For b = 13 it breaks `frcpa_spec`, and `div_u16 13 13` then
+  returns 0. The oracle checks `frcpa_spec` from the observed `y0` on every
+  row, so a model is never trusted blindly.
 
 ## Exclusions
 

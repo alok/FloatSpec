@@ -138,6 +138,11 @@ def round_sqrt(beta: int, fexp: Callable[[int], int], mode, q: Fraction) -> Frac
     return _round_integer(mode, floor, exact, half, True) * Fraction(beta) ** c
 
 
+def in_generic_format(beta: int, fexp: Callable[[int], int], x: Fraction) -> bool:
+    """Flocq's generic_format: x is an integer multiple of beta^(cexp x)."""
+    return x == 0 or (x / Fraction(beta) ** fexp(mag_rational(beta, x))).denominator == 1
+
+
 def flx(prec: int) -> Callable[[int], int]:
     return lambda e: e - prec
 
@@ -232,6 +237,24 @@ def oracle_cody_waite(rows: Sequence[Row]) -> OracleReport:
     return report
 
 
+def oracle_division_u16(rows: Sequence[Row]) -> OracleReport:
+    """Division_u16.v div_u16_spec, with frcpa_spec checked on the observed y0."""
+    report = OracleReport()
+    frcpa_format = flt(-65597, 11)
+    for index, row in enumerate(rows):
+        a, b, model, y0m, y0e, *_intermediate, quotient = row
+        y0 = value(2, y0m, y0e)
+        frcpa_spec = (1 <= b <= 65536 and in_generic_format(2, frcpa_format, y0) and
+                      abs(y0 - Fraction(1, b)) <= Fraction(4433, 2**21) / b)
+        ok = quotient == a // b
+        if 1 <= a <= 65535 and 1 <= b <= 65535 and frcpa_spec:
+            report.check(f"row {index} model {model}: div_u16 {a} {b}", ok)
+        else:
+            report.check(f"row {index}", None)
+            report.control_breaks += not ok
+    return report
+
+
 # ---------------------------------------------------------------------------
 # Exemplar registry
 # ---------------------------------------------------------------------------
@@ -251,6 +274,8 @@ class Exemplar:
 EXEMPLARS: dict[str, Exemplar] = {e.name: e for e in (
     Exemplar("ComputeGrid", rows=960, width=15, oracle=oracle_compute_grid),
     Exemplar("CodyWaite", rows=30, width=15, oracle=oracle_cody_waite),
+    Exemplar("DivisionU16", rows=152, width=12, oracle=oracle_division_u16,
+             needs_control_break=True),
 )}
 
 

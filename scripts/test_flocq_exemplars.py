@@ -121,6 +121,15 @@ class OracleControlTests(unittest.TestCase):
         outside = [1000, 0, *row[2:]]
         self.assertEqual(lane.oracle_cody_waite([outside]).premise_false, 2)
 
+    def test_division_oracle_checks_frcpa_spec_before_the_quotient(self):
+        exact = [6, 1, 0, 1, 0, 6, 0, 1, -17, 6, 0, 6]
+        self.assertEqual(lane.oracle_division_u16([exact]).holds, 1)
+        self.assertEqual(len(lane.oracle_division_u16([exact[:11] + [5]]).violations), 1)
+        # y0 = 1/2 for b = 1 breaks frcpa_spec: a wrong quotient is then a control break.
+        control = lane.oracle_division_u16([[6, 1, 3, 1, -1, 3, 0, 1, -1, 4, 0, 4]])
+        self.assertEqual((control.premise_false, control.control_breaks, control.violations),
+                         (1, 1, []))
+
     def test_a_missing_control_break_fails_the_oracle_verdict(self):
         exemplar = lane.Exemplar("Probe", rows=1, width=1,
                                  oracle=lambda rows: lane.OracleReport(holds=1),
@@ -166,6 +175,10 @@ class LiveExemplarTests(unittest.TestCase):
 
     def test_cody_waite(self):
         self.check("CodyWaite")
+
+    def test_division_u16(self):
+        result = self.check("DivisionU16")
+        self.assertGreater(result["oracle_rocq"]["control_breaks"], 0)
 
     def mutant(self, name, side, old, new):
         """Run a copy of an exemplar with one side textually mutated."""
