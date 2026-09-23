@@ -46,21 +46,39 @@ unsafe def replayModule (olean : System.FilePath) : IO Nat := do
   env.freeRegions
   return (constants.toList.filter fun (_, info) => !info.isUnsafe && !info.isPartial).length
 
-/-- Replay every target in parallel and report each result in argument order. -/
+/-- How many targets to replay at once. Each replay imports its module's whole
+environment (about 3 GB for a Mathlib-based module), so running every target in
+parallel exhausted a 16 GB CI runner. Defaults to 1; set `KERNEL_REPLAY_JOBS`
+to use more memory for speed on large machines. -/
+def replayJobs : IO Nat := do
+  let some value ← IO.getEnv "KERNEL_REPLAY_JOBS" | return 1
+  let some jobs := value.toNat?
+    | throw <| IO.userError s!"KERNEL_REPLAY_JOBS is not a number: {value}"
+  if jobs == 0 then
+    throw <| IO.userError "KERNEL_REPLAY_JOBS must be a positive integer"
+  return jobs
+
+/-- Replay the targets `KERNEL_REPLAY_JOBS` at a time and report each result
+in argument order. -/
 unsafe def main (targets : List String) : IO UInt32 := do
   initSearchPath (← findSysroot)
   if targets.isEmpty then
     throw <| IO.userError "usage: KernelReplay (MODULE | FILE.olean)..."
-  let mut tasks := #[]
-  for target in targets do
-    let olean ← if target.endsWith ".olean" then pure (System.FilePath.mk target)
-      else findOLean target.toName
-    tasks := tasks.push (target, ← IO.asTask (replayModule olean))
+  let jobs ← replayJobs
   let mut failed := false
-  for (target, task) in tasks do
-    match task.get with
-    | .ok count => IO.println s!"replayed {target} {count}"
-    | .error error =>
-      IO.eprintln s!"kernel replay rejected {target}: {error}"
-      failed := true
+  let mut pending := targets
+  while !pending.isEmpty do
+    let batch := pending.take jobs
+    pending := pending.drop jobs
+    let mut tasks := #[]
+    for target in batch do
+      let olean ← if target.endsWith ".olean" then pure (System.FilePath.mk target)
+        else findOLean target.toName
+      tasks := tasks.push (target, ← IO.asTask (replayModule olean))
+    for (target, task) in tasks do
+      match task.get with
+      | .ok count => IO.println s!"replayed {target} {count}"
+      | .error error =>
+        IO.eprintln s!"kernel replay rejected {target}: {error}"
+        failed := true
   return if failed then 1 else 0

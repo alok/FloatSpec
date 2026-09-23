@@ -110,7 +110,7 @@ outside `FloatSpec/Test`; those fixtures instead run with warnings as errors,
 pass the text gate below, and are replayed by the fixture step. The root,
 aggregator, linter and stub modules (`FloatSpec`, `FloatSpec.src`,
 `FloatSpec.Test`, `FloatSpec.Linter.*`, `FloatSpec.VersoExt`, `FloatSpecRoles`,
-`Main`) belong to neither scope and meet only the text gate.
+`Main`) belong to neither scope and meet only the text gate. Replays run one module at a time by default: each imports its module's whole environment (about 3 GB with Mathlib), and replaying every fixture in parallel ran a 16 GB hosted runner out of memory. `KERNEL_REPLAY_JOBS` raises the parallelism on larger machines.
 
 `scripts/check_proof_debts.py` runs `scripts/audit_placeholders.sh` over every
 Lean and Rocq source except `Deps/`, `_opam/` and hidden directories: the
