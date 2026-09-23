@@ -14,6 +14,7 @@ open Real
 def bnot (b : Bool) : Bool := !b
 
 -- Coq: full_float
+@[flocq_source "src/IEEE754/Binary.v" 33 "full_float"]
 inductive full_float where
   | F754_zero (s : Bool) : full_float
   | F754_infinity (s : Bool) : full_float
@@ -211,6 +212,7 @@ theorem is_finite_build_nan_compat (s : Bool) (payload : Nat) :
   rfl
 
 -- Coq: `nan_pl pl := Zlt_bool (Zpos (digits2_pos pl)) prec`.
+@[flocq_source "src/IEEE754/Binary.v" 161 "nan_pl"]
 def nan_pl (prec : Int) (pl : FloatSpec.Core.Zaux.Positive) : Bool :=
   FloatSpec.Core.Zaux.Zlt_bool
     (FloatSpec.Core.Digits.digits2_pos
@@ -373,6 +375,7 @@ variable [Prec_gt_0 prec]
 variable [Prec_lt_emax prec emax]
 
 -- IEEE 754 binary format
+@[flocq_source "src/IEEE754/Binary.v" 184 "binary_float"]
 inductive binary_float (prec emax : Int) where
   | B754_zero (s : Bool) : binary_float prec emax
   | B754_infinity (s : Bool) : binary_float prec emax

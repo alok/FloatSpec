@@ -12,6 +12,7 @@ surface and proves that it is only a renaming, not a second rounding model.
 namespace FloatSpec.IEEE754.BinarySingleNaN.Source
 
 /-- Coq `BinarySingleNaN.mode`, with the source constructor names and order. -/
+@[flocq_source "src/IEEE754/BinarySingleNaN.v" 1129 "mode"]
 inductive mode where
   | mode_NE
   | mode_ZR
@@ -50,6 +51,7 @@ The five branches are definitionally the same functions as the integrated
 `rnd_of_mode`; spelling them through that implementation prevents the source
 facade and the reusable API from drifting apart.
 -/
+@[flocq_source "src/IEEE754/BinarySingleNaN.v" 1131 "round_mode"]
 noncomputable def round_mode (m : mode) : Real → Int :=
   rnd_of_mode m.toRoundingMode
 

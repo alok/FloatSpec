@@ -2,7 +2,7 @@
  "flocq_commit": "7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f",
  "rocq": "9.1",
  "floatspec_base": "6644539f",
- "anchors": 457,
+ "anchors": 462,
  "verdicts": [
   {
    "coq_path": "src/Calc/Bracket.v",
@@ -3204,6 +3204,41 @@
    "lean_name": "Flocq_version.Flocq_version",
    "verdict": "match",
    "explanation": "Both are unary-natural constants. The Coq type is N (binary naturals) and the Lean type is ℕ, which is the same carrier. The bodies also agree. Coq's compiled Print gives `Flocq_version = 40202%N`: its vm_compute'd parser reads \"4.2.2\" with each dotted component in base 100, so 4*10000 + 2*100 + 2 = 40202. The Lean definition is literally `def Flocq_version : Nat := 40202`, and an `example ... := rfl` checks that value. The declaration has no axioms and no sorry. The flocq_source anchor is (src/Version.v, 24), which matches Coq's declaration line 24."
+  },
+  {
+   "coq_path": "src/IEEE754/Binary.v",
+   "coq_name": "full_float",
+   "lean_name": "full_float",
+   "verdict": "match",
+   "explanation": "Checked with Lean #print and Rocq Print (batch 1D). Same four constructors in the same order, F754_zero (s : bool), F754_infinity (s : bool), F754_nan (s : bool) (m : positive), F754_finite (s : bool) (m : positive) (e : Z), with positive carried as FloatSpec.Core.Zaux.Positive and Z as Int. Coq's sort is Set, Lean's is Type."
+  },
+  {
+   "coq_path": "src/IEEE754/Binary.v",
+   "coq_name": "binary_float",
+   "lean_name": "binary_float",
+   "verdict": "match",
+   "explanation": "Checked with Lean #print and Rocq Print (batch 1D). Same two parameters and four constructors in the same order. B754_nan carries a positive payload with `nan_pl prec pl = true`, as in Coq. B754_finite carries `specFloat_bounded (positiveToNat m) e = true` for Coq's `SpecFloat.bounded prec emax m e = true`; specFloat_bounded is canonical_mantissa && e <= emax - prec, where canonical_mantissa compares e with FLT_exp (3 - emax - prec) prec (Zdigits 2 m + e), which is SpecFloat.fexp prec emax (Zpos (digits2_pos m) + e) for positive m. prec and emax are implicit in the Lean constructors because Lean makes inductive parameters implicit in constructors; Binary.v leaves them explicit."
+  },
+  {
+   "coq_path": "src/IEEE754/Binary.v",
+   "coq_name": "nan_pl",
+   "lean_name": "nan_pl",
+   "verdict": "match",
+   "explanation": "Checked with Lean #check/#print and Rocq Check/Print (batch 1D). Both have type Z -> positive -> bool with prec first. Coq's body is Z.ltb (Zpos (digits2_pos pl)) prec; Lean's is Zlt_bool (digits2_pos (positiveToNat pl)) prec, the same digit count of the positive payload compared strictly with prec."
+  },
+  {
+   "coq_path": "src/IEEE754/BinarySingleNaN.v",
+   "coq_name": "mode",
+   "lean_name": "FloatSpec.IEEE754.BinarySingleNaN.Source.mode",
+   "verdict": "match",
+   "explanation": "Checked with Lean #print and Rocq Print (batch 1D). Same five nullary constructors in the same order: mode_NE, mode_ZR, mode_DN, mode_UP, mode_NA."
+  },
+  {
+   "coq_path": "src/IEEE754/BinarySingleNaN.v",
+   "coq_name": "round_mode",
+   "lean_name": "FloatSpec.IEEE754.BinarySingleNaN.Source.round_mode",
+   "verdict": "match",
+   "explanation": "Checked with Lean #check/#print and Rocq Check/Print (batch 1D). Both have type mode -> R -> Z. Lean's body is rnd_of_mode m.toRoundingMode, which gives, constructor by constructor, Znearest (fun t => !decide (2 | t)) for mode_NE (Coq: ZnearestE, Znearest (fun x => negb (Z.even x))), Ztrunc for mode_ZR, Zfloor for mode_DN, Zceil for mode_UP, and Znearest ZnearestA with ZnearestA t = decide (0 <= t) for mode_NA (Coq: Znearest (Z.leb 0))."
   }
  ]
 }
