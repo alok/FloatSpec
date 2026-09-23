@@ -4688,7 +4688,7 @@ theorem Bulp_correct
       have hulp0 :
           FloatSpec.Core.Ulp.ulp 2 (FLT_exp (3 - emax - prec) prec) 0 =
             (2 : ℝ) ^ (3 - emax - prec) := by
-        simpa [FLT_exp, wp, PostCond.noThrow, pure] using hzero trivial
+        simpa [FLT_exp, wp, PostCond.noThrow, pure] using hzero
       simp [binarySingleNaNFloatToB754, Bulp, B754_to_R, BSN_is_finite,
         BSN_sign, F2R, FloatSpec.Core.Defs.F2R, hulp0]
   | B754_infinity sx =>
@@ -4713,7 +4713,7 @@ theorem Bulp_correct
         have htrip := FloatSpec.Core.FLT.generic_format_FLT_bpow
           (prec := prec) (emin := 3 - emax - prec) (beta := 2) (e := ex)
         simpa [FLT_exp, wp, PostCond.noThrow, pure] using
-          htrip ⟨by norm_num, hemin_le_ex⟩
+          htrip hemin_le_ex
       have hround_eq :
           FloatSpec.Core.Generic_fmt.roundR 2 (FLT_exp (3 - emax - prec) prec)
               (rnd_of_mode RoundingMode.RTZ)
@@ -4973,7 +4973,7 @@ theorem binary_round_one_payload
     have htrip := FloatSpec.Core.FLT.generic_format_FLT_bpow
       (prec:=prec) (emin:=3 - emax - prec) (beta:=2) (e:=e)
     simpa [FLT_exp, wp, PostCond.noThrow, pure] using
-      htrip ⟨by norm_num, hemin⟩
+      htrip hemin
   have hroundEq :
       FloatSpec.Core.Generic_fmt.roundR 2 (FLT_exp (3 - emax - prec) prec)
           (rnd_of_mode mode)
@@ -6826,10 +6826,10 @@ private theorem roundR_FLT_one {prec emax : Int}
   have hfmt : FloatSpec.Core.Generic_fmt.generic_format 2
       (FLT_exp (3 - emax - prec) prec) 1 := by
     simpa [wp, PostCond.noThrow, pure] using hfmtTrip
-      ⟨by norm_num, by
+      (by
         have hp := (inferInstance : Prec_gt_0 prec).pos
         have he := (inferInstance : Prec_lt_emax prec emax).emax_ge_2
-        omega⟩
+        omega)
   exact FloatSpec.Core.Generic_fmt.roundR_generic 2
     (FLT_exp (3 - emax - prec) prec) (rnd_of_mode RoundingMode.RNE) 1
     (by norm_num) hfmt
@@ -12562,7 +12562,7 @@ private theorem Bpred_positive_correct {prec emax : Int}
               (FloatSpec.Core.Ulp.pred 2 (FLT_exp (3 - emax - prec) prec) xr) =
             FloatSpec.Core.Ulp.ulp 2 (FLT_exp (3 - emax - prec) prec) xr / 2) := by
     simpa [FLT_exp, wp, PostCond.noThrow, pure] using
-      hulpPredCasesTrip ⟨by norm_num, hformat, le_of_lt hxrPos⟩
+      hulpPredCasesTrip hformat (le_of_lt hxrPos)
   have hpowHalf : (2 : ℝ) ^ ex / 2 = eps := by
     calc
       (2 : ℝ) ^ ex / 2 = (2 : ℝ) ^ ex * (2 : ℝ) ^ (-1 : Int) := by ring_nf
@@ -13585,7 +13585,7 @@ theorem Bsucc_correct {prec emax : Int}
           (FLT_exp (3 - emax - prec) prec) 0 =
           FloatSpec.Core.Raux.bpow 2 (3 - emax - prec) := by
         simpa [wp, PostCond.noThrow, pure, FloatSpec.Core.Raux.bpow] using
-          hulp0 trivial
+          hulp0
       have heminLt : 3 - emax - prec < emax := by
         have hp := (inferInstance : Prec_gt_0 prec).pos
         have he := (inferInstance : Prec_lt_emax prec emax).emax_ge_2

@@ -2284,7 +2284,7 @@ theorem Fulp_ulp_aux (beta : Int) [ValidRadix beta] (b : Fbound) (p : Int) (f : 
         FloatSpec.Core.Ulp.ulp beta (FloatSpec.Core.FLT.FLT_exp p (-b.dExp)) 0 =
           (beta : ℝ) ^ (-b.dExp) := by
       simpa [wp, PostCond.noThrow, pure] using
-        hsmall ⟨hbeta, by simpa using hpow_pos⟩
+        hsmall (by simpa using hpow_pos)
     rw [hx]
     exact hzero'.trans hres.symm
   · have hm_ne : f.Fnum ≠ 0 := by

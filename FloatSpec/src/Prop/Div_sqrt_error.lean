@@ -461,7 +461,7 @@ theorem sqrt_error_FLX_N (h_gt1 : 1 < prec) (x : ℝ)
               FloatSpec.Core.Ulp.ulp beta fexp (Real.sqrt x)
                 ≤ |Real.sqrt x| * (beta : ℝ) ^ (1 - prec) := by
             simpa [fexp, FLX_exp, wp, Std.Do.PostCond.noThrow, Id.run, pure]
-              using htrip hβ
+              using htrip
           simpa [hulp_sqrt] using hplain
         have hhalf_nonneg : 0 ≤ (1 / 2 : ℝ) := by norm_num
         have hscaled_bound :
@@ -824,7 +824,7 @@ lemma sqrt_error_N_FLX_aux2_without_prec_gt_one_payload (x : ℝ)
   · right
     have hF1 : generic_format beta (FLX_exp prec) (1 : ℝ) := by
       have htrip := FloatSpec.Core.FLX.generic_format_FLX_1 (prec := prec) (beta := beta)
-      simpa [wp, Std.Do.PostCond.noThrow, Id.run, pure] using htrip hβ
+      simpa [wp, Std.Do.PostCond.noThrow, Id.run, pure] using htrip
     have h2u : 2 * u_ro beta prec = (beta : ℝ) ^ (1 - prec) := by
       unfold u_ro
       have hexp : -prec + 1 = 1 - prec := by ring

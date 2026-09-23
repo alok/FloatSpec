@@ -1032,7 +1032,7 @@ theorem relative_error_N_FLX (hβ : 1 < beta) (x : ℝ) :
     have hulp_le :
         FloatSpec.Core.Ulp.ulp beta fexpFLX x ≤ |x| * (beta : ℝ) ^ (1 - prec) := by
       have h :=
-        (FloatSpec.Core.FLX.ulp_FLX_le (prec := prec) (beta := beta) (x := x)) hβ
+        (FloatSpec.Core.FLX.ulp_FLX_le (prec := prec) (beta := beta) (x := x))
       simpa [Std.Do.wp, Std.Do.PostCond.noThrow, Id.run, pure, fexpFLX] using h
     have hpow_le : (beta : ℝ) ^ e ≤ (beta : ℝ) ^ (-prec + 1) * |x| := by
       have hpow_le' : (beta : ℝ) ^ e ≤ |x| * (beta : ℝ) ^ (1 - prec) := by
@@ -1591,7 +1591,7 @@ theorem relative_error_FLT_F2R_emin (rnd : ℝ → Int) [FloatSpec.Core.Generic_
       have htrip :=
         FloatSpec.Core.FLT.generic_format_FLT_FIX
           (prec := prec) (emin := emin) (beta := beta) (x := x)
-      simpa [fixExp] using htrip ⟨hβ, hle, hfix⟩
+      simpa [fixExp] using htrip hle hfix
     have hround :
         FloatSpec.Calc.Round.round beta (FLT_exp emin prec) (FloatSpec.Calc.Round.Mode.ofRnd rnd) x = x := by
       have h :=
@@ -1711,7 +1711,7 @@ theorem relative_error_N_FLT_F2R_emin (m : Int) (hβ : 1 < beta) :
       have htrip :=
         FloatSpec.Core.FLT.generic_format_FLT_FIX
           (prec := prec) (emin := emin) (beta := beta) (x := x)
-      simpa [fixExp] using htrip ⟨hβ, hle, hfix⟩
+      simpa [fixExp] using htrip hle hfix
     have hround :
         FloatSpec.Calc.Round.round beta (FLT_exp emin prec) (Znearest choice) x = x := by
       have h :=
@@ -1810,7 +1810,7 @@ theorem relative_error_N_FLT_round_F2R_emin (m : Int) (hβ : 1 < beta) :
       have htrip :=
         FloatSpec.Core.FLT.generic_format_FLT_FIX
           (prec := prec) (emin := emin) (beta := beta) (x := x)
-      simpa [fixExp] using htrip ⟨hβ, hle, hfix⟩
+      simpa [fixExp] using htrip hle hfix
     have hround :
         FloatSpec.Calc.Round.round beta (FLT_exp emin prec) (Znearest choice) x = x := by
       have h :=

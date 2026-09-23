@@ -1119,7 +1119,7 @@ theorem V1_Und3' (beta emin prec : Int) [ValidRadix beta] [Prec_gt_0 prec]
       have hemin_le : emin ≤ e := by
         dsimp [e]
         omega
-      simpa [FLT_exp] using htrip ⟨hβ, hemin_le⟩
+      simpa [FLT_exp] using htrip hemin_le
     have hfmt_bpow' :
         generic_format beta (FLT_exp emin prec)
           (FloatSpec.Core.Raux.bpow beta e) := by
@@ -3933,7 +3933,7 @@ theorem V2_Und4 (beta emin prec : Int) [ValidRadix beta] [Prec_gt_0 prec]
       (e := emin + 4 * prec - 3)
     have hemin_le : emin ≤ emin + 4 * prec - 3 := by
       omega
-    simpa [FLT_exp, FloatSpec.Core.Raux.bpow] using htrip ⟨hβ, hemin_le⟩
+    simpa [FLT_exp, FloatSpec.Core.Raux.bpow] using htrip hemin_le
   have hu1_strong :
       FloatSpec.Core.Raux.bpow beta (emin + 4 * prec - 3) ≤ |u1| := by
     by_cases hnonneg : 0 ≤ a * x
@@ -4048,7 +4048,7 @@ theorem V2_Und5 (beta emin prec : Int) [ValidRadix beta] [Prec_gt_0 prec]
     have hemin_le : emin ≤ emin + prec - 1 := by
       have hprec_pos : 0 < prec := (Prec_gt_0.pos : 0 < prec)
       omega
-    simpa [FLT_exp, FloatSpec.Core.Raux.bpow] using htrip ⟨hβ, hemin_le⟩
+    simpa [FLT_exp, FloatSpec.Core.Raux.bpow] using htrip hemin_le
   rcases U2 with hy_zero | hy_bound
   · have htarget_le_ax :
         FloatSpec.Core.Raux.bpow beta (emin + prec - 1) ≤ |a * x| := by
@@ -4143,7 +4143,7 @@ theorem V2_Und5 (beta emin prec : Int) [ValidRadix beta] [Prec_gt_0 prec]
             (prec := prec) (emin := emin) (beta := beta)
             (e := emin + 4 * prec - 3)
           have hemin_le : emin ≤ emin + 4 * prec - 3 := by omega
-          simpa [FLT_exp, FloatSpec.Core.Raux.bpow] using htrip ⟨hβ, hemin_le⟩
+          simpa [FLT_exp, FloatSpec.Core.Raux.bpow] using htrip hemin_le
         by_cases hnonneg : 0 ≤ a * x
         · have hxle :
               FloatSpec.Core.Raux.bpow beta (emin + 4 * prec - 3) ≤ a * x := by
@@ -5957,7 +5957,7 @@ theorem U3_discri1 (emin prec : Int) [Prec_gt_0 prec]
       have hprec_pos : 0 < prec := Prec_gt_0.pos
       omega
     simpa [FloatSpec.Core.Raux.bpow] using
-      htrip ⟨(by decide : (2 : Int) > 1), hemin_le⟩
+      htrip hemin_le
   have hbb_nonneg : 0 ≤ b * b := by nlinarith [sq_nonneg b]
   have hbpow_le_bb :
       FloatSpec.Core.Raux.bpow 2 (emin + 3 * prec) ≤ b * b := by
@@ -6277,7 +6277,7 @@ theorem U5_discri1_aux (emin prec : Int) [Prec_gt_0 prec]
     have htrip := FloatSpec.Core.FLT.generic_format_FLT_bpow
       (prec := prec) (emin := emin) (beta := 2) (e := e)
     simpa [FloatSpec.Core.Raux.bpow] using
-      htrip ⟨(by decide : (2 : Int) > 1), hemin⟩
+      htrip hemin
   by_cases hlarge : FloatSpec.Core.Raux.bpow 2 e ≤ |x + y|
   · by_cases hsum_nonneg : 0 ≤ x + y
     · have hle_sum :
@@ -6743,7 +6743,7 @@ private theorem discri_correct_test_nonexceptional
         (FloatSpec.Core.Raux.bpow 2 e) := by
     have h := FloatSpec.Core.FLT.generic_format_FLT_bpow
       (prec := prec) (emin := emin) (beta := 2) (e := e)
-    simpa [FloatSpec.Core.Raux.bpow] using h ⟨hbeta, he⟩
+    simpa [FloatSpec.Core.Raux.bpow] using h he
   have hpMagStrong :
       FloatSpec.Core.Raux.bpow 2 (emin + 3 * prec) ≤ |p| := by
     have h := FloatSpec.Core.Generic_fmt.abs_round_ge_generic

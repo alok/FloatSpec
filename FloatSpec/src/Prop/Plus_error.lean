@@ -693,7 +693,7 @@ theorem FLT_format_plus_small (x y : ℝ)
       (prec := prec) (emin := emin) (beta := beta) (x := x + y)
   have h_bound' : |x + y| ≤ (beta : ℝ) ^ (emin + prec) := by
     simpa [FloatSpec.Core.Raux.bpow, add_comm] using h_bound
-  simpa [fixExp] using hflt ⟨hβ, h_bound', hfix_sum⟩
+  simpa [fixExp] using hflt h_bound' hfix_sum
 
 /-- FLT plus error with nearest rounding existence -/
 lemma FLT_plus_error_N_ex (x y : ℝ)

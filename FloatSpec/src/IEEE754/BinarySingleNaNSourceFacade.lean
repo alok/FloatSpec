@@ -1032,7 +1032,7 @@ private theorem Bldexp_Bone_spec {prec emax : Int}
       (FLT_exp (3 - emax - prec) prec) (FloatSpec.Core.Raux.bpow 2 k) := by
     simpa [FLT_exp, wp, Std.Do.PostCond.noThrow, pure,
       FloatSpec.Core.Raux.bpow] using
-      hfmtTrip ⟨by norm_num, hmin⟩
+      hfmtTrip hmin
   have hround := FloatSpec.Core.Generic_fmt.roundR_generic
     (beta:=2) (fexp:=FLT_exp (3 - emax - prec) prec)
     (rnd:=rnd_of_mode RoundingMode.RNE)
@@ -1339,7 +1339,7 @@ theorem Bulp'_correct {prec emax : Int}
           FloatSpec.Core.Raux.bpow 2 (3 - emax - prec) := by
         simpa [FLT_exp, wp, Std.Do.PostCond.noThrow, pure,
           FloatSpec.Core.Raux.bpow] using
-          hulp0Trip trivial
+          hulp0Trip
       apply B2R_Bsign_inj _ _ hb'.2.1 hulp.2.1
       · rw [hb'.1, hulp.1]
         simpa [B2R, binarySingleNaNFloatToB754, B754_to_R] using hulp0.symm

@@ -2722,7 +2722,7 @@ theorem mag_round_odd_from_explicit_payload
     have hemin_le : emin ≤ e - 1 := by
       have : emin + 1 ≤ e := Int.add_one_le_iff.mpr (by simpa [e] using hxmag)
       omega
-    simpa [FLT_exp] using htrip ⟨hβ, hemin_le⟩
+    simpa [FLT_exp] using htrip hemin_le
   have hlow_r :
       (beta : ℝ) ^ (e - 1) ≤ |r| := by
     simpa [r, FloatSpec.Calc.Round.round, oddMode] using
@@ -2735,7 +2735,7 @@ theorem mag_round_odd_from_explicit_payload
     have htrip := FloatSpec.Core.FLT.generic_format_FLT_bpow
       (prec := prec) (emin := emin) (beta := beta) (e := e)
     have hemin_le : emin ≤ e := le_of_lt (by simpa [e] using hxmag)
-    simpa [FLT_exp] using htrip ⟨hβ, hemin_le⟩
+    simpa [FLT_exp] using htrip hemin_le
   have hupper_r_le :
       |r| ≤ (beta : ℝ) ^ e := by
     simpa [r, FloatSpec.Calc.Round.round, oddMode] using
@@ -2909,7 +2909,7 @@ theorem fexp_round_odd_from_explicit_payload
         generic_format beta (FLT_exp emin prec) ((beta : ℝ) ^ emin) := by
       have htrip := FloatSpec.Core.FLT.generic_format_FLT_bpow
         (prec := prec) (emin := emin) (beta := beta) (e := emin)
-      simpa [FLT_exp] using htrip ⟨hβ, le_rfl⟩
+      simpa [FLT_exp] using htrip le_rfl
     have hr_abs_le :
         |r| ≤ (beta : ℝ) ^ emin := by
       simpa [r, FloatSpec.Calc.Round.round, oddMode] using
@@ -2982,7 +2982,7 @@ theorem fexp_round_odd_from_explicit_payload
             exact_mod_cast (lt_trans Int.zero_lt_one hβ)
           simpa using (zpow_pos hbpos (emin + prec))
         simpa [FLT_exp, Std.Do.wp, Std.Do.PostCond.noThrow, Id.run, pure]
-          using htrip ⟨hβ, hsmall0⟩
+          using htrip hsmall0
       have : (beta : ℝ) ^ emin ≤ |r| := by simpa [hsucc0, hulp0] using hsucc_le
       exact not_lt_of_ge this hlt
     have hmag_abs_r :
