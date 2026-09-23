@@ -69,7 +69,7 @@ Please ensure your implementation Always Works™ for:
 
 ### Proof Writing Process
 
-1. **Follow the Zfast_div_eucl_spec example** in Zaux.lean and other proofs in current file as your template
+1. **Follow the Zfast_div_eucl_correct example** in Zaux.lean and other proofs in current file as your template
 2. **ONE-BY-ONE approach is mandatory:**
     - Write ONE proof
     - Check immediately with `lake build`

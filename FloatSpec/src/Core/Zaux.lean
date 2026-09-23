@@ -21,8 +21,6 @@ import Mathlib.Tactic
 import FloatSpec.src.SimprocWP
 import FloatSpec.Linter.CoqSourceLinter
 
-open Std.Do
-
 namespace FloatSpec.Core.Zaux
 
 /-- Binary positive integers, matching Coq's `positive` constructors. -/
@@ -497,19 +495,6 @@ end DivMod
 
 section SameSign
 
-/-- Transitivity of nonnegativity through a nonzero middle factor -/
-def Zsame_sign_trans_check (_v u w : Int) : Bool :=
-  decide (0 ≤ u * w)
-
-/-- Specification: If v ≠ 0 and both u·v and v·w are nonnegative, then u·w is nonnegative. -/
-theorem Zsame_sign_trans_spec (v u w : Int) :
-    ⦃⌜v ≠ 0 ∧ 0 ≤ u * v ∧ 0 ≤ v * w⌝⦄
-    (pure (Zsame_sign_trans_check v u w) : Id _)
-    ⦃⇓result => ⌜result = decide (0 ≤ u * w)⌝⦄ := by
-  intro _
-  unfold Zsame_sign_trans_check
-  rfl
-
 /-- Coq-compatible name: transitivity of nonnegativity through a nonzero factor -/
 theorem Zsame_sign_trans (v u w : Int) (hv : v ≠ 0)
     (huv : 0 ≤ u * v) (hvw : 0 ≤ v * w) : 0 ≤ u * w := by
@@ -520,41 +505,12 @@ theorem Zsame_sign_trans (v u w : Int) (hv : v ≠ 0)
   · exact (hv (le_antisymm hv0 hv1)).elim
   · exact mul_nonneg_of_nonpos_of_nonpos hu hw
 
-/-- Weak transitivity of nonnegativity with zero-propagation hypothesis -/
-def Zsame_sign_trans_weak_check (_v u w : Int) : Bool :=
-  decide (0 ≤ u * w)
-
-/-- Specification: If (v = 0 → w = 0) and both u·v and v·w are nonnegative, then u·w is nonnegative. -/
-theorem Zsame_sign_trans_weak_spec (v u w : Int) :
-    ⦃⌜(v = 0 → w = 0) ∧ 0 ≤ u * v ∧ 0 ≤ v * w⌝⦄
-    (pure (Zsame_sign_trans_weak_check v u w) : Id _)
-    ⦃⇓result => ⌜result = decide (0 ≤ u * w)⌝⦄ := by
-  intro _
-  unfold Zsame_sign_trans_weak_check
-  rfl
-
 /-- Coq-compatible name: weak transitivity of nonnegativity -/
 theorem Zsame_sign_trans_weak (v u w : Int) (hzero : v = 0 → w = 0)
     (huv : 0 ≤ u * v) (hvw : 0 ≤ v * w) : 0 ≤ u * w := by
   by_cases hv : v = 0
   · simp [hzero hv]
   · exact Zsame_sign_trans v u w hv huv hvw
-
-/-- Deriving nonnegativity of product from sign-compatibility hypotheses -/
-def Zsame_sign_imp_check (u v : Int)
-    (_hp : 0 < u → 0 ≤ v)
-    (_hn : 0 < -u → 0 ≤ -v) : Bool :=
-  decide (0 ≤ u * v)
-
-/-- Specification: If u > 0 implies v ≥ 0 and −u > 0 implies −v ≥ 0, then 0 ≤ u·v. -/
-theorem Zsame_sign_imp_spec (u v : Int)
-    (hp : 0 < u → 0 ≤ v) (hn : 0 < -u → 0 ≤ -v) :
-    ⦃⌜True⌝⦄
-    (pure (Zsame_sign_imp_check u v hp hn) : Id _)
-    ⦃⇓result => ⌜result = decide (0 ≤ u * v)⌝⦄ := by
-  intro _
-  unfold Zsame_sign_imp_check
-  rfl
 
 /-- Coq-compatible name: sign implications imply a nonnegative product. -/
 theorem Zsame_sign_imp (u v : Int)
@@ -568,19 +524,6 @@ theorem Zsame_sign_imp (u v : Int)
       have := hn (neg_pos.mpr (lt_of_not_ge hu))
       omega
     exact mul_nonneg_of_nonpos_of_nonpos huNeg hvNeg
-
-/-- Nonnegativity of u·(u / v) when v ≥ 0 (truncated division). -/
-def Zsame_sign_odiv_check (u v : Int) : Bool :=
-  decide (0 ≤ u * Int.tdiv u v)
-
-/-- Specification: If 0 ≤ v then 0 ≤ u·(u / v). -/
-theorem Zsame_sign_odiv_spec (u v : Int) :
-    ⦃⌜0 ≤ v⌝⦄
-    (pure (Zsame_sign_odiv_check u v) : Id _)
-    ⦃⇓result => ⌜result = decide (0 ≤ u * Int.tdiv u v)⌝⦄ := by
-  intro _
-  unfold Zsame_sign_odiv_check
-  rfl
 
 /-- Coq-compatible name: a nonnegative divisor gives a same-sign truncated quotient. -/
 theorem Zsame_sign_odiv (u v : Int) (hv : 0 ≤ v) :
@@ -670,397 +613,69 @@ theorem Zlt_bool_spec (x y : Int) : Zlt_bool_prop x y (Zlt_bool x y) := by
   · have hyx : y ≤ x := le_of_not_gt h
     simpa [Zlt_bool, h] using Zlt_bool_false_ (x := x) (y := y) hyx
 
-/-- Boolean equality is true when equal -/
-def Zeq_bool_true_check (_ _ : Int) : Bool :=
-  true
-
-/-- Specification: Equality implies true -/
-theorem Zeq_bool_true_spec (x y : Int) :
-    ⦃⌜x = y⌝⦄
-    (pure (Zeq_bool_true_check x y) : Id _)
-    ⦃⇓result => ⌜result = true⌝⦄ := by
-  intro _
-  unfold Zeq_bool_true_check
-  rfl
-
 /-- FLoCq `Zeq_bool_true`. -/
 theorem Zeq_bool_true (x y : Int) (h : x = y) : Zeq_bool x y = true := by
   simp [Zeq_bool, h]
-
-/-- Boolean equality is false when not equal -/
-def Zeq_bool_false_check (_ _ : Int) : Bool :=
-  false
-
-/-- Specification: Inequality implies false -/
-theorem Zeq_bool_false_spec (x y : Int) :
-    ⦃⌜x ≠ y⌝⦄
-    (pure (Zeq_bool_false_check x y) : Id _)
-    ⦃⇓result => ⌜result = false⌝⦄ := by
-  intro _
-  unfold Zeq_bool_false_check
-  rfl
 
 /-- FLoCq `Zeq_bool_false`. -/
 theorem Zeq_bool_false (x y : Int) (h : x ≠ y) : Zeq_bool x y = false := by
   simp [Zeq_bool, h]
 
-/-- Boolean equality is reflexive. -/
-def Zeq_bool_diag_check (_ : Int) : Bool :=
-  true
-
-/-- Specification: Reflexivity of boolean equality
-
-    The boolean equality test evaluates to true when
-    comparing a value with itself. This is the boolean
-    version of reflexivity.
--/
-theorem Zeq_bool_diag_spec (x : Int) :
-    ⦃⌜True⌝⦄
-    (pure (Zeq_bool_diag_check x) : Id _)
-    ⦃⇓result => ⌜result = true⌝⦄ := by
-  intro _
-  unfold Zeq_bool_diag_check
-  rfl
-
 /-- FLoCq `Zeq_bool_diag`. -/
 theorem Zeq_bool_diag (x : Int) : Zeq_bool x x = true := by
   simp [Zeq_bool]
-
-/-- Opposite preserves equality testing
-
-    Zeq_bool(-x, y) = Zeq_bool(x, -y). This shows that
-    negation can be moved between arguments in equality tests.
--/
-def Zeq_bool_opp_check (x y : Int) : Bool :=
-  decide ((-x = y) = (x = -y))
-
-/-- Specification: Negation commutes with equality
-
-    The equality test is preserved when negating both sides
-    or moving negation between arguments. This is useful for
-    simplifying equality tests involving negations.
--/
-theorem Zeq_bool_opp_spec (x y : Int) :
-    ⦃⌜True⌝⦄
-    (pure (Zeq_bool_opp_check x y) : Id _)
-    ⦃⇓result => ⌜result = decide ((-x = y) = (x = -y))⌝⦄ := by
-  intro _
-  unfold Zeq_bool_opp_check
-  rfl
 
 /-- FLoCq `Zeq_bool_opp`. -/
 theorem Zeq_bool_opp (x y : Int) : Zeq_bool (-x) y = Zeq_bool x (-y) := by
   by_cases h : -x = y <;> simp [Zeq_bool, h] <;> omega
 
-/-- Double opposite preserves equality testing
-
-    Zeq_bool(-x, -y) = Zeq_bool(x, y). This shows that
-    negating both arguments preserves the equality test.
--/
-def Zeq_bool_opp'_check (x y : Int) : Bool :=
-  decide ((-x = -y) = (x = y))
-
-/-- Specification: Double negation preserves equality
-
-    The equality test is preserved when negating both
-    arguments. This follows from the fact that negation
-    is an injection on integers.
--/
-theorem Zeq_bool_opp'_spec (x y : Int) :
-    ⦃⌜True⌝⦄
-    (pure (Zeq_bool_opp'_check x y) : Id _)
-    ⦃⇓result => ⌜result = decide ((-x = -y) = (x = y))⌝⦄ := by
-  intro _
-  unfold Zeq_bool_opp'_check
-  rfl
-
 /-- FLoCq `Zeq_bool_opp'`. -/
 theorem Zeq_bool_opp' (x y : Int) : Zeq_bool (-x) (-y) = Zeq_bool x y := by
   simp [Zeq_bool]
-
-/-- Boolean less-or-equal is true when satisfied. -/
-def Zle_bool_true_check (_ _ : Int) : Bool :=
-  true
-
-/-- Specification: Less-or-equal implies true
-
-    When x ≤ y holds, the boolean less-or-equal test
-    returns true. This is the soundness property for
-    boolean ordering.
--/
-theorem Zle_bool_true_spec (x y : Int) :
-    ⦃⌜x ≤ y⌝⦄
-    (pure (Zle_bool_true_check x y) : Id _)
-    ⦃⇓result => ⌜result = true⌝⦄ := by
-  intro _
-  unfold Zle_bool_true_check
-  rfl
 
 /-- FLoCq `Zle_bool_true`. -/
 theorem Zle_bool_true (x y : Int) (h : x ≤ y) : Zle_bool x y = true := by
   simp [Zle_bool, h]
 
-/-- Boolean less-or-equal is false when violated. -/
-def Zle_bool_false_check (_ _ : Int) : Bool :=
-  false
-
-/-- Specification: Greater-than implies false
-
-    When y < x holds, the boolean less-or-equal test
-    returns false. This is the completeness property
-    for boolean ordering.
--/
-theorem Zle_bool_false_spec (x y : Int) :
-    ⦃⌜y < x⌝⦄
-    (pure (Zle_bool_false_check x y) : Id _)
-    ⦃⇓result => ⌜result = false⌝⦄ := by
-  intro _
-  unfold Zle_bool_false_check
-  rfl
-
 /-- FLoCq `Zle_bool_false`. -/
 theorem Zle_bool_false (x y : Int) (h : y < x) : Zle_bool x y = false := by
   simp [Zle_bool, Int.not_le.mpr h]
-
-/-- Boolean less-or-equal with opposite on left
-
-    Zle_bool(-x, y) = Zle_bool(-y, x). This shows how
-    negation on the left relates to swapping with negation.
--/
-def Zle_bool_opp_l_check (x y : Int) : Bool :=
-  decide ((- x ≤ y) = (- y ≤ x))
-
-/-- Specification: Left negation swaps comparison
-
-    Negating the left argument and swapping gives the same
-    result: Zle_bool(-x, y) = Zle_bool(-y, x).
--/
-theorem Zle_bool_opp_l_spec (x y : Int) :
-    ⦃⌜True⌝⦄
-    (pure (Zle_bool_opp_l_check x y) : Id _)
-    ⦃⇓result => ⌜result = decide ((- x ≤ y) = (- y ≤ x))⌝⦄ := by
-  intro _
-  unfold Zle_bool_opp_l_check
-  rfl
 
 /-- FLoCq `Zle_bool_opp_l`. -/
 theorem Zle_bool_opp_l (x y : Int) : Zle_bool (-x) y = Zle_bool (-y) x := by
   by_cases h : -x ≤ y <;> simp [Zle_bool, h] <;> omega
 
-/-- Boolean less-or-equal with double opposite
-
-    Zle_bool(-x, -y) = Zle_bool(y, x). This shows that
-    double negation reverses the comparison.
--/
-def Zle_bool_opp_check (x y : Int) : Bool :=
-  decide ((- x ≤ - y) = (y ≤ x))
-
-/-- Specification: Double negation reverses ordering
-
-    Negating both arguments reverses the comparison:
-    Zle_bool(-x, -y) = Zle_bool(y, x).
--/
-theorem Zle_bool_opp_spec (x y : Int) :
-    ⦃⌜True⌝⦄
-    (pure (Zle_bool_opp_check x y) : Id _)
-    ⦃⇓result => ⌜result = decide ((- x ≤ - y) = (y ≤ x))⌝⦄ := by
-  intro _
-  unfold Zle_bool_opp_check
-  rfl
-
 /-- FLoCq `Zle_bool_opp`. -/
 theorem Zle_bool_opp (x y : Int) : Zle_bool (-x) (-y) = Zle_bool y x := by
   simp [Zle_bool]
-
-/-- Boolean less-or-equal with opposite on right
-
-    Zle_bool(x, -y) = Zle_bool(y, -x). This shows how
-    negation on the right relates to swapping with negation.
--/
-def Zle_bool_opp_r_check (x y : Int) : Bool :=
-  decide ((x ≤ - y) = (y ≤ - x))
-
-/-- Specification: Right negation swaps comparison
-
-    Negating the right argument relates to swapping with
-    left negation: Zle_bool(x, -y) = Zle_bool(y, -x).
--/
-theorem Zle_bool_opp_r_spec (x y : Int) :
-    ⦃⌜True⌝⦄
-    (pure (Zle_bool_opp_r_check x y) : Id _)
-    ⦃⇓result => ⌜result = decide ((x ≤ - y) = (y ≤ - x))⌝⦄ := by
-  intro _
-  unfold Zle_bool_opp_r_check
-  rfl
 
 /-- FLoCq `Zle_bool_opp_r`. -/
 theorem Zle_bool_opp_r (x y : Int) : Zle_bool x (-y) = Zle_bool y (-x) := by
   by_cases h : x ≤ -y <;> simp [Zle_bool, h] <;> omega
 
-/-- Negation of less-or-equal is strict greater-than
-
-    Shows that negb (Zle_bool x y) = Zlt_bool y x.
-    This captures the duality between ≤ and >.
--/
-def negb_Zle_bool_check (x y : Int) : Bool :=
-  decide (!(x ≤ y) = (y < x))
-
-/-- Specification: Negated ≤ equals strict >
-
-    The negation of x ≤ y is equivalent to y < x. This duality
-    is fundamental for simplifying boolean comparisons.
--/
-theorem negb_Zle_bool_spec (x y : Int) :
-    ⦃⌜True⌝⦄
-    (pure (negb_Zle_bool_check x y) : Id _)
-    ⦃⇓result => ⌜result = decide (!(x ≤ y) = (y < x))⌝⦄ := by
-  intro _
-  unfold negb_Zle_bool_check
-  rfl
-
 /-- FLoCq `negb_Zle_bool`. -/
 theorem negb_Zle_bool (x y : Int) : !Zle_bool x y = Zlt_bool y x := by
   by_cases h : x ≤ y <;> simp [Zle_bool, Zlt_bool, h]
-
-/-- Negation of strict less-than is greater-or-equal
-
-    Shows that negb (Zlt_bool x y) = Zle_bool y x.
-    This captures the duality between < and ≥.
--/
-def negb_Zlt_bool_check (x y : Int) : Bool :=
-  decide (!(x < y) = (y ≤ x))
-
-/-- Specification: Negated < equals ≥
-
-    The negation of x < y is equivalent to y ≤ x. This duality
-    allows conversion between strict and non-strict comparisons.
--/
-theorem negb_Zlt_bool_spec (x y : Int) :
-    ⦃⌜True⌝⦄
-    (pure (negb_Zlt_bool_check x y) : Id _)
-    ⦃⇓result => ⌜result = decide (!(x < y) = (y ≤ x))⌝⦄ := by
-  intro _
-  unfold negb_Zlt_bool_check
-  rfl
 
 /-- FLoCq `negb_Zlt_bool`. -/
 theorem negb_Zlt_bool (x y : Int) : !Zlt_bool x y = Zle_bool y x := by
   by_cases h : x < y <;> simp [Zlt_bool, Zle_bool, h]
 
-/-- Boolean less-than is true when satisfied. -/
-def Zlt_bool_true_check (_ _ : Int) : Bool :=
-  true
-
-/-- Specification: Less-than implies true
-
-    When x < y holds, the boolean less-than test
-    returns true. This is the soundness property for
-    boolean strict ordering.
--/
-theorem Zlt_bool_true_spec (x y : Int) :
-    ⦃⌜x < y⌝⦄
-    (pure (Zlt_bool_true_check x y) : Id _)
-    ⦃⇓result => ⌜result = true⌝⦄ := by
-  intro _
-  unfold Zlt_bool_true_check
-  rfl
-
 /-- FLoCq `Zlt_bool_true`. -/
 theorem Zlt_bool_true (x y : Int) (h : x < y) : Zlt_bool x y = true := by
   simp [Zlt_bool, h]
-
-/-- Boolean less-than is false when violated. -/
-def Zlt_bool_false_check (_ _ : Int) : Bool :=
-  false
-
-/-- Specification: Greater-or-equal implies false
-
-    When y ≤ x holds, the boolean less-than test
-    returns false. This is the completeness property
-    for boolean strict ordering.
--/
-theorem Zlt_bool_false_spec (x y : Int) :
-    ⦃⌜y ≤ x⌝⦄
-    (pure (Zlt_bool_false_check x y) : Id _)
-    ⦃⇓result => ⌜result = false⌝⦄ := by
-  intro _
-  unfold Zlt_bool_false_check
-  rfl
 
 /-- FLoCq `Zlt_bool_false`. -/
 theorem Zlt_bool_false (x y : Int) (h : y ≤ x) : Zlt_bool x y = false := by
   simp [Zlt_bool, Int.not_lt.mpr h]
 
-/-- Boolean less-than with opposite on left
-
-    Zlt_bool(-x, y) = Zlt_bool(-y, x). This shows how
-    negation on the left relates to swapping with negation.
--/
-def Zlt_bool_opp_l_check (x y : Int) : Bool :=
-  decide ((- x < y) = (- y < x))
-
-/-- Specification: Left negation swaps strict comparison
-
-    Negating the left argument and swapping gives the same
-    result: Zlt_bool(-x, y) = Zlt_bool(-y, x).
--/
-theorem Zlt_bool_opp_l_spec (x y : Int) :
-    ⦃⌜True⌝⦄
-    (pure (Zlt_bool_opp_l_check x y) : Id _)
-    ⦃⇓result => ⌜result = decide ((- x < y) = (- y < x))⌝⦄ := by
-  intro _
-  unfold Zlt_bool_opp_l_check
-  rfl
-
 /-- FLoCq `Zlt_bool_opp_l`. -/
 theorem Zlt_bool_opp_l (x y : Int) : Zlt_bool (-x) y = Zlt_bool (-y) x := by
   by_cases h : -x < y <;> simp [Zlt_bool, h] <;> omega
 
-/-- Boolean less-than with opposite on right
-
-    Zlt_bool(x, -y) = Zlt_bool(y, -x). This shows how
-    negation on the right relates to swapping with negation.
--/
-def Zlt_bool_opp_r_check (x y : Int) : Bool :=
-  decide ((x < - y) = (y < - x))
-
-/-- Specification: Right negation swaps strict comparison
-
-    Negating the right argument relates to swapping with
-    left negation: Zlt_bool(x, -y) = Zlt_bool(y, -x).
--/
-theorem Zlt_bool_opp_r_spec (x y : Int) :
-    ⦃⌜True⌝⦄
-    (pure (Zlt_bool_opp_r_check x y) : Id _)
-    ⦃⇓result => ⌜result = decide ((x < - y) = (y < - x))⌝⦄ := by
-  intro _
-  unfold Zlt_bool_opp_r_check
-  rfl
-
 /-- FLoCq `Zlt_bool_opp_r`. -/
 theorem Zlt_bool_opp_r (x y : Int) : Zlt_bool x (-y) = Zlt_bool y (-x) := by
   by_cases h : x < -y <;> simp [Zlt_bool, h] <;> omega
-
-/-- Boolean less-than with double opposite
-
-    Zlt_bool(-x, -y) = Zlt_bool(y, x). This shows that
-    double negation reverses the strict comparison.
--/
-def Zlt_bool_opp_check (x y : Int) : Bool :=
-  decide ((- x < - y) = (y < x))
-
-/-- Specification: Double negation reverses strict ordering
-
-    Negating both arguments reverses the comparison:
-    Zlt_bool(-x, -y) = Zlt_bool(y, x).
--/
-theorem Zlt_bool_opp_spec (x y : Int) :
-    ⦃⌜True⌝⦄
-    (pure (Zlt_bool_opp_check x y) : Id _)
-    ⦃⇓result => ⌜result = decide ((- x < - y) = (y < x))⌝⦄ := by
-  intro _
-  unfold Zlt_bool_opp_check
-  rfl
 
 /-- FLoCq `Zlt_bool_opp`. -/
 theorem Zlt_bool_opp (x y : Int) : Zlt_bool (-x) (-y) = Zlt_bool y x := by
@@ -1107,12 +722,9 @@ theorem Zcompare_spec (x y : Int) : Zcompare_prop x y (Zcompare x y) := by
     This captures the complete ordering of integers.
 -/
 theorem Zcompare_behavior_spec (x y : Int) :
-    ⦃⌜True⌝⦄
-    (pure (Zcompare x y) : Id _)
-    ⦃⇓result => ⌜(result = Ordering.lt ↔ x < y) ∧
-                (result = Ordering.eq ↔ x = y) ∧
-                (result = Ordering.gt ↔ y < x)⌝⦄ := by
-  intro _
+    (Zcompare x y = Ordering.lt ↔ x < y) ∧
+    (Zcompare x y = Ordering.eq ↔ x = y) ∧
+    (Zcompare x y = Ordering.gt ↔ y < x) := by
   unfold Zcompare
 
   -- Split on whether x < y
@@ -1200,76 +812,13 @@ theorem Zcompare_behavior_spec (x y : Int) :
       · -- Prove: Ordering.gt = Ordering.gt ↔ y < x
         exact ⟨fun _ => h_gt, fun _ => rfl⟩
 
-/-- Comparison returns Lt for less-than
-
-    When x < y, Zcompare returns Lt. This provides
-    a computational witness for the less-than relation.
--/
-def Zcompare_Lt_check (_ _ : Int) : Ordering :=
-  Ordering.lt
-
-/-- Specification: Less-than yields Lt
-
-    The comparison function returns Lt exactly when x < y.
-    This provides the forward direction of the comparison specification.
--/
-theorem Zcompare_Lt_spec (x y : Int) :
-    ⦃⌜x < y⌝⦄
-    (pure (Zcompare_Lt_check x y) : Id _)
-    ⦃⇓result => ⌜result = Ordering.lt⌝⦄ := by
-  intro _
-  unfold Zcompare_Lt_check
-  rfl
-
 /-- FLoCq `Zcompare_Lt`. -/
 theorem Zcompare_Lt (x y : Int) (h : x < y) : Zcompare x y = Ordering.lt := by
   simp [Zcompare, h]
 
-/-- Comparison returns Eq for equality
-
-    When x = y, Zcompare returns Eq. This provides
-    a computational witness for equality.
--/
-def Zcompare_Eq_check (_ _ : Int) : Ordering :=
-  Ordering.eq
-
-/-- Specification: Equality yields Eq
-
-    The comparison function returns Eq exactly when x = y.
-    This provides decidable equality through comparison.
--/
-theorem Zcompare_Eq_spec (x y : Int) :
-    ⦃⌜x = y⌝⦄
-    (pure (Zcompare_Eq_check x y) : Id _)
-    ⦃⇓result => ⌜result = Ordering.eq⌝⦄ := by
-  intro _
-  unfold Zcompare_Eq_check
-  rfl
-
 /-- FLoCq `Zcompare_Eq`. -/
 theorem Zcompare_Eq (x y : Int) (h : x = y) : Zcompare x y = Ordering.eq := by
   simp [Zcompare, h]
-
-/-- Comparison returns Gt for greater-than
-
-    When y < x, Zcompare returns Gt. This provides
-    a computational witness for the greater-than relation.
--/
-def Zcompare_Gt_check (_ _ : Int) : Ordering :=
-  Ordering.gt
-
-/-- Specification: Greater-than yields Gt
-
-    The comparison function returns Gt exactly when y < x.
-    This completes the three cases of integer comparison.
--/
-theorem Zcompare_Gt_spec (x y : Int) :
-    ⦃⌜y < x⌝⦄
-    (pure (Zcompare_Gt_check x y) : Id _)
-    ⦃⇓result => ⌜result = Ordering.gt⌝⦄ := by
-  intro _
-  unfold Zcompare_Gt_check
-  rfl
 
 /-- FLoCq `Zcompare_Gt`. -/
 theorem Zcompare_Gt (x y : Int) (h : y < x) : Zcompare x y = Ordering.gt := by
@@ -1298,78 +847,23 @@ def cond_Zopp (b : Bool) (x : Int) : Int :=
     This is fundamental for handling signs in floating-point.
 -/
 theorem cond_Zopp_spec (b : Bool) (x : Int) :
-    ⦃⌜True⌝⦄
-    (pure (cond_Zopp b x) : Id _)
-    ⦃⇓result => ⌜result = if b then -x else x⌝⦄ := by
-  intro _
+    cond_Zopp b x = if b then -x else x := by
   unfold cond_Zopp
-  rfl
-
-/-- Conditional opposite of zero. -/
-def cond_Zopp_0_check (_ : Bool) : Int :=
-  0
-
-/-- Specification: Zero invariance under conditional opposite. -/
-theorem cond_Zopp_0_spec (sx : Bool) :
-    ⦃⌜True⌝⦄
-    (pure (cond_Zopp_0_check sx) : Id _)
-    ⦃⇓result => ⌜result = 0⌝⦄ := by
-  intro _
-  unfold cond_Zopp_0_check
   rfl
 
 /-- FLoCq `cond_Zopp_0`. -/
 theorem cond_Zopp_0 (sx : Bool) : cond_Zopp sx 0 = 0 := by
   cases sx <;> rfl
 
-/-- Negated condition flips conditional opposite. -/
-def cond_Zopp_negb_check (x : Bool) (y : Int) : Int :=
-  -(if x then -y else y)
-
-/-- Specification: Condition negation flips result. -/
-theorem cond_Zopp_negb_spec (x : Bool) (y : Int) :
-    ⦃⌜True⌝⦄
-    (pure (cond_Zopp_negb_check x y) : Id _)
-    ⦃⇓result => ⌜result = -(if x then -y else y)⌝⦄ := by
-  intro _
-  unfold cond_Zopp_negb_check
-  rfl
-
 /-- FLoCq `cond_Zopp_negb`. -/
 theorem cond_Zopp_negb (x : Bool) (y : Int) :
     cond_Zopp (!x) y = -cond_Zopp x y := by
   cases x <;> simp [cond_Zopp]
 
-/-- Absolute value preservation under conditional opposite. -/
-def abs_cond_Zopp_check (_b : Bool) (m : Int) : Int :=
-  (Int.natAbs m : Int)
-
-/-- Specification: Conditional opposite preserves magnitude. -/
-theorem abs_cond_Zopp_spec (b : Bool) (m : Int) :
-    ⦃⌜True⌝⦄
-    (pure (abs_cond_Zopp_check b m) : Id _)
-    ⦃⇓result => ⌜result = (Int.natAbs m : Int)⌝⦄ := by
-  intro _
-  unfold abs_cond_Zopp_check
-  rfl
-
 /-- FLoCq `abs_cond_Zopp`. -/
 theorem abs_cond_Zopp (b : Bool) (m : Int) :
     |cond_Zopp b m| = |m| := by
   cases b <;> simp [cond_Zopp]
-
-/-- Absolute value via conditional opposite. -/
-def cond_Zopp_Zlt_bool_check (m : Int) : Int :=
-  (Int.natAbs m : Int)
-
-/-- Specification: Absolute value computation. -/
-theorem cond_Zopp_Zlt_bool_spec (m : Int) :
-    ⦃⌜True⌝⦄
-    (pure (cond_Zopp_Zlt_bool_check m) : Id _)
-    ⦃⇓result => ⌜result = (Int.natAbs m : Int)⌝⦄ := by
-  intro _
-  unfold cond_Zopp_Zlt_bool_check
-  rfl
 
 /-- FLoCq `cond_Zopp_Zlt_bool`. -/
 theorem cond_Zopp_Zlt_bool (m : Int) :
@@ -1377,27 +871,6 @@ theorem cond_Zopp_Zlt_bool (m : Int) :
   by_cases h : m < 0
   · simp [cond_Zopp, Zlt_bool, h, abs_of_nonpos h.le]
   · simp [cond_Zopp, Zlt_bool, h, abs_of_nonneg (le_of_not_gt h)]
-
-/-- Equality test with conditional opposite
-
-    Shows that Zeq_bool (cond_Zopp s m) n = Zeq_bool m (cond_Zopp s n).
-    This demonstrates the symmetry of conditional negation in equality tests.
--/
-def Zeq_bool_cond_Zopp_check (s : Bool) (m n : Int) : Bool :=
-  decide (((if s then -m else m) = n) = (m = (if s then -n else n)))
-
-/-- Specification: Conditional opposite commutes with equality
-
-    The equality test is preserved when moving conditional negation
-    between arguments: Zeq_bool (cond_Zopp s m) n = Zeq_bool m (cond_Zopp s n).
--/
-theorem Zeq_bool_cond_Zopp_spec (s : Bool) (m n : Int) :
-    ⦃⌜True⌝⦄
-    (pure (Zeq_bool_cond_Zopp_check s m n) : Id _)
-    ⦃⇓result => ⌜result = decide (((if s then -m else m) = n) = (m = (if s then -n else n)))⌝⦄ := by
-  intro _
-  unfold Zeq_bool_cond_Zopp_check
-  rfl
 
 /-- FLoCq `Zeq_bool_cond_Zopp`. -/
 theorem Zeq_bool_cond_Zopp (s : Bool) (m n : Int) :
@@ -1418,19 +891,6 @@ section FastPower
 def Zfast_pow_pos (v : Int) (e : Positive) : Int :=
   v ^ positiveToNat e
 
-/-- Specification: Fast power computes correct result
-
-    The fast exponentiation algorithm computes the same result
-    as naive exponentiation but with better complexity.
--/
-theorem Zfast_pow_pos_spec (v : Int) (e : Positive) :
-    ⦃⌜True⌝⦄
-    (pure (Zfast_pow_pos v e) : Id _)
-    ⦃⇓result => ⌜result = Zpower_pos v e⌝⦄ := by
-  intro _
-  unfold Zfast_pow_pos Zpower_pos
-  rfl
-
 /-- Coq-compat name: correctness of fast exponentiation for positive exponents -/
 theorem Zfast_pow_pos_correct (v : Int) (e : Positive) :
     Zfast_pow_pos v e = Zpower_pos v e := rfl
@@ -1443,16 +903,6 @@ section FasterDiv
 def Z_div_eucl (a b : Int) : (Int × Int) :=
   let q := Int.fdiv a b
   (q, a - b * q)
-
-/-- Specification of the Coq-compatible Euclidean-division pair. -/
-theorem Zdiv_eucl_unique_spec (a b : Int) :
-    ⦃⌜True⌝⦄
-    (pure (Z_div_eucl a b) : Id _)
-    ⦃⇓result => ⌜result =
-      (Int.fdiv a b, a - b * Int.fdiv a b)⌝⦄ := by
-  intro _
-  unfold Z_div_eucl
-  rfl
 
 /-- FLoCq `Zdiv_eucl_unique`. -/
 theorem Zdiv_eucl_unique (a b : Int) :
@@ -1585,31 +1035,16 @@ theorem Zpos_div_eucl_aux_correct (a b : Positive) :
         rfl
     · simp [heq, Zpos_div_eucl_aux1_correct]
 
-/-- Specification: correctness of secondary positive-aux division helper. -/
-theorem Zpos_div_eucl_aux_correct_spec (a b : Positive) :
-    ⦃⌜True⌝⦄
-    (pure (Zpos_div_eucl_aux a b) : Id _)
-    ⦃⇓result => ⌜result = Z_pos_div_eucl a (Zpos b)⌝⦄ := by
-  intro _
-  exact Zpos_div_eucl_aux_correct a b
-
 /-- Fast Euclidean division for integers. -/
 def Zfast_div_eucl (a b : Int) : (Int × Int) :=
   Z_div_eucl a b
 
-/-- Specification: fast division computes the Coq-compatible division pair. -/
-theorem Zfast_div_eucl_spec (a b : Int) :
-    ⦃⌜True⌝⦄
-    (pure (Zfast_div_eucl a b) : Id _)
-    ⦃⇓result => ⌜result = Z_div_eucl a b⌝⦄ := by
-  intro _
-  rfl
-
-end FasterDiv
-
--- Coq-compat name: correctness of fast Euclidean division
+/-- FLoCq `Zfast_div_eucl_correct`: fast division computes the Coq-compatible
+division pair. -/
 theorem Zfast_div_eucl_correct (a b : Int) :
     Zfast_div_eucl a b = Z_div_eucl a b := rfl
+
+end FasterDiv
 
 section Iteration
 
@@ -1626,53 +1061,15 @@ def iter_nat {A : Type} (f : A → A) (n : Nat) (x : A) : A :=
 
 /-- Specification: Iteration applies function n times. -/
 theorem iter_nat_spec {A : Type} (f : A → A) (n : Nat) (x : A) :
-    ⦃⌜True⌝⦄
-    (pure (iter_nat f n x) : Id _)
-    ⦃⇓result => ⌜result = f^[n] x⌝⦄ := by
-  intro _
+    iter_nat f n x = f^[n] x := by
   induction n generalizing x with
   | zero => simp [iter_nat]
   | succ n ih =>
       simpa [iter_nat, Function.iterate_succ_apply'] using congrArg f (ih x)
 
-/-- Successor property for iteration
-
-    Shows that iter_nat f (S p) x = f (iter_nat f p x).
-    This is the successor case of the iteration recursion.
--/
-def iter_nat_S_check {A : Type} (f : A → A) (p : Nat) (x : A) : A :=
-  f (iter_nat f p x)
-
-/-- Specification: Iteration successor formula
-
-    Iterating S p times is equivalent to iterating p times
-    followed by one more application of f. This captures
-    the recursive nature of iteration.
--/
-theorem iter_nat_S_spec {A : Type} (f : A → A) (p : Nat) (x : A) :
-    ⦃⌜True⌝⦄
-    (pure (iter_nat_S_check f p x) : Id _)
-    ⦃⇓result => ⌜result = f (iter_nat f p x)⌝⦄ := by
-  intro _
-  unfold iter_nat_S_check
-  rfl
-
 /-- FLoCq `iter_nat_S`. -/
 theorem iter_nat_S {A : Type} (f : A → A) (p : Nat) (x : A) :
     iter_nat f (p + 1) x = f (iter_nat f p x) := rfl
-
-/-- Iteration addition formula. -/
-def iter_nat_plus_check {A : Type} (f : A → A) (p q : Nat) (x : A) : A :=
-  iter_nat f p (iter_nat f q x)
-
-/-- Specification: Iteration count addition. -/
-theorem iter_nat_plus_spec {A : Type} (f : A → A) (p q : Nat) (x : A) :
-    ⦃⌜True⌝⦄
-    (pure (iter_nat_plus_check f p q x) : Id _)
-    ⦃⇓result => ⌜result = iter_nat f p (iter_nat f q x)⌝⦄ := by
-  intro _
-  unfold iter_nat_plus_check
-  rfl
 
 /-- FLoCq `iter_nat_plus`. -/
 theorem iter_nat_plus {A : Type} (f : A → A) (p q : Nat) (x : A) :
@@ -1707,22 +1104,6 @@ theorem iter_pos_nat {A : Type} (f : A → A) (p : Positive) (x : A) :
   | xI p ih =>
       simp only [iter_pos, positiveToNat, ih, ← iter_nat_plus, two_mul,
         iter_nat_S, iter_nat_apply]
-
-def iter_pos_nat_check {A : Type} (f : A → A) (p : Positive) (x : A) : A :=
-  iter_pos f p x
-
-/-- Specification: Positive iteration via naturals
-
-    Iteration with positive numbers can be expressed through
-    natural number iteration after conversion. This allows
-    unified reasoning about different iteration types.
--/
-theorem iter_pos_nat_spec {A : Type} (f : A → A) (p : Positive) (x : A) :
-    ⦃⌜True⌝⦄
-    (pure (iter_pos_nat_check f p x) : Id _)
-    ⦃⇓result => ⌜result = iter_nat f (positiveToNat p) x⌝⦄ := by
-  intro _
-  simpa [iter_pos_nat_check, wp, PostCond.noThrow, Id.run, pure] using iter_pos_nat f p x
 
 end Iteration
 

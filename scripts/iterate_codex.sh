@@ -97,7 +97,7 @@ Repair **exactly one** theorem: the **first** theorem in the target file that la
 4. **Draft Implement**
 
    * Add minimal helper lemmas (use `private` or local `namespace`).
-   * Follow house style; use `Zaux.lean`’s `Zfast_div_eucl_spec` and in-file patterns as templates.
+   * Follow house style; use `Zaux.lean`’s `Zfast_div_eucl_correct` and in-file patterns as templates.
    * Do not attempt to skip or bypass the proof: `axiom`, `admit`, `pure true`, or any placeholder (including `sorry`, `pure (decide True)`, `pure (decide ((0 : ℝ) ≤ 0))`, and all variants which could be easily deducted to a `True`) are strictly forbidden.
 5. **Compile**: `lake build` immediately after the change.
 
