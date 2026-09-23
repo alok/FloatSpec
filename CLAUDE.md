@@ -548,14 +548,18 @@ docstring. Markdown docstrings elsewhere stay as they are.
 - A fenced block with info string `coq ANCHOR` quotes the Rocq source (a validated quote). Its
   first line must declare the anchored name (`Theorem round_0 :`), so the location header is not
   written in the block: the hover renders it as a link. `scripts/validate_flocq_source_refs.py`
-  reads the compiled quote back and checks it byte for byte against the exact anchor Lean linked,
-  through the end of a Rocq sentence; a final line `...` marks a deliberately shortened quote, and
-  there is no interior elision, so quote a whole definition. Every line opening a `coq` fence must
-  compile to a quote, so build a rejected quote inside a string in tests.
-- Quotes the validator cannot check (the Rocq core library's `SpecFloat.v`/`FloatOps.v`, or a Flocq
-  declaration no Lean port anchors) go in a plain fence with no info string, whose first line is a
-  location comment such as `(* Rocq V9.1.0 theories/Corelib/Floats/SpecFloat.v:36-37 *)`; nothing
-  checks them. Any other info string is an "unknown code block" error in a Verso docstring.
+  reads the compiled quote back and checks it against the exact anchor Lean linked, verbatim up
+  to trailing whitespace, through the end of a Rocq sentence; a final line `...` marks a
+  deliberately shortened quote, and there is no interior elision, so quote a whole definition.
+  Every line opening a `coq` fence must compile to a quote, so build a rejected quote inside a
+  string in tests.
+- Every Flocq quote takes that form. If the Lean port of a Flocq declaration has no anchor, add
+  `@[flocq_source]` to it before quoting it; the validator rejects any Lean line starting with a
+  Flocq location comment, `(* Flocq src/...`. Only quotes from the Rocq core library
+  (`SpecFloat.v`, `FloatOps.v`), which have no anchors, go in a plain fence with no info string,
+  whose first line is a location comment such as
+  `(* Rocq V9.1.0 theories/Corelib/Floats/SpecFloat.v:36-37 *)`; nothing checks them. Any other
+  info string is an "unknown code block" error in a Verso docstring.
 - `linter.flocqCitations` (on by default) warns when a Markdown docstring uses `{coq}`,
   `{coq_file}` or a `coq` fence, which would render as unchecked literal text.
 - Examples: `scripts/fixtures/CoqDocRole.lean` (accepted uses, under the fixture step's rules) and

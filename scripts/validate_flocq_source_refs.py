@@ -6,9 +6,10 @@ The default builds/imports FloatSpec and reads its persistent source metadata.
 
 With compiled metadata it also checks the Flocq file list behind the `{coq_file}`
 docstring role, and every `coq` docstring quote as Lean compiled it: against the
-exact anchor its rendered link names, verbatim from the anchored line to the end
-of a Rocq sentence. Every line of a Lean file that opens a `coq` fence must have
-compiled to such a quote, so none escapes the check.
+exact anchor its rendered link names, verbatim (up to trailing whitespace) from the
+anchored line to the end of a Rocq sentence. Every line of a Lean file that opens a
+`coq` fence must have compiled to such a quote, and no Lean line may carry the location
+comment of an unchecked Flocq quote, `(* Flocq src/...`, so no Flocq quote escapes the check.
 """
 
 from __future__ import annotations
@@ -40,6 +41,12 @@ COQ_DECL = re.compile(
 QUOTE_FENCE = re.compile(
     r"^[ \t]*(?:(?:>|[*+-](?=[ \t])|[0-9]+[.)](?=[ \t]))[ \t]*)*(?:`{3,}|~{3,})[ \t]*coq"
     r"(?![A-Za-z0-9_'])", re.MULTILINE)
+# A line that begins, after any blockquote or list markers, with the location comment of a Flocq
+# quote, `(* Flocq src/...`: the form an unchecked quote of Flocq took in a plain block. A Flocq
+# quote must be a `coq` block, which starts at the anchored declaration instead.
+FLOCQ_LOCATION = re.compile(
+    r"^[ \t]*(?:(?:>|[*+-](?=[ \t])|[0-9]+[.)](?=[ \t]))[ \t]*)*\(\*[ \t]*Flocq[ \t]+src/",
+    re.MULTILINE)
 # The line `run_cmd FloatSpec.Roles.printMainModuleQuotes` prints; see FloatSpecRoles.lean.
 QUOTES_MARKER = "FLOCQ_QUOTES "
 
@@ -69,6 +76,11 @@ def lean_files(root: Path) -> list[Path]:
 def quote_fence_lines(text: str) -> list[int]:
     """The 1-based lines of `text` that open a `coq` fenced block."""
     return [text.count("\n", 0, match.start()) + 1 for match in QUOTE_FENCE.finditer(text)]
+
+
+def flocq_location_lines(text: str) -> list[int]:
+    """The 1-based lines of `text` that begin with a Flocq location comment, `(* Flocq src/...`."""
+    return [text.count("\n", 0, match.start()) + 1 for match in FLOCQ_LOCATION.finditer(text)]
 
 
 def module_file(module: str, root: Path = ROOT) -> Path:
@@ -105,6 +117,7 @@ def check_quote(quote: dict, source: list[str]) -> str | None:
     The quote must reproduce `source` verbatim from the anchored line, and end where a Rocq
     sentence ends, so it cannot silently drop the rest of a statement. A final line `...`
     marks a quote as deliberately shortened; the lines before it must still be verbatim.
+    Trailing whitespace on each line, and the quote's final newline, are not compared.
     """
     where = f"{quote['path']}:{quote['line']}"
     body = [line.rstrip() for line in quote["code"].removesuffix("\n").split("\n")]
@@ -139,7 +152,15 @@ def validate_quotes(files: list[Path], compiled: dict[Path, list[dict]], referen
     sources: dict[str, list[str]] = {}
     for file in files:
         where_file = file.relative_to(root) if file.is_relative_to(root) else file
-        fences = set(quote_fence_lines(file.read_text(encoding="utf-8")))
+        text = file.read_text(encoding="utf-8")
+        for line in flocq_location_lines(text):
+            failures.append(
+                f"{where_file}:{line}: a `(* Flocq src/...` location line marks an unchecked "
+                f"quote of Flocq. Quote Flocq in a ```coq ANCHOR block of a Verso docstring, "
+                f"which starts at the anchored declaration, so the validator checks it (if the "
+                f"Lean port has no anchor, add `@[flocq_source \"src/...v\" LINE \"name\"]`). "
+                f"Plain blocks are for the Rocq core library, located by `(* Rocq V9.1.0 ...`.")
+        fences = set(quote_fence_lines(text))
         quotes = compiled.get(file, [])
         stored = {quote["lean_line"] for quote in quotes}
         for line in sorted(fences - stored):

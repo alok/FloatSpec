@@ -148,6 +148,28 @@ class QuoteTests(unittest.TestCase):
             with self.subTest(text=text):
                 self.assertEqual(validator.quote_fence_lines(text), [])
 
+    def test_plain_blocks_may_not_quote_flocq(self):
+        # A `(* Flocq src/...` location line marks an unchecked quote of Flocq, wherever it sits
+        # in a plain block. A Rocq core library quote, located by `(* Rocq ...`, stays allowed.
+        rocq = ("```\n(* Rocq V9.1.0 theories/Corelib/Floats/SpecFloat.v:36-37 *)\n"
+                "  Definition emin := 1.\n")
+        flocq = "(* Flocq src/Probe.v:2-3 (7aab8f55) *)\n" + self.BODY
+        for block, line in (("```\n" + flocq + "```\n", 4), (rocq + flocq + "```\n", 6),
+                            ("> ~~~\n> (* Flocq src/Probe.v:2-3 *)\n> ~~~\n", 4),
+                            ("* ```\n  (*Flocq src/Probe.v:2 *)\n  ```\n", 4)):
+            with self.subTest(block=block):
+                failures, checked = self.check("/--\nDoc.\n" + block + "-/\ndef x := 1\n", [])
+                self.assertEqual(checked, 0)
+                self.assertEqual(len(failures), 1, failures)
+                self.assertIn(f"Probe.lean:{line}: a `(* Flocq src/...` location line",
+                              failures[0])
+        self.assertEqual(self.check("/--\nDoc.\n" + rocq + "```\n-/\ndef x := 1\n", []), ([], 0))
+        # Naming the form in prose, or in a string, is not a quote.
+        for text in ("  a `(* Flocq src/...` line\n", 'text "(* Flocq src/X.v *)"\n',
+                     "(* Flocq's src/X.v *)\n"):
+            with self.subTest(text=text):
+                self.assertEqual(validator.flocq_location_lines(text), [])
+
     def test_lean_and_python_accept_the_same_declaration_keywords(self):
         roles = (ROOT / "FloatSpecRoles.lean").read_text()
         def lean_list(name: str) -> list[str]:
