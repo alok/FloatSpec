@@ -89,7 +89,8 @@ Descriptor: `scripts/fixtures/flocqsmith/campaign_2026-09-23.descriptor.json`,
 committed in `a26c90a6` before the run. Report committed in `402b5fad`. It took
 322 s in total, including the exemplar lane.
 
-Observed bindings compared on each path: 8,245 over 400 programs.
+Observed bindings compared on each path: 8,054 values and 86 branch tags over
+400 programs (see the note in §7 on how this was counted).
 
 ### Verdict totals (baseline cases, all lanes)
 
@@ -183,7 +184,8 @@ lane:
 The exemplar lane was not repeated, because the Lean sources and the fixtures
 were unchanged.
 
-Observed bindings compared on each path: 44,029 over 1,960 programs.
+Observed bindings compared on each path: 42,827 values and 530 branch tags
+over 1,960 programs.
 
 ### Verdict totals (baseline cases, all lanes)
 
@@ -303,8 +305,15 @@ campaign, not pass it.
 
 ## 7. What this does not show
 
-- **It does not prove equivalence.** 2,360 programs and 52,274
-  observed bindings per path are finite evidence.
+- **It does not prove equivalence.** 2,360 programs and 50,881
+  observed value bindings per path are finite evidence.
+
+  An earlier revision of this document gave 8,245, 44,029 and 52,274
+  bindings. Those figures are sums of each case record's `size`, which
+  counts the statements in both arms of every branch, but only the taken
+  arm is observed and compared. The figures here come from decoding every
+  reference document against its observation signature in the retained
+  evidence.
 - **Only one world ran.** Every program is BinarySingleNaN at radix 2. The
   full-payload `B` world, the `W` IEEE-width wrappers, the raw `SF` kernels,
   `Fl(β)` at other radixes and the raw-parameter lane are still design only
