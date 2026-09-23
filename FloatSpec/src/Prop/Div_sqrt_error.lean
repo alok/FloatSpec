@@ -49,7 +49,7 @@ lemma generic_format_plus_prec (fexp : Int → Int)
       simpa [F2R, hx, hy] using hFplus
     have hfxy_exp : fxy.Fexp = min fx.Fexp fy.Fexp := by
       have h :=
-        (FloatSpec.Calc.Operations.Fexp_Fplus_spec (beta := beta) fx fy)
+        (FloatSpec.Calc.Operations.Fexp_Fplus (beta := beta) fx fy)
       simpa [fxy, pure] using h
     have hmag_x :
         FloatSpec.Core.Raux.mag beta (x + y) ≤ prec + fx.Fexp := by

@@ -308,12 +308,11 @@ theorem Fplus_same_exp_spec (m1 m2 e : Int) :
   -- With equal exponents, alignment keeps mantissas unchanged
   simp [Falign, Int.natAbs_zero, pow_zero, mul_one]
 
-/-- Specification: Sum exponent is minimum
-
-    The exponent of a sum is the minimum of the input exponents
+/-- The exponent of a sum is the minimum of the input exponents
     (Coq: `Fexp_Fplus`).
 -/
-theorem Fexp_Fplus_spec (f1 f2 : FlocqFloat beta) :
+@[flocq_source "src/Calc/Operations.v" 121 "Fexp_Fplus"]
+theorem Fexp_Fplus (f1 f2 : FlocqFloat beta) :
     (Fplus beta f1 f2).Fexp = min f1.Fexp f2.Fexp := by
   unfold Fplus
   cases f1 with

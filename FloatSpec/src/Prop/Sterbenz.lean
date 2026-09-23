@@ -84,7 +84,7 @@ theorem generic_format_plus (x y : ℝ)
           min (FloatSpec.Core.Generic_fmt.cexp beta fexp x)
               (FloatSpec.Core.Generic_fmt.cexp beta fexp y) := by
       have h :=
-        (FloatSpec.Calc.Operations.Fexp_Fplus_spec (beta := beta) fx fy)
+        (FloatSpec.Calc.Operations.Fexp_Fplus (beta := beta) fx fy)
       simpa [fxy, fx, fy, pure] using h
     have hmag_xy : mag beta (x + y) ≤ e := by
       have htrip :=

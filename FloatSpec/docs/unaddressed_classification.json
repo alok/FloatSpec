@@ -543,6 +543,28 @@
    "port_notes": "The spec has no callers. Add a direct anchored theorem (line 575)."
   },
   {
+   "id": "src/Core/Raux.v:Rcompare_prop_ind",
+   "coq_name": "Rcompare_prop_ind",
+   "classification": "renamed-match",
+   "lean_name": "FloatSpec.Core.Raux.Rcompare_prop.rec",
+   "coq_type": "",
+   "lean_type": "",
+   "explanation": "Auto-generated Rocq eliminator; Lean's generated recursor Rcompare_prop.rec is the counterpart (the Lean-only _ind alias was removed in conventions batch 1C).",
+   "port_difficulty": "n/a",
+   "port_notes": "Added 2026-09-23 after batch 1C removed the aliases."
+  },
+  {
+   "id": "src/Core/Raux.v:Rcompare_prop_sind",
+   "coq_name": "Rcompare_prop_sind",
+   "classification": "not-applicable",
+   "lean_name": "",
+   "coq_type": "",
+   "lean_type": "",
+   "explanation": "Rocq auto-generated SProp eliminator; Lean has no SProp, so there is no analogue by design.",
+   "port_difficulty": "n/a",
+   "port_notes": "Added 2026-09-23 after batch 1C removed the aliases."
+  },
+  {
    "id": "src/Core/Raux.v:Rcompare_sqr@11479",
    "coq_name": "Rcompare_sqr",
    "classification": "renamed-match",
@@ -563,6 +585,28 @@
    "explanation": "The constructor is identical up to implicit binders. It is exported as FloatSpec.Core.Raux.Req_bool_false_.",
    "port_difficulty": "n/a",
    "port_notes": "No port needed. Atlas constructor resolution only."
+  },
+  {
+   "id": "src/Core/Raux.v:Req_bool_prop_ind",
+   "coq_name": "Req_bool_prop_ind",
+   "classification": "renamed-match",
+   "lean_name": "FloatSpec.Core.Raux.Req_bool_prop.rec",
+   "coq_type": "",
+   "lean_type": "",
+   "explanation": "Auto-generated Rocq eliminator; Lean's generated recursor Req_bool_prop.rec is the counterpart (the Lean-only _ind alias was removed in conventions batch 1C).",
+   "port_difficulty": "n/a",
+   "port_notes": "Added 2026-09-23 after batch 1C removed the aliases."
+  },
+  {
+   "id": "src/Core/Raux.v:Req_bool_prop_sind",
+   "coq_name": "Req_bool_prop_sind",
+   "classification": "not-applicable",
+   "lean_name": "",
+   "coq_type": "",
+   "lean_type": "",
+   "explanation": "Rocq auto-generated SProp eliminator; Lean has no SProp, so there is no analogue by design.",
+   "port_difficulty": "n/a",
+   "port_notes": "Added 2026-09-23 after batch 1C removed the aliases."
   },
   {
    "id": "src/Core/Raux.v:Req_bool_true_@14501",
@@ -609,6 +653,28 @@
    "port_notes": "No port needed. Atlas constructor resolution only."
   },
   {
+   "id": "src/Core/Raux.v:Rle_bool_prop_ind",
+   "coq_name": "Rle_bool_prop_ind",
+   "classification": "renamed-match",
+   "lean_name": "FloatSpec.Core.Raux.Rle_bool_prop.rec",
+   "coq_type": "",
+   "lean_type": "",
+   "explanation": "Auto-generated Rocq eliminator; Lean's generated recursor Rle_bool_prop.rec is the counterpart (the Lean-only _ind alias was removed in conventions batch 1C).",
+   "port_difficulty": "n/a",
+   "port_notes": "Added 2026-09-23 after batch 1C removed the aliases."
+  },
+  {
+   "id": "src/Core/Raux.v:Rle_bool_prop_sind",
+   "coq_name": "Rle_bool_prop_sind",
+   "classification": "not-applicable",
+   "lean_name": "",
+   "coq_type": "",
+   "lean_type": "",
+   "explanation": "Rocq auto-generated SProp eliminator; Lean has no SProp, so there is no analogue by design.",
+   "port_difficulty": "n/a",
+   "port_notes": "Added 2026-09-23 after batch 1C removed the aliases."
+  },
+  {
    "id": "src/Core/Raux.v:Rle_bool_true_@12298",
    "coq_name": "Rle_bool_true_",
    "classification": "renamed-match",
@@ -629,6 +695,28 @@
    "explanation": "The constructor is identical up to implicit binders. It is exported as FloatSpec.Core.Raux.Rlt_bool_false_.",
    "port_difficulty": "n/a",
    "port_notes": "No port needed. Atlas constructor resolution only."
+  },
+  {
+   "id": "src/Core/Raux.v:Rlt_bool_prop_ind",
+   "coq_name": "Rlt_bool_prop_ind",
+   "classification": "renamed-match",
+   "lean_name": "FloatSpec.Core.Raux.Rlt_bool_prop.rec",
+   "coq_type": "",
+   "lean_type": "",
+   "explanation": "Auto-generated Rocq eliminator; Lean's generated recursor Rlt_bool_prop.rec is the counterpart (the Lean-only _ind alias was removed in conventions batch 1C).",
+   "port_difficulty": "n/a",
+   "port_notes": "Added 2026-09-23 after batch 1C removed the aliases."
+  },
+  {
+   "id": "src/Core/Raux.v:Rlt_bool_prop_sind",
+   "coq_name": "Rlt_bool_prop_sind",
+   "classification": "not-applicable",
+   "lean_name": "",
+   "coq_type": "",
+   "lean_type": "",
+   "explanation": "Rocq auto-generated SProp eliminator; Lean has no SProp, so there is no analogue by design.",
+   "port_difficulty": "n/a",
+   "port_notes": "Added 2026-09-23 after batch 1C removed the aliases."
   },
   {
    "id": "src/Core/Raux.v:Rlt_bool_true_@13207",
