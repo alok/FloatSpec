@@ -154,6 +154,9 @@ The follow-up implementation on September 21 removes its unnecessary marker:
 `#eval Zquotient (-7) 3` now runs and returns `-2`, with the same body and type.
 `Pdiv`, `oZ` and `oZ1` are executable for the same reason. This closes those
 specific execution gaps; the real-valued specifications remain mathematical.
+A later change replaced the `Pdiv`, `Zquotient` and `ZdividesP` bodies with
+transcriptions of Coq's. Closed theorems equate them with the September 21
+bodies, and `@[csimp]` keeps `Pdiv`'s compiled code on natural division.
 
 `maxDiv` needed one more step. Its old definition used classical choice to
 decide integer divisibility despite an existing constructive `ZdividesP`.

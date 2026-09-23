@@ -43,10 +43,18 @@ support radix one. Both assistants prove radix-zero counterexamples.
 Eight live contract mutations reject missing premises and incorrect signs.
 This closes these two interface gaps, not the rest of the unreviewed Pff API.
 
-Pdiv, oZ, oZ1 and Zquotient now execute with unchanged integer/natural bodies
-and types. maxDiv uses the existing constructive ZdividesP rather than a
-classical decision, with a closed universal equality proof against its old
-definition. Paired fixtures and 2172 three-way cases test signed quotients,
+Pdiv, Zquotient and ZdividesP now transcribe their Coq bodies rather than
+reimplement them. Pdiv recurses on Coq's xH/xO/xI through a constructor view
+of the predecessor-encoded Positive, with the same option cases and
+Z0/Zpos/Zneg comparisons. Zquotient splits on signs and calls Pdiv. ZdividesP
+cases on m and tests Zquotient n m * m = n. Pdiv_correct is proved by
+induction on p, as in Coq. Closed theorems equate Pdiv with natural `/` and
+`%` and Zquotient with `Int.tdiv`. `@[csimp]` installs the natural-division
+path as Pdiv's compiled code. Kernel reduction and `#reduce` evaluate the
+transcriptions, including the bridge's 127-bit cases. oZ and oZ1 keep their
+source bodies. maxDiv uses ZdividesP rather than a classical decision, with a
+closed universal equality proof against its old definition. Paired fixtures
+and 2172 three-way cases test signed quotients,
 zero divisors, full optional records, smallest positives and bounded
 divisibility at negative/zero/one radices too. Five shared-program mutations
 are rejected independently. Other noncomputable declarations still need

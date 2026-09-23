@@ -156,9 +156,11 @@ integer algorithms are different layers in both provers. Some legacy integer
 helpers are unnecessarily marked, which is a real execution-capability gap.
 The September 20 probe found `Zquotient (-7) 3` returned −2 in Rocq and Lean
 kernel reduction, while Lean's `#eval` rejected its marker. That specific gap
-is now fixed: `Zquotient`, `Pdiv`, `oZ` and `oZ1` execute with unchanged bodies
-and types. `maxDiv` now uses constructive divisibility, with a universal Lean
-proof that its answer is unchanged. Arbitrary-real specifications remain as
+is now fixed: `Zquotient`, `Pdiv`, `oZ` and `oZ1` execute with their source
+types. `Pdiv`, `Zquotient` and `ZdividesP` now transcribe the Coq bodies, with
+closed equations to natural division and `Int.tdiv`; `@[csimp]` keeps `Pdiv`'s
+compiled code on natural division. `maxDiv` now uses constructive
+divisibility, with a universal Lean proof that its answer is unchanged. Arbitrary-real specifications remain as
 they were. Read
 [the explanation and concrete probes](COMPUTABLE_COMPARE_GUIDE.md#5-what-noncomputable-does-and-what-it-does-not-do).
 The original explanatory answer was read-only; these are subsequent tested fixes.
