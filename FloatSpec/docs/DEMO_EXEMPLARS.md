@@ -9,7 +9,10 @@ lake exe floatspec_demo
 The [demo source](../../scripts/fixtures/GuidedDemo.lean) is short enough to read
 in execution order. It uses the port's actual integer algorithms, not decimal
 approximations as an oracle. Every section has both a `decide +kernel` assertion
-and a compiled runtime check that throws on disagreement.
+and a compiled runtime check that throws on disagreement. Each computation's doc
+comment quotes, verbatim and with file and line numbers, the Flocq definitions
+(or the Rocq core definitions Flocq imports) that decide its answer, so the Lean
+line and the Coq original can be read side by side.
 This command builds and runs a native executable through Lake. For the direct
 Lean interpreter path, `lake env lean --run scripts/fixtures/GuidedDemo.lean`
 still runs the same source and checks. The old `floatspec` executable remains
