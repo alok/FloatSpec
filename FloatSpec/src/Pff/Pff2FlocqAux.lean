@@ -1182,8 +1182,7 @@ theorem pff_round_DN_is_round (beta : Int) [ValidRadix beta] (b : Fbound) (p : I
         isMin (beta:=beta) (toFboundSkel b) beta r p →
         isMin (beta:=beta) (toFboundSkel b) beta r q →
         _root_.F2R (beta:=beta) p = _root_.F2R (beta:=beta) q := by
-    simpa only [wp, PostCond.noThrow, pure, MinUniqueP_check,
-      Id.run, ULift.up_down, PredTrans.pure, PredTrans.apply, SPred.down_pure_nil, Int.cast_ofNat] using huniq True.intro
+    simpa only [Int.cast_ofNat] using huniq
   exact (huniq' r (RND_Min (beta:=beta) (toFboundSkel b) beta p r) q
     hmin hq_isMin).trans hqval
 
@@ -1245,8 +1244,7 @@ theorem pff_round_UP_is_round (beta : Int) [ValidRadix beta] (b : Fbound) (p : I
         isMax (beta:=beta) (toFboundSkel b) beta r p →
         isMax (beta:=beta) (toFboundSkel b) beta r q →
         _root_.F2R (beta:=beta) p = _root_.F2R (beta:=beta) q := by
-    simpa only [wp, PostCond.noThrow, pure, MaxUniqueP_check,
-      Id.run, ULift.up_down, PredTrans.pure, PredTrans.apply, SPred.down_pure_nil, Int.cast_ofNat] using huniq True.intro
+    simpa only [Int.cast_ofNat] using huniq
   exact (huniq' r (RND_Max (beta:=beta) (toFboundSkel b) beta p r) q
     hmax hq_isMax).trans hqval
 
@@ -2220,9 +2218,8 @@ theorem CanonicGeNormal (beta : Int) [ValidRadix beta] (b : Fbound) (p : Int) (f
       Int.natAbs_ne_zero.mpr (ne_of_gt hp_pos)
     have hmant := pSubnormal_absolu_min (beta := beta) beta b p.natAbs f
     have hmant' : |f.Fnum| < nNormMin beta p.natAbs := by
-      simpa only [wp, PostCond.noThrow, pure, pSubnormal_absolu_min_check,
-        Id.run, ULift.up_down, Fsubnormal', PredTrans.pure, PredTrans.apply, SPred.down_pure_nil, Int.cast_ofNat] using
-          hmant ⟨hsubnormal, hsubnormal, hprecision, hbeta, hpGives⟩
+      simpa only [Fsubnormal', Int.cast_ofNat] using
+          hmant hsubnormal hsubnormal hprecision hbeta hpGives
     have hp_nat : 1 ≤ p.natAbs := Nat.one_le_iff_ne_zero.mpr hprecision
     have hsub_cast : ((p.natAbs - 1 : Nat) : Int) = p - 1 := by
       calc
