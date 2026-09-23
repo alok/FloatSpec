@@ -15,8 +15,9 @@ docstring cites pinned anchors with the `{coq}` role, and sections 1, 2, 4, 5,
 and 6 quote the Rocq text in `coq` blocks, so hovering the definition in an
 editor shows the Coq next to the Lean. The quotes are not decoration: a citation
 that names no anchor fails to elaborate, and
-`scripts/validate_flocq_source_refs.py` compares every quote verbatim with the
-pinned checkout (see `FloatSpecRoles.lean`).
+`scripts/validate_flocq_source_refs.py` reads each quote back from the compiled
+docstring and compares it verbatim, through the end of the Rocq sentence, with
+the pinned source at the very line its link points to (see `FloatSpecRoles.lean`).
 This command builds and runs a native executable through Lake. For the direct
 Lean interpreter path, `lake env lean --run scripts/fixtures/GuidedDemo.lean`
 still runs the same source and checks. The old `floatspec` executable remains

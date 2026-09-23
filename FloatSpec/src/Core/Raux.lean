@@ -378,7 +378,7 @@ section IZR
 def IZR_le_lt_triple (m n p : Int) : (ℝ × ℝ × ℝ) :=
   ((m : ℝ), (n : ℝ), (p : ℝ))
 
-/-- Coq: {coq}`IZR_le_lt`
+/-- Coq: {lit}`IZR_le_lt`
 
     If m ≤ n < p as integers, then (m:ℝ) ≤ (n:ℝ) < (p:ℝ).
 -/
@@ -499,7 +499,7 @@ theorem sqrt_ge_0_spec (x : ℝ) :
 
   Lean (spec): If x ≤ 0 then sqrt x = 0.
 -/
-/-- Carrier for {coq}`sqrt_neg`: returns {lean}`Real.sqrt x`. -/
+/-- Carrier for {lit}`sqrt_neg`: returns {lean}`Real.sqrt x`. -/
 noncomputable def sqrt_neg_check (x : ℝ) : ℝ :=
   Real.sqrt x
 
@@ -560,7 +560,7 @@ section Squares
 
   Lean (spec): From x^2 ≤ y^2, deduce x ≤ |y|.
 -/
-/-- Carrier for {coq}`Rsqr_le_abs_0_alt`: returns the first argument. -/
+/-- Carrier for {lit}`Rsqr_le_abs_0_alt`: returns the first argument. -/
 noncomputable def Rsqr_le_abs_0_alt_val (x _y : ℝ) : ℝ :=
   x
 
@@ -685,7 +685,7 @@ noncomputable def Rcompare (x y : ℝ) : Int :=
         else if x = y then 0
         else 1)
 
-/-- Coq {coq}`Rcompare_prop`: inductive characterization of {lean}`Rcompare` codes. -/
+/-- Coq {lit}`Rcompare_prop`: inductive characterization of {lean}`Rcompare` codes. -/
 inductive Rcompare_prop (x y : ℝ) : Int → Prop where
   | Rcompare_Lt_ : x < y → Rcompare_prop x y (-1)
   | Rcompare_Eq_ : x = y → Rcompare_prop x y 0
@@ -693,13 +693,13 @@ inductive Rcompare_prop (x y : ℝ) : Int → Prop where
 
 export Rcompare_prop (Rcompare_Lt_ Rcompare_Eq_ Rcompare_Gt_)
 
-/-- Coq {coq}`Rcompare_prop_ind` (alias of the recursor). -/
+/-- Coq {lit}`Rcompare_prop_ind` (alias of the recursor). -/
 abbrev Rcompare_prop_ind := @Rcompare_prop.rec
 
-/-- Coq {coq}`Rcompare_prop_sind` (alias of the recursor). -/
+/-- Coq {lit}`Rcompare_prop_sind` (alias of the recursor). -/
 abbrev Rcompare_prop_sind := @Rcompare_prop.rec
 
-/-- Coq-style spec: {coq}`Rcompare_prop` holds for {lean}`Rcompare`. -/
+/-- Coq-style spec: {lit}`Rcompare_prop` holds for {lean}`Rcompare`. -/
 theorem Rcompare_prop_spec (x y : ℝ) : Rcompare_prop x y (Rcompare x y) := by
   by_cases hxy : x < y
   · simpa [Rcompare, hxy] using (Rcompare_Lt_ (x := x) (y := y) hxy)
@@ -1020,7 +1020,7 @@ theorem Rcompare_not_Gt (x y : ℝ) (hxy : x ≤ y) : Rcompare x y ≠ 1 := by
   rcases lt_or_eq_of_le hxy with h | h
   · simp [Rcompare, h]
   · subst y; simp [Rcompare]
-/-- Carrier for {coq}`Rcompare`: generic comparison. -/
+/-- Carrier for {lit}`Rcompare`: generic comparison. -/
 noncomputable def Rcompare_val (x y : ℝ) : Int := Rcompare x y
 
 /-- Coq: {lean}`Rcompare_Lt` — if {lean}`x < y` then the comparison yields the Lt code {lean}`-1`. -/
@@ -1533,20 +1533,20 @@ section BooleanComparisons
 noncomputable def Rle_bool (x y : ℝ) : Bool :=
   (decide (x ≤ y))
 
-/-- Coq {coq}`Rle_bool_prop`: inductive characterization of {lean}`Rle_bool`. -/
+/-- Coq {lit}`Rle_bool_prop`: inductive characterization of {lean}`Rle_bool`. -/
 inductive Rle_bool_prop (x y : ℝ) : Bool → Prop where
   | Rle_bool_true_ : x ≤ y → Rle_bool_prop x y true
   | Rle_bool_false_ : y < x → Rle_bool_prop x y false
 
 export Rle_bool_prop (Rle_bool_true_ Rle_bool_false_)
 
-/-- Coq {coq}`Rle_bool_prop_ind` (alias of the recursor). -/
+/-- Coq {lit}`Rle_bool_prop_ind` (alias of the recursor). -/
 abbrev Rle_bool_prop_ind := @Rle_bool_prop.rec
 
-/-- Coq {coq}`Rle_bool_prop_sind` (alias of the recursor). -/
+/-- Coq {lit}`Rle_bool_prop_sind` (alias of the recursor). -/
 abbrev Rle_bool_prop_sind := @Rle_bool_prop.rec
 
-/-- Coq-style spec: {coq}`Rle_bool_prop` holds for {lean}`Rle_bool`. -/
+/-- Coq-style spec: {lit}`Rle_bool_prop` holds for {lean}`Rle_bool`. -/
 theorem Rle_bool_prop_spec (x y : ℝ) : Rle_bool_prop x y (Rle_bool x y) := by
   by_cases hxy : x ≤ y
   · have h : Rle_bool_prop x y true := Rle_bool_true_ hxy
@@ -1601,20 +1601,20 @@ theorem Rle_bool_false (x y : ℝ) (hyx : y < x) :
 noncomputable def Rlt_bool (x y : ℝ) : Bool :=
   (x < y)
 
-/-- Coq {coq}`Rlt_bool_prop`: inductive characterization of {lean}`Rlt_bool`. -/
+/-- Coq {lit}`Rlt_bool_prop`: inductive characterization of {lean}`Rlt_bool`. -/
 inductive Rlt_bool_prop (x y : ℝ) : Bool → Prop where
   | Rlt_bool_true_ : x < y → Rlt_bool_prop x y true
   | Rlt_bool_false_ : y ≤ x → Rlt_bool_prop x y false
 
 export Rlt_bool_prop (Rlt_bool_true_ Rlt_bool_false_)
 
-/-- Coq {coq}`Rlt_bool_prop_ind` (alias of the recursor). -/
+/-- Coq {lit}`Rlt_bool_prop_ind` (alias of the recursor). -/
 abbrev Rlt_bool_prop_ind := @Rlt_bool_prop.rec
 
-/-- Coq {coq}`Rlt_bool_prop_sind` (alias of the recursor). -/
+/-- Coq {lit}`Rlt_bool_prop_sind` (alias of the recursor). -/
 abbrev Rlt_bool_prop_sind := @Rlt_bool_prop.rec
 
-/-- Coq-style spec: {coq}`Rlt_bool_prop` holds for {lean}`Rlt_bool`. -/
+/-- Coq-style spec: {lit}`Rlt_bool_prop` holds for {lean}`Rlt_bool`. -/
 theorem Rlt_bool_prop_spec (x y : ℝ) : Rlt_bool_prop x y (Rlt_bool x y) := by
   by_cases hxy : x < y
   · have h : Rlt_bool_prop x y true := Rlt_bool_true_ hxy
@@ -1661,7 +1661,7 @@ theorem Rlt_bool_false (x y : ℝ) (hyx : y ≤ x) :
 /-- Negation flips strict-less-than boolean
 
     Rlt_bool (-x) (-y) = Rlt_bool y x.
-    Direct consequence of {coq}`Rcompare_opp` in Coq; mirrors here.
+    Direct consequence of {lit}`Rcompare_opp` in Coq; mirrors here.
 -/
 theorem Rlt_bool_opp (x y : ℝ) :
     ⦃⌜True⌝⦄
@@ -1772,20 +1772,20 @@ theorem negb_Rle_bool_spec (x y : ℝ) :
 noncomputable def Req_bool (x y : ℝ) : Bool :=
   (x = y)
 
-/-- Coq {coq}`Req_bool_prop`: inductive characterization of {lean}`Req_bool`. -/
+/-- Coq {lit}`Req_bool_prop`: inductive characterization of {lean}`Req_bool`. -/
 inductive Req_bool_prop (x y : ℝ) : Bool → Prop where
   | Req_bool_true_ : x = y → Req_bool_prop x y true
   | Req_bool_false_ : x ≠ y → Req_bool_prop x y false
 
 export Req_bool_prop (Req_bool_true_ Req_bool_false_)
 
-/-- Coq {coq}`Req_bool_prop_ind` (alias of the recursor). -/
+/-- Coq {lit}`Req_bool_prop_ind` (alias of the recursor). -/
 abbrev Req_bool_prop_ind := @Req_bool_prop.rec
 
-/-- Coq {coq}`Req_bool_prop_sind` (alias of the recursor). -/
+/-- Coq {lit}`Req_bool_prop_sind` (alias of the recursor). -/
 abbrev Req_bool_prop_sind := @Req_bool_prop.rec
 
-/-- Coq-style spec: {coq}`Req_bool_prop` holds for {lean}`Req_bool`. -/
+/-- Coq-style spec: {lit}`Req_bool_prop` holds for {lean}`Req_bool`. -/
 theorem Req_bool_prop_spec (x y : ℝ) : Req_bool_prop x y (Req_bool x y) := by
   by_cases hxy : x = y
   · have h : Req_bool_prop x y true := Req_bool_true_ hxy
@@ -1856,7 +1856,7 @@ theorem eqb_sym_spec (a b : Bool) :
   -- Boolean equality is symmetric
   exact Bool.beq_comm
 
-/-- Boolean equality test wrapper for {coq}`eqb` specs. -/
+/-- Boolean equality test wrapper for {lit}`eqb` specs. -/
 def eqb_check (a b : Bool) : Bool :=
   (a == b)
 
@@ -2030,7 +2030,7 @@ end CondAbsMulAdd
 
 section CondRltBool
 
-/-- Coq {coq}`cond_Ropp_Rlt_bool`: applying the sign from {lean}`Rlt_bool m 0`
+/-- Coq {lit}`cond_Ropp_Rlt_bool`: applying the sign from {lean}`Rlt_bool m 0`
     turns {lean}`m` into its absolute value. -/
 theorem cond_Ropp_Rlt_bool (m : ℝ) :
     cond_Ropp (Rlt_bool m 0) m = |m| := by
@@ -2061,7 +2061,7 @@ theorem cond_Ropp_Rlt_bool_spec (b : Bool) (x y : ℝ) :
   · -- When b = false, the inequality is unchanged
     simp [hb]
 
-/-- Coq {coq}`Rlt_bool_cond_Ropp`: a positive magnitude has sign flag {lean}`sx`
+/-- Coq {lit}`Rlt_bool_cond_Ropp`: a positive magnitude has sign flag {lean}`sx`
     after conditional negation by {lean}`sx`. -/
 theorem Rlt_bool_cond_Ropp (x : ℝ) (sx : Bool) (hx : 0 < x) :
     Rlt_bool (cond_Ropp sx x) 0 = sx := by
@@ -2808,7 +2808,7 @@ theorem Zfloor_div (x y : Int) (hy : y ≠ 0) :
       rw [← hf, Int.neg_fdiv_neg]
     simpa using h.trans hq
 
-/-- Coq lemma {coq}`Ztrunc_div`: for integers x and y with y ≠ 0, {coq}`Ztrunc` ({coq}`IZR` x / {coq}`IZR` y) equals the integer quotient; in Lean we state it as {lean}`Ztrunc ((x : ℝ) / (y : ℝ)) = Int.tdiv x y`. -/
+/-- Coq lemma {lit}`Ztrunc_div`: for integers x and y with y ≠ 0, {lit}`Ztrunc` ({lit}`IZR` x / {lit}`IZR` y) equals the integer quotient; in Lean we state it as {lean}`Ztrunc ((x : ℝ) / (y : ℝ)) = Int.tdiv x y`. -/
 theorem Ztrunc_div_nonneg_pos_payload (x y : Int) :
     (hxy : 0 ≤ x ∧ 0 < y) →
     ⦃⌜True⌝⦄
@@ -2899,7 +2899,7 @@ end IntDiv
 -- Comparisons against floor/ceil bounds
 section CompareIntBounds
 
-/-- Coq theorem {coq}`Rcompare_floor_ceil_middle`: in the non-integral case,
+/-- Coq theorem {lit}`Rcompare_floor_ceil_middle`: in the non-integral case,
     comparing the fractional part of {lean}`x` with {lean}`1 / 2` is the same
     as comparing it with the distance from {lean}`x` to its ceiling. -/
 theorem Rcompare_floor_ceil_middle (x : ℝ)
@@ -3035,7 +3035,7 @@ theorem Rcompare_floor_ceil_middle_spec (x : ℝ) :
     Rcompare x ((Int.ceil x : Int) : ℝ)
   exact this
 
-/-- Coq theorem {coq}`Rcompare_ceil_floor_middle`: in the non-integral case,
+/-- Coq theorem {lit}`Rcompare_ceil_floor_middle`: in the non-integral case,
     comparing the distance from {lean}`x` to its ceiling with {lean}`1 / 2`
     is the same as comparing it with the fractional part of {lean}`x`. -/
 theorem Rcompare_ceil_floor_middle (x : ℝ)
@@ -3074,7 +3074,7 @@ theorem Rcompare_ceil_floor_middle (x : ℝ)
     _ = Rcompare ((Zceil x : ℝ) - x) (x - (Zfloor x : ℝ)) := by
           rw [hdist]
 
-/-- Carrier for {coq}`Rcompare_ceil_floor_middle`: checks ceiling/floor comparison codes. -/
+/-- Carrier for {lit}`Rcompare_ceil_floor_middle`: checks ceiling/floor comparison codes. -/
 noncomputable def Rcompare_ceil_floor_middle_check (x : ℝ) : (Int × Int) :=
   let f := Zfloor x
   let c := Zceil x
@@ -3510,7 +3510,7 @@ theorem bpow_unique (beta : Int) (x : ℝ) (e1 e2 : Int)
   exact (bpow_unique_from_abs_payload beta x e1 e2 hβ
     (by simpa [hxabs] using h1) (by simpa [hxabs] using h2)) True.intro
 
-/-- Carrier for {coq}`sqrt_bpow`: square-root law on even exponents. -/
+/-- Carrier for {lit}`sqrt_bpow`: square-root law on even exponents. -/
 noncomputable def sqrt_bpow_check (beta e : Int) : (ℝ × ℝ) :=
   ((Real.sqrt ((beta : ℝ) ^ (2 * e)), (beta : ℝ) ^ e))
 
@@ -3795,17 +3795,17 @@ end LPO
 -/
 section Mag
 
-/-- Coq {coq}`mag_prop`: witness record for a magnitude exponent. -/
+/-- Coq {lit}`mag_prop`: witness record for a magnitude exponent. -/
 structure mag_prop (beta : Int) (x : ℝ) : Type where
   /-- The exponent witnessing the magnitude bound. -/
   mag_val : Int
   /-- Coq bound: if x ≠ 0 then β^(e-1) ≤ |x| < β^e. -/
   mag_spec : x ≠ 0 → bpow beta (mag_val - 1) ≤ |x| ∧ |x| < bpow beta mag_val
 
-/-- Coq {coq}`mag_val` projection. -/
+/-- Coq {lit}`mag_val` projection. -/
 abbrev mag_val {beta : Int} {x : ℝ} (m : mag_prop beta x) : Int := m.mag_val
 
-/-- Coq {coq}`Build_mag_prop` constructor alias. -/
+/-- Coq {lit}`Build_mag_prop` constructor alias. -/
 abbrev Build_mag_prop {beta : Int} {x : ℝ} (e : Int)
     (h : x ≠ 0 → bpow beta (e - 1) ≤ |x| ∧ |x| < bpow beta e) : mag_prop beta x :=
   { mag_val := e, mag_spec := h }
@@ -3813,7 +3813,7 @@ abbrev Build_mag_prop {beta : Int} {x : ℝ} (e : Int)
 
 /-- Magnitude of a real number with respect to base {lit}`beta`.
 
-    In Coq, {coq}`mag` is characterized by {coq}`bpow` bounds: for nonzero {lit}`x`,
+    In Coq, {lit}`mag` is characterized by {lit}`bpow` bounds: for nonzero {lit}`x`,
     {lit}`bpow (e - 1) ≤ |x| < bpow e`, where {lit}`e = mag x`.
     We model it as a pure computation and wrap it in {lean}`Id` only in specs.
 
@@ -4076,7 +4076,7 @@ theorem mag_le (beta : Int) (x y : ℝ)
 
 /-- If {lit}`0 < |x| < bpow e` then {lit}`mag x ≤ e`
 
-    For nonzero inputs this port computes {coq}`mag` as the floor of the
+    For nonzero inputs this port computes {lit}`mag` as the floor of the
     base-beta logarithm plus one. The strict bound {lit}`|x| < (beta : ℝ) ^ e`
     implies {lit}`log_beta |x| < e`, hence {lit}`mag x ≤ e`.
     This corrects the direction compared to an earlier draft. -/

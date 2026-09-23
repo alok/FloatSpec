@@ -5,8 +5,10 @@ The default builds/imports FloatSpec and reads its persistent source metadata.
 --lean-dir is a legacy textual heuristic, not a compiler-backed coverage gate.
 
 With compiled metadata it also checks the Flocq file list behind the `{coq_file}`
-docstring role, and that every `coq` quote block in a Lean file reproduces the
-pinned source verbatim, starting at its anchored line.
+docstring role, and every `coq` docstring quote as Lean compiled it: against the
+exact anchor its rendered link names, verbatim from the anchored line to the end
+of a Rocq sentence. Every line of a Lean file that opens a `coq` fence must have
+compiled to such a quote, so none escapes the check.
 """
 
 from __future__ import annotations
@@ -15,6 +17,7 @@ import argparse
 import json
 import re
 from pathlib import Path
+import tempfile
 
 from flocq_bridge import ROOT, run, verify_reference
 
@@ -30,19 +33,21 @@ COQ_DECL = re.compile(
 )
 
 
-# A docstring code block quoting Flocq: ```coq ANCHOR ... ``` (see FloatSpecRoles.lean).
-QUOTE = re.compile(
-    r"^(?P<indent>[ \t]*)(?P<fence>`{3,})coq(?:[ \t]+(?P<anchor>[^\s`]+))?[ \t]*\n"
-    r"(?P<body>.*?)^(?P=indent)(?P=fence)[ \t]*$", re.MULTILINE | re.DOTALL)
-QUOTE_OPENER = re.compile(r"^[ \t]*`{3,}coq(?:[ \t]+[^\s`]+)?[ \t]*$", re.MULTILINE)
-# A doc comment that `#guard_msgs` expects to be rejected, possibly under `set_option ... in`.
-EXPECTED_FAILURE = re.compile(r"#guard_msgs[^\n]*\bin\s*(?:set_option[^\n]*\bin\s*)*/--$")
+# A line opening a fenced code block whose info string starts with the word `coq`, after any
+# blockquote or list markers: the form every `coq` quote block takes in a docstring (see
+# FloatSpecRoles.lean). It deliberately over-approximates what Lean's docstring parser accepts, so
+# that no quote-like block escapes the check below.
+QUOTE_FENCE = re.compile(
+    r"^[ \t]*(?:(?:>|[*+-](?=[ \t])|[0-9]+[.)](?=[ \t]))[ \t]*)*(?:`{3,}|~{3,})[ \t]*coq"
+    r"(?![A-Za-z0-9_'])", re.MULTILINE)
+# The line `run_cmd FloatSpec.Roles.printMainModuleQuotes` prints; see FloatSpecRoles.lean.
+QUOTES_MARKER = "FLOCQ_QUOTES "
 
 
 def tracked_rocq_sources(flocq_dir: Path) -> list[str]:
-    """Rocq sources committed at the checkout's commit. `./configure` also generates an
+    """Rocq sources in the tree of the checkout's commit. `./configure` also generates an
     untracked `src/Version.v`, which has no pinned URL and so is not a citable file."""
-    listed = run(["git", "-C", str(flocq_dir), "ls-files", "--", "src"])
+    listed = run(["git", "-C", str(flocq_dir), "ls-tree", "-r", "--name-only", "HEAD", "--", "src"])
     return sorted(path for path in listed.splitlines() if path.endswith(".v"))
 
 
@@ -61,56 +66,127 @@ def lean_files(root: Path) -> list[Path]:
                   if not {".lake", "Deps", ".git"} & set(path.relative_to(root).parts))
 
 
-def validate_quotes(files: list[Path], references: list[dict], flocq_dir: Path,
-                    root: Path = ROOT) -> tuple[list[str], int]:
-    """Check each `coq` quote block against the pinned source at its anchor.
+def quote_fence_lines(text: str) -> list[int]:
+    """The 1-based lines of `text` that open a `coq` fenced block."""
+    return [text.count("\n", 0, match.start()) + 1 for match in QUOTE_FENCE.finditer(text)]
 
-    An anchor names a Lean declaration (full or namespace suffix) or a Coq name, as the
-    Lean role does; the quote must equal the source lines starting at one such anchor.
-    Blocks inside a doc comment that `#guard_msgs` expects to fail are skipped.
+
+def module_file(module: str, root: Path = ROOT) -> Path:
+    """The source file of a library module."""
+    return root / (module.replace(".", "/") + ".lean")
+
+
+def standalone_quotes(path: Path) -> list[dict]:
+    """The compiled `coq` quotes of a Lean file outside the library, such as a fixture.
+
+    Elaborates a copy of the file with a final command that prints the quotes its docstrings
+    stored, each with the anchor Lean resolved and the line of its fence.
+    """
+    with tempfile.TemporaryDirectory(prefix="flocq-quotes-") as directory:
+        copy = Path(directory) / path.name
+        copy.write_text(path.read_text(encoding="utf-8") +
+                        "\n\nrun_cmd FloatSpec.Roles.printMainModuleQuotes\n", encoding="utf-8")
+        output = run(["lake", "env", "lean", "-DElab.async=false", str(copy)], timeout=3600)
+    printed = [line for line in output.splitlines() if line.startswith(QUOTES_MARKER)]
+    if len(printed) != 1:
+        raise ValueError(f"{path}: expected one {QUOTES_MARKER.strip()} line, got {len(printed)}")
+    return json.loads(printed[0].removeprefix(QUOTES_MARKER))
+
+
+def ends_sentence(line: str) -> bool:
+    """Does this line of Rocq source end a sentence (a vernacular command)?"""
+    stripped = line.rstrip()
+    return stripped.endswith(".") and not stripped.endswith("..")
+
+
+def check_quote(quote: dict, source: list[str]) -> str | None:
+    """Why a compiled quote misstates the pinned source it links to, if it does.
+
+    The quote must reproduce `source` verbatim from the anchored line, and end where a Rocq
+    sentence ends, so it cannot silently drop the rest of a statement. A final line `...`
+    marks a quote as deliberately shortened; the lines before it must still be verbatim.
+    """
+    where = f"{quote['path']}:{quote['line']}"
+    body = [line.rstrip() for line in quote["code"].removesuffix("\n").split("\n")]
+    shortened = len(body) > 1 and body[-1].strip() == "..."
+    if shortened:
+        body = body[:-1]
+    start = quote["line"] - 1
+    pinned = [line.rstrip() for line in source[start:start + len(body)]]
+    if body != pinned:
+        return (f"is not verbatim {where}; the pinned source reads:\n  " +
+                "\n  ".join(pinned or ["<nothing: the file is missing or shorter>"]))
+    if not shortened and not ends_sentence(body[-1]):
+        end = next((i for i in range(start + len(body), len(source)) if ends_sentence(source[i])),
+                   None)
+        until = f"through line {end + 1}" if end is not None else "to the end of the sentence"
+        return (f"stops inside the Rocq sentence that begins at {where}; quote it {until}, "
+                f"or end the quote with a line `...` to mark it shortened")
+    return None
+
+
+def validate_quotes(files: list[Path], compiled: dict[Path, list[dict]], references: list[dict],
+                    flocq_dir: Path, root: Path = ROOT) -> tuple[list[str], int]:
+    """Check every `coq` quote as Lean compiled it, and that every fence in `files` compiled.
+
+    `compiled` maps a file to the quotes its docstrings stored. Each quote carries the anchor
+    Lean resolved, so it is compared with exactly the source its rendered link points at.
     Returns the failures and the number of verified quotes.
     """
     failures: list[str] = []
     checked = 0
+    anchors = {(ref["path"], ref["line"], ref["name"]) for ref in references}
     sources: dict[str, list[str]] = {}
     for file in files:
-        text = file.read_text(encoding="utf-8")
         where_file = file.relative_to(root) if file.is_relative_to(root) else file
-        blocks = list(QUOTE.finditer(text))
-        if len(blocks) != len(QUOTE_OPENER.findall(text)):
-            failures.append(f"{where_file}: a ```coq block is unterminated or malformed")
-        for block in blocks:
-            where = f"{where_file}:{text.count(chr(10), 0, block.start()) + 1}"
-            opener = text.rfind("/--", 0, block.start())
-            if opener >= 0 and EXPECTED_FAILURE.search(text[max(0, opener - 400):opener + 3]):
+        fences = set(quote_fence_lines(file.read_text(encoding="utf-8")))
+        quotes = compiled.get(file, [])
+        stored = {quote["lean_line"] for quote in quotes}
+        for line in sorted(fences - stored):
+            failures.append(
+                f"{where_file}:{line}: this ```coq block is not a compiled Flocq quote, so "
+                f"nothing checks it. Quotes are elaborated only in Verso docstrings: put "
+                f"`set_option doc.verso true in` before the declaration (and rebuild). A test of "
+                f"a rejected quote must build the block inside a string.")
+        for line in sorted(stored - fences):
+            failures.append(f"{where_file}:{line}: a compiled Flocq quote has no ```coq fence "
+                            f"on this line; the build is stale")
+        for quote in quotes:
+            where = f"{where_file}:{quote['lean_line']}: ```coq {quote['cited']}"
+            if (quote["path"], quote["line"], quote["coq_name"]) not in anchors:
+                failures.append(f"{where} resolved to {quote['path']}:{quote['line']}, "
+                                f"which is not a compiled anchor")
                 continue
-            anchor = block["anchor"]
-            if not anchor:
-                failures.append(f"{where}: ```coq quote names no Flocq anchor")
-                continue
-            indent = block["indent"]
-            body = block["body"].removesuffix("\n").split("\n")
-            quote = [line.removeprefix(indent).rstrip() for line in body]
-            targets = sorted({(ref["path"], ref["line"]) for ref in references
-                              if anchor in (ref["name"], ref["lean_name"])
-                              or ref["lean_name"].endswith("." + anchor)})
-            if not targets:
-                failures.append(f"{where}: ```coq {anchor} names no compiled Flocq anchor")
-                continue
-            for path in {path for path, _ in targets} - sources.keys():
-                coq_file = flocq_dir / path
-                sources[path] = (coq_file.read_text(encoding="utf-8").splitlines()
-                                 if coq_file.is_file() else [])
-            pinned = {(path, line_no): [line.rstrip() for line in
-                                        sources[path][line_no - 1:line_no - 1 + len(quote)]]
-                      for path, line_no in targets}
-            if quote in pinned.values():
-                checked += 1
+            if quote["path"] not in sources:
+                coq_file = flocq_dir / quote["path"]
+                sources[quote["path"]] = (coq_file.read_text(encoding="utf-8").splitlines()
+                                          if coq_file.is_file() else [])
+            problem = check_quote(quote, sources[quote["path"]])
+            if problem:
+                failures.append(f"{where} {problem}")
             else:
-                path, line_no = targets[0]
-                failures.append(f"{where}: ```coq {anchor} is not verbatim {path}:{line_no}; "
-                                f"the pinned source reads:\n  " + "\n  ".join(pinned[targets[0]]))
+                checked += 1
     return failures, checked
+
+
+def compiled_quotes(files: list[Path], manifest: dict,
+                    root: Path = ROOT) -> tuple[dict[Path, list[dict]], list[str]]:
+    """The compiled quotes of `files`: the library's from `manifest`, and any other file's
+    that opens a `coq` fence by elaborating it. Returns them with any export failures."""
+    library = {module_file(module, root) for module in manifest["quote_modules"]}
+    compiled: dict[Path, list[dict]] = {}
+    for quote in manifest["quotes"]:
+        compiled.setdefault(module_file(quote["module"], root), []).append(quote)
+    failures: list[str] = []
+    for file in files:
+        if file in library or not quote_fence_lines(file.read_text(encoding="utf-8")):
+            continue
+        try:
+            compiled[file] = standalone_quotes(file)
+        except (RuntimeError, ValueError) as error:
+            failures.append(f"{file.relative_to(root)}: could not read its compiled quotes "
+                            f"(does it import FloatSpecRoles?): {error}")
+    return compiled, failures
 
 
 def validate_references(references: list[dict], flocq_dir: Path) -> list[str]:
@@ -173,9 +249,16 @@ def main() -> int:
                                               tracked_rocq_sources(args.flocq_dir))
         elif not args.manifest:
             failures.append("compiled metadata lacks the {coq_file} source-file list")
-        quote_failures, quotes = validate_quotes(lean_files(ROOT), references, args.flocq_dir)
-        failures += quote_failures
-        extra = f" and {quotes} verbatim `coq` docstring quotes"
+        if "quotes" in manifest:
+            files = lean_files(ROOT)
+            compiled, export_failures = compiled_quotes(files, manifest)
+            quote_failures, quotes = validate_quotes(files, compiled, references, args.flocq_dir)
+            failures += export_failures + quote_failures
+            extra = f" and {quotes} verbatim `coq` docstring quotes"
+        elif not args.manifest:
+            failures.append("compiled metadata lacks the docstring quotes")
+        else:
+            extra = " (the supplied metadata has no docstring quotes; quotes not checked)"
     if failures:
         for failure in failures:
             print(failure)
