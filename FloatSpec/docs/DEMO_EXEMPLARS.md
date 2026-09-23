@@ -6,10 +6,15 @@ Start here, then read [the linear guide](READING_GUIDE.md). From the repository 
 lake exe floatspec_demo
 ```
 
-The [demo source](../../scripts/fixtures/GuidedDemo.lean) is short enough to read
-in execution order. It uses the port's actual integer algorithms, not decimal
+The [demo source](../../scripts/fixtures/GuidedDemo.lean) reads in execution
+order; roughly a third of it is Lean, a third quoted Coq, and a third
+explanation. It uses the port's actual integer algorithms, not decimal
 approximations as an oracle. Every section has both a `decide +kernel` assertion
-and a compiled runtime check that throws on disagreement.
+and a compiled runtime check that throws on disagreement. Each example quotes
+(or points back to), verbatim and with file and line numbers, the Flocq
+definitions (or the Rocq core definitions Flocq imports) that decide its
+answer, so the Lean line and the Coq original can be read side by side. The
+file header explains the Coq notation the quotes use.
 This command builds and runs a native executable through Lake. For the direct
 Lean interpreter path, `lake env lean --run scripts/fixtures/GuidedDemo.lean`
 still runs the same source and checks. The old `floatspec` executable remains
@@ -19,7 +24,8 @@ a no-op launch smoke test; it is not this demo.
 
 Binary32 addition gives `1.5 + 2.25 = 3.75`, with result word `0x40700000`.
 Start with `b32_plus` in [Bits](../src/IEEE754/Bits.lean): it delegates to the
-generic IEEE operation in [Binary](../src/IEEE754/Binary.lean). Its finite path
+generic IEEE operation `Binary.Bplus`, defined under `namespace Binary` in
+[BinarySingleNaN](../src/IEEE754/BinarySingleNaN.lean). Its finite path
 aligns integer mantissas, computes, and rounds. The theorem beside an operation
 states its interpretation; executing a particular input is a different check.
 
