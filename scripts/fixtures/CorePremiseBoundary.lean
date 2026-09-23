@@ -2,9 +2,8 @@ import FloatSpec.src.Core.Ulp
 
 /-! Typed clients retain the pre-repair Lean conclusions and parameters, removing
 only the Valid_exp binder absent from the paired compiled Rocq source type.
-Clients of legacy Hoare-triple declarations are stated as direct propositions:
-the precondition becomes the trailing hypothesis and the postcondition is
-applied to the computed value. They supplement the structural premise guards;
+The radix bound {lit}`1 < beta` comes from {lit}`ValidRadix` unless a declaration
+still takes it explicitly. They supplement the structural premise guards;
 they are not automatic proofs of cross-language semantic equivalence. -/
 
 namespace FloatSpec.Test.CorePremiseBoundary
@@ -28,7 +27,6 @@ theorem Ulp_negligible_exp_spec_prime_unrestricted :
 theorem Ulp_succ_le_plus_ulp_unrestricted :
     ∀ (beta : ℤ) [inst : ValidRadix beta] (fexp : ℤ → ℤ)
   [FloatSpec.Core.Ulp.Monotone_exp fexp] (x : ℝ),
-  1 < beta →
     FloatSpec.Core.Ulp.succ beta fexp x ≤ x + FloatSpec.Core.Ulp.ulp beta fexp x := @FloatSpec.Core.Ulp.succ_le_plus_ulp
 
 #print axioms Ulp_succ_le_plus_ulp_unrestricted
@@ -37,7 +35,7 @@ theorem Ulp_succ_le_plus_ulp_unrestricted :
 theorem Ulp_pred_lt_le_unrestricted :
     ∀ (beta : ℤ) [inst : ValidRadix beta] (fexp : ℤ → ℤ)
   (x y : ℝ),
-  x ≠ 0 → x ≤ y → 1 < beta → FloatSpec.Core.Ulp.pred beta fexp x < y := @FloatSpec.Core.Ulp.pred_lt_le
+  x ≠ 0 → x ≤ y → FloatSpec.Core.Ulp.pred beta fexp x < y := @FloatSpec.Core.Ulp.pred_lt_le
 
 #print axioms Ulp_pred_lt_le_unrestricted
 
@@ -45,7 +43,7 @@ theorem Ulp_pred_lt_le_unrestricted :
 theorem Ulp_succ_gt_ge_unrestricted :
     ∀ (beta : ℤ) [inst : ValidRadix beta] (fexp : ℤ → ℤ)
   (x y : ℝ),
-  y ≠ 0 → x ≤ y → 1 < beta → x < FloatSpec.Core.Ulp.succ beta fexp y := @FloatSpec.Core.Ulp.succ_gt_ge
+  y ≠ 0 → x ≤ y → x < FloatSpec.Core.Ulp.succ beta fexp y := @FloatSpec.Core.Ulp.succ_gt_ge
 
 #print axioms Ulp_succ_gt_ge_unrestricted
 
@@ -56,7 +54,6 @@ theorem Ulp_pred_pos_plus_ulp_aux1_unrestricted :
   0 < x →
     FloatSpec.Core.Generic_fmt.generic_format beta fexp x →
       x ≠ ↑beta ^ (FloatSpec.Core.Raux.mag beta x - 1) →
-        1 < beta →
           x - FloatSpec.Core.Ulp.ulp beta fexp x +
               FloatSpec.Core.Ulp.ulp beta fexp (x - FloatSpec.Core.Ulp.ulp beta fexp x) = x := @FloatSpec.Core.Ulp.pred_pos_plus_ulp_aux1
 
@@ -69,7 +66,7 @@ theorem Ulp_id_p_ulp_le_bpow_unrestricted :
   0 < x →
     FloatSpec.Core.Generic_fmt.generic_format beta fexp x →
       x < ↑beta ^ e →
-        1 < beta → x + FloatSpec.Core.Ulp.ulp beta fexp x ≤ ↑beta ^ e := @FloatSpec.Core.Ulp.id_p_ulp_le_bpow
+        x + FloatSpec.Core.Ulp.ulp beta fexp x ≤ ↑beta ^ e := @FloatSpec.Core.Ulp.id_p_ulp_le_bpow
 
 #print axioms Ulp_id_p_ulp_le_bpow_unrestricted
 
@@ -79,7 +76,6 @@ theorem Ulp_ulp_succ_pos_unrestricted :
   (x : ℝ),
   FloatSpec.Core.Generic_fmt.generic_format beta fexp x →
     0 < x →
-      1 < beta →
         FloatSpec.Core.Ulp.ulp beta fexp (FloatSpec.Core.Ulp.succ beta fexp x) =
             FloatSpec.Core.Ulp.ulp beta fexp x ∨
           FloatSpec.Core.Ulp.succ beta fexp x = ↑beta ^ FloatSpec.Core.Raux.mag beta x := @FloatSpec.Core.Ulp.ulp_succ_pos
@@ -102,11 +98,7 @@ theorem Ulp_id_m_ulp_ge_bpow_unrestricted :
   FloatSpec.Core.Generic_fmt.generic_format beta fexp x →
     x ≠ FloatSpec.Core.Ulp.ulp beta fexp x →
       ↑beta ^ e < x →
-        1 < beta → ↑beta ^ e ≤ x - FloatSpec.Core.Ulp.ulp beta fexp x :=
-  -- The legacy declaration still carries a `True` precondition; once
-  -- `id_m_ulp_ge_bpow` is stated directly this becomes `@...id_m_ulp_ge_bpow`.
-  fun beta _ fexp x e Fx hne hgt hβ =>
-    FloatSpec.Core.Ulp.id_m_ulp_ge_bpow beta fexp x e Fx hne hgt hβ trivial
+        1 < beta → ↑beta ^ e ≤ x - FloatSpec.Core.Ulp.ulp beta fexp x := @FloatSpec.Core.Ulp.id_m_ulp_ge_bpow
 
 #print axioms Ulp_id_m_ulp_ge_bpow_unrestricted
 

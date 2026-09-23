@@ -602,7 +602,7 @@ private theorem DN_UP_gap_of_not_format
       round_UP_to_format beta fexp x hβ =
         round_DN_to_format beta fexp x hβ + FloatSpec.Core.Ulp.ulp beta fexp x := by
     simpa [Id.run, bind, pure]
-      using hgap True.intro
+      using hgap
   simpa [hxd, hxu] using hgap_run
 
 /-- Same-canonical-exponent arithmetic: if two canonical endpoints are separated

@@ -3387,7 +3387,7 @@ theorem Bsucc_correct_compat (x : Binary754 prec emax)
         (FloatSpec.Core.Ulp.succ 2 (FLT_exp (3 - emax - prec) prec) (B2R x)) := by
       have h := FloatSpec.Core.Ulp.generic_format_succ 2 (FLT_exp (3 - emax - prec) prec)
         (B2R x) hgf_B2R (by norm_num : (1 : Int) < 2)
-      simpa [wp, PostCond.noThrow, Id.run, pure] using h trivial
+      simpa [wp, PostCond.noThrow, Id.run, pure] using h
     -- Apply FF2R_real_to_FullFloat
     exact FF2R_real_to_FullFloat _ _ hgf_succ
   · -- Case: overflow (if-condition is false)
@@ -3467,7 +3467,7 @@ theorem Bpred_correct_compat (x : Binary754 prec emax)
         (FloatSpec.Core.Ulp.pred 2 (FLT_exp (3 - emax - prec) prec) (B2R x)) := by
       have h := FloatSpec.Core.Ulp.generic_format_pred 2 (FLT_exp (3 - emax - prec) prec)
         (B2R x) hgf_B2R (by norm_num : (1 : Int) < 2)
-      simpa [wp, PostCond.noThrow, Id.run, pure] using h trivial
+      simpa [wp, PostCond.noThrow, Id.run, pure] using h
     -- Apply FF2R_real_to_FullFloat
     exact FF2R_real_to_FullFloat _ _ hgf_pred
   · -- Case: underflow (if-condition is false)

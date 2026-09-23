@@ -450,7 +450,7 @@ theorem sqrt_error_FLX_N (h_gt1 : 1 < prec) (x : ℝ)
             FloatSpec.Core.Ulp.ulp beta fexp (Real.sqrt x) = (beta : ℝ) ^ e := by
           have htrip := FloatSpec.Core.Ulp.ulp_neq_0
             (beta := beta) (fexp := fexp) (x := Real.sqrt x) hsqrt_ne
-          simpa [Id.run, pure, e, he] using htrip True.intro
+          simpa [Id.run, pure, e, he] using htrip
         have hpow_le_abs :
             (beta : ℝ) ^ e ≤ |Real.sqrt x| * (beta : ℝ) ^ (1 - prec) := by
           have htrip := FloatSpec.Core.FLX.ulp_FLX_le
@@ -615,7 +615,7 @@ theorem sqrt_error_FLX_N (h_gt1 : 1 < prec) (x : ℝ)
           FloatSpec.Core.Ulp.ulp beta fexp r = (beta : ℝ) ^ fr.Fexp := by
         have htrip := FloatSpec.Core.Ulp.ulp_neq_0
           (beta := beta) (fexp := fexp) (x := r) hr0
-        simpa [fr, Id.run, pure] using htrip True.intro
+        simpa [fr, Id.run, pure] using htrip
       have herr_half :
           |r - Real.sqrt x| ≤ (1 / 2 : ℝ) * (beta : ℝ) ^ fr.Fexp := by
         have htrip := FloatSpec.Core.Ulp.error_le_half_ulp_round
@@ -836,7 +836,7 @@ lemma sqrt_error_N_FLX_aux2_without_prec_gt_one_payload (x : ℝ)
       have htrip := FloatSpec.Core.Ulp.succ_le_lt
         (beta := beta) (fexp := FLX_exp prec) (x := 1) (y := x)
         hF1 hx hx_gt1
-      simpa [hsucc1, Id.run, pure] using htrip hβ
+      simpa [hsucc1, Id.run, pure] using htrip
     rcases le_or_gt x (1 + 2 * u_ro beta prec) with hx_le_mid | hx_gt_mid
     · left
       exact le_antisymm hx_le_mid hfirst_lower
@@ -846,7 +846,7 @@ lemma sqrt_error_N_FLX_aux2_without_prec_gt_one_payload (x : ℝ)
           (beta := beta) (fexp := FLX_exp prec) (x := 1) hF1 hβ
         have hrun : generic_format beta (FLX_exp prec)
             (FloatSpec.Core.Ulp.succ beta (FLX_exp prec) 1) := by
-          simpa [Id.run, pure] using htrip trivial
+          simpa [Id.run, pure] using htrip
         simpa [hsucc1] using hrun
       have hsucc_mid_le_x :
           FloatSpec.Core.Ulp.succ beta (FLX_exp prec) (1 + 2 * u_ro beta prec) ≤ x := by
@@ -854,7 +854,7 @@ lemma sqrt_error_N_FLX_aux2_without_prec_gt_one_payload (x : ℝ)
           (beta := beta) (fexp := FLX_exp prec)
           (x := 1 + 2 * u_ro beta prec) (y := x)
           hmid_fmt hx hx_gt_mid
-        simpa [Id.run, pure] using htrip hβ
+        simpa [Id.run, pure] using htrip
       have hulp1 : FloatSpec.Core.Ulp.ulp beta (FLX_exp prec) 1 =
           2 * u_ro beta prec := by
         simpa [h2u] using FloatSpec.Core.FLX.ulp_FLX_1 (prec := prec) (beta := beta)
@@ -872,7 +872,7 @@ lemma sqrt_error_N_FLX_aux2_without_prec_gt_one_payload (x : ℝ)
           (by norm_num : (0 : ℝ) ≤ 1) hmid_ge1 hβ
         have hrun : FloatSpec.Core.Ulp.ulp beta (FLX_exp prec) 1 ≤
             FloatSpec.Core.Ulp.ulp beta (FLX_exp prec) (1 + 2 * u_ro beta prec) := by
-          simpa [Id.run, pure] using htrip trivial
+          simpa [Id.run, pure] using htrip
         simpa [hulp1] using hrun
       have hsucc_mid_ge :
           1 + 4 * u_ro beta prec ≤

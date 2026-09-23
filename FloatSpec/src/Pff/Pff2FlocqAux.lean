@@ -2306,7 +2306,7 @@ theorem Fulp_ulp_aux (beta : Int) [ValidRadix beta] (b : Fbound) (p : Int) (f : 
           (beta : ℝ) ^
             (FloatSpec.Core.Generic_fmt.cexp beta (FLT_exp (-b.dExp) p)
               (pff_to_R_aux beta f)) := by
-      simpa [ulp, wp, PostCond.noThrow, pure] using hspec True.intro
+      simpa [ulp, wp, PostCond.noThrow, pure] using hspec
     calc
       PFulp beta b p f = (beta : ℝ) ^ f.Fexp := hcanUlp'
       _ = (beta : ℝ) ^

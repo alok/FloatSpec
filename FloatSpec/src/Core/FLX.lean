@@ -1204,14 +1204,14 @@ private theorem pred_FLX_exact_shift_pos_aux (beta : Int) [ValidRadix beta] [Pre
         FloatSpec.Core.Ulp.pred_pos beta (FLX_exp prec) y := by
     have h := FloatSpec.Core.Ulp.pred_eq_pos (beta := beta) (fexp := FLX_exp prec)
                 (x := y) (hx := hy_nonneg)
-    have hrun := h hβ
+    have hrun := h
     simpa [Id.run, bind, pure] using hrun
   have hpred_x_pos :
       FloatSpec.Core.Ulp.pred beta (FLX_exp prec) x =
         FloatSpec.Core.Ulp.pred_pos beta (FLX_exp prec) x := by
     have h := FloatSpec.Core.Ulp.pred_eq_pos (beta := beta) (fexp := FLX_exp prec)
                 (x := x) (hx := hx_nonneg)
-    have hrun := h hβ
+    have hrun := h
     simpa [Id.run, bind, pure] using hrun
   have hboundary_y_of_x :
       x = (beta : ℝ) ^ (M - 1) →
@@ -1337,13 +1337,13 @@ theorem succ_FLX_exact_shift (beta : Int) [ValidRadix beta] [Prec_gt_0 prec] (x 
         (FloatSpec.Core.Ulp.succ beta (FLX_exp prec) (x * (beta : ℝ) ^ e))
           = x * (beta : ℝ) ^ e + (FloatSpec.Core.Ulp.ulp beta (FLX_exp prec) (x * (beta : ℝ) ^ e)) := by
       have := FloatSpec.Core.Ulp.succ_eq_pos (beta := beta) (fexp := FLX_exp prec)
-                  (x := x * (beta : ℝ) ^ e) (hx := hy_nonneg) True.intro
+                  (x := x * (beta : ℝ) ^ e) (hx := hy_nonneg)
       simpa [Id.run, bind, pure] using this
     have hsucc_x_run :
         (FloatSpec.Core.Ulp.succ beta (FLX_exp prec) x)
           = x + (FloatSpec.Core.Ulp.ulp beta (FLX_exp prec) x) := by
       have := FloatSpec.Core.Ulp.succ_eq_pos (beta := beta) (fexp := FLX_exp prec)
-                  (x := x) (hx := hx_nonneg) True.intro
+                  (x := x) (hx := hx_nonneg)
       simpa [Id.run, bind, pure] using this
     have hulp_shift :
         (FloatSpec.Core.Ulp.ulp beta (FLX_exp prec) (x * (beta : ℝ) ^ e))

@@ -4771,7 +4771,7 @@ theorem Bulp_correct
           FloatSpec.Core.Ulp.ulp 2 (FLT_exp (3 - emax - prec) prec)
             (B754_to_R (B754.B754_finite sx mx ex)) = (2 : ℝ) ^ ex := by
         simpa [B754_to_R, F2R, FloatSpec.Core.Defs.F2R,
-          wp, PostCond.noThrow, pure] using hulp_trip trivial
+          wp, PostCond.noThrow, pure] using hulp_trip
       constructor
       · calc
           B754_to_R (Bulp (prec:=prec) (emax:=emax)
@@ -5410,7 +5410,7 @@ theorem is_finite_strict_Bulp
               (2 : ℝ) ^
                 (FloatSpec.Core.Generic_fmt.cexp 2 (FLT_exp (3 - emax - prec) prec)
                   (B754_to_R (binarySingleNaNFloatToB754 (prec:=prec) (emax:=emax) xfin))) := by
-          simpa [wp, PostCond.noThrow, pure] using htrip trivial
+          simpa [wp, PostCond.noThrow, pure] using htrip
         rw [hulp_eq]
         exact ne_of_gt (zpow_pos (by norm_num : (0 : ℝ) < 2) _)
       have hbulp_ne :
@@ -12453,7 +12453,7 @@ private theorem roundR_floor_minus_eps_pos {prec emax : Int}
       FloatSpec.Core.Generic_fmt.round_DN_to_format 2
           (FLT_exp (3 - emax - prec) prec) (x - eps) (by norm_num) =
         FloatSpec.Core.Ulp.pred 2 (FLT_exp (3 - emax - prec) prec) x := by
-    simpa [wp, PostCond.noThrow, pure] using hchosenTrip trivial
+    simpa [wp, PostCond.noThrow, pure] using hchosenTrip
   have hround := FloatSpec.Core.Generic_fmt.roundR_DN_pt
     (beta:=2) (fexp:=FLT_exp (3 - emax - prec) prec)
     (x:=x - eps) (by norm_num : (1 : Int) < 2)
@@ -12518,7 +12518,7 @@ private theorem Bpred_positive_correct {prec emax : Int}
     (by norm_num : (1 : Int) < 2) hcanon
   have hulpX : FloatSpec.Core.Ulp.ulp 2 (FLT_exp (3 - emax - prec) prec) xr =
       (2 : ℝ) ^ ex := by
-    simpa [wp, PostCond.noThrow, pure, xr, x, B754_to_R] using hulpXTrip trivial
+    simpa [wp, PostCond.noThrow, pure, xr, x, B754_to_R] using hulpXTrip
   have hulpPredCasesTrip := FloatSpec.Core.FLT.ulp_FLT_pred_pos
     (prec:=prec) (emin:=3 - emax - prec) (beta:=2) xr
   have hulpPredCases :
@@ -12565,7 +12565,7 @@ private theorem Bpred_positive_correct {prec emax : Int}
   have hpredEqPos :
       FloatSpec.Core.Ulp.pred 2 (FLT_exp (3 - emax - prec) prec) xr =
         FloatSpec.Core.Ulp.pred_pos 2 (FLT_exp (3 - emax - prec) prec) xr := by
-    simpa [wp, PostCond.noThrow, pure] using hpredEqPosTrip (by norm_num)
+    simpa [wp, PostCond.noThrow, pure] using hpredEqPosTrip
   have hrtzQ : FloatSpec.Core.Generic_fmt.roundR 2
       (FLT_exp (3 - emax - prec) prec) (rnd_of_mode RoundingMode.RTZ) q =
         FloatSpec.Core.Ulp.pred_pos 2 (FLT_exp (3 - emax - prec) prec) xr := by
@@ -12575,7 +12575,7 @@ private theorem Bpred_positive_correct {prec emax : Int}
     (beta:=2) (fexp:=FLT_exp (3 - emax - prec) prec) xr hxrPos hformat
   have hpredNonneg : 0 ≤ FloatSpec.Core.Ulp.pred_pos 2
       (FLT_exp (3 - emax - prec) prec) xr := by
-    simpa [wp, PostCond.noThrow, pure] using hpredNonnegTrip (by norm_num)
+    simpa [wp, PostCond.noThrow, pure] using hpredNonnegTrip
   let mn := 2 * mx - 1
   have hmnPos : 0 < mn := by simp [mn]; omega
   have hmnCast : (mn : ℝ) = 2 * (mx : ℝ) - 1 := by
@@ -12618,7 +12618,7 @@ private theorem Bpred_positive_correct {prec emax : Int}
       (FLT_exp (3 - emax - prec) prec) xr ≤ xr := by
     have hle : FloatSpec.Core.Ulp.pred 2
         (FLT_exp (3 - emax - prec) prec) xr ≤ xr := by
-      simpa [wp, PostCond.noThrow, pure] using hpredLeTrip (by norm_num)
+      simpa [wp, PostCond.noThrow, pure] using hpredLeTrip
     simpa [hpredEqPos] using hle
   have hover : FloatSpec.Core.Raux.Rlt_bool
       |FloatSpec.Core.Generic_fmt.roundR 2 (FLT_exp (3 - emax - prec) prec)
@@ -12750,7 +12750,7 @@ private theorem ulp_eq_boundary_step_of_mantissa_nonboundary {prec emax : Int}
   have hulp : FloatSpec.Core.Ulp.ulp 2 (FLT_exp (3 - emax - prec) prec) xr =
       (2 : ℝ) ^ ex := by
     simpa [wp, PostCond.noThrow, pure, xr, B754_to_R, F2R,
-      FloatSpec.Core.Defs.F2R] using hulpTrip trivial
+      FloatSpec.Core.Defs.F2R] using hulpTrip
   have hMsmall : M ≤ 3 - emax - prec + prec := by
     by_contra hnot
     have hlarge : 3 - emax - prec + prec < M := lt_of_not_ge hnot
@@ -12833,7 +12833,7 @@ private theorem Bpred_pos'_positive_correct {prec emax : Int}
     (beta:=2) (fexp:=fp) (m:=(mx : Int)) (e:=ex)
     (by exact_mod_cast (Nat.ne_of_gt hmx)) (by norm_num : (1 : Int) < 2) hcanon
   have hulp : FloatSpec.Core.Ulp.ulp 2 fp xr = (2 : ℝ) ^ ex := by
-    simpa [fp, xr, x, B754_to_R, wp, PostCond.noThrow, pure] using hulpTrip trivial
+    simpa [fp, xr, x, B754_to_R, wp, PostCond.noThrow, pure] using hulpTrip
   have hulpPos : 0 < FloatSpec.Core.Ulp.ulp 2 fp xr := by
     rw [hulp]
     exact hpowEx
@@ -12938,7 +12938,7 @@ private theorem Bpred_pos'_positive_correct {prec emax : Int}
   have hpredNonnegTrip := FloatSpec.Core.Ulp.pred_pos_ge_0
     (beta:=2) (fexp:=fp) xr hxrPos hformat
   have hpredNonneg : 0 ≤ FloatSpec.Core.Ulp.pred_pos 2 fp xr := by
-    simpa [wp, PostCond.noThrow, pure] using hpredNonnegTrip (by norm_num)
+    simpa [wp, PostCond.noThrow, pure] using hpredNonnegTrip
   have hdShape : ∃ my ey, d = B754.B754_finite false my ey ∧ 0 < my := by
     cases hd : d with
     | B754_zero sd =>
@@ -12974,7 +12974,7 @@ private theorem Bpred_pos'_positive_correct {prec emax : Int}
     (beta:=2) (fexp:=fp) xr hformat hxrPos (by norm_num : (1 : Int) < 2)
   have hpredFormat : FloatSpec.Core.Generic_fmt.generic_format 2 fp
       (FloatSpec.Core.Ulp.pred_pos 2 fp xr) := by
-    simpa [wp, PostCond.noThrow, pure] using hpredFormatTrip trivial
+    simpa [wp, PostCond.noThrow, pure] using hpredFormatTrip
   have hroundPred := FloatSpec.Core.Generic_fmt.roundR_generic
     (beta:=2) (fexp:=fp) (rnd:=rnd_of_mode RoundingMode.RNE)
     (x:=FloatSpec.Core.Ulp.pred_pos 2 fp xr) (by norm_num : (1 : Int) < 2)
@@ -13216,11 +13216,11 @@ private theorem Bsucc_positive_correct {prec emax : Int}
     (beta:=2) (fexp:=fp) (m:=(mx : Int)) (e:=ex)
     (by exact_mod_cast (Nat.ne_of_gt hmx)) (by norm_num : (1 : Int) < 2) hcanon
   have hulp : FloatSpec.Core.Ulp.ulp 2 fp xr = (2 : ℝ) ^ ex := by
-    simpa [fp, xr, x, B754_to_R, wp, PostCond.noThrow, pure] using hulpTrip trivial
+    simpa [fp, xr, x, B754_to_R, wp, PostCond.noThrow, pure] using hulpTrip
   have hsuccTrip := FloatSpec.Core.Ulp.succ_eq_pos
     (beta:=2) (fexp:=fp) xr (le_of_lt hxrPos)
   have hsuccEq : successor = xr + FloatSpec.Core.Ulp.ulp 2 fp xr := by
-    simpa [successor, wp, PostCond.noThrow, pure] using hsuccTrip trivial
+    simpa [successor, wp, PostCond.noThrow, pure] using hsuccTrip
   have hinput :
       SF2R 2 (StandardFloat.S754_finite false (mx + 1) ex) = successor := by
     rw [hsuccEq, hulp]
@@ -13229,7 +13229,7 @@ private theorem Bsucc_positive_correct {prec emax : Int}
   have hsuccFormatTrip := FloatSpec.Core.Ulp.generic_format_succ
     (beta:=2) (fexp:=fp) xr hformat (by norm_num : (1 : Int) < 2)
   have hsuccFormat : FloatSpec.Core.Generic_fmt.generic_format 2 fp successor := by
-    simpa [successor, wp, PostCond.noThrow, pure] using hsuccFormatTrip trivial
+    simpa [successor, wp, PostCond.noThrow, pure] using hsuccFormatTrip
   have hroundEq :
       FloatSpec.Core.Generic_fmt.roundR 2 fp (rnd_of_mode RoundingMode.RTP)
           (SF2R 2 (StandardFloat.S754_finite false (mx + 1) ex)) = successor := by
@@ -13364,7 +13364,7 @@ theorem Bsucc'_correct {prec emax : Int}
             (by norm_num : (1 : Int) < 2) hcanon
           have hulpPow : FloatSpec.Core.Ulp.ulp 2 fp xr = (2 : ℝ) ^ ex := by
             simpa [fp, xr, raw, B754_to_R, wp, PostCond.noThrow, pure] using
-              hulpTrip trivial
+              hulpTrip
           have hyPos : 0 < B754_to_R y := by
             rw [hulpY.1, hulpPow]
             exact zpow_pos (by norm_num) ex
@@ -13402,7 +13402,7 @@ theorem Bsucc'_correct {prec emax : Int}
                   mul_pos hmxR hpow))
           have hsuccEq :
               successor = xr + FloatSpec.Core.Ulp.ulp 2 fp xr := by
-            simpa [successor, wp, PostCond.noThrow, pure] using hsuccTrip trivial
+            simpa [successor, wp, PostCond.noThrow, pure] using hsuccTrip
           have hsumEq :
               B754_to_R raw +
                   B754_to_R (B754.B754_finite false my ey) = successor := by
@@ -13417,7 +13417,7 @@ theorem Bsucc'_correct {prec emax : Int}
           have hsuccFormat :
               FloatSpec.Core.Generic_fmt.generic_format 2 fp successor := by
             simpa [successor, wp, PostCond.noThrow, pure] using
-              hsuccFormatTrip trivial
+              hsuccFormatTrip
           have hroundSum :
               FloatSpec.Core.Generic_fmt.roundR 2 fp
                   (rnd_of_mode RoundingMode.RNE)
@@ -13546,7 +13546,7 @@ theorem Bsucc_correct {prec emax : Int}
       have hsucc : FloatSpec.Core.Ulp.succ 2
           (FLT_exp (3 - emax - prec) prec) 0 =
           FloatSpec.Core.Ulp.ulp 2 (FLT_exp (3 - emax - prec) prec) 0 := by
-        simpa [wp, PostCond.noThrow, pure] using hsucc0 trivial
+        simpa [wp, PostCond.noThrow, pure] using hsucc0
       have hulp0 := FloatSpec.Core.FLT.ulp_FLT_0
         (prec:=prec) (emin:=3 - emax - prec) 2
       have hulp : FloatSpec.Core.Ulp.ulp 2
@@ -13587,7 +13587,7 @@ theorem Bsucc_correct {prec emax : Int}
           have hsuccEq : successor = B754_to_R raw +
               FloatSpec.Core.Ulp.ulp 2 (FLT_exp (3 - emax - prec) prec)
                 (B754_to_R raw) := by
-            simpa [successor, wp, PostCond.noThrow, pure] using hsuccTrip trivial
+            simpa [successor, wp, PostCond.noThrow, pure] using hsuccTrip
           have hulpPos : 0 < FloatSpec.Core.Ulp.ulp 2
               (FLT_exp (3 - emax - prec) prec) (B754_to_R raw) := by
             simp [FloatSpec.Core.Ulp.ulp, ne_of_gt hrawPos,
@@ -13716,7 +13716,7 @@ theorem Bsucc_correct {prec emax : Int}
           have hsuccValue : successor = -FloatSpec.Core.Ulp.pred 2
               (FLT_exp (3 - emax - prec) prec) (B754_to_R pos) := by
             simpa [successor, hnegValue, wp, PostCond.noThrow, pure] using
-              hsuccOpp trivial
+              hsuccOpp
           have hposValue : 0 < B754_to_R pos := by
             have hp : (0 : ℝ) < (mx : ℝ) := Nat.cast_pos.mpr hmx
             have he : (0 : ℝ) < (2 : ℝ) ^ ex := zpow_pos (by norm_num) ex
@@ -13728,7 +13728,7 @@ theorem Bsucc_correct {prec emax : Int}
               (FLT_exp (3 - emax - prec) prec) (B754_to_R pos) =
               FloatSpec.Core.Ulp.pred_pos 2
                 (FLT_exp (3 - emax - prec) prec) (B754_to_R pos) := by
-            simpa [wp, PostCond.noThrow, pure] using hpredEq (by norm_num)
+            simpa [wp, PostCond.noThrow, pure] using hpredEq
           have hsuccessorValue : B754_to_R (Bsucc
               (prec:=prec) (emax:=emax) neg) = successor := by
             rw [hr, hvalueOpp, hpredValue, hsuccValue, hpredEq']

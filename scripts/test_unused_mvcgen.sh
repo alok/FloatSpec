@@ -27,7 +27,6 @@ require_no_matches -n --glob '*.lean' \
 # grow it.
 legacy_std_do=(
   Calc/Sqrt.lean
-  Core/Ulp.lean
   Core/Zaux.lean
   IEEE754/Binary.lean
   IEEE754/BinarySingleNaN.lean

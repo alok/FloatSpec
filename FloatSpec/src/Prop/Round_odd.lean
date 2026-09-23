@@ -2955,14 +2955,14 @@ theorem fexp_round_odd_from_explicit_payload
           (beta := beta) (fexp := FLT_exp emin prec)
           (x := 0) (y := |r|) hfmt0 hfmt_abs_r hr_abs_pos
         simpa [Id.run, pure]
-          using htrip hβ
+          using htrip
       have hsucc0 :
           FloatSpec.Core.Ulp.succ beta (FLT_exp emin prec) 0 =
             FloatSpec.Core.Ulp.ulp beta (FLT_exp emin prec) 0 := by
         have htrip := FloatSpec.Core.Ulp.succ_0
           (beta := beta) (fexp := FLT_exp emin prec)
         simpa [Id.run, pure]
-          using htrip True.intro
+          using htrip
       have hulp0 :
           FloatSpec.Core.Ulp.ulp beta (FLT_exp emin prec) 0 =
             (beta : ℝ) ^ emin := by

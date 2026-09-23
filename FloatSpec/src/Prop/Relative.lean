@@ -854,7 +854,7 @@ theorem relative_error_round (rnd : ℝ → Int) [FloatSpec.Core.Generic_fmt.Val
           (FloatSpec.Calc.Round.Mode.ofRnd rnd) x - x| <
         FloatSpec.Core.Ulp.ulp beta fexp x := by
     have h := FloatSpec.Core.Ulp.error_lt_ulp
-      (beta := beta) (fexp := fexp) (rnd := rnd) (x := x) hx hβ
+      (beta := beta) (fexp := fexp) (rnd := rnd) (x := x) hx
     simpa [Id.run, pure,
       FloatSpec.Calc.Round.round, FloatSpec.Calc.Round.Mode.ofRnd,
       FloatSpec.Core.Generic_fmt.round_to_generic] using h
@@ -862,7 +862,7 @@ theorem relative_error_round (rnd : ℝ → Int) [FloatSpec.Core.Generic_fmt.Val
       (beta : ℝ) ^ (FloatSpec.Core.Generic_fmt.cexp beta fexp x) := by
     have h := FloatSpec.Core.Ulp.ulp_neq_0
       (beta := beta) (fexp := fexp) (x := x) hx
-    simpa [Id.run, pure] using h True.intro
+    simpa [Id.run, pure] using h
   calc
     |FloatSpec.Calc.Round.round beta fexp
         (FloatSpec.Calc.Round.Mode.ofRnd rnd) x - x|

@@ -3,7 +3,6 @@ import FloatSpec.src.Core.Ulp
 namespace FloatSpec.Test.ExponentValidityBoundary
 
 open FloatSpec.Core.Generic_fmt FloatSpec.Core.Ulp
-open Std.Do
 
 /-- An exponent function whose available precision alternates with the binade. -/
 def zigzag (exponent : Int) : Int :=
@@ -43,16 +42,14 @@ theorem zigzag_contains_powers (exponent : Int) :
 /-- The spacing below one is a half in this valid format. -/
 theorem zigzag_ulp_half : ulp 2 zigzag (1 / 2 : Real) = (1 / 2 : Real) := by
   have power := ulp_bpow (beta := 2) (fexp := zigzag) (e := -1)
-    (show (1 : Int) < 2 from by decide)
-  simpa [wp, PostCond.noThrow, Id.run, bind, pure, zigzag] using power
+  simpa [zigzag] using power
 
 #print axioms zigzag_ulp_half
 
 /-- The next binade has finer spacing, despite format validity. -/
 theorem zigzag_ulp_one : ulp 2 zigzag (1 : Real) = (1 / 4 : Real) := by
   have power := ulp_bpow (beta := 2) (fexp := zigzag) (e := 0)
-    (show (1 : Int) < 2 from by decide)
-  norm_num [wp, PostCond.noThrow, Id.run, bind, pure, zigzag] at power ⊢
+  norm_num [zigzag] at power ⊢
   exact power
 
 #print axioms zigzag_ulp_one

@@ -952,12 +952,12 @@ theorem round_plus_ge_ulp (x y : ℝ)
         ulp beta fexp 0 ≤ ulp beta fexp y := by
       have htrip := FloatSpec.Core.Ulp.ulp_ge_ulp_0
         (beta := beta) (fexp := fexp) (x := y) hβ
-      simpa [Id.run, pure] using htrip True.intro
+      simpa [Id.run, pure] using htrip
     have hulp_y :
         ulp beta fexp y ≤ |y| := by
       have htrip := FloatSpec.Core.Ulp.ulp_le_abs
         (beta := beta) (fexp := fexp) (x := y) hy0 hy
-      simpa [Id.run, pure] using htrip True.intro
+      simpa [Id.run, pure] using htrip
     have hzero_div : x / (beta : ℝ) = 0 := by simp [hx0]
     simpa [hzero_div, hround] using le_trans hulps hulp_y
   · rcases round_plus_F2R (beta := beta) (fexp := fexp) (rnd := rnd)
@@ -976,7 +976,7 @@ theorem round_plus_ge_ulp (x y : ℝ)
         have htrip := FloatSpec.Core.Ulp.ulp_neq_0
           (beta := beta) (fexp := fexp) (x := x / (beta : ℝ)) hx_div_ne
         simpa [Id.run, pure, e, he]
-          using htrip True.intro
+          using htrip
       have hpow_nonneg : 0 ≤ (beta : ℝ) ^ e := le_of_lt (zpow_pos hbpos_real e)
       have hm_abs_ge_one : (1 : ℝ) ≤ |(m : ℝ)| := by
         have hm_abs_pos : 0 < Int.natAbs m := Int.natAbs_pos.mpr hm0
@@ -1054,7 +1054,7 @@ theorem round_FLT_plus_ge (x y : ℝ) (e : Int)
     have h := FloatSpec.Core.Ulp.ulp_neq_0
       (beta := beta) (fexp := FLT_exp emin prec)
       (x := x / (beta : ℝ)) (hx := hx_div0)
-    simpa [cexp] using h True.intro
+    simpa [cexp] using h
   have hbpow_le_ulp :
       FloatSpec.Core.Raux.bpow beta e ≤
         ulp beta (FLT_exp emin prec) (x / (beta : ℝ)) := by
@@ -1150,7 +1150,7 @@ theorem round_FLX_plus_ge (x y : ℝ) (e : Int)
     have h := FloatSpec.Core.Ulp.ulp_neq_0
       (beta := beta) (fexp := FLX_exp prec)
       (x := x / (beta : ℝ)) (hx := hx_div0)
-    simpa [cexp] using h True.intro
+    simpa [cexp] using h
   have hbpow_le_ulp :
       FloatSpec.Core.Raux.bpow beta e ≤
         ulp beta (FLX_exp prec) (x / (beta : ℝ)) := by

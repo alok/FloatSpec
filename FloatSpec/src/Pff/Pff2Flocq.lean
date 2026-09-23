@@ -6998,7 +6998,7 @@ theorem discri_correct_test (emin prec : Int) [Prec_gt_0 prec]
       (beta := 2) (fexp := FLT_exp emin prec) x
     simpa only [wp, PostCond.noThrow, pure, Id.run, Prod.fst, Prod.snd,
       PredTrans.pure, PredTrans.apply, SPred.down_pure_nil]
-      using h True.intro
+      using h
   have hroundBound (x : ℝ) :
       |R x - x| ≤ 2 * ulp 2 (FLT_exp emin prec) (R x) := by
     simpa [R, rnd, choice, PredTrans.pure, PredTrans.apply, SPred.down_pure_nil, Int.cast_ofNat] using
