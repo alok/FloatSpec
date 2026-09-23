@@ -277,6 +277,52 @@ def oracle_sqrt_sqr(rows: Sequence[Row]) -> OracleReport:
     return report
 
 
+# family -> (outer fexp1, inner fexp2). The fixed parameters satisfy each
+# family's premise: FLX prec 2 <= 3; FLT also emin' -6 <= -4; FTZ
+# emin' + prec' = -2 <= emin + prec = -2.
+DOUBLE_ROUNDING_FORMATS = {0: (flx(2), flx(3)), 1: (flt(-4, 2), flt(-6, 3)),
+                           2: (ftz(-4, 2), ftz(-5, 3))}
+
+
+def oracle_double_rounding(rows: Sequence[Row]) -> OracleReport:
+    """Double_rounding_odd_radix.v round_round_eq for mult/plus/minus/sqrt/div.
+
+    Every row's three roundings are re-derived exactly. The identity itself
+    is judged only in odd radix, for inputs in the outer format, and (for
+    div) nonzero y with ZnearestA on both roundings; radix-2 rows are
+    positive controls.
+    """
+    report = OracleReport()
+    for index, row in enumerate(rows):
+        beta, family, op, k1, k2, mx, ex, my, ey, im, ie, om, oe, dm, de, difference = row
+        fexp1, fexp2 = DOUBLE_ROUNDING_FORMATS[family]
+        choice1, choice2 = ("N", TIE_PREDICATES[k1]), ("N", TIE_PREDICATES[k2])
+        x, y = value(beta, mx, ex), value(beta, my, ey)
+
+        def exact_round(fexp, mode):
+            if op == 3:
+                return round_sqrt(beta, fexp, mode, x)
+            if op == 4:
+                return round_rational(beta, fexp, mode, x / y) if y else None
+            return round_rational(beta, fexp, mode, {0: x * y, 1: x + y, 2: x - y}[op])
+
+        inner, outer, direct = value(beta, im, ie), value(beta, om, oe), value(beta, dm, de)
+        for label, observed, expected in (("inner", inner, exact_round(fexp2, choice2)),
+                                          ("direct", direct, exact_round(fexp1, choice1))):
+            report.check(f"row {index} {label}", None if expected is None else observed == expected)
+        report.check(f"row {index} outer", outer == round_rational(beta, fexp1, choice1, inner))
+        premise = (beta % 2 == 1 and in_generic_format(beta, fexp1, x) and
+                   (op == 3 or in_generic_format(beta, fexp1, y)) and
+                   (op != 4 or (y != 0 and k1 == k2 == 1)))
+        ok = difference == 0
+        if premise:
+            report.check(f"row {index} round_round_eq", ok)
+        else:
+            report.check(f"row {index} round_round_eq", None)
+            report.control_breaks += not ok
+    return report
+
+
 # ---------------------------------------------------------------------------
 # Exemplar registry
 # ---------------------------------------------------------------------------
@@ -299,6 +345,8 @@ EXEMPLARS: dict[str, Exemplar] = {e.name: e for e in (
     Exemplar("DivisionU16", rows=152, width=12, oracle=oracle_division_u16,
              needs_control_break=True),
     Exemplar("SqrtSqr", rows=2000, width=8, oracle=oracle_sqrt_sqr),
+    Exemplar("DoubleRoundingOddRadix", rows=2448, width=16, oracle=oracle_double_rounding,
+             needs_control_break=True),
 )}
 
 

@@ -58,6 +58,7 @@ definitions are equivalent.
 | `ComputeGrid` | exemplar | driver over `Compute.v` (FloatSpec-authored) | radices 2/3/10 × FLX/FLT/FIX/FTZ × DN/UP/ZR/NE/NA × 16 input pairs | same | `plus/mult/div/sqrt_correct`: exact rounding of the exact result |
 | `CodyWaite` | exemplar | Flocq `examples/Cody_Waite.v` (`7aab8f55`) | `cw_exp` on binary64 via `Compute.v`, 30 inputs, every intermediate observed | same | `exp_correct` (relative error ≤ 2⁻⁵¹ against `exp` at 120 digits) and `argument_reduction` |
 | `SqrtSqr` | exemplar | Flocq `examples/Sqrt_sqr.v` §Sec6 (`7aab8f55`) | `sqrt ∘ mult` in radix 5, precision 3, all 125 mantissas × 4 × 4 tie predicates | same | `sqrt_sqr_special_case` (`Fnum (f mx) = 0`), and `y` and `z` are exact `Znearest` roundings |
+| `DoubleRoundingOddRadix` | exemplar | Flocq `examples/Double_rounding_odd_radix.v` (`7aab8f55`) | `round_round_eq` executed for mult/plus/minus/sqrt/div over radices 3/5/7 (+2), FLX/FLT/FTZ, tie-predicate pairs | same | the identity for odd radix and in-format inputs, and each of the three roundings re-derived exactly; radix-2 rows are positive controls |
 | `DivisionU16` | exemplar | Flocq `examples/Division_u16.v` (`7aab8f55`) | `div_u16` in the 64-bit register format, four executable `frcpa` models × 38 pairs | same | `div_u16_spec` (= `a / b`) wherever the observed `y0` satisfies `frcpa_spec`; the 8-bit model is a positive control |
 
 ## Trim manifests
@@ -143,6 +144,28 @@ because guessing gets it wrong: the ZR choice is `m` itself, not
   `Zle_bool 0`, always true and always false. Every mantissa and every
   intermediate is printed.
 - Dropped: Sections Sec1–Sec5 and Sec7, which are proofs over R.
+
+### `DoubleRoundingOddRadix` (Flocq `examples/Double_rounding_odd_radix.v`, LGPL-3.0-or-later)
+
+- Kept: the statements of `round_round_{mult,plus,minus}_beta_odd_*`,
+  `round_round_sqrt_beta_odd_*` and `round_round_div_rna_*`, together with
+  their premises on `(emin, prec)` and `(emin', prec')`. They define what
+  a row means. `round_round_eq` comes from `src/Prop/Double_rounding.v`.
+- Replaced: each real `round fexp (Znearest c) (x op y)` becomes
+  `Compute.v`'s operation with the choice `rnd_N c`. Rounding the inner
+  result again is `plus inner 0`.
+- Dropped: all proofs; this file is proofs only.
+- Parameters:
+  - outer formats: `FLX 2`, `FLT (-4) 2` and `FTZ (-4) 2`;
+  - inner formats: `FLX 3`, `FLT (-6) 3` and `FTZ (-5) 3`;
+  - twelve input pairs per radix. They were drawn once with a fixed seed
+    from mantissas in `[β, β²)` of either sign, which is valid in all three
+    outer formats, and each odd radix gets one hand-built near-midpoint
+    pair.
+- Radix 2 is a positive control. The theorem requires an odd radix, and in
+  radix 2 the identity really fails: 63 rows do, for example
+  `6 − 3/4 = 21/4`, which rounds to 5 at three bits and then ties to 4 at
+  two bits.
 
 ## Exclusions
 

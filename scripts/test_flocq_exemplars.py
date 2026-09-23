@@ -144,6 +144,17 @@ class OracleControlTests(unittest.TestCase):
             self.assertEqual(lane.round_rational(5, lane.flx(3), ("N", lane.TIE_PREDICATES[predicate]),
                                                  Fraction(305, 2)), expected)
 
+    def test_double_rounding_identity_is_judged_only_in_odd_radix(self):
+        # Radix 2, FLX 2 over FLX 3, NE twice: 6 - 3/4 = 21/4 rounds to 5 at
+        # three bits, then ties to 4; direct rounding gives 6.
+        control = [2, 0, 1, 0, 0, 3, 1, -3, -2, 5, 0, 1, 2, 3, 1, -1]
+        report = lane.oracle_double_rounding([control])
+        self.assertEqual((report.premise_false, report.control_breaks, report.violations),
+                         (1, 1, []))
+        # The same broken identity in radix 3 would be a violation.
+        odd = lane.oracle_double_rounding([[3, 0, 0, 0, 0, 4, 0, 4, 0, 16, 0, 15, 0, 15, 0, 1]])
+        self.assertEqual(odd.violations, ["row 0 round_round_eq"])
+
     def test_a_missing_control_break_fails_the_oracle_verdict(self):
         exemplar = lane.Exemplar("Probe", rows=1, width=1,
                                  oracle=lambda rows: lane.OracleReport(holds=1),
@@ -196,6 +207,10 @@ class LiveExemplarTests(unittest.TestCase):
 
     def test_sqrt_sqr(self):
         self.check("SqrtSqr")
+
+    def test_double_rounding_odd_radix(self):
+        result = self.check("DoubleRoundingOddRadix")
+        self.assertGreater(result["oracle_rocq"]["control_breaks"], 0)
 
     def mutant(self, name, side, old, new):
         """Run a copy of an exemplar with one side textually mutated."""
