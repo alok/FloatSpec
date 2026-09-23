@@ -1693,6 +1693,7 @@ instance valid_rnd_AW : Valid_rnd FloatSpec.Core.Raux.Zaway := by
     simpa [Id.run, pure] using h
 
 /-- Coq ({lit}`Generic_fmt.v`): Opposite rounding function {lean}`Zrnd_opp`. -/
+@[flocq_source "src/Core/Generic_fmt.v" 833 "Zrnd_opp"]
 def Zrnd_opp (rnd : ℝ → Int) (x : ℝ) : Int :=
   -(rnd (-x))
 

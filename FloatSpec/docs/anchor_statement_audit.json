@@ -2,7 +2,7 @@
  "flocq_commit": "7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f",
  "rocq": "9.1",
  "floatspec_base": "6644539f",
- "anchors": 457,
+ "anchors": 480,
  "verdicts": [
   {
    "coq_path": "src/Calc/Bracket.v",
@@ -3204,6 +3204,167 @@
    "lean_name": "Flocq_version.Flocq_version",
    "verdict": "match",
    "explanation": "Both are unary-natural constants. The Coq type is N (binary naturals) and the Lean type is ℕ, which is the same carrier. The bodies also agree. Coq's compiled Print gives `Flocq_version = 40202%N`: its vm_compute'd parser reads \"4.2.2\" with each dotted component in base 100, so 4*10000 + 2*100 + 2 = 40202. The Lean definition is literally `def Flocq_version : Nat := 40202`, and an `example ... := rfl` checks that value. The declaration has no axioms and no sorry. The flocq_source anchor is (src/Version.v, 24), which matches Coq's declaration line 24."
+  },
+  {
+   "coq_path": "src/Core/Raux.v",
+   "coq_name": "Rabs_eq_Rabs",
+   "lean_name": "FloatSpec.Core.Raux.Rabs_eq_Rabs",
+   "verdict": "match",
+   "explanation": "Coq: forall x y : R, Rabs x = Rabs y -> x = y \\/ x = - y. Lean: (x y : ℝ) → |x| = |y| → x = y ∨ x = -y. The binders, the hypothesis and the disjunction are the same."
+  },
+  {
+   "coq_path": "src/Core/Raux.v",
+   "coq_name": "Rabs_minus_le",
+   "lean_name": "FloatSpec.Core.Raux.Rabs_minus_le",
+   "verdict": "match",
+   "explanation": "Coq: forall x y, 0 <= y -> y <= 2*x -> Rabs (x-y) <= x. Lean: (x y : ℝ) → 0 ≤ y → y ≤ 2 * x → |x - y| ≤ x. Identical."
+  },
+  {
+   "coq_path": "src/Core/Raux.v",
+   "coq_name": "Rabs_eq_R0",
+   "lean_name": "FloatSpec.Core.Raux.Rabs_eq_R0",
+   "verdict": "match",
+   "explanation": "Coq: forall x, Rabs x = 0 -> x = 0. Lean: (x : ℝ) → |x| = 0 → x = 0. Batch 1C restated it from the stronger Lean-only iff `Rabs_eq_R0_spec` (no callers) to Coq's one-way implication and name."
+  },
+  {
+   "coq_path": "src/Core/Raux.v",
+   "coq_name": "Rinv_lt",
+   "lean_name": "FloatSpec.Core.Raux.Rinv_lt",
+   "verdict": "match",
+   "explanation": "Coq: forall x y, 0 < x -> x < y -> /y < /x. Lean: (x y : ℝ) → 0 < x → x < y → y⁻¹ < x⁻¹. Batch 1C replaced the former `1 / y < 1 / x` spelling (no callers) with the inverse, which is Coq's Rinv."
+  },
+  {
+   "coq_path": "src/Core/Raux.v",
+   "coq_name": "Rinv_le",
+   "lean_name": "FloatSpec.Core.Raux.Rinv_le",
+   "verdict": "match",
+   "explanation": "Coq: forall x y, 0 < x -> x <= y -> /y <= /x. Lean: (x y : ℝ) → 0 < x → x ≤ y → y⁻¹ ≤ x⁻¹. Batch 1C replaced the former `1 / y ≤ 1 / x` spelling (no callers) with the inverse."
+  },
+  {
+   "coq_path": "src/Core/Raux.v",
+   "coq_name": "sqrt_neg",
+   "lean_name": "FloatSpec.Core.Raux.sqrt_neg",
+   "verdict": "match",
+   "explanation": "Coq: forall x, x <= 0 -> sqrt x = 0 (R_sqrt.sqrt). Lean: (x : ℝ) → x ≤ 0 → √x = 0 (Real.sqrt). Both square roots are defined as 0 on nonpositive arguments, so the propositions agree."
+  },
+  {
+   "coq_path": "src/Core/Raux.v",
+   "coq_name": "Rsqr_le_abs_0_alt",
+   "lean_name": "FloatSpec.Core.Raux.Rsqr_le_abs_0_alt",
+   "verdict": "match",
+   "explanation": "Coq: forall x y, Rsqr x <= Rsqr y -> x <= Rabs y, where Print gives Rsqr = fun r => r * r. Lean: (x y : ℝ) → x * x ≤ y * y → x ≤ |y|. Lean has no Rsqr, so batch 1C states its body (formerly `x ^ 2 ≤ y ^ 2`, no callers), as the anchored Rcompare_sqr twin does."
+  },
+  {
+   "coq_path": "src/Core/Raux.v",
+   "coq_name": "Rabs_le_inv",
+   "lean_name": "FloatSpec.Core.Raux.Rabs_le_inv",
+   "verdict": "match",
+   "explanation": "Coq: forall x y, Rabs x <= y -> -y <= x /\\ x <= y. Lean: |x| ≤ y → -y ≤ x ∧ x ≤ y. Identical."
+  },
+  {
+   "coq_path": "src/Core/Raux.v",
+   "coq_name": "Rabs_ge",
+   "lean_name": "FloatSpec.Core.Raux.Rabs_ge",
+   "verdict": "match",
+   "explanation": "Coq: forall x y, y <= -x \\/ x <= y -> x <= Rabs y. Lean: y ≤ -x ∨ x ≤ y → x ≤ |y|. Identical."
+  },
+  {
+   "coq_path": "src/Core/Raux.v",
+   "coq_name": "Rabs_ge_inv",
+   "lean_name": "FloatSpec.Core.Raux.Rabs_ge_inv",
+   "verdict": "match",
+   "explanation": "Coq: forall x y, x <= Rabs y -> y <= -x \\/ x <= y. Lean: x ≤ |y| → y ≤ -x ∨ x ≤ y. Identical."
+  },
+  {
+   "coq_path": "src/Core/Raux.v",
+   "coq_name": "Rabs_lt_inv",
+   "lean_name": "FloatSpec.Core.Raux.Rabs_lt_inv",
+   "verdict": "match",
+   "explanation": "Coq: forall x y, Rabs x < y -> -y < x /\\ x < y. Lean: |x| < y → -y < x ∧ x < y. Identical."
+  },
+  {
+   "coq_path": "src/Core/Raux.v",
+   "coq_name": "IZR_le_lt",
+   "lean_name": "FloatSpec.Core.Raux.IZR_le_lt",
+   "verdict": "match",
+   "explanation": "Coq: forall m n p : Z, m <= n < p -> IZR m <= IZR n < IZR p. Lean: (m n p : ℤ) → m ≤ n ∧ n < p → ↑m ≤ ↑n ∧ ↑n < ↑p, with IZR as the Int-to-ℝ cast. Identical."
+  },
+  {
+   "coq_path": "src/Core/Raux.v",
+   "coq_name": "le_lt_IZR",
+   "lean_name": "FloatSpec.Core.Raux.le_lt_IZR",
+   "verdict": "match",
+   "explanation": "Coq: forall m n p : Z, IZR m <= IZR n < IZR p -> m <= n < p. Lean: ↑m ≤ ↑n ∧ ↑n < ↑p → m ≤ n ∧ n < p. Identical."
+  },
+  {
+   "coq_path": "src/Core/Raux.v",
+   "coq_name": "eqb_false",
+   "lean_name": "FloatSpec.Core.Raux.eqb_false",
+   "verdict": "match",
+   "explanation": "Coq: forall x y : bool, x = negb y -> Bool.eqb x y = false. Lean: (a b : Bool) → a = !b → (a == b) = false, where `==` on Bool is boolean equality (Coq Bool.eqb). The premise is Coq's `x = negb y`, not the weaker `a ≠ b` the 2026-09-22 classification recorded."
+  },
+  {
+   "coq_path": "src/Core/Raux.v",
+   "coq_name": "eqb_true",
+   "lean_name": "FloatSpec.Core.Raux.eqb_true",
+   "verdict": "match",
+   "explanation": "Coq: forall x y : bool, x = y -> Bool.eqb x y = true. Lean: a = b → (a == b) = true. Identical up to Bool.eqb ↔ `==`."
+  },
+  {
+   "coq_path": "src/Core/Raux.v",
+   "coq_name": "abs_cond_Ropp",
+   "lean_name": "FloatSpec.Core.Raux.abs_cond_Ropp",
+   "verdict": "match",
+   "explanation": "Coq: forall b m, Rabs (cond_Ropp b m) = Rabs m. Lean: |cond_Ropp b x| = |x|. Lean cond_Ropp b m := if b then -m else m, which is Coq's body. Identical."
+  },
+  {
+   "coq_path": "src/Core/Raux.v",
+   "coq_name": "cond_Ropp_mult_l",
+   "lean_name": "FloatSpec.Core.Raux.cond_Ropp_mult_l",
+   "verdict": "match",
+   "explanation": "Coq: forall b x y, cond_Ropp b (x * y) = cond_Ropp b x * y. Lean: same equation over the same cond_Ropp body."
+  },
+  {
+   "coq_path": "src/Core/Raux.v",
+   "coq_name": "cond_Ropp_mult_r",
+   "lean_name": "FloatSpec.Core.Raux.cond_Ropp_mult_r",
+   "verdict": "match",
+   "explanation": "Coq: forall b x y, cond_Ropp b (x * y) = x * cond_Ropp b y. Lean: same equation."
+  },
+  {
+   "coq_path": "src/Core/Raux.v",
+   "coq_name": "cond_Ropp_plus",
+   "lean_name": "FloatSpec.Core.Raux.cond_Ropp_plus",
+   "verdict": "match",
+   "explanation": "Coq: forall b x y, cond_Ropp b (x + y) = cond_Ropp b x + cond_Ropp b y. Lean: same equation."
+  },
+  {
+   "coq_path": "src/Core/Generic_fmt.v",
+   "coq_name": "Zrnd_opp",
+   "lean_name": "FloatSpec.Core.Generic_fmt.Zrnd_opp",
+   "verdict": "match",
+   "explanation": "Coq: (R -> Z) -> R -> Z, Print: fun rnd x => Z.opp (rnd (- x)). Lean: (ℝ → ℤ) → ℝ → ℤ, body -(rnd (-x)). Identical type and body. Batch 1C removed its unneeded `noncomputable`: the higher-order body compiles, so the definition now has executable code."
+  },
+  {
+   "coq_path": "src/Prop/Double_rounding.v",
+   "coq_name": "round_round_eq",
+   "lean_name": "round_round_eq",
+   "verdict": "match",
+   "explanation": "Coq: radix -> (Z->Z) -> (Z->Z) -> (Z->bool) -> (Z->bool) -> R -> Prop, body round fexp1 (Znearest choice1) (round fexp2 (Znearest choice2) x) = round fexp1 (Znearest choice1) x. Lean: (beta : ℤ) [ValidRadix beta] with the same remaining binders and the same body, over roundR. A compiled `Iff.rfl` shows it equals the body over the anchored Flocq round (round_to_generic). Batch 4A merges the round names. Batch 1C removed the inert `noncomputable` (a Prop)."
+  },
+  {
+   "coq_path": "src/Prop/Double_rounding.v",
+   "coq_name": "midp",
+   "lean_name": "midp",
+   "verdict": "match",
+   "explanation": "Coq: radix -> (Z->Z) -> R -> R, body round beta fexp Zfloor x + / 2 * ulp beta fexp x. Lean: (beta : ℤ) [ValidRadix beta] → (ℤ → ℤ) → ℝ → ℝ, body roundR beta fexp rnd_floor x + (1 / 2) * ulp beta fexp x. A compiled example proves it equals round_to_generic beta fexp Zfloor x + 2⁻¹ * Ulp.ulp beta fexp x, which is Coq's body. The critic's correction keeps it (noncomputable, E1). Its literal respelling waits for 4A/4B, which retire roundR and rnd_floor."
+  },
+  {
+   "coq_path": "src/Prop/Double_rounding.v",
+   "coq_name": "midp'",
+   "lean_name": "midp'",
+   "verdict": "match",
+   "explanation": "Coq: radix -> (Z->Z) -> R -> R, body round beta fexp Zceil x - / 2 * ulp beta fexp x. Lean: roundR beta fexp rnd_ceil x - (1 / 2) * ulp beta fexp x. A compiled example proves it equals round_to_generic beta fexp Zceil x - 2⁻¹ * Ulp.ulp beta fexp x. It is kept as E1, and its literal respelling waits for 4A/4B."
   }
  ]
 }
