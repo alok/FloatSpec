@@ -5,7 +5,7 @@ Generated from the current workspace by `scripts/status_report.sh`.
 ## Summary
 
 - Lean files: 102
-- `sorry`: 4
+- `sorry`: 2
 - `axiom`: 0
 - `admit`: 0
 - Placeholder/weakening findings: 0
@@ -19,7 +19,7 @@ Generated from the current workspace by `scripts/status_report.sh`.
 | Calc | 7 | 0 | 0 | 0 | 0 |
 | Prop | 8 | 0 | 0 | 0 | 0 |
 | Pff | 6 | 0 | 0 | 0 | 0 |
-| IEEE754 | 11 | 4 | 0 | 0 | 0 |
+| IEEE754 | 11 | 2 | 0 | 0 | 0 |
 | ErrorBound | 7 | 0 | 0 | 0 | 0 |
 | Other | 46 | 0 | 0 | 0 | 0 |
 

@@ -12,19 +12,5 @@
     "theorem": "native_frExp_equiv",
     "lean_name": "FaithfulPrimFloat.PrimitiveFloat.native_frExp_equiv",
     "strategy": "Establish a trusted semantics for opaque Float.frExp on nonzero finite values, then compare mantissa and exponent through Float.Model."
-  },
-  {
-    "id": "native_next_up",
-    "path": "FloatSpec/src/IEEE754/PrimFloat.lean",
-    "theorem": "nativeNextUp_equiv",
-    "lean_name": "FaithfulPrimFloat.PrimitiveFloat.nativeNextUp_equiv",
-    "strategy": "Prove nextUpBits follows the binary64 field ordering and agrees with Bsucc at zero, finite, infinity, and NaN."
-  },
-  {
-    "id": "native_next_down",
-    "path": "FloatSpec/src/IEEE754/PrimFloat.lean",
-    "theorem": "nativeNextDown_equiv",
-    "lean_name": "FaithfulPrimFloat.PrimitiveFloat.nativeNextDown_equiv",
-    "strategy": "Prove nextDownBits follows the binary64 field ordering and agrees with Bpred at zero, finite, infinity, and NaN."
   }
 ]

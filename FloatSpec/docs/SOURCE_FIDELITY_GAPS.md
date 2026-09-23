@@ -73,8 +73,9 @@ inputs and shared-bug mutation tests when expanding the executable surface.
 
 ## Priority 5: discharge the explicit native/decoder boundary obligations
 
-The four manifest obligations concern binary64 sign flipping, native frExp,
-and next-up/next-down refinement. Runtime agreement is not their proof.
+The two manifest obligations concern binary64 sign flipping and native frExp.
+Runtime agreement is not their proof. The native next-up/next-down refinement
+to `Bsucc`/`Bpred` is now a kernel-checked theorem over all binary64 inputs.
 See [proof_debts.json](proof_debts.json). Keep these explicit rather than
 letting their names imply established universal refinement.
 
