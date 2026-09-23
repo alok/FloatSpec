@@ -89,3 +89,9 @@ which Lean parses as `!(a = b)`; they now read `(!a) = b`, as in Rocq.
 `v ^ n`, and `Zdiv_eucl_unique` names `Int.fmod` for `Z.modulo`. `Zeven_ex`
 and `Zeven_Zpower_odd` were restated on the new `Zaux.Z.even` (Rocq's Boolean
 `Z.even`) and re-checked.
+
+The phase P1a integration merge `b8e3b447` joined 1C, 1D, 1E and 1F. Every
+`FloatSpec.src` declaration there has the same compiled type hash, value hash
+and `noncomputable` flag as on the lane commit where its row was checked
+(`ExportPortInventory.lean`, three-way against the lanes' base `8368e132`),
+so each row still holds, and `updated_on` names that merge.

@@ -15,13 +15,13 @@ External Rocq imports are recorded in the JSON report, not counted as Flocq decl
 | Order | Source module | Declarations | Anchored | Name candidates | Reviewed |
 |---:|---|---:|---:|---:|---:|
 | 1 | src/Version.v | 1 | 1 | 1 | 1 |
-| 2 | src/Core/Zaux.v | 102 | 32 | 91 | 35 |
-| 3 | src/Core/Raux.v | 186 | 10 | 185 | 0 |
+| 2 | src/Core/Zaux.v | 102 | 75 | 91 | 35 |
+| 3 | src/Core/Raux.v | 186 | 29 | 178 | 0 |
 | 4 | src/Core/Defs.v | 14 | 11 | 14 | 0 |
 | 5 | src/Core/Round_pred.v | 83 | 78 | 78 | 83 |
 | 6 | src/Core/Digits.v | 67 | 0 | 67 | 0 |
 | 7 | src/Core/Float_prop.v | 37 | 0 | 37 | 0 |
-| 8 | src/Core/Generic_fmt.v | 145 | 33 | 140 | 0 |
+| 8 | src/Core/Generic_fmt.v | 145 | 34 | 140 | 0 |
 | 9 | src/Calc/Operations.v | 17 | 6 | 16 | 0 |
 | 10 | src/Prop/Sterbenz.v | 6 | 0 | 5 | 0 |
 | 11 | src/Core/Ulp.v | 122 | 31 | 119 | 0 |
@@ -35,7 +35,7 @@ External Rocq imports are recorded in the JSON report, not counted as Flocq decl
 | 19 | src/Prop/Plus_error.v | 27 | 9 | 24 | 0 |
 | 20 | src/Prop/Mult_error.v | 14 | 4 | 12 | 0 |
 | 21 | src/Core/FTZ.v | 17 | 5 | 14 | 0 |
-| 22 | src/Prop/Double_rounding.v | 108 | 0 | 108 | 0 |
+| 22 | src/Prop/Double_rounding.v | 108 | 3 | 108 | 0 |
 | 23 | src/Prop/Div_sqrt_error.v | 27 | 6 | 24 | 0 |
 | 24 | src/Pff/Pff.v | 833 | 58 | 828 | 0 |
 | 25 | src/Pff/Pff2FlocqAux.v | 31 | 3 | 30 | 0 |
