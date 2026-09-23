@@ -12,8 +12,6 @@ import FloatSpec.src.Prop.Div_sqrt_error
 import FloatSpec.src.Prop.Plus_error
 import FloatSpec.src.Prop.Mult_error
 
-open Std.Do
-
 /-!
 # Pff source-contract regression surface
 
