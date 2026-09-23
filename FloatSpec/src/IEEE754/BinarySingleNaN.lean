@@ -10017,6 +10017,25 @@ namespace BinarySingleNaN
 abbrev SF2B {prec emax : Int} :=
   @standardFloatToBinarySingleNaNFloat prec emax
 
+set_option doc.verso true in
+/--
+Flocq's total conversion {coq}`SF2B'` from a raw {name}`StandardFloat`: a finite triple that
+fails the {lit}`bounded` check becomes NaN, where {name}`SF2B` instead demands a validity proof.
+
+```coq SF2B'
+Definition SF2B' x :=
+  match x with
+  | S754_zero s => B754_zero s
+  | S754_infinity s => B754_infinity s
+  | S754_nan => B754_nan
+  | S754_finite s m e =>
+    match bounded m e as b return bounded m e = b -> _ with
+    | true => B754_finite s m e
+    | false => fun H => B754_nan
+    end eq_refl
+  end.
+```
+-/
 @[flocq_source "src/IEEE754/BinarySingleNaN.v" 73 "SF2B'"]
 abbrev SF2B' {prec emax : Int} :=
   @standardFloatToBinarySingleNaNFloat' prec emax

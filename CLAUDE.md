@@ -520,9 +520,32 @@ Do NOT use the `{lit}` verso role if an identifier is missing. Use `{given
 - `{given +show}`n : Nat`` introduces metavariables for display and subsequent `{lean}` roles
 - `{given -show}` for internal (non-displayed) variable introduction
 - Pattern: `{given +show}`n : Nat`` then `{lean}`some n`` works
-- `{coq}` role (from VersoCoq) links to Flocq documentation
 - `{lit}` for literal math notation without validation, but don't overuse for patterns with metavariables
-- `@[doc_role]` must define at root namespace for role name to match (e.g., `coq` not `VersoCoq.Roles.coq`)
+- `@[doc_role]` must define at root namespace for role name to match (e.g., `coq`, not `FloatSpec.Roles.coq`)
+
+### Flocq citations (`FloatSpecRoles.lean`, Lean's built-in Verso docstrings)
+
+The project default is `doc.verso = false`; opt a declaration in with `set_option doc.verso true in`
+before its docstring.
+
+- `{coq}`round_0`` or `{coq}`FloatSpec.Core.Generic_fmt.round_0`` renders the Coq name linked to its
+  anchored line at the pinned Flocq commit on GitLab. The argument is a Lean declaration carrying
+  `@[flocq_source]` (resolved in the current scope, so inside `namespace BinarySingleNaN`,
+  `Bcompare` means `BinarySingleNaN.Bcompare`), or a Coq name that exactly one anchor declares.
+  Unknown, unanchored, ambiguous names, and names that also resolve to an unanchored Lean
+  declaration, are elaboration errors with suggested fixes. Anchors declared later in the same file
+  or in a downstream module are not visible yet: write `{lit}`name`` there.
+- `{coq_file}`src/Core/Generic_fmt.v`` (or a unique suffix such as `Generic_fmt.v`) links a whole
+  pinned file.
+- A fenced block with info string `coq ANCHOR` quotes the Rocq source. Its first line must declare
+  the anchored name (`Theorem round_0 :`). `scripts/validate_flocq_source_refs.py` reads the
+  compiled quote back and checks it verbatim against the exact anchor Lean linked, through the end
+  of a Rocq sentence; a final line `...` marks a deliberately shortened quote. Every line opening a
+  `coq` fence must compile to a quote, so build a rejected quote inside a string in tests.
+- `linter.flocqCitations` (on by default) warns when a Markdown docstring uses `{coq}`,
+  `{coq_file}` or a `coq` fence, which would render as unchecked literal text.
+- Examples and rejected cases: `scripts/fixtures/CoqDocRole.lean` and the guided demo,
+  `scripts/fixtures/GuidedDemo.lean`.
 
 ## Agent Handoff (2025-12-26)
 

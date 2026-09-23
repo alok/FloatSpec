@@ -13,6 +13,7 @@ import FloatSpec.Test.BitOrderExecution
 import FloatSpec.Test.NativeSourceArithmetic
 import FloatSpec.Test.RoundingWalkthrough
 import FloatSpec.Test.CoqSourceLinks
+import FloatSpec.Test.FlocqCitations
 import FloatSpec.Test.ZauxSource
 import FloatSpec.Test.MagSource
 import FloatSpec.Test.PffTotality

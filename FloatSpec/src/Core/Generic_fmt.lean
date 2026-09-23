@@ -6794,7 +6794,17 @@ theorem round_bounded_large
   exact (round_abs_abs (beta := beta) (fexp := fexp)
     P hP rnd x) hx
 
-/-- Coq Generic_fmt.round_0. -/
+set_option doc.verso true in
+/--
+Rounding zero gives zero, in every generic format and for every valid rounding function. This
+is Flocq's {coq}`round_0`; the Coq section variables {name}`beta`, {name}`fexp`, and
+{name}`rnd` are explicit arguments here.
+
+```coq round_0
+Theorem round_0 :
+  round 0 = 0%R.
+```
+-/
 @[flocq_source "src/Core/Generic_fmt.v" 763 "round_0"]
 theorem round_0
     (beta : Int) [ValidRadix beta]
