@@ -29,8 +29,6 @@ legacy_std_do=(
   Calc/Sqrt.lean
   Core/Zaux.lean
   Pff/Pff.lean
-  Pff/Pff2Flocq.lean
-  Pff/Pff2FlocqAux.lean
   SimprocWP.lean
 )
 legacy_globs=()
