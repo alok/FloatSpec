@@ -289,6 +289,34 @@ generator revision and on fresh seeds, caught every planted defect:
   These rates come from the control-focused corpus. A real defect that is
   equally rare could escape an unfocused campaign of this size.
 
+- **Most rare-defect detections came from the focused programs.** In a
+  controls lane, program `i` is focused on planted control `i mod 10`. It
+  keeps that control's ops in its swarm and emits the control's relational
+  corners once. The other programs in the lane expose a control only
+  incidentally. The split below was recomputed from the retained batch
+  records. A focused program counts as exposed only if it actually used one
+  of the control's ops. The forced corner can draw another op of its
+  family, so for `ltb_as_leb`, `trunc_floor` and `nearbyint_na_as_ne`
+  fewer than four focused programs were exposed.
+
+  | Control | Focused, campaign 1 | Unfocused, campaign 1 | Focused, campaign 2 | Unfocused, campaign 2 |
+  |---|---:|---:|---:|---:|
+  | `tie_rne_as_rna` | 3/4 | 1/32 | 2/4 | 2/31 |
+  | `dn_zero_sign` | 3/4 | 1/28 | 3/4 | 5/20 |
+  | `updn_swap_negative` | 0/4 | 5/25 | 3/4 | 5/24 |
+  | `zr_overflow_to_inf` | 3/4 | 3/32 | 2/4 | 1/24 |
+  | `subnormal_exp_off_by_one` | 4/4 | 8/25 | 4/4 | 5/24 |
+  | `fma_double_rounding` | 3/4 | 5/15 | 2/4 | 3/12 |
+  | `succ_max_saturates` | 3/4 | 2/7 | 1/4 | 0/7 |
+  | `ltb_as_leb` | 2/2 | 2/2 | 1/1 | 2/7 |
+  | `trunc_floor` | 1/2 | 3/6 | 2/3 | 3/6 |
+  | `nearbyint_na_as_ne` | 2/3 | 0/5 | 1/2 | 2/8 |
+
+  Cells are detected/exposed. Unfocused programs across both campaigns
+  detected `tie_rne_as_rna` in 3 of 63 exposures, `zr_overflow_to_inf` in
+  4 of 56 and `succ_max_saturates` in 2 of 14. Those are the better guide
+  to what an unfocused campaign would catch.
+
 ## 6. Infrastructure failures
 
 **None.** Neither campaign produced a `reference-infra-failure`, a
