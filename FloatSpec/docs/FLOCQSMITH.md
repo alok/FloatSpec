@@ -1,10 +1,16 @@
 # flocqsmith: generated Flocq programs for differential conformance
 
-**Status: design only.** Nothing in this document is implemented under
-`scripts/` at the commit that adds it. Section 14 separates the evidence
-already observed from the claims this design will make once built. The pinned
-identities are Flocq `7aab8f55`, Rocq 9.1.0 (`_opam/bin/coqc`), and Lean
-`v4.34.0`.
+**Status: first vertical slice implemented** in `scripts/flocqsmith/`
+(commits `fc954bd5`, `5bb84646`, `918bbf54`), run as
+`uv run scripts/run_flocqsmith.py`. It covers the BinarySingleNaN world
+end to end: generation, per-case execution on all four paths, the closed
+verdict taxonomy, replay, positive controls, shrinking and offline
+verification. The other worlds (full-payload `B`, `W`, raw `SF` kernels,
+`Fl(β)`), the exemplar lane, fix-pair campaigns and the ledger gate are
+still design only. Section 14 separates what has been run from what is only
+designed; §14.4 records where the implementation corrected this design. The
+pinned identities are Flocq `7aab8f55`, Rocq 9.1.0 (`_opam/bin/coqc`), and
+Lean `v4.34.0`.
 
 flocqsmith generates small programs over Flocq's executable API that are
 valid by construction. It renders each program once in Rocq and once in Lean,
@@ -340,8 +346,10 @@ It never emits:
 A mistaken reference fails closed: `lean-ir` reports a noncomputable
 dependency, and `#reduce` output does not parse. But that would surface as a
 `clone-infra-failure`, not a port gap, so the allowlist test must catch it at
-table-build time. That test compiles each template once and checks that its
-head constant is computable.
+table-build time. As implemented, `check_table` checks every template's head
+against the namespace allowlist statically, and the live validity test runs
+one program per table row on `lean-ir`, where a noncomputable head fails to
+compile.
 
 ### 3.7 A rendered program, run on all four paths
 
@@ -632,13 +640,18 @@ For every case whose `rocq-vm` status is OK, the harness emits
 Outcomes:
 
 - No message: match.
-- A decide failure message that says the proposition is false:
-  `observation-mismatch` for this path.
-- Anything else: `clone-infra-failure(kernel-stuck | heartbeats | …)`.
+- A `decide` rejection (kind `[anonymous]`, one of two pinned prefixes): the
+  case is re-checked in a second process with the negated statement,
+  `example : ¬ ((prog : List Int) = <rocq values>) := by decide +kernel`.
+  The kernel proving the negation is `observation-mismatch`; rejecting both
+  is `clone-infra-failure(kernel-stuck)`.
+- A typed runtime error: `clone-infra-failure(heartbeats | max-recdepth | …)`.
+- Anything else: `harness-error`.
 
-The decide message texts carry kind `[anonymous]`. So the classifier matches a
-small set of message prefixes, pinned to the toolchain and tested, and sends
-unknown text to `harness-error`.
+The re-check exists because the rejection text is not a kernel verdict (§14.4):
+when the kernel rejects the proof, Lean diagnoses with elaborator reduction
+and prints "proved that the proposition … is false" only if *that* reduction
+reaches `isFalse`, and "failed for proposition … did not reduce" otherwise.
 
 ### 6.5 Reuse of `flocq_bridge.py`
 
@@ -654,11 +667,11 @@ copy it. It reuses:
 - the rule that the output directory must be empty (line 1445);
 - `run`'s process-group kill.
 
-`run` currently raises on any stderr output or nonzero exit. flocqsmith
-needs a sibling that returns `(stdout, stderr, returncode, timed_out)` for
-classification. That refactor belongs to the first implementation commit, and
-it must keep `run`'s own contract (and its tests at `test_flocq_bridge.py:19-48`)
-unchanged.
+`run` raises on any stderr output or nonzero exit. flocqsmith needs a
+sibling that returns `(stdout, stderr, returncode, timed_out)` for
+classification. As implemented it is `flocqsmith/process.py:run_capture`,
+which repeats `run`'s process-group kill and leaves `flocq_bridge.run`, its
+contract and its tests at `test_flocq_bridge.py:19-48` untouched.
 
 Generated `.v` files never go inside the reference checkout, because
 `verify_reference` rejects untracked `.v` files there. Lean sources must not
@@ -1125,7 +1138,10 @@ kernel. So programs may be DAGs without blowing up exponentially.
 
 | Claim | Status |
 |---|---|
-| flocqsmith generator, harness, verdicts, replay, shrinker, budget, ledger gate | **Not implemented.** Design only. |
+| BSN generator (36 table rows, 10 formats, op/select/case4/fold/branch, 10 relational corners), per-case harness on four paths, closed verdicts, replay and mutated-tape sweep, 13 positive controls, shrinker (flatten, cut, pin, simplify, mode), staging/manifest/`complete.json`, offline `verify` | **Implemented and run** (§14.4). 33 tests in `scripts/test_flocqsmith.py`, 6 of them live. |
+| Worlds `B`, `W`, raw `SF` kernels, `Fl(β)`; raw-parameter lane; exemplar lane; fix-pair campaigns; degenerate clones (§10.3); ledger and gate; `lean-native`; format descent in the shrinker | **Not implemented.** Design only. |
+| Composed BSN programs agree (implemented generator) | **Observed once.** Seed `20260922`, 50 programs at `68f3de8a` (clean tree): 50/50 `match` on `lean-meta`, `lean-ir` and `lean-kernel`; 3,203 observed integers per path; all 36 ops; 20 s. Reference-side tags: 66 ties (13 under NE), 51 inexact, 24 exact zero sums, 32 overflow-range and 22 subnormal-range results, 31 NaN results. `verify` re-judged all 50. |
+| Every positive control is detected | **Observed** (deterministic live test). Seed 5, 40 programs, control-focused corpus: all 13 detected on all three Lean paths with no infrastructure or harness verdict and an all-match baseline; detections per control range from 2 (`ltb_as_leb`, 9 exposed) to 40 (`enc_sign_flip`). |
 | No Flocq-executable export in Binary/BSN/Bits/PrimFloat/Calc is missing from the Lean side | **Observed once.** Scratch probe, 2026-09-22: 40 groups, `#eval` and `#reduce` against Rocq `vm_compute`, all equal. Not committed, and not a gate. |
 | Composed BSN programs agree | **Observed once.** Scratch smoke: 150 programs, size 10, five formats, 7,410 observed integers, 0 mismatches across `lean-meta`, `lean-ir` and `rocq-vm`; 150 `decide +kernel` regressions passed. Caveats: 47% of finite raw leaves were non-canonical (§3.5), and features were counted from rendered text (§4.5). |
 | Select, branch-local tagged blocks, unrolled folds and binary16 (BSN and generic Bits) render and agree | **Observed once**, for this document. 2 programs on 4 paths (§3.7). Binary16 words `0x7E01`, `0x7C01`, `0x8000`, `0x0001` and `0x7BFF` re-encoded identically. The minimum subnormal decoded as `[3,0,1,-24]` and the maximum finite as `[3,0,2047,5]` (65504). |
@@ -1178,10 +1194,64 @@ Flocq export. It can be enumerated from the port inventory
   Coquelicot at run time.** In the files surveyed these are used only in
   proofs.
 
+### 14.4 Implementation notes (2026-09-22)
+
+What building the slice changed or added, each with the incident behind it:
+
+- **The kernel rejection text is not a verdict.** In the first 30-program
+  control campaign, five mutants that `lean-meta` and `lean-ir` had detected
+  came back from `decide +kernel` as "failed … did not reduce", which the
+  §6.4 draft would have filed as `kernel-stuck`. The kernel had rejected a
+  false equation; the *diagnosis* ran elaborator reduction and got stuck.
+  The harness now re-checks every rejection with the negated statement, and
+  the pinned texts are a live test.
+- **Closed-term extraction is off in the `lean-ir` file**
+  (`set_option compiler.extract_closed false`), so a case's work happens
+  between its `FSBEGIN` and `FSOUT` markers rather than at initialization. A
+  compile error in one case (for example a noncomputable dependency) is
+  attributed by its def's line range, the case is removed, and the remainder
+  is re-emitted; no case ever executes twice.
+- **Rocq file-level failure fails the whole batch closed** as
+  `harness-error`, naming the last marker. Per-case timeouts are still
+  per-case through the Ltac wrapper.
+- **One stage was added:** `process-crash`, for a `lean-meta` or
+  `lean-kernel` process that dies without per-case attribution.
+- **The CLI is `scripts/run_flocqsmith.py`**, because a
+  `scripts/flocqsmith.py` module and the `scripts/flocqsmith/` package would
+  shadow each other.
+- **Corners gained mode sweeps and a TwoProduct fma corner.** At one mode
+  per corner the first control run detected `zr_overflow_to_inf` 0 times in
+  19 exposed programs and `tie_rne_as_rna` once in 24. Corners now draw a
+  mode biased to the one that makes them bite and, half the time, apply the
+  op under all five modes. The new `fma_error` corner builds
+  `fma(x, y, -RN(x·y))`, whose fused result is the product's rounding error
+  and whose unfused result is zero.
+- **The controls corpus is control-focused**, and the report says so:
+  program `i` keeps the ops of planted control `i mod k` in its swarm and
+  emits that control's corners once. Detection rates are reported for that
+  corpus, not for an unfocused campaign.
+- **Budget gaps.** The cost model does not charge a `Z` mantissa by its digit
+  count (a `Btrunc` result can reach about `2^emax`), and `maxHeartbeats` is a
+  fixed per-case constant rather than derived from the predicted cost. No
+  run so far has hit either limit.
+- **Corner tags count statements**, so a mode sweep counts five.
+- **Integer normalization is repeated, not imported.** `harness.py` repeats
+  `parse_result`'s two `Int.ofNat`/`Int.negSucc` rewrites, because
+  `parse_result` parses one whole-batch list of lists and rejects partial
+  output, while flocqsmith parses one message per case.
+- **Replay needs a compatible generator for tapes** (any change to a draw
+  site or weight changes what a tape decodes to) and only a compatible
+  renderer for IR (`--from-ir`). `verify` reads the IR, so it survives
+  generator changes.
+
 ## 15. Build order
 
 Build one vertical slice first, then extend. Each step names the incident or
 need that justifies it.
+
+Progress: steps 1-5 and 10 are done for the BSN world, and the
+campaign-integrity half of step 9. Steps 0, 6, 7, 8 and the ledger half of
+step 9 remain.
 
 0. **Adapter naming.** Rename the paths in `flocq_bridge.py` and
    THREE_VERIFICATION_LOOPS.md, and give `lean-kernel` a per-case judged
@@ -1204,18 +1274,26 @@ need that justifies it.
 9. **Ledger and its gate** (§14.2). **Campaign integrity** (§8.2).
 10. **Shrinker**, after the first real finding (§9).
 
-**CLI sketch:**
+**CLI** (as implemented):
 
 ```sh
-uv run scripts/flocqsmith.py run --flocq-dir "$FLOCQ_AUDIT_DIR" --seed 17 -n 200 --out DIR
-uv run scripts/flocqsmith.py replay DIR/cases/s17-000042.json --flocq-dir "$FLOCQ_AUDIT_DIR"
-uv run scripts/flocqsmith.py verify DIR          # offline re-judgement from retained streams
-uv run scripts/flocqsmith.py controls --flocq-dir "$FLOCQ_AUDIT_DIR"
+uv run scripts/run_flocqsmith.py run --flocq-dir "$FLOCQ_AUDIT_DIR" --seed 17 -n 200 --out DIR
+uv run scripts/run_flocqsmith.py controls --flocq-dir "$FLOCQ_AUDIT_DIR" --seed 5 -n 40 --out DIR
+uv run scripts/run_flocqsmith.py replay DIR/cases/s17-000042.json --flocq-dir "$FLOCQ_AUDIT_DIR" --out DIR2
+uv run scripts/run_flocqsmith.py shrink CASE.json --control fma_double_rounding \
+    --flocq-dir "$FLOCQ_AUDIT_DIR" --out DIR3
+uv run scripts/run_flocqsmith.py verify DIR       # offline re-judgement from retained streams
+FLOCQ_AUDIT_DIR=... uv run scripts/test_flocqsmith.py -v
 ```
 
-`scripts/test_flocq_conformance.sh` gains a small fixed-seed campaign and all
-committed IR fixtures only after step 2 passes. Large campaigns stay
-overnight jobs.
+`run` exits 0 only for `passed`; `controls` only when every control is
+detected with no other verdict and the baseline is all `match`. A dirty tree
+is refused unless `--allow-dirty` is given, and it is recorded either way.
+
+`scripts/test_flocq_conformance.sh`, CI and the required live suite
+(`run_required_rocq_tests.py`) do not run flocqsmith yet. Adding
+`test_flocqsmith` to the required suite costs about five minutes, most of
+it the 40-program control campaign. Large campaigns stay overnight jobs.
 
 ## 16. Open questions
 
