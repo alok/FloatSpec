@@ -2600,7 +2600,7 @@ def B754_sign (x : B754) : Bool :=
   | B754.B754_nan => false
 
 -- Exponent scaling (Coq: Bldexp) at the SingleNaN level.
-noncomputable def Bldexp (mode : RoundingMode) (x : B754) (e : Int) : B754 :=
+def Bldexp (mode : RoundingMode) (x : B754) (e : Int) : B754 :=
   match x with
   | B754.B754_finite s m ex =>
       SF2B (binary_round (prec:=prec) (emax:=emax) mode s m (ex + e))
@@ -3478,7 +3478,7 @@ theorem Bulp_correct_aux :
     grind
 
 -- Coq: Bulp
-noncomputable def Bulp (x : B754) : B754 :=
+def Bulp (x : B754) : B754 :=
   match x with
   | B754.B754_zero _ => B754.B754_finite false 1 (3 - emax - prec)
   | B754.B754_infinity _ => B754.B754_infinity false
@@ -3499,13 +3499,13 @@ theorem is_nan_Bulp (x : B754) :
           RoundingMode.RTZ 1 e false
 
 -- Coq: Bulp'
-noncomputable def Bulp' (x : B754) : B754 :=
+def Bulp' (x : B754) : B754 :=
   Bldexp (prec:=prec) (emax:=emax) RoundingMode.RNE Bone
     ((FLT_exp (3 - emax - prec) prec)
       (Bfrexp_bsn (prec:=prec) (emax:=emax) x).2)
 
 -- Coq: Bplus
-noncomputable def Bplus (mode : RoundingMode) (x y : B754) : B754 :=
+def Bplus (mode : RoundingMode) (x y : B754) : B754 :=
   match x, y with
   | B754.B754_nan, _ => B754.B754_nan
   | _, B754.B754_nan => B754.B754_nan
@@ -3531,11 +3531,11 @@ noncomputable def Bplus (mode : RoundingMode) (x y : B754) : B754 :=
 
 -- Coq: Bminus. This is extensionally the constructor match used upstream:
 -- subtraction is addition after flipping the second operand's sign.
-noncomputable def Bminus (mode : RoundingMode) (x y : B754) : B754 :=
+def Bminus (mode : RoundingMode) (x y : B754) : B754 :=
   Bplus (prec:=prec) (emax:=emax) mode x (Bopp_bsn y)
 
 -- Coq: Bpred_pos'
-noncomputable def Bpred_pos' (x : B754) : B754 :=
+def Bpred_pos' (x : B754) : B754 :=
   match x with
   | B754.B754_finite _ mx _ =>
       let d :=
@@ -3549,7 +3549,7 @@ noncomputable def Bpred_pos' (x : B754) : B754 :=
   | _ => x
 
 -- Coq: Bsucc'
-noncomputable def Bsucc' (x : B754) : B754 :=
+def Bsucc' (x : B754) : B754 :=
   match x with
   | B754.B754_zero _ =>
       Bldexp (prec:=prec) (emax:=emax) RoundingMode.RNE Bone (3 - emax - prec)
@@ -3564,7 +3564,7 @@ noncomputable def Bsucc' (x : B754) : B754 :=
       Bopp_bsn (Bpred_pos' (prec:=prec) (emax:=emax) (Bopp_bsn x))
 
 -- Coq: Bsucc
-noncomputable def Bsucc (x : B754) : B754 :=
+def Bsucc (x : B754) : B754 :=
   match x with
   | B754.B754_zero _ => B754.B754_finite false 1 (3 - emax - prec)
   | B754.B754_infinity false => x
@@ -3594,7 +3594,7 @@ theorem is_nan_Bsucc (x : B754) :
           RoundingMode.RTZ true (2 * mx - 1) (ex - 1)
 
 -- Coq: Bpred
-noncomputable def Bpred (x : B754) : B754 :=
+def Bpred (x : B754) : B754 :=
   Bopp_bsn (Bsucc (prec:=prec) (emax:=emax) (Bopp_bsn x))
 
 -- Coq: is_nan_Bpred

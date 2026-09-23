@@ -233,7 +233,7 @@ example :
 /-! These function-type checks fail if an internal `Valid_exp` or
 `Monotone_exp` proof leaks into the source-facing arithmetic signatures. -/
 
-noncomputable section
+section
 
 namespace FloatSpec.IEEE754.BinarySingleNaN.Source
 

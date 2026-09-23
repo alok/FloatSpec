@@ -57,7 +57,7 @@ noncomputable def round_mode (m : mode) : Real → Int :=
     round_mode m = rnd_of_mode m.toRoundingMode := by
   rfl
 
-noncomputable instance valid_rnd_round_mode (m : mode) :
+instance valid_rnd_round_mode (m : mode) :
     FloatSpec.Core.Generic_fmt.Valid_rnd (round_mode m) := by
   unfold round_mode
   infer_instance

@@ -931,7 +931,7 @@ noncomputable def rnd_of_mode (mode : RoundingMode) : ℝ → Int :=
   | RoundingMode.RNA =>
       FloatSpec.Core.Generic_fmt.Znearest FloatSpec.Core.Generic_fmt.ZnearestA
 
-noncomputable instance valid_rnd_of_mode (mode : RoundingMode) :
+instance valid_rnd_of_mode (mode : RoundingMode) :
     FloatSpec.Core.Generic_fmt.Valid_rnd (rnd_of_mode mode) := by
   cases mode
   · simpa [rnd_of_mode] using
@@ -1033,7 +1033,7 @@ lemma round_to_generic_rnd_of_mode_zero (mode : RoundingMode)
 /-- Predicate capturing when a Binary754 float is in generic format.
     For finite floats, this requires the canonical exponent to be at most the float's exponent.
     This is the key constraint that Coq's `bounded mx ex = true` proof provides. -/
-noncomputable def Binary754_in_generic_format {prec emax : Int} (x : Binary754 prec emax) : Prop :=
+def Binary754_in_generic_format {prec emax : Int} (x : Binary754 prec emax) : Prop :=
   match x.val with
   | FullFloat.F754_zero _ => True
   | FullFloat.F754_infinity _ => True
