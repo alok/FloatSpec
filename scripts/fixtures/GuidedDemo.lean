@@ -1,5 +1,6 @@
 import FloatSpec.src.IEEE754.Bits
 import FloatSpec.src.IEEE754.PrimFloat
+import FloatSpec.src.IEEE754.BinarySingleNaNSourceFacade
 
 /-! Run with `lake env lean --run scripts/fixtures/GuidedDemo.lean`.
 Each section is a computation using the port, followed by a kernel-checked
@@ -9,12 +10,28 @@ Each example quotes (or points back to) the Coq that decides its answer, from
 Flocq at the pinned commit 7aab8f55. Flocq takes some definitions, such as
 `shr_1`, `SFcompare`, SpecFloat's `valid_binary`, and `SF2Prim`, from the Rocq
 core library; those are quoted from Rocq V9.1.0, the prover that builds the
-pinned reference. Quotes are verbatim. A `(* Flocq path:lines (7aab8f55) *)` or
-`(* Rocq V9.1.0 path:lines *)` line gives the location, and a `(* ... *)` line
-marks omitted lines; Rocq lines keep the indentation of their enclosing Section
-or Module. One-line aliases, type-conversion wrappers, and small helpers are
-cited in the prose by file and line rather than quoted. A row
-`[sign, mantissa, exponent]` means `(-1)^sign * mantissa * 2^exponent`.
+pinned reference. Quotes are verbatim, in one of two forms.
+
+* Checked: every Flocq quote is a block whose fence names the `@[flocq_source]`
+  anchor of its Lean port (`coq BinarySingleNaN.Bplus`), inside a Verso docstring
+  (`set_option doc.verso true in`). Lean resolves the name to one pinned line,
+  the hover links that line at the pinned commit, and
+  `scripts/validate_flocq_source_refs.py` compares the block with the pinned
+  source, verbatim up to trailing whitespace, from that line through the end of
+  the Rocq sentence. So the block starts at the declaration, and its location is
+  in the prose, as unchecked text such as `BinarySingleNaN.v:1940-1955`. These
+  docstrings write names as `{coq}` (a checked, linked Flocq citation), `{name}`
+  (a Lean declaration), or `{lit}` (text Lean does not check).
+* Unchecked: a quote from the Rocq core library is a plain block. Nothing
+  compares it with the source. Its first line, `(* Rocq V9.1.0 path:lines *)`,
+  gives the location; a `(* ... *)` line marks omitted lines; and Rocq lines
+  keep the indentation of their enclosing Section or Module. The validator
+  rejects a plain block with a Flocq location line, `(* Flocq src/...`, so a
+  Flocq quote cannot take this form.
+
+One-line aliases, type-conversion wrappers, and small helpers are cited in the
+prose by file and line rather than quoted. A row `[sign, mantissa, exponent]`
+means `(-1)^sign * mantissa * 2^exponent`.
 
 Coq vocabulary: `xH` = 1, `xO p` = 2p, and `xI p` = 2p+1 spell a `positive` in
 binary, lowest bit outermost; `Zpos p`, `Zneg p`, and `Z0` are +p, -p, and 0.
@@ -37,27 +54,39 @@ private def observe : StandardFloat → List Int
   | .S754_finite sign mantissa exponent => [if sign then 1 else 0, mantissa, exponent]
   | _ => []
 
-/-- **1. Exact arithmetic.** Coq's `Bplus` shifts both integer mantissas to the
-smaller exponent `ez`, adds them with their signs (`Fplus_naive`,
-`BinarySingleNaN.v:1837-1838`), and rounds the sum once with `binary_normalize`,
-which calls `binary_round` (example 3); 3.75 fits in 24 bits, so nothing is
-rounded away. Flocq's `b32_plus` (`Bits.v:669`) is Binary.v's `Bplus` at
-precision 24 and emax 128, which handles NaN payloads and delegates to this
-`Bplus` (`Binary.v:1049-1050`). Lean's `b32_plus` runs the computable
-`Binary.Bplus` in `BinarySingleNaN.lean`, which merges both layers into one
-match and writes `binary_normalize` inline: zero test, sign split,
-`binary_round`.
-```coq
-(* Flocq src/IEEE754/BinarySingleNaN.v:1940-1955 (7aab8f55) *)
+set_option doc.verso true in
+/-- **1. Exact arithmetic.** Coq's {coq}`BinarySingleNaN.Bplus`
+({lit}`BinarySingleNaN.v:1940-1955`) shifts both integer mantissas to the smaller exponent
+{lit}`ez`, adds them with their signs ({lit}`Fplus_naive`, {lit}`BinarySingleNaN.v:1837-1838`),
+and rounds the sum once with {coq}`BinarySingleNaN.binary_normalize`
+({lit}`BinarySingleNaN.v:1751-1756`), which calls {coq}`BinarySingleNaN.binary_round`
+(example 3); 3.75 fits in 24 bits, so nothing is rounded away. Flocq's {coq}`b32_plus`
+({lit}`Bits.v:669`) is Binary.v's {lit}`Bplus` at precision 24 and emax 128, which handles NaN
+payloads and delegates to this {coq}`BinarySingleNaN.Bplus` ({lit}`Binary.v:1049-1050`). Lean's
+{name}`b32_plus` runs the computable {name}`Binary.Bplus` in {lit}`BinarySingleNaN.lean`, which
+merges both layers into one match and writes {coq}`BinarySingleNaN.binary_normalize` inline: zero
+test, sign split, {name}`binary_round`.
+
+```coq BinarySingleNaN.Bplus
 Definition Bplus m x y :=
   match x, y with
-  (* ... *)
+  | B754_nan, _ | _, B754_nan => B754_nan
+  | B754_infinity sx, B754_infinity sy => if Bool.eqb sx sy then x else B754_nan
+  | B754_infinity _, _ => x
+  | _, B754_infinity _ => y
+  | B754_zero sx, B754_zero sy =>
+    if Bool.eqb sx sy then x else
+    match m with mode_DN => B754_zero true | _ => B754_zero false end
+  | B754_zero _, _ => y
+  | _, B754_zero _ => x
   | B754_finite sx mx ex Hx, B754_finite sy my ey Hy =>
     let ez := Z.min ex ey in
     binary_normalize m (Fplus_naive sx mx ex sy my ey ez)
       ez (match m with mode_DN => true | _ => false end)
   end.
-(* Flocq src/IEEE754/BinarySingleNaN.v:1751-1756 (7aab8f55) *)
+```
+
+```coq BinarySingleNaN.binary_normalize
 Definition binary_normalize mode m e szero :=
   match m with
   | Z0 => B754_zero szero
@@ -71,17 +100,18 @@ private def sumBits : Nat :=
 
 example : sumBits = 0x40700000 := by decide +kernel
 
-/-- **2. Rounding modes.** `binary_round` (next example) cuts 1.125 to the
-three-bit mantissa 4 with a dropped part of exactly half (`loc_Inexact Eq`),
-then asks Coq's `choice_mode` whether to add one. NE adds one only if 4 were
-odd (at an exact half `round_N` returns its first argument), NA always, ZR
-never, DN only for a negative inexact value, and UP only for a positive one
-(`round_sign_DN` and `round_sign_UP`, `Round.v:180-184` and `Round.v:273-277`).
-Lean's `.RNE .RTZ .RTN .RTP .RNA` are Coq's
-`mode_NE mode_ZR mode_DN mode_UP mode_NA`, and Lean's `choice_mode`
-(`BinarySingleNaN.lean`) has the same five branches.
-```coq
-(* Flocq src/IEEE754/BinarySingleNaN.v:1140-1147 (7aab8f55) *)
+set_option doc.verso true in
+/-- **2. Rounding modes.** {coq}`BinarySingleNaN.binary_round` (next example) cuts 1.125 to
+the three-bit mantissa 4 with a dropped part of exactly half ({lit}`loc_Inexact Eq`),
+then asks Coq's {coq}`choice_mode` ({lit}`BinarySingleNaN.v:1140-1147`) whether to add
+one. NE adds one only if 4 were odd (at an exact half {coq}`round_N`, {lit}`Round.v:415-421`,
+returns its first argument), NA always, ZR never, DN only for a negative inexact value, and
+UP only for a positive one ({coq}`round_sign_DN` and {coq}`round_sign_UP`,
+{lit}`Round.v:180-184` and {lit}`Round.v:273-277`). Lean's {lit}`.RNE .RTZ .RTN .RTP .RNA`
+are Coq's {lit}`mode_NE mode_ZR mode_DN mode_UP mode_NA`, and Lean's {name}`choice_mode`
+({lit}`BinarySingleNaN.lean`) has the same five branches.
+
+```coq choice_mode
 Definition choice_mode m sx mx lx :=
   match m with
   | mode_NE => cond_incr (round_N (negb (Z.even mx)) lx) mx
@@ -90,7 +120,9 @@ Definition choice_mode m sx mx lx :=
   | mode_UP => cond_incr (round_sign_UP sx lx) mx
   | mode_NA => cond_incr (round_N true lx) mx
   end.
-(* Flocq src/Calc/Round.v:415-421 (7aab8f55) *)
+```
+
+```coq round_N
 Definition round_N (p : bool) l :=
   match l with
   | loc_Exact => false
@@ -108,23 +140,29 @@ example : modes false = [[0,4,-2], [0,4,-2], [0,4,-2], [0,5,-2], [0,5,-2]] ∧
     modes true = [[1,4,-2], [1,4,-2], [1,5,-2], [1,4,-2], [1,5,-2]] := by
   decide +kernel
 
-/-- **3. Double rounding.** Coq's `binary_round` first aligns the mantissa to
-the format's exponent (`shl_align_fexp` shifts it left when it has fewer digits
-than the format needs; 73 does not). Then `binary_round_aux` shifts it down to
-the precision (`shr_fexp`), rounds with `choice_mode`, and renormalizes. Under
-NE, `round_N` (example 2) rounds up above half and breaks an exact half toward
-an even mantissa. Directly, `73*2^-6` (73 = 1001001 in binary) keeps 100 and
-drops 1001, above half, so it rounds up to `5*2^-2` = 1.25. Lean's
-`binary_round` and `binary_round_aux` (`BinarySingleNaN.lean`) follow these
-lines.
-```coq
-(* Flocq src/IEEE754/BinarySingleNaN.v:1701-1702 (7aab8f55) *)
+set_option doc.verso true in
+/-- **3. Double rounding.** Coq's {coq}`BinarySingleNaN.binary_round`
+({lit}`BinarySingleNaN.v:1701-1702`) first aligns the mantissa to the format's exponent
+({coq}`BinarySingleNaN.shl_align_fexp`, {lit}`BinarySingleNaN.v:1678-1679`, shifts it left
+when it has fewer digits than the format needs; 73 does not). Then
+{coq}`BinarySingleNaN.binary_round_aux` ({lit}`BinarySingleNaN.v:1270-1277`) shifts it down
+to the precision ({lit}`shr_fexp`), rounds with {coq}`choice_mode`, and renormalizes. Under
+NE, {coq}`round_N` (example 2) rounds up above half and breaks an exact half toward an even
+mantissa. Directly, {lit}`73*2^-6` (73 = 1001001 in binary) keeps 100 and drops 1001, above
+half, so it rounds up to {lit}`5*2^-2` = 1.25. Lean's {name}`binary_round` and
+{name}`binary_round_aux` ({lit}`BinarySingleNaN.lean`) follow these lines.
+
+```coq BinarySingleNaN.binary_round
 Definition binary_round m sx mx ex :=
   let '(mz, ez) := shl_align_fexp mx ex in binary_round_aux m sx (Zpos mz) ez loc_Exact.
-(* Flocq src/IEEE754/BinarySingleNaN.v:1678-1679 (7aab8f55) *)
+```
+
+```coq BinarySingleNaN.shl_align_fexp
 Definition shl_align_fexp mx ex :=
   shl_align mx ex (fexp (Zpos (digits2_pos mx) + ex)).
-(* Flocq src/IEEE754/BinarySingleNaN.v:1270-1277 (7aab8f55) *)
+```
+
+```coq BinarySingleNaN.binary_round_aux
 Definition binary_round_aux mode sx mx ex lx :=
   let '(mrs', e') := shr_fexp mx ex lx in
   let '(mrs'', e'') := shr_fexp (choice_mode mode sx (shr_m mrs') (loc_of_shr_record mrs')) e' loc_Exact in
@@ -149,19 +187,26 @@ private def viaFour : List Int :=
 
 example : direct = [0,5,-2] ∧ viaFour = [0,4,-2] := by decide +kernel
 
-/-- **4. Signed zero, NaN, successor.** Coq compares through `SFcompare`, whose
-zero row answers `Some Eq` whatever the signs and whose NaN row answers `None`
-(unordered). Flocq's `b64_compare` (`Bits.v:743`) is Binary.v's `Bcompare` at
-precision 53 and emax 1024. Lean's `b64_compare` reaches
-`BinarySingleNaN.Bcompare` (`BinarySingleNaN.lean`), which has the same rows,
-written `some .eq` and `none`.
-```coq
-(* Flocq src/IEEE754/Binary.v:773-774 (7aab8f55) *)
+set_option doc.verso true in
+/-- **4. Signed zero, NaN, successor.** Coq compares through {lit}`SFcompare`, whose
+zero row answers {lit}`Some Eq` whatever the signs and whose NaN row answers {lit}`None`
+(unordered). Flocq's {coq}`b64_compare` ({lit}`Bits.v:743`) is Binary.v's
+{coq}`Binary.Bcompare` ({lit}`Binary.v:773-774`) at precision 53 and emax 1024, which applies
+{coq}`BinarySingleNaN.Bcompare` ({lit}`BinarySingleNaN.v:559-560`). Lean's
+{name}`b64_compare` reaches {name}`BinarySingleNaN.Bcompare` ({lit}`BinarySingleNaN.lean`),
+which has the same rows, written {lit}`some .eq` and {lit}`none`.
+
+```coq Binary.Bcompare
 Definition Bcompare (f1 f2 : binary_float) : option comparison :=
   BinarySingleNaN.Bcompare (B2BSN f1) (B2BSN f2).
-(* Flocq src/IEEE754/BinarySingleNaN.v:559-560 (7aab8f55) *)
+```
+
+```coq BinarySingleNaN.Bcompare
 Definition Bcompare (f1 f2 : binary_float) : option comparison :=
   SFcompare (B2SF f1) (B2SF f2).
+```
+
+```
 (* Rocq V9.1.0 theories/Corelib/Floats/SpecFloat.v:177-209 *)
   Definition SFcompare f1 f2 :=
     match f1, f2 with
@@ -179,17 +224,26 @@ private def zeroComparison : Option Ordering :=
 private def nanComparison : Option Ordering :=
   b64_compare (b64_of_bits 0x7ff8000000000000) (b64_of_bits 0)
 
-/-- The Boolean tests read `SFcompare`: `SFeqb` needs `Some Eq` and `SFltb`
-needs `Some Lt` (`SpecFloat.v:211-221`), while `SFleb` accepts either, so the
-`None` from NaN makes all three false. Lean's `Beqb`, `Bltb`, and `Bleb` match
-on `Bcompare` the same way.
-```coq
-(* Flocq src/IEEE754/BinarySingleNaN.v:628, 652, 666 (7aab8f55) *)
+set_option doc.verso true in
+/-- The Boolean tests {coq}`Beqb`, {coq}`Bltb`, and {coq}`Bleb` ({lit}`BinarySingleNaN.v`
+lines 628, 652, and 666) read {lit}`SFcompare`: {lit}`SFeqb` needs {lit}`Some Eq` and
+{lit}`SFltb` needs {lit}`Some Lt` ({lit}`SpecFloat.v:211-221`), while {lit}`SFleb` accepts
+either, so the {lit}`None` from NaN makes all three false. Lean's {name}`Beqb`, {name}`Bltb`,
+and {name}`Bleb` match on {name}`BinarySingleNaN.Bcompare` the same way.
+
+```coq Beqb
 Definition Beqb (f1 f2 : binary_float) : bool := SFeqb (B2SF f1) (B2SF f2).
-(* ... *)
+```
+
+```coq Bltb
 Definition Bltb (f1 f2 : binary_float) : bool := SFltb (B2SF f1) (B2SF f2).
-(* ... *)
+```
+
+```coq Bleb
 Definition Bleb (f1 f2 : binary_float) : bool := SFleb (B2SF f1) (B2SF f2).
+```
+
+```
 (* Rocq V9.1.0 theories/Corelib/Floats/SpecFloat.v:223-227 *)
   Definition SFleb f1 f2 :=
     match SFcompare f1 f2 with
@@ -205,17 +259,19 @@ private def booleanComparison : List (List Bool) :=
     [BinarySingleNaN.Beqb positiveZero y,
      BinarySingleNaN.Bltb positiveZero y, BinarySingleNaN.Bleb positiveZero y]
 
-/-- Flocq's `b64_succ` (`Bits.v:733`) is Binary.v's `Bsucc` (`Binary.v:1392`),
-which applies the `Bsucc` below to `B2BSN x` and lifts the result back (a proof
-script, not quoted). For negative `x`, `Bsucc` rounds `x` plus half a unit in
-the last place toward zero: the negative number with mantissa `xO mx - 1` (that
-is, `2*mx - 1`) at exponent `ex - 1`. That gives the next float toward zero.
-For the smallest negative subnormal the number is `-2^-1075`, which rounds to
--0. Lean's `b64_succ` (`Bits.lean`) instead subtracts one from the 64-bit word;
-its agreement with `Bsucc` is tested (`FloatSpec/Test/BitOrderExecution.lean`,
-`scripts/fixtures/BitOrderProperties.v`), not proven.
-```coq
-(* Flocq src/IEEE754/BinarySingleNaN.v:3242-3252 (7aab8f55) *)
+set_option doc.verso true in
+/-- Flocq's {coq}`b64_succ` ({lit}`Bits.v:733`) is Binary.v's {coq}`Binary.Bsucc`
+({lit}`Binary.v:1392`), which applies the {coq}`BinarySingleNaN.Bsucc` below
+({lit}`BinarySingleNaN.v:3242-3252`) to {lit}`B2BSN x` and lifts the result back (a proof
+script, not quoted). For negative {lit}`x`, {lit}`Bsucc` rounds {lit}`x` plus half a unit in
+the last place toward zero: the negative number with mantissa {lit}`xO mx - 1` (that is,
+{lit}`2*mx - 1`) at exponent {lit}`ex - 1`. That gives the next float toward zero. For the
+smallest negative subnormal the number is {lit}`-2^-1075`, which rounds to -0. Lean's
+{name}`b64_succ` ({lit}`Bits.lean`) instead subtracts one from the 64-bit word; its agreement
+with {lit}`Bsucc` is tested ({lit}`FloatSpec/Test/BitOrderExecution.lean`,
+{lit}`scripts/fixtures/BitOrderProperties.v`), not proven.
+
+```coq BinarySingleNaN.Bsucc
 Definition Bsucc x :=
   match x with
   | B754_zero _ => B754_finite false 1 emin Bulp_correct_aux
@@ -244,7 +300,7 @@ this `valid_binary prec emax` (`Binary.v:164`); Binary.v's own `valid_binary`
 (line 166) is the full-float version with NaN payloads. Lean's
 `valid_binary_SF` (`Binary.lean`) makes the same check, plus `0 < m` because its
 mantissa is a `Nat`, not a Coq `positive`.
-```coq
+```
 (* Rocq V9.1.0 theories/Corelib/Floats/SpecFloat.v:36-37 *)
   Definition emin := Z.sub (Z.sub (Zpos 3) emax) prec.
   Definition fexp e := Z.max (Z.sub e prec) emin.
@@ -276,7 +332,7 @@ floor division (Python's `-1 // 2`), and gives -1. Flocq's `shr_truncate`
 (`BinarySingleNaN.v:1039-1044`) equates shifting with truncation only for
 `0 <= m`. Lean's `shr_1` (`BinarySingleNaN.lean`) shifts negative mantissas the
 same way as Coq's.
-```coq
+```
 (* Rocq V9.1.0 theories/Corelib/Floats/SpecFloat.v:86-97 *)
     Definition shr_1 mrs :=
       let '(Build_shr_record m r s) := mrs in
@@ -304,7 +360,7 @@ mantissas: on -7, adding one moves toward zero instead of away, so the answer is
 Lean matches Coq even outside that contract. Lean's `bsn_shr_fexp` uses this
 signed shift for negative mantissas; the former Euclidean-division shortcut
 returned NaN on this input.
-```coq
+```
 (* Rocq V9.1.0 theories/Corelib/Floats/SpecFloat.v:115-122 *)
     Definition shr mrs e n :=
       match n with
@@ -324,18 +380,23 @@ private def rawRoundIsNegativeZero : Bool :=
 example : signedShiftAndFloor = [0, -1] ∧ rawRoundIsNegativeZero = true := by
   decide +kernel
 
-/-- **7. Conversion.** Rocq's `SF2Prim`, which Flocq's `B2Prim` uses, first
-turns the integer mantissa into a machine float (`of_Z` wraps it modulo 2^63,
-and Lean keeps that wrap; `of_uint63` may round), then scales it (`Z.ldexp`
-clamps the exponent and `ldshiftexp` may round again); raw (3, -1) becomes the
-machine float 1.5. Lean's `SF2Prim` (`PrimFloat.lean`) keeps valid inputs and
-sends other finite ones through `convertRawFinite`, which takes the same two
-steps; Lean's `Prim2SF` reads the stored value, where Rocq's decodes machine
-bits (`FloatOps.v:37-48`).
-```coq
-(* Flocq src/IEEE754/PrimFloat.v:33-34 (7aab8f55) *)
+set_option doc.verso true in
+/-- **7. Conversion.** Rocq's {lit}`SF2Prim`, which Flocq's {coq}`B2Prim`
+({lit}`PrimFloat.v:33-34`) uses, first turns the integer mantissa into a machine float
+({lit}`of_Z` wraps it modulo 2^63, and Lean keeps that wrap; {lit}`of_uint63` may round),
+then scales it ({lit}`Z.ldexp` clamps the exponent and {lit}`ldshiftexp` may round again);
+raw (3, -1) becomes the machine float 1.5. Lean's
+{name (full := FaithfulPrimFloat.SF2Prim)}`SF2Prim` ({lit}`PrimFloat.lean`) keeps valid
+inputs and sends other finite ones through {lit}`convertRawFinite`, which takes the same two
+steps; Lean's {name (full := FaithfulPrimFloat.Prim2SF)}`Prim2SF` reads the stored value,
+where Rocq's decodes machine bits ({lit}`FloatOps.v:37-48`).
+
+```coq B2Prim
 Definition B2Prim (x : binary_float prec emax) : float :=
   SF2Prim (B2SF x).
+```
+
+```
 (* Rocq V9.1.0 theories/Corelib/Floats/FloatOps.v:50-61 *)
 Definition SF2Prim ef :=
   match ef with

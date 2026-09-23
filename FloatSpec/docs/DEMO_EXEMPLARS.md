@@ -11,10 +11,21 @@ order; roughly a third of it is Lean, a third quoted Coq, and a third
 explanation. It uses the port's actual integer algorithms, not decimal
 approximations as an oracle. Every section has both a `decide +kernel` assertion
 and a compiled runtime check that throws on disagreement. Each example quotes
-(or points back to), verbatim and with file and line numbers, the Flocq
+(or points back to), verbatim and located by file and line, the Flocq
 definitions (or the Rocq core definitions Flocq imports) that decide its
 answer, so the Lean line and the Coq original can be read side by side. The
 file header explains the Coq notation the quotes use.
+Every Flocq quote is checked. The quoted declaration's Lean port carries an
+`@[flocq_source]` anchor, and the docstring is a Verso docstring that cites it
+with the `{coq}` role and quotes it in a `coq` block naming the anchor, so
+hovering the definition in an editor links the pinned line next to the Lean. A
+citation that names no anchor fails to elaborate, and
+`scripts/validate_flocq_source_refs.py` reads each quote back from the compiled
+docstring and compares it, verbatim up to trailing whitespace and through the
+end of the Rocq sentence, with the pinned source at the very line its link
+points to (see `FloatSpecRoles.lean`). It also rejects a plain block that quotes
+Flocq. The other quotes, from the Rocq core library, are plain blocks whose
+first line gives the location; nothing checks them.
 This command builds and runs a native executable through Lake. For the direct
 Lean interpreter path, `lake env lean --run scripts/fixtures/GuidedDemo.lean`
 still runs the same source and checks. The old `floatspec` executable remains

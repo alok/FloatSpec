@@ -2360,13 +2360,13 @@ noncomputable def Rnd_NE_pt_refl_check : Bool :=
         (Classical.dec _)
 
 
-/-- Coq:
-    {coq}`Rnd_NG_pt_refl` specialized to {name}`Rnd_NE_pt`
-    (implicit in Coq proof of {coq}`round_NE_pt`).
+set_option doc.verso true in
+/-- Coq: {coq}`Rnd_NG_pt_refl` specialized to {name}`Rnd_NE_pt`
+(implicit in the Coq proof of {lit}`round_NE_pt`).
 
-    Specification: Nearest-even rounding is reflexive on format
+Specification: Nearest-even rounding is reflexive on format
 
-    If x is already in the format, then rounding x gives x itself.
+If x is already in the format, then rounding x gives x itself.
 -/
 theorem Rnd_NE_pt_refl (x : ℝ) :
     ⦃⌜beta > 1 ∧ FloatSpec.Core.Generic_fmt.generic_format beta fexp x⌝⦄
@@ -2405,7 +2405,7 @@ noncomputable def Rnd_NE_pt_idempotent_check : Bool :=
 
 
 /-- Coq:
-    {coq}`Rnd_NG_pt_idempotent` specialized (implicit in Coq lemmas around Rnd predicates).
+    {lit}`Rnd_NG_pt_idempotent` specialized (implicit in Coq lemmas around Rnd predicates).
 
     Specification: Nearest-even rounding is idempotent
 
@@ -2488,7 +2488,7 @@ noncomputable def Rnd_NE_pt_sign_check : Bool :=
           Rnd_NE_pt beta fexp x f → x ≠ 0 → 0 < f → 0 < x)
         (Classical.dec _)
 
-/-- Coq: Derived from {coq}`round_NE_pt_pos` and symmetry; sign preserved except zeros.
+/-- Coq: Derived from {lit}`round_NE_pt_pos` and symmetry; sign preserved except zeros.
 
     Specification: Nearest-even preserves sign
 
@@ -2748,7 +2748,7 @@ noncomputable def round_NE_pt_pos_check : Bool :=
 
 
 /-- Coq:
-    Lemma {coq}`round_NE_pt_pos`:
+    Lemma {lit}`round_NE_pt_pos`:
       for all x with 0 < x, Rnd_NE_pt x (round beta fexp ZnearestE x).
 
     Rounding to nearest-even at positive x satisfies the predicate.

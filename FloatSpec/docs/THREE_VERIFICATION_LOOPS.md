@@ -32,7 +32,7 @@ deeper profile below.
 
 CI also compiles every Rocq fixture (`scripts/fixtures/*.v`, 47 today) against
 the pinned build and elaborates every Lean fixture (`scripts/fixtures/*.lean`,
-35 today) with `-DwarningAsError=true`, both discovered by glob. `lake env lean`
+36 today) with `-DwarningAsError=true`, both discovered by glob. `lake env lean`
 does not read the lakefile, so fixtures meet Lean's default linters plus
 warnings-as-errors, which is stricter than the product build. The two fixtures
 that define `main`, `GuidedDemo` and `PffWalkthrough`, also execute, and
@@ -42,9 +42,14 @@ those steps reject what compiles without error but proves nothing: Lean
 procedures, kernel bypasses (`skipKernelTC`, `addDeclCore`, `doCheck`,
 `addDeclWithoutChecking`) and environment writes (`setEnv`, `modifyEnv`,
 `run_cmd`), and Rocq `Admitted`, `Admit`, `Abort`, `Axiom`, `Parameter`,
-`Declare`, `native_compute` and disabled checking. Each Lean fixture's olean
+`Declare`, `native_compute` and disabled checking. A Lean test that needs one of
+the rejected Lean forms, such as `FloatSpec/Test/FlocqCitations.lean`, which
+probes rejected docstring citations with `run_cmd` and a rollback, belongs in
+the compiled test library instead: `lake build` applies `warningAsError` there,
+and `scripts/check_compiled_trust.py --scope tests` audits it and replays its
+declarations through the kernel. Each Lean fixture's olean
 is written while it elaborates, and `scripts/KernelReplay.lean` then sends
-every declaration of all 35 back through the kernel (436 declarations, about
+every declaration of all 36 back through the kernel (440 declarations, about
 45 seconds here): a metaprogram can add a theorem the kernel never checked, which
 `#print axioms` reports as axiom-free, and only a replay sees that however it
 is spelled.

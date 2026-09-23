@@ -15403,9 +15403,20 @@ decreasing_by
   · exact Positive.view_xI_lt _hp
   · exact Positive.view_xO_lt _hp
 
-/-- Coq `Pdiv_correct`: `Pdiv` returns quotient and remainder, with the
-remainder below the divisor. Proved as Coq does, by induction on `p` through
-each branch of `Pdiv`. -/
+set_option doc.verso true in
+/--
+Flocq's {coq}`Pdiv_correct`: {name}`Pdiv` returns quotient and remainder, with the remainder
+below the divisor. Proved as Coq does, by induction on {name}`p` through each branch of
+{name}`Pdiv`.
+
+```coq Pdiv_correct
+Theorem Pdiv_correct :
+ forall p q,
+ nat_of_P p =
+ oZ (fst (Pdiv p q)) * nat_of_P q + oZ (snd (Pdiv p q)) /\
+ oZ (snd (Pdiv p q)) < nat_of_P q.
+```
+-/
 @[flocq_source "src/Pff/Pff.v" 5397 "Pdiv_correct"]
 theorem Pdiv_correct (p q : Positive) :
     nat_of_P p = oZ (Prod.fst (Pdiv p q)) * nat_of_P q + oZ (Prod.snd (Pdiv p q)) ∧
