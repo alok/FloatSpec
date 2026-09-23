@@ -2,7 +2,7 @@
  "flocq_commit": "7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f",
  "rocq": "9.1",
  "floatspec_base": "6644539f",
- "anchors": 456,
+ "anchors": 457,
  "verdicts": [
   {
    "coq_path": "src/Calc/Bracket.v",
@@ -2903,6 +2903,13 @@
    "lean_name": "Pdiv",
    "verdict": "match",
    "explanation": "The types match. Lean computes (p/q, p%q) through Nat div/mod and encodes zero as None. Coq uses a structural binary Fixpoint instead. By Coq's Pdiv_correct (p = q*quot + rem with rem < q) and uniqueness of Euclidean division, the two are extensionally equal. Spot evaluation in Rocq and Lean gave identical outputs for p = 1..12."
+  },
+  {
+   "coq_path": "src/Pff/Pff.v",
+   "coq_name": "Pdiv_correct",
+   "lean_name": "Pdiv_correct",
+   "verdict": "match",
+   "explanation": "Added after the audit run with the structural Pdiv transcription. Lean: forall p q : Positive, nat_of_P p = oZ (Pdiv p q).1 * nat_of_P q + oZ (Pdiv p q).2 /\\ oZ (Pdiv p q).2 < nat_of_P q. Rocq Check @Pdiv_correct: forall p q : positive, Pos.to_nat p = oZ (fst (Pdiv p q)) * Pos.to_nat q + oZ (snd (Pdiv p q)) /\\ oZ (snd (Pdiv p q)) < Pos.to_nat q. Same proposition."
   },
   {
    "coq_path": "src/Pff/Pff.v",

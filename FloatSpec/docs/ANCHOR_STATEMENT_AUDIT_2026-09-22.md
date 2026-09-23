@@ -40,9 +40,10 @@ wrong Lean declaration:
   which matches Rocq's `spec_float → binary_float prec emax`. The raw view is
   `@[flocq_local]`.
 
-After the fix there are 455 anchors (the `Calc` duplicate is gone), and
-`scripts/validate_flocq_source_refs.py` validates all of them against fresh
-compiled metadata.
+After the fix there were 455 anchors (the `Calc` duplicate is gone). The
+structural Pff transcription then anchored `Pdiv_correct`, checked the same
+way (match), for 456. `scripts/validate_flocq_source_refs.py` validates all of
+them against fresh compiled metadata.
 
 ## What this does and does not establish
 
