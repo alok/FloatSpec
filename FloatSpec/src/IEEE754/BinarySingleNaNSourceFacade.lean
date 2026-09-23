@@ -501,6 +501,7 @@ theorem bounded_canonical_lt_emax {prec emax : Int}
       (FloatSpec.Core.Zaux.positiveToNat m) e = true :=
   Binary.bounded_canonical_lt_emax m e hc hlt
 
+@[flocq_source "src/IEEE754/BinarySingleNaN.v" 1678 "shl_align_fexp"]
 abbrev shl_align_fexp {prec emax : Int} := @Binary.shl_align_fexp prec emax
 
 abbrev shl_align_fexp_correct {prec emax : Int} :=

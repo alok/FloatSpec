@@ -1731,7 +1731,7 @@ theorem shr_truncate (fexp : Int → Int)
       simp [shr, FloatSpec.Calc.Round.truncate_triple, Hshift, Hnot_lt,
         Hshift_nonneg, Hnot_le]
 
--- Coq: choice_mode
+@[flocq_source "src/IEEE754/BinarySingleNaN.v" 1140 "choice_mode"]
 def choice_mode (mode : RoundingMode) (sx : Bool) (mx : Int) (lx : Loc) : Int :=
   match mode with
   | RoundingMode.RNE =>

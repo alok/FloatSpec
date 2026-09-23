@@ -123,7 +123,7 @@ theorem B2SF_valid (x : PrimBinaryFloat) :
 def Prim2B (x : PrimitiveFloat) : PrimBinaryFloat :=
   SF2B (Prim2SF x) (Prim2SF_valid x)
 
--- Flocq `PrimFloat.v:B2Prim`.
+@[flocq_source "src/IEEE754/PrimFloat.v" 33 "B2Prim"]
 def B2Prim (x : PrimBinaryFloat) : PrimitiveFloat :=
   SF2Prim (B2SF x)
 
