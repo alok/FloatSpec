@@ -1670,7 +1670,7 @@ instance valid_rnd_ceil : Valid_rnd rnd_ceil := by
   exact valid_rnd_UP
 
 /-- Coq (`Generic_fmt.v`): truncation is a valid integer rounding mode. -/
-noncomputable instance valid_rnd_ZR : Valid_rnd FloatSpec.Core.Raux.Ztrunc := by
+instance valid_rnd_ZR : Valid_rnd FloatSpec.Core.Raux.Ztrunc := by
   refine { Zrnd_le := ?mono, Zrnd_IZR := ?onInt }
   · intro x y hxy
     have h := FloatSpec.Core.Raux.Ztrunc_le x y hxy
@@ -1680,10 +1680,10 @@ noncomputable instance valid_rnd_ZR : Valid_rnd FloatSpec.Core.Raux.Ztrunc := by
     simpa [Id.run, pure] using h
 
 /-- Compatibility name retained for existing FloatSpec clients. -/
-noncomputable abbrev valid_rnd_Ztrunc := valid_rnd_ZR
+abbrev valid_rnd_Ztrunc := valid_rnd_ZR
 
 /-- Coq (`Generic_fmt.v`): away-from-zero rounding is a valid integer rounding mode. -/
-noncomputable instance valid_rnd_AW : Valid_rnd FloatSpec.Core.Raux.Zaway := by
+instance valid_rnd_AW : Valid_rnd FloatSpec.Core.Raux.Zaway := by
   refine { Zrnd_le := ?mono, Zrnd_IZR := ?onInt }
   · intro x y hxy
     have h := FloatSpec.Core.Raux.Zaway_le x y hxy
@@ -1693,7 +1693,7 @@ noncomputable instance valid_rnd_AW : Valid_rnd FloatSpec.Core.Raux.Zaway := by
     simpa [Id.run, pure] using h
 
 /-- Coq ({lit}`Generic_fmt.v`): Opposite rounding function {lean}`Zrnd_opp`. -/
-noncomputable def Zrnd_opp (rnd : ℝ → Int) (x : ℝ) : Int :=
+def Zrnd_opp (rnd : ℝ → Int) (x : ℝ) : Int :=
   -(rnd (-x))
 
 /-- Validity of opposite rounding -/
@@ -2014,7 +2014,7 @@ theorem Znearest_le_ceil (choice : Int → Bool) (x : ℝ) :
 
 Rounding to nearest with an arbitrary tie-breaking choice is a valid integer
 rounding mode. -/
-noncomputable instance valid_rnd_N (choice : Int → Bool) :
+instance valid_rnd_N (choice : Int → Bool) :
     Valid_rnd (Znearest choice) := by
   refine { Zrnd_le := ?mono, Zrnd_IZR := ?onInt }
   · intro x y hxy
@@ -3480,13 +3480,13 @@ theorem round_to_generic_int_eq_roundR
 /-- Choice function for round-to-nearest, ties away from zero.
 
     It selects the upper neighbor when the tie is nonnegative. -/
-noncomputable def ZnearestA := fun t : Int => decide (0 ≤ t)
+def ZnearestA := fun t : Int => decide (0 ≤ t)
 
 /-- Coq `Generic_fmt.v`: instance `valid_rnd_NA`.
 
     Upstream: `Global Instance valid_rnd_NA :
     Valid_rnd (Znearest (Zle_bool 0)) := valid_rnd_N _.` -/
-noncomputable instance valid_rnd_NA : Valid_rnd (Znearest ZnearestA) :=
+instance valid_rnd_NA : Valid_rnd (Znearest ZnearestA) :=
   valid_rnd_N ZnearestA
 
 /-- Local monotonicity assumption on the exponent function (matches Coq's
@@ -3540,7 +3540,7 @@ noncomputable def Znearest0 : ℝ → Int :=
 /-- Coq `Generic_fmt.v`: instance `valid_rnd_N0`.
 
     Upstream: `Global Instance valid_rnd_N0 : Valid_rnd Znearest0 := valid_rnd_N _.` -/
-noncomputable instance valid_rnd_N0 : Valid_rnd Znearest0 :=
+instance valid_rnd_N0 : Valid_rnd Znearest0 :=
   valid_rnd_N (fun t : Int => decide (t < 0))
 
 /- Coq (Generic_fmt.v): round_N_opp

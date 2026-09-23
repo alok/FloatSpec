@@ -255,7 +255,7 @@ private lemma Zodd_opp (x : ℝ) : Zodd (-x) = -Zodd x := by
       rw [hnegz, hxz, hceil_neg]
 
 /-- Coq `valid_rnd_odd`: round to odd is a valid integer rounding. -/
-noncomputable instance valid_rnd_odd :
+instance valid_rnd_odd :
     FloatSpec.Core.Generic_fmt.Valid_rnd Zrnd_odd := by
   change FloatSpec.Core.Generic_fmt.Valid_rnd Zodd
   refine { Zrnd_le := ?mono, Zrnd_IZR := ?onInt }

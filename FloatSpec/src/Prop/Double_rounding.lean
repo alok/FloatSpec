@@ -14,7 +14,7 @@ variable (beta : Int) [ValidRadix beta]
 
 /-! Midpoint helpers, corresponding to Coq's `midp` and `midp'`. -/
 
-noncomputable def round_round_eq (fexp1 fexp2 : Int → Int)
+def round_round_eq (fexp1 fexp2 : Int → Int)
     (choice1 choice2 : Int → Bool) (x : ℝ) : Prop :=
   FloatSpec.Core.Generic_fmt.roundR beta fexp1
       (FloatSpec.Core.Generic_fmt.Znearest choice1)

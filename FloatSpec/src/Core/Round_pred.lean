@@ -806,8 +806,6 @@ section RoundNearestGeneric
 
 universe u
 
-noncomputable section
-
 /-- FLoCq's uniqueness condition for a generic nearest tie predicate. -/
 @[flocq_source "src/Core/Round_pred.v" 701 "Rnd_NG_pt_unique_prop"]
 def Rnd_NG_pt_unique_prop (F : ℝ → Prop) (P : ℝ → ℝ → Sort u) : Prop :=
@@ -815,8 +813,6 @@ def Rnd_NG_pt_unique_prop (F : ℝ → Prop) (P : ℝ → ℝ → Sort u) : Prop
     Rnd_DN_pt F x d → Rnd_N_pt F x d →
     Rnd_UP_pt F x u → Rnd_N_pt F x u →
     P x d → P x u → d = u
-
-end
 
 /-- A generic nearest policy gives unique results under its tie-uniqueness condition. -/
 @[flocq_source "src/Core/Round_pred.v" 707 "Rnd_NG_pt_unique"]
