@@ -543,7 +543,7 @@
    "port_notes": "The spec has no callers. Add a direct anchored theorem (line 575)."
   },
   {
-   "id": "src/Core/Raux.v:Rcompare_prop_ind",
+   "id": "src/Core/Raux.v:Rcompare_prop_ind@6967",
    "coq_name": "Rcompare_prop_ind",
    "classification": "renamed-match",
    "lean_name": "FloatSpec.Core.Raux.Rcompare_prop.rec",
@@ -554,7 +554,7 @@
    "port_notes": "Added 2026-09-23 after batch 1C removed the aliases."
   },
   {
-   "id": "src/Core/Raux.v:Rcompare_prop_sind",
+   "id": "src/Core/Raux.v:Rcompare_prop_sind@6967",
    "coq_name": "Rcompare_prop_sind",
    "classification": "not-applicable",
    "lean_name": "",
@@ -587,7 +587,7 @@
    "port_notes": "No port needed. Atlas constructor resolution only."
   },
   {
-   "id": "src/Core/Raux.v:Req_bool_prop_ind",
+   "id": "src/Core/Raux.v:Req_bool_prop_ind@14455",
    "coq_name": "Req_bool_prop_ind",
    "classification": "renamed-match",
    "lean_name": "FloatSpec.Core.Raux.Req_bool_prop.rec",
@@ -598,7 +598,7 @@
    "port_notes": "Added 2026-09-23 after batch 1C removed the aliases."
   },
   {
-   "id": "src/Core/Raux.v:Req_bool_prop_sind",
+   "id": "src/Core/Raux.v:Req_bool_prop_sind@14455",
    "coq_name": "Req_bool_prop_sind",
    "classification": "not-applicable",
    "lean_name": "",
@@ -653,7 +653,7 @@
    "port_notes": "No port needed. Atlas constructor resolution only."
   },
   {
-   "id": "src/Core/Raux.v:Rle_bool_prop_ind",
+   "id": "src/Core/Raux.v:Rle_bool_prop_ind@12252",
    "coq_name": "Rle_bool_prop_ind",
    "classification": "renamed-match",
    "lean_name": "FloatSpec.Core.Raux.Rle_bool_prop.rec",
@@ -664,7 +664,7 @@
    "port_notes": "Added 2026-09-23 after batch 1C removed the aliases."
   },
   {
-   "id": "src/Core/Raux.v:Rle_bool_prop_sind",
+   "id": "src/Core/Raux.v:Rle_bool_prop_sind@12252",
    "coq_name": "Rle_bool_prop_sind",
    "classification": "not-applicable",
    "lean_name": "",
@@ -697,7 +697,7 @@
    "port_notes": "No port needed. Atlas constructor resolution only."
   },
   {
-   "id": "src/Core/Raux.v:Rlt_bool_prop_ind",
+   "id": "src/Core/Raux.v:Rlt_bool_prop_ind@13161",
    "coq_name": "Rlt_bool_prop_ind",
    "classification": "renamed-match",
    "lean_name": "FloatSpec.Core.Raux.Rlt_bool_prop.rec",
@@ -708,7 +708,7 @@
    "port_notes": "Added 2026-09-23 after batch 1C removed the aliases."
   },
   {
-   "id": "src/Core/Raux.v:Rlt_bool_prop_sind",
+   "id": "src/Core/Raux.v:Rlt_bool_prop_sind@13161",
    "coq_name": "Rlt_bool_prop_sind",
    "classification": "not-applicable",
    "lean_name": "",
