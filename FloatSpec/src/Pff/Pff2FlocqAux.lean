@@ -1538,13 +1538,12 @@ private theorem round_N_const_false_eq_DN_of_nearest_DN
   have hNearestPt := FloatSpec.Core.Generic_fmt.round_N_pt
     (beta := beta) (fexp := fexp)
     (choice := fun _ : Int => false) (x := r) hbeta
-  have hclass := FloatSpec.Core.Round_pred.Rnd_N_pt_DN_or_UP_eq_spec
+  have hclass := FloatSpec.Core.Round_pred.Rnd_N_pt_DN_or_UP_eq
     (fun y => generic_format beta fexp y) r down up nearest
     (by simpa [down] using hDN) (by simpa [up] using hUP)
     (by simpa [nearest] using hNearestPt)
   have hcases : nearest = down ∨ nearest = up := by
-    simpa [FloatSpec.Core.Round_pred.Rnd_N_pt_DN_or_UP_eq_check, pure,
-      decide_eq_true_iff] using hclass trivial
+    exact hclass
   rcases hcases with hnearest_down | hnearest_up
   · simpa [nearest, down] using hnearest_down
   · have hup_nearest : FloatSpec.Core.Defs.Rnd_N_pt
@@ -1604,13 +1603,12 @@ private theorem round_N_const_true_eq_UP_of_nearest_UP
   have hNearestPt := FloatSpec.Core.Generic_fmt.round_N_pt
     (beta := beta) (fexp := fexp)
     (choice := fun _ : Int => true) (x := r) hbeta
-  have hclass := FloatSpec.Core.Round_pred.Rnd_N_pt_DN_or_UP_eq_spec
+  have hclass := FloatSpec.Core.Round_pred.Rnd_N_pt_DN_or_UP_eq
     (fun y => generic_format beta fexp y) r down up nearest
     (by simpa [down] using hDN) (by simpa [up] using hUP)
     (by simpa [nearest] using hNearestPt)
   have hcases : nearest = down ∨ nearest = up := by
-    simpa [FloatSpec.Core.Round_pred.Rnd_N_pt_DN_or_UP_eq_check, pure,
-      decide_eq_true_iff] using hclass trivial
+    exact hclass
   rcases hcases with hnearest_down | hnearest_up
   · have hdown_nearest : FloatSpec.Core.Defs.Rnd_N_pt
         (fun y => generic_format beta fexp y) r down := by
@@ -1672,15 +1670,14 @@ theorem pff_round_is_round_N (beta : Int) [ValidRadix beta] (b : Fbound) (p : In
     simpa [fexp] using
       (closest_to_Rnd_N_pt (beta := beta) (b := b) (p := p) (r := r)
         (f := f) hpBound hprec hbeta hClosest)
-  have hclass := FloatSpec.Core.Round_pred.Rnd_N_pt_DN_or_UP_eq_spec
+  have hclass := FloatSpec.Core.Round_pred.Rnd_N_pt_DN_or_UP_eq
     (fun y => generic_format beta fexp y) r down up
     (_root_.F2R (beta:=beta) f)
     (by simpa [down] using hDN) (by simpa [up] using hUP)
     hF_nearest
   have hcases : _root_.F2R (beta:=beta) f = down ∨
       _root_.F2R (beta:=beta) f = up := by
-    simpa [FloatSpec.Core.Round_pred.Rnd_N_pt_DN_or_UP_eq_check, pure,
-      decide_eq_true_iff] using hclass trivial
+    exact hclass
   rcases hcases with hdown | hup
   · refine ⟨fun _ : Int => false, ?_⟩
     have hDN_nearest :

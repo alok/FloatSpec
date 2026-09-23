@@ -290,7 +290,7 @@
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_N_pt_ge_0": {
           "type_hash": "1874941508",
-          "value_hash": "1146378895",
+          "value_hash": "1596783371",
           "noncomputable": false
         }
       }
@@ -311,7 +311,7 @@
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_N_pt_le_0": {
           "type_hash": "1465334945",
-          "value_hash": "2710001251",
+          "value_hash": "926026772",
           "noncomputable": false
         }
       }
@@ -332,7 +332,7 @@
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_N_pt_abs": {
           "type_hash": "4152876850",
-          "value_hash": "3408117147",
+          "value_hash": "3151592711",
           "noncomputable": false
         }
       }
@@ -353,7 +353,7 @@
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_N_pt_DN_UP": {
           "type_hash": "3196688007",
-          "value_hash": "1268772993",
+          "value_hash": "519447807",
           "noncomputable": false
         }
       }
@@ -374,7 +374,7 @@
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_N_pt_DN": {
           "type_hash": "4245544349",
-          "value_hash": "754111752",
+          "value_hash": "1525735832",
           "noncomputable": false
         }
       }
@@ -395,7 +395,7 @@
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_N_pt_UP": {
           "type_hash": "3432433165",
-          "value_hash": "4210207193",
+          "value_hash": "2200458609",
           "noncomputable": false
         }
       }
@@ -437,7 +437,7 @@
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_NG_pt_unique": {
           "type_hash": "2897881679",
-          "value_hash": "643757632",
+          "value_hash": "4008667926",
           "noncomputable": false
         }
       }
@@ -500,7 +500,7 @@
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_NG_pt_opp_inv": {
           "type_hash": "2381238653",
-          "value_hash": "755937644",
+          "value_hash": "1362421599",
           "noncomputable": false
         }
       }
@@ -542,7 +542,7 @@
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_NA_NG_pt": {
           "type_hash": "1313149894",
-          "value_hash": "2569475725",
+          "value_hash": "1882943505",
           "noncomputable": false
         }
       }
@@ -563,7 +563,7 @@
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_NA_pt_unique_prop": {
           "type_hash": "3523269823",
-          "value_hash": "2436545000",
+          "value_hash": "2581470363",
           "noncomputable": false
         }
       }
@@ -605,7 +605,7 @@
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_NA_pt_N": {
           "type_hash": "2883257050",
-          "value_hash": "1706322996",
+          "value_hash": "170972826",
           "noncomputable": false
         }
       }
@@ -710,7 +710,7 @@
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_N0_NG_pt": {
           "type_hash": "3402619903",
-          "value_hash": "1915880048",
+          "value_hash": "1792434705",
           "noncomputable": false
         }
       }
@@ -731,7 +731,7 @@
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_N0_pt_unique_prop": {
           "type_hash": "1572400916",
-          "value_hash": "4073906354",
+          "value_hash": "185128747",
           "noncomputable": false
         }
       }
@@ -773,7 +773,7 @@
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_N0_pt_N": {
           "type_hash": "342954005",
-          "value_hash": "1080463072",
+          "value_hash": "2605858329",
           "noncomputable": false
         }
       }
@@ -962,7 +962,7 @@
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_DN_pt_equiv_format": {
           "type_hash": "1983794384",
-          "value_hash": "3321929141",
+          "value_hash": "2672306179",
           "noncomputable": false
         }
       }
@@ -983,7 +983,7 @@
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_UP_pt_equiv_format": {
           "type_hash": "3621153434",
-          "value_hash": "478502909",
+          "value_hash": "1697667197",
           "noncomputable": false
         }
       }
@@ -1241,7 +1241,7 @@
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.satisfies_any_imp_NG": {
           "type_hash": "2685258716",
-          "value_hash": "143349043",
+          "value_hash": "2615715886",
           "noncomputable": false
         }
       }
@@ -1262,7 +1262,7 @@
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.satisfies_any_imp_NA": {
           "type_hash": "4082841849",
-          "value_hash": "1770742175",
+          "value_hash": "2873143620",
           "noncomputable": false
         }
       }
@@ -1283,7 +1283,7 @@
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.satisfies_any_imp_N0": {
           "type_hash": "1440828472",
-          "value_hash": "1357895249",
+          "value_hash": "1539101887",
           "noncomputable": false
         }
       }
@@ -1682,7 +1682,7 @@
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_N_pt_DN_or_UP": {
           "type_hash": "4109915066",
-          "value_hash": "1438838585",
+          "value_hash": "3927922677",
           "noncomputable": false
         }
       }
@@ -1724,7 +1724,7 @@
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_N_pt_opp_inv": {
           "type_hash": "3400056284",
-          "value_hash": "78183811",
+          "value_hash": "4018185035",
           "noncomputable": false
         }
       }
@@ -1745,7 +1745,7 @@
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_N_pt_monotone": {
           "type_hash": "3383686272",
-          "value_hash": "848296256",
+          "value_hash": "1913812494",
           "noncomputable": false
         }
       }
@@ -1766,7 +1766,7 @@
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_N_pt_unique": {
           "type_hash": "4172921520",
-          "value_hash": "2299097476",
+          "value_hash": "2408982620",
           "noncomputable": false
         }
       }

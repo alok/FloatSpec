@@ -367,11 +367,8 @@ theorem roundR_Znearest_N_pt (x : ℝ) (hβ : 1 < beta) :
       simp [u]
       ring
     simpa [hf_x, hu_x] using hdist
-  have hspec := FloatSpec.Core.Round_pred.Rnd_N_pt_DN_UP_spec
-    (F := F) (x := x) (d := d) (u := u) (f := f)
-  have hN : FloatSpec.Core.Defs.Rnd_N_pt F x f := by
-    simpa [FloatSpec.Core.Round_pred.Rnd_N_pt_DN_UP_check, pure,
-      decide_eq_true_iff] using hspec ⟨hFf, hDN, hUP, hbdL, hbdR⟩
+  have hN : FloatSpec.Core.Defs.Rnd_N_pt F x f :=
+    FloatSpec.Core.Round_pred.Rnd_N_pt_DN_UP F x d u f hFf hDN hUP hbdL hbdR
   simpa [F, hround_near] using hN
 
 omit [FloatSpec.Core.Generic_fmt.Valid_exp fexp] [FloatSpec.Core.Generic_fmt.Monotone_exp fexp] in

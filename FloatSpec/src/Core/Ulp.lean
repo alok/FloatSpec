@@ -7368,10 +7368,9 @@ theorem round_N_le_midp
       refine ⟨by simpa [F] using Fu, ?_⟩
       intro g _
       simp
-    have hmono := FloatSpec.Core.Round_pred.Rnd_N_pt_monotone_spec
+    have hmono := FloatSpec.Core.Round_pred.Rnd_N_pt_monotone
       F v m rv u hrv hmu (by simpa [m] using hvm)
-    simpa [FloatSpec.Core.Round_pred.Rnd_N_pt_monotone_check,
-      pure, decide_eq_true_iff, rv] using hmono True.intro
+    simpa [rv] using hmono
   · have husLt : u < s := lt_of_le_of_ne hus husEq
     have humLt : u < m := by dsimp [m]; linarith
     have hmsLt : m < s := by dsimp [m]; linarith
@@ -7394,13 +7393,11 @@ theorem round_N_le_midp
       exact succ_le_lt_theorem (beta := beta) (fexp := fexp)
         u g Fu (by simpa [F] using Fg) hug ValidRadix.valid
     have hNu : FloatSpec.Core.Round_pred.Rnd_N_pt F m u := by
-      have hn := FloatSpec.Core.Round_pred.Rnd_N_pt_DN_spec F m u s
-      simpa [FloatSpec.Core.Round_pred.Rnd_N_pt_DN_check,
-        pure, decide_eq_true_iff] using hn ⟨hDN, hUP, by dsimp [m]; linarith⟩
-    have hmono := FloatSpec.Core.Round_pred.Rnd_N_pt_monotone_spec
+      exact FloatSpec.Core.Round_pred.Rnd_N_pt_DN F m u s hDN hUP
+        (by dsimp [m]; linarith)
+    have hmono := FloatSpec.Core.Round_pred.Rnd_N_pt_monotone
       F v m rv u hrv hNu (by simpa [m, s] using hvm)
-    simpa [FloatSpec.Core.Round_pred.Rnd_N_pt_monotone_check,
-      pure, decide_eq_true_iff, rv] using hmono True.intro
+    simpa [rv] using hmono
 
 /-- The source lower-midpoint bound follows by negating the upper-midpoint
 bound and transforming the supplied tie policy. -/
