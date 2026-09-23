@@ -260,9 +260,38 @@ because guessing gets it wrong: the ZR choice is `m` itself, not
 
 ## Exclusions
 
-None so far. If the Lean side lacks an executable counterpart for part of
-an exemplar, that part stays in the `.v` file and is listed here. It is not
-faked on the Lean side.
+Every row printed by a `.v` file is also computed by its `.lean` file.
+Nothing executable is Rocq-only. The following **proof** content exists
+only on the Rocq side, and the Lean side does not pretend to have it:
+
+- `Average.v`: `Rle_bool_0_F2R` and `Rle_bool_abs_F2R`, which justify
+  replacing upstream's real comparisons with integer tests. The Lean side
+  runs the same integer tests without a Lean proof.
+- `CompCertFloats.v`: CompCert's `normalized_nan`,
+  `quiet_nan_{64,32}_proof` and `expand_nan_proof`, plus the `Coqlib`/`Zbits`
+  lemmas they use. `CompCertFloats.lean` decides `nan_pl` at run time and
+  returns a visible marker NaN if the check fails (see its manifest above).
+- `Compute.v`: the four correctness theorems. The oracle checks their
+  statements on every row instead.
+
+`Choices` is not an exclusion: both files prove the `rnd_choice` lemmas.
+
+Surveyed candidates that are not ported yet (not excluded for lack of a
+FloatSpec API; simply not done):
+
+- CoqInterval `src/Float/Generic.v`, an independent multi-radix arithmetic.
+- VCFloat's `Float_notations.v` parse/print round trip and the FPBench
+  binary64 kernels.
+- LAProof's dot-product, sum and Cholesky folds.
+- Flocq `examples/Homogen.v`, `Triangle.v` and `Print17.v`.
+
+The Lean side runs through `#eval`, which executes the compiled
+definitions. FloatSpec has no `implemented_by` or `extern` overrides, and
+`check_compiled_trust.py` rejects them. A kernel-reduction path, like the
+bootstrap regressions in `flocq_bridge.py`, is future work. Elaborating a
+full row literal exceeded the default heartbeats, and a whole-output
+checksum hit the kernel's recursion limit, so a kernel path would have to
+check per row or per chunk.
 
 ## Licensing
 
