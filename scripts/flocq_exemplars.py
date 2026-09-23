@@ -255,6 +255,28 @@ def oracle_division_u16(rows: Sequence[Row]) -> OracleReport:
     return report
 
 
+TIE_PREDICATES: dict[int, Callable[[int], bool]] = {
+    0: lambda floor: floor % 2 != 0,   # negb (Z.even m): ties to even
+    1: lambda floor: floor >= 0,       # Zle_bool 0: ties away from zero
+    2: lambda floor: True,
+    3: lambda floor: False,
+}
+
+
+def oracle_sqrt_sqr(rows: Sequence[Row]) -> OracleReport:
+    """Sqrt_sqr.v sqrt_sqr_special_case (radix 5, precision 3), step by step."""
+    report = OracleReport()
+    fexp = flx(3)
+    for index, (k1, k2, mx, ym, ye, zm, ze, difference) in enumerate(rows):
+        x, y = Fraction(mx), value(5, ym, ye)
+        premise = 0 <= mx < 125
+        report.check(f"row {index} y", y == round_rational(5, fexp, ("N", TIE_PREDICATES[k2]), x * x))
+        report.check(f"row {index} z", value(5, zm, ze) ==
+                     round_sqrt(5, fexp, ("N", TIE_PREDICATES[k1]), y))
+        report.check(f"row {index} sqrt_sqr", difference == 0 if premise else None)
+    return report
+
+
 # ---------------------------------------------------------------------------
 # Exemplar registry
 # ---------------------------------------------------------------------------
@@ -276,6 +298,7 @@ EXEMPLARS: dict[str, Exemplar] = {e.name: e for e in (
     Exemplar("CodyWaite", rows=30, width=15, oracle=oracle_cody_waite),
     Exemplar("DivisionU16", rows=152, width=12, oracle=oracle_division_u16,
              needs_control_break=True),
+    Exemplar("SqrtSqr", rows=2000, width=8, oracle=oracle_sqrt_sqr),
 )}
 
 

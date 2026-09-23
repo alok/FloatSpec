@@ -130,6 +130,20 @@ class OracleControlTests(unittest.TestCase):
         self.assertEqual((control.premise_false, control.control_breaks, control.violations),
                          (1, 1, []))
 
+    def test_sqrt_sqr_oracle_checks_each_rounding_and_the_identity(self):
+        row = [0, 0, 2, 4, 0, 2, 0, 0]                    # x = 2, y = 4, z = 2
+        self.assertEqual(lane.oracle_sqrt_sqr([row]).holds, 3)
+        for column, label in ((3, "y"), (5, "z"), (7, "identity")):
+            mutated = row[:]
+            mutated[column] += 1
+            with self.subTest(label):
+                self.assertTrue(lane.oracle_sqrt_sqr([mutated]).violations)
+        # 152.5 lies halfway between 150 and 155 (radix 5, three digits), and
+        # each tie predicate picks its own side.
+        for predicate, expected in ((0, 150), (1, 155), (2, 155), (3, 150)):
+            self.assertEqual(lane.round_rational(5, lane.flx(3), ("N", lane.TIE_PREDICATES[predicate]),
+                                                 Fraction(305, 2)), expected)
+
     def test_a_missing_control_break_fails_the_oracle_verdict(self):
         exemplar = lane.Exemplar("Probe", rows=1, width=1,
                                  oracle=lambda rows: lane.OracleReport(holds=1),
@@ -179,6 +193,9 @@ class LiveExemplarTests(unittest.TestCase):
     def test_division_u16(self):
         result = self.check("DivisionU16")
         self.assertGreater(result["oracle_rocq"]["control_breaks"], 0)
+
+    def test_sqrt_sqr(self):
+        self.check("SqrtSqr")
 
     def mutant(self, name, side, old, new):
         """Run a copy of an exemplar with one side textually mutated."""

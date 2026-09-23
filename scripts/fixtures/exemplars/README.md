@@ -57,6 +57,7 @@ definitions are equivalent.
 | `Choices` | shared | not upstream; derived from Flocq `src/Calc/Round.v` (`7aab8f55`) | choice functions, each proved to satisfy `Compute.v`'s `rnd_choice` via `inbetween_int_*_sign` | same functions, same proofs via the FloatSpec ports of those lemmas | (library) |
 | `ComputeGrid` | exemplar | driver over `Compute.v` (FloatSpec-authored) | radices 2/3/10 × FLX/FLT/FIX/FTZ × DN/UP/ZR/NE/NA × 16 input pairs | same | `plus/mult/div/sqrt_correct`: exact rounding of the exact result |
 | `CodyWaite` | exemplar | Flocq `examples/Cody_Waite.v` (`7aab8f55`) | `cw_exp` on binary64 via `Compute.v`, 30 inputs, every intermediate observed | same | `exp_correct` (relative error ≤ 2⁻⁵¹ against `exp` at 120 digits) and `argument_reduction` |
+| `SqrtSqr` | exemplar | Flocq `examples/Sqrt_sqr.v` §Sec6 (`7aab8f55`) | `sqrt ∘ mult` in radix 5, precision 3, all 125 mantissas × 4 × 4 tie predicates | same | `sqrt_sqr_special_case` (`Fnum (f mx) = 0`), and `y` and `z` are exact `Znearest` roundings |
 | `DivisionU16` | exemplar | Flocq `examples/Division_u16.v` (`7aab8f55`) | `div_u16` in the 64-bit register format, four executable `frcpa` models × 38 pairs | same | `div_u16_spec` (= `a / b`) wherever the observed `y0` satisfies `frcpa_spec`; the 8-bit model is a positive control |
 
 ## Trim manifests
@@ -131,6 +132,17 @@ because guessing gets it wrong: the ZR choice is `m` itself, not
   control. For b = 13 it breaks `frcpa_spec`, and `div_u16 13 13` then
   returns 0. The oracle checks `frcpa_spec` from the observed `y0` on every
   row, so a model is never trusted blindly.
+
+### `SqrtSqr` (Flocq `examples/Sqrt_sqr.v`, Section `Sec6`, LGPL-3.0-or-later)
+
+- Kept verbatim: `beta = 5`, `prec = 3`, the choice `r c`, and
+  `f mx = Fminus (sqrt (r c1) (mult (r c2) x x)) x`. Upstream imports
+  `Compute.v` under the name `ComputeMore`; `r` is `Choices.rnd_N`.
+- Replaced: the proof runs `vm_compute` on a Boolean fold over abstract
+  `c1` and `c2`. Here an `Eval` covers four concrete tie predicates: even,
+  `Zle_bool 0`, always true and always false. Every mantissa and every
+  intermediate is printed.
+- Dropped: Sections Sec1–Sec5 and Sec7, which are proofs over R.
 
 ## Exclusions
 
