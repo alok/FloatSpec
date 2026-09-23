@@ -56,8 +56,10 @@ distinct.
   propositions.
 - Trust gates: `scripts/audit_placeholders.sh` and
   `scripts/check_proof_debts.py` reject unregistered proof holes and trust
-  escapes; `scripts/status_report.sh` records the current counts under
-  `FloatSpec/docs/status.{md,json}`.
+  escapes in every Lean and Rocq source outside `Deps/`, standalone fixtures
+  included; `scripts/status_report.sh` records the current counts under
+  `FloatSpec/docs/status.{md,json}`. CI also runs every fixture, found by
+  glob, with Lean warnings as errors, and every live test module without skips.
 - Source links: `@[flocq_source "src/Module.v" LINE "name"]` stores a pinned
   Coq correspondence, and the opt-in `linter.coqSource` checks public
   definitions in source-facing modules. An adjacent `Source:` URL is clickable

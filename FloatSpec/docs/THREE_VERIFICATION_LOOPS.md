@@ -19,27 +19,61 @@ uv run scripts/run_required_rocq_tests.py \
 ```
 
 This runner sets the reference before loading the tests and rejects **any skip**,
-an empty suite, missing/dirty/wrong-pinned reference, unavailable compiler,
-failure or error. Eight runner-policy controls test these boundaries. It runs
-the existing core, native IEEE, mode/scale/integer, rounding, ULP, Zaux and Pff
-mutation suites; it is not a replacement for every deeper profile below.
+any expected failure, an empty suite, a listed module that ran no tests, a
+missing/dirty/wrong-pinned reference, an unavailable compiler, and any failure
+or error; its report records each module's test count. Eleven runner-policy
+controls in `scripts/test_required_rocq_tests.py` test these boundaries, and 14
+hermetic controls in `scripts/test_reference_policy.py` test the reference
+policy described in section 2. The runner covers all 24 test modules gated on
+`FLOCQ_AUDIT_DIR`: 238 live tests spanning the core, native IEEE,
+mode/scale/integer, exact-oracle, rounding, ULP, remainder, model-adapter,
+LPO, double-rounding, Zaux and Pff suites. It is not a replacement for every
+deeper profile below.
 
-CI also runs seven pure Rocq fixtures, a 4,309-case core shared-input bridge
-(seed 865509, five random cases per selected family plus boundary grids),
-generated Lean kernel equalities and four permanent counterexample
-replays. A fresh run/attempt-specific directory under the CI runner's temporary
-directory is uploaded even on failure as
-`flocq-cross-check-<commit>` for 30 days. Download the artifact to inspect inputs,
+CI also compiles every Rocq fixture (`scripts/fixtures/*.v`, 47 today) against
+the pinned build and elaborates every Lean fixture (`scripts/fixtures/*.lean`,
+35 today) with `-DwarningAsError=true`, both discovered by glob. `lake env lean`
+does not read the lakefile, so fixtures meet Lean's default linters plus
+warnings-as-errors, which is stricter than the product build. The two fixtures
+that define `main`, `GuidedDemo` and `PffWalkthrough`, also execute, and
+`GuidedDemo` runs again as the compiled `floatspec_demo`. Two text gates in
+those steps reject what compiles without error but proves nothing: Lean
+`axiom`, `#guard_msgs`, `#exit`, `implemented_by`, `extern`, native decision
+procedures and kernel bypasses, and Rocq `Admitted`, `Admit`, `Abort`,
+`Axiom`, `Parameter`, `Declare`, `native_compute` and disabled checking.
+CI then runs a 4,309-case core shared-input bridge (seed 865509, five random
+cases per selected family plus boundary grids), generated Lean kernel
+equalities and six permanent counterexample replays: raw IEEE rounding, raw
+overflow, primitive comparison, primitive conversion, Pff sign laws and Pff
+integer division. A final step fails unless every piece of evidence exists: one
+`.vo` per Rocq fixture, one report per replay, and the reference build, fixture,
+required-suite and bridge logs and reports. A fresh run/attempt-specific
+directory under the CI runner's temporary directory is uploaded even on failure
+as `flocq-cross-check-<commit>` for 30 days, and an empty upload fails the job.
+Download the artifact to inspect inputs,
 source/compiler identities, reports and batch programs. A report still marked
 `running` or `error`, including an interrupted job, is **not** a pass. Reports
 are kept outside `.lake` so build-cache restores cannot replay stale evidence.
 This
 retention is finite; older local receipts are not retroactively published.
 
+`scripts/test_ci_coverage.py` keeps this coverage complete. It fails if a
+reference-gated test module is missing from the required runner, a test
+script or `*_bridge.py` never runs in CI, a replay is not replayed, a fixture
+defining `main` is only elaborated, a nested fixture has no consumer, or the
+local driver runs a check CI does not (only the random corpora it lists, with
+their measured cost, are exempt). It also parses the workflow and each step's
+shell, and fails on trigger filters, `if:` conditions other than the cache save
+and the evidence upload, a missing `shell: bash`, and constructs that can lose
+a failure (`|| true`, `&&`, backgrounding, `set +e`). The job timeout is 180
+minutes: a run takes about 50-60 minutes with lean-action's cache warm and
+about 125-135 minutes when a cold cache rebuilds Mathlib.
+
 The per-push bridge selects `power`, `div_eucl`, `location`, `round`, `truncate`,
 `div`, `plus`, `sqrt`, `formats`, `digits`, `operations`, `bits32` and `bits64`.
-The 174-method live suite additionally exercises the IEEE/native adapters and
-mutation controls; the saved replays cover prior raw-IEEE counterexamples.
+The 238-test live suite additionally exercises the IEEE/native adapters and
+mutation controls; the saved replays cover prior raw-IEEE and Pff
+counterexamples.
 Omit `--operations` for the larger 35,594-case grid at this seed/sample count.
 That is intentionally a separate longer run, not a claim that the per-push
 bridge covers every family. The initial all-family local run was interrupted
@@ -49,7 +83,25 @@ Compiled trust is checked separately for source and tests. The test scope
 imports every `FloatSpec/Test` module and allows no project axiom, unsafe
 declaration, runtime override, or direct/transitive sorry dependency. It does
 not turn native runtime assertions into kernel proofs, nor automatically cover
-standalone files outside `FloatSpec/Test`.
+standalone files outside `FloatSpec/Test`; those fixtures instead run with
+warnings as errors and pass the text gate below.
+
+`scripts/check_proof_debts.py` runs `scripts/audit_placeholders.sh` over every
+Lean and Rocq source except `Deps/`, `_opam/` and hidden directories: the
+lakefile, the root modules, `FloatSpec/` and all of `scripts/`, fixtures
+included. Besides `sorry`, `admit`, `axiom` and placeholder heuristics, it
+rejects Lean trust escapes (native evaluation, `bv_decide`, `ofReduceBool` and
+its relatives, `sorryAx` and other sorry producers such as `stop` and
+`apply?`, kernel-bypass and `debug.*AsSorry` options, `#exit`) and Rocq
+admissions (`Admitted`, `Admit Obligations`, `Axiom`, `Parameter`, `Declare`,
+top-level hypotheses, `native_compute`, disabled guard, positivity or universe
+checking). It approves `warningAsError` only when enabling it, in the
+lakefile's single option, or scoping exactly one manifest debt; and
+`#guard_msgs in` only over a `#` command whose expected output never mentions
+`sorry`. Unambiguous trust names are rejected even in comments and docstrings.
+It is a line-and-token text gate, not a parser: an escape a macro assembles from
+strings would still pass it. `scripts/status_report.sh` counts the approved
+`warningAsError` and `#guard_msgs` uses as reviewed, not as placeholders.
 
 Fresh clones can now use `git submodule update --init Deps/flocq`. Do not run
 that command in a checkout with intentional local dependency changes: build
@@ -487,8 +539,23 @@ actual Flocq definitions from the pinned gitlink; it does not implement a second
 version of those arithmetic routines in the test.
 
 The reference is built separately from the user's modified `Deps/flocq`
-checkout. A supplied cached checkout must match the gitlink and have no changed
-tracked sources or untracked `.v` source files. The runner uses that checkout's
+checkout. Every consumer (the bridges, the required runner,
+`validate_flocq_source_refs.py` and the local driver) accepts a reference only
+through `verify_reference` in `scripts/flocq_bridge.py`. HEAD must equal the
+gitlink, and the path must be the top level of its own work tree. The pinned
+file list comes from commit and tree objects that are re-hashed, with replace
+refs disabled, and each pinned file is hashed from disk in Python, including its
+executable bit, so Git filters, index flags and stale stat data cannot hide an
+edit. Nothing may be staged. A walk of the directory rejects symlinks, nested
+repositories and any `.v` file other than byte-exact generated `src/Version.v`
+and `examples/ComputeMore.v`. Each `.vo` needs its source beside it and a
+`.glob` whose `DIGEST` line is the MD5 of that source, which rejects a build
+from a reverted edit or from another commit. This catches accidents, not
+forgery: a `.vo` swapped without its `.glob` still passes, which is why CI
+builds from a fresh clone. If a stale `.vo` is reported, delete the listed
+files before rerunning `./remake`, which compares timestamps only to the second.
+The 14 controls in `scripts/test_reference_policy.py` exercise each rule on
+throwaway repositories. The runner uses that checkout's
 configured Rocq compiler. On the audit Mac, the cached reference uses Homebrew
 Rocq 9.2, while the project-local `coqc` is 9.1; those compiled artifacts are not
 interchangeable.
@@ -834,9 +901,16 @@ From the repository root:
 bash scripts/test_flocq_conformance.sh
 ```
 
-This creates and builds a detached reference worktree, runs the standalone
-Rocq and Lean checks, runs all six differential bridges, and executes their own
-tests. Live mutations recreate the historical negative-exponent bug and replace
+This creates and builds a detached reference worktree, verifying it before and
+after the build, then compiles every Rocq fixture and elaborates every Lean
+fixture with the same globs and warnings-as-errors flag as CI. It replays all
+six saved counterexample corpora, runs the full corpus of each of the twelve
+differential bridges, and executes their own tests. Those corpora are the only
+checks this driver runs that per-push CI does not: `LOCAL_CORPORA` in
+`scripts/test_ci_coverage.py` lists each with its measured local cost (about
+65 minutes for nine per-family corpora, and about 130 minutes for the
+`--samples 100` grid of `flocq_bridge.py`). Live mutations recreate the
+historical negative-exponent bug and replace
 native successor by predecessor, swap native arithmetic operands, and alter
 only compiled Lean while kernel/Rocq still agree. Each
 mutation must cause a failed comparison
