@@ -54,3 +54,20 @@ compiled hashes and reopen on drift. They are the input that says where
 manual review should look first. The two confirmed mismatches were both
 anchor-placement errors that `validate_flocq_source_refs.py` could not see,
 because it checks names and lines, not propositions.
+
+## Later rows
+
+Anchors added since this audit get a row, checked the same way, when they
+land. The JSON header gives the base of the full audit (`full_audit_base`),
+the commit its latest rows were checked on (`updated_on`), and the number of
+live anchors (`anchors`), each of which has exactly one row. The two rows
+listed in `superseded_rows` are the mismatches above; each keeps its
+`resolution` and names a Lean declaration that no longer carries the anchor.
+
+The batch 1D review (conventions cutover) added rows for the 12 `Binary.v` and
+`BinarySingleNaN.v` operations it anchored, moved the `valid_binary` row to
+`Binary.valid_binary`, and filled in the four anchors that had no row:
+`BinarySingleNaN.SF2B'`, `BinarySingleNaN.shl_align_fexp`, `choice_mode` and
+`FaithfulPrimFloat.B2Prim`. All of them are `match`. `Binary.Bfma_szero` is a
+`match` only after its body was corrected: it had read NaN signs with `Bsign`,
+where Coq reads them through `B2BSN`.

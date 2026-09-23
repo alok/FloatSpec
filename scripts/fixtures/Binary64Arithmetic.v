@@ -20,3 +20,14 @@ Example binary64_boundaries : rows =
   [4613937818241073152; 9218868437227405312; 9218868437227405312;
    9218868437227405311].
 Proof. vm_compute. reflexivity. Qed.
+
+Definition neg_nan : binary64 := b64_of_bits 18444492273895866368.
+Definition pos_zero : binary64 := b64_of_bits 0.
+Definition neg_zero : binary64 := b64_of_bits 9223372036854775808.
+
+Example neg_nan_sign : Binary.Bsign 53 1024 neg_nan = true.
+Proof. vm_compute. reflexivity. Qed.
+
+Example fma_szero_nan_sign :
+  Binary.Bfma_szero 53 1024 mode_NE neg_nan pos_zero neg_zero = false.
+Proof. vm_compute. reflexivity. Qed.

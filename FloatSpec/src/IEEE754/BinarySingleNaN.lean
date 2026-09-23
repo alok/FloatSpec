@@ -662,8 +662,6 @@ theorem canonical_bounded_nat
   exact canonical_canonical_mantissa_bsn (prec:=prec) (emax:=emax) sx mx ex hmx_pos
     (canonical_mantissa_of_specFloat_bounded h_bounded)
 
-alias canonical_bounded_of_specFloat_bounded := canonical_bounded_nat
-
 -- Coq `BinarySingleNaN.canonical_canonical_mantissa`, published on the
 -- proof-carrying carrier's positive mantissa boundary.
 omit [Prec_gt_0 prec] [Prec_lt_emax prec emax] in
@@ -4401,9 +4399,9 @@ theorem standardFloat_eq_of_valid_finite_sign_value
           have hyParts : 0 < my ∧
               specFloat_bounded (prec:=prec) (emax:=emax) my ey = true := by
             simpa [validBinarySingleNaNStandardFloat, Bool.and_eq_true] using hvalidY
-          have hcanonXTrip := canonical_bounded_of_specFloat_bounded
+          have hcanonXTrip := canonical_bounded_nat
             (prec:=prec) (emax:=emax) sx mx ex hxParts.1 hxParts.2
-          have hcanonYTrip := canonical_bounded_of_specFloat_bounded
+          have hcanonYTrip := canonical_bounded_nat
             (prec:=prec) (emax:=emax) sy my ey hyParts.1 hyParts.2
           have hcanonX : canonical_FF (prec:=prec) (emax:=emax)
               (SF2FF (StandardFloat.S754_finite sx mx ex)) := by
@@ -5765,7 +5763,10 @@ def standardFloatToBinaryFloatOfNotNaN {prec emax : Int}
       binary_float.B754_finite (prec:=prec) (emax:=emax) s p e (by
         simpa [hp] using h'.2)
 
--- Coq: `Binary.v:Bsqrt`.
+-- Coq `Binary.v:Bsqrt` is `BSN2B (sqrt_nan x) (BinarySingleNaN.Bsqrt m (B2BSN x))`.
+-- This direct transcription is equal to that composition on every input
+-- (checked in `FloatSpec/Test/SourceSurface.lean`).
+@[flocq_source "src/IEEE754/Binary.v" 1193 "Bsqrt"]
 def Bsqrt {prec emax : Int}
     [Prec_gt_0 prec] [Prec_lt_emax prec emax]
     (sqrt_nan : BsqrtNaNHandler prec emax)
@@ -6416,12 +6417,14 @@ def BmaxFloatSingle {prec emax : Int}
     (maxFloatMantissa_pos (prec:=prec)) (by
       simp [specFloat_bounded, m, hp.2])
 
--- Coq `Binary.v:Bmax_float`.
+-- Coq `Binary.v:Bmax_float`: `BSN2B' BinarySingleNaN.Bmax_float eq_refl`.
+@[flocq_source "src/IEEE754/Binary.v" 1266 "Bmax_float"]
 def Bmax_float {prec emax : Int}
     [Prec_gt_0 prec] [Prec_lt_emax prec emax] : binary_float prec emax :=
   BSN2B' (BmaxFloatSingle (prec:=prec) (emax:=emax)) (by rfl)
 
--- Coq `Binary.v:Bnormfr_mantissa`.
+-- Coq `Binary.v:Bnormfr_mantissa`: `BinarySingleNaN.Bnormfr_mantissa (B2BSN x)`.
+@[flocq_source "src/IEEE754/Binary.v" 1271 "Bnormfr_mantissa"]
 def Bnormfr_mantissa {prec emax : Int} (x : binary_float prec emax) : Nat :=
   BinarySingleNaNFloat.Bnormfr_mantissa (B2BSN x)
 
@@ -6811,6 +6814,10 @@ private theorem binarySingleNaNFloatToB754_of_is_nan {prec emax : Int}
     simp [is_nan, binaryFloatToBinarySingleNaNFloat,
       binarySingleNaNFloatToB754] at hx ⊢
 
+-- Coq `Binary.v:Bplus` is `BSN2B (plus_nan x y) (BinarySingleNaN.Bplus m (B2BSN x)
+-- (B2BSN y))`. This direct transcription is equal to that composition on every
+-- input (checked in `FloatSpec/Test/SourceSurface.lean`).
+@[flocq_source "src/IEEE754/Binary.v" 1049 "Bplus"]
 def Bplus {prec emax : Int}
     [Prec_gt_0 prec] [Prec_lt_emax prec emax]
     (plus_nan : BplusNaNHandler prec emax)
@@ -7047,9 +7054,12 @@ theorem binarySingleNaNFloatToB754_Bplus {prec emax : Int}
                 binaryFloatToBinarySingleNaNFloat, binarySingleNaNFloatToB754,
                 mxn, myn, ez, m, szero, hm0, hmpos, z] using hstd
 
--- Coq: Binary.v:Bminus
--- Upstream defines this by subtracting through the SingleNaN operation and
--- lifting NaN results with the original `(x, y)` payload handler.
+-- Coq `Binary.v:Bminus` is `BSN2B (minus_nan x y) (BinarySingleNaN.Bminus m
+-- (B2BSN x) (B2BSN y))`: it subtracts through the SingleNaN operation and
+-- lifts NaN results with the original `(x, y)` payload handler. This direct
+-- transcription is equal to that composition on every input (checked in
+-- `FloatSpec/Test/SourceSurface.lean`).
+@[flocq_source "src/IEEE754/Binary.v" 1086 "Bminus"]
 def Bminus {prec emax : Int}
     [Prec_gt_0 prec] [Prec_lt_emax prec emax]
     (minus_nan : BminusNaNHandler prec emax)
@@ -7115,6 +7125,10 @@ theorem Bminus_eq_Bplus_Bopp {prec emax : Int}
   cases x <;> cases y <;> cases mode <;>
     simp [Bminus, Bplus, Bopp_preserve_nan, Bool.xor]
 
+-- Coq `Binary.v:Bmult` is `BSN2B (mult_nan x y) (BinarySingleNaN.Bmult m (B2BSN x)
+-- (B2BSN y))`. This direct transcription is equal to that composition on every
+-- input (checked in `FloatSpec/Test/SourceSurface.lean`).
+@[flocq_source "src/IEEE754/Binary.v" 947 "Bmult"]
 def Bmult {prec emax : Int}
     [Prec_gt_0 prec] [Prec_lt_emax prec emax]
     (mult_nan : BmultNaNHandler prec emax)
@@ -7176,7 +7190,10 @@ def Bmult {prec emax : Int}
           exact is_nan_binary_overflow (prec:=prec) (emax:=emax) mode (Bool.xor sx sy)
       standardFloatToBinaryFloatOfNotNaN (prec:=prec) (emax:=emax) z haux.1 hnotnan
 
--- Coq: `Binary.v:Bdiv`.
+-- Coq `Binary.v:Bdiv` is `BSN2B (div_nan x y) (BinarySingleNaN.Bdiv m (B2BSN x)
+-- (B2BSN y))`. This direct transcription is equal to that composition on every
+-- input (checked in `FloatSpec/Test/SourceSurface.lean`).
+@[flocq_source "src/IEEE754/Binary.v" 1162 "Bdiv"]
 def Bdiv {prec emax : Int}
     [Prec_gt_0 prec] [Prec_lt_emax prec emax]
     (div_nan : BdivNaNHandler prec emax)
@@ -7239,12 +7256,17 @@ def Bdiv {prec emax : Int}
             (Bool.xor sx sy)
       standardFloatToBinaryFloatOfNotNaN (prec:=prec) (emax:=emax) z haux.1 hnotnan
 
--- Coq: `Binary.v:Bfma_szero`, on the proof-carrying Binary surface.
+-- Coq `Binary.v:Bfma_szero` is `BinarySingleNaN.Bfma_szero m (B2BSN x)
+-- (B2BSN y) (B2BSN z)`. `B2BSN` forgets a NaN's sign, so a NaN operand counts
+-- as positive here, whereas `Bsign` would read its sign bit. The signs are
+-- therefore read through `B2BSN`, which makes this definitionally equal to
+-- the SingleNaN rule (checked in `FloatSpec/Test/SourceSurface.lean`).
+@[flocq_source "src/IEEE754/Binary.v" 1123 "Bfma_szero"]
 def Bfma_szero {prec emax : Int} (mode : RoundingMode)
     (x y z : binary_float prec emax) : Bool :=
-  let sxy := Bool.xor (Bsign (prec:=prec) (emax:=emax) x)
-    (Bsign (prec:=prec) (emax:=emax) y)
-  if sxy == Bsign (prec:=prec) (emax:=emax) z then sxy
+  let sxy := Bool.xor (BSN_sign (binarySingleNaNFloatToB754 (B2BSN x)))
+    (BSN_sign (binarySingleNaNFloatToB754 (B2BSN y)))
+  if sxy == BSN_sign (binarySingleNaNFloatToB754 (B2BSN z)) then sxy
   else
     match mode with
     | RoundingMode.RTN => true
@@ -7511,7 +7533,10 @@ theorem normalize_correct {prec emax : Int}
             simp [binary_overflow, FloatSpec.Core.Raux.Rlt_bool, F2R,
               FloatSpec.Core.Defs.F2R, hinputNegRaw]
 
--- Coq: `Binary.v:Bfma`.
+-- Coq `Binary.v:Bfma` is `BSN2B (fma_nan x y z) (BinarySingleNaN.Bfma m
+-- (B2BSN x) (B2BSN y) (B2BSN z))`. This direct transcription is equal to that
+-- composition on every input (checked in `FloatSpec/Test/SourceSurface.lean`).
+@[flocq_source "src/IEEE754/Binary.v" 1126 "Bfma"]
 def Bfma {prec emax : Int}
     [Prec_gt_0 prec] [Prec_lt_emax prec emax]
     (fma_nan : BfmaNaNHandler prec emax)
@@ -7747,6 +7772,7 @@ def Bminus {prec emax : Int}
     binary_float prec emax :=
   Bplus mode x (Bopp y)
 
+@[flocq_source "src/IEEE754/BinarySingleNaN.v" 2089 "Bfma_szero"]
 def Bfma_szero {prec emax : Int} (mode : RoundingMode)
     (x y z : binary_float prec emax) : Bool :=
   let sxy := Bool.xor
@@ -10111,7 +10137,7 @@ private theorem binaryFiniteGenericFormat {prec emax : Int}
       (Binary.B2R (prec:=prec) (emax:=emax)
         (binary_float.B754_finite (prec:=prec) (emax:=emax) s m e hbounded)) := by
   have hpositive := positiveToNat_pos_bsn m
-  have hcanonTrip := canonical_bounded_of_specFloat_bounded
+  have hcanonTrip := canonical_bounded_nat
     (prec:=prec) (emax:=emax) s (FloatSpec.Core.Zaux.positiveToNat m) e
     hpositive hbounded
   have hcanon :
@@ -13531,6 +13557,9 @@ theorem B2FF_BSN2B' {prec emax : Int} (x : BinarySingleNaNFloat prec emax)
       simp [BSN2B', B2FF_exact, binaryFloatToFullFloat, SF2FF_exact,
         binarySingleNaNFloatToStandardFloat, hm, binaryPositiveOfNat_spec]
 
+/-- Flocq `valid_binary` on the exact `full_float` carrier: a finite value must
+satisfy `SpecFloat.bounded` and a NaN payload must satisfy `nan_pl`. -/
+@[flocq_source "src/IEEE754/Binary.v" 166 "valid_binary"]
 abbrev valid_binary {prec emax : Int} (x : full_float) : Bool :=
   valid_full_float_binary (prec:=prec) (emax:=emax) x
 
@@ -15268,9 +15297,9 @@ private theorem exp_lt {prec emax : Int} (mx my : Nat) (ex ey : Int)
   let fexp := _root_.FLT_exp (3 - emax - prec) prec
   let fx : FloatSpec.Core.Defs.FlocqFloat 2 := ⟨mx, ex⟩
   let fy : FloatSpec.Core.Defs.FlocqFloat 2 := ⟨my, ey⟩
-  have hcxTrip := canonical_bounded_of_specFloat_bounded
+  have hcxTrip := canonical_bounded_nat
     (prec := prec) (emax := emax) false mx ex hmx hx
-  have hcyTrip := canonical_bounded_of_specFloat_bounded
+  have hcyTrip := canonical_bounded_nat
     (prec := prec) (emax := emax) false my ey hmy hy
   have hcx : canonical 2 fexp fx := by
     simpa [fexp, fx] using hcxTrip

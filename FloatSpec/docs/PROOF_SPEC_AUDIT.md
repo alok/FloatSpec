@@ -20,23 +20,19 @@ placeholder matching.
 
 ### Correctness names
 
-Six same-name `Unit` declarations were removed. Two compatibility names are
-now exact aliases of translated Flocq theorem contracts:
+Six same-name `Unit` declarations were removed. This audit originally kept
+two exact aliases, `binary_add_correct` for `Bplus_correct` and
+`binary_mul_correct` for `Bmult_correct`, and four compatibility theorems,
+`binary_sub_correct`, `binary_fma_correct`, `binary_div_correct` and
+`binary_sqrt_correct`. All six were deleted in batch 1D of the conventions
+cutover (September 2026), together with the real-rounding `Binary754`
+operations they described, and their regression tests went with them.
 
-| Compatibility name | Flocq contract |
-|---|---|
-| `binary_add_correct` | `Bplus_correct` |
-| `binary_mul_correct` | `Bmult_correct` |
-
-Regression tests prove these two alias equalities definitionally.
-
-The local theorems `binary_sub_correct`, `binary_fma_correct`,
-`binary_div_correct`, and `binary_sqrt_correct` remain explicitly named
-compatibility results. The distinct source-shaped contracts are now exported
-under the exact Coq names `Bminus_correct`, `Bfma_correct`, `Bdiv_correct`, and
-`Bsqrt_correct`; they quantify over the translated source operations and NaN
-handlers and preserve the source result equations, finiteness, sign, and
-overflow obligations.
+The source-shaped contracts are exported only under the exact Coq names
+`Bplus_correct`, `Bmult_correct`, `Bminus_correct`, `Bfma_correct`,
+`Bdiv_correct` and `Bsqrt_correct`. They quantify over the translated source
+operations and NaN handlers, and they keep the source result equations and
+the finiteness, sign and overflow obligations.
 
 The root `binary_overflow` implementation now follows Coq's rounding-mode and
 sign behavior, including the largest-finite result for RTZ overflow. This

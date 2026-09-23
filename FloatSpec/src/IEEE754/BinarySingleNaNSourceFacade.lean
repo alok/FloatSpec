@@ -705,10 +705,12 @@ abbrev Bone {prec emax : Int}
     [Prec_gt_0 prec] [Prec_lt_emax prec emax] :=
   @Binary.BoneSingle prec emax _ _
 
+@[flocq_source "src/IEEE754/BinarySingleNaN.v" 2816 "Bmax_float"]
 abbrev Bmax_float {prec emax : Int}
     [Prec_gt_0 prec] [Prec_lt_emax prec emax] :=
   @Binary.BmaxFloatSingle prec emax _ _
 
+@[flocq_source "src/IEEE754/BinarySingleNaN.v" 2820 "Bnormfr_mantissa"]
 abbrev Bnormfr_mantissa {prec emax : Int} :=
   @BinarySingleNaNFloat.Bnormfr_mantissa prec emax
 

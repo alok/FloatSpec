@@ -485,7 +485,7 @@
    "lean_type": "∀ {x y : ℝ}, x = y → Rcompare_prop x y 0",
    "explanation": "Same situation as Rcompare_Lt_. The inductive is ℤ-indexed, so the constructor concludes Rcompare_prop x y 0, where Coq has Rcompare_prop x y Eq. The premise matches, but the index type (ℤ code vs comparison) differs.",
    "port_difficulty": "easy",
-   "port_notes": "Same as Rcompare_Lt_: accept the Int encoding and fix Atlas constructor resolution, or re-index over Ordering using BinarySingleNaN.RcompareOrdering and orderingOfCompareCode_Rcompare."
+   "port_notes": "Same as Rcompare_Lt_: accept the Int encoding and fix Atlas constructor resolution, or re-index over Ordering using BinarySingleNaN.RcompareOrdering. The Int-to-Ordering bridge orderingOfCompareCode_Rcompare was deleted in batch 1D; batch 2B makes Rcompare itself Ordering-valued."
   },
   {
    "id": "src/Core/Raux.v:Rcompare_Gt_@7121",
@@ -507,7 +507,7 @@
    "lean_type": "∀ {x y : ℝ}, x < y → Rcompare_prop x y (-1)",
    "explanation": "A constructor of the same inductive, also exported as the alias FloatSpec.Core.Raux.Rcompare_Lt_. The Lean Rcompare_prop is indexed by ℤ (Rcompare_prop : ℝ → ℝ → ℤ → Prop), not by Coq's comparison type, so the constructor concludes Rcompare_prop x y (-1) instead of ... Lt. This is the legacy integer encoding (Lt = -1, Eq = 0, Gt = 1) that FloatSpec.Core.Raux.Rcompare : ℝ → ℝ → ℤ uses. The logical content is the same, but the index codomain differs. x and y are implicit in Lean and explicit in Coq.",
    "port_difficulty": "easy",
-   "port_notes": "Two options. (a) Accept the Int encoding, which the project already accepts for the anchored Rcompare_Lt/Rcompare_Eq/Rcompare_Gt, and make the Atlas resolve constructor names under the inductive's namespace or through export aliases. (b) Re-index Rcompare_prop over Ordering and state Rcompare_prop_spec for BinarySingleNaN.RcompareOrdering (the Ordering-valued function anchored to Coq Rcompare). Bridge: BinarySingleNaN.orderingOfCompareCode_Rcompare. The constructors are used only in Raux.lean (3 hits each)."
+   "port_notes": "Two options. (a) Accept the Int encoding, which the project already accepts for the anchored Rcompare_Lt/Rcompare_Eq/Rcompare_Gt, and make the Atlas resolve constructor names under the inductive's namespace or through export aliases. (b) Re-index Rcompare_prop over Ordering and state Rcompare_prop_spec for BinarySingleNaN.RcompareOrdering (the Ordering-valued function anchored to Coq Rcompare). The former Int-to-Ordering bridge, BinarySingleNaN.orderingOfCompareCode_Rcompare, was deleted in batch 1D; batch 2B makes Rcompare itself Ordering-valued. The constructors are used only in Raux.lean (3 hits each)."
   },
   {
    "id": "src/Core/Raux.v:Rcompare_Lt_inv@7603",
@@ -650,7 +650,7 @@
    "lean_type": "∀ (x y : ℝ), ⦃⌜True⌝⦄ pure (Rmin_compare_check x y) ⦃PostCond.noThrow fun p => ⌜p.1 = if p.2 = -1 then x else if p.2 = 0 then x else y⌝⦄",
    "explanation": "Triple-shaped. The carrier is (min x y, Rcompare x y), so the reading is min x y = if Rcompare x y = -1 then x else if Rcompare x y = 0 then x else y. Coq matches on the comparison constructors (Gt => y | _ => x). Lean branches on ℤ codes. The two agree under the legacy Lt = -1 / Eq = 0 / Gt = 1 encoding, because Lean's Rcompare only returns -1, 0 or 1. The difference is the encoding of the comparison value, not the math. Reading verified in V.lean.",
    "port_difficulty": "trivial",
-   "port_notes": "The spec has no callers. Add a direct anchored theorem Rmin_compare (line 602) with the if-on-codes RHS, or with a match on BinarySingleNaN.RcompareOrdering x y (Ordering-faithful, via orderingOfCompareCode_Rcompare)."
+   "port_notes": "The spec has no callers. Add a direct anchored theorem Rmin_compare (line 602) with the if-on-codes RHS, or with a match on BinarySingleNaN.RcompareOrdering x y (Ordering-faithful; batch 2B makes Rcompare itself Ordering-valued, and the old orderingOfCompareCode_Rcompare bridge was deleted in batch 1D)."
   },
   {
    "id": "src/Core/Raux.v:Rsqr_le_abs_0_alt@4560",

@@ -1,5 +1,14 @@
 # IEEE754 Theorems Comparison (content-reviewed)
 
+**Historical record (late 2025).** The Lean names, files and line numbers
+below describe the tree when this file was written and have not been kept up
+to date. Batch 1D of the conventions cutover (September 2026) deleted the
+real-rounding `Binary754` operations and the `binary_add_correct` and
+`binary_mul_correct` aliases listed here. The Flocq contracts are exported
+under their Coq names, for example `Bplus_correct` and `Bmult_correct`, and
+the live list of Lean declarations anchored to Flocq comes from
+`scripts/ExportFlocqSources.lean`.
+
 This file lists theorem-like declarations per file (Coq vs Lean) and records correspondences judged by statement intent. Names may differ; mapping is by content where appropriate.
 
 ## File: Bits.v → Bits.lean
@@ -140,8 +149,8 @@ This file lists theorem-like declarations per file (Coq vs Lean) and records cor
 - theorem: `is_finite_FF2SF` (FloatSpec/src/IEEE754/Binary.lean:128)
 - theorem: `sign_SF2FF` (FloatSpec/src/IEEE754/Binary.lean:133)
 - theorem: `sign_FF2SF` (FloatSpec/src/IEEE754/Binary.lean:138)
-- theorem: `binary_add_correct` (FloatSpec/src/IEEE754/Binary.lean:189)
-- theorem: `binary_mul_correct` (FloatSpec/src/IEEE754/Binary.lean:195)
+- theorem: `binary_add_correct` (deleted in batch 1D; see `Bplus_correct`)
+- theorem: `binary_mul_correct` (deleted in batch 1D; see `Bmult_correct`)
 
 ### Mapping (Coq → Lean)
 - `SF2R_FF2SF` → `SF2R_FF2SF [FloatSpec/src/IEEE754/Binary.lean:48]` (exact)
@@ -223,13 +232,13 @@ This file lists theorem-like declarations per file (Coq vs Lean) and records cor
 - `eq_binary_overflow_FF2SF` → `eq_binary_overflow_FF2SF [FloatSpec/src/IEEE754/Binary.lean:591]` (spec-variant, hoare)
 -- `binary_round_aux_correct'` → `binary_round_aux_correct' [FloatSpec/src/IEEE754/Binary.lean:1087]` (spec-variant, hoare)
 -- `binary_round_aux_correct` → `binary_round_aux_correct [FloatSpec/src/IEEE754/Binary.lean:1142]` (spec-variant, hoare)
-- `Bmult_correct` → `binary_mul_correct [FloatSpec/src/IEEE754/Binary.lean:170]` (content-equivalent)
+- `Bmult_correct` → `Bmult_correct` (exact name; the `binary_mul_correct` alias was deleted in batch 1D)
 -- `shl_align_fexp_correct` → `shl_align_fexp_correct [FloatSpec/src/IEEE754/Binary.lean:1019]` (spec-variant, hoare)
 - `binary_round_aux_correct'` → `binary_round_aux_correct' [FloatSpec/src/IEEE754/Binary.lean:1087]` (spec-variant, hoare)
 - `binary_round_aux_correct` → `binary_round_aux_correct [FloatSpec/src/IEEE754/Binary.lean:1142]` (spec-variant, hoare)
 - `binary_round_correct` → `binary_round_correct [FloatSpec/src/IEEE754/Binary.lean:1107]` (spec-variant, hoare)
 - `binary_normalize_correct` → `binary_normalize_correct [FloatSpec/src/IEEE754/Binary.lean:1127]` (spec-variant, hoare)
--- `Bplus_correct` → `binary_add_correct [FloatSpec/src/IEEE754/Binary.lean:579]` (content-equivalent)
+-- `Bplus_correct` → `Bplus_correct` (exact name; the `binary_add_correct` alias was deleted in batch 1D)
 -- `Bminus_correct` → `Bminus_correct [FloatSpec/src/IEEE754/Binary.lean:597]` (spec-variant, hoare)
 -- `Bdiv_correct` → `Bdiv_correct [FloatSpec/src/IEEE754/Binary.lean:612]` (spec-variant, hoare)
  -- `Bsqrt_correct` → `Bsqrt_correct [FloatSpec/src/IEEE754/Binary.lean:627]` (spec-variant, hoare)

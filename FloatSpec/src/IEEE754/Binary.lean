@@ -847,13 +847,11 @@ theorem B2R_Bsign_inj_compat {prec emax} (x y : Binary754 prec emax)
 -- Coq counterparts `valid_binary_B2FF` and `FF2B_B2FF_valid` appear below
 -- as compatibility-carrier statements.
 
--- Coq: valid_binary — the source predicate checks positive finite mantissas,
--- canonical boundedness, and positive bounded NaN payloads.
-set_option linter.coqSource true
--- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/IEEE754/Binary.v#L166
-/-- Flocq `valid_binary` on the Nat-payload compatibility carrier.
-Positivity checks replace source-level `positive` payload types. -/
-@[flocq_source "src/IEEE754/Binary.v" 166 "valid_binary"]
+/-- Validity on the Nat-payload compatibility carrier `FullFloat`. The Flocq
+anchor for `valid_binary` is `Binary.valid_binary`, over the exact `full_float`
+carrier. This copy adds explicit `0 < m` and `0 < payload` checks in place of
+Rocq's `positive` type, and agrees with `Binary.valid_binary` on the image of
+`full_float.toFullFloat`. It goes away with the `Binary754` carrier (batch 5A). -/
 def valid_binary {prec emax : Int} (x : FullFloat) : Bool :=
   match x with
   | FullFloat.F754_finite _ m e =>
@@ -864,8 +862,6 @@ def valid_binary {prec emax : Int} (x : FullFloat) : Bool :=
           (FloatSpec.Core.Digits.digits2_pos payload) prec
   | FullFloat.F754_zero _ => true
   | FullFloat.F754_infinity _ => true
-
-set_option linter.coqSource false
 
 theorem valid_binary_B2FF_compat {prec emax} (x : Binary754 prec emax)
     (hvalid : valid_binary (prec:=prec) (emax:=emax) x.val = true) :

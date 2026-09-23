@@ -516,8 +516,11 @@ The standalone paired fixtures add independent contract and error checks:
   bits of `3`, and the largest finite binary64 times two overflows to `+∞` in
   round-to-nearest, through both `b64_mult` and `Binary.Bmult` with
   `Binary.Bmax_float`. The deleted real-rounding `Binary754` layer never
-  produced that overflow. Lean checks the rows with `decide +kernel` and
-  `#eval` (lean-ir); the paired Rocq fixture closes them with `vm_compute`.
+  produced that overflow. The fixture also checks that
+  `Binary.Bfma_szero` ignores a NaN's sign, as Flocq's definition through
+  `B2BSN` does: with a negative NaN, `+0` and `-0` in round-to-nearest it is
+  `false`. Lean checks the rows with `decide +kernel` and `#eval` (lean-ir);
+  the paired Rocq fixture closes them with `vm_compute`.
 - `SingleNaNArithmetic`: 30 literal one-bit-format results in all five modes,
   through both the direct and source-mode SingleNaN APIs. The cases cover
   overflow, signed cancellation, underflow ties, square root, and an FMA whose

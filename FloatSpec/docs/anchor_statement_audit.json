@@ -1,8 +1,13 @@
 {
  "flocq_commit": "7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f",
  "rocq": "9.1",
- "floatspec_base": "6644539f",
- "anchors": 462,
+ "full_audit_base": "6644539f",
+ "updated_on": "6af83019",
+ "anchors": 476,
+ "superseded_rows": [
+  "FloatSpec.Calc.Round.round_0",
+  "SF2B'"
+ ],
  "verdicts": [
   {
    "coq_path": "src/Calc/Bracket.v",
@@ -2010,9 +2015,9 @@
   {
    "coq_path": "src/IEEE754/Binary.v",
    "coq_name": "valid_binary",
-   "lean_name": "valid_binary",
+   "lean_name": "Binary.valid_binary",
    "verdict": "match",
-   "explanation": "Same signature shape (prec emax, float, bool). The only difference is the carrier: Lean uses the Nat-payload FullFloat, Coq uses the positive-payload full_float. The body is the Coq body plus explicit `0 < m` and `0 < payload` guards. Finite values get specFloat_bounded (= SpecFloat.bounded, i.e. canonical_mantissa && e <= emax-prec, with fexp = max(e-prec, 3-emax-prec)). NaN gets Zlt_bool (digits2_pos pl) prec (= nan_pl). Zero and infinity give true. I checked in Lean that `valid_binary x.toFullFloat = valid_full_float_binary x` for every exact `full_float` x (`cases x <;> simp` closes it), so the two agree on the Coq image. Zero-mantissa junk values are rejected."
+   "explanation": "Checked with Lean #check/#print (pp.proofs false) and Rocq About/Print (batch 1D review). The anchor moved here from the root valid_binary on the Nat-payload FullFloat, which used neither full_float nor nan_pl. Coq: Z -> Z -> full_float -> bool (Arguments valid_binary (prec emax) x). Lean: {prec emax} (x : full_float) : Bool, an abbrev for valid_full_float_binary. Bodies agree constructor by constructor: F754_finite _ m e gives specFloat_bounded (positiveToNat m) e, which is SpecFloat.bounded prec emax m e; F754_nan _ pl gives nan_pl prec pl, the anchored nan_pl; zero and infinity give true. Carriers are the anchored full_float and Int for Z. FloatSpec/Test/SourceSurface.lean proves that the root valid_binary agrees with it on full_float.toFullFloat of every full_float. Binary.v gives prec and emax no Arguments line, so they are explicit there (Arguments valid_binary (prec emax) ...), while Lean takes {prec emax}; this is the E6(b) binder difference,."
   },
   {
    "coq_path": "src/IEEE754/Binary.v",
@@ -3239,6 +3244,118 @@
    "lean_name": "FloatSpec.IEEE754.BinarySingleNaN.Source.round_mode",
    "verdict": "match",
    "explanation": "Checked with Lean #check/#print and Rocq Check/Print (batch 1D). Both have type mode -> R -> Z. Lean's body is rnd_of_mode m.toRoundingMode, which gives, constructor by constructor, Znearest (fun t => !decide (2 | t)) for mode_NE (Coq: ZnearestE, Znearest (fun x => negb (Z.even x))), Ztrunc for mode_ZR, Zfloor for mode_DN, Zceil for mode_UP, and Znearest ZnearestA with ZnearestA t = decide (0 <= t) for mode_NA (Coq: Znearest (Z.leb 0))."
+  },
+  {
+   "coq_path": "src/IEEE754/Binary.v",
+   "coq_name": "Bmult",
+   "lean_name": "Binary.Bmult",
+   "verdict": "match",
+   "explanation": "Checked with Lean #check/#print (pp.proofs false) and Rocq About/Print (batch 1D review). Coq: forall prec emax, Prec_gt_0 prec -> Prec_lt_emax prec emax -> (binary_float -> binary_float -> {x | is_nan x = true}) -> mode -> binary_float -> binary_float -> binary_float, with body BSN2B (mult_nan x y) (BinarySingleNaN.Bmult m (B2BSN x) (B2BSN y)). Lean: {prec emax} [Prec_gt_0 prec] [Prec_lt_emax prec emax] (Binary.BmultNaNHandler, an abbrev for the same function type into {nan // is_nan nan = true}) (mode : RoundingMode) x y : binary_float prec emax, in the same argument order. RoundingMode's five constructors correspond one to one with Coq's mode. The Lean body is a direct case split rather than the BSN2B composition. FloatSpec/Test/SourceSurface.lean proves, for every mode and every input including all NaN, zero and infinity cases, that the Lean definition equals BSN2B (mult_nan ...) (BinarySingleNaN.Bmult m (B2BSN x) ...), which is Coq's body. Binary.v gives prec and emax no Arguments line, so they are explicit there (Arguments Binary.X (prec emax) ...), while Lean takes {prec emax}; this is the E6(b) binder difference, and Coq's explicit Prec_gt_0/Prec_lt_emax arguments are Lean instance arguments (E6(a))."
+  },
+  {
+   "coq_path": "src/IEEE754/Binary.v",
+   "coq_name": "Bplus",
+   "lean_name": "Binary.Bplus",
+   "verdict": "match",
+   "explanation": "Checked with Lean #check/#print (pp.proofs false) and Rocq About/Print (batch 1D review). Coq: forall prec emax, Prec_gt_0 prec -> Prec_lt_emax prec emax -> (binary_float -> binary_float -> {x | is_nan x = true}) -> mode -> binary_float -> binary_float -> binary_float, with body BSN2B (plus_nan x y) (BinarySingleNaN.Bplus m (B2BSN x) (B2BSN y)). Lean: {prec emax} [Prec_gt_0 prec] [Prec_lt_emax prec emax] (Binary.BplusNaNHandler, an abbrev for the same function type into {nan // is_nan nan = true}) (mode : RoundingMode) x y : binary_float prec emax, in the same argument order. RoundingMode's five constructors correspond one to one with Coq's mode. The Lean body is a direct case split rather than the BSN2B composition. FloatSpec/Test/SourceSurface.lean proves, for every mode and every input including all NaN, zero and infinity cases, that the Lean definition equals BSN2B (plus_nan ...) (BinarySingleNaN.Bplus m (B2BSN x) ...), which is Coq's body. Binary.v gives prec and emax no Arguments line, so they are explicit there (Arguments Binary.X (prec emax) ...), while Lean takes {prec emax}; this is the E6(b) binder difference, and Coq's explicit Prec_gt_0/Prec_lt_emax arguments are Lean instance arguments (E6(a))."
+  },
+  {
+   "coq_path": "src/IEEE754/Binary.v",
+   "coq_name": "Bminus",
+   "lean_name": "Binary.Bminus",
+   "verdict": "match",
+   "explanation": "Checked with Lean #check/#print (pp.proofs false) and Rocq About/Print (batch 1D review). Coq: forall prec emax, Prec_gt_0 prec -> Prec_lt_emax prec emax -> (binary_float -> binary_float -> {x | is_nan x = true}) -> mode -> binary_float -> binary_float -> binary_float, with body BSN2B (minus_nan x y) (BinarySingleNaN.Bminus m (B2BSN x) (B2BSN y)). Lean: {prec emax} [Prec_gt_0 prec] [Prec_lt_emax prec emax] (Binary.BminusNaNHandler, an abbrev for the same function type into {nan // is_nan nan = true}) (mode : RoundingMode) x y : binary_float prec emax, in the same argument order. RoundingMode's five constructors correspond one to one with Coq's mode. The Lean body is a direct case split rather than the BSN2B composition. FloatSpec/Test/SourceSurface.lean proves, for every mode and every input including all NaN, zero and infinity cases, that the Lean definition equals BSN2B (minus_nan ...) (BinarySingleNaN.Bminus m (B2BSN x) ...), which is Coq's body. Binary.v gives prec and emax no Arguments line, so they are explicit there (Arguments Binary.X (prec emax) ...), while Lean takes {prec emax}; this is the E6(b) binder difference, and Coq's explicit Prec_gt_0/Prec_lt_emax arguments are Lean instance arguments (E6(a))."
+  },
+  {
+   "coq_path": "src/IEEE754/Binary.v",
+   "coq_name": "Bfma",
+   "lean_name": "Binary.Bfma",
+   "verdict": "match",
+   "explanation": "Checked with Lean #check/#print (pp.proofs false) and Rocq About/Print (batch 1D review). Coq: forall prec emax, Prec_gt_0 prec -> Prec_lt_emax prec emax -> (binary_float -> binary_float -> binary_float -> {x | is_nan x = true}) -> mode -> binary_float -> binary_float -> binary_float -> binary_float, with body BSN2B (fma_nan x y z) (BinarySingleNaN.Bfma m (B2BSN x) (B2BSN y) (B2BSN z)). Lean: {prec emax} [Prec_gt_0 prec] [Prec_lt_emax prec emax] (Binary.BfmaNaNHandler, an abbrev for the same function type into {nan // is_nan nan = true}) (mode : RoundingMode) x y z : binary_float prec emax, in the same argument order. RoundingMode's five constructors correspond one to one with Coq's mode. The Lean body is a direct case split rather than the BSN2B composition. FloatSpec/Test/SourceSurface.lean proves, for every mode and every input including all NaN, zero and infinity cases, that the Lean definition equals BSN2B (fma_nan ...) (BinarySingleNaN.Bfma m (B2BSN x) ...), which is Coq's body. Binary.v gives prec and emax no Arguments line, so they are explicit there (Arguments Binary.X (prec emax) ...), while Lean takes {prec emax}; this is the E6(b) binder difference, and Coq's explicit Prec_gt_0/Prec_lt_emax arguments are Lean instance arguments (E6(a))."
+  },
+  {
+   "coq_path": "src/IEEE754/Binary.v",
+   "coq_name": "Bdiv",
+   "lean_name": "Binary.Bdiv",
+   "verdict": "match",
+   "explanation": "Checked with Lean #check/#print (pp.proofs false) and Rocq About/Print (batch 1D review). Coq: forall prec emax, Prec_gt_0 prec -> Prec_lt_emax prec emax -> (binary_float -> binary_float -> {x | is_nan x = true}) -> mode -> binary_float -> binary_float -> binary_float, with body BSN2B (div_nan x y) (BinarySingleNaN.Bdiv m (B2BSN x) (B2BSN y)). Lean: {prec emax} [Prec_gt_0 prec] [Prec_lt_emax prec emax] (Binary.BdivNaNHandler, an abbrev for the same function type into {nan // is_nan nan = true}) (mode : RoundingMode) x y : binary_float prec emax, in the same argument order. RoundingMode's five constructors correspond one to one with Coq's mode. The Lean body is a direct case split rather than the BSN2B composition. FloatSpec/Test/SourceSurface.lean proves, for every mode and every input including all NaN, zero and infinity cases, that the Lean definition equals BSN2B (div_nan ...) (BinarySingleNaN.Bdiv m (B2BSN x) ...), which is Coq's body. Binary.v gives prec and emax no Arguments line, so they are explicit there (Arguments Binary.X (prec emax) ...), while Lean takes {prec emax}; this is the E6(b) binder difference, and Coq's explicit Prec_gt_0/Prec_lt_emax arguments are Lean instance arguments (E6(a))."
+  },
+  {
+   "coq_path": "src/IEEE754/Binary.v",
+   "coq_name": "Bsqrt",
+   "lean_name": "Binary.Bsqrt",
+   "verdict": "match",
+   "explanation": "Checked with Lean #check/#print (pp.proofs false) and Rocq About/Print (batch 1D review). Coq: forall prec emax, Prec_gt_0 prec -> Prec_lt_emax prec emax -> (binary_float -> {x | is_nan x = true}) -> mode -> binary_float -> binary_float, with body BSN2B (sqrt_nan x) (BinarySingleNaN.Bsqrt m (B2BSN x)). Lean: {prec emax} [Prec_gt_0 prec] [Prec_lt_emax prec emax] (Binary.BsqrtNaNHandler, an abbrev for the same function type into {nan // is_nan nan = true}) (mode : RoundingMode) x : binary_float prec emax, in the same argument order. RoundingMode's five constructors correspond one to one with Coq's mode. The Lean body is a direct case split rather than the BSN2B composition. FloatSpec/Test/SourceSurface.lean proves, for every mode and every input including all NaN, zero and infinity cases, that the Lean definition equals BSN2B (sqrt_nan ...) (BinarySingleNaN.Bsqrt m (B2BSN x) ...), which is Coq's body. Binary.v gives prec and emax no Arguments line, so they are explicit there (Arguments Binary.X (prec emax) ...), while Lean takes {prec emax}; this is the E6(b) binder difference, and Coq's explicit Prec_gt_0/Prec_lt_emax arguments are Lean instance arguments (E6(a))."
+  },
+  {
+   "coq_path": "src/IEEE754/Binary.v",
+   "coq_name": "Bfma_szero",
+   "lean_name": "Binary.Bfma_szero",
+   "verdict": "match",
+   "explanation": "Checked with Lean #check/#print (pp.proofs false) and Rocq About/Print (batch 1D review). Coq: forall prec emax, mode -> binary_float -> binary_float -> binary_float -> bool, with body BinarySingleNaN.Bfma_szero prec emax m (B2BSN x) (B2BSN y) (B2BSN z). Lean: {prec emax} (mode : RoundingMode) (x y z : binary_float prec emax) : Bool. Before this review the Lean body read the signs with Binary.Bsign, which returns a NaN's sign bit, whereas B2BSN maps every NaN to the signless SingleNaN NaN, whose Bsign is false. The two disagreed on NaN operands: for a negative NaN, +0 and -0 in mode_NE, Coq computes false (vm_compute) and the old Lean body gave true. The body now reads the signs through B2BSN, so it equals BinarySingleNaN.Bfma_szero m (B2BSN x) (B2BSN y) (B2BSN z) by rfl (FloatSpec/Test/SourceSurface.lean), and scripts/fixtures/Binary64Arithmetic.{lean,v} check the NaN case in both provers. Binary.Bfma only calls it on non-NaN operands, so Bfma's results are unchanged. Binary.v gives prec and emax no Arguments line, so they are explicit there (Arguments Binary.X (prec emax) ...), while Lean takes {prec emax}; this is the E6(b) binder difference,."
+  },
+  {
+   "coq_path": "src/IEEE754/Binary.v",
+   "coq_name": "Bmax_float",
+   "lean_name": "Binary.Bmax_float",
+   "verdict": "match",
+   "explanation": "Checked with Lean #check/#print (pp.proofs false) and Rocq About/Print (batch 1D review). Coq: forall prec emax, Prec_gt_0 prec -> Prec_lt_emax prec emax -> binary_float prec emax, with body BSN2B' BinarySingleNaN.Bmax_float eq_refl. Lean: {prec emax} [Prec_gt_0 prec] [Prec_lt_emax prec emax] : binary_float prec emax, with body BSN2B' BmaxFloatSingle rfl, and BmaxFloatSingle is the anchored BinarySingleNaN.Bmax_float; the equation holds by rfl (FloatSpec/Test/SourceSurface.lean). Binary.v gives prec and emax no Arguments line, so they are explicit there (Arguments Binary.X (prec emax) ...), while Lean takes {prec emax}; this is the E6(b) binder difference, and Coq's explicit Prec_gt_0/Prec_lt_emax arguments are Lean instance arguments (E6(a))."
+  },
+  {
+   "coq_path": "src/IEEE754/Binary.v",
+   "coq_name": "Bnormfr_mantissa",
+   "lean_name": "Binary.Bnormfr_mantissa",
+   "verdict": "match",
+   "explanation": "Checked with Lean #check/#print (pp.proofs false) and Rocq About/Print (batch 1D review). Coq: forall prec emax, binary_float prec emax -> N, with body BinarySingleNaN.Bnormfr_mantissa (B2BSN x). Lean: {prec emax} (x : binary_float prec emax) : Nat, with body BinarySingleNaNFloat.Bnormfr_mantissa (B2BSN x), which is the anchored BinarySingleNaN.Bnormfr_mantissa (rfl in FloatSpec/Test/SourceSurface.lean). N is Nat. Binary.v gives prec and emax no Arguments line, so they are explicit there (Arguments Binary.X (prec emax) ...), while Lean takes {prec emax}; this is the E6(b) binder difference,."
+  },
+  {
+   "coq_path": "src/IEEE754/BinarySingleNaN.v",
+   "coq_name": "Bmax_float",
+   "lean_name": "BinarySingleNaN.Bmax_float",
+   "verdict": "match",
+   "explanation": "Checked with Lean #check/#print (pp.proofs false) and Rocq About/Print (batch 1D review). Coq: forall {prec emax}, Prec_gt_0 prec -> Prec_lt_emax prec emax -> binary_float prec emax (prec, emax and both instances implicit), with body SF2B (S754_finite false (Pos.sub (shift_pos (Z.to_pos prec) 1) 1) (emax - prec)) Bmax_float_proof. Lean: {prec emax} [Prec_gt_0 prec] [Prec_lt_emax prec emax] : BinarySingleNaNFloat prec emax, an abbrev for Binary.BmaxFloatSingle = B754_finite false (2 ^ prec.toNat - 1) (emax - prec). shift_pos p 1 is 2^p, and Prec_gt_0 makes Z.to_pos prec = prec, so the mantissa is 2^prec - 1 on both sides and the exponent is emax - prec. Both provers give bits 0x7FEFFFFFFFFFFFFF for binary64 (scripts/fixtures/Binary64Arithmetic.{lean,v})."
+  },
+  {
+   "coq_path": "src/IEEE754/BinarySingleNaN.v",
+   "coq_name": "Bnormfr_mantissa",
+   "lean_name": "BinarySingleNaN.Bnormfr_mantissa",
+   "verdict": "match",
+   "explanation": "Checked with Lean #check/#print (pp.proofs false) and Rocq About/Print (batch 1D review). Coq: forall {prec emax}, binary_float prec emax -> N, with body SFnormfr_mantissa prec (B2SF x). Lean: {prec emax} : BinarySingleNaNFloat prec emax -> Nat, an abbrev for BinarySingleNaNFloat.Bnormfr_mantissa = SFnormfr_mantissa prec (binarySingleNaNFloatToStandardFloat x) (rfl in FloatSpec/Test/SourceSurface.lean). Lean's SFnormfr_mantissa returns m when e == -prec on a finite value and 0 otherwise, which is Rocq's SpecFloat.SFnormfr_mantissa (Npos mx if Z.eqb ex (-prec), else N0)."
+  },
+  {
+   "coq_path": "src/IEEE754/BinarySingleNaN.v",
+   "coq_name": "Bfma_szero",
+   "lean_name": "BinarySingleNaN.Bfma_szero",
+   "verdict": "match",
+   "explanation": "Checked with Lean #check/#print (pp.proofs false) and Rocq About/Print (batch 1D review). Coq: forall prec emax, mode -> binary_float -> binary_float -> binary_float -> bool; BinarySingleNaN.v's implicit-argument block does not cover it, so prec and emax are explicit (Arguments Bfma_szero (prec emax) m x y z), while Lean takes {prec emax}. Body: s_xy := xorb (Bsign x) (Bsign y); if Bool.eqb s_xy (Bsign z) then s_xy else (mode_DN => true | _ => false). Lean reads each sign as BSN_sign (binarySingleNaNFloatToB754 _), which returns false for NaN and the sign field otherwise, exactly Coq's BinarySingleNaN.Bsign; RTN is mode_DN."
+  },
+  {
+   "coq_path": "src/IEEE754/BinarySingleNaN.v",
+   "coq_name": "SF2B'",
+   "lean_name": "BinarySingleNaN.SF2B'",
+   "verdict": "match",
+   "explanation": "Checked with Lean #check/#print (pp.proofs false) and Rocq About/Print (batch 1D review). This is the anchor the 2026-09-22 audit moved here from the root SF2B' (see that row's resolution); it had no row of its own. Coq: forall {prec emax}, spec_float -> binary_float prec emax. Lean: {prec emax} : StandardFloat -> BinarySingleNaNFloat prec emax, an abbrev for standardFloatToBinarySingleNaNFloat'. Zero, infinity and NaN map to the same constructors. On S754_finite s m e, Coq returns B754_finite s m e when SpecFloat.bounded prec emax m e and B754_nan otherwise; Lean returns the finite value when validBinarySingleNaNStandardFloat holds, that is 0 < m and specFloat_bounded m e, and NaN otherwise. The 0 < m test stands in for Coq's positive mantissa, so the two agree on every spec_float."
+  },
+  {
+   "coq_path": "src/IEEE754/BinarySingleNaN.v",
+   "coq_name": "shl_align_fexp",
+   "lean_name": "BinarySingleNaN.shl_align_fexp",
+   "verdict": "match",
+   "explanation": "Checked with Lean #check/#print (pp.proofs false) and Rocq About/Print (batch 1D review). Coq: Z -> Z -> positive -> Z -> positive * Z with prec and emax explicit (Arguments shl_align_fexp (prec emax) mx ex), while Lean takes {prec emax} (Positive -> Int -> Positive × Int). Coq's body is SpecFloat.shl_align mx ex (SpecFloat.fexp prec emax (Zpos (digits2_pos mx) + ex)). Lean's abbrev is Binary.shl_align_fexp, which runs the Nat shl_align on positiveToNat mx with target FLT_exp (3 - emax - prec) prec (Zdigits 2 mx + ex) and converts the mantissa back to Positive. SpecFloat.fexp prec emax is max (e - prec) (3 - emax - prec), which is FLT_exp (3 - emax - prec) prec, and Zdigits 2 of a positive m is Zpos (digits2_pos m). shl_align shifts left by ex - e' when e' < ex and otherwise returns (mx, ex). Lean's test is e' <= ex, but at e' = ex it returns (mx * 2^0, ex), the same pair."
+  },
+  {
+   "coq_path": "src/IEEE754/BinarySingleNaN.v",
+   "coq_name": "choice_mode",
+   "lean_name": "choice_mode",
+   "verdict": "match",
+   "explanation": "Checked with Lean #check/#print (pp.proofs false) and Rocq About/Print (batch 1D review). Coq: mode -> bool -> Z -> location -> Z. Lean: RoundingMode -> Bool -> Int -> Loc -> Int, where Loc is Calc.Bracket.Location (loc_Exact | loc_Inexact Ordering), which is SpecFloat.location. Branch by branch: NE gives cond_incr (round_N (negb (Z.even mx)) lx) mx, and Lean's !decide (2 ∣ mx) is negb (Z.even mx); ZR gives mx; DN gives cond_incr (round_sign_DN sx lx) mx and matches RTN; UP gives cond_incr (round_sign_UP sx lx) mx and matches RTP; NA gives cond_incr (round_N true lx) mx. No section variables or instance arguments appear on either side."
+  },
+  {
+   "coq_path": "src/IEEE754/PrimFloat.v",
+   "coq_name": "B2Prim",
+   "lean_name": "FaithfulPrimFloat.B2Prim",
+   "verdict": "match",
+   "explanation": "Checked with Lean #check/#print (pp.proofs false) and Rocq About/Print (batch 1D review). Coq: binary_float FloatOps.prec FloatOps.emax -> PrimFloat.float, with body SF2Prim (B2SF x). Lean: PrimBinaryFloat -> PrimitiveFloat, with body SF2Prim (B2SF x). PrimBinaryFloat is BinarySingleNaNFloat 53 1024, which is FloatOps.prec and FloatOps.emax. Rocq's PrimFloat.float is a kernel primitive with no inductive definition, so Lean models it as PrimitiveFloat, a StandardFloat together with its validity proof. The argument B2SF x is always valid, so Lean's SF2Prim takes its first branch and returns B2SF x unchanged, which is what Rocq's Prim2SF_SF2Prim law says of the primitive. Only the carrier of the result differs, and the carrier is a model rather than the primitive."
   }
  ]
 }

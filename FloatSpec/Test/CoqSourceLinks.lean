@@ -11,7 +11,7 @@ open Lean Elab Command
 run_cmd do
   let env ← getEnv
   let expected := #[
-    (`valid_binary, "src/IEEE754/Binary.v#L166"),
+    (`Binary.valid_binary, "src/IEEE754/Binary.v#L166"),
     (`FloatSpec.IEEE754.Bits.Source.join_bits, "src/IEEE754/Bits.v#L37"),
     (`FloatSpec.IEEE754.Bits.Source.binary_float_of_bits,
       "src/IEEE754/Bits.v#L491"),

@@ -4,7 +4,8 @@ import FloatSpec.src.IEEE754.Bits
 through the integer pipeline and overflow as Flocq does. The expected answers
 are literal IEEE-754 bit patterns: `1 + 2` is `3`, and the largest finite
 binary64 times two overflows to `+∞` in round-to-nearest, both through the
-`b64_*` wrappers and through `Binary.Bmult` directly. -/
+`b64_*` wrappers and through `Binary.Bmult` directly. `Binary.Bfma_szero`
+ignores a NaN's sign, as in Flocq. -/
 
 namespace Binary64Arithmetic
 
@@ -26,9 +27,23 @@ private def expected : List Int :=
 
 example : rows = expected := by decide +kernel
 
+/-! `Binary.Bfma_szero` reads signs through `B2BSN`, which forgets a NaN's sign:
+with a negative NaN, `+0` and `-0`, the product sign counts as positive, so it
+differs from `-0` and round-to-nearest gives `false`. Reading the NaN's own
+sign bit would give `true`. -/
+private def negNaN : binary64 := b64_of_bits 0xFFF8000000000000
+private def posZero : binary64 := b64_of_bits 0x0000000000000000
+private def negZero : binary64 := b64_of_bits 0x8000000000000000
+
+example : Binary.Bsign negNaN = true := by decide +kernel
+example : Binary.Bfma_szero .RNE negNaN posZero negZero = false := by decide +kernel
+
 private def check : IO Unit := do
   unless decide (rows = expected) do throw (IO.userError "binary64 arithmetic mismatch")
-  IO.println "PASS: four binary64 sum and overflow boundaries (compiled and kernel-checked)."
+  unless Binary.Bfma_szero .RNE negNaN posZero negZero == false do
+    throw (IO.userError "Bfma_szero NaN sign mismatch")
+  IO.println "PASS: four binary64 sum and overflow boundaries and the Bfma_szero NaN sign \
+    (compiled and kernel-checked)."
 
 #eval check
 
