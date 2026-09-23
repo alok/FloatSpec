@@ -301,12 +301,17 @@ FLOCQ_AUDIT_DIR="$FLOCQ_AUDIT_DIR" uv run scripts/test_flocq_exemplars.py -v
 ```
 
 On 2026-09-22 all 6,322 rows of the eight exemplars agreed. The test also
-does two more checks:
+checks that `Compute.v` is byte-identical to the pinned
+`examples/Compute.v`, and it runs three mutation controls:
 
-- it checks that `Compute.v` is byte-identical to the pinned
-  `examples/Compute.v`;
-- it runs a Lean-only mutation control (NE replaced by NA), which must be
-  reported as a mismatch and a Lean-side oracle violation.
+- NE replaced by NA on the Lean side only must be a mismatch with a
+  Lean-side oracle violation;
+- Cody–Waite's `Log2l` exponent changed on the Rocq side only must be a
+  mismatch with a Rocq-side violation;
+- a Lean fixture that does not compile must surface as `lean-infra`.
+
+The CLI reports `rocq-infra`, `lean-infra` and `harness-error` verdicts;
+none of them counts as a pass.
 
 The Lean side runs compiled definitions through `#eval`; it has no
 kernel-reduction path yet. Agreement is finite testing of these programs,
