@@ -521,4 +521,3 @@ def verify(out: Path) -> dict[str, object]:
 
 def all_control_names() -> tuple[str, ...]:
     return tuple(c.name for c in CONTROLS)
-

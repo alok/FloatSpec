@@ -196,4 +196,3 @@ def numeric_tags(program: Program, reference: tuple[Observed, ...]) -> Counter[s
                 visit(s.op, s.mode, args, name)
                 acc = Arg.ref(name)
     return tags
-
