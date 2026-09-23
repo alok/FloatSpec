@@ -226,7 +226,7 @@ theorem Zpower_nat_S (b : Int) (e : Nat) : b ^ (e + 1) = b * b ^ e := by
 
 /-- Coq-compatible name: positive base yields positive power
 
-    If 0 < b and p is a natural number, then b^p > 0.
+    If 0 < b and p is a binary positive, then b^p > 0.
     This mirrors the Coq lemma {lit}`Zpower_pos_gt_0`.
 -/
 @[flocq_source "src/Core/Zaux.v" 123 "Zpower_pos_gt_0"]

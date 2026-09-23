@@ -153,6 +153,7 @@ theorem Fopp_Fopp (x : float) : Fopp (Fopp x) = x := by
   cases x
   simp [Fopp]
 
+/-- Source absolute value: the mantissa's absolute value at the same exponent. -/
 @[flocq_source "src/Pff/Pff.v" 1524 "Fabs"]
 def Fabs (x : float) : float :=
   ⟨x.Fnum.natAbs, x.Fexp⟩
