@@ -17,7 +17,7 @@
       "lean_fingerprints": {
         "FloatSpec.Core.RoundNE.Rnd_NE_pt_total": {
           "type_hash": "2919088964",
-          "value_hash": "1490587932",
+          "value_hash": "2630724595",
           "noncomputable": false
         }
       }
@@ -38,7 +38,7 @@
       "lean_fingerprints": {
         "FloatSpec.Core.RoundNE.Rnd_NE_pt_monotone": {
           "type_hash": "2446094460",
-          "value_hash": "614338811",
+          "value_hash": "2793651772",
           "noncomputable": false
         }
       }

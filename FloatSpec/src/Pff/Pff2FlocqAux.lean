@@ -1778,12 +1778,10 @@ theorem pff_round_NE_is_round (beta : Int) [ValidRadix beta] (b : Fbound) (p : I
       FloatSpec.Core.RoundNE.Rnd_NE_pt beta (FLT_exp (-b.dExp) p) r rounded := by
     simpa [rounded] using FloatSpec.Core.RoundNE.round_NE_pt
       (beta := beta) (fexp := FLT_exp (-b.dExp) p) (x := r)
-  have huniq := FloatSpec.Core.RoundNE.Rnd_NE_pt_unique
+  have hy_eq : y = rounded :=
+    FloatSpec.Core.RoundNE.Rnd_NE_pt_unique
       (beta := beta) (fexp := FLT_exp (-b.dExp) p)
-      (x := r) (f1 := y) (f2 := rounded)
-  have hy_eq : y = rounded := by
-    simpa [FloatSpec.Core.RoundNE.Rnd_NE_pt_unique_specific_check, pure,
-      decide_eq_true_iff] using huniq ⟨hbeta, hNE_y, hNE_round⟩
+      (x := r) (f1 := y) (f2 := rounded) hNE_y hNE_round
   simpa [f, y, rounded] using hy_eq
 
 /-- Convert an arbitrary Pff `EvenClosest` witness into the concrete Flocq
@@ -1846,12 +1844,10 @@ theorem evenClosest_value_eq_round_NE (beta : Int) [ValidRadix beta] (b : Fbound
       FloatSpec.Core.RoundNE.Rnd_NE_pt beta (FLT_exp (-b.dExp) p) r rounded := by
     simpa [rounded] using FloatSpec.Core.RoundNE.round_NE_pt
       (beta := beta) (fexp := FLT_exp (-b.dExp) p) (x := r)
-  have huniq := FloatSpec.Core.RoundNE.Rnd_NE_pt_unique
+  have hy_eq : y = rounded :=
+    FloatSpec.Core.RoundNE.Rnd_NE_pt_unique
       (beta := beta) (fexp := FLT_exp (-b.dExp) p)
-      (x := r) (f1 := y) (f2 := rounded)
-  have hy_eq : y = rounded := by
-    simpa [FloatSpec.Core.RoundNE.Rnd_NE_pt_unique_specific_check, pure,
-      decide_eq_true_iff] using huniq ⟨hbeta, hNE_y, hNE_round⟩
+      (x := r) (f1 := y) (f2 := rounded) hNE_y hNE_round
   simpa [y, rounded]
 
 /-- Coq: `round_NE_is_pff_round` — nearest-even rounding has a canonical Pff

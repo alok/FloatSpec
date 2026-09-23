@@ -522,11 +522,9 @@ theorem Rnd_odd_pt_unique (x f1 f2 : ℝ) :
       rcases H1du with H1dn | H1up
       · rcases H2du with H2dn | H2up
         · exact DN_unique x f1 f2 (by simpa [F] using H1dn) (by simpa [F] using H2dn)
-        · have hpar_prop : FloatSpec.Core.RoundNE.DN_UP_parity_payload beta fexp := by
-            have htrip := FloatSpec.Core.RoundNE.DN_UP_parity_generic_payload
+        · have hpar_prop : FloatSpec.Core.RoundNE.DN_UP_parity_payload beta fexp :=
+            FloatSpec.Core.RoundNE.DN_UP_parity_generic_payload
               (beta := beta) (fexp := fexp)
-            simpa [FloatSpec.Core.RoundNE.DN_UP_parity_generic_check, pure,
-              decide_eq_true_iff] using (htrip hβ)
           rcases hpar_prop x f1 f2 HxNF H1dn H2up with
             ⟨gd, gu, Hgd, Hgu, Cgd, Cgu, Hpar⟩
           have hgd_eq : gd = g1 := by
@@ -544,11 +542,9 @@ theorem Rnd_odd_pt_unique (x f1 f2 : ℝ) :
           rw [hgd_eq, hgu_eq] at Hpar
           exact False.elim (Hpar (by rw [odd_mod_one g1.Fnum Og1, odd_mod_one g2.Fnum Og2]))
       · rcases H2du with H2dn | H2up
-        · have hpar_prop : FloatSpec.Core.RoundNE.DN_UP_parity_payload beta fexp := by
-            have htrip := FloatSpec.Core.RoundNE.DN_UP_parity_generic_payload
+        · have hpar_prop : FloatSpec.Core.RoundNE.DN_UP_parity_payload beta fexp :=
+            FloatSpec.Core.RoundNE.DN_UP_parity_generic_payload
               (beta := beta) (fexp := fexp)
-            simpa [FloatSpec.Core.RoundNE.DN_UP_parity_generic_check, pure,
-              decide_eq_true_iff] using (htrip hβ)
           rcases hpar_prop x f2 f1 HxNF H2dn H1up with
             ⟨gd, gu, Hgd, Hgu, Cgd, Cgu, Hpar⟩
           have hgd_eq : gd = g2 := by
@@ -1081,11 +1077,9 @@ private theorem round_odd_pt_pos
     simpa [rd] using roundR_floor_DN_pt_local (beta := beta) (fexp := fexp) x hβ
   have hUP : FloatSpec.Core.Defs.Rnd_UP_pt (generic_format beta fexp) x ru := by
     simpa [ru] using roundR_ceil_UP_pt_local (beta := beta) (fexp := fexp) x hβ
-  have hpar_prop : FloatSpec.Core.RoundNE.DN_UP_parity_payload beta fexp := by
-    have htrip := FloatSpec.Core.RoundNE.DN_UP_parity_generic_payload
+  have hpar_prop : FloatSpec.Core.RoundNE.DN_UP_parity_payload beta fexp :=
+    FloatSpec.Core.RoundNE.DN_UP_parity_generic_payload
       (beta := beta) (fexp := fexp)
-    simpa [FloatSpec.Core.RoundNE.DN_UP_parity_generic_check, pure,
-      decide_eq_true_iff] using (htrip hβ)
   rcases hpar_prop x rd ru hxNF hDN hUP with
     ⟨gd, gu, Hgd, Hgu, Cgd, Cgu, Hpar⟩
   have floor_canonical_parity :
