@@ -26,7 +26,7 @@ theorem Ulp_negligible_exp_spec_prime_unrestricted :
 
 /-- Expected source boundary: no exponent-validity premise. -/
 theorem Ulp_succ_le_plus_ulp_unrestricted :
-    ∀ (beta : ℤ) [inst : ValidRadix beta] (fexp : ℤ → ℤ)
+    ∀ (beta : ℤ) [ValidRadix beta] (fexp : ℤ → ℤ)
   [FloatSpec.Core.Ulp.Monotone_exp fexp] (x : ℝ),
   ⦃⌜1 < beta⌝⦄
     (@pure Id _ _)
@@ -37,7 +37,7 @@ theorem Ulp_succ_le_plus_ulp_unrestricted :
 
 /-- Expected source boundary: no exponent-validity premise. -/
 theorem Ulp_pred_lt_le_unrestricted :
-    ∀ (beta : ℤ) [inst : ValidRadix beta] (fexp : ℤ → ℤ)
+    ∀ (beta : ℤ) [ValidRadix beta] (fexp : ℤ → ℤ)
   (x y : ℝ),
   x ≠ 0 → x ≤ y → ⦃⌜1 < beta⌝⦄ (@pure Id _ _) (FloatSpec.Core.Ulp.pred beta fexp x) ⦃Std.Do.PostCond.noThrow fun r => ⌜r < y⌝⦄ := @FloatSpec.Core.Ulp.pred_lt_le
 
@@ -45,7 +45,7 @@ theorem Ulp_pred_lt_le_unrestricted :
 
 /-- Expected source boundary: no exponent-validity premise. -/
 theorem Ulp_succ_gt_ge_unrestricted :
-    ∀ (beta : ℤ) [inst : ValidRadix beta] (fexp : ℤ → ℤ)
+    ∀ (beta : ℤ) [ValidRadix beta] (fexp : ℤ → ℤ)
   (x y : ℝ),
   y ≠ 0 → x ≤ y → ⦃⌜1 < beta⌝⦄ (@pure Id _ _) (FloatSpec.Core.Ulp.succ beta fexp y) ⦃Std.Do.PostCond.noThrow fun r => ⌜x < r⌝⦄ := @FloatSpec.Core.Ulp.succ_gt_ge
 
@@ -53,7 +53,7 @@ theorem Ulp_succ_gt_ge_unrestricted :
 
 /-- Expected source boundary: no exponent-validity premise. -/
 theorem Ulp_pred_pos_plus_ulp_aux1_unrestricted :
-    ∀ (beta : ℤ) [inst : ValidRadix beta] (fexp : ℤ → ℤ)
+    ∀ (beta : ℤ) [ValidRadix beta] (fexp : ℤ → ℤ)
   (x : ℝ),
   0 < x →
     FloatSpec.Core.Generic_fmt.generic_format beta fexp x →
@@ -68,7 +68,7 @@ theorem Ulp_pred_pos_plus_ulp_aux1_unrestricted :
 
 /-- Expected source boundary: no exponent-validity premise. -/
 theorem Ulp_id_p_ulp_le_bpow_unrestricted :
-    ∀ (beta : ℤ) [inst : ValidRadix beta] (fexp : ℤ → ℤ)
+    ∀ (beta : ℤ) [ValidRadix beta] (fexp : ℤ → ℤ)
   (x : ℝ) (e : ℤ),
   0 < x →
     FloatSpec.Core.Generic_fmt.generic_format beta fexp x →
@@ -82,7 +82,7 @@ theorem Ulp_id_p_ulp_le_bpow_unrestricted :
 
 /-- Expected source boundary: no exponent-validity premise. -/
 theorem Ulp_ulp_succ_pos_unrestricted :
-    ∀ (beta : ℤ) [inst : ValidRadix beta] (fexp : ℤ → ℤ)
+    ∀ (beta : ℤ) [ValidRadix beta] (fexp : ℤ → ℤ)
   (x : ℝ),
   FloatSpec.Core.Generic_fmt.generic_format beta fexp x →
     0 < x →
@@ -98,7 +98,7 @@ theorem Ulp_ulp_succ_pos_unrestricted :
 
 /-- Expected source boundary: no exponent-validity premise. -/
 theorem Ulp_not_FTZ_generic_format_ulp_unrestricted :
-    ∀ (beta : ℤ) [inst : ValidRadix beta] (fexp : ℤ → ℤ)
+    ∀ (beta : ℤ) [ValidRadix beta] (fexp : ℤ → ℤ)
   ,
   (∀ (x : ℝ), FloatSpec.Core.Generic_fmt.generic_format beta fexp (FloatSpec.Core.Ulp.ulp beta fexp x)) →
     1 < beta → FloatSpec.Core.Ulp.Exp_not_FTZ fexp := @FloatSpec.Core.Ulp.not_FTZ_generic_format_ulp
@@ -107,7 +107,7 @@ theorem Ulp_not_FTZ_generic_format_ulp_unrestricted :
 
 /-- Expected source boundary: no exponent-validity premise. -/
 theorem Ulp_id_m_ulp_ge_bpow_unrestricted :
-    ∀ (beta : ℤ) [inst : ValidRadix beta] (fexp : ℤ → ℤ)
+    ∀ (beta : ℤ) [ValidRadix beta] (fexp : ℤ → ℤ)
   (x : ℝ) (e : ℤ),
   FloatSpec.Core.Generic_fmt.generic_format beta fexp x →
     x ≠ FloatSpec.Core.Ulp.ulp beta fexp x →
@@ -119,7 +119,7 @@ theorem Ulp_id_m_ulp_ge_bpow_unrestricted :
 
 /-- Expected source boundary: no exponent-validity premise. -/
 theorem Ulp_round_UP_DN_ulp_unrestricted :
-    ∀ (beta : ℤ) [inst : ValidRadix beta] (fexp : ℤ → ℤ)
+    ∀ (beta : ℤ) [ValidRadix beta] (fexp : ℤ → ℤ)
   (x : ℝ),
   ¬FloatSpec.Core.Generic_fmt.generic_format beta fexp x →
     FloatSpec.Core.Generic_fmt.roundR beta fexp FloatSpec.Core.Generic_fmt.rnd_ceil x =
@@ -130,7 +130,7 @@ theorem Ulp_round_UP_DN_ulp_unrestricted :
 
 /-- Expected source boundary: no exponent-validity premise. -/
 theorem Generic_fmt_generic_format_ge_bpow_unrestricted :
-    ∀ (beta : ℤ) [inst : ValidRadix beta] (fexp : ℤ → ℤ)
+    ∀ (beta : ℤ) [ValidRadix beta] (fexp : ℤ → ℤ)
   (emin : ℤ),
   (1 < beta ∧ ∀ (e : ℤ), emin ≤ fexp e) →
     ∀ (x : ℝ), 0 < x → FloatSpec.Core.Generic_fmt.generic_format beta fexp x → ↑beta ^ emin ≤ x := @FloatSpec.Core.Generic_fmt.generic_format_ge_bpow
@@ -139,7 +139,7 @@ theorem Generic_fmt_generic_format_ge_bpow_unrestricted :
 
 /-- Expected source boundary: no exponent-validity premise. -/
 theorem Generic_fmt_round_N_middle_unrestricted :
-    ∀ (beta : ℤ) [inst : ValidRadix beta] (fexp : ℤ → ℤ)
+    ∀ (beta : ℤ) [ValidRadix beta] (fexp : ℤ → ℤ)
   (choice : ℤ → Bool) (x : ℝ),
   1 < beta →
     x - FloatSpec.Core.Generic_fmt.roundR beta fexp (fun y => FloatSpec.Core.Raux.Zfloor y) x =
@@ -153,7 +153,7 @@ theorem Generic_fmt_round_N_middle_unrestricted :
 
 /-- Expected source boundary: no exponent-validity premise. -/
 theorem Generic_fmt_round_N_small_pos_unrestricted :
-    ∀ (beta : ℤ) [inst : ValidRadix beta] (fexp : ℤ → ℤ)
+    ∀ (beta : ℤ) [ValidRadix beta] (fexp : ℤ → ℤ)
   (choice : ℤ → Bool) (x : ℝ) (ex : ℤ),
   1 < beta →
     ↑beta ^ (ex - 1) ≤ x ∧ x < ↑beta ^ ex →
@@ -163,7 +163,7 @@ theorem Generic_fmt_round_N_small_pos_unrestricted :
 
 /-- Expected source boundary: no exponent-validity premise. -/
 theorem Generic_fmt_round_N_opp_unrestricted :
-    ∀ (beta : ℤ) [inst : ValidRadix beta] (fexp : ℤ → ℤ)
+    ∀ (beta : ℤ) [ValidRadix beta] (fexp : ℤ → ℤ)
   (choice : ℤ → Bool) (x : ℝ),
   FloatSpec.Core.Generic_fmt.roundR beta fexp (FloatSpec.Core.Generic_fmt.Znearest choice) (-x) =
     -FloatSpec.Core.Generic_fmt.roundR beta fexp (FloatSpec.Core.Generic_fmt.Znearest fun t => !choice (-(t + 1))) x := @FloatSpec.Core.Generic_fmt.round_N_opp
@@ -172,7 +172,7 @@ theorem Generic_fmt_round_N_opp_unrestricted :
 
 /-- Expected source boundary: no exponent-validity premise. -/
 theorem Generic_fmt_round_N0_opp_unrestricted :
-    ∀ (beta : ℤ) [inst : ValidRadix beta] (fexp : ℤ → ℤ)
+    ∀ (beta : ℤ) [ValidRadix beta] (fexp : ℤ → ℤ)
   (x : ℝ),
   FloatSpec.Core.Generic_fmt.roundR beta fexp (FloatSpec.Core.Generic_fmt.Znearest fun t => decide (t < 0)) (-x) =
     -FloatSpec.Core.Generic_fmt.roundR beta fexp (FloatSpec.Core.Generic_fmt.Znearest fun t => decide (t < 0)) x := @FloatSpec.Core.Generic_fmt.round_N0_opp
@@ -181,7 +181,7 @@ theorem Generic_fmt_round_N0_opp_unrestricted :
 
 /-- Expected source boundary: no exponent-validity premise. -/
 theorem Generic_fmt_round_N_small_unrestricted :
-    ∀ (beta : ℤ) [inst : ValidRadix beta] (fexp : ℤ → ℤ)
+    ∀ (beta : ℤ) [ValidRadix beta] (fexp : ℤ → ℤ)
   (choice : ℤ → Bool) (x : ℝ) (ex : ℤ),
   1 < beta →
     ↑beta ^ (ex - 1) ≤ |x| ∧ |x| < ↑beta ^ ex →
@@ -191,7 +191,7 @@ theorem Generic_fmt_round_N_small_unrestricted :
 
 /-- Expected source boundary: no exponent-validity premise. -/
 theorem Generic_fmt_round_NA_opp_unrestricted :
-    ∀ (beta : ℤ) [inst : ValidRadix beta] (fexp : ℤ → ℤ)
+    ∀ (beta : ℤ) [ValidRadix beta] (fexp : ℤ → ℤ)
   (x : ℝ),
   FloatSpec.Core.Generic_fmt.roundR beta fexp (FloatSpec.Core.Generic_fmt.Znearest fun t => decide (0 ≤ t)) (-x) =
     -FloatSpec.Core.Generic_fmt.roundR beta fexp (FloatSpec.Core.Generic_fmt.Znearest fun t => decide (0 ≤ t)) x := @FloatSpec.Core.Generic_fmt.round_NA_opp
@@ -200,7 +200,7 @@ theorem Generic_fmt_round_NA_opp_unrestricted :
 
 /-- Expected source boundary: no exponent-validity premise. -/
 theorem Generic_fmt_scaled_mantissa_generic_unrestricted :
-    ∀ (beta : ℤ) [inst : ValidRadix beta] (fexp : ℤ → ℤ)
+    ∀ (beta : ℤ) [ValidRadix beta] (fexp : ℤ → ℤ)
   (x : ℝ),
   ⦃⌜FloatSpec.Core.Generic_fmt.generic_format beta fexp x⌝⦄
     (@pure Id _ _)
@@ -211,7 +211,7 @@ theorem Generic_fmt_scaled_mantissa_generic_unrestricted :
 
 /-- Expected source boundary: no exponent-validity premise. -/
 theorem Generic_fmt_round_DN_or_UP_unrestricted :
-    ∀ (beta : ℤ) [inst : ValidRadix beta] (fexp : ℤ → ℤ)
+    ∀ (beta : ℤ) [ValidRadix beta] (fexp : ℤ → ℤ)
   (rnd : ℝ → ℤ) [FloatSpec.Core.Generic_fmt.Valid_rnd rnd] (x : ℝ),
   FloatSpec.Core.Generic_fmt.roundR beta fexp rnd x =
       FloatSpec.Core.Generic_fmt.roundR beta fexp FloatSpec.Core.Generic_fmt.rnd_floor x ∨
@@ -222,7 +222,7 @@ theorem Generic_fmt_round_DN_or_UP_unrestricted :
 
 /-- Expected source boundary: no exponent-validity premise. -/
 theorem Generic_fmt_round_ZR_or_AW_unrestricted :
-    ∀ (beta : ℤ) [inst : ValidRadix beta] (fexp : ℤ → ℤ)
+    ∀ (beta : ℤ) [ValidRadix beta] (fexp : ℤ → ℤ)
   (rnd : ℝ → ℤ) [FloatSpec.Core.Generic_fmt.Valid_rnd rnd] (x : ℝ),
   FloatSpec.Core.Generic_fmt.round_to_generic beta fexp rnd x =
       FloatSpec.Core.Generic_fmt.round_to_generic beta fexp FloatSpec.Core.Raux.Ztrunc x ∨
@@ -233,7 +233,7 @@ theorem Generic_fmt_round_ZR_or_AW_unrestricted :
 
 /-- Expected source boundary: no exponent-validity premise. -/
 theorem Generic_fmt_round_bounded_small_pos_unrestricted :
-    ∀ (beta : ℤ) [inst : ValidRadix beta] (fexp : ℤ → ℤ)
+    ∀ (beta : ℤ) [ValidRadix beta] (fexp : ℤ → ℤ)
   (rnd : ℝ → ℤ) [FloatSpec.Core.Generic_fmt.Valid_rnd rnd] {x : ℝ} {ex : ℤ},
   ex ≤ fexp ex →
     ↑beta ^ (ex - 1) ≤ x ∧ x < ↑beta ^ ex →
@@ -244,7 +244,7 @@ theorem Generic_fmt_round_bounded_small_pos_unrestricted :
 
 /-- Expected source boundary: no exponent-validity premise. -/
 theorem Generic_fmt_round_bounded_large_pos_unrestricted :
-    ∀ (beta : ℤ) [inst : ValidRadix beta] (fexp : ℤ → ℤ)
+    ∀ (beta : ℤ) [ValidRadix beta] (fexp : ℤ → ℤ)
   (rnd : ℝ → ℤ) [FloatSpec.Core.Generic_fmt.Valid_rnd rnd] {x : ℝ} {ex : ℤ},
   fexp ex < ex →
     ↑beta ^ (ex - 1) ≤ x ∧ x < ↑beta ^ ex →
@@ -255,7 +255,7 @@ theorem Generic_fmt_round_bounded_large_pos_unrestricted :
 
 /-- Expected source boundary: no exponent-validity premise. -/
 theorem Generic_fmt_round_DN_small_pos_unrestricted :
-    ∀ (beta : ℤ) [inst : ValidRadix beta] (fexp : ℤ → ℤ)
+    ∀ (beta : ℤ) [ValidRadix beta] (fexp : ℤ → ℤ)
   (x : ℝ) (ex : ℤ),
   ↑beta ^ (ex - 1) ≤ x ∧ x < ↑beta ^ ex →
     ex ≤ fexp ex → 1 < beta → FloatSpec.Core.Generic_fmt.roundR beta fexp FloatSpec.Core.Generic_fmt.rnd_floor x = 0 := @FloatSpec.Core.Generic_fmt.round_DN_small_pos
@@ -264,7 +264,7 @@ theorem Generic_fmt_round_DN_small_pos_unrestricted :
 
 /-- Expected source boundary: no exponent-validity premise. -/
 theorem Generic_fmt_round_UP_small_pos_unrestricted :
-    ∀ (beta : ℤ) [inst : ValidRadix beta] (fexp : ℤ → ℤ)
+    ∀ (beta : ℤ) [ValidRadix beta] (fexp : ℤ → ℤ)
   (x : ℝ) (ex : ℤ),
   ⦃⌜1 < beta ∧ ex ≤ fexp ex ∧ ↑beta ^ (ex - 1) ≤ x ∧ x < ↑beta ^ ex⌝⦄
     (@pure Id _ _)
@@ -275,7 +275,7 @@ theorem Generic_fmt_round_UP_small_pos_unrestricted :
 
 /-- Expected source boundary: no exponent-validity premise. -/
 theorem Generic_fmt_round_large_pos_ge_bpow_unrestricted :
-    ∀ (beta : ℤ) [inst : ValidRadix beta] (fexp : ℤ → ℤ)
+    ∀ (beta : ℤ) [ValidRadix beta] (fexp : ℤ → ℤ)
   (rnd : ℝ → ℤ) [FloatSpec.Core.Generic_fmt.Valid_rnd rnd] {x : ℝ} {e : ℤ},
   0 < FloatSpec.Core.Generic_fmt.round_to_generic beta fexp rnd x →
     ↑beta ^ e ≤ x → ↑beta ^ e ≤ FloatSpec.Core.Generic_fmt.round_to_generic beta fexp rnd x := @FloatSpec.Core.Generic_fmt.round_large_pos_ge_bpow
@@ -284,7 +284,7 @@ theorem Generic_fmt_round_large_pos_ge_bpow_unrestricted :
 
 /-- Expected source boundary: no exponent-validity premise. -/
 theorem Generic_fmt_exp_small_round_0_pos_unrestricted :
-    ∀ (beta : ℤ) [inst : ValidRadix beta] (fexp : ℤ → ℤ)
+    ∀ (beta : ℤ) [ValidRadix beta] (fexp : ℤ → ℤ)
   (rnd : ℝ → ℤ) [FloatSpec.Core.Generic_fmt.Valid_rnd rnd] {x : ℝ} {ex : ℤ},
   ↑beta ^ (ex - 1) ≤ x ∧ x < ↑beta ^ ex → FloatSpec.Core.Generic_fmt.round_to_generic beta fexp rnd x = 0 → ex ≤ fexp ex := @FloatSpec.Core.Generic_fmt.exp_small_round_0_pos
 
