@@ -20,12 +20,10 @@ COPYING file for more details.
 import FloatSpec.src.Core.Defs
 import FloatSpec.src.Core.Generic_fmt
 -- import Mathlib.Data.Real.Basic
-import Std.Do.Triple
 import FloatSpec.src.Core.Ulp
 import FloatSpec.src.Core.FLX
 
 open Real
-open Std.Do
 open FloatSpec.Core.Generic_fmt
 
 set_option linter.coqSource true
@@ -47,30 +45,16 @@ variable (prec emin : Int) [Fact (0 < prec)]
 def FTZ_exp (e : Int) : Int :=
   if e - prec < emin then emin + prec - 1 else e - prec
 
-/-- Check FTZ exponent function correctness
-
-    Verify that the FTZ exponent function correctly implements
-    the conditional logic for flush-to-zero behavior.
--/
-@[flocq_local "Boolean arithmetic regression for the Lean FTZ_exp implementation"]
-def FTZ_exp_correct_check (e : Int) : Bool :=
-  -- Use boolean equality to avoid Prop-in-Bool mismatches
-  (FTZ_exp prec emin e) == (if e - prec < emin then emin + prec - 1 else e - prec)
-
 /-- Specification: FTZ exponent calculation
 
     The FTZ exponent function provides full precision for normal
     numbers but flushes small numbers to the minimum exponent,
     eliminating subnormal numbers from the representation.
+    Local arithmetic regression for the Lean `FTZ_exp` implementation.
 -/
 theorem FTZ_exp_spec (e : Int) :
-    ⦃⌜True⌝⦄
-    (pure (FTZ_exp_correct_check prec emin e) : Id Bool)
-    ⦃⇓result => ⌜result = true⌝⦄ := by
-  intro _
-  unfold FTZ_exp_correct_check FTZ_exp
-  -- Reflexivity on the conditional makes the boolean check true
-  simp
+    FTZ_exp prec emin e = if e - prec < emin then emin + prec - 1 else e - prec := by
+  rfl
 
 /-- Flush-to-zero format predicate
 
@@ -281,8 +265,8 @@ private theorem FTZ_format_generic_run (beta : Int) [ValidRadix beta] (x : ℝ)
     -- The canonical exponent of a nonzero generic number is below its magnitude.
     have hcexp_lt : FTZ_exp prec emin ex < ex := by
       have h := FloatSpec.Core.Generic_fmt.mag_generic_gt beta (FTZ_exp prec emin) x
-      simpa [FloatSpec.Core.Generic_fmt.cexp, wp, PostCond.noThrow, Id.run, pure, hex]
-        using h ⟨hbeta, hx0, hx⟩
+      simpa [FloatSpec.Core.Generic_fmt.cexp, Id.run, pure, hex]
+        using h hx0 hx
     -- Hence the flush branch is unreachable.
     have hbranch : ¬ (ex - prec < emin) := by
       intro hlt
@@ -297,7 +281,7 @@ private theorem FTZ_format_generic_run (beta : Int) [ValidRadix beta] (x : ℝ)
         FloatSpec.Core.Generic_fmt.scaled_mantissa beta (FTZ_exp prec emin) x = (m : ℝ) := by
       have h := FloatSpec.Core.Generic_fmt.scaled_mantissa_generic
         (beta := beta) (fexp := FTZ_exp prec emin) x hx
-      simpa [wp, PostCond.noThrow, Id.run, pure, hm] using h
+      simpa [Id.run, pure, hm] using h
     have hxeq : x = (m : ℝ) * (beta : ℝ) ^ (ex - prec) := by
       simpa [FloatSpec.Core.Generic_fmt.generic_format, hcexp, hm] using hx
     -- Upper bound: |m| < β^prec.
@@ -356,106 +340,47 @@ theorem FTZ_format_iff_generic (beta : Int) [ValidRadix beta] (x : ℝ) :
   ⟨FTZ_generic_format_run (prec := prec) (emin := emin) beta x,
    FTZ_format_generic_run (prec := prec) (emin := emin) beta x⟩
 
-/-- Specification: FTZ format using generic format
-
-    The FTZ format eliminates subnormal numbers by using the
-    flush-to-zero exponent function, providing simpler arithmetic
-    at the cost of reduced precision near zero.
--/
-theorem FTZ_format_spec (beta : Int) [ValidRadix beta] (x : ℝ) :
-    ⦃⌜True⌝⦄
-    (pure (FTZ_format prec emin beta x) : Id Prop)
-    ⦃⇓result => ⌜result = (FloatSpec.Core.Generic_fmt.generic_format beta (FTZ_exp prec emin) x)⌝⦄ := by
-  intro _
-  simp only [wp, PostCond.noThrow, Id.run, pure]
-  apply propext
-  exact FTZ_format_iff_generic (prec := prec) (emin := emin) beta x
-
 /-- Specification: FTZ exponent function correctness
 
     The FTZ exponent function correctly implements flush-to-zero
     semantics, choosing between precision-based and minimum
     exponents based on the magnitude of the input.
+    Local arithmetic regression for the Lean `FTZ_exp` implementation.
 -/
 theorem FTZ_exp_correct_spec (e : Int) :
-    ⦃⌜True⌝⦄
-    (pure (FTZ_exp_correct_check prec emin e) : Id Bool)
-    ⦃⇓result => ⌜result = true⌝⦄ := by
-  intro _
-  unfold FTZ_exp_correct_check FTZ_exp
-  simp
+    FTZ_exp prec emin e = if e - prec < emin then emin + prec - 1 else e - prec := by
+  rfl
 
-/-- Legacy arithmetic regression for `Ztrunc 0 = 0`.
+/-- Legacy arithmetic regression: `Ztrunc 0 = 0`.
 
-    This does not decide `FTZ_format` membership.  The translated Flocq
+    This does not state `FTZ_format` membership.  The translated Flocq
     structural contract is `FTZ_format_satisfies_any`.
 -/
-@[flocq_local "Ztrunc-zero regression, not a Flocq FTZ_format declaration"]
-noncomputable def FTZ_format_0_check (beta : Int) [ValidRadix beta] : Bool :=
-  -- Concrete arithmetic check: Ztrunc 0 = 0
-  ((FloatSpec.Core.Raux.Ztrunc (0 : ℝ))) == (0 : Int)
+theorem FTZ_format_0_spec (beta : Int) [ValidRadix beta] (hβ : beta > 1) :
+    FloatSpec.Core.Raux.Ztrunc (0 : ℝ) = 0 := by
+  -- Ztrunc 0 reduces to ⌊0⌋, which is 0.
+  simp [FloatSpec.Core.Raux.Ztrunc]
 
-/-- The legacy zero-truncation regression evaluates to `true`.
+/-- Legacy arithmetic regression: `Ztrunc (-x) + Ztrunc x = 0`.
 
-    See `FTZ_format_satisfies_any` for actual zero membership.
--/
-theorem FTZ_format_0_spec (beta : Int) [ValidRadix beta] :
-    ⦃⌜beta > 1⌝⦄
-    (pure (FTZ_format_0_check beta) : Id Bool)
-    ⦃⇓result => ⌜result = true⌝⦄ := by
-  intro _
-  -- Evaluate the concrete check: Ztrunc 0 = 0
-  -- Ztrunc 0 reduces to ⌊0⌋ which is 0, hence the boolean equality is true.
-  simp [FTZ_format_0_check, FloatSpec.Core.Raux.Ztrunc]
-
-/-- Legacy arithmetic regression for `Ztrunc (-x) = -Ztrunc x`.
-
-    This Boolean does not inspect `FTZ_format` membership.
--/
-@[flocq_local "Ztrunc-negation regression, not a Flocq FTZ_format declaration"]
-noncomputable def FTZ_format_opp_check (beta : Int) [ValidRadix beta] (x : ℝ) : Bool :=
-  -- Concrete arithmetic check leveraging Ztrunc_opp: Ztrunc(-x) + Ztrunc(x) = 0
-  ((FloatSpec.Core.Raux.Ztrunc (-x)) + (FloatSpec.Core.Raux.Ztrunc x)) == (0 : Int)
-
-/-- The legacy negated-truncation regression evaluates to `true`.
-
-    Actual FTZ negation closure is a field of
-    `FTZ_format_satisfies_any`.
+    This does not state `FTZ_format` membership.  Actual FTZ negation
+    closure is a field of `FTZ_format_satisfies_any`.
 -/
 theorem FTZ_format_opp_spec (beta : Int) [ValidRadix beta] (x : ℝ) :
-    ⦃⌜True⌝⦄
-    (pure (FTZ_format_opp_check beta x) : Id Bool)
-    ⦃⇓result => ⌜result = true⌝⦄ := by
-  intro _
+    FloatSpec.Core.Raux.Ztrunc (-x) + FloatSpec.Core.Raux.Ztrunc x = 0 := by
   -- Use truncation under negation: Ztrunc (-x) = - Ztrunc x
-  unfold FTZ_format_opp_check
-  simp only [wp, PostCond.noThrow, pure, PredTrans.pure, PredTrans.apply]
-  -- Use Ztrunc_neg to show Ztrunc(-x).run + Ztrunc(x).run = 0
-  have h : ((FloatSpec.Core.Raux.Ztrunc (-x)) + (FloatSpec.Core.Raux.Ztrunc x) == (0 : Int)) = true := by
-    rw [FloatSpec.Core.Generic_fmt.Ztrunc_neg]
-    simp only [neg_add_cancel, beq_self_eq_true]
-  exact h
+  rw [FloatSpec.Core.Generic_fmt.Ztrunc_neg]
+  exact neg_add_cancel _
 
-/-- Legacy arithmetic regression relating truncation and absolute value.
+/-- Legacy arithmetic regression: `Ztrunc |x|` is the absolute value of `Ztrunc x`.
 
-    This Boolean does not inspect `FTZ_format` membership.
--/
-@[flocq_local "Ztrunc-absolute-value regression, not a Flocq FTZ_format declaration"]
-noncomputable def FTZ_format_abs_check (beta : Int) [ValidRadix beta] (x : ℝ) : Bool :=
-  -- Concrete arithmetic check: Ztrunc(|x|) matches natAbs of Ztrunc(x)
-  ((FloatSpec.Core.Raux.Ztrunc (abs x)))
-        == Int.ofNat ((FloatSpec.Core.Raux.Ztrunc x).natAbs)
-
-/-- The legacy absolute-value truncation regression evaluates to `true`.
-
-    Actual FTZ absolute-value closure follows from zero and negation closure
-    in `FTZ_format_satisfies_any`; this helper proves only an integer identity.
+    This does not state `FTZ_format` membership.  Actual FTZ absolute-value
+    closure follows from zero and negation closure in
+    `FTZ_format_satisfies_any`; this helper proves only an integer identity.
 -/
 theorem FTZ_format_abs_spec (beta : Int) [ValidRadix beta] (x : ℝ) :
-    ⦃⌜True⌝⦄
-    (pure (FTZ_format_abs_check beta x) : Id Bool)
-    ⦃⇓result => ⌜result = true⌝⦄ := by
-  intro _
+    FloatSpec.Core.Raux.Ztrunc (abs x) =
+      Int.ofNat ((FloatSpec.Core.Raux.Ztrunc x).natAbs) := by
   -- Compute Ztrunc(|x|) in terms of Ztrunc(x)
   have zabs_eq :
       (FloatSpec.Core.Raux.Ztrunc (abs x))
@@ -485,14 +410,7 @@ theorem FTZ_format_abs_spec (beta : Int) [ValidRadix beta] (x : ℝ) :
         (Int.natCast_natAbs (Int.floor x))
       -- LHS: ⌊|x|⌋ = ⌊x⌋; RHS: ↑(natAbs ⌊x⌋) = |⌊x⌋| = ⌊x⌋
       simpa [hxabs, hAbsFloor, hNatAbsFloor, hxlt]
-  -- Reduce the boolean equality using the computed equality
-  unfold FTZ_format_abs_check
-  simp only [wp, PostCond.noThrow, pure, PredTrans.pure, PredTrans.apply]
-  -- The goal is about comparing Ztrunc values; use the helper equality
-  have h : (((FloatSpec.Core.Raux.Ztrunc (abs x)))
-            == Int.ofNat ((FloatSpec.Core.Raux.Ztrunc x).natAbs)) = true := by
-    rw [zabs_eq]; simp only [beq_self_eq_true]
-  exact h
+  exact zabs_eq
 
 end FloatSpec.Core.FTZ
 
@@ -526,14 +444,12 @@ Theorem {lit}`FTZ_format_FLXN`:
 Lean (spec): If {lit}`|x| ≥ β^(emin + prec - 1)` and x is in {lean}`FloatSpec.Core.FLX.FLXN_format`,
 then x is in {lean}`FloatSpec.Core.FTZ.FTZ_format` for the same base and precision.
 -/
-theorem FTZ_format_FLXN (beta : Int) [ValidRadix beta] (x : ℝ) :
-    ⦃⌜1 < beta ∧ (beta : ℝ) ^ (emin + prec - 1) ≤ |x| ∧ FloatSpec.Core.FLX.FLXN_format (prec := prec) beta x⌝⦄
-    (pure (FTZ_format prec emin beta x) : Id Prop)
-    ⦃⇓result => ⌜result⌝⦄ := by
-  intro hpre
-  simp only [wp, PredTrans.apply, PostCond.noThrow, Id.run, pure, PredTrans.pure]
-  -- Unpack the preconditions
-  rcases hpre with ⟨hβ, hlb, hx_flx⟩
+theorem FTZ_format_FLXN (beta : Int) [ValidRadix beta] (x : ℝ)
+    (hlb : (beta : ℝ) ^ (emin + prec - 1) ≤ |x|)
+    (hx_flx : FloatSpec.Core.FLX.FLXN_format (prec := prec) beta x) :
+    FTZ_format prec emin beta x := by
+  -- The radix invariant carried by `ValidRadix`
+  have hβ : 1 < beta := ValidRadix.valid
   -- Abbreviations
   set e1 : Int := emin + prec - 1
   -- Provide the FLX generic_format view of the hypothesis
@@ -559,7 +475,7 @@ theorem FTZ_format_FLXN (beta : Int) [ValidRadix beta] (x : ℝ) :
             (lt_add_of_pos_right M (by exact Int.zero_lt_one))
         simpa [hM] using And.intro hβ hlt
       -- Discharge the Hoare triple and get the raw inequality
-      simpa [FloatSpec.Core.Raux.abs_val] using (hxlt hpre'.1 hpre'.2 trivial)
+      simpa using (hxlt hpre'.1 hpre'.2)
     -- Pointwise exponent inequality on (e1, M+1]: FTZ_exp e = FLX_exp e
     have hle_band : ∀ e : Int, e1 < e ∧ e ≤ (M + 1) →
         FTZ_exp prec emin e ≤ FloatSpec.Core.FLX.FLX_exp prec e := by
@@ -620,7 +536,7 @@ theorem FTZ_format_FLXN (beta : Int) [ValidRadix beta] (x : ℝ) :
       exact
         (FloatSpec.Core.Generic_fmt.generic_format_bpow'
           (beta := beta) (fexp := FTZ_exp prec emin) (e := e1))
-          ⟨hβ, hle_e1⟩
+          hle_e1
     -- Finally, since |x| = β^e1, FTZ holds for |x|, and hence for x by symmetry of abs in generic_format
     -- We can use that generic_format works on the exact real value; replace x by its absolute value equality.
     -- Build the target by rewriting x = (sign x) * |x|, then using generic_format closure under sign.
@@ -654,7 +570,7 @@ theorem FTZ_format_FLXN (beta : Int) [ValidRadix beta] (x : ℝ) :
         have : (FloatSpec.Core.Generic_fmt.generic_format beta (FTZ_exp prec emin) |x|) := by
           simpa [heq.symm] using hfmt_ftz
         simpa [habs] using this
-    -- Conclude the Hoare triple
+    -- Repackage to FTZ_format
     exact (FTZ_format_iff_generic (prec := prec) (emin := emin) beta x).mpr this
 
 end FloatSpec.Core.FTZ
@@ -693,8 +609,8 @@ theorem round_FTZ_FLX (beta : Int) [ValidRadix beta]
   have hexp : FTZ_exp prec emin M = FloatSpec.Core.FLX.FLX_exp prec M := by
     simp [FTZ_exp, FloatSpec.Core.FLX.FLX_exp, hcase]
   have hmagLower : (beta : ℝ) ^ (M - 1) ≤ |x| := by
-    simpa [FloatSpec.Core.Raux.abs_val] using
-      (FloatSpec.Core.Raux.bpow_mag_le_from_exp_payload beta x M hβ hxne le_rfl True.intro)
+    simpa using
+      (FloatSpec.Core.Raux.bpow_mag_le_from_exp_payload beta x M hβ hxne le_rfl)
   have hprec : 0 < prec := Fact.out
   have hpowOne : (1 : ℝ) ≤ (beta : ℝ) ^ (prec - 1) := by
     exact one_le_zpow₀ (le_of_lt (by exact_mod_cast hβ : (1 : ℝ) < beta)) (by omega)
@@ -751,13 +667,11 @@ Lean (spec): If |x| is smaller than {lit}`β^(emin+prec-1)`, then rounding in
 FTZ flushes to zero for any rounding predicate {lit}`rnd`.
 -/
 theorem round_FTZ_small (beta : Int) [ValidRadix beta]
-    (rnd : ℝ → Int) [Valid_rnd rnd] (x : ℝ) :
-    ⦃⌜1 < beta ∧ |x| < (beta : ℝ) ^ (emin + prec - 1)⌝⦄
-    (pure (round_to_generic (beta := beta) (fexp := FTZ_exp prec emin)
-      (mode := Zrnd_FTZ rnd) x) : Id ℝ)
-    ⦃⇓r => ⌜r = 0⌝⦄ := by
-  intro hpre
-  rcases hpre with ⟨hβ, hxlt⟩
+    (rnd : ℝ → Int) [Valid_rnd rnd] (x : ℝ)
+    (hxlt : |x| < (beta : ℝ) ^ (emin + prec - 1)) :
+    round_to_generic (beta := beta) (fexp := FTZ_exp prec emin)
+      (mode := Zrnd_FTZ rnd) x = 0 := by
+  have hβ : 1 < beta := ValidRadix.valid
   let e0 : Int := emin + prec - 1
   -- From |x| < β^e0 and the FTZ small-regime property at e0,
   -- the scaled mantissa is strictly within (-1, 1).
@@ -791,74 +705,7 @@ theorem round_FTZ_small (beta : Int) [ValidRadix beta]
           (FTZ_exp prec emin) x) = 0 := by
       simpa [hsm] using hmode
     simp [round_to_generic, FloatSpec.Core.Generic_fmt.roundR, hmode']
-  simpa [wp, PostCond.noThrow, Id.run, bind, pure] using hround
-/-
-  have hZtrunc_sm : (FloatSpec.Core.Raux.Ztrunc sm) = 0 := by
-    -- Split on the sign of sm and use floor/ceil characterizations
-    by_cases hneg : sm < 0
-    ·
-      -- Negative case handled via ceiling when sm < 0
-      have hceil0 : Int.ceil sm = 0 := by
-        -- Use Int.ceil characterization with m = 0: (-1 < sm ∧ sm ≤ 0)
-        have hleft : ((0 : Int) : ℝ) - 1 < sm := by simpa using hbounds.left
-        have hright : sm ≤ ((0 : Int) : ℝ) := by
-          -- coe 0 : Int to ℝ is defeq to (0 : ℝ)
-          simpa using (le_of_lt hneg : sm ≤ (0 : ℝ))
-        have : ((0 : Int) : ℝ) - 1 < sm ∧ sm ≤ ((0 : Int) : ℝ) := ⟨hleft, hright⟩
-        simpa using ((Int.ceil_eq_iff).2 this)
-      -- Ztrunc sm = ⌈sm⌉ when sm < 0
-      simpa [FloatSpec.Core.Raux.Ztrunc, hneg, hceil0]
-    ·
-      -- Nonnegative case: 0 ≤ sm
-      have hnonneg : 0 ≤ sm := le_of_not_gt hneg
-      have hfloor0 : Int.floor sm = 0 := by
-        -- Use floor characterization with m = 0: (0 ≤ sm ∧ sm < 1)
-        have : ((0 : Int) : ℝ) ≤ sm ∧ sm < ((0 : Int) : ℝ) + 1 := by
-          refine And.intro ?hl ?hr
-          · simpa using hnonneg
-          · simpa using hbounds.right
-        simpa using ((Int.floor_eq_iff).2 this)
-      -- Ztrunc sm = ⌊sm⌋ when 0 ≤ sm
-      simpa [FloatSpec.Core.Raux.Ztrunc, not_lt.mpr hnonneg, hfloor0]
-  -- Unfold rounding: with truncated mantissa 0, the reconstructed value is 0
-  have : round_to_generic (beta := beta) (fexp := FTZ_exp prec emin) (mode := rnd) x = 0 := by
-    -- Expand definition and rewrite step-by-step without triggering zpow inversion
-    classical
-    unfold round_to_generic
-    set E : Int := (FloatSpec.Core.Generic_fmt.cexp beta (FTZ_exp prec emin) x) with hE
-    -- Replace the argument by sm and use Ztrunc sm = 0
-    set m : ℝ := x * (beta : ℝ) ^ (-E) with hm
-    have hsm' : m = sm := by
-      simpa [FloatSpec.Core.Generic_fmt.cexp, hE, FloatSpec.Core.Generic_fmt.scaled_mantissa, hm] using hsm.symm
-    have htrunc0' : (FloatSpec.Core.Raux.Ztrunc m) = 0 := by
-      simpa [hsm'] using hZtrunc_sm
-    -- Evaluate the let-bindings to conclude
-    have htrunc0R : ((FloatSpec.Core.Raux.Ztrunc m) : ℝ) = 0 := by simpa [htrunc0']
-    -- Compute the final value explicitly to avoid zpow inversion rewrites
-    have hrw :
-        round_to_generic (beta := beta) (fexp := FTZ_exp prec emin) (mode := rnd) x
-          = ((FloatSpec.Core.Raux.Ztrunc m) : ℝ) * (beta : ℝ) ^ E := by
-      simp [round_to_generic, hE, hm]
-    -- With truncated mantissa equal to 0, the result is 0
-    -- Guard against zpow inversion by proving the required Ztrunc equality directly
-    have hbposR : (0 : ℝ) < (beta : ℝ) := by exact_mod_cast (lt_trans Int.zero_lt_one hβ)
-    have hb_ne : (beta : ℝ) ≠ 0 := ne_of_gt hbposR
-    have hm_inv : m = x * ((beta : ℝ) ^ E)⁻¹ := by
-      -- Rewrite m = x * β^(-E) as x * (β^E)⁻¹ using zpow_neg
-      have : (beta : ℝ) ^ (-E) = ((beta : ℝ) ^ E)⁻¹ := by
-        simpa using (zpow_neg hb_ne E)
-      simpa [hm, this]
-    have hZinv : (FloatSpec.Core.Raux.Ztrunc (x * ((beta : ℝ) ^ E)⁻¹)) = 0 := by
-      simpa [hm_inv] using htrunc0'
-    -- Rewrite using m = x * β^(-E) so we get Ztrunc(m).run = 0
-    have htrunc0R' : ((FloatSpec.Core.Raux.Ztrunc (x * (beta : ℝ) ^ (-E))) : ℝ) = 0 := by
-      simpa [hm] using htrunc0R
-    -- Final simplification: 0 * β^E = 0
-    simp only [FloatSpec.Core.Generic_fmt.RoundModeLike.toRnd_relation_apply,
-      hrw, htrunc0R', zero_mul]
-  -- Discharge the Hoare triple
-  simpa [wp, PostCond.noThrow, Id.run, bind, pure] using this
--/
+  exact hround
 
 end FloatSpec.Core.FTZ
 
@@ -922,10 +769,7 @@ Theorem {lit}`ulp_FTZ_0`: {lit}`ulp beta FTZ_exp 0 = bpow (emin + prec - 1)`.
 Lean (spec): The ULP under FTZ at 0 equals {lit}`β^(emin+prec-1)`.
 -/
 theorem ulp_FTZ_0 (beta : Int) [ValidRadix beta] :
-    ⦃⌜True⌝⦄
-    (pure (FloatSpec.Core.Ulp.ulp beta (FTZ_exp prec emin) 0) : Id ℝ)
-    ⦃⇓r => ⌜r = (beta : ℝ) ^ (emin + prec - 1)⌝⦄ := by
-  intro _
+    FloatSpec.Core.Ulp.ulp beta (FTZ_exp prec emin) 0 = (beta : ℝ) ^ (emin + prec - 1) := by
   classical
   let e0 : Int := emin + prec - 1
   have hbranch : e0 - prec < emin := by
@@ -962,7 +806,6 @@ theorem ulp_FTZ_0 (beta : Int) [ValidRadix beta] :
     unfold FloatSpec.Core.Ulp.ulp
     -- Select the `some n` branch and rewrite its exponent to `e0`.
     simpa [hneg_eq, hfexp_eq, hfexp_e0]
-  -- Discharge the Hoare-style postcondition.
-  simpa [wp, PostCond.noThrow, Id.run, pure] using this
+  exact this
 
 end FloatSpec.Core.FTZ

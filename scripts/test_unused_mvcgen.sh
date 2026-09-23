@@ -22,7 +22,21 @@ require_no_matches() {
 
 require_no_matches -n --glob '*.lean' \
   '^[[:space:]]*(@\[spec\]|mvcgen\b|mspec\b)|^import Std\.Tactic\.Do$' FloatSpec/src
-require_no_matches -n '[⦃⦄]' FloatSpec/src/Core/FIX.lean
+# Ratchet: only these not-yet-migrated modules may still state `Id` Hoare
+# triples or import/open `Std.Do`. Shrink this list as modules migrate; never
+# grow it.
+legacy_std_do=(
+  Calc/Sqrt.lean
+  Core/Zaux.lean
+  Pff/Pff.lean
+  SimprocWP.lean
+)
+legacy_globs=()
+for path in "${legacy_std_do[@]}"; do
+  legacy_globs+=(--glob "!FloatSpec/src/$path")
+done
+require_no_matches -n --glob '*.lean' "${legacy_globs[@]}" \
+  '[⦃⦄]|^(import|open) Std\.Do\b' FloatSpec/src
 
 test ! -e FloatSpec/Linter/HoareStyleLinter.lean
-echo 'Unused mvcgen surface is absent; FIX stays direct.'
+echo 'Unused mvcgen surface is absent; migrated modules stay free of Hoare triples and Std.Do.'

@@ -73,7 +73,7 @@ Introduce missing theorems in the directory. You can find the record of missing 
 
 ### Theorem Importing Process
 
-1. **Follow the Zfast_div_eucl_spec example** in Zaux.lean and other theorems in current file as your template. Use hoare triple syntax to write the theorem statement, and leave the proof as `:= sorry` for now.
+1. **Follow the Zfast_div_eucl_correct example** in Zaux.lean and other theorems in current file as your template. State the theorem as a direct proposition (not a Hoare triple), and leave the proof as `:= sorry` for now.
 2. **ONE-BY-ONE approach is mandatory:**
     - Write ONE theorem
     - Use the hoare triple syntax (introduced in FloatSpec/PIPELINE.md and CLAUDE.md) to write the theorem

@@ -9,7 +9,6 @@ import FloatSpec.src.Pff.Pff2FlocqAux
 namespace FloatSpec.Test.FlocqConformance
 
 open FloatSpec.Calc.Bracket
-open Std.Do
 
 /-! These examples mirror executable evaluations against the Flocq gitlink
 commit.  In particular, Flocq's integer `Zpower` is total and evaluates to zero
@@ -154,8 +153,6 @@ example :
     FloatSpec.Core.Zaux.Zlt_bool]
 
 example : (make_bound 2 0 (-1)).dExp = 1 := by
-  have h := make_bound_Emin 2 0 (-1)
-  have h' := h (by omega : (-1 : Int) ≤ 0)
-  simpa [wp, PostCond.noThrow, make_bound_Emin_check, pure] using h'
+  simpa using make_bound_Emin 2 0 (-1) (by omega)
 
 end FloatSpec.Test.FlocqConformance

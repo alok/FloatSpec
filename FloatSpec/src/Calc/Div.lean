@@ -15,12 +15,10 @@ import FloatSpec.src.Core.Float_prop
 import FloatSpec.src.Core.Digits
 import FloatSpec.src.Calc.Bracket
 import Mathlib.Data.Real.Basic
-import Std.Do.Triple
 import FloatSpec.src.SimprocWP
 
 open Real FloatSpec.Calc.Bracket FloatSpec.Core.Defs FloatSpec.Core.Digits FloatSpec.Core.Generic_fmt
 open FloatSpec.Core.Generic_fmt FloatSpec.Core.Raux
-open Std.Do
 
 set_option linter.coqSource true
 set_option warningAsError true
@@ -45,7 +43,7 @@ lemma mag_div_F2R (m1 e1 m2 e2 : Int) (Hm1 : 0 < m1) (Hm2 : 0 < m2)
     (beta := beta) (f := FlocqFloat.mk m1 e1) Hβ Hm1
   have hy := FloatSpec.Core.Float_prop.F2R_gt_0
     (beta := beta) (f := FlocqFloat.mk m2 e2) Hβ Hm2
-  have h := FloatSpec.Core.Raux.mag_div beta _ _ Hβ (ne_of_gt hx) (ne_of_gt hy) trivial
+  have h := FloatSpec.Core.Raux.mag_div beta _ _ Hβ (ne_of_gt hx) (ne_of_gt hy)
   have hmx := FloatSpec.Core.Float_prop.Raux_mag_F2R_Zdigits beta m1 e1 Hβ (ne_of_gt Hm1)
   have hmy := FloatSpec.Core.Float_prop.Raux_mag_F2R_Zdigits beta m2 e2 Hβ (ne_of_gt Hm2)
   change mag beta (F2R (FlocqFloat.mk m1 e1 : FlocqFloat beta)) -
@@ -99,23 +97,23 @@ def Fdiv_core (m1 e1 m2 e2 e : Int) : (Int × Location) :=
   let (q, r) := FloatSpec.Core.Zaux.Z_div_eucl m1' m2'
   (q, new_location m2' r Location.loc_Exact)
 
-/-- Specification: Core division correctness
+/-- Specification: Core division correctness on the `e ≤ e1 - e2` branch
 
-    The computed quotient with location accurately represents the division
+    The computed quotient with location accurately represents the division.
+    Lean-only helper for `Fdiv_core_correct`, which covers both branches.
 -/
 theorem Fdiv_core_correct_left_branch (m1 e1 m2 e2 e : Int)
     (Hm1 : 0 < m1) (Hm2 : 0 < m2)
-    (Hβ : 1 < beta) :
-    ⦃⌜0 < m1 ∧ 0 < m2 ∧ e ≤ e1 - e2⌝⦄
-    (pure (Fdiv_core beta m1 e1 m2 e2 e) : Id _)
-    ⦃⇓result => let (m, l) := result
-                ⌜inbetween_float beta m e
-                  ((F2R (FlocqFloat.mk m1 e1 : FlocqFloat beta)) /
-                   (F2R (FlocqFloat.mk m2 e2 : FlocqFloat beta))) l⌝⦄ := by
-  intro hpre
-  rcases hpre with ⟨hm1_pos, hm2_pos, hele⟩
-  -- Evaluate the branch selected by the precondition e ≤ e1 - e2
-  simp [Fdiv_core, hele, pure]
+    (Hβ : 1 < beta) (He : e ≤ e1 - e2) :
+    let result := Fdiv_core beta m1 e1 m2 e2 e
+    inbetween_float beta result.1 e
+      (F2R (FlocqFloat.mk m1 e1 : FlocqFloat beta) /
+        F2R (FlocqFloat.mk m2 e2 : FlocqFloat beta)) result.2 := by
+  have hm1_pos := Hm1
+  have hm2_pos := Hm2
+  have hele := He
+  -- Evaluate the branch selected by the hypothesis e ≤ e1 - e2
+  simp [Fdiv_core, hele]
   -- Abbreviations for reals and base
   set b : ℝ := (beta : ℝ)
   have hbpos : 0 < b := by
@@ -264,15 +262,11 @@ theorem Fdiv_core_correct_left_branch (m1 e1 m2 e2 e : Int)
       dsimp [start, step]
       field_simp [ne_of_gt hm2R_pos]
       <;> ring
-    have hnew :=
-      (new_location_correct (start := start) (step := step) (nb_steps := m2)
-        (x := xR) (k := r) (l := Location.loc_Exact)
-        hm2gt ⟨hr_nonneg, hr_lt⟩ hx_local hstep)
-        ⟨hr_nonneg, hr_lt, hx_local⟩
     have hnew_run :
         inbetween start (start + (m2 : ℝ) * step) xR
-          (new_location m2 r Location.loc_Exact) := by
-      simpa [wp, PostCond.noThrow, pure] using hnew
+          (new_location m2 r Location.loc_Exact) :=
+      new_location_correct start step m2 hstep hm2gt xR r Location.loc_Exact
+        ⟨hr_nonneg, hr_lt⟩ hx_local
     have hstart : start = dR := by simpa [start] using hdR.symm
     have hend : start + (m2 : ℝ) * step = uR := by
       dsimp [start, step]
@@ -311,7 +305,7 @@ theorem Fdiv_core_correct (m1 e1 m2 e2 e : Int)
   have Hβ : 1 < beta := ValidRadix.valid
   by_cases hele : e ≤ e1 - e2
   · exact Fdiv_core_correct_left_branch
-      (beta := beta) m1 e1 m2 e2 e Hm1 Hm2 Hβ ⟨Hm1, Hm2, hele⟩
+      (beta := beta) m1 e1 m2 e2 e Hm1 Hm2 Hβ hele
   · let k : Int := e - (e1 - e2)
     let p : Int := beta ^ k.natAbs
     let m2' : Int := m2 * p
@@ -373,9 +367,8 @@ theorem Fdiv_core_correct (m1 e1 m2 e2 e : Int)
       simp only [hleft, ite_eq_left, hele, ite_eq_right]
       simp [hzero, m2', p, k, hdenScaled]
     have h := Fdiv_core_correct_left_branch
-      (beta := beta) m1 e1 m2' e2' e Hm1 hm2' Hβ
-      ⟨Hm1, hm2', hleft⟩
-    simpa [wp, PostCond.noThrow, pure, hcore, hdenRaw] using h
+      (beta := beta) m1 e1 m2' e2' e Hm1 hm2' Hβ hleft
+    simpa [hcore, hdenRaw] using h
 
 end CoreDivision
 
@@ -441,10 +434,10 @@ theorem Fdiv_correct (x y : FlocqFloat beta)
           (m2 := m2) (e2 := e2) (e := e) (Hm1 := hm1_pos) (Hm2 := hm2_pos)
       have hinSimple : inbetween_float beta (Fdiv_core beta m1 e1 m2 e2 e).fst e qR
             (Fdiv_core beta m1 e1 m2 e2 e).snd := by
-        simpa [qR, wp, PostCond.noThrow, pure] using hinst
+        simpa [qR] using hinst
       have hmag := mag_div_F2R (beta := beta) m1 e1 m2 e2 hm1_pos hm2_pos
       have hbounds : e' ≤ mag beta qR ∧ mag beta qR ≤ e' + 1 := by
-        simpa [qR, e', d1, d2, wp, PostCond.noThrow, pure] using hmag
+        simpa [qR, e', d1, d2] using hmag
       have hmag_cases : mag beta qR = e' ∨ mag beta qR = e' + 1 := by omega
       have he_cexp : e ≤ cexp beta fexp qR := by
         unfold cexp

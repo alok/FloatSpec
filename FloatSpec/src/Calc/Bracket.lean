@@ -14,7 +14,6 @@ import FloatSpec.src.Core.Defs
 import FloatSpec.src.Core.Float_prop
 import Mathlib.Data.Real.Basic
 import Mathlib.Tactic
-import Std.Do.Triple
 import FloatSpec.src.SimprocWP
 
 set_option maxRecDepth 4096
@@ -23,7 +22,6 @@ set_option warningAsError true
 
 open Real
 open FloatSpec.Core
-open Std.Do
 
 namespace FloatSpec.Calc.Bracket
 
@@ -446,87 +444,45 @@ variable (start step : ℝ)
 variable (nb_steps : Int)
 variable (Hstep : 0 < step)
 
-/-- Compute ordered steps
-
-    Verifies that consecutive steps are properly ordered
--/
-@[flocq_local "Lean-only Unit carrier for the ordered_steps proposition"]
-def ordered_steps_check (start step : ℝ) (k : Int) : Unit :=
-  -- Computation carries no data; theorem proves the strict inequality.
-  ()
-
 /-- Specification: Steps are ordered
 
-    Each step increases by the step size
+    Coq `ordered_steps`: under the section hypothesis `0 < step`, each step
+    increases by the step size.
 -/
-lemma ordered_steps (k : Int) :
-    ⦃⌜0 < step⌝⦄
-    (pure (ordered_steps_check start step k) : Id Unit)
-    ⦃⇓result => ⌜start + k * step < start + (k + 1) * step⌝⦄ := by
-  intro hstep
-  simp only [wp, PostCond.noThrow, pure, ordered_steps_check]
+lemma ordered_steps (Hstep : 0 < step) (k : Int) :
+    start + k * step < start + (k + 1) * step := by
   -- Show that adding a positive `step` strictly increases the value.
   have hl : start + k * step < start + k * step + step := by
-    simpa using (add_lt_add_left hstep (start + k * step))
+    simpa using (add_lt_add_left Hstep (start + k * step))
   -- Rewrite `(k + 1) * step` as `k * step + step`.
   simpa [Int.cast_add, Int.cast_ofNat, add_mul, one_mul]
     using hl
 
-/-- Calculate middle of range
-
-    Computes the midpoint of a stepped range
--/
-@[flocq_local "Lean-only midpoint calculation used inside the stepped-range proof"]
-noncomputable def middle_range_calc (start step : ℝ) (k : Int) : ℝ :=
-  -- Return the midpoint of the two consecutive stepped points explicitly.
-  (start + (start + k * step)) / 2
-
 /-- Specification: Middle range calculation
 
-    The midpoint formula is correct for stepped ranges
+    Coq `middle_range`: the midpoint of `start` and `start + k * step` is
+    `start + (k / 2 * step)`.
 -/
 lemma middle_range (k : Int) :
-    ⦃⌜True⌝⦄
-    (pure (middle_range_calc start step k) : Id ℝ)
-    ⦃⇓result => ⌜(start + (start + k * step)) / 2 = result⌝⦄ := by
-  -- For a pure computation, the post-condition holds by reflexivity.
-  apply Std.Do.Triple.pure (m := Id)
-  intro _
-  simp [middle_range_calc]
+    (start + (start + k * step)) / 2 = start + (k / 2 * step) := by
+  ring
 
 variable (Hnb_steps : 1 < nb_steps)
 
-/-- Compute new location for inexact step
-
-    Determines location in larger interval based on step location
--/
-@[flocq_local "Lean-only computed location for a stepped-range theorem"]
-noncomputable def inbetween_step_not_Eq_compute (start step : ℝ) (nb_steps : Int) (x : ℝ) (k : Int) (ord : Ordering) : Location :=
-  -- For the global interval, we keep the same inexact ordering `ord`.
-  Location.loc_Inexact ord
-
 /-- Specification: Step location transformation
 
-    Location in a step interval determines location in full range
+    Coq `inbetween_step_not_Eq`: an interior step location, together with the
+    comparison `ord` against the global midpoint, gives `loc_Inexact ord` in the
+    full range.
 -/
-theorem inbetween_step_not_Eq (x : ℝ) (k : Int) (l : Location) (ord : Ordering)
-    (Hstep : 0 < step)
+theorem inbetween_step_not_Eq (Hstep : 0 < step)
+    (x : ℝ) (k : Int) (l : Location) (ord : Ordering)
     (Hx : inbetween (start + k * step) (start + (k + 1) * step) x l)
     (Hk : 0 < k ∧ k < nb_steps)
     (Hord : compare x (start + (nb_steps / 2 * step)) = ord) :
-    ⦃⌜inbetween (start + k * step) (start + (k + 1) * step) x l ∧
-      0 < k ∧ k < nb_steps ∧
-      compare x (start + (nb_steps / 2 * step)) = ord⌝⦄
-    (pure (inbetween_step_not_Eq_compute start step nb_steps x k ord) : Id Location)
-    ⦃⇓result => ⌜inbetween start (start + nb_steps * step) x result⌝⦄ := by
-  -- Discharge the Hoare triple for a pure computation
-  apply Std.Do.Triple.pure (m := Id)
-  intro hpre
-  -- Unpack the precondition pieces
-  rcases hpre with ⟨Hx', hkpos, hklt, hcmp⟩
-  have Hx := Hx'
-  -- We return an inexact location with ordering `ord` for the global interval
-  dsimp [inbetween_step_not_Eq_compute]
+    inbetween start (start + nb_steps * step) x (Location.loc_Inexact ord) := by
+  rcases Hk with ⟨hkpos, hklt⟩
+  have hcmp := Hord
   -- Show the strict global bounds and the midpoint comparison
   refine inbetween.inbetween_Inexact (l := ord) ?hbounds ?hord
   · -- Bounds: start < x < start + nb_steps * step
@@ -577,31 +533,17 @@ theorem inbetween_step_not_Eq (x : ℝ) (k : Int) (l : Location) (ord : Ordering
     -- Use the provided comparison at this midpoint
     simpa [hmid_eq] using hcmp
 
-/-- Compute location for low step
-
-    Determines location when in lower half of range
--/
-@[flocq_local "Lean-only computed low location for a stepped-range theorem"]
-def inbetween_step_Lo_compute : Location :=
-  (Location.loc_Inexact Ordering.lt)
-
 /-- Specification: Low step location
 
-    Points in lower steps map to less-than ordering
+    Coq `inbetween_step_Lo`: points in lower steps map to `loc_Inexact Lt`.
 -/
-theorem inbetween_step_Lo (x : ℝ) (k : Int) (l : Location)
+theorem inbetween_step_Lo (Hstep : 0 < step) (x : ℝ) (k : Int) (l : Location)
     (Hx : inbetween (start + k * step) (start + (k + 1) * step) x l)
-    (Hk1 : 0 < k) (Hk2 : 2 * k + 1 < nb_steps) (Hstep : 0 < step) :
-    ⦃⌜inbetween (start + k * step) (start + (k + 1) * step) x l ∧
-      0 < k ∧ 2 * k + 1 < nb_steps⌝⦄
-    (pure inbetween_step_Lo_compute : Id Location)
-    ⦃⇓result => ⌜inbetween start (start + nb_steps * step) x result⌝⦄ := by
-  -- Discharge the Hoare triple for a pure computation
-  apply Std.Do.Triple.pure (m := Id)
-  intro hpre
-  rcases hpre with ⟨Hx', hk1, hk2⟩
-  -- The computation returns an inexact location with ordering `lt`.
-  dsimp [inbetween_step_Lo_compute]
+    (Hk1 : 0 < k) (Hk2 : 2 * k + 1 < nb_steps) :
+    inbetween start (start + nb_steps * step) x (Location.loc_Inexact Ordering.lt) := by
+  have Hx' := Hx
+  have hk1 := Hk1
+  have hk2 := Hk2
   -- We show global strict bounds and that x is left of the global midpoint.
   refine inbetween.inbetween_Inexact (l := Ordering.lt) ?hbounds ?hcmp
   · -- Global bounds: start < x < start + nb_steps * step
@@ -698,31 +640,17 @@ theorem inbetween_step_Lo (x : ℝ) (k : Int) (l : Location)
     -- Rewrite to the canonical midpoint `(start + (start + nb_steps * step)) / 2`
     simpa [hmid_eq] using hcmp'
 
-/-- Compute location for high step
-
-    Determines location when in upper half of range
--/
-@[flocq_local "Lean-only computed high location for a stepped-range theorem"]
-def inbetween_step_Hi_compute : Location :=
-  (Location.loc_Inexact Ordering.gt)
-
 /-- Specification: High step location
 
-    Points in upper steps map to greater-than ordering
+    Coq `inbetween_step_Hi`: points in upper steps map to `loc_Inexact Gt`.
 -/
-theorem inbetween_step_Hi (x : ℝ) (k : Int) (l : Location)
+theorem inbetween_step_Hi (Hstep : 0 < step) (x : ℝ) (k : Int) (l : Location)
     (Hx : inbetween (start + k * step) (start + (k + 1) * step) x l)
-    (Hk1 : nb_steps < 2 * k) (Hk2 : k < nb_steps) (Hstep : 0 < step) :
-    ⦃⌜inbetween (start + k * step) (start + (k + 1) * step) x l ∧
-      nb_steps < 2 * k ∧ k < nb_steps⌝⦄
-    (pure inbetween_step_Hi_compute : Id Location)
-    ⦃⇓result => ⌜inbetween start (start + nb_steps * step) x result⌝⦄ := by
-  -- Discharge the Hoare triple for a pure computation
-  apply Std.Do.Triple.pure (m := Id)
-  intro hpre
-  rcases hpre with ⟨Hx', hk1, hk2⟩
-  -- Return an inexact location with Ordering.gt
-  dsimp [inbetween_step_Hi_compute]
+    (Hk1 : nb_steps < 2 * k) (Hk2 : k < nb_steps) :
+    inbetween start (start + nb_steps * step) x (Location.loc_Inexact Ordering.gt) := by
+  have Hx' := Hx
+  have hk1 := Hk1
+  have hk2 := Hk2
   refine inbetween.inbetween_Inexact (l := Ordering.gt) ?hbounds ?hcmp
   · -- Global bounds: start < x < start + nb_steps * step
     -- From hk1 and hk2, deduce 0 < k
@@ -824,20 +752,17 @@ def new_location_even (nb_steps k : Int) (l : Location) : Location :=
 
 /-- Specification: Even step location is correct
 
-    The computed location for even steps preserves interval properties
+    Coq `new_location_even_correct`: the computed location for an even number
+    of steps preserves interval properties.
 -/
-theorem new_location_even_correct (Hnb_steps : 1 < nb_steps)
+theorem new_location_even_correct (Hstep : 0 < step) (Hnb_steps : 1 < nb_steps)
     (He : nb_steps % 2 = 0) (x : ℝ) (k : Int) (l : Location)
-    (Hk : 0 ≤ k ∧ k < nb_steps) (Hstep : 0 < step)
+    (Hk : 0 ≤ k ∧ k < nb_steps)
     (Hx : inbetween (start + k * step) (start + (k + 1) * step) x l) :
-    ⦃⌜nb_steps % 2 = 0 ∧ 0 ≤ k ∧ k < nb_steps ∧
-      inbetween (start + k * step) (start + (k + 1) * step) x l⌝⦄
-    (pure (new_location_even nb_steps k l) : Id Location)
-    ⦃⇓result => ⌜inbetween start (start + nb_steps * step) x result⌝⦄ := by
-  -- Pure computation proof
-  apply Std.Do.Triple.pure (m := Id)
-  intro hpre
-  rcases hpre with ⟨He', hk0, hklt, Hx'⟩
+    inbetween start (start + nb_steps * step) x (new_location_even nb_steps k l) := by
+  have He' := He
+  rcases Hk with ⟨hk0, hklt⟩
+  have Hx' := Hx
   dsimp [new_location_even]
   by_cases hkz : k = 0
   · -- k = 0 branch
@@ -1176,20 +1101,17 @@ def new_location_odd (nb_steps k : Int) (l : Location) : Location :=
 
 /-- Specification: Odd step location is correct
 
-    The computed location for odd steps preserves interval properties
+    Coq `new_location_odd_correct`: the computed location for an odd number of
+    steps preserves interval properties.
 -/
-theorem new_location_odd_correct (Hnb_steps : 1 < nb_steps)
+theorem new_location_odd_correct (Hstep : 0 < step) (Hnb_steps : 1 < nb_steps)
     (Ho : nb_steps % 2 = 1) (x : ℝ) (k : Int) (l : Location)
-    (Hk : 0 ≤ k ∧ k < nb_steps) (Hstep : 0 < step)
+    (Hk : 0 ≤ k ∧ k < nb_steps)
     (Hx : inbetween (start + k * step) (start + (k + 1) * step) x l) :
-    ⦃⌜nb_steps % 2 = 1 ∧ 0 ≤ k ∧ k < nb_steps ∧
-      inbetween (start + k * step) (start + (k + 1) * step) x l⌝⦄
-    (pure (new_location_odd nb_steps k l) : Id Location)
-    ⦃⇓result => ⌜inbetween start (start + nb_steps * step) x result⌝⦄ := by
-  -- Pure computation proof
-  apply Std.Do.Triple.pure (m := Id)
-  intro hpre
-  rcases hpre with ⟨Ho', hk0, hklt, Hx'⟩
+    inbetween start (start + nb_steps * step) x (new_location_odd nb_steps k l) := by
+  have Ho' := Ho
+  rcases Hk with ⟨hk0, hklt⟩
+  have Hx' := Hx
   dsimp [new_location_odd]
   -- Use section-level `Hstep` for monotonicity/strictness
   have hstep_pos : 0 < step := Hstep
@@ -1582,51 +1504,27 @@ def new_location (nb_steps k : Int) (l : Location) : Location :=
 
 /-- Specification: New location is correct
 
-    The computed location accurately represents position in full range
+    Coq `new_location_correct`: the computed location accurately represents
+    the position in the full range.
 -/
-theorem new_location_correct (x : ℝ) (k : Int) (l : Location)
-    (Hnb_steps : 1 < nb_steps)
+theorem new_location_correct (Hstep : 0 < step) (Hnb_steps : 1 < nb_steps)
+    (x : ℝ) (k : Int) (l : Location)
     (Hk : 0 ≤ k ∧ k < nb_steps)
-    (Hx : inbetween (start + k * step) (start + (k + 1) * step) x l)
-    (Hstep : 0 < step) :
-    ⦃⌜0 ≤ k ∧ k < nb_steps ∧
-      inbetween (start + k * step) (start + (k + 1) * step) x l⌝⦄
-    (pure (new_location nb_steps k l) : Id Location)
-    ⦃⇓result => ⌜inbetween start (start + nb_steps * step) x result⌝⦄ := by
+    (Hx : inbetween (start + k * step) (start + (k + 1) * step) x l) :
+    inbetween start (start + nb_steps * step) x (new_location nb_steps k l) := by
   -- Split on parity and reuse the corresponding correctness lemmas
   by_cases He : nb_steps % 2 = 0
   · -- Even number of steps: reduce to `new_location_even_correct`
-    -- After rewriting the program, we can feed the strengthened precondition.
-    intro hpre
-    have hpre' : nb_steps % 2 = 0 ∧ 0 ≤ k ∧ k < nb_steps ∧
-        inbetween (start + k * step) (start + (k + 1) * step) x l := by
-      exact And.intro He ⟨hpre.1, hpre.2.1, hpre.2.2⟩
-    -- Apply the specialized correctness theorem
-    have htrip :=
-      (new_location_even_correct (start := start) (step := step)
-        (nb_steps := nb_steps) (x := x) (k := k) (l := l)
-        (Hnb_steps := Hnb_steps) (He := He) (Hk := Hk) (Hstep := Hstep) (Hx := Hx))
-    -- Run it with the strengthened precondition
-    have := htrip hpre'
-    -- Normalize the program being analyzed
-    simpa [new_location, He]
+    have h := new_location_even_correct start step nb_steps Hstep Hnb_steps He x k l Hk Hx
+    simpa [new_location, He] using h
   · -- Odd number of steps: obtain `% 2 = 1` and reduce to `new_location_odd_correct`
     -- From `¬%2=0`, `Int.emod_two_eq_zero_or_one` gives `%2=1`.
     have Ho : nb_steps % 2 = 1 := by
       rcases Int.emod_two_eq_zero_or_one nb_steps with h0 | h1
       · exact (False.elim (He h0))
       · exact h1
-    intro hpre
-    have hpre' : nb_steps % 2 = 1 ∧ 0 ≤ k ∧ k < nb_steps ∧
-        inbetween (start + k * step) (start + (k + 1) * step) x l := by
-      exact And.intro Ho ⟨hpre.1, hpre.2.1, hpre.2.2⟩
-    -- Apply the specialized correctness theorem for odd parity
-    have htrip :=
-      (new_location_odd_correct (start := start) (step := step)
-        (nb_steps := nb_steps) (x := x) (k := k) (l := l)
-        (Hnb_steps := Hnb_steps) (Ho := Ho) (Hk := Hk) (Hstep := Hstep) (Hx := Hx))
-    have := htrip hpre'
-    simpa [new_location, He]
+    have h := new_location_odd_correct start step nb_steps Hstep Hnb_steps Ho x k l Hk Hx
+    simpa [new_location, He] using h
 
 end SteppingRanges
 
@@ -2389,14 +2287,9 @@ theorem inbetween_float_new_location
     simpa [FloatSpec.Core.Defs.F2R, hL, hR, step]
       using Hx
   -- Apply new_location correctness on the local step
-  have htrip :=
-    (new_location_correct (start := start) (step := step)
-      (nb_steps := p) (x := x) (k := (m % p)) (l := l)
-      (Hnb_steps := hp_gt) (Hk := hk_bounds) (Hx := Hx_local) (Hstep := hstep_pos))
-  -- Feed the triple its precondition
   have hpostR : inbetween start (start + (p : ℝ) * step) x
-      (Id.run (new_location (nb_steps := p) (k := (m % p)) l)) := by
-    simpa using htrip ⟨hk_bounds.1, hk_bounds.2, Hx_local⟩
+      (new_location p (m % p) l) :=
+    new_location_correct start step p hstep_pos hp_gt x (m % p) l hk_bounds Hx_local
   -- Simplify the program argument and rewrite the global endpoints into the float form
   -- Left global endpoint equals F2R ((m / p) * p, e) using exponent change
   -- We will rewrite the goal endpoints to
@@ -2459,13 +2352,9 @@ theorem inbetween_float_new_location
     simpa [FloatSpec.Core.Defs.F2R, b, step, p, hp_def, mul_comm, mul_left_comm, mul_assoc,
            Int.cast_add, Int.cast_ofNat, add_comm, add_left_comm, add_assoc, htmp, mul_add]
       using this
-  -- Finally, relate the `new_location_correct` postcondition to the desired goal
-  -- The Hoare triple gives: inbetween start (start + p*step) x (Id.run (new_location ...))
-  -- Rewrite bounds to F2R with exponent e+k and conclude.
-  -- Convert the triple result into a plain proposition by running the Id program
-  -- and aligning endpoints.
-  -- Evaluate the program and use the established equalities
-  -- Reduce the goal to the postcondition of `new_location_correct`
+  -- Finally, relate the `new_location_correct` conclusion to the desired goal:
+  -- it gives `inbetween start (start + p*step) x (new_location p (m % p) l)`.
+  -- Rewrite bounds to F2R with exponent e+k and conclude by aligning endpoints.
   -- Left endpoint: F2R (m/p, e+k)
   -- Right endpoint: F2R (m/p+1, e+k)
   -- Both match `start` and `start + p*step` respectively.

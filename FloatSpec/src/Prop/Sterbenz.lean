@@ -6,7 +6,6 @@ import Mathlib.Data.Real.Basic
 -- Translated from Coq file: flocq/src/Prop/Sterbenz.v
 
 open Real
-open Std.Do
 
 variable (beta : Int) [ValidRadix beta]
 variable (fexp : Int → Int)
@@ -22,7 +21,7 @@ theorem generic_format_plus (x y : ℝ)
   classical
   by_cases hz : x + y = 0
   · simpa [generic_format, hz] using
-      (FloatSpec.Core.Generic_fmt.generic_format_0_run (beta := beta) (fexp := fexp))
+      (FloatSpec.Core.Generic_fmt.generic_format_0 (beta := beta) (fexp := fexp))
   by_cases hx0 : x = 0
   · simpa [hx0, zero_add] using hy
   by_cases hy0 : y = 0
@@ -52,19 +51,19 @@ theorem generic_format_plus (x y : ℝ)
             FloatSpec.Core.Generic_fmt.cexp beta fexp x ≤ mag beta x := by
           have h :=
             FloatSpec.Core.Generic_fmt.mag_generic_gt (beta := beta) (fexp := fexp) x
-              ⟨hβ, hx0, by simpa [generic_format] using hx⟩
-          simpa [Std.Do.PostCond.noThrow, wp, pure] using (le_of_lt h)
+              hx0 (by simpa [generic_format] using hx)
+          simpa [pure] using (le_of_lt h)
         simpa [e, he, hmin, FloatSpec.Core.Generic_fmt.cexp] using hx_cexp_le
       · have hy_cexp_le :
             FloatSpec.Core.Generic_fmt.cexp beta fexp y ≤ mag beta y := by
           have h :=
             FloatSpec.Core.Generic_fmt.mag_generic_gt (beta := beta) (fexp := fexp) y
-              ⟨hβ, hy0, by simpa [generic_format] using hy⟩
-          simpa [Std.Do.PostCond.noThrow, wp, pure] using (le_of_lt h)
+              hy0 (by simpa [generic_format] using hy)
+          simpa [pure] using (le_of_lt h)
         simpa [e, he, hmin, FloatSpec.Core.Generic_fmt.cexp] using hy_cexp_le
     have h :=
       FloatSpec.Core.Generic_fmt.generic_format_bpow' (beta := beta) (fexp := fexp) e
-        ⟨hβ, hfe⟩
+        hfe
     simpa [generic_format] using h
 
   rcases lt_or_eq_of_le h_bound with hlt | heq_abs
@@ -73,8 +72,8 @@ theorem generic_format_plus (x y : ℝ)
     have hFplus :
         FloatSpec.Core.Defs.F2R fxy =
           FloatSpec.Core.Defs.F2R fx + FloatSpec.Core.Defs.F2R fy := by
-      have h := (FloatSpec.Calc.Operations.F2R_plus (beta := beta) fx fy) hβ
-      simpa [fxy, Std.Do.PostCond.noThrow, wp, pure] using h
+      have h := (FloatSpec.Calc.Operations.F2R_plus (beta := beta) fx fy)
+      simpa [fxy, pure] using h
     have hfxy_eq : FloatSpec.Core.Defs.F2R fxy = x + y := by
       calc
         FloatSpec.Core.Defs.F2R fxy =
@@ -85,14 +84,13 @@ theorem generic_format_plus (x y : ℝ)
           min (FloatSpec.Core.Generic_fmt.cexp beta fexp x)
               (FloatSpec.Core.Generic_fmt.cexp beta fexp y) := by
       have h :=
-        (FloatSpec.Calc.Operations.Fexp_Fplus_spec (beta := beta) fx fy) trivial
-      simpa [fxy, fx, fy, FloatSpec.Calc.Operations.Fexp_Fplus,
-        Std.Do.PostCond.noThrow, wp, pure] using h
+        (FloatSpec.Calc.Operations.Fexp_Fplus_spec (beta := beta) fx fy)
+      simpa [fxy, fx, fy, pure] using h
     have hmag_xy : mag beta (x + y) ≤ e := by
       have htrip :=
         FloatSpec.Core.Raux.mag_le_bpow (beta := beta) (x := x + y) (e := e)
           hβ hz (by simpa [e, he] using hlt)
-      simpa [Std.Do.PostCond.noThrow, wp, pure] using htrip trivial
+      simpa [pure] using htrip
     have hcexp_le :
         FloatSpec.Core.Generic_fmt.cexp beta fexp (x + y) ≤ fxy.Fexp := by
       have hmono_xy :
@@ -117,8 +115,8 @@ theorem generic_format_plus (x y : ℝ)
       exact le_trans hmono_xy (by simpa [hfxy_exp] using hmin)
     have hfmt :=
       (FloatSpec.Core.Generic_fmt.generic_format_F2R' (beta := beta) (fexp := fexp)
-        (x := x + y) (f := fxy)) ⟨hβ, hfxy_eq, fun _ => hcexp_le⟩
-    simpa [generic_format, Std.Do.PostCond.noThrow, wp, pure] using hfmt
+        (x := x + y) (f := fxy)) hfxy_eq (fun _ => hcexp_le)
+    simpa [generic_format, pure] using hfmt
   · have h_abs_fmt : generic_format beta fexp |x + y| := by
       rw [heq_abs]
       exact hfmt_bpow
@@ -145,10 +143,10 @@ theorem generic_format_plus_weak (x y : ℝ)
       min_eq_left hmag_xy
     have hx_upper : |x| ≤ (beta : ℝ) ^ (min (mag beta x) (mag beta y)) := by
       have h :=
-        FloatSpec.Core.Raux.mag_upper_bound (beta := beta) (x := x) hβ hx0
+        FloatSpec.Core.Raux.bpow_mag_gt (beta := beta) (x := x) hβ
       have hx_lt : |x| < (beta : ℝ) ^ (mag beta x) := by
-        simpa [FloatSpec.Core.Raux.abs_val, Std.Do.PostCond.noThrow, wp, pure]
-          using h trivial
+        simpa [pure]
+          using h
       simpa [hmin_mag] using le_of_lt hx_lt
     have hmin_abs : min |x| |y| = |x| := min_eq_left hxy_abs
     exact le_trans h_bound (by simpa [hmin_abs] using hx_upper)
@@ -159,10 +157,10 @@ theorem generic_format_plus_weak (x y : ℝ)
       min_eq_right hmag_yx
     have hy_upper : |y| ≤ (beta : ℝ) ^ (min (mag beta x) (mag beta y)) := by
       have h :=
-        FloatSpec.Core.Raux.mag_upper_bound (beta := beta) (x := y) hβ hy0
+        FloatSpec.Core.Raux.bpow_mag_gt (beta := beta) (x := y) hβ
       have hy_lt : |y| < (beta : ℝ) ^ (mag beta y) := by
-        simpa [FloatSpec.Core.Raux.abs_val, Std.Do.PostCond.noThrow, wp, pure]
-          using h trivial
+        simpa [pure]
+          using h
       simpa [hmin_mag] using le_of_lt hy_lt
     have hmin_abs : min |x| |y| = |y| := min_eq_right hyx_abs
     exact le_trans h_bound (by simpa [hmin_abs] using hy_upper)
@@ -184,7 +182,7 @@ lemma sterbenz_aux (x y : ℝ)
   have hy_opp : generic_format beta fexp (-y) := by
     have h := FloatSpec.Core.Generic_fmt.generic_format_opp
       (beta := beta) (fexp := fexp) (x := y)
-    simpa [Std.Do.PostCond.noThrow, wp, pure] using h hy
+    simpa [pure] using h hy
   have hweak : |x + -y| ≤ min |x| |-y| := by
     have hsub_abs : |x + -y| = x - y := by
       simpa [sub_eq_add_neg] using abs_of_nonneg hsub_nonneg
@@ -211,6 +209,6 @@ theorem sterbenz (x y : ℝ)
     have hfmt_neg : generic_format beta fexp (-(y - x)) := by
       have h := FloatSpec.Core.Generic_fmt.generic_format_opp
         (beta := beta) (fexp := fexp) (x := y - x)
-      simpa [Std.Do.PostCond.noThrow, wp, pure] using h hfmt_yx
+      simpa [pure] using h hfmt_yx
     simpa [sub_eq_add_neg] using hfmt_neg
   · exact sterbenz_aux (beta := beta) (fexp := fexp) x y hx hy hβ ⟨hyx, h_bound.2⟩

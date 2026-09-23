@@ -4,13 +4,10 @@
 import FloatSpec.src.IEEE754.Binary
 import FloatSpec.src.IEEE754.BinarySingleNaN
 import FloatSpec.src.IEEE754.Bits
-import FloatSpec.src.SimprocWP
 import Mathlib.Data.Real.Basic
-import Std.Do.Triple
 
 open Real
 open Classical
-open Std.Do
 
 namespace FaithfulPrimFloat
 
@@ -1920,14 +1917,12 @@ private theorem binary_round_eq_overflow (mode : RoundingMode) (s : Bool) (M : N
 private theorem primMag_eq (x : ℝ) (k : Int) (h1 : (2 : ℝ) ^ (k - 1) ≤ |x|)
     (h2 : |x| < (2 : ℝ) ^ k) :
     FloatSpec.Core.Raux.mag 2 x = k := by
-  have h := FloatSpec.Core.Raux.mag_unique 2 x k (by norm_num) (by exact_mod_cast h1)
+  exact FloatSpec.Core.Raux.mag_unique 2 x k (by norm_num) (by exact_mod_cast h1)
     (by exact_mod_cast h2)
-  simpa [wp, PostCond.noThrow, pure] using h trivial
 
 private theorem primMag_le (x : ℝ) (k : Int) (hx : x ≠ 0) (h2 : |x| < (2 : ℝ) ^ k) :
     FloatSpec.Core.Raux.mag 2 x ≤ k := by
-  have h := FloatSpec.Core.Raux.mag_le_bpow 2 x k (by norm_num) hx (by exact_mod_cast h2)
-  simpa [wp, PostCond.noThrow, pure] using h trivial
+  exact FloatSpec.Core.Raux.mag_le_bpow 2 x k (by norm_num) hx (by exact_mod_cast h2)
 
 
 private abbrev primFexp : Int → Int := FLT_exp (3 - primEmax - primPrec) primPrec

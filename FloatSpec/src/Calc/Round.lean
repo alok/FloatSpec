@@ -15,11 +15,9 @@ import FloatSpec.src.Core.Generic_fmt
 import FloatSpec.src.Core.Raux
 import Mathlib.Data.Real.Basic
 import Mathlib.Data.Int.Basic
-import Std.Do.Triple
 import FloatSpec.src.SimprocWP
 
 open Real FloatSpec.Calc.Bracket FloatSpec.Core.Defs
-open Std.Do
 
 set_option linter.coqSource true
 set_option warningAsError true
@@ -91,20 +89,6 @@ def truncate_at_exp (beta : Int) [ValidRadix beta]
     truncate_aux beta (f.Fnum, f.Fexp, l) k
   else
     (f.Fnum, f.Fexp, l)
-
-/-- Scaffold marker for the executable truncation wrapper.
-
-    This is intentionally only a computational specification.  The semantic
-    preservation theorem needs the full Coq `Round.v` proof chain and must not
-    be claimed from the executable definition alone.
--/
-theorem truncate_at_exp_spec (f : FlocqFloat beta) (e : Int) (l : Location)
-    (He : f.Fexp ≤ e) (Hl : inbetween_float beta f.Fnum e ((F2R f)) l) :
-    ⦃⌜f.Fexp ≤ e ∧ inbetween_float beta f.Fnum e ((F2R f)) l⌝⦄
-    (pure (truncate_at_exp beta f e l) : Id (Int × Int × Location))
-    ⦃⇓result => ⌜result = truncate_at_exp beta f e l⌝⦄ := by
-  intro _
-  simp [wp, PostCond.noThrow, pure]
 
 end Truncation
 
@@ -227,7 +211,7 @@ theorem cexp_inbetween_float
     have Hd_pos : 0 < d := by
       simpa [d, hd] using
         (FloatSpec.Core.Digits.Zdigits_gt_0
-          (beta := beta) m (by simpa using Hβ) Hm_ne)
+          (beta := beta) m Hm_ne (by simpa using Hβ))
     have Hd_nonneg : 0 ≤ d := le_of_lt Hd_pos
     have Hdm1_nonneg : 0 ≤ d - 1 := by omega
     have Hlow_int : FloatSpec.Core.Zaux.Zpower beta (d - 1) ≤ |m| := by
@@ -305,7 +289,7 @@ theorem cexp_inbetween_float
         FloatSpec.Core.Raux.mag beta x = d + e := by
       have Htrip := FloatSpec.Core.Raux.mag_unique_pos_from_positive_payload
         (beta := beta) (x := x) (e := d + e) Hβ Px Hlow_scaled Hupp_scaled
-      simpa using Htrip True.intro
+      simpa using Htrip
     simp [cexp, Hmag, d, hd]
   · have Hm_zero : m = 0 := le_antisymm (le_of_not_gt Hm_pos) Hm_nonneg
     have Hx_ne : x ≠ 0 := ne_of_gt Px
@@ -315,7 +299,7 @@ theorem cexp_inbetween_float
     have Hmag_le : FloatSpec.Core.Raux.mag beta x ≤ e := by
       have Htrip := FloatSpec.Core.Raux.mag_le_bpow
         (beta := beta) (x := x) (e := e) Hβ Hx_ne Hx_upp
-      simpa using Htrip True.intro
+      simpa using Htrip
     have Hdigits0 : FloatSpec.Core.Digits.Zdigits beta m = 0 := by
       simp [Hm_zero, FloatSpec.Core.Digits.Zdigits]
     rcases He with He_left | He_right
@@ -2255,60 +2239,54 @@ theorem generic_format_truncate
         (beta := beta) (fexp := fexp) (m := q) (e := e + k)
       simp [pure] at hgf
       apply hgf
-      constructor
-      · exact hβ
-      · intro hq_ne
-        have hk_nonneg : 0 ≤ k := le_of_lt hkpos
-        have hβ_digits : beta > 1 := by simpa using hβ
-        have hk_le_digits : k ≤ FloatSpec.Core.Digits.Zdigits beta m := by
-          by_contra hnot
-          have hdigits_lt : FloatSpec.Core.Digits.Zdigits beta m < k := lt_of_not_ge hnot
-          have hsmall : (Int.natAbs m : Int) < beta ^ k.natAbs := by
-            have hpow := (FloatSpec.Core.Digits.Zpower_gt_Zdigits
-              (beta := beta) (h_beta := hβ_digits) (e := k) (x := m)
-              (hβ := hβ_digits)) True.intro
-            exact hpow (le_of_lt hdigits_lt)
-          have hm_lt : m < beta ^ k.natAbs := by
-            simpa [Int.natAbs_of_nonneg hm_nonneg] using hsmall
-          have hq_zero : q = 0 := by
-            rw [hq]
-            exact Int.ediv_eq_zero_of_lt hm_nonneg hm_lt
-          exact hq_ne hq_zero
-        have hdiv := (FloatSpec.Core.Digits.Zdigits_div_Zpower
-          (beta := beta) (m := m) (e := k) (h_beta := hβ_digits))
-          ⟨hm_nonneg, hk_nonneg,
-            ⟨FloatSpec.Core.Digits.Zdigits beta m, rfl, hk_le_digits⟩⟩
-        rcases hdiv with ⟨dm, hdm, hq_digits⟩
-        have hq_digits' :
-            FloatSpec.Core.Digits.Zdigits beta q =
-              FloatSpec.Core.Digits.Zdigits beta m - k := by
-          simpa [q, hq, hdm] using hq_digits
-        have hmagF := FloatSpec.Core.Float_prop.Raux_mag_F2R_Zdigits
-          (beta := beta) (m := q) (e := e + k) hβ hq_ne
-        have hmag :
-            FloatSpec.Core.Raux.mag beta ((q : ℝ) * (beta : ℝ) ^ (e + k)) =
-              FloatSpec.Core.Digits.Zdigits beta q + (e + k) := by
-          simpa [FloatSpec.Core.Defs.F2R] using hmagF
-        have harg :
-            FloatSpec.Core.Digits.Zdigits beta q + (e + k) =
-              FloatSpec.Core.Digits.Zdigits beta m + e := by
-          rw [hq_digits']
-          ring
-        have hcexp :
-            FloatSpec.Core.Generic_fmt.cexp beta fexp
-              ((q : ℝ) * (beta : ℝ) ^ (e + k)) =
-              fexp (FloatSpec.Core.Digits.Zdigits beta m + e) := by
-          simp [FloatSpec.Core.Generic_fmt.cexp, hmag, harg]
-        have hk_eq : fexp (FloatSpec.Core.Digits.Zdigits beta m + e) = e + k := by
-          omega
-        rw [hcexp, hk_eq]
+      intro hq_ne
+      have hk_nonneg : 0 ≤ k := le_of_lt hkpos
+      have hβ_digits : beta > 1 := by simpa using hβ
+      have hk_le_digits : k ≤ FloatSpec.Core.Digits.Zdigits beta m := by
+        by_contra hnot
+        have hdigits_lt : FloatSpec.Core.Digits.Zdigits beta m < k := lt_of_not_ge hnot
+        have hsmall : (Int.natAbs m : Int) < beta ^ k.natAbs := by
+          exact FloatSpec.Core.Digits.Zpower_gt_Zdigits
+            (beta := beta) (h_beta := hβ_digits) (e := k) (x := m)
+            (le_of_lt hdigits_lt) (hβ := hβ_digits)
+        have hm_lt : m < beta ^ k.natAbs := by
+          simpa [Int.natAbs_of_nonneg hm_nonneg] using hsmall
+        have hq_zero : q = 0 := by
+          rw [hq]
+          exact Int.ediv_eq_zero_of_lt hm_nonneg hm_lt
+        exact hq_ne hq_zero
+      have hq_digits' :
+          FloatSpec.Core.Digits.Zdigits beta q =
+            FloatSpec.Core.Digits.Zdigits beta m - k := by
+        simpa [q, hq] using FloatSpec.Core.Digits.Zdigits_div_Zpower
+          (beta := beta) (m := m) (e := k) hm_nonneg ⟨hk_nonneg, hk_le_digits⟩
+          (h_beta := hβ_digits)
+      have hmagF := FloatSpec.Core.Float_prop.Raux_mag_F2R_Zdigits
+        (beta := beta) (m := q) (e := e + k) hβ hq_ne
+      have hmag :
+          FloatSpec.Core.Raux.mag beta ((q : ℝ) * (beta : ℝ) ^ (e + k)) =
+            FloatSpec.Core.Digits.Zdigits beta q + (e + k) := by
+        simpa [FloatSpec.Core.Defs.F2R] using hmagF
+      have harg :
+          FloatSpec.Core.Digits.Zdigits beta q + (e + k) =
+            FloatSpec.Core.Digits.Zdigits beta m + e := by
+        rw [hq_digits']
+        ring
+      have hcexp :
+          FloatSpec.Core.Generic_fmt.cexp beta fexp
+            ((q : ℝ) * (beta : ℝ) ^ (e + k)) =
+            fexp (FloatSpec.Core.Digits.Zdigits beta m + e) := by
+        simp [FloatSpec.Core.Generic_fmt.cexp, hmag, harg]
+      have hk_eq : fexp (FloatSpec.Core.Digits.Zdigits beta m + e) = e + k := by
+        omega
+      rw [hcexp, hk_eq]
     simpa [hkpos, truncate_aux, hpow, q, hq] using hfmt
   · have hk_nonpos : fexp (FloatSpec.Core.Digits.Zdigits beta m + e) ≤ e := by
       omega
     by_cases hm_zero : m = 0
     · have hzero :
           FloatSpec.Core.Generic_fmt.generic_format beta fexp (0 : ℝ) :=
-        FloatSpec.Core.Generic_fmt.generic_format_0_run (beta := beta) (fexp := fexp)
+        FloatSpec.Core.Generic_fmt.generic_format_0 (beta := beta) (fexp := fexp)
       simpa [hkpos, hm_zero, FloatSpec.Core.Defs.F2R] using hzero
     · have hfmt :
           FloatSpec.Core.Generic_fmt.generic_format beta fexp
@@ -2319,21 +2297,19 @@ theorem generic_format_truncate
           (beta := beta) (fexp := fexp) (m := m) (e := e)
         simp [pure] at hgf
         apply hgf
-        constructor
-        · exact hβ
-        · intro hm_ne
-          have hmagF := FloatSpec.Core.Float_prop.Raux_mag_F2R_Zdigits
-            (beta := beta) (m := m) (e := e) hβ hm_ne
-          have hmag :
-              FloatSpec.Core.Raux.mag beta ((m : ℝ) * (beta : ℝ) ^ e) =
-                FloatSpec.Core.Digits.Zdigits beta m + e := by
-            simpa [FloatSpec.Core.Defs.F2R] using hmagF
-          have hcexp :
-              FloatSpec.Core.Generic_fmt.cexp beta fexp
-                ((m : ℝ) * (beta : ℝ) ^ e) =
-                fexp (FloatSpec.Core.Digits.Zdigits beta m + e) := by
-            simp [FloatSpec.Core.Generic_fmt.cexp, hmag]
-          simpa [hcexp] using hk_nonpos
+        intro hm_ne
+        have hmagF := FloatSpec.Core.Float_prop.Raux_mag_F2R_Zdigits
+          (beta := beta) (m := m) (e := e) hβ hm_ne
+        have hmag :
+            FloatSpec.Core.Raux.mag beta ((m : ℝ) * (beta : ℝ) ^ e) =
+              FloatSpec.Core.Digits.Zdigits beta m + e := by
+          simpa [FloatSpec.Core.Defs.F2R] using hmagF
+        have hcexp :
+            FloatSpec.Core.Generic_fmt.cexp beta fexp
+              ((m : ℝ) * (beta : ℝ) ^ e) =
+              fexp (FloatSpec.Core.Digits.Zdigits beta m + e) := by
+          simp [FloatSpec.Core.Generic_fmt.cexp, hmag]
+        simpa [hcexp] using hk_nonpos
       simpa [hkpos] using hfmt
 
 end Audit
@@ -2392,7 +2368,7 @@ theorem truncate_correct_format
         sm = ((FloatSpec.Core.Raux.Ztrunc sm : Int) : ℝ) := by
       have htrip := FloatSpec.Core.Generic_fmt.scaled_mantissa_generic
         (beta := beta) (fexp := fexp) (x := x)
-      simpa [sm, wp, Std.Do.PostCond.noThrow, Id.run, pure] using htrip Hx
+      simpa [sm, Id.run, pure] using htrip Hx
     have Hsm_div : sm = (m : ℝ) / (p : ℝ) := by
       have Hpow :
           (beta : ℝ) ^ e * (beta : ℝ) ^ (-(e + k)) = (p : ℝ)⁻¹ := by
@@ -2417,7 +2393,7 @@ theorem truncate_correct_format
     have Hfloor_div :
         FloatSpec.Core.Raux.Zfloor ((m : ℝ) / (p : ℝ)) = q := by
       have htrip := FloatSpec.Core.Raux.Zfloor_div_pos_payload m p Hp_pos
-      simpa [q, hq, wp, Std.Do.PostCond.noThrow, Id.run, pure] using htrip True.intro
+      simpa [q, hq, Id.run, pure] using htrip
     have Hfloor_sm :
         FloatSpec.Core.Raux.Zfloor sm = FloatSpec.Core.Raux.Ztrunc sm := by
       rw [Hsm_generic]
@@ -2552,24 +2528,22 @@ theorem truncate_correct'
             (beta := beta) (fexp := fexp) (m := m) (e := e)
           simp [pure] at hgf
           apply hgf
-          constructor
-          · exact Hβ
-          · intro hm
-            have hmag := FloatSpec.Core.Float_prop.Raux_mag_F2R_Zdigits
-              (beta := beta) (m := m) (e := e) Hβ hm
-            have hcexp :
-                FloatSpec.Core.Generic_fmt.cexp beta fexp
-                  (FloatSpec.Core.Defs.F2R
-                    (FloatSpec.Core.Defs.FlocqFloat.mk m e :
-                      FloatSpec.Core.Defs.FlocqFloat beta)) =
-                  fexp (FloatSpec.Core.Digits.Zdigits beta m + e) := by
-              simpa [FloatSpec.Core.Generic_fmt.cexp] using congrArg fexp hmag
-            have hcexp' :
-                FloatSpec.Core.Generic_fmt.cexp beta fexp
-                  ((m : ℝ) * (beta : ℝ) ^ e) =
-                  fexp (FloatSpec.Core.Digits.Zdigits beta m + e) := by
-              simpa [FloatSpec.Core.Defs.F2R] using hcexp
-            simpa [hcexp'] using le_of_lt Hf_lt
+          intro hm
+          have hmag := FloatSpec.Core.Float_prop.Raux_mag_F2R_Zdigits
+            (beta := beta) (m := m) (e := e) Hβ hm
+          have hcexp :
+              FloatSpec.Core.Generic_fmt.cexp beta fexp
+                (FloatSpec.Core.Defs.F2R
+                  (FloatSpec.Core.Defs.FlocqFloat.mk m e :
+                    FloatSpec.Core.Defs.FlocqFloat beta)) =
+                fexp (FloatSpec.Core.Digits.Zdigits beta m + e) := by
+            simpa [FloatSpec.Core.Generic_fmt.cexp] using congrArg fexp hmag
+          have hcexp' :
+              FloatSpec.Core.Generic_fmt.cexp beta fexp
+                ((m : ℝ) * (beta : ℝ) ^ e) =
+                fexp (FloatSpec.Core.Digits.Zdigits beta m + e) := by
+            simpa [FloatSpec.Core.Defs.F2R] using hcexp
+          simpa [hcexp'] using le_of_lt Hf_lt
         refine ⟨?_, Or.inr ?_⟩
         · simpa [truncate_triple, Hk, Hk'] using H1
         · constructor
@@ -2634,7 +2608,7 @@ theorem truncate_correct'
       · constructor
         · simp [truncate_aux, Hk', Hpow, Hloc]
         · simpa [Hx_zero] using
-            (FloatSpec.Core.Generic_fmt.generic_format_0_run
+            (FloatSpec.Core.Generic_fmt.generic_format_0
               (beta := beta) (fexp := fexp))
     · have Hk' : ¬ e < fexp (FloatSpec.Core.Digits.Zdigits beta 0 + e) := by
         omega
@@ -2647,7 +2621,7 @@ theorem truncate_correct'
       · constructor
         · simp [Hk']
         · simpa [Hx_zero] using
-            (FloatSpec.Core.Generic_fmt.generic_format_0_run
+            (FloatSpec.Core.Generic_fmt.generic_format_0
               (beta := beta) (fexp := fexp))
 
 theorem truncate_correct
@@ -3143,7 +3117,7 @@ theorem round_trunc_sign_any_correct'
       cexp beta fexp |x| = cexp beta fexp x := by
     have htrip := FloatSpec.Core.Generic_fmt.cexp_abs
       (beta := beta) (fexp := fexp) (x := x)
-    simpa [wp, Std.Do.PostCond.noThrow, Id.run, pure] using htrip Hβ
+    simpa [Id.run, pure] using htrip
   have Heq_abs : e ≤ cexp beta fexp |x| ∨ l = Location.loc_Exact := by
     rcases Heq with Heq | Heq
     · exact Or.inl (by simpa [hcexp_abs] using Heq)
@@ -3161,7 +3135,7 @@ theorem round_trunc_sign_any_correct'
           FloatSpec.Core.Generic_fmt.generic_format beta fexp x := by
         have htrip := FloatSpec.Core.Generic_fmt.generic_format_abs_inv
           (beta := beta) (fexp := fexp) (x := x)
-        simpa [wp, Std.Do.PostCond.noThrow, Id.run, pure] using htrip Hfmt_abs
+        simpa [Id.run, pure] using htrip Hfmt_abs
       exact Or.inr ⟨Hloc, Hfmt_x⟩
   change FloatSpec.Core.Generic_fmt.roundR beta fexp rnd x =
     FloatSpec.Core.Defs.F2R
@@ -3197,7 +3171,7 @@ theorem round_trunc_sign_any_correct
       cexp beta fexp |x| = cexp beta fexp x := by
     have htrip := FloatSpec.Core.Generic_fmt.cexp_abs
       (beta := beta) (fexp := fexp) (x := x)
-    simpa [wp, Std.Do.PostCond.noThrow, Id.run, pure] using htrip Hβ
+    simpa [Id.run, pure] using htrip
   have Heq_abs :
       e ≤ cexp beta fexp |x| ∨ l = Location.loc_Exact :=
     (cexp_inbetween_float_loc_Exact (beta := beta) (fexp := fexp)
@@ -3903,11 +3877,9 @@ theorem truncate_FIX_correct
             (m := m) (e := e)
           simp [pure] at hgf
           apply hgf
-          constructor
-          · exact Hβ
-          · intro _hm
-            simpa [FloatSpec.Core.Generic_fmt.cexp, FloatSpec.Core.FIX.FIX_exp]
-              using hle_emin_e
+          intro _hm
+          simpa [FloatSpec.Core.Generic_fmt.cexp, FloatSpec.Core.FIX.FIX_exp]
+            using hle_emin_e
         exact Or.inr ⟨rfl, by simpa [Hx_eq] using Hformat_F2R⟩
 
 end CoqTheoremsPorts

@@ -2,10 +2,9 @@ import FloatSpec.src.Core.Ulp
 
 /-! Typed clients retain the pre-repair Lean conclusions and parameters, removing
 only the Valid_exp binder absent from the paired compiled Rocq source type.
-They supplement the structural premise guards; they are not automatic proofs
-of cross-language semantic equivalence. -/
-
-open Std.Do
+The radix bound {lit}`1 < beta` comes from {lit}`ValidRadix` unless a declaration
+still takes it explicitly. They supplement the structural premise guards;
+they are not automatic proofs of cross-language semantic equivalence. -/
 
 namespace FloatSpec.Test.CorePremiseBoundary
 
@@ -28,10 +27,7 @@ theorem Ulp_negligible_exp_spec_prime_unrestricted :
 theorem Ulp_succ_le_plus_ulp_unrestricted :
     ∀ (beta : ℤ) [ValidRadix beta] (fexp : ℤ → ℤ)
   [FloatSpec.Core.Ulp.Monotone_exp fexp] (x : ℝ),
-  ⦃⌜1 < beta⌝⦄
-    (@pure Id _ _)
-      (FloatSpec.Core.Ulp.succ beta fexp x,
-        FloatSpec.Core.Ulp.ulp beta fexp x) ⦃Std.Do.PostCond.noThrow fun r => ⌜r.1 ≤ x + r.2⌝⦄ := @FloatSpec.Core.Ulp.succ_le_plus_ulp
+    FloatSpec.Core.Ulp.succ beta fexp x ≤ x + FloatSpec.Core.Ulp.ulp beta fexp x := @FloatSpec.Core.Ulp.succ_le_plus_ulp
 
 #print axioms Ulp_succ_le_plus_ulp_unrestricted
 
@@ -39,7 +35,7 @@ theorem Ulp_succ_le_plus_ulp_unrestricted :
 theorem Ulp_pred_lt_le_unrestricted :
     ∀ (beta : ℤ) [ValidRadix beta] (fexp : ℤ → ℤ)
   (x y : ℝ),
-  x ≠ 0 → x ≤ y → ⦃⌜1 < beta⌝⦄ (@pure Id _ _) (FloatSpec.Core.Ulp.pred beta fexp x) ⦃Std.Do.PostCond.noThrow fun r => ⌜r < y⌝⦄ := @FloatSpec.Core.Ulp.pred_lt_le
+  x ≠ 0 → x ≤ y → FloatSpec.Core.Ulp.pred beta fexp x < y := @FloatSpec.Core.Ulp.pred_lt_le
 
 #print axioms Ulp_pred_lt_le_unrestricted
 
@@ -47,7 +43,7 @@ theorem Ulp_pred_lt_le_unrestricted :
 theorem Ulp_succ_gt_ge_unrestricted :
     ∀ (beta : ℤ) [ValidRadix beta] (fexp : ℤ → ℤ)
   (x y : ℝ),
-  y ≠ 0 → x ≤ y → ⦃⌜1 < beta⌝⦄ (@pure Id _ _) (FloatSpec.Core.Ulp.succ beta fexp y) ⦃Std.Do.PostCond.noThrow fun r => ⌜x < r⌝⦄ := @FloatSpec.Core.Ulp.succ_gt_ge
+  y ≠ 0 → x ≤ y → x < FloatSpec.Core.Ulp.succ beta fexp y := @FloatSpec.Core.Ulp.succ_gt_ge
 
 #print axioms Ulp_succ_gt_ge_unrestricted
 
@@ -58,11 +54,8 @@ theorem Ulp_pred_pos_plus_ulp_aux1_unrestricted :
   0 < x →
     FloatSpec.Core.Generic_fmt.generic_format beta fexp x →
       x ≠ ↑beta ^ (FloatSpec.Core.Raux.mag beta x - 1) →
-        ⦃⌜1 < beta⌝⦄
-          (@pure Id _ _)
-            (have u := FloatSpec.Core.Ulp.ulp beta fexp x;
-            have u2 := FloatSpec.Core.Ulp.ulp beta fexp (x - u);
-            x - u + u2) ⦃Std.Do.PostCond.noThrow fun r => ⌜r = x⌝⦄ := @FloatSpec.Core.Ulp.pred_pos_plus_ulp_aux1
+          x - FloatSpec.Core.Ulp.ulp beta fexp x +
+              FloatSpec.Core.Ulp.ulp beta fexp (x - FloatSpec.Core.Ulp.ulp beta fexp x) = x := @FloatSpec.Core.Ulp.pred_pos_plus_ulp_aux1
 
 #print axioms Ulp_pred_pos_plus_ulp_aux1_unrestricted
 
@@ -73,10 +66,7 @@ theorem Ulp_id_p_ulp_le_bpow_unrestricted :
   0 < x →
     FloatSpec.Core.Generic_fmt.generic_format beta fexp x →
       x < ↑beta ^ e →
-        ⦃⌜1 < beta⌝⦄
-          (@pure Id _ _)
-            (have u := FloatSpec.Core.Ulp.ulp beta fexp x;
-            x + u) ⦃Std.Do.PostCond.noThrow fun r => ⌜r ≤ ↑beta ^ e⌝⦄ := @FloatSpec.Core.Ulp.id_p_ulp_le_bpow
+        x + FloatSpec.Core.Ulp.ulp beta fexp x ≤ ↑beta ^ e := @FloatSpec.Core.Ulp.id_p_ulp_le_bpow
 
 #print axioms Ulp_id_p_ulp_le_bpow_unrestricted
 
@@ -86,13 +76,9 @@ theorem Ulp_ulp_succ_pos_unrestricted :
   (x : ℝ),
   FloatSpec.Core.Generic_fmt.generic_format beta fexp x →
     0 < x →
-      ⦃⌜1 < beta⌝⦄
-        (@pure Id _ _)
-          (have s := FloatSpec.Core.Ulp.succ beta fexp x;
-          have us := FloatSpec.Core.Ulp.ulp beta fexp s;
-          have ux := FloatSpec.Core.Ulp.ulp beta fexp x;
-          have mx := FloatSpec.Core.Raux.mag beta x;
-          ((us, ux), s, mx)) ⦃Std.Do.PostCond.noThrow fun r => ⌜r.1.1 = r.1.2 ∨ r.2.1 = ↑beta ^ r.2.2⌝⦄ := @FloatSpec.Core.Ulp.ulp_succ_pos
+        FloatSpec.Core.Ulp.ulp beta fexp (FloatSpec.Core.Ulp.succ beta fexp x) =
+            FloatSpec.Core.Ulp.ulp beta fexp x ∨
+          FloatSpec.Core.Ulp.succ beta fexp x = ↑beta ^ FloatSpec.Core.Raux.mag beta x := @FloatSpec.Core.Ulp.ulp_succ_pos
 
 #print axioms Ulp_ulp_succ_pos_unrestricted
 
@@ -112,8 +98,7 @@ theorem Ulp_id_m_ulp_ge_bpow_unrestricted :
   FloatSpec.Core.Generic_fmt.generic_format beta fexp x →
     x ≠ FloatSpec.Core.Ulp.ulp beta fexp x →
       ↑beta ^ e < x →
-        1 < beta →
-          ⦃⌜True⌝⦄ (@pure Id _ _) (x - FloatSpec.Core.Ulp.ulp beta fexp x) ⦃Std.Do.PostCond.noThrow fun r => ⌜↑beta ^ e ≤ r⌝⦄ := @FloatSpec.Core.Ulp.id_m_ulp_ge_bpow
+        1 < beta → ↑beta ^ e ≤ x - FloatSpec.Core.Ulp.ulp beta fexp x := @FloatSpec.Core.Ulp.id_m_ulp_ge_bpow
 
 #print axioms Ulp_id_m_ulp_ge_bpow_unrestricted
 
@@ -202,10 +187,9 @@ theorem Generic_fmt_round_NA_opp_unrestricted :
 theorem Generic_fmt_scaled_mantissa_generic_unrestricted :
     ∀ (beta : ℤ) [ValidRadix beta] (fexp : ℤ → ℤ)
   (x : ℝ),
-  ⦃⌜FloatSpec.Core.Generic_fmt.generic_format beta fexp x⌝⦄
-    (@pure Id _ _)
-      (FloatSpec.Core.Generic_fmt.scaled_mantissa beta fexp
-        x) ⦃Std.Do.PostCond.noThrow fun result => ⌜result = ↑(FloatSpec.Core.Raux.Ztrunc result)⌝⦄ := @FloatSpec.Core.Generic_fmt.scaled_mantissa_generic
+  FloatSpec.Core.Generic_fmt.generic_format beta fexp x →
+    FloatSpec.Core.Generic_fmt.scaled_mantissa beta fexp x =
+      ↑(FloatSpec.Core.Raux.Ztrunc (FloatSpec.Core.Generic_fmt.scaled_mantissa beta fexp x)) := @FloatSpec.Core.Generic_fmt.scaled_mantissa_generic
 
 #print axioms Generic_fmt_scaled_mantissa_generic_unrestricted
 
@@ -266,10 +250,9 @@ theorem Generic_fmt_round_DN_small_pos_unrestricted :
 theorem Generic_fmt_round_UP_small_pos_unrestricted :
     ∀ (beta : ℤ) [ValidRadix beta] (fexp : ℤ → ℤ)
   (x : ℝ) (ex : ℤ),
-  ⦃⌜1 < beta ∧ ex ≤ fexp ex ∧ ↑beta ^ (ex - 1) ≤ x ∧ x < ↑beta ^ ex⌝⦄
-    (@pure Id _ _)
-      (FloatSpec.Core.Generic_fmt.round_to_generic beta fexp FloatSpec.Core.Generic_fmt.rnd_ceil
-        x) ⦃Std.Do.PostCond.noThrow fun r => ⌜r = ↑beta ^ fexp ex⌝⦄ := @FloatSpec.Core.Generic_fmt.round_UP_small_pos
+  ↑beta ^ (ex - 1) ≤ x ∧ x < ↑beta ^ ex → ex ≤ fexp ex →
+    FloatSpec.Core.Generic_fmt.round_to_generic beta fexp FloatSpec.Core.Generic_fmt.rnd_ceil x =
+      ↑beta ^ fexp ex := @FloatSpec.Core.Generic_fmt.round_UP_small_pos
 
 #print axioms Generic_fmt_round_UP_small_pos_unrestricted
 

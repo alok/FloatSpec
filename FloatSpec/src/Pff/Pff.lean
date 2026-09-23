@@ -1264,11 +1264,7 @@ private theorem pffDigit_neg (radix q : Int) :
   by_cases hradix : 1 < radix
   · simp only [pffDigit_of_one_lt radix (-q) hradix,
       pffDigit_of_one_lt radix q hradix]
-    have h := FloatSpec.Core.Digits.Zdigits_opp
-      (beta := radix) (n := q) (by trivial)
-    simp only [wp, PostCond.noThrow, pure, Id.run] at h
-    rcases h with ⟨dn, hdn, hd⟩
-    exact congrArg Int.toNat (hd.trans hdn.symm)
+    exact congrArg Int.toNat (FloatSpec.Core.Digits.Zdigits_opp (beta := radix) (n := q))
   · simp [pffDigit, hradix, pffStructuralDigit]
 
 private theorem pffDigit_abs (radix q : Int) :
@@ -1873,7 +1869,7 @@ theorem FSuccDiff1 {beta : Int} [ValidRadix beta]
         FtoR (FSucc (beta:=radix) b radix precision x) - FtoR x := by
     have h := FloatSpec.Calc.Operations.F2R_minus (beta:=radix)
       (FSucc (beta:=radix) b radix precision x) x
-    simpa [FtoR, Fminus] using h hradix
+    simpa [FtoR, Fminus] using h
   rw [hminus]
   have hradix_pos : (0 : ℝ) < (radix : ℝ) := by
     exact_mod_cast (by omega : (0 : Int) < radix)
@@ -1932,7 +1928,7 @@ theorem FSuccDiff2 {beta : Int} [ValidRadix beta]
         FtoR (FSucc (beta:=radix) b radix precision x) - FtoR x := by
     have h := FloatSpec.Calc.Operations.F2R_minus (beta:=radix)
       (FSucc (beta:=radix) b radix precision x) x
-    simpa [FtoR, Fminus] using h hradix
+    simpa [FtoR, Fminus] using h
   rw [hminus]
   unfold FSucc
   have hnot_top : x.Fnum ≠ pPred b.vNum := by
@@ -1970,7 +1966,7 @@ theorem FSuccDiff3 {beta : Int} [ValidRadix beta]
         FtoR (FSucc (beta:=radix) b radix precision x) - FtoR x := by
     have h := FloatSpec.Calc.Operations.F2R_minus (beta:=radix)
       (FSucc (beta:=radix) b radix precision x) x
-    simpa [FtoR, Fminus] using h hradix
+    simpa [FtoR, Fminus] using h
   rw [hminus]
   have hradix_pos : (0 : ℝ) < (radix : ℝ) := by
     exact_mod_cast (by omega : (0 : Int) < radix)
@@ -2662,7 +2658,7 @@ theorem FPredDiff1 {beta : Int} [ValidRadix beta]
         FtoR x - FtoR (FPred (beta:=radix) b radix precision x) := by
     have h := FloatSpec.Calc.Operations.F2R_minus (beta:=radix)
       x (FPred (beta:=radix) b radix precision x)
-    simpa [FtoR, Fminus] using h hradix
+    simpa [FtoR, Fminus] using h
   rw [hminus]
   have hradix_pos : (0 : ℝ) < (radix : ℝ) := by
     exact_mod_cast (by omega : (0 : Int) < radix)
@@ -2722,7 +2718,7 @@ theorem FPredDiff2 {beta : Int} [ValidRadix beta]
         FtoR x - FtoR (FPred (beta:=radix) b radix precision x) := by
     have h := FloatSpec.Calc.Operations.F2R_minus (beta:=radix)
       x (FPred (beta:=radix) b radix precision x)
-    simpa [FtoR, Fminus] using h hradix
+    simpa [FtoR, Fminus] using h
   rw [hminus]
   unfold FPred
   have hnot_top : x.Fnum ≠ -pPred b.vNum := by
@@ -2760,7 +2756,7 @@ theorem FPredDiff3 {beta : Int} [ValidRadix beta]
         FtoR x - FtoR (FPred (beta:=radix) b radix precision x) := by
     have h := FloatSpec.Calc.Operations.F2R_minus (beta:=radix)
       x (FPred (beta:=radix) b radix precision x)
-    simpa [FtoR, Fminus] using h hradix
+    simpa [FtoR, Fminus] using h
   rw [hminus]
   have hradix_pos : (0 : ℝ) < (radix : ℝ) := by
     exact_mod_cast (by omega : (0 : Int) < radix)
@@ -3662,7 +3658,7 @@ theorem FPredLt {beta : Int} [ValidRadix beta]
       _root_.F2R (beta:=beta) (Fopp (beta:=beta) x) =
         - _root_.F2R (beta:=beta) x := by
     have h := FloatSpec.Calc.Operations.F2R_opp (beta:=beta) x
-    simpa [Fopp, _root_.F2R] using h trivial
+    simpa [Fopp, _root_.F2R] using h
   have hsucc_opp :
       _root_.F2R (beta:=beta)
           (Fopp (beta:=beta)
@@ -3671,7 +3667,7 @@ theorem FPredLt {beta : Int} [ValidRadix beta]
           (FSucc (beta:=beta) b radix precision (Fopp (beta:=beta) x)) := by
     have h := FloatSpec.Calc.Operations.F2R_opp (beta:=beta)
       (FSucc (beta:=beta) b radix precision (Fopp (beta:=beta) x))
-    simpa [Fopp, _root_.F2R] using h trivial
+    simpa [Fopp, _root_.F2R] using h
   rw [hpred_eq, hsucc_opp]
   rw [hx_opp] at hsucc_lt
   have hdual := neg_lt_neg hsucc_lt
@@ -3764,7 +3760,7 @@ theorem R0RltRlePred {beta : Int} [ValidRadix beta]
       _root_.F2R (beta:=beta) (Fopp (beta:=beta) x) =
         - _root_.F2R (beta:=beta) x := by
     have h := FloatSpec.Calc.Operations.F2R_opp (beta:=beta) x
-    simpa [Fopp, _root_.F2R] using h trivial
+    simpa [Fopp, _root_.F2R] using h
   have hopp_neg :
       _root_.F2R (beta:=beta) (Fopp (beta:=beta) x) < 0 := by
     rw [hx_opp]
@@ -3793,7 +3789,7 @@ theorem R0RltRlePred {beta : Int} [ValidRadix beta]
           (FSucc (beta:=beta) b radix precision (Fopp (beta:=beta) x)) := by
     have h := FloatSpec.Calc.Operations.F2R_opp (beta:=beta)
       (FSucc (beta:=beta) b radix precision (Fopp (beta:=beta) x))
-    simpa [Fopp, _root_.F2R] using h trivial
+    simpa [Fopp, _root_.F2R] using h
   rw [hpred_eq, hsucc_opp]
   exact neg_nonneg.mpr hsucc_nonpos
 
@@ -8898,7 +8894,7 @@ theorem RND_Min_correct_from_positive_payload {beta : Int} [ValidRadix beta]
               (RND_Max_Pos (beta:=beta) b radix p (-r)) := by
         have h := FloatSpec.Calc.Operations.F2R_opp (beta:=beta)
           (RND_Max_Pos (beta:=beta) b radix p (-r))
-        simpa [Fopp, _root_.F2R] using h trivial
+        simpa [Fopp, _root_.F2R] using h
       rw [hFopp]
       linarith
     · intro f hfBounded hfLe
@@ -8908,7 +8904,7 @@ theorem RND_Min_correct_from_positive_payload {beta : Int} [ValidRadix beta]
           _root_.F2R (beta:=beta) (Fopp (beta:=beta) f) =
             - _root_.F2R (beta:=beta) f := by
         have h := FloatSpec.Calc.Operations.F2R_opp (beta:=beta) f
-        simpa [Fopp, _root_.F2R] using h trivial
+        simpa [Fopp, _root_.F2R] using h
       have hInput : -r ≤ _root_.F2R (beta:=beta) (Fopp (beta:=beta) f) := by
         rw [hFoppF]
         linarith
@@ -8920,7 +8916,7 @@ theorem RND_Min_correct_from_positive_payload {beta : Int} [ValidRadix beta]
               (RND_Max_Pos (beta:=beta) b radix p (-r)) := by
         have h := FloatSpec.Calc.Operations.F2R_opp (beta:=beta)
           (RND_Max_Pos (beta:=beta) b radix p (-r))
-        simpa [Fopp, _root_.F2R] using h trivial
+        simpa [Fopp, _root_.F2R] using h
       rw [hFoppF] at hLeast
       rw [hFoppMax]
       linarith
@@ -8969,7 +8965,7 @@ theorem RND_Max_correct_from_positive_payload {beta : Int} [ValidRadix beta]
               (RND_Min_Pos (beta:=beta) b radix p (-r)) := by
         have h := FloatSpec.Calc.Operations.F2R_opp (beta:=beta)
           (RND_Min_Pos (beta:=beta) b radix p (-r))
-        simpa [Fopp, _root_.F2R] using h trivial
+        simpa [Fopp, _root_.F2R] using h
       rw [hFopp]
       linarith
     · intro f hfBounded hfGe
@@ -8979,7 +8975,7 @@ theorem RND_Max_correct_from_positive_payload {beta : Int} [ValidRadix beta]
           _root_.F2R (beta:=beta) (Fopp (beta:=beta) f) =
             - _root_.F2R (beta:=beta) f := by
         have h := FloatSpec.Calc.Operations.F2R_opp (beta:=beta) f
-        simpa [Fopp, _root_.F2R] using h trivial
+        simpa [Fopp, _root_.F2R] using h
       have hInput : _root_.F2R (beta:=beta) (Fopp (beta:=beta) f) ≤ -r := by
         rw [hFoppF]
         linarith
@@ -8991,7 +8987,7 @@ theorem RND_Max_correct_from_positive_payload {beta : Int} [ValidRadix beta]
               (RND_Min_Pos (beta:=beta) b radix p (-r)) := by
         have h := FloatSpec.Calc.Operations.F2R_opp (beta:=beta)
           (RND_Min_Pos (beta:=beta) b radix p (-r))
-        simpa [Fopp, _root_.F2R] using h trivial
+        simpa [Fopp, _root_.F2R] using h
       rw [hFoppF] at hGreatest
       rw [hFoppMin]
       linarith
@@ -10680,11 +10676,11 @@ theorem ClosestOpp {beta : Int} [ValidRadix beta]
     have hClosest := hpClosest (Fopp f) hFoppFBounded
     have hpOpp :
         _root_.F2R (beta:=beta) (Fopp (beta:=beta) p) = - _root_.F2R (beta:=beta) p := by
-      have h := (FloatSpec.Calc.Operations.F2R_opp (beta:=beta) p) trivial
+      have h := (FloatSpec.Calc.Operations.F2R_opp (beta:=beta) p)
       simpa [Fopp, _root_.F2R] using h
     have hfOpp :
         _root_.F2R (beta:=beta) (Fopp (beta:=beta) f) = - _root_.F2R (beta:=beta) f := by
-      have h := (FloatSpec.Calc.Operations.F2R_opp (beta:=beta) f) trivial
+      have h := (FloatSpec.Calc.Operations.F2R_opp (beta:=beta) f)
       simpa [Fopp, _root_.F2R] using h
     calc
       |_root_.F2R (beta:=beta) (Fopp (beta:=beta) p) - -r|
@@ -10727,7 +10723,7 @@ theorem ClosestFabs {beta : Int} [ValidRadix beta]
   have hFabsVal :
       _root_.F2R (beta:=beta) (Fabs (beta:=beta) p) =
         |_root_.F2R (beta:=beta) p| := by
-    have h := FloatSpec.Calc.Operations.F2R_abs (beta:=beta) p hβ
+    have h := FloatSpec.Calc.Operations.F2R_abs (beta:=beta) p
     simpa [Fabs, _root_.F2R] using h
   constructor
   · exact hFabsBounded
@@ -10749,7 +10745,7 @@ theorem ClosestFabs {beta : Int} [ValidRadix beta]
       have hFoppVal :
           _root_.F2R (beta:=beta) (Fopp (beta:=beta) g) =
             - _root_.F2R (beta:=beta) g := by
-        have h := (FloatSpec.Calc.Operations.F2R_opp (beta:=beta) g) trivial
+        have h := (FloatSpec.Calc.Operations.F2R_opp (beta:=beta) g)
         simpa [Fopp, _root_.F2R] using h
       calc
         |(_root_.F2R (beta:=beta) (Fabs (beta:=beta) p)) - (|r|)| =
@@ -11108,11 +11104,11 @@ theorem ClosestSymmetric {beta : Int} [ValidRadix beta]
     have hClosest := hpClosest (Fopp f) hFoppFBounded
     have hpOpp :
         _root_.F2R (beta:=beta) (Fopp (beta:=beta) p) = - _root_.F2R (beta:=beta) p := by
-      have h := (FloatSpec.Calc.Operations.F2R_opp (beta:=beta) p) trivial
+      have h := (FloatSpec.Calc.Operations.F2R_opp (beta:=beta) p)
       simpa [Fopp, _root_.F2R] using h
     have hfOpp :
         _root_.F2R (beta:=beta) (Fopp (beta:=beta) f) = - _root_.F2R (beta:=beta) f := by
-      have h := (FloatSpec.Calc.Operations.F2R_opp (beta:=beta) f) trivial
+      have h := (FloatSpec.Calc.Operations.F2R_opp (beta:=beta) f)
       simpa [Fopp, _root_.F2R] using h
     calc
       |_root_.F2R (beta:=beta) (Fopp (beta:=beta) p) - -r|
@@ -11595,12 +11591,12 @@ theorem EvenClosestSymmetric {beta : Int} [ValidRadix beta]
       have hF2R_opp_q :
           _root_.F2R (beta:=beta) (Fopp (beta:=beta) q) =
             - _root_.F2R (beta:=beta) q := by
-        have h := (FloatSpec.Calc.Operations.F2R_opp (beta:=beta) q) trivial
+        have h := (FloatSpec.Calc.Operations.F2R_opp (beta:=beta) q)
         simpa [Fopp, _root_.F2R] using h
       have hF2R_opp_p :
           _root_.F2R (beta:=beta) (Fopp (beta:=beta) p) =
             - _root_.F2R (beta:=beta) p := by
-        have h := (FloatSpec.Calc.Operations.F2R_opp (beta:=beta) p) trivial
+        have h := (FloatSpec.Calc.Operations.F2R_opp (beta:=beta) p)
         simpa [Fopp, _root_.F2R] using h
       rw [hF2R_opp_q] at hFoppq_eq_p
       rw [hF2R_opp_p]
@@ -11681,13 +11677,13 @@ theorem EvenClosestFabs {beta : Int} [ValidRadix beta]
         have hqOppVal :
             _root_.F2R (beta:=beta) (Fopp (beta:=beta) q) =
               -_root_.F2R (beta:=beta) q := by
-          have h := (FloatSpec.Calc.Operations.F2R_opp (beta:=beta) q) trivial
+          have h := (FloatSpec.Calc.Operations.F2R_opp (beta:=beta) q)
           simpa [Fopp, _root_.F2R] using h
         have hfabsOppVal :
             _root_.F2R (beta:=beta) (Fopp (beta:=beta) (Fabs (beta:=beta) f)) =
               -_root_.F2R (beta:=beta) (Fabs (beta:=beta) f) := by
           have h := (FloatSpec.Calc.Operations.F2R_opp
-            (beta:=beta) (Fabs (beta:=beta) f)) trivial
+            (beta:=beta) (Fabs (beta:=beta) f))
           simpa [Fopp, _root_.F2R] using h
         rw [hqOppVal] at hqOpp_eq_f
         rw [hfabsOppVal] at hfabsOpp_eq_f
@@ -13015,7 +13011,7 @@ theorem RoundedModeMultAbs_from_properties {beta : Int} [ValidRadix beta]
         _root_.F2R (beta:=beta) (Fopp (beta:=beta) q') =
           - _root_.F2R (beta:=beta) q' := by
       have h := FloatSpec.Calc.Operations.F2R_opp (beta:=beta) q'
-      simpa [Fopp, _root_.F2R] using h trivial
+      simpa [Fopp, _root_.F2R] using h
     have hneg_bound :
         radix * _root_.F2R (beta:=beta) (Fopp (beta:=beta) q') ≤ r := by
       rw [hFoppQ']
@@ -15746,7 +15742,6 @@ theorem digitPredVNumiSPrecision
     have hunique := FloatSpec.Core.Digits.Zdigits_unique_from_nonzero_payload
       (beta := radix) (h_beta := hradix) (n := Int.pred b.vNum) (e := (precision : Int))
       (hβ := hradix) hpre
-    simp only [wp, PostCond.noThrow, pure, Id.run] at hunique
     exact hunique
   rw [hzdigits]
   simp
@@ -15772,9 +15767,9 @@ theorem digitVNumiSPrecision
     rw [hvNum]
     unfold Zpower_nat
     exact
-      (FloatSpec.Core.Digits.Zdigits_Zpower
-        (beta := radix) (k := (precision : Int)) hradix)
-        (by exact_mod_cast Nat.zero_le precision)
+      FloatSpec.Core.Digits.Zdigits_Zpower
+        (beta := radix) (k := (precision : Int))
+        (by exact_mod_cast Nat.zero_le precision) hradix
   rw [hzdigits]
   simp
 
@@ -15809,13 +15804,10 @@ theorem pGivesDigit {beta : Int} [ValidRadix beta]
       refine ⟨by exact_mod_cast Nat.zero_le precision, ?_⟩
       simpa [Int.natAbs_of_nonneg (show 0 ≤ (precision : Int) by
         exact_mod_cast Nat.zero_le precision)] using hnum_lt
-    have h :=
+    exact
       (FloatSpec.Core.Digits.Zdigits_le_Zpower
         (beta := radix) (h_beta := hradix)
         (x := p.Fnum) (e := (precision : Int)) (hβ := hradix)) hpre
-    simpa only [wp, PostCond.noThrow, pure,
-      PredTrans.pure, PredTrans.apply, SPred.down_pure_nil,
-      Id.run, ULift.up, ULift.down, ULift.up_down, Int.cast_ofNat] using h
   exact Int.toNat_le.mpr hdigits_int
 
 noncomputable def digitGivesBoundedNum_check {beta : Int} [ValidRadix beta]
@@ -15840,12 +15832,7 @@ theorem digitGivesBoundedNum {beta : Int} [ValidRadix beta]
       FloatSpec.Core.Digits.Zdigits radix p.Fnum ≤ (precision : Int) := by
     have hdigits_nonneg :
         0 ≤ FloatSpec.Core.Digits.Zdigits radix p.Fnum := by
-      have hge :=
-        FloatSpec.Core.Digits.Zdigits_ge_0
-          (beta := radix) (n := p.Fnum) trivial
-      simpa only [wp, PostCond.noThrow, pure,
-        PredTrans.pure, PredTrans.apply, SPred.down_pure_nil,
-        Id.run, ULift.up, ULift.down, ULift.up_down, Int.cast_ofNat] using hge
+      exact FloatSpec.Core.Digits.Zdigits_ge_0 (beta := radix) (n := p.Fnum)
     have hdigit_int :
         ((Int.toNat (FloatSpec.Core.Digits.Zdigits radix p.Fnum) : Nat) : Int)
           ≤ (precision : Int) := by
@@ -15853,13 +15840,10 @@ theorem digitGivesBoundedNum {beta : Int} [ValidRadix beta]
     simpa [Int.toNat_of_nonneg hdigits_nonneg] using hdigit_int
   have hnum_lt :
       (p.Fnum.natAbs : Int) < radix ^ ((precision : Int).natAbs) := by
-    have hpow :=
+    exact
       FloatSpec.Core.Digits.Zpower_gt_Zdigits
         (beta := radix) (h_beta := hradix)
-        (e := (precision : Int)) (x := p.Fnum) (hβ := hradix)
-        trivial
-    simpa only [wp, PostCond.noThrow, pure,
-      Id.run, Int.cast_ofNat] using hpow hdigits_bound
+        (e := (precision : Int)) (x := p.Fnum) hdigits_bound (hβ := hradix)
   rw [hvNum]
   simpa [Zpower_nat, Int.natAbs_of_nonneg
     (show 0 ≤ (precision : Int) by exact_mod_cast Nat.zero_le precision)] using hnum_lt
@@ -15892,7 +15876,7 @@ theorem FnormalPrecision_internal {beta : Int} [ValidRadix beta]
         0 ≤ FloatSpec.Core.Digits.Zdigits radix p.Fnum := by
       exact
         FloatSpec.Core.Digits.Zdigits_ge_0
-          (beta := radix) (n := p.Fnum) trivial
+          (beta := radix) (n := p.Fnum)
     have hprecision_le_digits :
         (precision : Int) ≤ FloatSpec.Core.Digits.Zdigits radix p.Fnum := by
       have hradix_pos : 0 < radix := by omega
@@ -15983,9 +15967,9 @@ theorem digitnNormMin (radix : Int) (precision : Nat) :
       FloatSpec.Core.Digits.Zdigits radix (radix ^ (precision - 1)) =
         ((precision - 1 : Nat) : Int) + 1 := by
     exact
-      (FloatSpec.Core.Digits.Zdigits_Zpower
-        (beta := radix) (k := ((precision - 1 : Nat) : Int)) hradix)
-        (by exact_mod_cast Nat.zero_le (precision - 1))
+      FloatSpec.Core.Digits.Zdigits_Zpower
+        (beta := radix) (k := ((precision - 1 : Nat) : Int))
+        (by exact_mod_cast Nat.zero_le (precision - 1)) hradix
   rw [hzdigits]
   have hint : (((precision - 1 : Nat) : Int) + 1) = (precision : Int) := by
     have hsucc : (precision - 1 : Nat) + 1 = precision := Nat.succ_pred hprecision
@@ -16399,12 +16383,12 @@ theorem FPredProp {beta : Int} [ValidRadix beta]
       _root_.F2R (beta:=beta) (Fopp (beta:=beta) x) =
         - _root_.F2R (beta:=beta) x := by
     have h := FloatSpec.Calc.Operations.F2R_opp (beta:=beta) x
-    simpa [Fopp, _root_.F2R, Int.cast_ofNat] using h trivial
+    simpa [Fopp, _root_.F2R, Int.cast_ofNat] using h
   have hy_opp :
       _root_.F2R (beta:=beta) (Fopp (beta:=beta) y) =
         - _root_.F2R (beta:=beta) y := by
     have h := FloatSpec.Calc.Operations.F2R_opp (beta:=beta) y
-    simpa [Fopp, _root_.F2R] using h trivial
+    simpa [Fopp, _root_.F2R] using h
   have hxy_opp :
       _root_.F2R (beta:=beta) (Fopp (beta:=beta) y) <
         _root_.F2R (beta:=beta) (Fopp (beta:=beta) x) := by
@@ -16437,7 +16421,7 @@ theorem FPredProp {beta : Int} [ValidRadix beta]
           (FSucc (beta:=beta) b radix precision (Fopp (beta:=beta) y)) := by
     have h := FloatSpec.Calc.Operations.F2R_opp (beta:=beta)
       (FSucc (beta:=beta) b radix precision (Fopp (beta:=beta) y))
-    simpa [Fopp, _root_.F2R] using h trivial
+    simpa [Fopp, _root_.F2R] using h
   rw [hpred_eq, hsucc_opp]
   rw [hx_opp] at hsucc
   simpa using neg_le_neg hsucc
@@ -16549,7 +16533,7 @@ theorem FsubnormalDigit {beta : Int} [ValidRadix beta]
       0 ≤ FloatSpec.Core.Digits.Zdigits radix p.Fnum := by
     exact
       FloatSpec.Core.Digits.Zdigits_ge_0
-        (beta := radix) (n := p.Fnum) trivial
+        (beta := radix) (n := p.Fnum)
   have hnat_le : Int.toNat (FloatSpec.Core.Digits.Zdigits radix p.Fnum) ≤ precision - 1 :=
     Int.toNat_le.2 hdigits_le
   exact lt_of_le_of_lt hnat_le (Nat.pred_lt hprecision)
@@ -16718,14 +16702,14 @@ theorem FsubnormalnormalLtNeg {beta : Int} [ValidRadix beta]
     have hp_eq :
         _root_.F2R (beta:=beta) fp = - _root_.F2R (beta:=beta) p :=
       by
-        have h := (FloatSpec.Calc.Operations.F2R_opp (beta := beta) p) trivial
+        have h := (FloatSpec.Calc.Operations.F2R_opp (beta := beta) p)
         simpa [fp, wp, PostCond.noThrow, pure, Id.run] using h
     linarith
   have hq_opp_nonneg : 0 ≤ _root_.F2R (beta:=beta) fq := by
     have hq_eq :
         _root_.F2R (beta:=beta) fq = - _root_.F2R (beta:=beta) q :=
       by
-        have h := (FloatSpec.Calc.Operations.F2R_opp (beta := beta) q) trivial
+        have h := (FloatSpec.Calc.Operations.F2R_opp (beta := beta) q)
         simpa [fq, wp, PostCond.noThrow, pure, Id.run] using h
     linarith
   have hopp_lt :
@@ -16736,12 +16720,12 @@ theorem FsubnormalnormalLtNeg {beta : Int} [ValidRadix beta]
   have hp_eq :
       _root_.F2R (beta:=beta) fp = - _root_.F2R (beta:=beta) p :=
     by
-      have h := (FloatSpec.Calc.Operations.F2R_opp (beta := beta) p) trivial
+      have h := (FloatSpec.Calc.Operations.F2R_opp (beta := beta) p)
       simpa [fp, wp, PostCond.noThrow, pure, Id.run] using h
   have hq_eq :
       _root_.F2R (beta:=beta) fq = - _root_.F2R (beta:=beta) q :=
     by
-      have h := (FloatSpec.Calc.Operations.F2R_opp (beta := beta) q) trivial
+      have h := (FloatSpec.Calc.Operations.F2R_opp (beta := beta) q)
       simpa [fq, wp, PostCond.noThrow, pure, Id.run] using h
   have hneg_lt :
       - _root_.F2R (beta:=beta) p < - _root_.F2R (beta:=beta) q := by
@@ -16888,13 +16872,11 @@ theorem FnormalLtPos {beta : Int} [ValidRadix beta]
       have hzdigits_le :
           FloatSpec.Core.Digits.Zdigits radix (Fshift (beta:=beta) radix n p).Fnum ≤
             FloatSpec.Core.Digits.Zdigits radix q.Fnum := by
-        have hzd :=
-          (FloatSpec.Core.Digits.Zdigits_le_Zdigits
+        exact
+          FloatSpec.Core.Digits.Zdigits_le_Zdigits
             (beta := radix) (h_beta := hradix)
-            (n := (Fshift (beta:=beta) radix n p).Fnum) (m := q.Fnum) (hβ := hradix))
-            ⟨by omega, hshift_abs_lt_q_abs⟩
-        rcases hzd with ⟨dm, hdm, hle⟩
-        simpa [hdm] using hle
+            (n := (Fshift (beta:=beta) radix n p).Fnum) (m := q.Fnum)
+            (by omega) hshift_abs_lt_q_abs (hβ := hradix)
       have hfdigit_le :
           Fdigit (beta:=beta) radix (Fshift (beta:=beta) radix n p) ≤
             Fdigit (beta:=beta) radix q := by
@@ -16909,23 +16891,22 @@ theorem FnormalLtPos {beta : Int} [ValidRadix beta]
         rw [pffDigit_of_one_lt radix _ hradix,
           pffDigit_of_one_lt radix _ hradix]
         have hn_nonneg : 0 ≤ (n : Int) := by exact_mod_cast Nat.zero_le n
-        have hmul :=
-          (FloatSpec.Core.Digits.Zdigits_mult_Zpower
-            (beta := radix) (n := p.Fnum) (k := (n : Int)) (h_beta := hradix))
-            ⟨hp_nonzero, hn_nonneg⟩
-        rcases hmul with ⟨dn, hdn, hres⟩
+        have hres :=
+          FloatSpec.Core.Digits.Zdigits_mult_Zpower
+            (beta := radix) (n := p.Fnum) (k := (n : Int)) hp_nonzero hn_nonneg
+            (h_beta := hradix)
         have hdn_nonneg :
             0 ≤ FloatSpec.Core.Digits.Zdigits radix p.Fnum := by
           exact
             FloatSpec.Core.Digits.Zdigits_ge_0
-              (beta := radix) (n := p.Fnum) trivial
+              (beta := radix) (n := p.Fnum)
         have hpow_arg :
             p.Fnum * radix ^ (n : Int).natAbs = p.Fnum * radix ^ n := by
           simp
         have hres' :
             FloatSpec.Core.Digits.Zdigits radix (p.Fnum * radix ^ n) =
               FloatSpec.Core.Digits.Zdigits radix p.Fnum + (n : Int) := by
-          simpa [hpow_arg, hdn] using hres
+          simpa [hpow_arg] using hres
         rw [hres']
         rw [Int.toNat_add hdn_nonneg hn_nonneg]
         simp
@@ -16967,7 +16948,7 @@ theorem vNumPrecision
       0 ≤ FloatSpec.Core.Digits.Zdigits radix n := by
     exact
       FloatSpec.Core.Digits.Zdigits_ge_0
-        (beta := radix) (n := n) trivial
+        (beta := radix) (n := n)
   have hdigits_bound :
       FloatSpec.Core.Digits.Zdigits radix n ≤ (precision : Int) := by
     have hdigit_int :
@@ -16977,13 +16958,10 @@ theorem vNumPrecision
     simpa [Int.toNat_of_nonneg hdigits_nonneg] using hdigit_int
   have hnum_lt :
       (n.natAbs : Int) < radix ^ ((precision : Int).natAbs) := by
-    have hpow :=
+    exact
       FloatSpec.Core.Digits.Zpower_gt_Zdigits
         (beta := radix) (h_beta := hradix)
-        (e := (precision : Int)) (x := n) (hβ := hradix)
-        trivial
-    simpa only [wp, PostCond.noThrow, pure,
-      Id.run, Int.cast_ofNat] using hpow hdigits_bound
+        (e := (precision : Int)) (x := n) hdigits_bound (hβ := hradix)
   rw [hvNum]
   simpa [Zpower_nat, Int.natAbs_of_nonneg
     (show 0 ≤ (precision : Int) by exact_mod_cast Nat.zero_le precision)] using hnum_lt
@@ -17008,7 +16986,7 @@ theorem NotDividesDigit (r v : Int) :
       0 ≤ FloatSpec.Core.Digits.Zdigits r v := by
     exact
       FloatSpec.Core.Digits.Zdigits_ge_0
-        (beta := r) (n := v) trivial
+        (beta := r) (n := v)
   have hnatAbs :
       (FloatSpec.Core.Digits.Zdigits r v).natAbs =
         Int.toNat (FloatSpec.Core.Digits.Zdigits r v) := by
@@ -17017,7 +16995,7 @@ theorem NotDividesDigit (r v : Int) :
       Int.toNat_of_nonneg hdigits_nonneg]
   have hupper : |v| < Zpower_nat r (digit r v) := by
     have hbounds :=
-      FloatSpec.Core.Digits.Zdigits_correct_from_nonzero_payload r v hr hv
+      FloatSpec.Core.Digits.Zdigits_correct_from_nonzero_payload r v hv hr
     simpa [Zpower_nat, digit, pffDigit_of_one_lt r v hr, hnatAbs] using hbounds.2
   have hpow_pos : 0 < Zpower_nat r (digit r v) := by
     simp [Zpower_nat]
@@ -17486,9 +17464,9 @@ theorem boundNatCorrect {beta : Int} [ValidRadix beta]
       simp [d, digit, pffDigit_of_one_lt radix 0 hradix, Zpower_nat,
         FloatSpec.Core.Digits.Zdigits]
     · have hbounds :=
-        FloatSpec.Core.Digits.Zdigits_correct_from_nonzero_payload radix (Int.ofNat n) hradix hnzero
+        FloatSpec.Core.Digits.Zdigits_correct_from_nonzero_payload radix (Int.ofNat n) hnzero hradix
       have hnonneg : 0 ≤ FloatSpec.Core.Digits.Zdigits radix (Int.ofNat n) :=
-        FloatSpec.Core.Digits.Zdigits_ge_0 radix (Int.ofNat n) trivial
+        FloatSpec.Core.Digits.Zdigits_ge_0 radix (Int.ofNat n)
       have hnat :
           (FloatSpec.Core.Digits.Zdigits radix (Int.ofNat n)).natAbs =
             (FloatSpec.Core.Digits.Zdigits radix (Int.ofNat n)).toNat := by
@@ -18646,7 +18624,7 @@ theorem RoundedModeMultAbs {beta : Int} [ValidRadix beta]
     have hqOppValue : _root_.F2R (beta:=radix) qOpp =
         -_root_.F2R (beta:=radix) q' := by
       have h := FloatSpec.Calc.Operations.F2R_opp (beta:=radix) q'
-      simpa [qOpp, Fopp, _root_.F2R] using h trivial
+      simpa [qOpp, Fopp, _root_.F2R] using h
     have hScaledValue : _root_.F2R (beta:=radix) scaled =
         -((radix : ℝ) * _root_.F2R (beta:=radix) q') := by
       have h := FvalScale radix b qOpp 1
@@ -18951,7 +18929,7 @@ theorem RoundAbsMonotoner_from_rounded_payload {beta : Int} [ValidRadix beta]
     simpa [negR, Fbounded, FloatSpec.Calc.Operations.Fopp, abs_neg] using hrBound
   have hnegRVal : _root_.F2R (beta:=beta) negR = -_root_.F2R (beta:=beta) r := by
     simpa [negR] using
-      (FloatSpec.Calc.Operations.F2R_opp (beta:=beta) r) True.intro
+      (FloatSpec.Calc.Operations.F2R_opp (beta:=beta) r)
   have hminmax := hRounded.2.2.1 p q hP
   by_cases hp_nonneg : 0 ≤ p
   · have hp_le_r : p ≤ _root_.F2R (beta:=beta) r := by
@@ -19052,7 +19030,7 @@ theorem RoundAbsMonotonel_from_rounded_payload {beta : Int} [ValidRadix beta]
     simpa [negR, Fbounded, FloatSpec.Calc.Operations.Fopp, abs_neg] using hrBound
   have hnegRVal : _root_.F2R (beta:=beta) negR = -_root_.F2R (beta:=beta) r := by
     simpa [negR] using
-      (FloatSpec.Calc.Operations.F2R_opp (beta:=beta) r) True.intro
+      (FloatSpec.Calc.Operations.F2R_opp (beta:=beta) r)
   have hminmax := hRounded.2.2.1 p q hP
   by_cases hp_nonneg : 0 ≤ p
   · have hr_le_p : _root_.F2R (beta:=beta) r ≤ p := by
@@ -19296,7 +19274,7 @@ theorem Fplus_correct {beta : Int} [ValidRadix beta]
   simp only [wp, PostCond.noThrow, pure, Fplus_correct_check, Id.run,
     ULift.up_down]
   show _root_.F2R (Fplus x y) = _root_.F2R x + _root_.F2R y
-  have h := FloatSpec.Calc.Operations.F2R_plus (beta:=beta) x y hβ
+  have h := FloatSpec.Calc.Operations.F2R_plus (beta:=beta) x y
   simpa [Fplus, _root_.F2R] using h
 
 -- Coq: `Fminus_correct` — float subtraction corresponds to real subtraction
@@ -19315,7 +19293,7 @@ theorem Fminus_correct {beta : Int} [ValidRadix beta]
     ULift.up_down]
   show _root_.F2R (FloatSpec.Calc.Operations.Fminus (beta:=beta) x y) =
       _root_.F2R x - _root_.F2R y
-  have h := FloatSpec.Calc.Operations.F2R_minus (beta:=beta) x y hβ
+  have h := FloatSpec.Calc.Operations.F2R_minus (beta:=beta) x y
   simpa [_root_.F2R] using h
 
 -- Coq: `Fmult_correct` — float multiplication corresponds to real multiplication
@@ -19333,7 +19311,7 @@ theorem Fmult_correct {beta : Int} [ValidRadix beta]
   simp only [wp, PostCond.noThrow, pure, Fmult_correct_check, Id.run,
     ULift.up_down]
   have h := FloatSpec.Calc.Operations.F2R_mult (beta:=beta) x y
-  simpa [_root_.F2R, wp, PostCond.noThrow, pure] using h hβ
+  simpa [_root_.F2R, wp, PostCond.noThrow, pure] using h
 
 -- Coq: `Fopp_Fopp` — involutive property of float negation
 noncomputable def Fopp_Fopp_check {beta : Int} [ValidRadix beta]
@@ -20454,7 +20432,7 @@ theorem errorBoundedPlusLe_from_rep {beta : Int} [ValidRadix beta]
           |_root_.F2R (beta:=beta)
             (FloatSpec.Calc.Operations.Fminus (beta:=beta) q d)| := by
       simpa [error, Fabs, _root_.F2R, wp, PostCond.noThrow, pure,
-        Id.run, ULift.up_down, Int.cast_ofNat] using habs hβ
+        Id.run, ULift.up_down, Int.cast_ofNat] using habs
     rw [habs_val, hraw_val]
   have hd_exp : d.Fexp = min p.Fexp q.Fexp := by
     have hrep_exp : rep.Fexp = min p.Fexp q.Fexp := by
@@ -22079,7 +22057,7 @@ theorem Fabs_correct2 {beta : Int} [ValidRadix beta]
   simp only [wp, PostCond.noThrow, pure, Fabs_correct2_check, Id.run,
     ULift.up_down]
   show _root_.F2R (Fabs x) = - _root_.F2R x
-  have habs := FloatSpec.Calc.Operations.F2R_abs (beta:=beta) x hβ
+  have habs := FloatSpec.Calc.Operations.F2R_abs (beta:=beta) x
   have hxabs : |_root_.F2R x| = - _root_.F2R x := abs_of_nonpos hx
   calc
     _root_.F2R (Fabs x) = |_root_.F2R x| := by
@@ -22100,7 +22078,7 @@ theorem Fabs_correct {beta : Int} [ValidRadix beta]
   simp only [wp, PostCond.noThrow, pure, Fabs_correct_check, Id.run,
     ULift.up_down]
   show _root_.F2R (Fabs x) = |_root_.F2R x|
-  have habs := FloatSpec.Calc.Operations.F2R_abs (beta:=beta) x hβ
+  have habs := FloatSpec.Calc.Operations.F2R_abs (beta:=beta) x
   simpa [Fabs, _root_.F2R] using habs
 
 -- Coq: `RleFexpFabs` — for nonzero real value, Float 1 (Fexp p) ≤ Fabs p
@@ -22219,23 +22197,22 @@ theorem FshiftFdigit {beta : Int} [ValidRadix beta]
   rw [pffDigit_of_one_lt radix (x.Fnum * radix ^ n) hradix,
     pffDigit_of_one_lt radix x.Fnum hradix]
   have hn_nonneg : 0 ≤ (n : Int) := by exact_mod_cast Nat.zero_le n
-  have hmul :=
-    (FloatSpec.Core.Digits.Zdigits_mult_Zpower
-      (beta := radix) (n := x.Fnum) (k := (n : Int)) (h_beta := hradix))
-      ⟨hx_nonzero, hn_nonneg⟩
-  rcases hmul with ⟨dn, hdn, hres⟩
+  have hres :=
+    FloatSpec.Core.Digits.Zdigits_mult_Zpower
+      (beta := radix) (n := x.Fnum) (k := (n : Int)) hx_nonzero hn_nonneg
+      (h_beta := hradix)
   have hdn_nonneg :
       0 ≤ FloatSpec.Core.Digits.Zdigits radix x.Fnum := by
     exact
       FloatSpec.Core.Digits.Zdigits_ge_0
-        (beta := radix) (n := x.Fnum) trivial
+        (beta := radix) (n := x.Fnum)
   have hpow_arg :
       x.Fnum * radix ^ (n : Int).natAbs = x.Fnum * radix ^ n := by
     simp
   have hres' :
       FloatSpec.Core.Digits.Zdigits radix (x.Fnum * radix ^ n) =
         FloatSpec.Core.Digits.Zdigits radix x.Fnum + (n : Int) := by
-    simpa [hpow_arg, hdn] using hres
+    simpa [hpow_arg] using hres
   rw [hres']
   rw [Int.toNat_add hdn_nonneg hn_nonneg]
   simp
@@ -22782,7 +22759,7 @@ theorem div2IsBetween {beta : Int} [ValidRadix beta]
       have hopp := FloatSpec.Calc.Operations.F2R_opp (beta:=beta) p
       rw [show _root_.F2R (beta:=beta) (Fopp (beta:=beta) p) =
           -_root_.F2R (beta:=beta) p by
-        simpa [Fopp, _root_.F2R] using hopp trivial]
+        simpa [Fopp, _root_.F2R] using hopp]
       linarith
     have h := div2IsBetweenPos (beta:=beta) b radix precision
       (Fopp (beta:=beta) p) (Fopp (beta:=beta) max) (Fopp (beta:=beta) min)
@@ -23481,7 +23458,7 @@ private lemma Fdigit_pos_of_nonzero {beta : Int} [ValidRadix beta]
   unfold Fdigit
   rw [pffDigit_of_one_lt radix p.Fnum hradix]
   have hgt : 0 < FloatSpec.Core.Digits.Zdigits radix p.Fnum :=
-    FloatSpec.Core.Digits.Zdigits_gt_0 radix p.Fnum hradix hp_nonzero
+    FloatSpec.Core.Digits.Zdigits_gt_0 radix p.Fnum hp_nonzero hradix
   have hnonneg : 0 ≤ FloatSpec.Core.Digits.Zdigits radix p.Fnum := le_of_lt hgt
   have htoNat :
       ((FloatSpec.Core.Digits.Zdigits radix p.Fnum).toNat : Int) =
@@ -23499,10 +23476,10 @@ private lemma Fdigit_less_abs {beta : Int} [ValidRadix beta]
     Zpower_nat radix (Nat.pred (Fdigit (beta:=beta) radix p)) ≤ |p.Fnum| := by
   unfold Fdigit
   rw [pffDigit_of_one_lt radix p.Fnum hradix]
-  have hbounds := FloatSpec.Core.Digits.Zdigits_correct_from_nonzero_payload radix p.Fnum hradix hp_nonzero
+  have hbounds := FloatSpec.Core.Digits.Zdigits_correct_from_nonzero_payload radix p.Fnum hp_nonzero hradix
   let d := FloatSpec.Core.Digits.Zdigits radix p.Fnum
   have hgt : 0 < d := by
-    simpa [d] using FloatSpec.Core.Digits.Zdigits_gt_0 radix p.Fnum hradix hp_nonzero
+    simpa [d] using FloatSpec.Core.Digits.Zdigits_gt_0 radix p.Fnum hp_nonzero hradix
   have hpred_cast : ((Nat.pred d.toNat : Nat) : Int) = d - 1 := by
     have hdto : (d.toNat : Int) = d := Int.toNat_of_nonneg (le_of_lt hgt)
     cases hd : d.toNat with
@@ -23529,9 +23506,9 @@ private lemma abs_lt_Fdigit_pow {beta : Int} [ValidRadix beta]
   by_cases hp_zero : p.Fnum = 0
   · rw [hp_zero]
     simp [Zpower_nat, FloatSpec.Core.Digits.Zdigits]
-  · have hbounds := FloatSpec.Core.Digits.Zdigits_correct_from_nonzero_payload radix p.Fnum hradix hp_zero
+  · have hbounds := FloatSpec.Core.Digits.Zdigits_correct_from_nonzero_payload radix p.Fnum hp_zero hradix
     have hnonneg : 0 ≤ FloatSpec.Core.Digits.Zdigits radix p.Fnum :=
-      FloatSpec.Core.Digits.Zdigits_ge_0 radix p.Fnum trivial
+      FloatSpec.Core.Digits.Zdigits_ge_0 radix p.Fnum
     have hnat :
         (FloatSpec.Core.Digits.Zdigits radix p.Fnum).natAbs =
           (FloatSpec.Core.Digits.Zdigits radix p.Fnum).toNat := by
@@ -27953,12 +27930,12 @@ theorem errorBoundedMultNeg_from_rounded_payload {beta : Int} [ValidRadix beta]
       _root_.F2R (beta:=beta) (Fopp (beta:=beta) p) =
         -_root_.F2R (beta:=beta) p := by
     have h := FloatSpec.Calc.Operations.F2R_opp (beta:=beta) p
-    simpa [Fopp, _root_.F2R] using h trivial
+    simpa [Fopp, _root_.F2R] using h
   have hfOppVal :
       _root_.F2R (beta:=beta) (Fopp (beta:=beta) f) =
         -_root_.F2R (beta:=beta) f := by
     have h := FloatSpec.Calc.Operations.F2R_opp (beta:=beta) f
-    simpa [Fopp, _root_.F2R] using h trivial
+    simpa [Fopp, _root_.F2R] using h
   have hpOppNonneg :
       0 ≤ _root_.F2R (beta:=beta) (Fopp (beta:=beta) p) := by
     rw [hpOppVal]
@@ -28003,7 +27980,7 @@ theorem errorBoundedMultNeg_from_rounded_payload {beta : Int} [ValidRadix beta]
           _root_.F2R (beta:=beta) (Fopp (beta:=beta) error) =
             -_root_.F2R (beta:=beta) error := by
         have h := FloatSpec.Calc.Operations.F2R_opp (beta:=beta) error
-        simpa [Fopp, _root_.F2R] using h trivial
+        simpa [Fopp, _root_.F2R] using h
       change
         _root_.F2R (beta:=beta) error =
           _root_.F2R (beta:=beta) (Fopp (beta:=beta) p) *
@@ -28043,7 +28020,7 @@ theorem errorBoundedMultNeg_from_rounded_payload {beta : Int} [ValidRadix beta]
           _root_.F2R (beta:=beta) (Fopp (beta:=beta) error) =
             -_root_.F2R (beta:=beta) error := by
         have h := FloatSpec.Calc.Operations.F2R_opp (beta:=beta) error
-        simpa [Fopp, _root_.F2R] using h trivial
+        simpa [Fopp, _root_.F2R] using h
       change
         _root_.F2R (beta:=beta) error =
           _root_.F2R (beta:=beta) (Fopp (beta:=beta) p) *
@@ -28117,7 +28094,7 @@ theorem errorBoundedMultClosest_from_nonneg {beta : Int} [ValidRadix beta]
             _root_.F2R (beta:=beta) (Fopp (beta:=beta) q) =
               -_root_.F2R (beta:=beta) q := by
           have h := FloatSpec.Calc.Operations.F2R_opp (beta:=beta) q
-          simpa [Fopp, _root_.F2R] using h trivial
+          simpa [Fopp, _root_.F2R] using h
         rw [hqOppVal]
         convert hclosestNeg using 1 <;> ring
       have hqOppNonneg :
@@ -28126,7 +28103,7 @@ theorem errorBoundedMultClosest_from_nonneg {beta : Int} [ValidRadix beta]
             _root_.F2R (beta:=beta) (Fopp (beta:=beta) q) =
               -_root_.F2R (beta:=beta) q := by
           have h := FloatSpec.Calc.Operations.F2R_opp (beta:=beta) q
-          simpa [Fopp, _root_.F2R] using h trivial
+          simpa [Fopp, _root_.F2R] using h
         rw [hqOppVal]
         linarith
       have hExpOpp :
@@ -28140,17 +28117,17 @@ theorem errorBoundedMultClosest_from_nonneg {beta : Int} [ValidRadix beta]
             _root_.F2R (beta:=beta) (Fopp (beta:=beta) error) =
               -_root_.F2R (beta:=beta) error := by
           have h := FloatSpec.Calc.Operations.F2R_opp (beta:=beta) error
-          simpa [Fopp, _root_.F2R] using h trivial
+          simpa [Fopp, _root_.F2R] using h
         have hqOppVal :
             _root_.F2R (beta:=beta) (Fopp (beta:=beta) q) =
               -_root_.F2R (beta:=beta) q := by
           have h := FloatSpec.Calc.Operations.F2R_opp (beta:=beta) q
-          simpa [Fopp, _root_.F2R] using h trivial
+          simpa [Fopp, _root_.F2R] using h
         have hfOppVal :
             _root_.F2R (beta:=beta) (Fopp (beta:=beta) f) =
               -_root_.F2R (beta:=beta) f := by
           have h := FloatSpec.Calc.Operations.F2R_opp (beta:=beta) f
-          simpa [Fopp, _root_.F2R] using h trivial
+          simpa [Fopp, _root_.F2R] using h
         rw [hErrOppVal, herrorVal, hqOppVal, hfOppVal]
         ring
       · have h := oppBounded (beta:=beta) bo error
@@ -28180,7 +28157,7 @@ theorem errorBoundedMultClosest_from_nonneg {beta : Int} [ValidRadix beta]
             _root_.F2R (beta:=beta) (Fopp (beta:=beta) p) =
               -_root_.F2R (beta:=beta) p := by
           have h := FloatSpec.Calc.Operations.F2R_opp (beta:=beta) p
-          simpa [Fopp, _root_.F2R] using h trivial
+          simpa [Fopp, _root_.F2R] using h
         rw [hpOppVal]
         convert hclosestNeg using 1 <;> ring
       have hpOppNonneg :
@@ -28189,7 +28166,7 @@ theorem errorBoundedMultClosest_from_nonneg {beta : Int} [ValidRadix beta]
             _root_.F2R (beta:=beta) (Fopp (beta:=beta) p) =
               -_root_.F2R (beta:=beta) p := by
           have h := FloatSpec.Calc.Operations.F2R_opp (beta:=beta) p
-          simpa [Fopp, _root_.F2R] using h trivial
+          simpa [Fopp, _root_.F2R] using h
         rw [hpOppVal]
         linarith
       have hExpOpp :
@@ -28203,17 +28180,17 @@ theorem errorBoundedMultClosest_from_nonneg {beta : Int} [ValidRadix beta]
             _root_.F2R (beta:=beta) (Fopp (beta:=beta) error) =
               -_root_.F2R (beta:=beta) error := by
           have h := FloatSpec.Calc.Operations.F2R_opp (beta:=beta) error
-          simpa [Fopp, _root_.F2R] using h trivial
+          simpa [Fopp, _root_.F2R] using h
         have hpOppVal :
             _root_.F2R (beta:=beta) (Fopp (beta:=beta) p) =
               -_root_.F2R (beta:=beta) p := by
           have h := FloatSpec.Calc.Operations.F2R_opp (beta:=beta) p
-          simpa [Fopp, _root_.F2R] using h trivial
+          simpa [Fopp, _root_.F2R] using h
         have hfOppVal :
             _root_.F2R (beta:=beta) (Fopp (beta:=beta) f) =
               -_root_.F2R (beta:=beta) f := by
           have h := FloatSpec.Calc.Operations.F2R_opp (beta:=beta) f
-          simpa [Fopp, _root_.F2R] using h trivial
+          simpa [Fopp, _root_.F2R] using h
         rw [hErrOppVal, herrorVal, hpOppVal, hfOppVal]
         ring
       · have h := oppBounded (beta:=beta) bo error
@@ -28235,7 +28212,7 @@ theorem errorBoundedMultClosest_from_nonneg {beta : Int} [ValidRadix beta]
             _root_.F2R (beta:=beta) (Fopp (beta:=beta) p) =
               -_root_.F2R (beta:=beta) p := by
           have h := FloatSpec.Calc.Operations.F2R_opp (beta:=beta) p
-          simpa [Fopp, _root_.F2R] using h trivial
+          simpa [Fopp, _root_.F2R] using h
         rw [hpOppVal]
         linarith
       have hqOppNonneg :
@@ -28244,7 +28221,7 @@ theorem errorBoundedMultClosest_from_nonneg {beta : Int} [ValidRadix beta]
             _root_.F2R (beta:=beta) (Fopp (beta:=beta) q) =
               -_root_.F2R (beta:=beta) q := by
           have h := FloatSpec.Calc.Operations.F2R_opp (beta:=beta) q
-          simpa [Fopp, _root_.F2R] using h trivial
+          simpa [Fopp, _root_.F2R] using h
         rw [hqOppVal]
         linarith
       have hsameClosest :
@@ -28255,12 +28232,12 @@ theorem errorBoundedMultClosest_from_nonneg {beta : Int} [ValidRadix beta]
             _root_.F2R (beta:=beta) (Fopp (beta:=beta) p) =
               -_root_.F2R (beta:=beta) p := by
           have h := FloatSpec.Calc.Operations.F2R_opp (beta:=beta) p
-          simpa [Fopp, _root_.F2R] using h trivial
+          simpa [Fopp, _root_.F2R] using h
         have hqOppVal :
             _root_.F2R (beta:=beta) (Fopp (beta:=beta) q) =
               -_root_.F2R (beta:=beta) q := by
           have h := FloatSpec.Calc.Operations.F2R_opp (beta:=beta) q
-          simpa [Fopp, _root_.F2R] using h trivial
+          simpa [Fopp, _root_.F2R] using h
         rw [hpOppVal, hqOppVal]
         convert hclosest using 1 <;> ring
       have hExpOpp :
@@ -28276,12 +28253,12 @@ theorem errorBoundedMultClosest_from_nonneg {beta : Int} [ValidRadix beta]
             _root_.F2R (beta:=beta) (Fopp (beta:=beta) p) =
               -_root_.F2R (beta:=beta) p := by
           have h := FloatSpec.Calc.Operations.F2R_opp (beta:=beta) p
-          simpa [Fopp, _root_.F2R] using h trivial
+          simpa [Fopp, _root_.F2R] using h
         have hqOppVal :
             _root_.F2R (beta:=beta) (Fopp (beta:=beta) q) =
               -_root_.F2R (beta:=beta) q := by
           have h := FloatSpec.Calc.Operations.F2R_opp (beta:=beta) q
-          simpa [Fopp, _root_.F2R] using h trivial
+          simpa [Fopp, _root_.F2R] using h
         rw [herrorVal, hpOppVal, hqOppVal]
         ring
       · simpa [Fopp, FloatSpec.Calc.Operations.Fopp] using herrorExp
@@ -37485,12 +37462,12 @@ theorem errorBoundedMultExp_from_split_payload {beta : Int} [ValidRadix beta]
           _root_.F2R (beta:=radix) (Fopp (beta:=radix) p) =
             -_root_.F2R (beta:=radix) p := by
         have h := FloatSpec.Calc.Operations.F2R_opp (beta:=radix) p
-        simpa [Fopp, _root_.F2R] using h trivial
+        simpa [Fopp, _root_.F2R] using h
       have hqOppVal :
           _root_.F2R (beta:=radix) (Fopp (beta:=radix) q) =
             -_root_.F2R (beta:=radix) q := by
         have h := FloatSpec.Calc.Operations.F2R_opp (beta:=radix) q
-        simpa [Fopp, _root_.F2R] using h trivial
+        simpa [Fopp, _root_.F2R] using h
       have hpOppNonneg :
           0 ≤ _root_.F2R (beta:=radix) (Fopp (beta:=radix) p) := by
         rw [hpOppVal]
@@ -38328,13 +38305,11 @@ theorem Twice_EvenClosest_Round {beta : Int} [ValidRadix beta]
           _root_.F2R (beta:=2) (Fabs (beta:=2) x) =
             |_root_.F2R (beta:=2) x| := by
         have h := FloatSpec.Calc.Operations.F2R_abs (beta:=2) x
-          (by norm_num : (1 : Int) < 2)
         simpa [Fabs, _root_.F2R] using h
       have hqFabsVal :
           _root_.F2R (beta:=2) (Fabs (beta:=2) q) =
             |_root_.F2R (beta:=2) q| := by
         have h := FloatSpec.Calc.Operations.F2R_abs (beta:=2) q
-          (by norm_num : (1 : Int) < 2)
         simpa [Fabs, _root_.F2R] using h
       have hxqAbs :
           |_root_.F2R (beta:=2) x| ≤ |_root_.F2R (beta:=2) q| := by
@@ -38803,7 +38778,7 @@ theorem errorBoundedMultClosest_Can {beta : Int} [ValidRadix beta]
         _root_.F2R (beta:=2) negLower =
           -_root_.F2R (beta:=2) lower := by
       have h := FloatSpec.Calc.Operations.F2R_opp (beta:=2) lower
-      simpa [negLower, Fopp, _root_.F2R] using h trivial
+      simpa [negLower, Fopp, _root_.F2R] using h
     have hlowerNonneg : 0 ≤ _root_.F2R (beta:=2) lower := by
       rw [hlowerVal]
       exact le_of_lt (zpow_pos htwo_pos _)
@@ -38997,7 +38972,7 @@ theorem errorBoundedMultClosest_Can {beta : Int} [ValidRadix beta]
         _root_.F2R (beta:=2) lowerUpper =
           -_root_.F2R (beta:=2) upper := by
       have h := FloatSpec.Calc.Operations.F2R_opp (beta:=2) upper
-      simpa [lowerUpper, Fopp, _root_.F2R] using h trivial
+      simpa [lowerUpper, Fopp, _root_.F2R] using h
     have hclosestProd : Closest (beta:=2) bo (2 : ℝ) prod g := by
       simpa [prod] using hclosest
     have hgLeUpper :
@@ -41811,7 +41786,7 @@ theorem Axpy_tFlessu_nonzero {beta : Int} [ValidRadix beta]
       _root_.F2R (beta:=beta) (Fopp (beta:=beta) q) =
         -_root_.F2R (beta:=beta) q := by
     have h := FloatSpec.Calc.Operations.F2R_opp (beta:=beta) q
-    simpa [Fopp, _root_.F2R] using h trivial
+    simpa [Fopp, _root_.F2R] using h
   by_cases huNeg : _root_.F2R (beta:=beta) u < 0
   · have haOppBound : Fbounded (beta:=beta) b (Fopp (beta:=beta) a) := by
       have h := oppBounded (beta:=beta) b a
@@ -42224,7 +42199,7 @@ theorem UlpFlessuGe_aux {beta : Int} [ValidRadix beta]
       _root_.F2R (beta:=beta) (Fopp (beta:=beta) q) =
         -_root_.F2R (beta:=beta) q := by
     have h := FloatSpec.Calc.Operations.F2R_opp (beta:=beta) q
-    simpa [Fopp, _root_.F2R] using h trivial
+    simpa [Fopp, _root_.F2R] using h
   have hpos_case
       (q : FloatSpec.Core.Defs.FlocqFloat beta)
       (hqBound : Fbounded (beta:=beta) b q)
@@ -47160,7 +47135,7 @@ theorem hxExact {beta : Int} [ValidRadix beta]
   have hFoppQ :
       _root_.F2R (beta:=beta) (Fopp (beta:=beta) q) =
         -_root_.F2R (beta:=beta) q := by
-    have h := (FloatSpec.Calc.Operations.F2R_opp (beta:=beta) q) trivial
+    have h := (FloatSpec.Calc.Operations.F2R_opp (beta:=beta) q)
     simpa [Fopp, _root_.F2R] using h
   have hFoppQBound : Fbounded (beta:=beta) b (Fopp (beta:=beta) q) := by
     simpa [Fbounded, Fopp, FloatSpec.Calc.Operations.Fopp, abs_neg] using hqBound
@@ -47463,7 +47438,7 @@ theorem eqLeep {beta : Int} [ValidRadix beta]
   have hFoppQ :
       _root_.F2R (beta:=beta) (Fopp (beta:=beta) q) =
         -_root_.F2R (beta:=beta) q := by
-    have h := (FloatSpec.Calc.Operations.F2R_opp (beta:=beta) q) trivial
+    have h := (FloatSpec.Calc.Operations.F2R_opp (beta:=beta) q)
     simpa [Fopp, _root_.F2R] using h
   have hProjectP :
       Closest (beta:=beta) b (radix : ℝ)
@@ -48962,7 +48937,7 @@ private theorem eqGe_large {beta : Int} [ValidRadix beta]
   have hFoppQ :
       _root_.F2R (beta:=radix) (Fopp (beta:=radix) q) =
         -_root_.F2R (beta:=radix) q := by
-    have h := (FloatSpec.Calc.Operations.F2R_opp (beta:=radix) q) trivial
+    have h := (FloatSpec.Calc.Operations.F2R_opp (beta:=radix) q)
     simpa [Fopp, _root_.F2R] using h
   have hLower :
       _root_.F2R (beta:=radix) g ≤
@@ -49090,7 +49065,7 @@ private theorem eqGe_exact_min {beta : Int} [ValidRadix beta]
       Id.run, ULift.up_down, q0, Int.cast_ofNat] using h hgNormal
   have hq0Value :
       _root_.F2R (beta:=radix) q0 = -_root_.F2R (beta:=radix) g := by
-    have h := (FloatSpec.Calc.Operations.F2R_opp (beta:=radix) g) trivial
+    have h := (FloatSpec.Calc.Operations.F2R_opp (beta:=radix) g)
     simpa [q0, Fopp, _root_.F2R] using h
   have hqValue :
       _root_.F2R (beta:=radix) q = _root_.F2R (beta:=radix) q0 := by
@@ -49106,7 +49081,7 @@ private theorem eqGe_exact_min {beta : Int} [ValidRadix beta]
   have hFoppQ :
       _root_.F2R (beta:=radix) (Fopp (beta:=radix) q) =
         -_root_.F2R (beta:=radix) q := by
-    have h := (FloatSpec.Calc.Operations.F2R_opp (beta:=radix) q) trivial
+    have h := (FloatSpec.Calc.Operations.F2R_opp (beta:=radix) q)
     simpa [Fopp, _root_.F2R] using h
   have hLower :
       _root_.F2R (beta:=radix) g ≤
@@ -49608,7 +49583,7 @@ private theorem Veltkamp_aux_aux_low {beta : Int} [ValidRadix beta]
   have hFoppQ :
       _root_.F2R (beta:=radix) (Fopp (beta:=radix) q) =
         -_root_.F2R (beta:=radix) q := by
-    have h := (FloatSpec.Calc.Operations.F2R_opp (beta:=radix) q) trivial
+    have h := (FloatSpec.Calc.Operations.F2R_opp (beta:=radix) q)
     simpa [Fopp, _root_.F2R] using h
   have hqValue : _root_.F2R (beta:=radix) q =
       -_root_.F2R (beta:=radix) yq := by
@@ -50226,7 +50201,7 @@ private theorem VeltkampEven1_candidate {beta : Int} [ValidRadix beta]
         have hopp :
             _root_.F2R (beta:=radix) v =
               -_root_.F2R (beta:=radix) base := by
-          have h := (FloatSpec.Calc.Operations.F2R_opp (beta:=radix) base) trivial
+          have h := (FloatSpec.Calc.Operations.F2R_opp (beta:=radix) base)
           simpa [v, Fopp, _root_.F2R] using h
         rw [hopp, hbaseValue, hmRepr, hmNegEq]
         norm_num [Int.cast_neg]
@@ -50454,7 +50429,7 @@ private theorem VeltkampEven1_tie_even {beta : Int} [ValidRadix beta]
           Id.run, ULift.up_down, Int.cast_ofNat] using h (Or.inl hqNormal)
       have hqOppNonneg :
           0 ≤ _root_.F2R (beta:=radix) (Fopp (beta:=radix) q) := by
-        have h := (FloatSpec.Calc.Operations.F2R_opp (beta:=radix) q) trivial
+        have h := (FloatSpec.Calc.Operations.F2R_opp (beta:=radix) q)
         have hopp :
             _root_.F2R (beta:=radix) (Fopp (beta:=radix) q) =
               -_root_.F2R (beta:=radix) q := by
@@ -51484,7 +51459,7 @@ theorem VeltkampN_aux {beta : Int} [ValidRadix beta]
     have hoppValue (f : FloatSpec.Core.Defs.FlocqFloat radix) :
         _root_.F2R (beta:=radix) (Fopp (beta:=radix) f) =
           -_root_.F2R (beta:=radix) f := by
-      have h := (FloatSpec.Calc.Operations.F2R_opp (beta:=radix) f) trivial
+      have h := (FloatSpec.Calc.Operations.F2R_opp (beta:=radix) f)
       simpa [Fopp, _root_.F2R] using h
     have hxOppNormal :
         Fnormal (beta:=radix) radix b (Fopp (beta:=radix) x) := by
@@ -51919,7 +51894,7 @@ theorem VeltkampEvenN_aux {beta : Int} [ValidRadix beta]
     have hoppValue (f : FloatSpec.Core.Defs.FlocqFloat radix) :
         _root_.F2R (beta:=radix) (Fopp (beta:=radix) f) =
           -_root_.F2R (beta:=radix) f := by
-      have h := (FloatSpec.Calc.Operations.F2R_opp (beta:=radix) f) trivial
+      have h := (FloatSpec.Calc.Operations.F2R_opp (beta:=radix) f)
       simpa [Fopp, _root_.F2R] using h
     have hxOppNormal :
         Fnormal (beta:=radix) radix b (Fopp (beta:=radix) x) := by
@@ -52185,7 +52160,7 @@ theorem Closestbbplus {beta : Int} [ValidRadix beta]
     rw [hthresholdScale]
   have hlowerValue :
       _root_.F2R (beta:=radix) lower = -threshold := by
-    have h := (FloatSpec.Calc.Operations.F2R_opp (beta:=radix) upper) trivial
+    have h := (FloatSpec.Calc.Operations.F2R_opp (beta:=radix) upper)
     calc
       _root_.F2R (beta:=radix) lower =
           -_root_.F2R (beta:=radix) upper := by
@@ -52589,12 +52564,12 @@ theorem ClosestClosest {beta : Int} [ValidRadix beta]
     Or.inl haf2Normal
   have hnf1Nonneg : 0 ≤ _root_.F2R (beta:=radix) nf1 := by
     rw [hnf1Value]
-    have h := FloatSpec.Calc.Operations.F2R_abs (beta:=radix) f1 hradix
+    have h := FloatSpec.Calc.Operations.F2R_abs (beta:=radix) f1
     rw [show _root_.F2R (beta:=radix) (Fabs f1) =
         |_root_.F2R (beta:=radix) f1| by simpa [Fabs, _root_.F2R] using h]
     exact abs_nonneg _
   have haf2Nonneg : 0 ≤ _root_.F2R (beta:=radix) af2 := by
-    have h := FloatSpec.Calc.Operations.F2R_abs (beta:=radix) f2 hradix
+    have h := FloatSpec.Calc.Operations.F2R_abs (beta:=radix) f2
     rw [show _root_.F2R (beta:=radix) af2 =
         |_root_.F2R (beta:=radix) f2| by
           simpa [af2, Fabs, _root_.F2R] using h]
@@ -54356,7 +54331,7 @@ private lemma closest_abs_le_of_input_abs_le {beta : Int} [ValidRadix beta]
       _root_.F2R (beta:=radix) lower =
         -_root_.F2R (beta:=radix) upper := by
     simpa [lower] using
-      (FloatSpec.Calc.Operations.F2R_opp (beta:=radix) upper) True.intro
+      (FloatSpec.Calc.Operations.F2R_opp (beta:=radix) upper)
   have hminmax :
       isMin (beta:=radix) b radix z f ∨
         isMax (beta:=radix) b radix z f := by
@@ -54978,7 +54953,7 @@ theorem xLe2y_aux1 {beta : Int} [ValidRadix beta]
             _root_.F2R (beta:=radix) negUnit =
               -_root_.F2R (beta:=radix) unitB := by
           simpa [negUnit] using
-            (FloatSpec.Calc.Operations.F2R_opp (beta:=radix) unitB) True.intro
+            (FloatSpec.Calc.Operations.F2R_opp (beta:=radix) unitB)
         rw [hopp, hunitValR, abs_of_neg hr_neg]
         ring
       have hdist := hxClosest.2 negUnit hnegUnitBound
@@ -58452,7 +58427,7 @@ theorem discri11_from_ordered_payloads {beta : Int} [ValidRadix beta]
         _root_.F2R (beta:=beta) (Fopp (beta:=beta) d) =
           -_root_.F2R (beta:=beta) d := by
       have h := FloatSpec.Calc.Operations.F2R_opp (beta:=beta) d
-      simpa [Fopp, _root_.F2R] using h trivial
+      simpa [Fopp, _root_.F2R] using h
     have htarget_abs :
         |_root_.F2R (beta:=beta) d -
             (_root_.F2R (beta:=beta) b * _root_.F2R (beta:=beta) b' -
@@ -59199,7 +59174,7 @@ theorem discri13_from_ordered_payloads {beta : Int} [ValidRadix beta]
         _root_.F2R (beta:=beta) (Fopp (beta:=beta) d) =
           -_root_.F2R (beta:=beta) d := by
       have h := FloatSpec.Calc.Operations.F2R_opp (beta:=beta) d
-      simpa [Fopp, _root_.F2R] using h trivial
+      simpa [Fopp, _root_.F2R] using h
     have htarget_abs :
         |_root_.F2R (beta:=beta) d -
             (_root_.F2R (beta:=beta) b * _root_.F2R (beta:=beta) b' -
@@ -62287,7 +62262,7 @@ private lemma closest_abs_le_of_bounded_upper {beta : Int} [ValidRadix beta]
       _root_.F2R (beta:=beta) lower =
         -_root_.F2R (beta:=beta) upper := by
     simpa [lower] using
-      (FloatSpec.Calc.Operations.F2R_opp (beta:=beta) upper) True.intro
+      (FloatSpec.Calc.Operations.F2R_opp (beta:=beta) upper)
   have hminmax :
       isMin (beta:=beta) b radix r q ∨ isMax (beta:=beta) b radix r q := by
     have h := ClosestMinOrMax_from_split_radix_payload (beta:=beta) b radix (radix : ℝ)
@@ -63108,7 +63083,7 @@ theorem rExp {beta : Int} [ValidRadix beta]
           _root_.F2R (beta:=radix) negLower =
             -_root_.F2R (beta:=radix) lower := by
         simpa [negLower] using
-          (FloatSpec.Calc.Operations.F2R_opp (beta:=radix) lower) True.intro
+          (FloatSpec.Calc.Operations.F2R_opp (beta:=radix) lower)
       have hlowerLeNegProd :
           _root_.F2R (beta:=radix) lower ≤ -prod := by
         simpa [abs_of_neg hprodNeg] using hlowerLeProd
@@ -68027,10 +68002,10 @@ theorem digitLess (n : Int) (q : Int) :
   intro ⟨hn, hq⟩
   simp only [wp, PostCond.noThrow, pure, digitLess_check, Id.run,
     ULift.up_down]
-  have hbounds := FloatSpec.Core.Digits.Zdigits_correct_from_nonzero_payload n q hn hq
+  have hbounds := FloatSpec.Core.Digits.Zdigits_correct_from_nonzero_payload n q hq hn
   let d := FloatSpec.Core.Digits.Zdigits n q
   have hgt : 0 < d := by
-    simpa [d] using FloatSpec.Core.Digits.Zdigits_gt_0 n q hn hq
+    simpa [d] using FloatSpec.Core.Digits.Zdigits_gt_0 n q hq hn
   have hpred_cast : ((Nat.pred d.toNat : Nat) : Int) = d - 1 := by
     have hdto : (d.toNat : Int) = d := Int.toNat_of_nonneg (le_of_lt hgt)
     cases hd : d.toNat with
@@ -68088,9 +68063,9 @@ theorem digitMore (n : Int) (q : Int) :
   · subst q
     simp [digit, pffDigit_of_one_lt n 0 hn, Zpower_nat,
       FloatSpec.Core.Digits.Zdigits]
-  · have hbounds := FloatSpec.Core.Digits.Zdigits_correct_from_nonzero_payload n q hn hq
+  · have hbounds := FloatSpec.Core.Digits.Zdigits_correct_from_nonzero_payload n q hq hn
     have hnonneg : 0 ≤ FloatSpec.Core.Digits.Zdigits n q :=
-      FloatSpec.Core.Digits.Zdigits_ge_0 n q trivial
+      FloatSpec.Core.Digits.Zdigits_ge_0 n q
     have hnat :
         (FloatSpec.Core.Digits.Zdigits n q).natAbs =
           (FloatSpec.Core.Digits.Zdigits n q).toNat := by
@@ -68192,7 +68167,6 @@ theorem digitInv (n : Int) (q : Int) (r : Nat) :
     have hzd :=
       (FloatSpec.Core.Digits.Zdigits_unique_from_nonzero_payload
         (beta := n) (h_beta := hn) (n := q) (e := (r : Int)) (hβ := hn)) hpre
-    simp only [wp, PostCond.noThrow, pure, Id.run] at hzd
     unfold digit
     rw [pffDigit_of_one_lt n q hn]
     rw [hzd]
@@ -68217,22 +68191,20 @@ theorem digit_monotone (n : Int) (p q : Int) :
       exact_mod_cast hpq
     have hpre : p ≠ 0 ∧ p.natAbs ≤ q.natAbs :=
       ⟨hp0, hpq_nat⟩
-    have hle_pack :=
+    have hle_int :=
       (FloatSpec.Core.Digits.Zdigits_le_from_abs_payload
         (beta := n) (h_beta := hn) (n := p) (m := q) (hβ := hn)) hpre
-    simp only [wp, PostCond.noThrow, pure, Id.run] at hle_pack
-    rcases hle_pack with ⟨dq, hdq, hle_int⟩
     have hp_nonneg : 0 ≤ FloatSpec.Core.Digits.Zdigits n p :=
-      FloatSpec.Core.Digits.Zdigits_ge_0 n p trivial
+      FloatSpec.Core.Digits.Zdigits_ge_0 n p
     have hq_nonneg : 0 ≤ FloatSpec.Core.Digits.Zdigits n q :=
-      FloatSpec.Core.Digits.Zdigits_ge_0 n q trivial
+      FloatSpec.Core.Digits.Zdigits_ge_0 n q
     unfold digit
     rw [pffDigit_of_one_lt n p hn, pffDigit_of_one_lt n q hn]
     have hle_toNat_int :
         ((FloatSpec.Core.Digits.Zdigits n p).toNat : Int) ≤
           ((FloatSpec.Core.Digits.Zdigits n q).toNat : Int) := by
       rw [Int.toNat_of_nonneg hp_nonneg, Int.toNat_of_nonneg hq_nonneg]
-      simpa [hdq] using hle_int
+      simpa using hle_int
     exact_mod_cast hle_toNat_int
 
 -- Coq: `digitNotZero` — if q ≠ 0 then 0 < digit n q
@@ -68249,7 +68221,7 @@ theorem digitNotZero (n : Int) (q : Int) :
   unfold digit
   rw [pffDigit_of_one_lt n q hn]
   have hgt : 0 < FloatSpec.Core.Digits.Zdigits n q :=
-    FloatSpec.Core.Digits.Zdigits_gt_0 n q hn hq
+    FloatSpec.Core.Digits.Zdigits_gt_0 n q hq hn
   have hnonneg : 0 ≤ FloatSpec.Core.Digits.Zdigits n q := le_of_lt hgt
   have htoNat :
       ((FloatSpec.Core.Digits.Zdigits n q).toNat : Int) =
@@ -68733,20 +68705,18 @@ theorem digitAdd (n : Int) (q : Int) (r : Nat) :
   rw [pffDigit_of_one_lt n (q * Zpower_nat n r) hn,
     pffDigit_of_one_lt n q hn]
   have hr_nonneg : 0 ≤ (r : Int) := by exact_mod_cast Nat.zero_le r
-  have hmul :=
-    (FloatSpec.Core.Digits.Zdigits_mult_Zpower
-      (beta := n) (n := q) (k := (r : Int)) (h_beta := hn))
-      ⟨hq, hr_nonneg⟩
-  rcases hmul with ⟨dq, hdq, hres⟩
+  have hres :=
+    FloatSpec.Core.Digits.Zdigits_mult_Zpower
+      (beta := n) (n := q) (k := (r : Int)) hq hr_nonneg (h_beta := hn)
   have hdq_nonneg : 0 ≤ FloatSpec.Core.Digits.Zdigits n q :=
-    FloatSpec.Core.Digits.Zdigits_ge_0 n q trivial
+    FloatSpec.Core.Digits.Zdigits_ge_0 n q
   have hpow_arg : q * n ^ (r : Int).natAbs = q * Zpower_nat n r := by
     simp [Zpower_nat]
   rw [hpow_arg] at hres
   have hres' :
       FloatSpec.Core.Digits.Zdigits n (q * Zpower_nat n r) =
         FloatSpec.Core.Digits.Zdigits n q + (r : Int) := by
-    simpa [hdq] using hres
+    simpa using hres
   rw [hres']
   rw [Int.toNat_add hdq_nonneg hr_nonneg]
   simp

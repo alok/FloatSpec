@@ -422,7 +422,7 @@ This file lists theorem-like declarations per file (Coq vs Lean) and records cor
 
 ### Lean Declarations
 - theorem: `FTZ_exp_spec` (FTZ.lean:60)
-- theorem: `FTZ_format_spec` (FTZ.lean:98)
+- theorem: `FTZ_format_iff_generic` (FTZ.lean:98)
 - theorem: `FTZ_exp_correct_spec` (FTZ.lean:110)
 - theorem: `FTZ_format_0_spec` (FTZ.lean:131)
 - theorem: `FTZ_format_opp_spec` (FTZ.lean:152)

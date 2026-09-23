@@ -238,10 +238,10 @@ counterexample and from the four theorem contracts.
 
 `round_NE_pt` now exposes the same direct proposition as the pinned
 `Core/Round_NE.v:521`: the specific value returned by nearest-even rounding
-satisfies `Rnd_NE_pt`. Its former Boolean/Hoare theorem survives under the
-explicit adapter name `round_NE_pt_check_spec`; the new theorem extracts the
-existing closed proof. Both production Pff callers now consume the proposition
-directly. No rounding algorithm, predicate or hypothesis was changed.
+satisfies `Rnd_NE_pt`. The former Boolean/Hoare adapter
+`round_NE_pt_check_spec` has been retired; `round_NE_pt` now owns the closed
+proof. Both production Pff callers consume the proposition directly. No
+rounding algorithm, predicate or hypothesis was changed.
 
 The paired `RoundNEPointContracts` fixtures distinguish seven compiled exports:
 negation has no exponent assumptions, absolute value requires `Valid_exp`,
@@ -249,8 +249,9 @@ and the positive/all-input point theorems require `Valid_exp` and `Exists_NE`.
 The point theorems have pinned anchors at lines 339 and 521. The totality,
 monotonicity and combined rounding contracts at lines 263, 306 and 331 now
 also return ordinary propositions, retaining `Valid_exp` and `Exists_NE`
-without an extra `Monotone_exp` assumption. The old interfaces remain under
-explicit `*_spec` compatibility names, and local consumers use the direct laws.
+without an extra `Monotone_exp` assumption. The old `*_spec` Boolean/Hoare
+compatibility wrappers have been retired; the direct laws own their proofs
+(refreshed body fingerprints, unchanged statement fingerprints).
 The redundant standalone `beta > 1` argument is supplied by `ValidRadix`,
 the port's representation of the source structured-radix invariant.
 

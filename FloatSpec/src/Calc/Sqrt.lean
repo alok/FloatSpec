@@ -194,9 +194,7 @@ lemma mag_eq_Zdigits (m : Int) (hm_pos : 0 < m) (hβ : 1 < beta) :
   have hβ_real_pos : (0 : ℝ) < (beta : ℝ) := Int.cast_pos.mpr hβ_pos
   -- Get d > 0 from Zdigits_gt_0
   have hd_pos : 0 < d := by
-    have := Zdigits_gt_0 beta m hβ (ne_of_gt hm_pos)
-    simp only [wp, PostCond.noThrow, pure, PredTrans.pure] at this
-    exact this
+    exact Zdigits_gt_0 beta m (ne_of_gt hm_pos) hβ
   -- For d > 0, d.natAbs = d and (d-1).natAbs = d - 1
   have hd_nonneg : 0 ≤ d := le_of_lt hd_pos
   have hd_sub_nonneg : 0 ≤ d - 1 := by linarith
@@ -224,8 +222,7 @@ lemma mag_eq_Zdigits (m : Int) (hm_pos : 0 < m) (hβ : 1 < beta) :
   -- Use mag_unique_pos from Raux: if β^(e-1) ≤ x < β^e then mag β x = e
   -- The bounds from Zdigits_correct exactly match!
   have hmag := FloatSpec.Core.Raux.mag_unique_pos_from_positive_payload beta (m : ℝ) d
-  simp only [wp, PostCond.noThrow, Id.run, bind, pure] at hmag
-  exact hmag hβ hm_real_pos hlow_real hupp_real trivial
+  exact hmag hβ hm_real_pos hlow_real hupp_real
 
 /-
  Helper lemma: mag(x * β^e) = mag(x) + e for nonzero x.

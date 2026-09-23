@@ -1,7 +1,5 @@
 import FloatSpec.src.IEEE754.BinarySingleNaN
 
-open Std.Do
-
 /-!
 # Source-faithful rounding-mode boundary
 
@@ -431,9 +429,8 @@ theorem abs_B2R_le_emax_minus_prec {prec emax : Int}
         (by norm_num) (by omega)
       have hpow : FloatSpec.Core.Raux.bpow 2 (emax - prec) ≤
           FloatSpec.Core.Raux.bpow 2 emax := by
-        simpa [wp, Std.Do.PostCond.noThrow, pure,
-          FloatSpec.Core.Raux.bpow_le_check, FloatSpec.Core.Raux.bpow] using
-          htrip trivial
+        simpa [FloatSpec.Core.Raux.bpow] using
+          htrip
       simp [B2R, binarySingleNaNFloatToB754, B754_to_R]
       exact hpow
   | B754_finite s m e hm hb =>
@@ -992,16 +989,14 @@ theorem Bldexp_Bopp_NE {prec emax : Int}
     (x : binary_float prec emax) (k : Int) :
     Bldexp RoundingMode.RNE (Bopp x) k = Bopp (Bldexp RoundingMode.RNE x k) := by
   apply toB754_inj
-  have href := ExperimentalSingleNaNArithmetic.Bldexp_Bopp_NE
-    (prec:=prec) (emax:=emax) (binarySingleNaNFloatToB754 x) k
   have hraw : ExperimentalSingleNaNArithmetic.Bldexp (prec:=prec) (emax:=emax)
         RoundingMode.RNE
         (ExperimentalSingleNaNArithmetic.Bopp_bsn (binarySingleNaNFloatToB754 x)) k =
       ExperimentalSingleNaNArithmetic.Bopp_bsn
         (ExperimentalSingleNaNArithmetic.Bldexp (prec:=prec) (emax:=emax)
-          RoundingMode.RNE (binarySingleNaNFloatToB754 x) k) := by
-    simpa [wp, Std.Do.PostCond.noThrow, pure,
-      ExperimentalSingleNaNArithmetic.Bldexp_Bopp_NE_check] using href trivial
+          RoundingMode.RNE (binarySingleNaNFloatToB754 x) k) :=
+    ExperimentalSingleNaNArithmetic.Bldexp_Bopp_NE
+      (prec:=prec) (emax:=emax) (binarySingleNaNFloatToB754 x) k
   calc
     binarySingleNaNFloatToB754 (Bldexp RoundingMode.RNE (Bopp x) k) =
         ExperimentalSingleNaNArithmetic.Bldexp (prec:=prec) (emax:=emax)
@@ -1031,17 +1026,16 @@ private theorem Bldexp_Bone_spec {prec emax : Int}
     (prec:=prec) (emin:=3 - emax - prec) (beta:=2) (e:=k)
   have hfmt : FloatSpec.Core.Generic_fmt.generic_format 2
       (FLT_exp (3 - emax - prec) prec) (FloatSpec.Core.Raux.bpow 2 k) := by
-    simpa [FLT_exp, wp, Std.Do.PostCond.noThrow, pure,
+    simpa [FLT_exp,
       FloatSpec.Core.Raux.bpow] using
-      hfmtTrip ⟨by norm_num, hmin⟩
+      hfmtTrip hmin
   have hround := FloatSpec.Core.Generic_fmt.roundR_generic
     (beta:=2) (fexp:=FLT_exp (3 - emax - prec) prec)
     (rnd:=rnd_of_mode RoundingMode.RNE)
     (x:=FloatSpec.Core.Raux.bpow 2 k) (hβ:=by norm_num) hfmt
   have hltTrip := FloatSpec.Core.Raux.bpow_lt 2 k emax (by norm_num) hmax
   have hlt : FloatSpec.Core.Raux.bpow 2 k < FloatSpec.Core.Raux.bpow 2 emax := by
-    simpa [FloatSpec.Core.Raux.bpow_lt_check, FloatSpec.Core.Raux.bpow,
-      wp, Std.Do.PostCond.noThrow, pure] using hltTrip trivial
+    simpa [FloatSpec.Core.Raux.bpow] using hltTrip
   have hbone := Binary.BoneSingle_value_finite_sign (prec:=prec) (emax:=emax)
   have hinput : B2R (Bone (prec:=prec) (emax:=emax)) *
       FloatSpec.Core.Raux.bpow 2 k = FloatSpec.Core.Raux.bpow 2 k := by
@@ -1190,7 +1184,7 @@ theorem Bfrexp_correct {prec emax : Int}
           exact (FloatSpec.Core.Raux.mag_unique 2 (SF2R 2 core.1) 0
             (by norm_num)
             (by norm_num; exact hnorm.1)
-            (by norm_num; exact hnorm.2)) trivial
+            (by norm_num; exact hnorm.2))
         have hmagMul := FloatSpec.Core.Raux.mag_mult_bpow
           2 (SF2R 2 core.1) core.2 (by norm_num) hz
         have hmagEq : FloatSpec.Core.Raux.mag 2
@@ -1338,9 +1332,9 @@ theorem Bulp'_correct {prec emax : Int}
         (prec:=prec) (emin:=3 - emax - prec) (beta:=2)
       have hulp0 : FloatSpec.Core.Ulp.ulp 2 (FLT_exp (3 - emax - prec) prec) 0 =
           FloatSpec.Core.Raux.bpow 2 (3 - emax - prec) := by
-        simpa [FLT_exp, wp, Std.Do.PostCond.noThrow, pure,
+        simpa [FLT_exp,
           FloatSpec.Core.Raux.bpow] using
-          hulp0Trip trivial
+          hulp0Trip
       apply B2R_Bsign_inj _ _ hb'.2.1 hulp.2.1
       · rw [hb'.1, hulp.1]
         simpa [B2R, binarySingleNaNFloatToB754, B754_to_R] using hulp0.symm
@@ -1359,7 +1353,7 @@ theorem Bulp'_correct {prec emax : Int}
       have hmagTrip := FloatSpec.Core.Raux.mag_le_bpow 2 (B2R xf) emax
         (by norm_num) hxne (abs_B2R_lt_emax xf)
       have hmagLe : FloatSpec.Core.Raux.mag 2 (B2R xf) ≤ emax := by
-        simpa [wp, Std.Do.PostCond.noThrow, pure] using hmagTrip trivial
+        simpa using hmagTrip
       let k := FLT_exp (3 - emax - prec) prec (Bfrexp xf).2
       have hkmin : 3 - emax - prec ≤ k := by
         simp [k, FLT_exp, FloatSpec.Core.FLT.FLT_exp]
@@ -1577,7 +1571,7 @@ private theorem BpredPosPrime_toB754 {prec emax : Int}
       have hmagTrip := FloatSpec.Core.Raux.mag_le_bpow 2 (B2R xf) emax
         (by norm_num) hxne (abs_B2R_lt_emax xf)
       have hmagLe : FloatSpec.Core.Raux.mag 2 (B2R xf) ≤ emax := by
-        simpa [wp, Std.Do.PostCond.noThrow, pure] using hmagTrip trivial
+        simpa using hmagTrip
       let k := FLT_exp (3 - emax - prec) prec ((Bfrexp xf).2 - 1)
       have hkmin : 3 - emax - prec ≤ k := by
         simp [k, FLT_exp, FloatSpec.Core.FLT.FLT_exp]

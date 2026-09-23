@@ -33,9 +33,8 @@ variable [Generic_fmt.Valid_exp fexp] [Generic_fmt.Monotone_exp fexp]
     Generic_fmt.generic_format beta fexp (x - (Generic_fmt.Znearest choice (x / y) : Real) * y))
 
 /-- Seven lies in the binade from four inclusive to eight exclusive. -/
-theorem magnitude_minus_seven : Raux.mag 2 (-7 : Real) = 3 := by
-  simpa [Std.Do.wp, Std.Do.PostCond.noThrow, pure] using
-    (Raux.mag_unique 2 (-7) 3 (by decide) (by norm_num) (by norm_num)) trivial
+theorem magnitude_minus_seven : Raux.mag 2 (-7 : Real) = 3 :=
+  Raux.mag_unique 2 (-7) 3 (by decide) (by norm_num) (by norm_num)
 
 #print axioms magnitude_minus_seven
 
@@ -50,9 +49,8 @@ theorem minus_seven_not_format :
 /-- Every power of two is representable at two-bit precision. -/
 theorem powers_are_representable (exponent : Int) :
     Generic_fmt.generic_format 2 (FLX.FLX_exp 2) ((2 : Real) ^ exponent) := by
-  simpa [Std.Do.wp, Std.Do.PostCond.noThrow, pure] using
-    Generic_fmt.generic_format_bpow 2 (FLX.FLX_exp 2) exponent
-      (by constructor <;> norm_num [FLX.FLX_exp])
+  exact Generic_fmt.generic_format_bpow 2 (FLX.FLX_exp 2) exponent
+    (by norm_num [FLX.FLX_exp])
 
 #print axioms powers_are_representable
 

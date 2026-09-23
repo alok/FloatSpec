@@ -1,10 +1,8 @@
 import Lean
 import Mathlib.Algebra.Order.Floor.Ring
 import FloatSpec.src.Core.Raux
-import Std.Do.Triple
 
 open Lean Meta Simp
-open Std.Do
 open FloatSpec.Core.Raux
 
 private def getNegArg? (e : Expr) : Option Expr :=
@@ -66,9 +64,8 @@ private theorem mag_abs_eq (beta : Int) (x : ℝ) : mag beta (abs x) = mag beta 
   simp [mag, abs_abs]
 
 @[simp] theorem mag_bpow_run (beta e : Int) (hβ : 1 < beta) :
-    (mag beta ((beta : ℝ) ^ e)) = e + 1 := by
-  have hspec := (mag_bpow (beta := beta) (e := e) hβ) (by trivial)
-  simpa [wp, PostCond.noThrow, Id.run, pure] using hspec
+    (mag beta ((beta : ℝ) ^ e)) = e + 1 :=
+  mag_bpow beta e hβ
 
 /-- Definitional simproc: simplify truncation on integer-coerced inputs. -/
 simproc [simp] reduceZtruncInt (Ztrunc _) := fun e => do

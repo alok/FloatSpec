@@ -3,7 +3,6 @@ import FloatSpec.src.Core.Ulp
 namespace FloatSpec.Test.ExponentValidityBoundary
 
 open FloatSpec.Core.Generic_fmt FloatSpec.Core.Ulp
-open Std.Do
 
 /-- An exponent function whose available precision alternates with the binade. -/
 def zigzag (exponent : Int) : Int :=
@@ -33,29 +32,24 @@ theorem zigzag_not_monotone : ¬ FloatSpec.Core.Generic_fmt.Monotone_exp zigzag 
 /-- Every power of two is representable, including both witness values below. -/
 theorem zigzag_contains_powers (exponent : Int) :
     generic_format 2 zigzag ((2 : Real) ^ exponent) := by
-  have bounds : (1 : Int) < 2 ∧ zigzag (exponent + 1) ≤ exponent := by
-    constructor
-    · decide
-    · unfold zigzag
-      split_ifs <;> grind
-  simpa [wp, PostCond.noThrow, Id.run, bind, pure] using
-    generic_format_bpow 2 zigzag exponent bounds
+  have bound : zigzag (exponent + 1) ≤ exponent := by
+    unfold zigzag
+    split_ifs <;> grind
+  exact generic_format_bpow 2 zigzag exponent bound
 
 #print axioms zigzag_contains_powers
 
 /-- The spacing below one is a half in this valid format. -/
 theorem zigzag_ulp_half : ulp 2 zigzag (1 / 2 : Real) = (1 / 2 : Real) := by
   have power := ulp_bpow (beta := 2) (fexp := zigzag) (e := -1)
-    (show (1 : Int) < 2 from by decide)
-  simpa [wp, PostCond.noThrow, Id.run, bind, pure, zigzag] using power
+  simpa [zigzag] using power
 
 #print axioms zigzag_ulp_half
 
 /-- The next binade has finer spacing, despite format validity. -/
 theorem zigzag_ulp_one : ulp 2 zigzag (1 : Real) = (1 / 4 : Real) := by
   have power := ulp_bpow (beta := 2) (fexp := zigzag) (e := 0)
-    (show (1 : Int) < 2 from by decide)
-  norm_num [wp, PostCond.noThrow, Id.run, bind, pure, zigzag] at power ⊢
+  norm_num [zigzag] at power ⊢
   exact power
 
 #print axioms zigzag_ulp_one
@@ -72,19 +66,17 @@ theorem valid_format_can_have_decreasing_ulp :
 
 /-- Seven quarters lies in the binade with finer spacing. -/
 theorem zigzag_magnitude_seven_quarters :
-    FloatSpec.Core.Raux.mag 2 (7 / 4 : Real) = 1 := by
-  simpa [wp, PostCond.noThrow, pure] using
-    (FloatSpec.Core.Raux.mag_unique 2 (7 / 4) 1
-      (by decide) (by norm_num) (by norm_num)) trivial
+    FloatSpec.Core.Raux.mag 2 (7 / 4 : Real) = 1 :=
+  FloatSpec.Core.Raux.mag_unique 2 (7 / 4) 1
+    (by decide) (by norm_num) (by norm_num)
 
 #print axioms zigzag_magnitude_seven_quarters
 
 /-- Three quarters falls back into the binade with coarser spacing. -/
 theorem zigzag_magnitude_three_quarters :
-    FloatSpec.Core.Raux.mag 2 (3 / 4 : Real) = 0 := by
-  simpa [wp, PostCond.noThrow, pure] using
-    (FloatSpec.Core.Raux.mag_unique 2 (3 / 4) 0
-      (by decide) (by norm_num) (by norm_num)) trivial
+    FloatSpec.Core.Raux.mag 2 (3 / 4 : Real) = 0 :=
+  FloatSpec.Core.Raux.mag_unique 2 (3 / 4) 0
+    (by decide) (by norm_num) (by norm_num)
 
 #print axioms zigzag_magnitude_three_quarters
 

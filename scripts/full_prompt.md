@@ -44,7 +44,7 @@ Repair **exactly one** item: the **first** theorem in the target file that lacks
 4. **Draft Implement**
 
    * Add minimal helper lemmas (use `private` or local `namespace`).
-   * Follow house style; use `Zaux.lean`’s `Zfast_div_eucl_spec` and in-file patterns as templates.
+   * Follow house style; use `Zaux.lean`’s `Zfast_div_eucl_correct` and in-file patterns as templates.
    * Do not attempt to skip or bypass the proof: `axiom`, `admit`, `pure true`, or any non-`sorry` placeholder (including `pure (decide True)`, `pure (decide ((0 : ℝ) ≤ 0))`, and all variants which could be easily deducted to a `True`) are strictly forbidden.
 5. **Check Implement**: review your changes to ensure no forbidden placeholders were introduced. To be specific:
     * Search the diff for `axiom`, `admit`, `pure true`, `pure (decide True)`, `pure (decide ((0 : ℝ) ≤ 0))`, and all variants which could be easily deducted to a `True`.

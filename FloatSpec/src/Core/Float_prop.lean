@@ -1281,7 +1281,7 @@ theorem mag_F2R_bounds (x : ℝ) (m e : Int) (hbeta : 1 < beta) :
     change |x| < (beta : ℝ) ^ (FloatSpec.Core.Raux.mag beta f)
     rw [abs_of_pos hx_pos]
     exact lt_of_lt_of_le hx_hi hf1_le
-  exact (FloatSpec.Core.Raux.mag_unique beta x (mag beta f) hbeta hlow hupp) True.intro
+  exact FloatSpec.Core.Raux.mag_unique beta x (mag beta f) hbeta hlow hupp
 
 /- Legacy proof for the accidentally weakened interval-only contract.
   intro hm_pos ⟨hx_lo, hx_hi⟩
@@ -1429,7 +1429,7 @@ theorem Zdigits_pos (n : Int) (hbeta : 1 < beta) :
   n ≠ 0 → (Zdigits beta n) > 0 := by
   intro hn
   -- Direct consequence of `Zdigits_gt_0` from `Digits.lean`.
-  have := FloatSpec.Core.Digits.Zdigits_gt_0 (beta := beta) n (by simpa using hbeta) hn
+  have := FloatSpec.Core.Digits.Zdigits_gt_0 (beta := beta) n hn (by simpa using hbeta)
   simpa
     using this
 
@@ -1443,7 +1443,7 @@ theorem Zdigits_mag (n : Int) (hbeta : 1 < beta) :
   have hbounds := FloatSpec.Core.Digits.Zdigits_correct (beta := beta) n hβ_digits
   have hd_pos : 0 < d := by
     simpa [d, hd] using
-      (FloatSpec.Core.Digits.Zdigits_gt_0 (beta := beta) n hβ_digits hn)
+      (FloatSpec.Core.Digits.Zdigits_gt_0 (beta := beta) n hn hβ_digits)
   have hd_nonneg : 0 ≤ d := le_of_lt hd_pos
   have hdm1_nonneg : 0 ≤ d - 1 := by grind
   have hlow_int : beta ^ ((d - 1).natAbs) ≤ |n| := by
@@ -1478,7 +1478,7 @@ theorem Zdigits_mag (n : Int) (hbeta : 1 < beta) :
   have hupp : |(n : ℝ)| < (beta : ℝ) ^ d := by
     simpa [hupp_pow]
       using hupp_nat
-  have hmag := (FloatSpec.Core.Raux.mag_unique beta (n : ℝ) d hbeta hlow hupp) True.intro
+  have hmag := FloatSpec.Core.Raux.mag_unique beta (n : ℝ) d hbeta hlow hupp
   have hmag_eq : FloatSpec.Core.Raux.mag beta (n : ℝ) = d := by
     simpa using hmag
   simpa [d, hd] using hmag_eq.symm
@@ -1533,7 +1533,7 @@ theorem Raux_mag_F2R_Zdigits (m e : Int) (hbeta : 1 < beta) :
   have hbounds := FloatSpec.Core.Digits.Zdigits_correct (beta := beta) m hβ_digits
   have hd_pos : 0 < d := by
     simpa [d, hd] using
-      (FloatSpec.Core.Digits.Zdigits_gt_0 (beta := beta) m hβ_digits hm)
+      (FloatSpec.Core.Digits.Zdigits_gt_0 (beta := beta) m hm hβ_digits)
   have hd_nonneg : 0 ≤ d := le_of_lt hd_pos
   have hdm1_nonneg : 0 ≤ d - 1 := by grind
   have hlow_int : beta ^ ((d - 1).natAbs) ≤ |m| := by
@@ -1602,7 +1602,7 @@ theorem Raux_mag_F2R_Zdigits (m e : Int) (hbeta : 1 < beta) :
   have hmag_eq :
       FloatSpec.Core.Raux.mag beta
           (F2R (FlocqFloat.mk m e : FlocqFloat beta)) = d + e := by
-    simpa using hmag True.intro
+    simpa using hmag
   simpa [d, hd] using hmag_eq
 
 /-- Coq-compatible magnitude for values strictly between adjacent positive
@@ -1633,7 +1633,7 @@ theorem mag_F2R_bounds_Zdigits (x : ℝ) (m e : Int) (hbeta : 1 < beta) :
   have hbounds := FloatSpec.Core.Digits.Zdigits_correct (beta := beta) m hβ_digits
   have hd_pos : 0 < d := by
     simpa [d, hd] using
-      (FloatSpec.Core.Digits.Zdigits_gt_0 (beta := beta) m hβ_digits hm_ne)
+      (FloatSpec.Core.Digits.Zdigits_gt_0 (beta := beta) m hm_ne hβ_digits)
   have hd_nonneg : 0 ≤ d := le_of_lt hd_pos
   have hdm1_nonneg : 0 ≤ d - 1 := by grind
   have hlow_int : beta ^ ((d - 1).natAbs) ≤ |m| := by
@@ -1712,7 +1712,7 @@ theorem mag_F2R_bounds_Zdigits (x : ℝ) (m e : Int) (hbeta : 1 < beta) :
     (beta := beta) (x := x) (e := d + e)
     hbeta hlow_scaled hupp_scaled
   have hmag_eq : FloatSpec.Core.Raux.mag beta x = d + e := by
-    simpa using hmag True.intro
+    simpa using hmag
   simpa [d, hd] using hmag_eq
 
 /-
@@ -1777,7 +1777,7 @@ Qed.
     -- For d > 0, we have d - 1 ≥ 0; convert natAbs and combine exponents
     have hd_pos : 0 < d := by
       simpa [d] using
-        (FloatSpec.Core.Digits.Zdigits_gt_0 (beta := beta) m (by simpa using hbeta) hm_ne)
+        (FloatSpec.Core.Digits.Zdigits_gt_0 (beta := beta) m hm_ne (by simpa using hbeta))
     have hd1_nonneg : 0 ≤ d - 1 := by linarith
     have hnatAbs_d1 : (((d - 1).natAbs : Int)) = d - 1 := Int.natAbs_of_nonneg hd1_nonneg
     -- Cast integer power to real power with Nat exponent
@@ -1830,7 +1830,7 @@ Qed.
     -- between Nat and Int exponents on b cleanly.
     have hd_pos : 0 < d := by
       simpa [d] using
-        (FloatSpec.Core.Digits.Zdigits_gt_0 (beta := beta) m (by simpa using hbeta) hm_ne)
+        (FloatSpec.Core.Digits.Zdigits_gt_0 (beta := beta) m hm_ne (by simpa using hbeta))
     have hd_nonneg : 0 ≤ d := le_of_lt hd_pos
     -- ((β^d:ℤ):ℝ) → b^d.natAbs, then to Int exponent d via |d| = d
     have hbcast_nat : ((beta ^ d.natAbs : Int) : ℝ) = b ^ d.natAbs := by
