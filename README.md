@@ -38,7 +38,7 @@ revisions; this combination builds on macOS with stable 4.34.0.
 
 ## Current Progress
 
-The project is actively under development. Four named `sorry` obligations now
+The project is actively under development. Three named `sorry` obligations now
 mark native-runtime correspondence and raw-bit sign proofs that remain open;
 they are listed in `FloatSpec/docs/proof_debts.json`. A successful build checks
 the definitions and theorem statements, not these proofs or whole-library

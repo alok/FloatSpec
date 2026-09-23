@@ -32,7 +32,7 @@ follow-up is locally verified and still needs its own hosted result. See
 **The port builds and runs on macOS with Lean 4.34.0, but is not yet a fully
 source-audited port.** All 35 built Flocq module names have Lean counterparts.
 That is file coverage, not a percentage of faithful definitions or theorems.
-Four named native/decoder proof obligations remain; the unreviewed source
+Three named native/decoder proof obligations remain; the unreviewed source
 surface is a separate and larger issue.
 
 The continuation is now on `main` in `~/floatspec` (the same directory as
@@ -521,8 +521,13 @@ the Hoare-style linter were removed. New source-facing work prefers pure
 definitions and direct propositions. Existing triples are migrated with
 their callers, not removed indiscriminately.
 
-Four explicit proof debts remain in `proof_debts.json`: raw sign-bit
-negation, native `frExp`, native next-up, and native next-down.
+Three explicit proof debts remain in `proof_debts.json`: raw sign-bit
+negation, native next-up, and native next-down. The former native `frExp`
+debt named Lean's `@[extern]` `opaque` `Float.frExp`, which the kernel cannot
+evaluate. It is now the closed theorem `nativeFrExp_equiv`, proved for a
+bit-level `nativeFrExp`. Agreement between that function and the runtime
+`Float.frExp` is checked by execution in
+`scripts/fixtures/NativeFrexpAgreement.lean`, not trusted by the kernel.
 A theorem using `sorry` remains unproved even if its statement compiles.
 The lexical debt gate and compiler-level dependency audit check that these
 holes are named and that no additional source declarations silently depend
@@ -562,7 +567,9 @@ They compare unary operations and nearest-even arithmetic with both the
 Lean logical model and Rocq. Signed zero is retained. NaNs are deliberately
 canonicalized in these native comparisons. Native `frExp` agreement has a
 nonzero-finite precondition; exceptional exponent observations are retained
-and reported separately.
+and reported separately. The proved `nativeFrExp_equiv` covers the bit-level
+`nativeFrExp`. Its link to the opaque runtime `Float.frExp` is the separate
+runtime agreement fixture.
 
 A separate IEEE source-API bridge covers binary32/binary64 in all five
 rounding modes, including fused multiply-add and exact NaN payloads.

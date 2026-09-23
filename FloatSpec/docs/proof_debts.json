@@ -7,13 +7,6 @@
     "strategy": "Relate UInt64 XOR to split_bits and prove constructor equality for finite, zero, infinity, and NaN payloads."
   },
   {
-    "id": "native_frexp",
-    "path": "FloatSpec/src/IEEE754/PrimFloat.lean",
-    "theorem": "native_frExp_equiv",
-    "lean_name": "FaithfulPrimFloat.PrimitiveFloat.native_frExp_equiv",
-    "strategy": "Establish a trusted semantics for opaque Float.frExp on nonzero finite values, then compare mantissa and exponent through Float.Model."
-  },
-  {
     "id": "native_next_up",
     "path": "FloatSpec/src/IEEE754/PrimFloat.lean",
     "theorem": "nativeNextUp_equiv",

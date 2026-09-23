@@ -899,7 +899,10 @@ Two qualifications are deliberate and visible in the report:
 - NaNs are observed through the single-NaN model. All payloads and signs map to
   `0x7ff8000000000000`; agreement does **not** establish payload preservation.
 - Native `frExp` equivalence is asserted only for nonzero finite values, as in
-  the theorem's precondition. The observed exceptional exponent is `0` on this
+  the precondition of `nativeFrExp_equiv`. That theorem is proved for the
+  bit-level `nativeFrExp`. The runtime `Float.frExp` is an `@[extern]`
+  `opaque` constant, so its agreement with `nativeFrExp` is checked by
+  execution in `scripts/fixtures/NativeFrexpAgreement.lean`, not by the kernel. The observed exceptional exponent is `0` on this
   Mac, versus `-2101` in the logical Flocq model. Those exceptional observations
   remain in the report; their input decoding and successor/predecessor results
   are still compared. Both compiled-model and kernel-model versus Rocq

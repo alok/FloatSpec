@@ -256,7 +256,7 @@ run_lake env lean "$repo_root/FloatSpec/Test/DoubleRoundingContracts.lean"
 run_lake env lean "$repo_root/FloatSpec/Test/NativeModelAdapters.lean"
 run_lake env lean "$repo_root/FloatSpec/Test/LpoSourceContracts.lean"
 run_lake env lean "$repo_root/FloatSpec/Test/UlpSourceChoice.lean"
-for fixture in BooleanComparison PrimitiveComparison PrimitiveConversion PrimitiveExecution RawIEEERounding RawOverflow SingleNaNArithmetic SingleNaNHelpers FrexpLaws Normalization CalcBrackets NativeSingleNaNArithmetic MultiplicationErrorGrid DoubleRoundingWitness SingleNaNValidity RelativeErrorGrid ExactArithmeticLaws RoundingOracle IntegerRounding CorePremiseBoundary ExponentValidityBoundary UlpNearestChoiceContracts PffBasicSourceContracts RoundNEPointContracts RemainderContracts RemainderGrid; do
+for fixture in BooleanComparison PrimitiveComparison PrimitiveConversion PrimitiveExecution RawIEEERounding RawOverflow SingleNaNArithmetic SingleNaNHelpers FrexpLaws Normalization CalcBrackets NativeSingleNaNArithmetic NativeFrexpAgreement MultiplicationErrorGrid DoubleRoundingWitness SingleNaNValidity RelativeErrorGrid ExactArithmeticLaws RoundingOracle IntegerRounding CorePremiseBoundary ExponentValidityBoundary UlpNearestChoiceContracts PffBasicSourceContracts RoundNEPointContracts RemainderContracts RemainderGrid; do
   run_lake env lean "$repo_root/scripts/fixtures/$fixture.lean"
 done
 run_lake env lean --run "$repo_root/scripts/fixtures/GuidedDemo.lean"
@@ -273,6 +273,7 @@ echo 'Lean bit/order loops passed: 20,000 roundtrips, 2,000 pure laws, 200,000 n
 echo 'Boolean ordering passed: eight boundary assertions and 600,000 native Boolean comparisons'
 echo 'Native source-arithmetic loop passed: 100,100 binary32/binary64 comparisons'
 echo 'Native SingleNaN arithmetic loop passed: 200,200 direct/source-mode comparisons'
+echo 'Native frExp loop passed: 200,556 Float.frExp/nativeFrExp runtime agreements'
 echo 'Multiplication-error loop passed: 5,385 conditional cases and a required-underflow-premise counterexample'
 echo 'Lean contract loop passed: 147 premise guards, typed consumers, finite error laws, 35,845 format-rounding and 5,125 integer-rounding oracle cases'
 echo 'Independent Calc loop passed: 8,640 division brackets, 2,496 square-root brackets, and a required-exponent-premise counterexample'
