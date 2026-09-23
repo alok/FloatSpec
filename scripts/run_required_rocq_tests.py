@@ -34,7 +34,7 @@ LIVE_MODULES = (
     'test_pff_integer_bridge', 'test_pff_rounding_contracts',
     'test_lpo_contracts', 'test_double_rounding_contracts',
     'test_remainder_contracts', 'test_remainder_bridge',
-    'test_model_adapter_bridge',
+    'test_model_adapter_bridge', 'test_flocq_exemplars', 'test_flocqsmith',
 )
 
 # Live modules that hosted CI cannot run, each with its measured reason. Empty:

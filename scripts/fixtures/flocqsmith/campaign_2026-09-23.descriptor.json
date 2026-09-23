@@ -1,0 +1,28 @@
+{
+ "schema": "flocqsmith-campaign-descriptor-v1",
+ "id": "flocqsmith-campaign-2026-09-23",
+ "purpose": "First pre-registered flocqsmith campaign: every format and every op family of the BinarySingleNaN capability profile across several seeds, on lean-meta, lean-ir and lean-kernel against pinned Rocq vm_compute, with a positive-control lane at the same generator revision and the exemplar lane test.",
+ "reference": {"flocq_commit": "7aab8f55"},
+ "paths": ["lean-meta", "lean-ir", "lean-kernel"],
+ "budget": {"wall_clock_minutes": 90, "max_concurrent_provers": 2},
+ "lanes": [
+  {"name": "mixed-a", "kind": "run", "seed": 2026092301, "n": 80, "min_size": 4, "max_size": 12,
+   "purpose": "default format weights, default sizes"},
+  {"name": "mixed-b", "kind": "run", "seed": 2026092302, "n": 80, "min_size": 4, "max_size": 12,
+   "purpose": "second seed, same configuration"},
+  {"name": "mixed-long", "kind": "run", "seed": 2026092303, "n": 60, "min_size": 10, "max_size": 20,
+   "purpose": "longer programs: deeper data flow, more structure per program"},
+  {"name": "wide", "kind": "run", "seed": 2026092304, "n": 60, "min_size": 4, "max_size": 10,
+   "formats": {"b16": 1, "bf16": 1, "b32": 1, "b64": 1},
+   "purpose": "IEEE-width formats only; the first smoke run drew no binary32 program"},
+  {"name": "tiny", "kind": "run", "seed": 2026092305, "n": 80, "min_size": 8, "max_size": 20,
+   "formats": {"t1_2": 1, "t2_3": 1, "t3_4": 1, "t4_8": 1, "t5_7": 1, "t8_16": 1},
+   "purpose": "tiny formats, where boundaries are dense (precision 1, non-power-of-two emax)"},
+  {"name": "controls", "kind": "controls", "seed": 2026092306, "n": 40, "controls": "all",
+   "purpose": "all 13 planted Lean-side defects at this generator revision, on a fresh seed (the live test uses seed 5)"}
+ ],
+ "coverage_required": "every format, op, form, mode and corner, and every (format, op family) cell, on cases judged on every path",
+ "shrink": {"max_per_cluster": 3},
+ "exemplar_lane": true,
+ "exemplar_timeout_s": 3600
+}

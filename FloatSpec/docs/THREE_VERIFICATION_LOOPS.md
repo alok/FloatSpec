@@ -354,6 +354,48 @@ set. Live mutations change both provers' programs together: floor division,
 swapped quotient/remainder, a false option tag, reversed divisibility arguments,
 and an always-zero search bound must still fail the independent oracle.
 
+## Exemplar lane: whole Flocq client programs (September 22)
+
+`scripts/fixtures/exemplars/` holds programs that other people wrote against
+Flocq, trimmed to Flocq only. Each comes as a Rocq `.v` file that prints its
+rows with `Eval vm_compute` and a Lean transliteration over FloatSpec's
+executable API that prints the same rows with `#eval`. The sources are:
+
+- Flocq's own `examples/`: `Compute.v` (verbatim), Cody–Waite `exp`,
+  `Division_u16`, `Sqrt_sqr` §6, odd-radix double rounding and `Average`;
+- CompCert's conversion identities and NaN payload policy for x86_64,
+  aarch64 and riscV.
+
+The harness requires identical rows on both sides. It then checks each
+side's rows against the theorems the upstream program proves. These checks
+use exact rationals, and CompCert's are checked against
+`ieee_exact_oracle.py` and an independent model of its NaN policy. Some
+exemplars include rows that violate a theorem's premises; there the
+identity must actually fail at least once. The fixture README records
+provenance, trimming and licences.
+
+```sh
+uv run scripts/flocq_exemplars.py --flocq-dir "$FLOCQ_AUDIT_DIR"
+FLOCQ_AUDIT_DIR="$FLOCQ_AUDIT_DIR" uv run scripts/test_flocq_exemplars.py -v
+```
+
+On 2026-09-22 all 6,322 rows of the eight exemplars agreed. The test also
+checks that `Compute.v` is byte-identical to the pinned
+`examples/Compute.v`, and it runs three mutation controls:
+
+- NE replaced by NA on the Lean side only must be a mismatch with a
+  Lean-side oracle violation;
+- Cody–Waite's `Log2l` exponent changed on the Rocq side only must be a
+  mismatch with a Rocq-side violation;
+- a Lean fixture that does not compile must surface as `lean-infra`.
+
+The CLI reports `rocq-infra`, `lean-infra` and `harness-error` verdicts;
+none of them counts as a pass.
+
+The Lean side runs compiled definitions through `#eval`; it has no
+kernel-reduction path yet. Agreement is finite testing of these programs,
+not an equivalence proof.
+
 ## 1. Lean checks itself
 
 `lake build FloatSpec.Test FloatSpecTests floatspec` builds the port, its tests,
