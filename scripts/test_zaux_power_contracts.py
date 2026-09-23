@@ -15,12 +15,14 @@ MUTATIONS = {
         ("n k₁ k₂ : Int, 0 ≤ k₁ → 0 ≤ k₂ →", "n k₁ k₂ : Int, 0 ≤ k₂ →"),
         ("(h : decide (2 ≤ value) = true)", "(h : decide (0 ≤ value) = true)"),
         ("Zpower 2 (-2) = 0 ∧", "Zpower 2 (-2) = 4 ∧"),
+        ("0 ≤ e → Z.even b = false →", "0 ≤ e → Z.even b = true →"),
     ],
     "v": [
         ("e1 e2, 0 <= e2 -> e1 < e2 ->", "e1 e2, e1 < e2 ->"),
         ("n k1 k2, 0 <= k1 -> 0 <= k2 ->", "n k1 k2, 0 <= k2 ->"),
         ("forall value, Z.leb 2 value = true", "forall value, Z.leb 0 value = true"),
         ("Zpower 2 (-2) = 0 /\\", "Zpower 2 (-2) = 4 /\\"),
+        ("0 <= e -> Z.even b = false ->", "0 <= e -> Z.even b = true ->"),
     ],
 }
 

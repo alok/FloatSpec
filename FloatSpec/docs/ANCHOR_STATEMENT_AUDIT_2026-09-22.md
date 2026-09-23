@@ -71,3 +71,21 @@ The batch 1D review (conventions cutover) added rows for the 12 `Binary.v` and
 `FaithfulPrimFloat.B2Prim`. All of them are `match`. `Binary.Bfma_szero` is a
 `match` only after its body was corrected: it had read NaN signs with `Bsign`,
 where Coq reads them through `B2BSN`.
+
+Batch 1C added 23 `match` rows: 19 `Raux.v` theorems (four of them,
+`Rabs_eq_R0`, `Rinv_lt`, `Rinv_le` and `Rsqr_le_abs_0_alt`, restated to Coq's
+form first), `Zrnd_opp`, and the `Double_rounding.v` definitions
+`round_round_eq`, `midp` and `midp'`.
+
+Batch 1E added 43 `Zaux.v` rows, all `match`: the 28
+`Zeq_bool`/`Zle_bool`/`Zlt_bool`/`Zcompare` declarations of Zaux.v:502–764,
+the four `Zsame_sign_*` lemmas, five `cond_Zopp` lemmas, `Zfast_pow_pos` and
+its correctness lemma, `Zdiv_eucl_unique`, `iter_nat_plus`, `iter_nat_S` and
+`iter_pos_nat`. `Zcompare_*` are now stated about Lean's `compare` on `Int`
+(Rocq's `Z.compare`); the Lean-only `Zaux.Zcompare` is gone. Anchoring exposed
+one statement bug: `negb_Zle_bool` and `negb_Zlt_bool` were written `!a = b`,
+which Lean parses as `!(a = b)`; they now read `(!a) = b`, as in Rocq.
+`Zfast_pow_pos` now follows Rocq's squaring recursion instead of computing
+`v ^ n`, and `Zdiv_eucl_unique` names `Int.fmod` for `Z.modulo`. `Zeven_ex`
+and `Zeven_Zpower_odd` were restated on the new `Zaux.Z.even` (Rocq's Boolean
+`Z.even`) and re-checked.

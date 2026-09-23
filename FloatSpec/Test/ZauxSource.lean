@@ -19,6 +19,7 @@ namespace FloatSpec.Test.ZauxSource
 #check @FloatSpec.Core.Zaux.negb_Zle_bool
 #check @FloatSpec.Core.Zaux.Zlt_bool_opp
 #check @FloatSpec.Core.Zaux.negb_Zlt_bool
+#check @FloatSpec.Core.Zaux.Zcompare_spec
 #check @FloatSpec.Core.Zaux.Zcompare_Lt
 #check @FloatSpec.Core.Zaux.Zcompare_Eq
 #check @FloatSpec.Core.Zaux.Zcompare_Gt
@@ -27,10 +28,33 @@ namespace FloatSpec.Test.ZauxSource
 #check @FloatSpec.Core.Zaux.cond_Zopp_Zlt_bool
 #check @FloatSpec.Core.Zaux.Zeq_bool_cond_Zopp
 #check @FloatSpec.Core.Zaux.Zfast_pow_pos_correct
+#check @FloatSpec.Core.Zaux.Zdiv_eucl_unique
 #check @FloatSpec.Core.Zaux.Zfast_div_eucl_correct
 #check @FloatSpec.Core.Zaux.iter_nat_plus
 #check @FloatSpec.Core.Zaux.iter_nat_S
 #check @FloatSpec.Core.Zaux.iter_pos_nat
+#check @FloatSpec.Core.Zaux.Zeven_ex
+#check @FloatSpec.Core.Zaux.Zeven_Zpower_odd
+
+-- Flocq's `Zcompare_*` lemmas are about Lean's `compare` on `Int`, Rocq's `Z.compare`.
+open FloatSpec.Core.Zaux in
+example (x y : Int) : Zcompare_prop x y (compare x y) := Zcompare_spec x y
+
+example : compare (-3 : Int) 5 = .lt := FloatSpec.Core.Zaux.Zcompare_Lt (-3) 5 (by decide)
+example : compare (7 : Int) (-2) = .gt := by decide
+
+-- Rocq's `Z.even` on zero and negative inputs: `Z.even (-4) = true`, `Z.even (-3) = false`.
+example : FloatSpec.Core.Zaux.Z.even (-4) = true := by decide
+example : FloatSpec.Core.Zaux.Z.even (-3) = false := by decide
+example : FloatSpec.Core.Zaux.Z.even 0 = true := by decide
+
+-- Rocq's `Zfast_pow_pos 3 5 = 243` and `Zfast_pow_pos (-2) 6 = 64`, by repeated squaring.
+example : FloatSpec.Core.Zaux.Zfast_pow_pos 3 (.xI (.xO .xH)) = 243 := by decide
+example : FloatSpec.Core.Zaux.Zfast_pow_pos (-2) (.xO (.xI .xH)) = 64 := by decide
+
+-- Rocq's floor `Z.div_eucl 7 (-3) = (-3, -2)`: the remainder takes the divisor's sign.
+example : FloatSpec.Core.Zaux.Z_div_eucl 7 (-3) = (Int.fdiv 7 (-3), Int.fmod 7 (-3)) :=
+  FloatSpec.Core.Zaux.Zdiv_eucl_unique 7 (-3)
 
 example : FloatSpec.Core.Zaux.Zfast_div_eucl 7 (-3) = (-3, -2) := by
   decide
