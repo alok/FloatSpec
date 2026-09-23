@@ -66,6 +66,9 @@ families = ["Core", "Calc", "Prop", "Pff", "IEEE754", "ErrorBound", "Other"]
 
 with open(audit_path, encoding="utf-8") as f:
     audit = json.load(f)
+# Every use of these is flagged, and scripts/check_proof_debts.py approves the
+# reviewed ones line by line; they are not placeholders.
+REVIEWED_USES = {"guard_msgs", "warning_as_error"}
 
 lean_files = sorted(root.rglob("*.lean"))
 
@@ -96,7 +99,7 @@ for finding in audit["findings"]:
     kind = finding["kind"]
     if kind in ("sorry", "axiom", "admit"):
         by_module[fam][kind] += 1
-    else:
+    elif kind not in REVIEWED_USES:
         by_module[fam]["placeholder"] += 1
 
 status = {
@@ -107,7 +110,7 @@ status = {
     "placeholder_semantics_count": sum(
         count
         for kind, count in audit["counts"].items()
-        if kind not in {"sorry", "axiom", "admit"}
+        if kind not in {"sorry", "axiom", "admit"} | REVIEWED_USES
     ),
     "spec_weakened_count": audit["counts"].get("conclusion_as_hypothesis", 0),
     "by_module": by_module,
