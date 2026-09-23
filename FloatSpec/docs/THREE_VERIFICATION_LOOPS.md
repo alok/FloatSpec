@@ -244,6 +244,13 @@ Run `FLOCQ_AUDIT_DIR="$FLOCQ_AUDIT_DIR" uv run scripts/test_pff_basic_contracts.
 for eight live mutation controls. The test deliberately removes positive-radix
 premises, replaces negation by identity and subtraction by addition; both
 checkers reject them.
+`PffStatementContracts` covers the indexed `Pff.lean` statements. It holds
+typed clients for `FnormalUnique`, `ImplyClosest`, `errorBoundedMult`, `discri3`
+and `eqExpLess`, written in Rocq's premise order in both assistants.
+`FLOCQ_AUDIT_DIR="$FLOCQ_AUDIT_DIR" uv run scripts/test_pff_statement_contracts.py -v`
+runs ten live mutation controls. They add a premise Rocq lacks, swap premise
+order, restrict `errorBoundedMult` to `Closest`, and add a boundedness premise;
+both checkers reject each change.
 `scripts/fixtures/PffSignLawsReplay.json` retains 72 focused raw-record inputs
 across negative, zero, one and ordinary radices, both mantissa signs, zero,
 and positive/negative odd/even exponents. Replay it with `scripts/pff_bridge.py`

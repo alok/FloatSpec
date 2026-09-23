@@ -27,6 +27,7 @@ LIVE_MODULES = (
     'test_ulp_nearest_contracts', 'test_ulp_choice_contracts',
     'test_zaux_prelude_bridge', 'test_zaux_power_contracts',
     'test_zaux_division_contracts', 'test_pff_basic_contracts',
+    'test_pff_statement_contracts',
     'test_pff_integer_bridge', 'test_remainder_contracts',
 )
 

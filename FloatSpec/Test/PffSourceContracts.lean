@@ -430,7 +430,7 @@ example : digitAux 2 5 1 ⟨0⟩ = 0 := by decide
 example : digitAux 2 5 1 ⟨1⟩ = 1 := by decide
 
 example : 0 < (2 : Int) ^ (0 : Nat) :=
-  Zpower_nat_less 2 0 (by norm_num)
+  Zpower_nat_less 2 (by norm_num) 0
 
 example : FloatSpec.Pff.Source.UniqueP 1
     (fun _ p => p = ⟨1, 0⟩) := by
@@ -456,19 +456,14 @@ example :
       |_root_.F2R (beta := 2)
         (⟨2, 0⟩ : FloatSpec.Core.Defs.FlocqFloat 2)| *
         ((1 / 2 : Real) * (2 : Real) ^ (1 - (2 : Int))) := by
-  have h := ClosestErrorBoundNormal
-        ({ dExp := 0, vNum := 4 } : Fbound_skel)
-        2 2 (2 : Real)
-        (⟨2, 0⟩ : FloatSpec.Core.Defs.FlocqFloat 2)
-        (by norm_num)
-        (by norm_num)
-        (by norm_num [Zpower_nat])
-        (by
+  have h := ClosestErrorBoundNormal ({ dExp := 0, vNum := 4 } : Fbound_skel) 2 2 (by norm_num)
+      (by norm_num) (by norm_num [Zpower_nat]) (2 : Real)
+      (⟨2, 0⟩ : FloatSpec.Core.Defs.FlocqFloat 2) (by
           constructor
           · norm_num [Fbounded]
           · intro g _hg
             norm_num [_root_.F2R])
-        (by
+      (by
           norm_num [Fnormal, Fnormalize, Fbounded, Fdigit, Fshift,
             FloatSpec.Core.Digits.Zdigits])
   convert h using 1 <;> norm_num

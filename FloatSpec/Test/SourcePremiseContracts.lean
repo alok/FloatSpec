@@ -297,7 +297,7 @@ example (emin prec : Int) (x y : ℝ) (e : Int)
     x * y - FloatSpec.Core.Generic_fmt.roundR beta (FLT_exp emin prec) rnd (x * y) = 0 ∨
       FloatSpec.Core.Raux.bpow beta (e + 1 - 2 * prec) ≤
         |x * y - FloatSpec.Core.Generic_fmt.roundR beta (FLT_exp emin prec) rnd (x * y)| :=
-  mult_error_FLT_ge_bpow' beta emin prec x y e hβ hx hy hb
+  mult_error_FLT_ge_bpow' beta emin prec x y e hx hy hb
 
 example (fexp : Int → Int) [FloatSpec.Core.Generic_fmt.Monotone_exp fexp]
     (x y : ℝ) (hy : 0 < y)

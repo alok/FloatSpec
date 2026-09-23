@@ -78,7 +78,7 @@ jobs:
 
       - name: Build regression tests
         run: |
-          for fixture in BooleanComparison PrimitiveComparison PrimitiveConversion PrimitiveExecution RawIEEERounding RawOverflow SingleNaNArithmetic SingleNaNHelpers FrexpLaws Normalization CalcBrackets NativeSingleNaNArithmetic NativeFrexpAgreement MultiplicationErrorGrid DoubleRoundingWitness SingleNaNValidity RelativeErrorGrid ExactArithmeticLaws RoundingOracle IntegerRounding CorePremiseBoundary ExponentValidityBoundary UlpNearestChoiceContracts PffBasicSourceContracts RoundNEPointContracts RemainderContracts RemainderGrid; do
+          for fixture in BooleanComparison PrimitiveComparison PrimitiveConversion PrimitiveExecution RawIEEERounding RawOverflow SingleNaNArithmetic SingleNaNHelpers FrexpLaws Normalization CalcBrackets NativeSingleNaNArithmetic NativeFrexpAgreement MultiplicationErrorGrid DoubleRoundingWitness SingleNaNValidity RelativeErrorGrid ExactArithmeticLaws RoundingOracle IntegerRounding CorePremiseBoundary ExponentValidityBoundary UlpNearestChoiceContracts PffBasicSourceContracts PffStatementContracts RoundNEPointContracts RemainderContracts RemainderGrid; do
             lake env lean "scripts/fixtures/$fixture.lean"
           done
           lake env lean scripts/fixtures/PffIntegerExecution.lean

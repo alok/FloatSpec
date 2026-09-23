@@ -63,6 +63,81 @@ divisibility at negative/zero/one radices too. Five shared-program mutations
 are rejected independently. Other noncomputable declarations still need
 individual review; mathematical real specifications should remain mathematical.
 
+## Pff.lean statement shapes after the Hoare cutover (September 23, 2026)
+
+The cutover replaced every Pff.lean Hoare triple with a direct proposition
+equivalent to the old reading. A later review compared the Coq-named statements
+with Rocq's `Check` output, premise by premise. The findings are now resolved as
+follows.
+
+- Premise order and currying follow Rocq for all 531 compared Coq-named
+  theorems. That means section hypotheses before the objects they constrain,
+  `forall P, RoundedModeP P ->` placed where Rocq puts it, and `forall e` at its
+  Rocq position in `discri5`–`discri8`. Callers were permuted to match.
+- The Discriminant family (`discri`, `discri1`–`discri16`, `cases`) now has
+  exactly Rocq's premises. The extra `Fbounded`/`Fnormal`/`Fcanonic`/underflow
+  hypotheses and the Lean-only bundle `discri3_source_context` are gone. The few
+  facts the proofs still needed are derived from the rounding hypotheses. For
+  example, `Fbounded t` comes from `EvenClosest (p - q) t`, and `0 ≤ p` comes
+  from `P_positive`.
+- `FmaErr`, `FmaErr_aux`, `ImplyClosest*`, `LSB_Pred`, `RoundedModeMult*`,
+  `UlpFlessuGe*`, `digitLess`, `eqExpLess`, `firstNormalPosNormal` and
+  `ExactMinusInterval` (now for any radix) no longer take hypotheses that Rocq
+  lacks. `errorBoundedMult` holds for any `P` with `RoundedModeP`. The
+  closest-only variant used by the local FMA proof is `errorBoundedMult_closest`.
+- The primed aliases `Fbounded'`, `Fnormal'`, `Fsubnormal'` and `Fcanonic'`, and
+  their duplicated premises, are deleted.
+- A redundant `1 < beta` binder is dropped from every Pff.lean theorem whose
+  `[ValidRadix beta]` already provides it. There are 32 exceptions: older
+  arrow-style statements that were outside the reviewed set still repeat it
+  after the colon. Most are local helpers; the rest are `Dekker2_FTS`,
+  `ExactMinusIntervalAux`, `ExactMinusIntervalAux1`, `MDekkerAux3` and
+  `MDekkerAux4`.
+- `MaxUniqueP`/`MinUniqueP` conclude `UniqueP`, and `Fle_Zle` concludes `Fle`.
+  `OddEvenDec` is a computational `PSum`, like `floatDec`, matching Rocq's
+  sumbool.
+
+Paired typed clients in `scripts/fixtures/PffStatementContracts.{lean,v}` check
+`FnormalUnique`, `ImplyClosest`, `errorBoundedMult`, `discri3` and `eqExpLess`
+against both checkers. `scripts/test_pff_statement_contracts.py` rejects planted
+changes in both checkers: an extra premise, a swapped order, a Closest-only
+`errorBoundedMult`, and an extra boundedness premise.
+
+Remaining differences are deliberate. The only one that asks for more than
+Rocq does is the indexed arithmetic laws below, which need a valid radix:
+
+- *Radix encoding.* The indexed carrier `FlocqFloat beta` with
+  `[ValidRadix beta]` stands for Coq's `float` with `1 < radix`. Theorems that
+  keep a separate `radix : Int` link it with `beta = radix`; the radix-2
+  sections use `beta = 2` and `radix = 2`. `Closest`, `EvenClosest`, `FNSucc`
+  and `FNPred` take an unused `radix : ℝ`, so `ClosestMax`/`ClosestMin(Eq)`
+  carry two radix binders. The `RND_*` lemmas take `p : ℤ` with `p.toNat` where
+  Rocq uses `p : nat`. The indexed `Fabs`/`Fplus`/`Fminus`/`Fmult_correct` in
+  Pff.lean need a valid radix (`1 < beta`), while Rocq needs only `0 < radix`.
+  The source facade (`FloatSpec.Pff.Source`) holds the Rocq-shaped versions,
+  including radix one.
+- *Relaxed premises (stronger Lean statements).* Twenty-eight theorems take
+  `precision ≠ 0` where Rocq has `1 < precision`, among them `ClosestUlp`, the
+  `Fulp*` lemmas, `MinOrMax*`, `errorBoundedMultMin/Max` and `RoundGeNormal`.
+  Some theorems drop Rocq premises altogether:
+  - `4 <= precision` in `AddExpGeUnderf*`, `FexpGeUnderf`, `RoundGeNormal`,
+    `pGeUnderf` and `qGeUnderf`;
+  - the precision and bound premises in `Fcanonic*`, `FcanonicUnique`,
+    `Fweight*`, `ClosestFabs`, `Rle*R0`, `RleBoundRound*` and
+    `RoundAbsMonotone*`;
+  - `Fbounded t`/`Fbounded u` in the `Axpy*` lemmas, and `Fbounded f` in
+    `ClosestSuccPred`;
+  - the unused `forall P, RoundedModeP P` in `ExactMinusInterval`.
+
+  `t_exact`, `dexact` and `IneqEq` replace the product-rounding premises with
+  `0 ≤ F2R p` or `F2R t = F2R p - F2R q`. `yLe2x`/`yLe2x_aux` quantify the
+  error over reals instead of floats.
+- *Conclusion forms.* `FulpPred`/`FulpSuc` state the expanded
+  `FPred (Fnormalize …)`/`FSucc (Fnormalize …)` rather than `FNPred`/`FNSucc`,
+  because of the phantom real radix above. A few equalities are oriented
+  differently from Rocq (`MinMax`, `MinOrMax3*`, the `Axpy` perturbation
+  bounds). These are equivalent readings.
+
 ## Priority 3: make provenance coverage a gate everywhere
 
 The latest compiled metadata validates 344 source anchors. Strict public-definition

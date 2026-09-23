@@ -941,10 +941,10 @@ private theorem Fnormalize_to_core_canonical (beta : Int) [ValidRadix beta] (b :
   have hcan :
       Fcanonic (beta:=beta) beta (toFboundSkel b)
         (Fnormalize (beta:=beta) beta (toFboundSkel b) p.toNat f) := by
-    have htrip := FnormalizeCanonic (beta:=beta) beta (toFboundSkel b) p.toNat f
+    have htrip := FnormalizeCanonic (beta:=beta) beta
     simpa only [wp, PostCond.noThrow, pure,
-      Id.run, ULift.up_down, Fbounded', PredTrans.pure, PredTrans.apply, SPred.down_pure_nil, Int.cast_ofNat] using
-      htrip hfbounded hfbounded hprecision hbeta hvnum
+      Id.run, ULift.up_down, PredTrans.pure, PredTrans.apply, SPred.down_pure_nil, Int.cast_ofNat] using
+      htrip hbeta (toFboundSkel b) p.toNat hprecision hvnum f hfbounded
   exact Fcanonic_to_core_canonical (beta := beta) (b := b) (p := p)
     (f := Fnormalize (beta:=beta) beta (toFboundSkel b) p.toNat f)
     hpBound hcan hbeta hnf_num_ne
@@ -1145,8 +1145,8 @@ theorem pff_round_DN_is_round (beta : Int) [ValidRadix beta] (b : Fbound) (p : I
     simpa [hp_abs_toNat] using hpBound
   have hmin : isMin (beta:=beta) (toFboundSkel b) beta r
       (RND_Min (beta:=beta) (toFboundSkel b) beta p r) := by
-    have h := RND_Min_correct (beta:=beta) (toFboundSkel b) beta p r
-    simpa only [Int.cast_ofNat] using h rfl hbeta hprec hvnum
+    have h := RND_Min_correct (beta:=beta) (toFboundSkel b) beta p
+    simpa only [Int.cast_ofNat] using h rfl hbeta hprec hvnum r
   let rd :=
     FloatSpec.Core.Generic_fmt.roundR beta (FLT_exp (-b.dExp) p)
       FloatSpec.Core.Generic_fmt.rnd_floor r
@@ -1181,7 +1181,7 @@ theorem pff_round_DN_is_round (beta : Int) [ValidRadix beta] (b : Fbound) (p : I
         isMin (beta:=beta) (toFboundSkel b) beta r p →
         isMin (beta:=beta) (toFboundSkel b) beta r q →
         _root_.F2R (beta:=beta) p = _root_.F2R (beta:=beta) q := by
-    simpa only [Int.cast_ofNat] using huniq
+    exact huniq
   exact (huniq' r (RND_Min (beta:=beta) (toFboundSkel b) beta p r) q
     hmin hq_isMin).trans hqval
 
@@ -1206,8 +1206,8 @@ theorem pff_round_UP_is_round (beta : Int) [ValidRadix beta] (b : Fbound) (p : I
     simpa [hp_abs_toNat] using hpBound
   have hmax : isMax (beta:=beta) (toFboundSkel b) beta r
       (RND_Max (beta:=beta) (toFboundSkel b) beta p r) := by
-    have h := RND_Max_correct (beta:=beta) (toFboundSkel b) beta p r
-    simpa only [Int.cast_ofNat] using h rfl hbeta hprec hvnum
+    have h := RND_Max_correct (beta:=beta) (toFboundSkel b) beta p
+    simpa only [Int.cast_ofNat] using h rfl hbeta hprec hvnum r
   let ru :=
     FloatSpec.Core.Generic_fmt.roundR beta (FLT_exp (-b.dExp) p)
       FloatSpec.Core.Generic_fmt.rnd_ceil r
@@ -1242,7 +1242,7 @@ theorem pff_round_UP_is_round (beta : Int) [ValidRadix beta] (b : Fbound) (p : I
         isMax (beta:=beta) (toFboundSkel b) beta r p →
         isMax (beta:=beta) (toFboundSkel b) beta r q →
         _root_.F2R (beta:=beta) p = _root_.F2R (beta:=beta) q := by
-    simpa only [Int.cast_ofNat] using huniq
+    exact huniq
   exact (huniq' r (RND_Max (beta:=beta) (toFboundSkel b) beta p r) q
     hmax hq_isMax).trans hqval
 
@@ -1489,13 +1489,11 @@ theorem round_N_is_pff_round (beta : Int) [ValidRadix beta] (b : Fbound) (p : In
     simpa [hp_abs_toNat] using hpBound
   let f := RND_Closest (beta:=beta) (toFboundSkel b) beta p choice r
   have hcan : Fcanonic (beta:=beta) beta (toFboundSkel b) f := by
-    have h := RND_Closest_canonic
-      (beta:=beta) (toFboundSkel b) beta p choice r
-    simpa only [f, Int.cast_ofNat] using h rfl hbeta hprec hvnum
+    have h := RND_Closest_canonic (beta:=beta) (toFboundSkel b) beta p choice
+    simpa only [f, Int.cast_ofNat] using h rfl hbeta hprec hvnum r
   have hclosest : Closest (beta:=beta) (toFboundSkel b) (beta : ℝ) r f := by
-    have h := RND_Closest_correct
-      (beta:=beta) (toFboundSkel b) beta p choice r
-    simpa only [f, Int.cast_ofNat] using h rfl hbeta hprec hvnum
+    have h := RND_Closest_correct (beta:=beta) (toFboundSkel b) beta p choice
+    simpa only [f, Int.cast_ofNat] using h rfl hbeta hprec hvnum r
   have hval :
       _root_.F2R (beta:=beta) f =
         FloatSpec.Core.Generic_fmt.roundR beta (FLT_exp (-b.dExp) p)
@@ -1735,9 +1733,8 @@ theorem pff_round_NE_is_round (beta : Int) [ValidRadix beta] (b : Fbound) (p : I
     FloatSpec.Core.Generic_fmt.roundR beta (FLT_exp (-b.dExp) p)
       (FloatSpec.Core.Generic_fmt.Znearest (fun t : Int => !(decide (2 ∣ t)))) r
   have hec : EvenClosest (beta:=beta) (toFboundSkel b) (beta : ℝ) p.toNat r f := by
-    have h := RND_EvenClosest_correct
-      (beta:=beta) (toFboundSkel b) beta p.toNat r
-    simpa only [f, Int.cast_ofNat] using h rfl hbeta hp_toNat_gt hvnum
+    have h := RND_EvenClosest_correct (beta:=beta) (toFboundSkel b) beta p.toNat
+    simpa only [f, Int.cast_ofNat] using h rfl hbeta hp_toNat_gt hvnum r
   have hN_y :
       FloatSpec.Core.Defs.Rnd_N_pt
         (fun z => generic_format beta (FLT_exp (-b.dExp) p) z) r y := by
@@ -1746,9 +1743,10 @@ theorem pff_round_NE_is_round (beta : Int) [ValidRadix beta] (b : Fbound) (p : I
   have hnorm_val :
       _root_.F2R (beta:=beta)
         (Fnormalize (beta:=beta) beta (toFboundSkel b) p.toNat f) = y := by
-    have h := FnormalizeCorrect (beta:=beta) beta (toFboundSkel b) p.toNat f
+    have h := FnormalizeCorrect (beta:=beta) beta
     simpa only [wp, PostCond.noThrow, pure,
-      Id.run, ULift.up_down, y, PredTrans.pure, PredTrans.apply, SPred.down_pure_nil, Int.cast_ofNat] using h rfl hbeta
+      Id.run, ULift.up_down, y, PredTrans.pure, PredTrans.apply, SPred.down_pure_nil, Int.cast_ofNat] using h rfl
+          hbeta (toFboundSkel b) p.toNat f
   have hNE_y :
       FloatSpec.Core.RoundNE.Rnd_NE_pt beta (FLT_exp (-b.dExp) p) r y := by
     refine ⟨hN_y, ?_⟩
@@ -1814,9 +1812,10 @@ theorem evenClosest_value_eq_round_NE (beta : Int) [ValidRadix beta] (b : Fbound
   have hnorm_val :
       _root_.F2R (beta:=beta)
         (Fnormalize (beta:=beta) beta (toFboundSkel b) p.toNat f) = y := by
-    have h := FnormalizeCorrect (beta:=beta) beta (toFboundSkel b) p.toNat f
+    have h := FnormalizeCorrect (beta:=beta) beta
     simpa only [wp, PostCond.noThrow, pure,
-      Id.run, ULift.up_down, y, PredTrans.pure, PredTrans.apply, SPred.down_pure_nil, Int.cast_ofNat] using h rfl hbeta
+      Id.run, ULift.up_down, y, PredTrans.pure, PredTrans.apply, SPred.down_pure_nil, Int.cast_ofNat] using h rfl
+          hbeta (toFboundSkel b) p.toNat f
   have hNE_y :
       FloatSpec.Core.RoundNE.Rnd_NE_pt beta (FLT_exp (-b.dExp) p) r y := by
     refine ⟨hN_y, ?_⟩
@@ -1876,13 +1875,11 @@ theorem round_NE_is_pff_round (beta : Int) [ValidRadix beta] (b : Fbound) (p : I
     simpa [hp_abs_toNat] using hpBound
   let f := RND_EvenClosest (beta:=beta) (toFboundSkel b) beta p.toNat r
   have hcan : Fcanonic (beta:=beta) beta (toFboundSkel b) f := by
-    have h := RND_EvenClosest_canonic
-      (beta:=beta) (toFboundSkel b) beta p.toNat r
-    simpa only [f, Int.cast_ofNat] using h rfl hbeta hp_toNat_gt hvnum
+    have h := RND_EvenClosest_canonic (beta:=beta) (toFboundSkel b) beta p.toNat
+    simpa only [f, Int.cast_ofNat] using h rfl hbeta hp_toNat_gt hvnum r
   have hec : EvenClosest (beta:=beta) (toFboundSkel b) (beta : ℝ) p.toNat r f := by
-    have h := RND_EvenClosest_correct
-      (beta:=beta) (toFboundSkel b) beta p.toNat r
-    simpa only [f, Int.cast_ofNat] using h rfl hbeta hp_toNat_gt hvnum
+    have h := RND_EvenClosest_correct (beta:=beta) (toFboundSkel b) beta p.toNat
+    simpa only [f, Int.cast_ofNat] using h rfl hbeta hp_toNat_gt hvnum r
   have hval :
       _root_.F2R (beta:=beta) f =
         FloatSpec.Core.Generic_fmt.roundR beta (FLT_exp (-b.dExp) p)
@@ -1946,20 +1943,21 @@ theorem format_is_pff_format_can (beta : Int) [ValidRadix beta] (b : Fbound) (p 
   rcases hw with ⟨f, hval, hfbounded⟩
   let nf : PffFloat beta := Fnormalize (beta := beta) beta b p.natAbs f
   refine ⟨nf, ?_, ?_⟩
-  · have hnorm := FnormalizeCorrect (beta := beta) beta b p.natAbs f
+  · have hnorm := FnormalizeCorrect (beta := beta) beta
     have hnorm' : pff_to_R_aux beta nf = pff_to_R_aux beta f := by
       simpa only [wp, PostCond.noThrow, pure,
-        Id.run, ULift.up_down, nf, pff_to_R_aux, PredTrans.pure, PredTrans.apply, SPred.down_pure_nil, Int.cast_ofNat] using hnorm rfl hβ
+        Id.run, ULift.up_down, nf, pff_to_R_aux, PredTrans.pure, PredTrans.apply, SPred.down_pure_nil, Int.cast_ofNat] using hnorm rfl
+            hβ b p.natAbs f
     exact hnorm'.trans hval
   · have hp : 0 < p := by unfold precisionNotZero at hprec; omega
     have hprec_nat : p.natAbs ≠ 0 :=
       Int.natAbs_ne_zero.mpr (ne_of_gt hp)
     have hvnum : b.vNum = Zpower_nat beta p.natAbs := by
       simpa [pGivesBound] using hbound
-    have hcan := FnormalizeCanonic (beta := beta) beta b p.natAbs f
+    have hcan := FnormalizeCanonic (beta := beta) beta
     simpa only [wp, PostCond.noThrow, pure,
       Id.run, ULift.up_down, nf, PFcanonic, PredTrans.pure, PredTrans.apply, SPred.down_pure_nil, Int.cast_ofNat] using
-        hcan hfbounded hfbounded hprec_nat hβ hvnum
+        hcan hβ b p.natAbs hprec_nat hvnum f hfbounded
 
 variable (beta : Int) [ValidRadix beta]
 
@@ -2209,10 +2207,10 @@ theorem CanonicGeNormal (beta : Int) [ValidRadix beta] (b : Fbound) (p : Int) (f
     have hp_nonneg : 0 ≤ p := le_of_lt hp_pos
     have hprecision : p.natAbs ≠ 0 :=
       Int.natAbs_ne_zero.mpr (ne_of_gt hp_pos)
-    have hmant := pSubnormal_absolu_min (beta := beta) beta b p.natAbs f
+    have hmant := pSubnormal_absolu_min (beta := beta) beta
     have hmant' : |f.Fnum| < nNormMin beta p.natAbs := by
-      simpa only [Fsubnormal', Int.cast_ofNat] using
-          hmant hsubnormal hsubnormal hprecision hbeta hpGives
+      simpa only [Int.cast_ofNat] using
+          hmant hbeta b p.natAbs hprecision hpGives f hsubnormal
     have hp_nat : 1 ≤ p.natAbs := Nat.one_le_iff_ne_zero.mpr hprecision
     have hsub_cast : ((p.natAbs - 1 : Nat) : Int) = p - 1 := by
       calc
@@ -2267,7 +2265,7 @@ theorem Fulp_ulp_aux (beta : Int) [ValidRadix beta] (b : Fbound) (p : Int) (f : 
   by_cases hx : pff_to_R_aux beta f = 0
   · have hmzero : f.Fnum = 0 :=
       FloatSpec.Core.Float_prop.eq_0_F2R (beta := beta) f hbeta hx
-    have hzero := Fulp_zero (beta := beta) beta b p.natAbs f
+    have hzero := Fulp_zero (beta := beta) b beta p.natAbs f
     have hzero' : PFulp beta b p f = (beta : ℝ) ^ (-b.dExp) := by
       simpa only [wp, PostCond.noThrow, pure,
         Id.run, ULift.up_down, PFulp, PredTrans.pure, PredTrans.apply, SPred.down_pure_nil, Int.cast_ofNat] using hzero (show is_Fzero f from hmzero)
@@ -2296,11 +2294,11 @@ theorem Fulp_ulp_aux (beta : Int) [ValidRadix beta] (b : Fbound) (p : Int) (f : 
       simpa [FloatSpec.Core.Generic_fmt.canonical,
         FloatSpec.Core.Generic_fmt.cexp, pff_to_R_aux,
         pff_to_flocq] using hcore
-    have hcanUlp := CanonicFulp (beta := beta) beta b p.natAbs f
+    have hcanUlp := CanonicFulp (beta := beta) b beta p.natAbs
     have hcanUlp' : PFulp beta b p f = (beta : ℝ) ^ f.Fexp := by
       simpa only [wp, PostCond.noThrow, pure,
         Id.run, ULift.up_down, PFulp, PredTrans.pure, PredTrans.apply, SPred.down_pure_nil, Int.cast_ofNat] using
-          hcanUlp hcan rfl hbeta hprecision hvnum
+          hcanUlp rfl hbeta hprecision hvnum f hcan
     have hspec := FloatSpec.Core.Ulp.ulp_neq_0
       (beta := beta) (fexp := FLT_exp (-b.dExp) p)
       (x := pff_to_R_aux beta f) hx
@@ -2334,25 +2332,25 @@ theorem Fulp_ulp (beta : Int) [ValidRadix beta] (b : Fbound) (p : Int) (f : PffF
     Int.natAbs_ne_zero.mpr (ne_of_gt hp_pos)
   let nf : PffFloat beta := Fnormalize (beta := beta) beta b p.natAbs f
   have hnfBounded : PFbounded b nf := by
-    have h := FnormalizeBounded (beta := beta) beta b p.natAbs f
+    have h := FnormalizeBounded (beta := beta) beta
     simpa only [wp, PostCond.noThrow, pure,
-      Id.run, ULift.up_down, nf, PFbounded, Fbounded', PredTrans.pure, PredTrans.apply, SPred.down_pure_nil, Int.cast_ofNat] using
-        h hfbounded hfbounded hprecision hbeta hpBound
+      Id.run, ULift.up_down, nf, PFbounded, PredTrans.pure, PredTrans.apply, SPred.down_pure_nil, Int.cast_ofNat] using
+        h hbeta b p.natAbs hprecision hpBound f hfbounded
   have hnfCanonic : PFcanonic beta b p nf := by
-    have h := FnormalizeCanonic (beta := beta) beta b p.natAbs f
+    have h := FnormalizeCanonic (beta := beta) beta
     simpa only [wp, PostCond.noThrow, pure,
-      Id.run, ULift.up_down, nf, PFcanonic, Fbounded', PredTrans.pure, PredTrans.apply, SPred.down_pure_nil, Int.cast_ofNat] using
-        h hfbounded hfbounded hprecision hbeta hpBound
+      Id.run, ULift.up_down, nf, PFcanonic, PredTrans.pure, PredTrans.apply, SPred.down_pure_nil, Int.cast_ofNat] using
+        h hbeta b p.natAbs hprecision hpBound f hfbounded
   have hnfVal : pff_to_R_aux beta nf = pff_to_R_aux beta f := by
-    have h := FnormalizeCorrect (beta := beta) beta b p.natAbs f
+    have h := FnormalizeCorrect (beta := beta) beta
     simpa only [wp, PostCond.noThrow, pure,
-      Id.run, ULift.up_down, nf, pff_to_R_aux, PredTrans.pure, PredTrans.apply, SPred.down_pure_nil, Int.cast_ofNat] using h rfl hbeta
+      Id.run, ULift.up_down, nf, pff_to_R_aux, PredTrans.pure, PredTrans.apply, SPred.down_pure_nil, Int.cast_ofNat] using h rfl
+          hbeta b p.natAbs f
   have hcomp : PFulp beta b p f = PFulp beta b p nf := by
-    have h := FulpComp (beta := beta) beta b p.natAbs f nf
+    have h := FulpComp (beta := beta) b beta p.natAbs
     simpa only [wp, PostCond.noThrow, pure,
       Id.run, ULift.up_down, PFulp, pff_to_R_aux, PredTrans.pure, PredTrans.apply, SPred.down_pure_nil, Int.cast_ofNat] using
-        h hfbounded hnfBounded hnfVal.symm rfl hbeta
-          hprecision hpBound
+        h rfl hbeta hprecision hpBound f nf hfbounded hnfBounded hnfVal.symm
   have haux := Fulp_ulp_aux beta b p nf
     ⟨hnfCanonic, hpBound, hprec, hbeta⟩
   simp only [wp, PostCond.noThrow, Fulp_ulp_aux_check, pure] at haux
