@@ -1471,6 +1471,22 @@ def compare(cases: list[Case], observations: dict[str, list]) -> list[dict]:
     return mismatches
 
 
+def kernel_checkable(observations: dict[str, list]) -> list[int]:
+    """Batch positions whose lean-meta row equals Rocq's, which lean-kernel then checks.
+
+    `bootstrap_lean` asks `decide +kernel` to prove each case's Lean expression
+    equal to Rocq's row. A case lean-meta already disagrees on is reported as a
+    mismatch and fails the run; adding it to the regression file would only make
+    that one example fail and throw away the kernel verdict of every other case.
+    Choosing per case keeps one mismatch from removing a whole batch's kernel
+    coverage. A lean-ir-only mismatch stays checkable: the kernel verdict then
+    shows which Lean path is wrong.
+    """
+    return [index for index, (meta, rocq) in enumerate(zip(observations["lean"], observations["rocq"],
+                                                            strict=True))
+            if meta == rocq]
+
+
 def bootstrap_lean(cases: list[Case], expected: list[list[int]], folder: Path) -> None:
     """Turn Rocq observations into actual kernel-checked Lean regression proofs."""
     rows = [expressions(case)[0] for case in cases]
@@ -1558,7 +1574,8 @@ def main(*, lean_build_targets: tuple[str, ...] | None = None,
               "requested_batch_size": args.batch_size, "batch_size_limits": BATCH_LIMITS,
               "batch_policy": "ordered mixed-light and homogeneous capped-heavy",
               "method": "Lean compiled execution and kernel reduction versus Rocq vm_compute; finite tests only",
-              "compared_cases": 0, "compiled_cases": 0, "bootstrapped_lean_cases": 0, "mismatches": []}
+              "compared_cases": 0, "compiled_cases": 0, "bootstrapped_lean_cases": 0, "batches": [],
+              "mismatches": []}
     report_path = output / "report.json"
     if profile_metadata is not None:
         report["profile"] = profile_metadata
@@ -1581,9 +1598,17 @@ def main(*, lean_build_targets: tuple[str, ...] | None = None,
             folder = output / f"batch_{offset:06d}"
             folder.mkdir()
             observations = execute(batch, flocq, coqc, folder)
-            for mismatch in compare(batch, observations):
+            batch_mismatches = compare(batch, observations)
+            for mismatch in batch_mismatches:
                 mismatch["index"] += offset
                 mismatches.append(mismatch)
+            checkable = kernel_checkable(observations)
+            # kernel_checked_cases stays 0 until the lean-kernel file is accepted.
+            record = {"offset": offset, "cases": len(batch), "mismatched_cases": len(batch_mismatches),
+                      "kernel_checked_cases": 0,
+                      "not_kernel_checked": [offset + index for index in
+                                             sorted(set(range(len(batch))) - set(checkable))]}
+            report["batches"].append(record)
             report["compared_cases"] += len(batch)
             report["compiled_cases"] += len(batch)
             report["mismatches"] = mismatches
@@ -1591,12 +1616,14 @@ def main(*, lean_build_targets: tuple[str, ...] | None = None,
                 (output / "replay.json").write_text(
                     json.dumps([m["case"] for m in mismatches], indent=2) + "\n")
             report_path.write_text(json.dumps(report, indent=2) + "\n")
-            if observations["lean"] == observations["rocq"]:
-                bootstrap_lean(batch, observations["rocq"], folder)
-                report["bootstrapped_lean_cases"] += len(batch)
+            if checkable:
+                bootstrap_lean([batch[index] for index in checkable],
+                               [observations["rocq"][index] for index in checkable], folder)
+                record["kernel_checked_cases"] = len(checkable)
+                report["bootstrapped_lean_cases"] += len(checkable)
                 report_path.write_text(json.dumps(report, indent=2) + "\n")
-            print(f"{offset + len(batch)}/{len(cases)}; "
-                  f"mismatches={len(mismatches)}", flush=True)
+            print(f"{offset + len(batch)}/{len(cases)}; mismatches={len(mismatches)}; "
+                  f"lean-kernel checked {len(checkable)}/{len(batch)}", flush=True)
             require_lean_source_snapshot(report["lean_source_sha256"])
         report["mismatches"] = mismatches
         report["status"] = "mismatch" if mismatches else "passed"

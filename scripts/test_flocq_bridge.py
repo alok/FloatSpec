@@ -162,6 +162,55 @@ class BatchTests(unittest.TestCase):
         for count in ('compared_cases', 'compiled_cases', 'bootstrapped_lean_cases'):
             self.assertEqual(report[count], 25)
 
+    def test_one_mismatch_keeps_kernel_coverage_for_the_rest_of_its_batch(self):
+        # Offline control: a planted lean-meta mismatch at case 30 (the second
+        # batch) and a lean-ir-only mismatch at case 3. Both fail the run; only
+        # case 30 leaves the lean-kernel file, and every batch says so.
+        cases = [bridge.Case('power', (2, n)) for n in range(40)]
+        planted = {30: ('lean', 'compiled'), 3: ('compiled',)}
+        with tempfile.TemporaryDirectory() as directory:
+            folder = Path(directory)
+            replay = folder / 'replay.json'
+            replay.write_text(json.dumps([{'op': c.op, 'args': c.args} for c in cases]))
+            output = folder / 'out'
+            argv = ['bridge', '--flocq-dir', directory, '--coqc', 'coqc', '--replay', str(replay),
+                    '--output', str(output), '--batch-size', '25', '--skip-build']
+            offsets, kernel = [0, 25], []
+
+            def execute(batch, *_):
+                offset = offsets.pop(0)
+                rows = {name: [[offset + index] for index in range(len(batch))]
+                        for name in ('lean', 'compiled', 'rocq')}
+                for index, paths in planted.items():
+                    for path in paths:
+                        if offset <= index < offset + len(batch):
+                            rows[path][index - offset] = [-1]
+                return rows
+
+            def bootstrap(batch, expected, _folder):
+                kernel.extend(zip(batch, expected, strict=True))
+
+            with (patch('sys.argv', argv),
+                  patch.object(bridge, 'verify_reference', return_value='pinned'),
+                  patch.object(bridge, 'run', return_value='metadata'),
+                  patch.object(bridge, 'lean_source_fingerprint', return_value='snapshot'),
+                  patch.object(bridge, 'execute', side_effect=execute),
+                  patch.object(bridge, 'bootstrap_lean', side_effect=bootstrap),
+                  contextlib.redirect_stdout(io.StringIO()),
+                  self.assertRaisesRegex(SystemExit, '2 mismatches')):
+                bridge.main()
+            report = json.loads((output / 'report.json').read_text())
+        self.assertEqual(report['status'], 'mismatch')
+        self.assertEqual([(m['index'], m['paths']) for m in report['mismatches']],
+                         [(3, ['compiled']), (30, ['lean', 'compiled'])])
+        self.assertEqual(kernel, [(case, [index]) for index, case in enumerate(cases) if index != 30])
+        self.assertEqual(report['bootstrapped_lean_cases'], 39)
+        self.assertEqual(report['batches'], [
+            {'offset': 0, 'cases': 25, 'mismatched_cases': 1, 'kernel_checked_cases': 25,
+             'not_kernel_checked': []},
+            {'offset': 25, 'cases': 15, 'mismatched_cases': 1, 'kernel_checked_cases': 14,
+             'not_kernel_checked': [30]}])
+
     def test_driver_batches_mixed_light_families(self):
         cases = [bridge.Case('power', (2, 3)), bridge.Case('div_eucl', (-7, 3))] * 103
         report, batches, replay = self.check_driver(cases=cases)
@@ -1312,6 +1361,43 @@ class LiveTests(unittest.TestCase):
             self.assertEqual(report["bootstrapped_lean_cases"], 1)
             self.assertEqual(json.loads((output / "replay.json").read_text()),
                              [{"op": "power", "args": [2, 1]}])
+
+    def test_one_mismatch_keeps_kernel_coverage_for_the_rest_of_its_batch(self):
+        # Live control: plant the natAbs bug in the Lean input of one case only.
+        # That case fails the run as a mismatch, and the real kernel still
+        # checks the other three cases of its batch against Rocq.
+        original = bridge.expressions
+        planted = bridge.Case("power", (2, -1))
+
+        def mutated(case):
+            lean, rocq = original(case)
+            return ("[Zaux.Zpower 2 (Int.natAbs (-1))]" if case == planted else lean), rocq
+
+        cases = [{"op": "power", "args": [2, 3]}, {"op": "power", "args": [2, -1]},
+                 {"op": "div_eucl", "args": [7, -3]}, {"op": "power", "args": [3, 2]}]
+        with tempfile.TemporaryDirectory(prefix="floatspec-bridge-kernel-coverage-") as directory:
+            output, replay = Path(directory) / "output", Path(directory) / "cases.json"
+            replay.write_text(json.dumps(cases))
+            argv = ["flocq_bridge", "--flocq-dir", os.environ["FLOCQ_AUDIT_DIR"], "--skip-build",
+                    "--replay", str(replay), "--output", str(output)]
+            with (patch("sys.argv", argv), patch.object(bridge, "expressions", mutated),
+                  contextlib.redirect_stdout(io.StringIO()),
+                  self.assertRaisesRegex(SystemExit, "1 mismatches")):
+                bridge.main()
+            report = json.loads((output / "report.json").read_text())
+            regressions = (output / "batch_000000" / "OracleRegressions.lean").read_text()
+            kernel_output = (output / "batch_000000" / "oracle_regressions.out").read_text()
+        self.assertEqual(report["status"], "mismatch")
+        self.assertEqual([(m["index"], m["paths"]) for m in report["mismatches"]],
+                         [(1, ["lean", "compiled"])])
+        self.assertEqual(report["batches"], [{"offset": 0, "cases": 4, "mismatched_cases": 1,
+                                              "kernel_checked_cases": 3, "not_kernel_checked": [1]}])
+        self.assertEqual(report["bootstrapped_lean_cases"], 3)
+        self.assertEqual(regressions.count(":= by decide +kernel"), 3)
+        for case in (cases[0], cases[2], cases[3]):
+            self.assertIn(original(bridge.Case(case["op"], tuple(case["args"])))[0], regressions)
+        self.assertNotIn("Int.natAbs", regressions)
+        self.assertEqual(kernel_output.strip(), "")
 
     def test_real_mutation_exits_with_replay(self):
         # Reproduce the historical negative-exponent/natAbs bug only in the

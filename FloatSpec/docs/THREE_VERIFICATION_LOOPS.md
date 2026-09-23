@@ -812,11 +812,17 @@ unnecessary `noncomputable` markers from twelve integer-only Calc definitions
 and three bit decoders; their bodies and public types did not change. The runner rejects
 compiler failures, unknown output, abbreviated output, missing rows, and empty
 corpora. It compares all expected columns of all three result streams. For
-kernel/Rocq-agreeing batches, it then generates
-`OracleRegressions.lean`: a separate equality statement for each input, with
-Rocq's observed values as the expected results. Lean checks those statements
-using `decide +kernel`. Separate statements avoid the expensive normalization
+every case whose `#reduce` row equals Rocq's, it then generates, in
+`OracleRegressions.lean`, a separate equality statement with Rocq's observed
+values as the expected results, and Lean checks each with `decide +kernel`.
+Separate statements avoid the expensive normalization
 of one enormous conjunction/list equality for the more complex operations.
+The choice is per case. Earlier, one `#reduce` mismatch withheld the whole
+batch from the kernel without saying so. Now only the mismatched case is
+left out, the mismatch still fails the run, and each entry of the report's
+`batches` list gives `kernel_checked_cases` and the `not_kernel_checked`
+indices. A live control in `test_flocq_bridge.py` plants one mismatch in a
+four-case batch and requires the kernel to accept the other three.
 The core bridge builds its imports by default. Its explicit `--skip-build`
 option is only for a known prebuilt, stable snapshot and records
 `fresh_build: false`; it must not be used to hide stale imports.
