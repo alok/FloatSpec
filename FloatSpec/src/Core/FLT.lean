@@ -24,10 +24,8 @@ import FloatSpec.src.Core.Ulp
 import FloatSpec.src.Core.FLX
 import FloatSpec.src.Core.FIX
 import Mathlib.Data.Real.Basic
-import Std.Do.Triple
 
 open Real
-open Std.Do
 open FloatSpec.Core.Defs
 open FloatSpec.Core.Raux
 open FloatSpec.Core.Generic_fmt
@@ -310,7 +308,7 @@ theorem generic_format_FLT (beta : Int) [ValidRadix beta] (x : ℝ) :
       rw [hmag]
       exact max_le (by omega) hemin
     exact (generic_format_F2R (beta := beta) (fexp := FLT_exp prec emin)
-      f.Fnum f.Fexp) ⟨ValidRadix.valid, fun _ => hce⟩
+      f.Fnum f.Fexp) (fun _ => hce)
 
 private theorem FLT_format_generic_run
     (beta : Int) [ValidRadix beta] (x : ℝ)
@@ -323,7 +321,7 @@ private theorem FLT_format_generic_run
   · have hsm := scaled_mantissa_generic
       (beta := beta) (fexp := FLT_exp prec emin) x hx
     have hsm_eq : scaled_mantissa beta (FLT_exp prec emin) x = (m : ℝ) := by
-      simpa [wp, PostCond.noThrow, pure, m] using hsm
+      simpa [pure, m] using hsm
     have hlt := scaled_mantissa_lt_bpow
       (beta := beta) (fexp := FLT_exp prec emin) x ValidRadix.valid
     have hprec : 0 ≤ prec := le_of_lt (Prec_gt_0.pos : 0 < prec)
@@ -404,7 +402,7 @@ theorem generic_format_FLT_bpow (beta : Int) [ValidRadix beta] (e : Int)
   -- Apply the generic lemma for powers in generic format.
   simpa [FLT_exp]
     using FloatSpec.Core.Generic_fmt.generic_format_bpow
-      (beta := beta) (fexp := FLT_exp prec emin) (e := e) ⟨hβ, hbound⟩
+      (beta := beta) (fexp := FLT_exp prec emin) (e := e) hbound
 
 /-
 Coq (FLT.v):
@@ -425,7 +423,7 @@ theorem FLT_format_bpow (beta : Int) [ValidRadix beta] (e : Int)
   have hfexp_le : (FLT_exp prec emin e) ≤ e :=
     (max_le_iff.mpr ⟨h_e_sub_prec_le_e, hemin_le_e⟩)
   have hgeneric := FloatSpec.Core.Generic_fmt.generic_format_bpow'
-    (beta := beta) (fexp := FLT_exp prec emin) (e := e) ⟨hβ, hfexp_le⟩
+    (beta := beta) (fexp := FLT_exp prec emin) (e := e) hfexp_le
   exact FLT_format_generic_run (prec := prec) (emin := emin) beta _ hgeneric
 
 /-
@@ -609,7 +607,7 @@ theorem generic_format_FIX_FLT (beta : Int) [ValidRadix beta] (x : ℝ)
   have hgf := FloatSpec.Core.Generic_fmt.generic_format_F2R
               (beta := beta)
               (fexp := FloatSpec.Core.FIX.FIX_exp (emin := emin))
-              (m := m1) (e := e1) ⟨hβ, hbound⟩
+              (m := m1) (e := e1) hbound
   -- Rewriting F2R (m1,e1) back to x as established above
   rw [← hF2R]
   exact hgf
@@ -715,7 +713,7 @@ theorem ulp_FLT_small (beta : Int) [ValidRadix beta] (x : ℝ)
       -- Use `mag_le_bpow` with separate arguments and unwrap the Hoare triple.
       have hspec := FloatSpec.Core.Raux.mag_le_bpow (beta := beta) (x := x) (e := (emin + prec)) hβ hx_ne hx_lt
       have hcall := hspec
-      simpa [FloatSpec.Core.Raux.mag, hM, wp, PostCond.noThrow, Id.run, pure]
+      simpa [FloatSpec.Core.Raux.mag, hM, Id.run, pure]
         using hcall
     -- Hence M - prec ≤ emin, so FLT_exp M = emin.
     have hsub_le : M - prec ≤ emin := by
@@ -766,7 +764,7 @@ theorem cexp_FLT_FIX (beta : Int) [ValidRadix beta] (x : ℝ)
     have := FloatSpec.Core.Raux.mag_le_bpow (beta := beta) (x := x) (e := (emin + prec))
     have hspec := this hβ hx_ne hx_lt
     have hcall := hspec
-    simpa [FloatSpec.Core.Raux.mag, hM, wp, PostCond.noThrow, Id.run, pure] using hcall
+    simpa [FloatSpec.Core.Raux.mag, hM, Id.run, pure] using hcall
   -- Hence M - prec ≤ emin, so FLT_exp M = emin
   have hsub_le : M - prec ≤ emin := by
     have := sub_le_sub_right hM_le prec
@@ -788,7 +786,7 @@ theorem cexp_FLT_FIX (beta : Int) [ValidRadix beta] (x : ℝ)
       (FloatSpec.Core.Generic_fmt.cexp beta (FLT_exp prec emin) x)
         = (FloatSpec.Core.Generic_fmt.cexp beta (FloatSpec.Core.FIX.FIX_exp (emin := emin)) x) := by
     simpa [hcexp_FLT_run, hcexp_FIX_run, hM, hfexp_eq, FloatSpec.Core.FIX.FIX_exp]
-  simpa [wp, PostCond.noThrow, Id.run, bind, pure] using hxrun
+  simpa [Id.run, bind, pure] using hxrun
 
 end FloatSpec.Core.FLT
 
@@ -814,7 +812,7 @@ theorem generic_format_FLT_1 (beta : Int) [ValidRadix beta] (hemin_le_zero : emi
     simpa [FLT_exp] using (max_le_iff.mpr ⟨h1_sub_prec_nonpos, hemin_le_zero⟩)
   -- Apply the power lemma and rewrite `(β : ℝ)^0 = 1`.
   have h := FloatSpec.Core.Generic_fmt.generic_format_bpow
-              (beta := beta) (fexp := FLT_exp prec emin) (e := (0 : Int)) ⟨hβ, hbound⟩
+              (beta := beta) (fexp := FLT_exp prec emin) (e := (0 : Int)) hbound
   simpa using h
 
 end FloatSpec.Core.FLT
@@ -918,7 +916,7 @@ theorem ulp_FLT_le (beta : Int) [ValidRadix beta] (x : ℝ)
         (FloatSpec.Core.Raux.bpow_mag_le_from_exp_payload (beta := beta) (x := x) (e := M) hβ hx_ne le_rfl)
       -- Simplify the returned triple and rewrite the exponent
       have hM_lb : (beta : ℝ) ^ (M - 1) ≤ |x| := by
-        simpa [hM, wp, PostCond.noThrow, Id.run, pure, sub_eq_add_neg]
+        simpa [hM, Id.run, pure, sub_eq_add_neg]
           using hcall
       -- Convert the goal exponent using `hfexp_eq`
       simpa [hfexp_eq, sub_eq_add_neg, add_comm, add_left_comm, add_assoc]
@@ -986,7 +984,7 @@ theorem ulp_FLT_gt (beta : Int) [ValidRadix beta] (x : ℝ) :
           = (beta : ℝ) ^ ((FloatSpec.Core.Generic_fmt.cexp beta (FLT_exp prec emin) x)) := by
       -- Use the generic `ulp_neq_0` lemma
       have h := (FloatSpec.Core.Ulp.ulp_neq_0 (beta := beta) (fexp := FLT_exp prec emin) x hx_ne) (by exact True.intro)
-      simpa [wp, PostCond.noThrow, Id.run, bind, pure] using h
+      simpa [Id.run, bind, pure] using h
     -- Abbreviation: M = mag beta x
     set M : Int := (FloatSpec.Core.Raux.mag beta x) with hM
     -- Goal reduces to bounding |x| by β^M and then using monotonicity of bpow
@@ -1696,7 +1694,7 @@ theorem ulp_FLT_pred_pos (beta : Int) [ValidRadix beta] (x : ℝ)
           = - (FloatSpec.Core.Ulp.ulp beta (FLT_exp prec emin) 0) := by
       -- Evaluate pred at 0 via the Hoare-style lemma
       have := FloatSpec.Core.Ulp.pred_0 (beta := beta) (fexp := FLT_exp prec emin)
-      simpa [wp, PostCond.noThrow, Id.run, bind, pure]
+      simpa [Id.run, bind, pure]
         using (this True.intro)
     have hpred0 : p = - (FloatSpec.Core.Ulp.ulp beta (FLT_exp prec emin) 0) := by
       -- Rewrite p := (pred x).run and substitute x = 0
@@ -1709,7 +1707,7 @@ theorem ulp_FLT_pred_pos (beta : Int) [ValidRadix beta] (x : ℝ)
       -- ulp(-y) = ulp(y); rewrite p via hpred0
       have := FloatSpec.Core.Ulp.ulp_opp (beta := beta) (fexp := FLT_exp prec emin) ((FloatSpec.Core.Ulp.ulp beta (FLT_exp prec emin) 0))
       -- Reduce the Hoare triple and rewrite
-      simpa [wp, PostCond.noThrow, Id.run, bind, pure, hpred0, hup]
+      simpa [Id.run, bind, pure, hpred0, hup]
         using (this True.intro)
     -- Compute ulp at 0 under FLT and then ulp at that value using the small‑regime lemma
     have hulp0 : (FloatSpec.Core.Ulp.ulp beta (FLT_exp prec emin) 0) = (beta : ℝ) ^ emin :=
@@ -1752,7 +1750,7 @@ theorem ulp_FLT_pred_pos (beta : Int) [ValidRadix beta] (x : ℝ)
                   = x := by
       have := FloatSpec.Core.Ulp.pred_plus_ulp (beta := beta) (fexp := FLT_exp prec emin)
                     (x := x) (hx := hxpos) (Fx := Fx)
-      simpa [wp, PostCond.noThrow, Id.run, bind, pure]
+      simpa [Id.run, bind, pure]
         using (this hβ)
     have hbposℤ : (0 : Int) < beta := lt_trans Int.zero_lt_one hβ
     have hbposR : (0 : ℝ) < (beta : ℝ) := by exact_mod_cast hbposℤ
@@ -1768,7 +1766,7 @@ theorem ulp_FLT_pred_pos (beta : Int) [ValidRadix beta] (x : ℝ)
         have hM_prev_lb : emin + prec ≤ M - 1 := by
           have h := FloatSpec.Core.Raux.le_bpow (beta := beta) (e1 := emin + prec) (e2 := M - 1)
               hβ hT_le_pow
-          simpa [wp, PostCond.noThrow, Id.run, pure] using h
+          simpa [Id.run, pure] using h
         have hM_large : emin ≤ M - prec := by omega
         have hM_prev_large : emin ≤ M - 1 - prec := by omega
         have hpred_pos :
@@ -1776,7 +1774,7 @@ theorem ulp_FLT_pred_pos (beta : Int) [ValidRadix beta] (x : ℝ)
               FloatSpec.Core.Ulp.pred_pos beta (FLT_exp prec emin) x := by
           have h := FloatSpec.Core.Ulp.pred_eq_pos (beta := beta) (fexp := FLT_exp prec emin)
               (x := x) (hx := hx0)
-          simpa [wp, PostCond.noThrow, Id.run, bind, pure] using (h hβ)
+          simpa [Id.run, bind, pure] using (h hβ)
         have hpred_boundary :
             FloatSpec.Core.Ulp.pred beta (FLT_exp prec emin) x =
               x - (beta : ℝ) ^ (FLT_exp prec emin (M - 1)) := by
@@ -1806,7 +1804,7 @@ theorem ulp_FLT_pred_pos (beta : Int) [ValidRadix beta] (x : ℝ)
                 FLT_exp prec emin M := by
             unfold FloatSpec.Core.Generic_fmt.cexp
             simp [FloatSpec.Core.Raux.mag, hM]
-          simpa [wp, PostCond.noThrow, Id.run, bind, pure, hcexp] using hrun
+          simpa [Id.run, bind, pure, hcexp] using hrun
         have hExp_M : FLT_exp prec emin M = M - prec := by
           simpa [FLT_exp, max_eq_left hM_large]
         have hExp_prev : FLT_exp prec emin (M - 1) = M - 1 - prec := by
@@ -1842,7 +1840,7 @@ theorem ulp_FLT_pred_pos (beta : Int) [ValidRadix beta] (x : ℝ)
               FloatSpec.Core.Ulp.pred_pos beta (FLT_exp prec emin) x := by
           have h := FloatSpec.Core.Ulp.pred_eq_pos (beta := beta) (fexp := FLT_exp prec emin)
               (x := x) (hx := hx0)
-          simpa [wp, PostCond.noThrow, Id.run, bind, pure] using (h hβ)
+          simpa [Id.run, bind, pure] using (h hβ)
         have hpred_run :
             FloatSpec.Core.Ulp.pred beta (FLT_exp prec emin) x =
               x - FloatSpec.Core.Ulp.ulp beta (FLT_exp prec emin) x := by
@@ -1867,14 +1865,14 @@ theorem ulp_FLT_pred_pos (beta : Int) [ValidRadix beta] (x : ℝ)
           FloatSpec.Core.Ulp.pred beta (FLT_exp prec emin) x < T := by
         have htrip := FloatSpec.Core.Ulp.pred_lt_le (beta := beta) (fexp := FLT_exp prec emin)
             (x := x) (y := T) (hx := ne_of_gt hxpos) (hxy := le_of_lt hx_small)
-        simpa [wp, PostCond.noThrow, Id.run, bind, pure] using (htrip hβ)
+        simpa [Id.run, bind, pure] using (htrip hβ)
       have hpred_nonneg :
           0 ≤ FloatSpec.Core.Ulp.pred beta (FLT_exp prec emin) x := by
         have F0 : FloatSpec.Core.Generic_fmt.generic_format beta (FLT_exp prec emin) 0 :=
-          FloatSpec.Core.Generic_fmt.generic_format_0_run (beta := beta) (fexp := FLT_exp prec emin)
+          FloatSpec.Core.Generic_fmt.generic_format_0 (beta := beta) (fexp := FLT_exp prec emin)
         have htrip := FloatSpec.Core.Ulp.pred_ge_gt (beta := beta) (fexp := FLT_exp prec emin)
             (x := 0) (y := x) (Fx := F0) (Fy := Fx) hxpos
-        simpa [wp, PostCond.noThrow, Id.run, bind, pure] using (htrip hβ)
+        simpa [Id.run, bind, pure] using (htrip hβ)
       have hux_small :
           FloatSpec.Core.Ulp.ulp beta (FLT_exp prec emin) x = (beta : ℝ) ^ emin := by
         have hxabs : |x| < (beta : ℝ) ^ (emin + prec) := by

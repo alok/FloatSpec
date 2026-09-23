@@ -29,11 +29,9 @@ import FloatSpec.src.Core.Float_prop
 import FloatSpec.src.Core.Ulp
 import FloatSpec.VersoExt
 -- import Mathlib.Data.Real.Basic
-import Std.Do.Triple
 import FloatSpec.src.SimprocWP
 
 open Real
-open Std.Do
 open FloatSpec.Core.Defs
 open FloatSpec.Core.Round_pred
 open FloatSpec.Core.Generic_fmt
@@ -207,10 +205,7 @@ theorem DN_UP_parity_aux_payload
     -- Hence the goal holds vacuously.
     exfalso
     have h0F : F 0 := by
-      -- generic_format_0 ensures 0 is in format when beta > 1
-      have h := FloatSpec.Core.Generic_fmt.generic_format_0 (beta := beta) (fexp := fexp) (hβ)
-      -- The theorem above states `generic_format beta fexp 0`.
-      simpa using h
+      simpa using FloatSpec.Core.Generic_fmt.generic_format_0 (beta := beta) (fexp := fexp)
     -- Rewrite x = 0 into the hypothesis and contradict using hnotFmt.
     exact hnotFmt (by simpa [hzeq] using h0F)
   · -- x < 0: reduce to the positive case on -x and transport the conclusion back.
@@ -396,7 +391,7 @@ private theorem roundR_format_int
         simpa using (Valid_rnd.Zrnd_IZR (rnd := rnd') (0 : Int))
       have hround0 : roundR beta fexp rnd' y = 0 := by
         simp [hy0, roundR, scaled_mantissa, hrnd0]
-      simpa [hround0] using generic_format_0_run (beta := beta) (fexp := fexp)
+      simpa [hround0] using generic_format_0 (beta := beta) (fexp := fexp)
     · have hy_pos : 0 < y := lt_of_le_of_ne hy_nonneg (Ne.symm hy0)
       set ex : Int := FloatSpec.Core.Raux.mag beta y with hex
       set c : Int := fexp ex with hc
@@ -407,12 +402,12 @@ private theorem roundR_format_int
         exact zpow_pos (by exact_mod_cast hbposℤ) _
       have hlow : (beta : ℝ) ^ (ex - 1) ≤ y := by
         have htrip := FloatSpec.Core.Raux.bpow_mag_le (beta := beta) (x := y) hβ hy0
-        simpa [abs_of_nonneg hy_nonneg, hex, wp,
-          PostCond.noThrow, Id.run, pure] using htrip
+        simpa [abs_of_nonneg hy_nonneg, hex, 
+          Id.run, pure] using htrip
       have hhigh : y < (beta : ℝ) ^ ex := by
         have htrip := FloatSpec.Core.Raux.bpow_mag_gt (beta := beta) (x := y) hβ
-        simpa [abs_of_nonneg hy_nonneg, hex, wp,
-          PostCond.noThrow, Id.run, pure] using htrip
+        simpa [abs_of_nonneg hy_nonneg, hex, 
+          Id.run, pure] using htrip
       have hcexp_y : cexp beta fexp y = c := by
         simpa [cexp, hex.symm, hc]
       have hsm_y : scaled_mantissa beta fexp y = sm := by simpa using hsm.symm
@@ -425,16 +420,16 @@ private theorem roundR_format_int
         have hround_r : r = 0 ∨ r = (beta : ℝ) ^ (fexp ex) := by
           simpa [r, hr] using hround
         rcases hround_r with hr0 | hrpow
-        · simpa [hr0] using generic_format_0_run (beta := beta) (fexp := fexp)
+        · simpa [hr0] using generic_format_0 (beta := beta) (fexp := fexp)
         · have hfexp_self : fexp (fexp ex) ≤ fexp ex := by
             have hpair := Valid_exp.valid_exp (fexp := fexp) ex
             have hconst := (hpair.right hsmall).right
             have heq : fexp (fexp ex) = fexp ex := hconst (fexp ex) le_rfl
             exact le_of_eq heq
           have hgen := generic_format_bpow' (beta := beta) (fexp := fexp)
-            (e := fexp ex) ⟨hβ, hfexp_self⟩
+            (e := fexp ex) hfexp_self
           have hgen_run : generic_format beta fexp ((beta : ℝ) ^ (fexp ex)) := by
-            simpa [wp, PostCond.noThrow, Id.run, pure] using hgen
+            simpa [Id.run, pure] using hgen
           simpa [hrpow] using hgen_run
       · have hlarge : fexp ex < ex := lt_of_not_ge hsmall
         have hround :=
@@ -451,7 +446,7 @@ private theorem roundR_format_int
               simpa [abs_of_pos hr_pos] using hr_lt
             have htrip := FloatSpec.Core.Raux.mag_unique
               (beta := beta) (x := r) (e := ex) hβ hr_low_abs hr_lt_abs
-            simpa [wp, PostCond.noThrow, Id.run, pure] using htrip
+            simpa [Id.run, pure] using htrip
           have hfmt_float :
               generic_format beta fexp
                 (F2R (FlocqFloat.mk (rnd' sm) c : FlocqFloat beta)) := by
@@ -467,8 +462,8 @@ private theorem roundR_format_int
               have hcexp_r : cexp beta fexp r = c := by
                 simpa [cexp, hmag_r, hc]
               rw [hF2R_eq, hcexp_r]
-            have hres := htrip ⟨hβ, hbound⟩
-            simpa [wp, PostCond.noThrow, Id.run, pure] using hres
+            have hres := htrip hbound
+            simpa [Id.run, pure] using hres
           have hF2R_eq : F2R (FlocqFloat.mk (rnd' sm) c : FlocqFloat beta) = r := by
             simpa [FloatSpec.Core.Defs.F2R] using hr_eval.symm
           have hF2R_eq' : ((rnd' sm : Int) : ℝ) * (beta : ℝ) ^ c = r := by
@@ -476,9 +471,9 @@ private theorem roundR_format_int
           simpa [hF2R_eq'] using hfmt_float
         · have hc_le_ex : fexp ex ≤ ex := le_of_lt hlarge
           have hgen := generic_format_bpow' (beta := beta) (fexp := fexp)
-            (e := ex) ⟨hβ, hc_le_ex⟩
+            (e := ex) hc_le_ex
           have hgen_run : generic_format beta fexp ((beta : ℝ) ^ ex) := by
-            simpa [wp, PostCond.noThrow, Id.run, pure] using hgen
+            simpa [Id.run, pure] using hgen
           simpa [hr_eq_pow] using hgen_run
   by_cases hx_nonneg : 0 ≤ x
   · exact hpos_format rnd x hx_nonneg
@@ -517,7 +512,7 @@ private theorem roundR_floor_DN_pt
       (le_of_lt (zpow_pos hbposR e))
     have hscaled : sm * (beta : ℝ) ^ e = x := by
       have htrip := scaled_mantissa_mult_bpow (beta := beta) (fexp := fexp) (x := x)
-      simpa [wp, PostCond.noThrow, Id.run, pure, sm, hsm, e, he] using htrip hβ
+      simpa [Id.run, pure, sm, hsm, e, he] using htrip
     have hdn_eval :
         roundR beta fexp rnd_floor x = ((rnd_floor sm : Int) : ℝ) * (beta : ℝ) ^ e := by
       simpa [roundR, sm, hsm, e, he]
@@ -552,7 +547,7 @@ private theorem roundR_ceil_UP_pt
       (le_of_lt (zpow_pos hbposR e))
     have hscaled : sm * (beta : ℝ) ^ e = x := by
       have htrip := scaled_mantissa_mult_bpow (beta := beta) (fexp := fexp) (x := x)
-      simpa [wp, PostCond.noThrow, Id.run, pure, sm, hsm, e, he] using htrip hβ
+      simpa [Id.run, pure, sm, hsm, e, he] using htrip
     have hup_eval :
         roundR beta fexp rnd_ceil x = ((rnd_ceil sm : Int) : ℝ) * (beta : ℝ) ^ e := by
       simpa [roundR, sm, hsm, e, he]
@@ -606,7 +601,7 @@ private theorem DN_UP_gap_of_not_format
   have hgap_run :
       round_UP_to_format beta fexp x hβ =
         round_DN_to_format beta fexp x hβ + FloatSpec.Core.Ulp.ulp beta fexp x := by
-    simpa [wp, PostCond.noThrow, Id.run, bind, pure]
+    simpa [Id.run, bind, pure]
       using hgap True.intro
   simpa [hxd, hxu] using hgap_run
 
@@ -732,7 +727,7 @@ private theorem canonical_power_mantissa
   classical
   have hmag_pow : FloatSpec.Core.Raux.mag beta ((beta : ℝ) ^ e) = e + 1 := by
     have htrip := FloatSpec.Core.Raux.mag_bpow (beta := beta) (e := e) hβ
-    simpa [wp, PostCond.noThrow, Id.run, pure] using htrip
+    simpa [Id.run, pure] using htrip
   have hgexp : g.Fexp = fexp (e + 1) := by
     unfold canonical at hcan
     have hmag_g : FloatSpec.Core.Raux.mag beta (F2R g) = e + 1 := by
@@ -788,7 +783,7 @@ private theorem canonical_power_exp
     g.Fexp = fexp (e + 1) := by
   have hmag_pow : FloatSpec.Core.Raux.mag beta ((beta : ℝ) ^ e) = e + 1 := by
     have htrip := FloatSpec.Core.Raux.mag_bpow (beta := beta) (e := e) hβ
-    simpa [wp, PostCond.noThrow, Id.run, pure] using htrip
+    simpa [Id.run, pure] using htrip
   unfold canonical at hcan
   have hmag_g : FloatSpec.Core.Raux.mag beta (F2R g) = e + 1 := by
     rw [hg]
@@ -843,11 +838,11 @@ theorem DN_UP_parity_generic_pos_payload :
   have hlow : (beta : ℝ) ^ (ex - 1) ≤ x := by
     have htrip := FloatSpec.Core.Raux.bpow_mag_le (beta := beta) (x := x) hβ hx_ne
     simpa [abs_of_nonneg hx_nonneg, hex,
-      wp, PostCond.noThrow, Id.run, pure] using htrip
+      Id.run, pure] using htrip
   have hhigh : x < (beta : ℝ) ^ ex := by
     have htrip := FloatSpec.Core.Raux.bpow_mag_gt (beta := beta) (x := x) hβ
     simpa [abs_of_nonneg hx_nonneg, hex,
-      wp, PostCond.noThrow, Id.run, pure] using htrip
+      Id.run, pure] using htrip
   by_cases hsmall : ex ≤ fexp ex
   · have hDN_floor : FloatSpec.Core.Round_pred.Rnd_DN_pt F x
         (roundR beta fexp rnd_floor x) := by
@@ -874,8 +869,8 @@ theorem DN_UP_parity_generic_pos_payload :
         round_to_generic beta fexp rnd_ceil x = (beta : ℝ) ^ (fexp ex) := by
       have htrip := round_UP_small_pos (beta := beta) (fexp := fexp)
         (x := x) (ex := ex)
-      simpa [wp, PostCond.noThrow, Id.run, pure]
-        using htrip ⟨hβ, hsmall, hlow, hhigh⟩
+      simpa [Id.run, pure]
+        using htrip ⟨hlow, hhigh⟩ hsmall
     have hup_small : roundR beta fexp rnd_ceil x = (beta : ℝ) ^ (fexp ex) := by
       calc
         roundR beta fexp rnd_ceil x = round_to_generic beta fexp rnd_ceil x := by
@@ -896,7 +891,7 @@ theorem DN_UP_parity_generic_pos_payload :
       have hmag_pow :
           FloatSpec.Core.Raux.mag beta ((beta : ℝ) ^ (fexp ex)) = fexp ex + 1 := by
         have htrip := FloatSpec.Core.Raux.mag_bpow (beta := beta) (e := fexp ex) hβ
-        simpa [wp, PostCond.noThrow, Id.run, pure] using htrip
+        simpa [Id.run, pure] using htrip
       have hcan_u' := hcan_u
       unfold canonical at hcan_u'
       have hmag_gu : FloatSpec.Core.Raux.mag beta (F2R gu) = fexp ex + 1 := by
@@ -922,14 +917,14 @@ theorem DN_UP_parity_generic_pos_payload :
   · have hlarge : fexp ex < ex := lt_of_not_ge hsmall
     have hcexp_x : cexp beta fexp x = fexp ex := by
       have htrip := cexp_fexp_pos (beta := beta) (fexp := fexp) (x := x) (ex := ex)
-      simpa [wp, PostCond.noThrow, Id.run, pure]
-        using htrip ⟨hβ, hlow, hhigh⟩
+      simpa [Id.run, pure]
+        using htrip ⟨hlow, hhigh⟩
     set sm : ℝ := scaled_mantissa beta fexp x with hsm
     set c : Int := fexp ex with hc
     have hscaled : sm * (beta : ℝ) ^ c = x := by
       have htrip := scaled_mantissa_mult_bpow (beta := beta) (fexp := fexp) (x := x)
-      simpa [wp, PostCond.noThrow, Id.run, pure, sm, hsm, c, hc, hcexp_x]
-        using htrip hβ
+      simpa [Id.run, pure, sm, hsm, c, hc, hcexp_x]
+        using htrip
     have hbpos : (0 : ℝ) < (beta : ℝ) := by
       exact_mod_cast (lt_trans Int.zero_lt_one hβ)
     have hpow_c_pos : 0 < (beta : ℝ) ^ c := zpow_pos hbpos c
@@ -1003,7 +998,7 @@ theorem DN_UP_parity_generic_pos_payload :
           exact hhigh_gd
         have htrip := FloatSpec.Core.Raux.mag_unique
           (beta := beta) (x := F2R gd) (e := ex) hβ hlow_abs hhigh_abs
-        simpa [wp, PostCond.noThrow, Id.run, pure] using htrip
+        simpa [Id.run, pure] using htrip
       have hgd_exp : gd.Fexp = c := by
         unfold canonical at hcan_d
         rw [hmag_gd] at hcan_d
@@ -1024,7 +1019,7 @@ theorem DN_UP_parity_generic_pos_payload :
           exact hhigh_gu
         have htrip := FloatSpec.Core.Raux.mag_unique
           (beta := beta) (x := F2R gu) (e := ex) hβ hlow_abs hhigh_abs
-        simpa [wp, PostCond.noThrow, Id.run, pure] using htrip
+        simpa [Id.run, pure] using htrip
       have hgu_exp : gu.Fexp = c := by
         unfold canonical at hcan_u
         rw [hmag_gu] at hcan_u
@@ -1080,7 +1075,7 @@ theorem DN_UP_parity_generic_pos_payload :
           exact hhigh_gd
         have htrip := FloatSpec.Core.Raux.mag_unique
           (beta := beta) (x := F2R gd) (e := ex) hβ hlow_abs hhigh_abs
-        simpa [wp, PostCond.noThrow, Id.run, pure] using htrip
+        simpa [Id.run, pure] using htrip
       have hgd_exp : gd.Fexp = c := by
         unfold canonical at hcan_d
         rw [hmag_gd] at hcan_d
@@ -1199,7 +1194,7 @@ theorem DN_UP_parity_aux
   · exact hpos x xd xu hx hnot hcd hcu hxd hxu
   · exfalso
     apply hnot
-    simpa [hx] using generic_format_0_run (beta := beta) (fexp := fexp)
+    simpa [hx] using generic_format_0 (beta := beta) (fexp := fexp)
   · let nd : FlocqFloat beta := ⟨-xu.Fnum, xu.Fexp⟩
     let nu : FlocqFloat beta := ⟨-xd.Fnum, xd.Fexp⟩
     have hcnd : canonical beta fexp nd := by
@@ -2115,7 +2110,7 @@ theorem Rnd_NE_pt_sign (x f : ℝ) (hNE : Rnd_NE_pt beta fexp x f)
     (_hx : x ≠ 0) (hf : 0 < f) : 0 < x := by
   -- Zero is representable in the generic format.
   have hF0 : FloatSpec.Core.Generic_fmt.generic_format beta fexp 0 :=
-    FloatSpec.Core.Generic_fmt.generic_format_0_run beta fexp
+    FloatSpec.Core.Generic_fmt.generic_format_0 beta fexp
   -- Show that `x` cannot be nonpositive, otherwise `f ≤ 0` contradicts `0 < f`.
   have hx_not_le : ¬ x ≤ 0 := by
     intro hxle
@@ -2147,7 +2142,7 @@ theorem Rnd_NE_pt_abs (x f : ℝ) (hNE : Rnd_NE_pt beta fexp x f) :
   -- Basic facts: 0 is representable and `F` is closed under negation.
   -- The source radix invariant `beta > 1` is carried by `ValidRadix`.
   have hβ : 1 < beta := ValidRadix.valid
-  have hF0 : F 0 := FloatSpec.Core.Generic_fmt.generic_format_0_run beta fexp
+  have hF0 : F 0 := FloatSpec.Core.Generic_fmt.generic_format_0 beta fexp
   have Fopp : ∀ y, F y → F (-y) := by
     intro y hy
     simpa using (FloatSpec.Core.Generic_fmt.generic_format_opp (beta := beta) (fexp := fexp) (x := y) hy)
@@ -2410,7 +2405,7 @@ theorem round_NE_pt (x : ℝ) :
           FloatSpec.Core.Generic_fmt.scaled_mantissa, hz]
       rw [hround0, hx0]
       exact Rnd_NE_pt_refl (beta := beta) (fexp := fexp) 0
-        (FloatSpec.Core.Generic_fmt.generic_format_0_run beta fexp)
+        (FloatSpec.Core.Generic_fmt.generic_format_0 beta fexp)
     · have hxneg : x < 0 := lt_of_le_of_ne (le_of_not_gt hxpos) hx0
       have hxneg_pos : 0 < -x := neg_pos.mpr hxneg
       let choice : Int → Bool := fun t => !(decide (2 ∣ t))

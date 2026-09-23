@@ -1990,7 +1990,7 @@ lemma round_to_generic_rnd_of_mode_nonneg (mode : RoundingMode)
   rw [FloatSpec.Core.Generic_fmt.round_to_generic_int_eq_roundR]
   have hfmt0 :
       FloatSpec.Core.Generic_fmt.generic_format 2 fexp (0 : ℝ) :=
-    FloatSpec.Core.Generic_fmt.generic_format_0_run (beta := 2) (fexp := fexp)
+    FloatSpec.Core.Generic_fmt.generic_format_0 (beta := 2) (fexp := fexp)
   simpa using
     FloatSpec.Core.Generic_fmt.roundR_ge_generic
       (beta := 2) (fexp := fexp) (rnd := rnd_of_mode mode)
@@ -2003,7 +2003,7 @@ lemma round_to_generic_rnd_of_mode_nonpos (mode : RoundingMode)
   rw [FloatSpec.Core.Generic_fmt.round_to_generic_int_eq_roundR]
   have hfmt0 :
       FloatSpec.Core.Generic_fmt.generic_format 2 fexp (0 : ℝ) :=
-    FloatSpec.Core.Generic_fmt.generic_format_0_run (beta := 2) (fexp := fexp)
+    FloatSpec.Core.Generic_fmt.generic_format_0 (beta := 2) (fexp := fexp)
   simpa using
     FloatSpec.Core.Generic_fmt.roundR_le_generic
       (beta := 2) (fexp := fexp) (rnd := rnd_of_mode mode)
@@ -3363,7 +3363,7 @@ theorem Bsucc_correct_compat (x : Binary754 prec emax)
       simp only [is_finite_B, is_finite_FF] at hx
       cases xval with
       | F754_zero s =>
-        exact FloatSpec.Core.Generic_fmt.generic_format_0_run 2 (FLT_exp (3 - emax - prec) prec)
+        exact FloatSpec.Core.Generic_fmt.generic_format_0 2 (FLT_exp (3 - emax - prec) prec)
       | F754_infinity s => simp at hx
       | F754_nan s m => simp at hx
       | F754_finite s m e =>
@@ -3373,18 +3373,15 @@ theorem Bsucc_correct_compat (x : Binary754 prec emax)
             simp only [F2R, FloatSpec.Core.Defs.F2R]
             cases s <;> simp
           rw [h_f2r_zero]
-          exact FloatSpec.Core.Generic_fmt.generic_format_0_run 2 (FLT_exp (3 - emax - prec) prec)
+          exact FloatSpec.Core.Generic_fmt.generic_format_0 2 (FLT_exp (3 - emax - prec) prec)
         · -- Non-zero mantissa case: use generic_format_F2R
           have h_format := FloatSpec.Core.Generic_fmt.generic_format_F2R 2 (FLT_exp (3 - emax - prec) prec)
             (if s then -(m : Int) else (m : Int)) e
-          simp only [wp, PostCond.noThrow, Id.run, pure] at h_format
           apply h_format
-          constructor
-          · norm_num  -- prove 2 > 1
-          · intro hm_ne
-            -- Use hformat which provides cexp ≤ e for finite floats with non-zero mantissa
-            simp only [Binary754_in_generic_format] at hformat
-            exact hformat hm_ne
+          intro hm_ne
+          -- Use hformat which provides cexp ≤ e for finite floats with non-zero mantissa
+          simp only [Binary754_in_generic_format] at hformat
+          exact hformat hm_ne
     -- Use generic_format_succ to get generic_format (succ ... (B2R x))
     have hgf_succ : FloatSpec.Core.Generic_fmt.generic_format 2 (FLT_exp (3 - emax - prec) prec)
         (FloatSpec.Core.Ulp.succ 2 (FLT_exp (3 - emax - prec) prec) (B2R x)) := by
@@ -3446,7 +3443,7 @@ theorem Bpred_correct_compat (x : Binary754 prec emax)
       simp only [is_finite_B, is_finite_FF] at hx
       cases xval with
       | F754_zero s =>
-        exact FloatSpec.Core.Generic_fmt.generic_format_0_run 2 (FLT_exp (3 - emax - prec) prec)
+        exact FloatSpec.Core.Generic_fmt.generic_format_0 2 (FLT_exp (3 - emax - prec) prec)
       | F754_infinity s => simp at hx
       | F754_nan s m => simp at hx
       | F754_finite s m e =>
@@ -3456,18 +3453,15 @@ theorem Bpred_correct_compat (x : Binary754 prec emax)
             simp only [F2R, FloatSpec.Core.Defs.F2R]
             cases s <;> simp
           rw [h_f2r_zero]
-          exact FloatSpec.Core.Generic_fmt.generic_format_0_run 2 (FLT_exp (3 - emax - prec) prec)
+          exact FloatSpec.Core.Generic_fmt.generic_format_0 2 (FLT_exp (3 - emax - prec) prec)
         · -- Non-zero mantissa case: use generic_format_F2R
           have h_format := FloatSpec.Core.Generic_fmt.generic_format_F2R 2 (FLT_exp (3 - emax - prec) prec)
             (if s then -(m : Int) else (m : Int)) e
-          simp only [wp, PostCond.noThrow, Id.run, pure] at h_format
           apply h_format
-          constructor
-          · norm_num  -- prove 2 > 1
-          · intro hm_ne
-            -- Use hformat which provides cexp ≤ e for finite floats with non-zero mantissa
-            simp only [Binary754_in_generic_format] at hformat
-            exact hformat hm_ne
+          intro hm_ne
+          -- Use hformat which provides cexp ≤ e for finite floats with non-zero mantissa
+          simp only [Binary754_in_generic_format] at hformat
+          exact hformat hm_ne
     -- Use generic_format_pred to get generic_format (pred ... (B2R x))
     have hgf_pred : FloatSpec.Core.Generic_fmt.generic_format 2 (FLT_exp (3 - emax - prec) prec)
         (FloatSpec.Core.Ulp.pred 2 (FLT_exp (3 - emax - prec) prec) (B2R x)) := by
@@ -3737,14 +3731,14 @@ theorem generic_format_B2R_compat {prec emax : Int} [Prec_gt_0 prec]
   simp only [B2R, FF2R]
   cases xval with
   | F754_zero s =>
-    -- B2R of zero is 0, use generic_format_0_run
-    exact FloatSpec.Core.Generic_fmt.generic_format_0_run 2 (FLT_exp (3 - emax - prec) prec)
+    -- B2R of zero is 0, use generic_format_0
+    exact FloatSpec.Core.Generic_fmt.generic_format_0 2 (FLT_exp (3 - emax - prec) prec)
   | F754_infinity s =>
-    -- B2R of infinity is 0, use generic_format_0_run
-    exact FloatSpec.Core.Generic_fmt.generic_format_0_run 2 (FLT_exp (3 - emax - prec) prec)
+    -- B2R of infinity is 0, use generic_format_0
+    exact FloatSpec.Core.Generic_fmt.generic_format_0 2 (FLT_exp (3 - emax - prec) prec)
   | F754_nan s m =>
-    -- B2R of NaN is 0, use generic_format_0_run
-    exact FloatSpec.Core.Generic_fmt.generic_format_0_run 2 (FLT_exp (3 - emax - prec) prec)
+    -- B2R of NaN is 0, use generic_format_0
+    exact FloatSpec.Core.Generic_fmt.generic_format_0 2 (FLT_exp (3 - emax - prec) prec)
   | F754_finite s m e =>
     -- For finite floats, F2R of a FlocqFloat is in generic format
     -- This requires showing the value is representable in FLT format
@@ -3756,17 +3750,14 @@ theorem generic_format_B2R_compat {prec emax : Int} [Prec_gt_0 prec]
         simp only [F2R, FloatSpec.Core.Defs.F2R]
         cases s <;> simp
       rw [h_f2r_zero]
-      exact FloatSpec.Core.Generic_fmt.generic_format_0_run 2 (FLT_exp (3 - emax - prec) prec)
+      exact FloatSpec.Core.Generic_fmt.generic_format_0 2 (FLT_exp (3 - emax - prec) prec)
     · -- Non-zero mantissa case: use generic_format_F2R
       have h_format := FloatSpec.Core.Generic_fmt.generic_format_F2R 2 (FLT_exp (3 - emax - prec) prec)
         (if s then -(m : Int) else (m : Int)) e
-      simp only [wp, PostCond.noThrow, Id.run, pure] at h_format
       apply h_format
-      constructor
-      · norm_num  -- prove 2 > 1
-      · intro hm_ne
-        simp only [Binary754_in_generic_format] at hformat
-        exact hformat hm_ne
+      intro hm_ne
+      simp only [Binary754_in_generic_format] at hformat
+      exact hformat hm_ne
 
 -- Coq: FLT_format_B2R
 -- FLT-format property of the real semantics of a binary float.

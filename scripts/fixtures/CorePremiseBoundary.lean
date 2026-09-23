@@ -258,7 +258,7 @@ theorem Generic_fmt_round_DN_small_pos_unrestricted :
 theorem Generic_fmt_round_UP_small_pos_unrestricted :
     ∀ (beta : ℤ) [inst : ValidRadix beta] (fexp : ℤ → ℤ)
   (x : ℝ) (ex : ℤ),
-  1 < beta ∧ ex ≤ fexp ex ∧ ↑beta ^ (ex - 1) ≤ x ∧ x < ↑beta ^ ex →
+  ↑beta ^ (ex - 1) ≤ x ∧ x < ↑beta ^ ex → ex ≤ fexp ex →
     FloatSpec.Core.Generic_fmt.round_to_generic beta fexp FloatSpec.Core.Generic_fmt.rnd_ceil x =
       ↑beta ^ fexp ex := @FloatSpec.Core.Generic_fmt.round_UP_small_pos
 

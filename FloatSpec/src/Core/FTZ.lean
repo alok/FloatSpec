@@ -20,12 +20,10 @@ COPYING file for more details.
 import FloatSpec.src.Core.Defs
 import FloatSpec.src.Core.Generic_fmt
 -- import Mathlib.Data.Real.Basic
-import Std.Do.Triple
 import FloatSpec.src.Core.Ulp
 import FloatSpec.src.Core.FLX
 
 open Real
-open Std.Do
 open FloatSpec.Core.Generic_fmt
 
 set_option linter.coqSource true
@@ -267,8 +265,8 @@ private theorem FTZ_format_generic_run (beta : Int) [ValidRadix beta] (x : ℝ)
     -- The canonical exponent of a nonzero generic number is below its magnitude.
     have hcexp_lt : FTZ_exp prec emin ex < ex := by
       have h := FloatSpec.Core.Generic_fmt.mag_generic_gt beta (FTZ_exp prec emin) x
-      simpa [FloatSpec.Core.Generic_fmt.cexp, wp, PostCond.noThrow, Id.run, pure, hex]
-        using h ⟨hbeta, hx0, hx⟩
+      simpa [FloatSpec.Core.Generic_fmt.cexp, Id.run, pure, hex]
+        using h hx0 hx
     -- Hence the flush branch is unreachable.
     have hbranch : ¬ (ex - prec < emin) := by
       intro hlt
@@ -283,7 +281,7 @@ private theorem FTZ_format_generic_run (beta : Int) [ValidRadix beta] (x : ℝ)
         FloatSpec.Core.Generic_fmt.scaled_mantissa beta (FTZ_exp prec emin) x = (m : ℝ) := by
       have h := FloatSpec.Core.Generic_fmt.scaled_mantissa_generic
         (beta := beta) (fexp := FTZ_exp prec emin) x hx
-      simpa [wp, PostCond.noThrow, Id.run, pure, hm] using h
+      simpa [Id.run, pure, hm] using h
     have hxeq : x = (m : ℝ) * (beta : ℝ) ^ (ex - prec) := by
       simpa [FloatSpec.Core.Generic_fmt.generic_format, hcexp, hm] using hx
     -- Upper bound: |m| < β^prec.
@@ -538,7 +536,7 @@ theorem FTZ_format_FLXN (beta : Int) [ValidRadix beta] (x : ℝ)
       exact
         (FloatSpec.Core.Generic_fmt.generic_format_bpow'
           (beta := beta) (fexp := FTZ_exp prec emin) (e := e1))
-          ⟨hβ, hle_e1⟩
+          hle_e1
     -- Finally, since |x| = β^e1, FTZ holds for |x|, and hence for x by symmetry of abs in generic_format
     -- We can use that generic_format works on the exact real value; replace x by its absolute value equality.
     -- Build the target by rewriting x = (sign x) * |x|, then using generic_format closure under sign.

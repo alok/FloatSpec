@@ -239,7 +239,7 @@ lemma mult_error_FLX_aux (x y : ℝ)
           (beta : ℝ) ^ ez = z := by
     have h := FloatSpec.Core.Generic_fmt.scaled_mantissa_mult_bpow
       (beta := beta) (fexp := fexp) (x := z)
-    simpa [ez, fexp] using h hβ
+    simpa [ez, fexp] using h
   have herr_lt :
       |FloatSpec.Core.Generic_fmt.roundR beta fexp rnd z - z| <
         (beta : ℝ) ^ ez := by
@@ -292,7 +292,7 @@ theorem mult_error_FLX (x y : ℝ)
   by_cases herr :
       FloatSpec.Core.Generic_fmt.roundR beta (FLX_exp prec) rnd (x * y) - (x * y) = 0
   · simpa [herr] using
-      (FloatSpec.Core.Generic_fmt.generic_format_0_run
+      (FloatSpec.Core.Generic_fmt.generic_format_0
         (beta := beta) (fexp := FLX_exp prec))
   · rcases mult_error_FLX_aux (beta := beta) (prec := prec)
       (rnd := rnd) x y hβ hx hy herr with ⟨f, hf_eq, hcexp_le, _hfexp⟩
@@ -306,7 +306,7 @@ theorem mult_error_FLX (x y : ℝ)
       (FloatSpec.Core.Generic_fmt.generic_format_F2R'
         (beta := beta) (fexp := FLX_exp prec)
         (x := FloatSpec.Core.Generic_fmt.roundR beta (FLX_exp prec) rnd (x * y) - (x * y))
-        (f := f)) ⟨hβ, hf_eq, fun _ => hcexp_le'⟩
+        (f := f)) hf_eq (fun _ => hcexp_le')
 
 omit [Prec_gt_0 prec] in
 /-- Multiplication by power of beta is exact in FLX -/
@@ -319,7 +319,7 @@ lemma mult_bpow_exact_FLX (x : ℝ) (e : Int)
   by_cases hx0 : x = 0
   · subst x
     simpa using
-      (FloatSpec.Core.Generic_fmt.generic_format_0_run (beta := beta) (fexp := fexp))
+      (FloatSpec.Core.Generic_fmt.generic_format_0 (beta := beta) (fexp := fexp))
   · set n : Int := e
     set m : Int := FloatSpec.Core.Raux.Ztrunc
       (FloatSpec.Core.Generic_fmt.scaled_mantissa beta fexp x)
@@ -371,9 +371,9 @@ lemma mult_bpow_exact_FLX (x : ℝ) (e : Int)
     have hfmt := FloatSpec.Core.Generic_fmt.generic_format_F2R'
       (beta := beta) (fexp := fexp)
       (x := x * FloatSpec.Core.Raux.bpow beta e)
-      (f := f) ⟨hβ, htarget.symm, by
+      (f := f) htarget.symm (by
         intro _
-        simpa [f] using le_of_eq hcexp⟩
+        simpa [f] using le_of_eq hcexp)
     simpa [fexp] using hfmt
 
 -- Section: FLT multiplication error
@@ -392,7 +392,7 @@ theorem mult_error_FLT (x y : ℝ)
   by_cases herr :
       FloatSpec.Core.Generic_fmt.roundR beta (FLT_exp emin prec) rnd z - z = 0
   · simpa [z, herr] using
-      (FloatSpec.Core.Generic_fmt.generic_format_0_run
+      (FloatSpec.Core.Generic_fmt.generic_format_0
         (beta := beta) (fexp := FLT_exp emin prec))
   have hbpos_int : (0 : Int) < beta := lt_trans (by decide) hβ
   have hbpos_real : (0 : ℝ) < (beta : ℝ) := by exact_mod_cast hbpos_int
@@ -423,7 +423,7 @@ theorem mult_error_FLT (x y : ℝ)
           (beta : ℝ) ^ (emin + 2 * prec - 1) := by
       have h := FloatSpec.Core.Raux.bpow_le beta (emin + prec)
         (emin + 2 * prec - 1) hβ hexp_le
-      simpa [Std.Do.wp, Std.Do.PostCond.noThrow,
+      simpa [
         Id.run, pure, FloatSpec.Core.Raux.bpow] using h
     exact le_trans hbpow_le (by simpa [FloatSpec.Core.Raux.bpow] using hbound_under)
   have hcexp_eq :
@@ -582,9 +582,9 @@ theorem mult_error_FLT (x y : ℝ)
     (FloatSpec.Core.Generic_fmt.generic_format_F2R'
       (beta := beta) (fexp := FLT_exp emin prec)
       (x := FloatSpec.Core.Generic_fmt.roundR beta (FLT_exp emin prec) rnd (x * y) - (x * y))
-      (f := f)) ⟨hβ, hf_eq_flt, fun _ => by
+      (f := f)) hf_eq_flt (fun _ => by
         rw [← hf_eq_flt]
-        exact hflt_cexp_le⟩
+        exact hflt_cexp_le)
 
 /-- F2R greater than or equal to power bound.
 
@@ -755,7 +755,7 @@ theorem mult_error_FLT_ge_bpow (x y : ℝ) (e : Int)
   have hbpow_le_ep :
       FloatSpec.Core.Raux.bpow beta e ≤ FloatSpec.Core.Raux.bpow beta ep := by
     have h := FloatSpec.Core.Raux.bpow_le beta e ep hβ he_le_ep
-    simpa [Std.Do.wp, Std.Do.PostCond.noThrow,
+    simpa [
       Id.run, pure, FloatSpec.Core.Raux.bpow] using h
   have hferr_ge :
       FloatSpec.Core.Raux.bpow beta ferr.Fexp ≤ |_root_.F2R ferr| :=
@@ -786,7 +786,7 @@ lemma mult_bpow_exact_FLT (x : ℝ) (e : Int)
   by_cases hx0 : x = 0
   · subst x
     simpa using
-      (FloatSpec.Core.Generic_fmt.generic_format_0_run (beta := beta) (fexp := fexp))
+      (FloatSpec.Core.Generic_fmt.generic_format_0 (beta := beta) (fexp := fexp))
   · set n : Int := e
     set m : Int := FloatSpec.Core.Raux.Ztrunc
       (FloatSpec.Core.Generic_fmt.scaled_mantissa beta fexp x)
@@ -859,9 +859,9 @@ lemma mult_bpow_exact_FLT (x : ℝ) (e : Int)
     have hfmt := FloatSpec.Core.Generic_fmt.generic_format_F2R'
       (beta := beta) (fexp := fexp)
       (x := x * FloatSpec.Core.Raux.bpow beta e)
-      (f := f) ⟨hβ, htarget.symm, by
+      (f := f) htarget.symm (by
         intro _
-        simpa [f] using hcexp⟩
+        simpa [f] using hcexp)
     simpa [fexp] using hfmt
 
 omit [Prec_gt_0 prec] in
@@ -877,7 +877,7 @@ lemma mult_bpow_pos_exact_FLT (x : ℝ) (e : Int)
   by_cases hx0 : x = 0
   · subst x
     simpa using
-      (FloatSpec.Core.Generic_fmt.generic_format_0_run (beta := beta) (fexp := fexp))
+      (FloatSpec.Core.Generic_fmt.generic_format_0 (beta := beta) (fexp := fexp))
   · set n : Int := e
     set m : Int := FloatSpec.Core.Raux.Ztrunc
       (FloatSpec.Core.Generic_fmt.scaled_mantissa beta fexp x)
@@ -954,7 +954,7 @@ lemma mult_bpow_pos_exact_FLT (x : ℝ) (e : Int)
     have hfmt := FloatSpec.Core.Generic_fmt.generic_format_F2R'
       (beta := beta) (fexp := fexp)
       (x := x * FloatSpec.Core.Raux.bpow beta e)
-      (f := f) ⟨hβ, htarget.symm, by
+      (f := f) htarget.symm (by
         intro _
-        simpa [f] using hcexp⟩
+        simpa [f] using hcexp)
     simpa [fexp] using hfmt

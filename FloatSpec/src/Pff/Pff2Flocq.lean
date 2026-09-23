@@ -890,8 +890,7 @@ theorem C_format (beta emin prec s : Int) [ValidRadix beta] [Prec_gt_0 prec] :
     rw [← hn_cast, zpow_natCast]
   have hfmt :=
     FloatSpec.Core.Generic_fmt.generic_format_F2R
-      (beta := beta) (fexp := FLT_exp emin prec) (m := m) (e := 0)
-      ⟨hβ, ?_⟩
+      (beta := beta) (fexp := FLT_exp emin prec) (m := m) (e := 0) ?_
   · simpa [FloatSpec.Core.Defs.F2R, hF2R, n, m,
       FloatSpec.Core.Raux.bpow, hpow_cast] using hfmt
   intro hm_ne
@@ -1147,7 +1146,6 @@ theorem V1_Und3' (beta emin prec : Int) [ValidRadix beta] [Prec_gt_0 prec]
         have hopp := FloatSpec.Core.Generic_fmt.generic_format_opp
           (beta := beta) (fexp := FLT_exp emin prec)
           (x := FloatSpec.Core.Raux.bpow beta e)
-        simp only [wp, PostCond.noThrow, PredTrans.pure, Id.run, pure, Bind.bind] at hopp
         exact hopp hfmt_bpow'
       have hround_le :
           FloatSpec.Core.Generic_fmt.roundR beta (FLT_exp emin prec)
@@ -2553,7 +2551,6 @@ theorem ErrFMA_bounded (beta emin prec : Int) [ValidRadix beta] [Prec_gt_0 prec]
         (beta := beta) (fexp := FLT_exp emin prec)
         (x := FloatSpec.Core.Generic_fmt.roundR beta (FLT_exp emin prec) rnd (a * x) -
           a * x)
-      simp only [wp, PostCond.noThrow, PredTrans.pure, Id.run, pure, Bind.bind] at hopp
       have hneg_fmt := hopp hprod_err
       have hu2_eq :
           u2 =
@@ -2584,7 +2581,6 @@ theorem ErrFMA_bounded (beta emin prec : Int) [ValidRadix beta] [Prec_gt_0 prec]
         (x :=
           FloatSpec.Core.Generic_fmt.roundR beta (FLT_exp emin prec) rnd
             (y + u2) - (y + u2))
-      simp only [wp, PostCond.noThrow, PredTrans.pure, Id.run, pure, Bind.bind] at hopp
       have hneg_fmt := hopp hadd_err_core
       have halpha2_eq :
           alpha2 =
@@ -2616,7 +2612,6 @@ theorem ErrFMA_bounded (beta emin prec : Int) [ValidRadix beta] [Prec_gt_0 prec]
       (x :=
         FloatSpec.Core.Generic_fmt.roundR beta (FLT_exp emin prec) rnd
           (gamma + alpha2) - (gamma + alpha2))
-    simp only [wp, PostCond.noThrow, PredTrans.pure, Id.run, pure, Bind.bind] at hopp
     have hneg_fmt := hopp hr3_err_core
     have hr3_eq :
         gamma + alpha2 - r2 =
@@ -2896,7 +2891,6 @@ theorem ErrFMA_error_value_formats (beta emin prec : Int) [ValidRadix beta] [Pre
       (beta := beta) (fexp := FLT_exp emin prec)
       (x := FloatSpec.Core.Generic_fmt.roundR beta (FLT_exp emin prec) rnd (a * x) -
         a * x)
-    simp only [wp, PostCond.noThrow, PredTrans.pure, Id.run, pure, Bind.bind] at hopp
     have hneg_fmt := hopp hprod_err
     have hu2_eq :
         u2 =
@@ -2930,7 +2924,6 @@ theorem ErrFMA_error_value_formats (beta emin prec : Int) [ValidRadix beta] [Pre
       (beta := beta) (fexp := FLT_exp emin prec)
       (x := FloatSpec.Core.Generic_fmt.roundR beta (FLT_exp emin prec) rnd
         (y + u2) - (y + u2))
-    simp only [wp, PostCond.noThrow, PredTrans.pure, Id.run, pure, Bind.bind] at hopp
     have hneg_fmt := hopp hadd_err_core
     have halpha2_eq :
         alpha2 =
@@ -2956,7 +2949,6 @@ theorem ErrFMA_error_value_formats (beta emin prec : Int) [ValidRadix beta] [Pre
       (beta := beta) (fexp := FLT_exp emin prec)
       (x := FloatSpec.Core.Generic_fmt.roundR beta (FLT_exp emin prec) rnd
         (u1 + alpha1) - (u1 + alpha1))
-    simp only [wp, PostCond.noThrow, PredTrans.pure, Id.run, pure, Bind.bind] at hopp
     have hneg_fmt := hopp hadd_err_core
     have hbeta2_eq :
         beta2 =
@@ -3878,7 +3870,6 @@ theorem V2_Und2 (beta emin prec : Int) [ValidRadix beta] [Prec_gt_0 prec]
     have hopp := FloatSpec.Core.Generic_fmt.generic_format_opp
       (beta := beta) (fexp := FLT_exp emin prec)
       (x := FloatSpec.Core.Generic_fmt.roundR beta (FLT_exp emin prec) rnd (a * x) - a * x)
-    simp only [wp, PostCond.noThrow, PredTrans.pure, Id.run, pure, Bind.bind] at hopp
     have hneg := hopp hprod_err_fmt
     simpa [u2, u1, sub_eq_add_neg, add_comm, add_left_comm, add_assoc] using hneg
   by_cases halpha1_zero : alpha1 = 0
@@ -3960,7 +3951,6 @@ theorem V2_Und4 (beta emin prec : Int) [ValidRadix beta] [Prec_gt_0 prec]
         have hopp := FloatSpec.Core.Generic_fmt.generic_format_opp
           (beta := beta) (fexp := FLT_exp emin prec)
           (x := FloatSpec.Core.Raux.bpow beta (emin + 4 * prec - 3))
-        simp only [wp, PostCond.noThrow, PredTrans.pure, Id.run, pure, Bind.bind] at hopp
         exact hopp hfmt_strong_bpow
       have hround_le :
           u1 ≤ -FloatSpec.Core.Raux.bpow beta (emin + 4 * prec - 3) := by
@@ -4092,7 +4082,6 @@ theorem V2_Und5 (beta emin prec : Int) [ValidRadix beta] [Prec_gt_0 prec]
       have hopp := FloatSpec.Core.Generic_fmt.generic_format_opp
         (beta := beta) (fexp := FLT_exp emin prec)
         (x := FloatSpec.Core.Generic_fmt.roundR beta (FLT_exp emin prec) rnd (a * x) - a * x)
-      simp only [wp, PostCond.noThrow, PredTrans.pure, Id.run, pure, Bind.bind] at hopp
       have hneg := hopp hprod_err_fmt
       simpa [u2, u1, sub_eq_add_neg, add_comm, add_left_comm, add_assoc] using hneg
     by_cases hu2_zero : u2 = 0
@@ -4168,7 +4157,6 @@ theorem V2_Und5 (beta emin prec : Int) [ValidRadix beta] [Prec_gt_0 prec]
             have hopp := FloatSpec.Core.Generic_fmt.generic_format_opp
               (beta := beta) (fexp := FLT_exp emin prec)
               (x := FloatSpec.Core.Raux.bpow beta (emin + 4 * prec - 3))
-            simp only [wp, PostCond.noThrow, PredTrans.pure, Id.run, pure, Bind.bind] at hopp
             exact hopp hfmt_strong_bpow
           have hround_le :
               u1 ≤ -FloatSpec.Core.Raux.bpow beta (emin + 4 * prec - 3) := by
@@ -4454,7 +4442,6 @@ theorem ErrFMA_correct_simpl_of_y_eq_zero (beta emin prec : Int) [ValidRadix bet
       (beta := beta) (fexp := FLT_exp emin prec)
       (x := FloatSpec.Core.Generic_fmt.roundR beta (FLT_exp emin prec) rnd (a * x) -
         a * x)
-    simp only [wp, PostCond.noThrow, PredTrans.pure, Id.run, pure, Bind.bind] at hopp
     have hneg_fmt := hopp hprod_err
     have hu2_eq :
         u2 =
@@ -5010,7 +4997,6 @@ theorem ErrFmaAppr_format_u2_v2 (beta emin prec : Int) [ValidRadix beta] [Prec_g
       (beta := beta) (fexp := FLT_exp emin prec)
       (x := FloatSpec.Core.Generic_fmt.roundR beta (FLT_exp emin prec) rnd (a * x) -
         a * x)
-    simp only [wp, PostCond.noThrow, PredTrans.pure, Id.run, pure, Bind.bind] at hopp
     have hneg_fmt := hopp hprod_err
     have hu2_eq :
         u2 =
@@ -5040,7 +5026,6 @@ theorem ErrFmaAppr_format_u2_v2 (beta emin prec : Int) [ValidRadix beta] [Prec_g
       (beta := beta) (fexp := FLT_exp emin prec)
       (x := FloatSpec.Core.Generic_fmt.roundR beta (FLT_exp emin prec) rnd
         (y + u1) - (y + u1))
-    simp only [wp, PostCond.noThrow, PredTrans.pure, Id.run, pure, Bind.bind] at hopp
     have hneg_fmt := hopp hadd_err_core
     have hv2_eq :
         v2 =
@@ -5840,7 +5825,6 @@ theorem format_dp (emin prec : Int) [Prec_gt_0 prec]
     (beta := 2) (fexp := FLT_exp emin prec) (x :=
       FloatSpec.Core.Generic_fmt.roundR 2 (FLT_exp emin prec)
         (FloatSpec.Core.Generic_fmt.Znearest (fun t : Int => !(decide (2 ∣ t)))) (b * b) - b * b)
-  simp only [wp, PostCond.noThrow, PredTrans.pure, Id.run, pure, Bind.bind] at hopp
   have hneg := hopp hmul
   simpa [FloatSpec.Calc.Round.round, FloatSpec.Calc.Round.nearestEvenMode,
     sub_eq_add_neg, add_comm, add_left_comm, add_assoc] using hneg

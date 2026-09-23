@@ -169,7 +169,7 @@
     - Attempt: 1
 32. generic_format_ulp0_theorem — FloatSpec/src/Core/Ulp.lean:2526
     - Status: finished
-    - Reason: Proved by case analysis on `negligible_exp fexp`. If `none`, then `(ulp 0).run = 0` and we reuse `generic_format_0_run`. If `some n`, then `(ulp 0).run = (β : ℝ)^(fexp n)` and `generic_format_bpow` gives representability at exponent `fexp n`. This mirrors Coq Ulp.v’s zero-branch of `ulp` where the value is either `0` or a small-regime power; both are in the generic format.
+    - Reason: Proved by case analysis on `negligible_exp fexp`. If `none`, then `(ulp 0).run = 0` and we reuse `generic_format_0`. If `some n`, then `(ulp 0).run = (β : ℝ)^(fexp n)` and `generic_format_bpow` gives representability at exponent `fexp n`. This mirrors Coq Ulp.v’s zero-branch of `ulp` where the value is either `0` or a small-regime power; both are in the generic format.
     - Attempt: 1
 33. pred_pos_plus_ulp_aux3_zero_bridge — FloatSpec/src/Core/Ulp.lean:4888
     - Status: finished

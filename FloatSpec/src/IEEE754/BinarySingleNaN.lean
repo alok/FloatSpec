@@ -2056,21 +2056,17 @@ theorem Bnearbyint_correct_aux_nat {prec emax : Int}
         (beta := 2) (fexp := FloatSpec.Core.FIX.FIX_exp 0)
         (m := if sx then -(mx : Int) else (mx : Int)) (e := ex)
       have hpre :
-          (2 : Int) > 1 ∧
-            ((if sx then -(mx : Int) else (mx : Int)) ≠ 0 →
-              FloatSpec.Core.Generic_fmt.cexp 2
-                (FloatSpec.Core.FIX.FIX_exp 0)
-                (F2R (FloatSpec.Core.Defs.FlocqFloat.mk
-                  (if sx then -(mx : Int) else (mx : Int)) ex :
-                    FloatSpec.Core.Defs.FlocqFloat 2)) ≤ ex) := by
-        constructor
-        · norm_num
-        · intro _
-          simpa [FloatSpec.Core.Generic_fmt.cexp, FloatSpec.Core.FIX.FIX_exp]
-            using hex_nonneg
+          (if sx then -(mx : Int) else (mx : Int)) ≠ 0 →
+            FloatSpec.Core.Generic_fmt.cexp 2
+              (FloatSpec.Core.FIX.FIX_exp 0)
+              (F2R (FloatSpec.Core.Defs.FlocqFloat.mk
+                (if sx then -(mx : Int) else (mx : Int)) ex :
+                  FloatSpec.Core.Defs.FlocqFloat 2)) ≤ ex := by
+        intro _
+        simpa [FloatSpec.Core.Generic_fmt.cexp, FloatSpec.Core.FIX.FIX_exp]
+          using hex_nonneg
       cases sx <;>
-        simpa [wp, PostCond.noThrow, pure, SF2R, F2R,
-          FloatSpec.Core.Defs.F2R] using htrip hpre
+        simpa [SF2R, F2R, FloatSpec.Core.Defs.F2R] using htrip hpre
     have hround :
         FloatSpec.Core.Generic_fmt.roundR 2
             (FloatSpec.Core.FIX.FIX_exp 0) (rnd_of_mode mode)
@@ -3522,13 +3518,13 @@ private theorem binary_round_aux_correct_proof
           FloatSpec.Core.Generic_fmt.cexp 2 fexp x := by
       have h := FloatSpec.Core.Generic_fmt.cexp_abs
         (beta := 2) (fexp := fexp) (x := x)
-      simpa [wp, PostCond.noThrow, pure] using h (by norm_num : (1 : Int) < 2)
+      simpa using h
     have hcexp_abs_rounded :
         FloatSpec.Core.Generic_fmt.cexp 2 fexp |rounded| =
           FloatSpec.Core.Generic_fmt.cexp 2 fexp rounded := by
       have h := FloatSpec.Core.Generic_fmt.cexp_abs
         (beta := 2) (fexp := fexp) (x := rounded)
-      simpa [wp, PostCond.noThrow, pure] using h (by norm_num : (1 : Int) < 2)
+      simpa using h
     have hcexp_rounded_repr :
         FloatSpec.Core.Generic_fmt.cexp 2 fexp |rounded| =
           fexp (FloatSpec.Core.Digits.Zdigits 2 m1' + e1) := by
@@ -4268,7 +4264,7 @@ theorem binary_round_aux_correct' {prec emax : Int}
         FloatSpec.Core.Generic_fmt.cexp 2 (FLT_exp (3 - emax - prec) prec) x := by
     have h := FloatSpec.Core.Generic_fmt.cexp_abs
       (beta := 2) (fexp := FLT_exp (3 - emax - prec) prec) (x := x)
-    simpa [wp, PostCond.noThrow, pure] using h (by norm_num : (1 : Int) < 2)
+    simpa using h
   have ExAbs :
       ex ≤ FloatSpec.Core.Generic_fmt.cexp 2
         (FLT_exp (3 - emax - prec) prec) |x| := by
@@ -4426,7 +4422,7 @@ theorem Bdiv_correct_aux {prec emax : Int}
           quotient := by
     have h := FloatSpec.Core.Generic_fmt.cexp_abs
       (beta := 2) (fexp := FLT_exp (3 - emax - prec) prec) (x := quotient)
-    simpa [wp, PostCond.noThrow, pure] using h (by norm_num : (1 : Int) < 2)
+    simpa using h
   have hexp :
       result.2.1 ≤ FloatSpec.Core.Generic_fmt.cexp 2
         (FLT_exp (3 - emax - prec) prec) quotient := by
@@ -5661,7 +5657,7 @@ theorem generic_format_B2R {prec emax : Int}
       (FLT_exp (3 - emax - prec) prec) (B2R x) := by
   cases x with
   | B754_zero s | B754_infinity s | B754_nan s p hp =>
-      simpa [B2R] using FloatSpec.Core.Generic_fmt.generic_format_0_run
+      simpa [B2R] using FloatSpec.Core.Generic_fmt.generic_format_0
         (beta:=2) (fexp:=FLT_exp (3 - emax - prec) prec)
   | B754_finite s m e hb =>
       apply FloatSpec.Core.Generic_fmt.generic_format_canonical
@@ -10731,7 +10727,7 @@ private theorem roundRSqrtBinaryFiniteLtEmax {prec emax : Int}
       2 (FLT_exp (3 - emax - prec) prec) (emax - 1)
     simpa [Std.Do.wp, Std.Do.PostCond.noThrow, pure, ceiling,
       FloatSpec.Core.Raux.bpow] using
-      htrip ⟨by norm_num, hfexp⟩
+      htrip hfexp
   have hroundLe : FloatSpec.Core.Generic_fmt.roundR 2
       (FLT_exp (3 - emax - prec) prec) (rnd_of_mode mode)
         (Real.sqrt input) ≤ ceiling :=

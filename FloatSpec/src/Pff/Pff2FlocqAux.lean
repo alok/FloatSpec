@@ -469,154 +469,150 @@ theorem pff_format_is_format_from_hoare_payload (beta : Int) [ValidRadix beta]
     (m := f.Fnum)
     (e := f.Fexp)
   -- Extract the result from the Hoare triple
-  simp only [wp, PostCond.noThrow, pure] at hF2R_in_fmt
   apply hF2R_in_fmt
-  constructor
-  · -- beta > 1
-    exact hbeta_gt1
-  · -- m ≠ 0 → cexp(...) ≤ e
-    intro hm_ne0
-    -- We need: cexp beta (FLT_exp (-b.dExp) p) (F2R ...) ≤ f.Fexp
-    -- By definition, cexp = fexp(mag x) = FLT_exp(-b.dExp, p)(mag x) = max(mag x - p, -b.dExp)
+  -- m ≠ 0 → cexp(...) ≤ e
+  intro hm_ne0
+  -- We need: cexp beta (FLT_exp (-b.dExp) p) (F2R ...) ≤ f.Fexp
+  -- By definition, cexp = fexp(mag x) = FLT_exp(-b.dExp, p)(mag x) = max(mag x - p, -b.dExp)
+  --
+  -- Set up notation for the effective mantissa
+  set m := (f.Fnum) with hm_def
+  -- The Flocq float
+  set flocq := (FloatSpec.Core.Defs.FlocqFloat.mk m f.Fexp : FloatSpec.Core.Defs.FlocqFloat beta) with hflocq_def
+  --
+  -- Step 1: Unfold cexp
+  -- cexp beta (FLT_exp (-b.dExp) p) (F2R flocq)
+  --   = FLT_exp (-b.dExp) p (mag beta (F2R flocq))
+  --   = max (mag beta (F2R flocq) - p) (-b.dExp)
+  --
+  -- We need: max (mag (F2R flocq) - p) (-b.dExp) ≤ f.Fexp
+  -- This follows from:
+  --   (a) mag(F2R flocq) - p ≤ f.Fexp
+  --   (b) -b.dExp ≤ f.Fexp (from hexp_bound)
+  --
+  -- Step 2: Prove (a) using mag_F2R and mantissa bound
+  -- From mag_F2R: mag(F2R{m, e}) = mag(m) + e for m ≠ 0
+  -- So mag(F2R flocq) - p = mag(m) + f.Fexp - p
+  -- We need: mag(m) + f.Fexp - p ≤ f.Fexp, i.e., mag(m) ≤ p
+  --
+  -- Goal: cexp beta (FLT_exp (-b.dExp) p) (F2R flocq) ≤ f.Fexp
+  -- where cexp = FLT_exp(-b.dExp, p)(mag(F2R flocq)) = max(mag(F2R flocq) - p, -b.dExp)
+  --
+  -- We need: max(mag - p, -b.dExp) ≤ f.Fexp
+  -- This follows from (a) mag - p ≤ f.Fexp, and (b) -b.dExp ≤ f.Fexp (hexp_bound)
+  --
+  -- Unfold cexp and FLT_exp
+  simp only [FloatSpec.Core.Generic_fmt.cexp, FLT_exp, FloatSpec.Core.FLT.FLT_exp]
+  -- Goal is now: max (mag ... - p) (-b.dExp) ≤ f.Fexp
+  -- Use max_le_iff
+  apply max_le
+  · -- Case: mag(F2R flocq) - p ≤ f.Fexp
+    -- Strategy: F2R flocq = m * beta^(f.Fexp), and we show mag(m * beta^e) - p ≤ e
+    -- by proving mag(m * beta^e) = mag(m) + e and mag(m) ≤ p.
     --
-    -- Set up notation for the effective mantissa
-    set m := (f.Fnum) with hm_def
-    -- The Flocq float
-    set flocq := (FloatSpec.Core.Defs.FlocqFloat.mk m f.Fexp : FloatSpec.Core.Defs.FlocqFloat beta) with hflocq_def
+    -- Step 1: Get positivity facts
+    have hp_pos : 0 < p := Prec_gt_0.pos
+    have hp_nonneg : 0 ≤ p := le_of_lt hp_pos
+    have hβposReal : (0 : ℝ) < (beta : ℝ) := by exact_mod_cast (lt_trans Int.zero_lt_one hbeta_gt1)
+    have hβ_gt1_real : (1 : ℝ) < (beta : ℝ) := by exact_mod_cast hbeta_gt1
+    have hβne : (beta : ℝ) ≠ 0 := ne_of_gt hβposReal
+    have hlogβ_pos : 0 < Real.log (beta : ℝ) := Real.log_pos hβ_gt1_real
+    have hlogβ_ne : Real.log (beta : ℝ) ≠ 0 := ne_of_gt hlogβ_pos
     --
-    -- Step 1: Unfold cexp
-    -- cexp beta (FLT_exp (-b.dExp) p) (F2R flocq)
-    --   = FLT_exp (-b.dExp) p (mag beta (F2R flocq))
-    --   = max (mag beta (F2R flocq) - p) (-b.dExp)
+    -- Step 2: Show |m| < beta^p (as reals)
+    -- Since p ≥ 0, we can use Nat exponent: p.toNat
+    have hp_toNat_natAbs : p.natAbs = p.toNat :=
+      natAbs_eq_toNat_of_nonneg p hp_nonneg
+    -- Zpower_nat beta (p.toNat) = beta ^ (p.toNat) : Int
+    -- Also, (beta : ℝ) ^ p = (beta : ℝ) ^ (p.toNat : ℤ) since p ≥ 0
+    have hp_toNat_cast : (p.toNat : Int) = p := Int.toNat_of_nonneg hp_nonneg
+    -- pGivesBound: b.vNum = Zpower_nat beta (Int.toNat (Int.natAbs p))
+    --            = Zpower_nat beta (Int.toNat p)
+    --            = beta ^ (p.toNat) : Int
+    have hZpower_eq : Zpower_nat beta (Int.toNat p) = beta ^ (p.toNat) := by
+      unfold Zpower_nat
+      rfl
+    have hbound_eq' : b.vNum = beta ^ (p.toNat) := by
+      unfold pGivesBound at hbound_eq
+      rw [hp_toNat_natAbs, hZpower_eq] at hbound_eq
+      exact hbound_eq
+    have hmant_bound' : (m.natAbs : Int) < beta ^ (p.toNat) := by
+      rw [← hbound_eq']
+      simpa only [Int.abs_eq_natAbs, PredTrans.pure, PredTrans.apply, SPred.down_pure_nil, Int.cast_ofNat] using hmant_bound
+    have hm_real_abs_eq : |(m : ℝ)| = (m.natAbs : ℝ) := by
+      rw [← Int.cast_abs]
+      congr 1
+      exact Int.abs_eq_natAbs m
+    -- Convert mantissa bound to reals: |(m : ℝ)| < (beta : ℝ)^p
+    have hm_real_lt : |(m : ℝ)| < (beta : ℝ) ^ p := by
+      rw [hm_real_abs_eq]
+      -- Need: (m.natAbs : ℝ) < (beta : ℝ)^p
+      -- We have: (m.natAbs : Int) < beta^(p.toNat) : Int
+      -- And: (beta : ℝ)^p = (beta : ℝ)^(p.toNat) since p.toNat : ℤ = p
+      have h_pow_eq : (beta : ℝ) ^ p = (beta : ℝ) ^ (p.toNat : ℤ) := by
+        rw [hp_toNat_cast]
+      rw [h_pow_eq]
+      -- (beta : ℝ)^(p.toNat : ℤ) = ((beta : ℤ)^(p.toNat) : ℝ) by zpow_natCast
+      have h_pow_cast : (beta : ℝ) ^ (p.toNat : ℤ) = ((beta ^ p.toNat : Int) : ℝ) := by
+        rw [zpow_natCast]
+        simp only [Int.cast_pow]
+      rw [h_pow_cast]
+      -- Now (m.natAbs : ℝ) < ((beta^p.toNat : Int) : ℝ)
+      have h1 : (m.natAbs : ℝ) = ((m.natAbs : Int) : ℝ) := by simp
+      rw [h1]
+      exact_mod_cast hmant_bound'
+    have hm_real_ne : (m : ℝ) ≠ 0 := Int.cast_ne_zero.mpr hm_ne0
     --
-    -- We need: max (mag (F2R flocq) - p) (-b.dExp) ≤ f.Fexp
-    -- This follows from:
-    --   (a) mag(F2R flocq) - p ≤ f.Fexp
-    --   (b) -b.dExp ≤ f.Fexp (from hexp_bound)
+    -- Step 3: Apply mag_le_bpow to get mag(m : ℝ) ≤ p
+    have hmag_m_le := FloatSpec.Core.Raux.mag_le_bpow (beta := beta) (x := (m : ℝ))
+                        (e := p) hbeta_gt1 hm_real_ne hm_real_lt
+    have hmag_m_le_p : FloatSpec.Core.Raux.mag beta (m : ℝ) ≤ p := by
+      simpa [wp, PostCond.noThrow, Id.run] using hmag_m_le
     --
-    -- Step 2: Prove (a) using mag_F2R and mantissa bound
-    -- From mag_F2R: mag(F2R{m, e}) = mag(m) + e for m ≠ 0
-    -- So mag(F2R flocq) - p = mag(m) + f.Fexp - p
-    -- We need: mag(m) + f.Fexp - p ≤ f.Fexp, i.e., mag(m) ≤ p
+    -- Step 4: Prove mag(F2R flocq) = mag(m) + f.Fexp directly
+    -- F2R flocq = m * beta^(f.Fexp)
+    have hF2R_eq : FloatSpec.Core.Defs.F2R flocq = (m : ℝ) * (beta : ℝ) ^ f.Fexp := by
+      -- flocq = { Fnum := m, Fexp := f.Fexp }
+      -- F2R flocq = flocq.Fnum * beta^flocq.Fexp = m * beta^f.Fexp
+      unfold FloatSpec.Core.Defs.F2R
+      -- Goal: ↑flocq.Fnum * ↑beta ^ flocq.Fexp = ↑m * ↑beta ^ f.Fexp
+      -- Since flocq.Fnum = m and flocq.Fexp = f.Fexp by definition
+      rfl
+    -- Now prove mag(m * beta^e) = mag(m) + e for m ≠ 0
+    -- Using the definition of mag and log properties
+    have hpow_pos : (0 : ℝ) < (beta : ℝ) ^ f.Fexp := zpow_pos hβposReal f.Fexp
+    have hpow_ne : (beta : ℝ) ^ f.Fexp ≠ 0 := ne_of_gt hpow_pos
+    have hprod_ne : (m : ℝ) * (beta : ℝ) ^ f.Fexp ≠ 0 := mul_ne_zero hm_real_ne hpow_ne
+    have habs_m_pos : 0 < |(m : ℝ)| := abs_pos.mpr hm_real_ne
+    have habs_pow : |(beta : ℝ) ^ f.Fexp| = (beta : ℝ) ^ f.Fexp :=
+      abs_of_pos hpow_pos
+    have habs_prod : |(m : ℝ) * (beta : ℝ) ^ f.Fexp| =
+                     |(m : ℝ)| * (beta : ℝ) ^ f.Fexp := by
+      rw [abs_mul, habs_pow]
+    have hlog_prod : Real.log (|(m : ℝ)| * (beta : ℝ) ^ f.Fexp) =
+                     Real.log |(m : ℝ)| + f.Fexp * Real.log (beta : ℝ) := by
+      rw [Real.log_mul (ne_of_gt habs_m_pos) hpow_ne]
+      congr 1
+      exact Real.log_zpow (beta : ℝ) f.Fexp
+    have hdiv_eq : (Real.log |(m : ℝ)| + f.Fexp * Real.log (beta : ℝ)) / Real.log (beta : ℝ)
+                 = Real.log |(m : ℝ)| / Real.log (beta : ℝ) + f.Fexp := by
+      field_simp [hlogβ_ne]
+    -- mag uses floor + 1 definition
+    have hmag_prod : FloatSpec.Core.Raux.mag beta ((m : ℝ) * (beta : ℝ) ^ f.Fexp) =
+                     FloatSpec.Core.Raux.mag beta (m : ℝ) + f.Fexp := by
+      unfold FloatSpec.Core.Raux.mag
+      simp only [hprod_ne, hm_real_ne, ite_false, habs_prod, hlog_prod, hdiv_eq]
+      -- ⌊L + e⌋ + 1 = (⌊L⌋ + 1) + e where L = log|m|/log β
+      rw [Int.floor_add_intCast]
+      ring
     --
-    -- Goal: cexp beta (FLT_exp (-b.dExp) p) (F2R flocq) ≤ f.Fexp
-    -- where cexp = FLT_exp(-b.dExp, p)(mag(F2R flocq)) = max(mag(F2R flocq) - p, -b.dExp)
-    --
-    -- We need: max(mag - p, -b.dExp) ≤ f.Fexp
-    -- This follows from (a) mag - p ≤ f.Fexp, and (b) -b.dExp ≤ f.Fexp (hexp_bound)
-    --
-    -- Unfold cexp and FLT_exp
-    simp only [FloatSpec.Core.Generic_fmt.cexp, FLT_exp, FloatSpec.Core.FLT.FLT_exp]
-    -- Goal is now: max (mag ... - p) (-b.dExp) ≤ f.Fexp
-    -- Use max_le_iff
-    apply max_le
-    · -- Case: mag(F2R flocq) - p ≤ f.Fexp
-      -- Strategy: F2R flocq = m * beta^(f.Fexp), and we show mag(m * beta^e) - p ≤ e
-      -- by proving mag(m * beta^e) = mag(m) + e and mag(m) ≤ p.
-      --
-      -- Step 1: Get positivity facts
-      have hp_pos : 0 < p := Prec_gt_0.pos
-      have hp_nonneg : 0 ≤ p := le_of_lt hp_pos
-      have hβposReal : (0 : ℝ) < (beta : ℝ) := by exact_mod_cast (lt_trans Int.zero_lt_one hbeta_gt1)
-      have hβ_gt1_real : (1 : ℝ) < (beta : ℝ) := by exact_mod_cast hbeta_gt1
-      have hβne : (beta : ℝ) ≠ 0 := ne_of_gt hβposReal
-      have hlogβ_pos : 0 < Real.log (beta : ℝ) := Real.log_pos hβ_gt1_real
-      have hlogβ_ne : Real.log (beta : ℝ) ≠ 0 := ne_of_gt hlogβ_pos
-      --
-      -- Step 2: Show |m| < beta^p (as reals)
-      -- Since p ≥ 0, we can use Nat exponent: p.toNat
-      have hp_toNat_natAbs : p.natAbs = p.toNat :=
-        natAbs_eq_toNat_of_nonneg p hp_nonneg
-      -- Zpower_nat beta (p.toNat) = beta ^ (p.toNat) : Int
-      -- Also, (beta : ℝ) ^ p = (beta : ℝ) ^ (p.toNat : ℤ) since p ≥ 0
-      have hp_toNat_cast : (p.toNat : Int) = p := Int.toNat_of_nonneg hp_nonneg
-      -- pGivesBound: b.vNum = Zpower_nat beta (Int.toNat (Int.natAbs p))
-      --            = Zpower_nat beta (Int.toNat p)
-      --            = beta ^ (p.toNat) : Int
-      have hZpower_eq : Zpower_nat beta (Int.toNat p) = beta ^ (p.toNat) := by
-        unfold Zpower_nat
-        rfl
-      have hbound_eq' : b.vNum = beta ^ (p.toNat) := by
-        unfold pGivesBound at hbound_eq
-        rw [hp_toNat_natAbs, hZpower_eq] at hbound_eq
-        exact hbound_eq
-      have hmant_bound' : (m.natAbs : Int) < beta ^ (p.toNat) := by
-        rw [← hbound_eq']
-        simpa only [Int.abs_eq_natAbs, PredTrans.pure, PredTrans.apply, SPred.down_pure_nil, Int.cast_ofNat] using hmant_bound
-      have hm_real_abs_eq : |(m : ℝ)| = (m.natAbs : ℝ) := by
-        rw [← Int.cast_abs]
-        congr 1
-        exact Int.abs_eq_natAbs m
-      -- Convert mantissa bound to reals: |(m : ℝ)| < (beta : ℝ)^p
-      have hm_real_lt : |(m : ℝ)| < (beta : ℝ) ^ p := by
-        rw [hm_real_abs_eq]
-        -- Need: (m.natAbs : ℝ) < (beta : ℝ)^p
-        -- We have: (m.natAbs : Int) < beta^(p.toNat) : Int
-        -- And: (beta : ℝ)^p = (beta : ℝ)^(p.toNat) since p.toNat : ℤ = p
-        have h_pow_eq : (beta : ℝ) ^ p = (beta : ℝ) ^ (p.toNat : ℤ) := by
-          rw [hp_toNat_cast]
-        rw [h_pow_eq]
-        -- (beta : ℝ)^(p.toNat : ℤ) = ((beta : ℤ)^(p.toNat) : ℝ) by zpow_natCast
-        have h_pow_cast : (beta : ℝ) ^ (p.toNat : ℤ) = ((beta ^ p.toNat : Int) : ℝ) := by
-          rw [zpow_natCast]
-          simp only [Int.cast_pow]
-        rw [h_pow_cast]
-        -- Now (m.natAbs : ℝ) < ((beta^p.toNat : Int) : ℝ)
-        have h1 : (m.natAbs : ℝ) = ((m.natAbs : Int) : ℝ) := by simp
-        rw [h1]
-        exact_mod_cast hmant_bound'
-      have hm_real_ne : (m : ℝ) ≠ 0 := Int.cast_ne_zero.mpr hm_ne0
-      --
-      -- Step 3: Apply mag_le_bpow to get mag(m : ℝ) ≤ p
-      have hmag_m_le := FloatSpec.Core.Raux.mag_le_bpow (beta := beta) (x := (m : ℝ))
-                          (e := p) hbeta_gt1 hm_real_ne hm_real_lt
-      have hmag_m_le_p : FloatSpec.Core.Raux.mag beta (m : ℝ) ≤ p := by
-        simpa [wp, PostCond.noThrow, Id.run] using hmag_m_le
-      --
-      -- Step 4: Prove mag(F2R flocq) = mag(m) + f.Fexp directly
-      -- F2R flocq = m * beta^(f.Fexp)
-      have hF2R_eq : FloatSpec.Core.Defs.F2R flocq = (m : ℝ) * (beta : ℝ) ^ f.Fexp := by
-        -- flocq = { Fnum := m, Fexp := f.Fexp }
-        -- F2R flocq = flocq.Fnum * beta^flocq.Fexp = m * beta^f.Fexp
-        unfold FloatSpec.Core.Defs.F2R
-        -- Goal: ↑flocq.Fnum * ↑beta ^ flocq.Fexp = ↑m * ↑beta ^ f.Fexp
-        -- Since flocq.Fnum = m and flocq.Fexp = f.Fexp by definition
-        rfl
-      -- Now prove mag(m * beta^e) = mag(m) + e for m ≠ 0
-      -- Using the definition of mag and log properties
-      have hpow_pos : (0 : ℝ) < (beta : ℝ) ^ f.Fexp := zpow_pos hβposReal f.Fexp
-      have hpow_ne : (beta : ℝ) ^ f.Fexp ≠ 0 := ne_of_gt hpow_pos
-      have hprod_ne : (m : ℝ) * (beta : ℝ) ^ f.Fexp ≠ 0 := mul_ne_zero hm_real_ne hpow_ne
-      have habs_m_pos : 0 < |(m : ℝ)| := abs_pos.mpr hm_real_ne
-      have habs_pow : |(beta : ℝ) ^ f.Fexp| = (beta : ℝ) ^ f.Fexp :=
-        abs_of_pos hpow_pos
-      have habs_prod : |(m : ℝ) * (beta : ℝ) ^ f.Fexp| =
-                       |(m : ℝ)| * (beta : ℝ) ^ f.Fexp := by
-        rw [abs_mul, habs_pow]
-      have hlog_prod : Real.log (|(m : ℝ)| * (beta : ℝ) ^ f.Fexp) =
-                       Real.log |(m : ℝ)| + f.Fexp * Real.log (beta : ℝ) := by
-        rw [Real.log_mul (ne_of_gt habs_m_pos) hpow_ne]
-        congr 1
-        exact Real.log_zpow (beta : ℝ) f.Fexp
-      have hdiv_eq : (Real.log |(m : ℝ)| + f.Fexp * Real.log (beta : ℝ)) / Real.log (beta : ℝ)
-                   = Real.log |(m : ℝ)| / Real.log (beta : ℝ) + f.Fexp := by
-        field_simp [hlogβ_ne]
-      -- mag uses floor + 1 definition
-      have hmag_prod : FloatSpec.Core.Raux.mag beta ((m : ℝ) * (beta : ℝ) ^ f.Fexp) =
-                       FloatSpec.Core.Raux.mag beta (m : ℝ) + f.Fexp := by
-        unfold FloatSpec.Core.Raux.mag
-        simp only [hprod_ne, hm_real_ne, ite_false, habs_prod, hlog_prod, hdiv_eq]
-        -- ⌊L + e⌋ + 1 = (⌊L⌋ + 1) + e where L = log|m|/log β
-        rw [Int.floor_add_intCast]
-        ring
-      --
-      -- Step 5: Combine to get the final goal
-      rw [hF2R_eq, hmag_prod]
-      -- Goal: mag(m) + f.Fexp - p ≤ f.Fexp
-      -- This is equivalent to mag(m) ≤ p
-      linarith
-    · -- Case: -b.dExp ≤ f.Fexp
-      exact hexp_bound
+    -- Step 5: Combine to get the final goal
+    rw [hF2R_eq, hmag_prod]
+    -- Goal: mag(m) + f.Fexp - p ≤ f.Fexp
+    -- This is equivalent to mag(m) ≤ p
+    linarith
+  · -- Case: -b.dExp ≤ f.Fexp
+    exact hexp_bound
 
 /-- Coq `pff_format_is_format`, with its two section hypotheses made explicit
 and no additional precision/typeclass payload. -/

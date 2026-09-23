@@ -14,12 +14,10 @@ import FloatSpec.src.Calc.Round
 import FloatSpec.src.Core.Digits
 import FloatSpec.src.Core.Generic_fmt
 import Mathlib.Data.Real.Basic
-import Std.Do.Triple
 import FloatSpec.src.SimprocWP
 
 open Real FloatSpec.Calc.Bracket FloatSpec.Core.Digits FloatSpec.Core.Defs FloatSpec.Core.Generic_fmt
 open FloatSpec.Core.Generic_fmt
-open Std.Do
 
 set_option linter.coqSource true
 set_option warningAsError true
@@ -245,7 +243,7 @@ theorem Fplus_correct (x y : FlocqFloat beta) :
             have hrun := htrip
             have : p2 - 1 ≤ FloatSpec.Core.Raux.mag beta z := by
               rw [hmag2] at hrun
-              simpa [z, add_comm, wp, PostCond.noThrow, pure] using hrun
+              simpa [z, add_comm, pure] using hrun
             simpa [max_eq_right hp12] using this
           · have hpcast : (2 : Int) ≤ (Int.natAbs (p1 - p2) : Int) := by
               exact_mod_cast hp
@@ -265,7 +263,7 @@ theorem Fplus_correct (x y : FlocqFloat beta) :
             have hrun := htrip
             have : p1 - 1 ≤ FloatSpec.Core.Raux.mag beta z := by
               rw [hmag1] at hrun
-              simpa [z, wp, PostCond.noThrow, pure] using hrun
+              simpa [z, pure] using hrun
             simpa [max_eq_left hp21] using this
         have he_cexp : e ≤ cexp beta fexp z := by
           apply le_trans (min_le_right _ _)
@@ -298,7 +296,7 @@ theorem Fplus_correct (x y : FlocqFloat beta) :
               F2R (FlocqFloat.mk m2 e2 : FlocqFloat beta) := by
           have h := (FloatSpec.Calc.Operations.F2R_plus (beta := beta)
             (FlocqFloat.mk m1 e1) (FlocqFloat.mk m2 e2))
-          simpa [sum, wp, PostCond.noThrow, pure] using h
+          simpa [sum, pure] using h
         simp only [Fplus_correct_obligation, Fplus, hm1, hm2, ite_false, p1, p2,
           hp]
         constructor

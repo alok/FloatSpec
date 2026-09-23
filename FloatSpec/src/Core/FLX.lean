@@ -23,7 +23,6 @@ import FloatSpec.src.Core.Round_NE
 import Mathlib.Data.Real.Basic
 import Mathlib.Algebra.Ring.Defs
 import Mathlib.Algebra.Ring.Basic
-import Std.Do.Triple
 import FloatSpec.src.Core.Ulp
 import FloatSpec.src.Core.FIX
 
@@ -33,7 +32,6 @@ attribute [-simp] neg_mul
 
 
 open Real
-open Std.Do
 open FloatSpec.Core.Defs FloatSpec.Core.Generic_fmt FloatSpec.Core.Raux
 
 set_option linter.coqSource true
@@ -271,7 +269,7 @@ theorem generic_format_FLX (beta : Int) [ValidRadix beta] (x : ℝ) :
     omega
   have hf := generic_format_F2R (beta := beta) (fexp := FLX_exp prec)
     f.Fnum f.Fexp
-  exact hf ⟨ValidRadix.valid, fun _ => hce⟩
+  exact hf (fun _ => hce)
 
 private theorem FLX_format_generic_run
     (beta : Int) [ValidRadix beta] [Prec_gt_0 prec] (x : ℝ)
@@ -284,7 +282,7 @@ private theorem FLX_format_generic_run
   · have hsm := scaled_mantissa_generic
       (beta := beta) (fexp := FLX_exp prec) x hx
     have hsm_eq : scaled_mantissa beta (FLX_exp prec) x = (m : ℝ) := by
-      simpa [wp, PostCond.noThrow, pure, m] using hsm
+      simpa [pure, m] using hsm
     have hlt := scaled_mantissa_lt_bpow
       (beta := beta) (fexp := FLX_exp prec) x ValidRadix.valid
     have hprec : 0 ≤ prec := le_of_lt (Prec_gt_0.pos : 0 < prec)
@@ -343,7 +341,7 @@ theorem FLXN_format_generic (beta : Int) [ValidRadix beta] [Prec_gt_0 prec]
     have hsm := scaled_mantissa_generic
       (beta := beta) (fexp := FLX_exp prec) x hx
     have hsm_eq : scaled_mantissa beta (FLX_exp prec) x = (m : ℝ) := by
-      simpa [wp, PostCond.noThrow, pure, m] using hsm
+      simpa [pure, m] using hsm
     have hprec : 0 < prec := Prec_gt_0.pos
     have hprec0 : 0 ≤ prec := le_of_lt hprec
     have hprec1 : 0 ≤ prec - 1 := by omega
@@ -578,7 +576,7 @@ format is a separate contract. -/
 theorem ulp_FLX_1 (beta : Int) [ValidRadix beta] :
     FloatSpec.Core.Ulp.ulp beta (FLX_exp prec) 1 = (beta : ℝ) ^ (1 - prec) := by
   have hmag : FloatSpec.Core.Raux.mag beta (1 : ℝ) = 1 := by
-    simpa [wp, PostCond.noThrow, pure] using
+    simpa [pure] using
       (FloatSpec.Core.Raux.mag_1 beta ValidRadix.valid)
   simp [FloatSpec.Core.Ulp.ulp, FloatSpec.Core.Generic_fmt.cexp, FLX_exp, hmag]
 
@@ -626,14 +624,14 @@ theorem ulp_FLX_le (beta : Int) [ValidRadix beta] [Prec_gt_0 prec] (x : ℝ) :
     have hcexp_run :
         (FloatSpec.Core.Generic_fmt.cexp (beta := beta) (fexp := FLX_exp prec) x)
           = FLX_exp prec ((FloatSpec.Core.Raux.mag beta x)) := by
-      simpa [wp, PostCond.noThrow, Id.run]
-        using (FloatSpec.Core.Generic_fmt.cexp_spec (beta := beta) (fexp := FLX_exp prec) (x := x)) hβ
+      simpa [Id.run]
+        using (FloatSpec.Core.Generic_fmt.cexp_spec (beta := beta) (fexp := FLX_exp prec) (x := x))
     -- Abbreviate the magnitude
     set m : Int := (FloatSpec.Core.Raux.mag beta x) with hm
     -- Lower bound: β^(m - 1) ≤ |x|
     have hlow : (beta : ℝ) ^ (m - 1) ≤ |x| := by
       have htr := FloatSpec.Core.Raux.bpow_mag_le_from_exp_payload (beta := beta) (x := x) (e := m)
-      simpa [wp, PostCond.noThrow, Id.run, hm, sub_eq_add_neg]
+      simpa [Id.run, hm, sub_eq_add_neg]
         using htr hβ hxne le_rfl
     -- Multiply both sides by β^(-(prec - 1)) (positive), then rewrite
     have hnonneg : 0 ≤ (beta : ℝ) ^ (-(prec - 1)) := le_of_lt (zpow_pos hbpos (-(prec - 1)))
@@ -701,8 +699,8 @@ theorem ulp_FLX_ge (beta : Int) [ValidRadix beta] (x : ℝ) :
     have hcexp_run :
         (FloatSpec.Core.Generic_fmt.cexp (beta := beta) (fexp := FLX_exp prec) x)
           = FLX_exp prec ((FloatSpec.Core.Raux.mag beta x)) := by
-      simpa [wp, PostCond.noThrow, Id.run]
-        using (FloatSpec.Core.Generic_fmt.cexp_spec (beta := beta) (fexp := FLX_exp prec) (x := x)) hβ
+      simpa [Id.run]
+        using (FloatSpec.Core.Generic_fmt.cexp_spec (beta := beta) (fexp := FLX_exp prec) (x := x))
     -- Abbreviate the magnitude
     set m : Int := (FloatSpec.Core.Raux.mag beta x) with hm
     -- Target reduces to: |x| * β^(-prec) ≤ β^(m - prec)
@@ -1039,7 +1037,7 @@ theorem generic_format_FLX_1 (beta : Int) [ValidRadix beta] [Prec_gt_0 prec] :
   have h :=
     FloatSpec.Core.Generic_fmt.generic_format_bpow'
       (beta := beta) (fexp := FLX_exp prec) (e := 0)
-      (by exact ⟨hβ, hfe_le⟩)
+      (by exact hfe_le)
   -- Rewrite (β : ℝ)^0 = 1 to conclude.
   simpa [zpow_zero] using h
 
@@ -1207,14 +1205,14 @@ private theorem pred_FLX_exact_shift_pos_aux (beta : Int) [ValidRadix beta] [Pre
     have h := FloatSpec.Core.Ulp.pred_eq_pos (beta := beta) (fexp := FLX_exp prec)
                 (x := y) (hx := hy_nonneg)
     have hrun := h hβ
-    simpa [wp, PostCond.noThrow, Id.run, bind, pure] using hrun
+    simpa [Id.run, bind, pure] using hrun
   have hpred_x_pos :
       FloatSpec.Core.Ulp.pred beta (FLX_exp prec) x =
         FloatSpec.Core.Ulp.pred_pos beta (FLX_exp prec) x := by
     have h := FloatSpec.Core.Ulp.pred_eq_pos (beta := beta) (fexp := FLX_exp prec)
                 (x := x) (hx := hx_nonneg)
     have hrun := h hβ
-    simpa [wp, PostCond.noThrow, Id.run, bind, pure] using hrun
+    simpa [Id.run, bind, pure] using hrun
   have hboundary_y_of_x :
       x = (beta : ℝ) ^ (M - 1) →
         y = (beta : ℝ) ^ (N - 1) := by
@@ -1340,13 +1338,13 @@ theorem succ_FLX_exact_shift (beta : Int) [ValidRadix beta] [Prec_gt_0 prec] (x 
           = x * (beta : ℝ) ^ e + (FloatSpec.Core.Ulp.ulp beta (FLX_exp prec) (x * (beta : ℝ) ^ e)) := by
       have := FloatSpec.Core.Ulp.succ_eq_pos (beta := beta) (fexp := FLX_exp prec)
                   (x := x * (beta : ℝ) ^ e) (hx := hy_nonneg) True.intro
-      simpa [wp, PostCond.noThrow, Id.run, bind, pure] using this
+      simpa [Id.run, bind, pure] using this
     have hsucc_x_run :
         (FloatSpec.Core.Ulp.succ beta (FLX_exp prec) x)
           = x + (FloatSpec.Core.Ulp.ulp beta (FLX_exp prec) x) := by
       have := FloatSpec.Core.Ulp.succ_eq_pos (beta := beta) (fexp := FLX_exp prec)
                   (x := x) (hx := hx_nonneg) True.intro
-      simpa [wp, PostCond.noThrow, Id.run, bind, pure] using this
+      simpa [Id.run, bind, pure] using this
     have hulp_shift :
         (FloatSpec.Core.Ulp.ulp beta (FLX_exp prec) (x * (beta : ℝ) ^ e))
           = (FloatSpec.Core.Ulp.ulp beta (FLX_exp prec) x) * (beta : ℝ) ^ e := by

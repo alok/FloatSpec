@@ -33,13 +33,10 @@ theorem zigzag_not_monotone : ¬ FloatSpec.Core.Generic_fmt.Monotone_exp zigzag 
 /-- Every power of two is representable, including both witness values below. -/
 theorem zigzag_contains_powers (exponent : Int) :
     generic_format 2 zigzag ((2 : Real) ^ exponent) := by
-  have bounds : (1 : Int) < 2 ∧ zigzag (exponent + 1) ≤ exponent := by
-    constructor
-    · decide
-    · unfold zigzag
-      split_ifs <;> grind
-  simpa [wp, PostCond.noThrow, Id.run, bind, pure] using
-    generic_format_bpow 2 zigzag exponent bounds
+  have bound : zigzag (exponent + 1) ≤ exponent := by
+    unfold zigzag
+    split_ifs <;> grind
+  exact generic_format_bpow 2 zigzag exponent bound
 
 #print axioms zigzag_contains_powers
 

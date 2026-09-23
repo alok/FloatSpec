@@ -49,9 +49,8 @@ theorem minus_seven_not_format :
 /-- Every power of two is representable at two-bit precision. -/
 theorem powers_are_representable (exponent : Int) :
     Generic_fmt.generic_format 2 (FLX.FLX_exp 2) ((2 : Real) ^ exponent) := by
-  simpa [Std.Do.wp, Std.Do.PostCond.noThrow, pure] using
-    Generic_fmt.generic_format_bpow 2 (FLX.FLX_exp 2) exponent
-      (by constructor <;> norm_num [FLX.FLX_exp])
+  exact Generic_fmt.generic_format_bpow 2 (FLX.FLX_exp 2) exponent
+    (by norm_num [FLX.FLX_exp])
 
 #print axioms powers_are_representable
 
