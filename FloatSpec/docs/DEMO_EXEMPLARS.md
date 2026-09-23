@@ -10,6 +10,13 @@ The [demo source](../../scripts/fixtures/GuidedDemo.lean) is short enough to rea
 in execution order. It uses the port's actual integer algorithms, not decimal
 approximations as an oracle. Every section has both a `decide +kernel` assertion
 and a compiled runtime check that throws on disagreement.
+Each section's first definition carries the Flocq source it exercises: its
+docstring cites pinned anchors with the `{coq}` role, and sections 1, 2, 4, 5,
+and 6 quote the Rocq text in `coq` blocks, so hovering the definition in an
+editor shows the Coq next to the Lean. The quotes are not decoration: a citation
+that names no anchor fails to elaborate, and
+`scripts/validate_flocq_source_refs.py` compares every quote verbatim with the
+pinned checkout (see `FloatSpecRoles.lean`).
 This command builds and runs a native executable through Lake. For the direct
 Lean interpreter path, `lake env lean --run scripts/fixtures/GuidedDemo.lean`
 still runs the same source and checks. The old `floatspec` executable remains

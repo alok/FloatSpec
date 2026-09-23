@@ -215,7 +215,16 @@ theorem round_unique (rnd : ℝ → ℝ → Prop) (h : round_pred_monotone rnd)
     (x f1 f2 : ℝ) (h1 : rnd x f1) (h2 : rnd x f2) : f1 = f2 :=
   le_antisymm (h x x f1 f2 h1 h2 le_rfl) (h x x f2 f1 h2 h1 le_rfl)
 
-/-- Rounding down is monotone for every format. -/
+set_option doc.verso true in
+/--
+Rounding down is monotone for every format: Flocq's {coq}`Rnd_DN_pt_monotone`.
+
+```coq Rnd_DN_pt_monotone
+Theorem Rnd_DN_pt_monotone :
+  forall F : R -> Prop,
+  round_pred_monotone (Rnd_DN_pt F).
+```
+-/
 @[flocq_source "src/Core/Round_pred.v" 103 "Rnd_DN_pt_monotone"]
 theorem Rnd_DN_pt_monotone (F : ℝ → Prop) : round_pred_monotone (Rnd_DN_pt F) :=
   fun _ _ _ _ hf hg hxy ↦ hg.2.2 _ hf.1 (le_trans hf.2.1 hxy)
