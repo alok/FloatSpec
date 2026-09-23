@@ -2,6 +2,15 @@
 
 This document records changes made to theorem specifications in `PrimFloat.lean`.
 
+**Historical record (January 2026).** Every API it discusses has since been
+deleted: the permissive `Binary754` operations `binary_mul` and `Bcompare`
+(with its integer comparison codes and `Bcompare_check`), the placeholder
+`prim_to_binary`, and the `prim_mul_correct` statement built on them. The
+current comparison ports are `Binary.Bcompare` and `BinarySingleNaN.Bcompare`,
+which return `Option Ordering`, and `PrimFloat.lean` states `compare_equiv` on
+the proof-carrying `PrimitiveFloat` model. Do not read the statements below as
+the current API.
+
 ## prim_mul_correct (Line 80-90)
 
 **Date**: 2026-01-23

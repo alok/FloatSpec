@@ -186,12 +186,28 @@ run_cmd do
     • {coq}`Rnd_DN_pt_monoto̲no̵e`\n  \
     • {coq}`Rnd_D̵N_pt_monoto̲no̵e`"]
 
--- The root `Bcompare` is an unanchored Lean declaration, and two anchored Coq declarations
--- are named `Bcompare`.
+-- No Lean declaration named `Bcompare` is in scope here, and two anchored Coq declarations are
+-- named `Bcompare`, so the bare name is ambiguous.
 run_cmd do
   expectMessages (versoDoc "{coq}`Bcompare`") #[
-    "error: `Bcompare` resolves to the Lean declaration `Bcompare`, which has no \
-    `@[flocq_source]` anchor, but it is also the Coq name of\n  \
+    "error: `Bcompare` names 2 different pinned Flocq declarations:\n  \
+    src/IEEE754/Binary.v:773 `Bcompare` (Lean: Binary.Bcompare)\n  \
+    src/IEEE754/BinarySingleNaN.v:559 `Bcompare` (Lean: BinarySingleNaN.Bcompare)\n\
+    Cite one of their Lean declarations to choose.\n\
+    \n\
+    Hint: Cite the Lean declaration instead:\n  \
+    • {coq}`Bi̲n̲a̲r̲y̲.̲B̲compare`\n  \
+    • {coq}`Bi̲n̲a̲r̲y̲S̲i̲n̲g̲l̲e̲N̲a̲N̲.̲B̲compare`"]
+
+-- An unanchored Lean declaration named `Bcompare` shadows both anchored Coq declarations.
+namespace ShadowBcompare
+/-- An unanchored Lean declaration that shares a Coq name with two anchors. -/
+def Bcompare : Nat := 0
+
+run_cmd do
+  expectMessages (versoDoc "{coq}`Bcompare`") #[
+    "error: `Bcompare` resolves to the Lean declaration `FlocqCitations.ShadowBcompare.Bcompare`, \
+    which has no `@[flocq_source]` anchor, but it is also the Coq name of\n  \
     src/IEEE754/Binary.v:773 `Bcompare` (Lean: Binary.Bcompare)\n  \
     src/IEEE754/BinarySingleNaN.v:559 `Bcompare` (Lean: BinarySingleNaN.Bcompare)\n\
     Cite the anchored Lean port to say which one you mean.\n\
@@ -199,6 +215,7 @@ run_cmd do
     Hint: Cite the anchored port instead:\n  \
     • {coq}`Bi̲n̲a̲r̲y̲.̲B̲compare`\n  \
     • {coq}`Bi̲n̲a̲r̲y̲S̲i̲n̲g̲l̲e̲N̲a̲N̲.̲B̲compare`"]
+end ShadowBcompare
 
 run_cmd do
   expectMessages (versoDoc "{coq}`Nat.add`") #[

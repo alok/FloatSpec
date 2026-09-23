@@ -30,4 +30,4 @@ import FloatSpec.Test.PrimFloatSource
 import FloatSpec.Test.ComputableCompareExecution
 import FloatSpec.Test.RoundingModeSource
 import FloatSpec.Test.SimprocRaux
-import FloatSpec.Test.SourceCorrectnessAliases
+import FloatSpec.Test.SourceSurface

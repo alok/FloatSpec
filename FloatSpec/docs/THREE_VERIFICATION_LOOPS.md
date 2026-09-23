@@ -512,6 +512,15 @@ The standalone paired fixtures add independent contract and error checks:
   including the positive-carrier fallback at nonpositive precision. A Lean
   theorem separately proves that the shared helper is positive at every
   integer precision, without a format-validity instance.
+- `Binary64Arithmetic`: four literal binary64 bit patterns. `1 + 2` gives the
+  bits of `3`, and the largest finite binary64 times two overflows to `+∞` in
+  round-to-nearest, through both `b64_mult` and `Binary.Bmult` with
+  `Binary.Bmax_float`. The deleted real-rounding `Binary754` layer never
+  produced that overflow. The fixture also checks that
+  `Binary.Bfma_szero` ignores a NaN's sign, as Flocq's definition through
+  `B2BSN` does: with a negative NaN, `+0` and `-0` in round-to-nearest it is
+  `false`. Lean checks the rows with `decide +kernel` and `#eval` (lean-ir);
+  the paired Rocq fixture closes them with `vm_compute`.
 - `SingleNaNArithmetic`: 30 literal one-bit-format results in all five modes,
   through both the direct and source-mode SingleNaN APIs. The cases cover
   overflow, signed cancellation, underflow ties, square root, and an FMA whose
@@ -783,8 +792,8 @@ also checks the three Boolean APIs against 600,000 native Float/Float32
 Boolean observations using the existing seed `388312`.
 The public `Binary.Bcompare` and `BinarySingleNaN.Bcompare` now return
 `Option Ordering` and execute integer comparisons, with closed value and
-reversal proofs. The legacy raw-carrier integer-coded adapter is named
-`BcompareIntCompat` rather than presented as the source interface.
+reversal proofs. They are the only `Bcompare` ports: the integer-coded
+comparison on the permissive `Binary754` carrier, and its adapter, were deleted.
 
 The twenty-third family, `small_ieee`, executes full-payload Lean arithmetic
 in precisions 2, 3, 4, and 8 with two exponent ranges each, against pinned
