@@ -1,0 +1,185 @@
+{
+ "schema": "flocqsmith-campaign-descriptor-v1",
+ "id": "flocqsmith-campaign-2026-09-23-extended",
+ "purpose": "Second pre-registered campaign, written after the first passed with most of its time budget unused: one lane per format, a larger mixed lane, two stress lanes that raise program length and the per-program cost budget toward the heartbeat and timeout limits, and a fresh positive-control lane. The exemplar lane already ran in the first campaign at the same Lean sources and is not repeated.",
+ "reference": {
+  "flocq_commit": "7aab8f55"
+ },
+ "paths": [
+  "lean-meta",
+  "lean-ir",
+  "lean-kernel"
+ ],
+ "budget": {
+  "wall_clock_minutes": 60,
+  "max_concurrent_provers": 2
+ },
+ "lanes": [
+  {
+   "name": "only-t1-2",
+   "kind": "run",
+   "seed": 2026092311,
+   "n": 120,
+   "min_size": 6,
+   "max_size": 16,
+   "formats": {
+    "t1_2": 1
+   },
+   "purpose": "single format t1_2: dense boundary coverage in one format"
+  },
+  {
+   "name": "only-t2-3",
+   "kind": "run",
+   "seed": 2026092312,
+   "n": 120,
+   "min_size": 6,
+   "max_size": 16,
+   "formats": {
+    "t2_3": 1
+   },
+   "purpose": "single format t2_3: dense boundary coverage in one format"
+  },
+  {
+   "name": "only-t3-4",
+   "kind": "run",
+   "seed": 2026092313,
+   "n": 120,
+   "min_size": 6,
+   "max_size": 16,
+   "formats": {
+    "t3_4": 1
+   },
+   "purpose": "single format t3_4: dense boundary coverage in one format"
+  },
+  {
+   "name": "only-t4-8",
+   "kind": "run",
+   "seed": 2026092314,
+   "n": 120,
+   "min_size": 6,
+   "max_size": 16,
+   "formats": {
+    "t4_8": 1
+   },
+   "purpose": "single format t4_8: dense boundary coverage in one format"
+  },
+  {
+   "name": "only-t5-7",
+   "kind": "run",
+   "seed": 2026092315,
+   "n": 120,
+   "min_size": 6,
+   "max_size": 16,
+   "formats": {
+    "t5_7": 1
+   },
+   "purpose": "single format t5_7: dense boundary coverage in one format"
+  },
+  {
+   "name": "only-t8-16",
+   "kind": "run",
+   "seed": 2026092316,
+   "n": 120,
+   "min_size": 6,
+   "max_size": 16,
+   "formats": {
+    "t8_16": 1
+   },
+   "purpose": "single format t8_16: dense boundary coverage in one format"
+  },
+  {
+   "name": "only-b16",
+   "kind": "run",
+   "seed": 2026092317,
+   "n": 120,
+   "min_size": 6,
+   "max_size": 16,
+   "formats": {
+    "b16": 1
+   },
+   "purpose": "single format b16: dense boundary coverage in one format"
+  },
+  {
+   "name": "only-bf16",
+   "kind": "run",
+   "seed": 2026092318,
+   "n": 120,
+   "min_size": 6,
+   "max_size": 16,
+   "formats": {
+    "bf16": 1
+   },
+   "purpose": "single format bf16: dense boundary coverage in one format"
+  },
+  {
+   "name": "only-b32",
+   "kind": "run",
+   "seed": 2026092319,
+   "n": 120,
+   "min_size": 6,
+   "max_size": 16,
+   "formats": {
+    "b32": 1
+   },
+   "purpose": "single format b32: dense boundary coverage in one format"
+  },
+  {
+   "name": "only-b64",
+   "kind": "run",
+   "seed": 2026092320,
+   "n": 120,
+   "min_size": 6,
+   "max_size": 16,
+   "formats": {
+    "b64": 1
+   },
+   "purpose": "single format b64: dense boundary coverage in one format"
+  },
+  {
+   "name": "mixed-big",
+   "kind": "run",
+   "seed": 2026092321,
+   "n": 400,
+   "min_size": 4,
+   "max_size": 12,
+   "purpose": "default weights at 5x the first campaign's per-lane N"
+  },
+  {
+   "name": "stress-long",
+   "kind": "run",
+   "seed": 2026092322,
+   "n": 200,
+   "min_size": 16,
+   "max_size": 28,
+   "budget_ms": 6000,
+   "purpose": "long programs with twice the per-program cost budget"
+  },
+  {
+   "name": "stress-wide",
+   "kind": "run",
+   "seed": 2026092323,
+   "n": 120,
+   "min_size": 6,
+   "max_size": 14,
+   "budget_ms": 8000,
+   "formats": {
+    "b32": 1,
+    "b64": 1
+   },
+   "purpose": "binary32/64 with a large cost budget, admitting far exponent gaps"
+  },
+  {
+   "name": "controls",
+   "kind": "controls",
+   "seed": 2026092324,
+   "n": 40,
+   "controls": "all",
+   "purpose": "all 13 planted defects at this generator revision on a fresh seed"
+  }
+ ],
+ "coverage_required": "every format, op, form, mode and corner, and every (format, op family) cell, on cases judged on every path",
+ "shrink": {
+  "max_per_cluster": 3
+ },
+ "exemplar_lane": false
+}
