@@ -49,15 +49,11 @@ else
   flocq_dir="$managed_worktree"
 fi
 
-# A matching HEAD alone does not make a modified reference pinned. Generated
-# build files are fine; changed tracked sources and untracked .v files are not.
-git -C "$flocq_dir" diff --exit-code HEAD -- src
-if git -C "$flocq_dir" ls-files --others --exclude-standard src | rg -q '\.v$'; then
-  echo 'Reference checkout contains untracked Rocq source files' >&2
-  exit 1
-fi
-
+# A matching HEAD alone does not make a modified reference pinned. CI and this
+# loop share one policy, verify_reference in scripts/flocq_bridge.py, which
+# validate_flocq_source_refs.py applies before anything else.
 uv run "$repo_root/scripts/validate_flocq_source_refs.py" "$flocq_dir"
+uv run "$repo_root/scripts/test_reference_policy.py" -v
 uv run "$repo_root/scripts/test_flocq_source_refs.py" -v
 uv run "$repo_root/scripts/test_flocq_port_queue.py" -v
 uv run "$repo_root/scripts/test_scan_failures.py" -v
@@ -74,128 +70,10 @@ if [[ "${FLOCQ_SKIP_BUILD:-0}" != "1" ]]; then
     ./remake --jobs="${FLOCQ_JOBS:-4}"
   )
 fi
-
-cat >"$scratch/FloatSpecConformance.v" <<'COQ'
-From Stdlib Require Import ZArith.
-From Flocq Require Import Core.Zaux Core.Defs Core.FIX Calc.Bracket Calc.Operations Calc.Plus Calc.Round Calc.Div Calc.Sqrt IEEE754.Binary Pff.Pff2FlocqAux.
-
-Open Scope Z_scope.
-
-Example even_middle_exact_location :
-    Bracket.new_location_even 4 2 SpecFloat.loc_Exact =
-    SpecFloat.loc_Inexact Eq.
-Proof. vm_compute. reflexivity. Qed.
-
-Example odd_middle_inexact_location :
-    Bracket.new_location_odd 3 1 (SpecFloat.loc_Inexact Gt) =
-    SpecFloat.loc_Inexact Gt.
-Proof. vm_compute. reflexivity. Qed.
-
-Example fplus_core_negative_scale :
-    (let beta := Build_radix 2 eq_refl in
-      Fplus_core beta 1 0 0 1 1) =
-    (0, SpecFloat.loc_Exact).
-Proof. vm_compute. reflexivity. Qed.
-
-Example fplus_core_positive_control :
-    (let beta := Build_radix 2 eq_refl in
-      Fplus_core beta 1 0 0 1 0) =
-    (1, SpecFloat.loc_Exact).
-Proof. vm_compute. reflexivity. Qed.
-
-Example falign_reverse_exponent :
-    (let beta := Build_radix 2 eq_refl in
-      Operations.Falign (Float beta 1 0) (Float beta 1 (-1))) =
-    (2, 1, -1).
-Proof. vm_compute. reflexivity. Qed.
-
-Example fplus_close_magnitudes :
-    (let beta := Build_radix 2 eq_refl in
-      Plus.Fplus beta (FIX_exp 0) (Float beta 1 0) (Float beta 1 1)) =
-    (3, 0, SpecFloat.loc_Exact).
-Proof. vm_compute. reflexivity. Qed.
-
-Example fdiv_core_exact_quotient :
-    (let beta := Build_radix 2 eq_refl in
-      Div.Fdiv_core beta 4 0 2 0 0) =
-    (2, SpecFloat.loc_Exact).
-Proof. vm_compute. reflexivity. Qed.
-
-Example fdiv_core_halfway_location :
-    (let beta := Build_radix 2 eq_refl in
-      Div.Fdiv_core beta 1 0 2 0 0) =
-    (0, SpecFloat.loc_Inexact Eq).
-Proof. vm_compute. reflexivity. Qed.
-
-Example fdiv_exact_quotient :
-    (let beta := Build_radix 2 eq_refl in
-      Div.Fdiv (FIX_exp 0) (Float beta 4 0) (Float beta 2 0)) =
-    (2, 0, SpecFloat.loc_Exact).
-Proof. vm_compute. reflexivity. Qed.
-
-Example fsqrt_core_exact_square :
-    (let beta := Build_radix 2 eq_refl in
-      Sqrt.Fsqrt_core beta 4 0 0) =
-    (2, SpecFloat.loc_Exact).
-Proof. vm_compute. reflexivity. Qed.
-
-Example fsqrt_core_inexact_location :
-    (let beta := Build_radix 2 eq_refl in
-      Sqrt.Fsqrt_core beta 2 0 0) =
-    (1, SpecFloat.loc_Inexact Lt).
-Proof. vm_compute. reflexivity. Qed.
-
-Example fsqrt_exact_square :
-    (let beta := Build_radix 2 eq_refl in
-      Sqrt.Fsqrt (FIX_exp 0) (Float beta 4 0)) =
-    (2, 0, SpecFloat.loc_Exact).
-Proof. vm_compute. reflexivity. Qed.
-
-Example truncate_aux_negative_scale :
-    (let beta := Build_radix 2 eq_refl in
-      truncate_aux beta (2, 0, SpecFloat.loc_Exact) (-1)) =
-    (0, -1, SpecFloat.loc_Inexact Gt).
-Proof. vm_compute. reflexivity. Qed.
-
-Example truncate_aux_positive_control :
-    (let beta := Build_radix 2 eq_refl in
-      truncate_aux beta (2, 0, SpecFloat.loc_Exact) 1) =
-    (1, 1, SpecFloat.loc_Exact).
-Proof. vm_compute. reflexivity. Qed.
-
-Example truncate_source_exponent :
-    (let beta := Build_radix 2 eq_refl in
-      truncate beta (FIX_exp 1) (4, 0, SpecFloat.loc_Exact)) =
-    (2, 1, SpecFloat.loc_Exact).
-Proof. vm_compute. reflexivity. Qed.
-
-Example round_sign_up_negative :
-    Round.round_sign_UP true (SpecFloat.loc_Inexact Gt) = false.
-Proof. vm_compute. reflexivity. Qed.
-
-Example round_nearest_tie_choice :
-    Round.round_N true (SpecFloat.loc_Inexact Eq) = true.
-Proof. vm_compute. reflexivity. Qed.
-
-Example truncate_fix_positive_shift :
-    (let beta := Build_radix 2 eq_refl in
-      Round.truncate_FIX beta 1 (4, 0, SpecFloat.loc_Exact)) =
-    (2, 1, SpecFloat.loc_Exact).
-Proof. vm_compute. reflexivity. Qed.
-
-Example nan_payload_bitlength_boundary :
-    Zlt_bool (Zpos (SpecFloat.digits2_pos 4)) 3 = false.
-Proof. vm_compute. reflexivity. Qed.
-
-Example nan_payload_bitlength_valid :
-    Zlt_bool (Zpos (SpecFloat.digits2_pos 3)) 3 = true.
-Proof. vm_compute. reflexivity. Qed.
-
-Example make_bound_Emin_zero_precision :
-    (let beta := Build_radix 2 eq_refl in
-      Z.of_N (Pff.dExp (make_bound beta 0 (-1)))) = 1.
-Proof. vm_compute. reflexivity. Qed.
-COQ
+# Verify again after building, as CI does, so no regression below runs against
+# build products compiled from other sources.
+uv run python -c 'import sys; from pathlib import Path; sys.path.insert(0, sys.argv[1]); import flocq_bridge; print("Built reference verified at", flocq_bridge.verify_reference(Path(sys.argv[2]).resolve()))' \
+  "$repo_root/scripts" "$flocq_dir"
 
 if [[ -n "${COQC:-}" ]]; then
   coqc_bin="$COQC"
@@ -207,36 +85,16 @@ else
     coqc_bin="$(command -v coqc)"
   fi
 fi
-"$coqc_bin" -q -R "$flocq_dir/src" Flocq "$scratch/FloatSpecConformance.v"
-"$coqc_bin" -q -R "$flocq_dir/src" Flocq -o "$scratch/ArithmeticProperties.vo" \
-  "$repo_root/scripts/fixtures/ArithmeticProperties.v"
-echo 'Pure Rocq loop passed: examples and 10,734 independent arithmetic invariant cases'
-"$coqc_bin" -q -R "$flocq_dir/src" Flocq -o "$scratch/BitsProperties.vo" \
-  "$repo_root/scripts/fixtures/BitsProperties.v"
-echo 'Pure Rocq bit loop passed: 20,000 binary32/binary64 roundtrip checks'
-"$coqc_bin" -q -R "$flocq_dir/src" Flocq -o "$scratch/BitOrderProperties.vo" \
-  "$repo_root/scripts/fixtures/BitOrderProperties.v"
-echo 'Pure Rocq order loop passed: 2,000 ordering-law checks and boundary examples'
-"$coqc_bin" -q -R "$flocq_dir/src" Flocq -o "$scratch/RoundingWalkthrough.vo" \
-  "$repo_root/scripts/fixtures/RoundingWalkthrough.v"
-for fixture in BooleanComparison PrimitiveComparison PrimitiveConversion PrimitiveExecution RawIEEERounding RawOverflow SingleNaNArithmetic SingleNaNHelpers FrexpLaws Normalization MultiplicationErrorGrid DoubleRoundingWitness SingleNaNValidity RelativeErrorGrid \
-    SourcePremiseContracts CorePremiseBoundary ExponentValidityBoundary UlpNearestChoiceContracts PffBasicSourceContracts RoundNEPointContracts RemainderContracts RemainderGrid DoubleRoundingContracts LpoSourceContracts UlpSourceChoice PffLogTotality PffExecution PffAuxExecution PffRoundingSource NativeModelAdapters CalcBrackets ExactArithmeticLaws RoundingOracle IntegerRounding; do
-  "$coqc_bin" -q -R "$flocq_dir/src" Flocq -o "$scratch/$fixture.vo" \
-    "$repo_root/scripts/fixtures/$fixture.v"
+# Compile every Rocq fixture, discovered by glob as in CI, against the reference.
+for path in "$repo_root"/scripts/fixtures/*.v; do
+  fixture="$(basename "$path" .v)"
+  echo "== $fixture"
+  "$coqc_bin" -q -R "$flocq_dir/src" Flocq -o "$scratch/$fixture.vo" "$path"
 done
+echo 'Pure Rocq loop passed: examples and 10,734 independent arithmetic invariant cases'
+echo 'Pure Rocq bit loop passed: 20,000 binary32/binary64 roundtrip checks'
+echo 'Pure Rocq order loop passed: 2,000 ordering-law checks and boundary examples'
 echo 'Pure Rocq contract loop passed: typed premises, counterexamples, finite error laws, 35,845 rounding-oracle cases'
-"$coqc_bin" -q -R "$flocq_dir/src" Flocq -o "$scratch/PffIntegerExecution.vo" \
-  "$repo_root/scripts/fixtures/PffIntegerExecution.v"
-"$coqc_bin" -q -R "$flocq_dir/src" Flocq -o "$scratch/ZauxPreludeContracts.vo" \
-  "$repo_root/scripts/fixtures/ZauxPreludeContracts.v"
-"$coqc_bin" -q -R "$flocq_dir/src" Flocq -o "$scratch/ZauxPowerRadixContracts.vo" \
-  "$repo_root/scripts/fixtures/ZauxPowerRadixContracts.v"
-"$coqc_bin" -q -R "$flocq_dir/src" Flocq -o "$scratch/ZauxDivisionContracts.vo" \
-  "$repo_root/scripts/fixtures/ZauxDivisionContracts.v"
-"$coqc_bin" -q -R "$flocq_dir/src" Flocq -o "$scratch/RoundPredSourceContracts.vo" \
-  "$repo_root/scripts/fixtures/RoundPredSourceContracts.v"
-"$coqc_bin" -q -R "$flocq_dir/src" Flocq -o "$scratch/RoundPredTieContracts.vo" \
-  "$repo_root/scripts/fixtures/RoundPredTieContracts.v"
 
 run_lake build FloatSpec.Test.FlocqConformance FloatSpec.Test.ArithmeticProperties \
   FloatSpec.Test.BitsExecution FloatSpec.Test.BitOrderExecution FloatSpec.Test.NativeSourceArithmetic \
@@ -256,17 +114,18 @@ run_lake env lean "$repo_root/FloatSpec/Test/DoubleRoundingContracts.lean"
 run_lake env lean "$repo_root/FloatSpec/Test/NativeModelAdapters.lean"
 run_lake env lean "$repo_root/FloatSpec/Test/LpoSourceContracts.lean"
 run_lake env lean "$repo_root/FloatSpec/Test/UlpSourceChoice.lean"
-for fixture in BooleanComparison PrimitiveComparison PrimitiveConversion PrimitiveExecution RawIEEERounding RawOverflow SingleNaNArithmetic SingleNaNHelpers FrexpLaws Normalization CalcBrackets NativeSingleNaNArithmetic NativeFrexpAgreement MultiplicationErrorGrid DoubleRoundingWitness SingleNaNValidity RelativeErrorGrid ExactArithmeticLaws RoundingOracle IntegerRounding CorePremiseBoundary ExponentValidityBoundary UlpNearestChoiceContracts PffBasicSourceContracts RoundNEPointContracts RemainderContracts RemainderGrid; do
-  run_lake env lean "$repo_root/scripts/fixtures/$fixture.lean"
+# Every Lean fixture, discovered by glob with warnings as errors, as in CI;
+# fixtures defining `main` also execute.
+executable_fixtures=' GuidedDemo PffWalkthrough '
+for path in "$repo_root"/scripts/fixtures/*.lean; do
+  fixture="$(basename "$path" .lean)"
+  echo "== $fixture"
+  if [[ "$executable_fixtures" == *" $fixture "* ]]; then
+    run_lake env lean -DwarningAsError=true --run "$path"
+  else
+    run_lake env lean -DwarningAsError=true "$path"
+  fi
 done
-run_lake env lean --run "$repo_root/scripts/fixtures/GuidedDemo.lean"
-run_lake env lean "$repo_root/scripts/fixtures/PffIntegerExecution.lean"
-run_lake env lean "$repo_root/scripts/fixtures/ZauxPreludeContracts.lean"
-run_lake env lean "$repo_root/scripts/fixtures/ZauxPowerRadixContracts.lean"
-run_lake env lean "$repo_root/scripts/fixtures/ZauxDivisionContracts.lean"
-run_lake env lean "$repo_root/scripts/fixtures/RoundPredSourceContracts.lean"
-run_lake env lean "$repo_root/scripts/fixtures/RoundPredTieContracts.lean"
-run_lake env lean --run "$repo_root/scripts/fixtures/PffWalkthrough.lean"
 echo 'Pure Lean loop passed: examples and 10,734 kernel-checked arithmetic invariant cases'
 run_lake exe floatspec_demo
 echo 'Lean bit/order loops passed: 20,000 roundtrips, 2,000 pure laws, 200,000 native comparisons'
@@ -286,6 +145,10 @@ for replay in RawIEEERoundingReplay RawOverflowReplay PrimitiveComparisonReplay 
   uv run "$repo_root/scripts/flocq_bridge.py" --flocq-dir "$flocq_dir" --coqc "$coqc_bin" \
     --replay "$repo_root/scripts/fixtures/$replay.json" --skip-build
 done
+uv run "$repo_root/scripts/pff_bridge.py" --flocq-dir "$flocq_dir" --coqc "$coqc_bin" \
+  --replay "$repo_root/scripts/fixtures/PffSignLawsReplay.json" --skip-build
+uv run "$repo_root/scripts/pff_integer_bridge.py" --flocq-dir "$flocq_dir" --coqc "$coqc_bin" \
+  --replay "$repo_root/scripts/fixtures/PffIntegerReplay.json" --skip-build
 FLOCQ_AUDIT_DIR="$flocq_dir" uv run "$repo_root/scripts/test_flocq_bridge.py" -v
 
 uv run "$repo_root/scripts/native_ieee_bridge.py" --flocq-dir "$flocq_dir" --coqc "$coqc_bin" \

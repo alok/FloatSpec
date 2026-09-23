@@ -546,6 +546,24 @@ class ConformanceDriverTests(unittest.TestCase):
                 with self.subTest(command=command):
                     self.assertIn(name, self.heredocs)
 
+    def test_fixture_loops_match_ci(self):
+        # A green local run should predict a green CI run: the same globs, the
+        # same warnings-as-errors flag, and the same fixtures executed.
+        executables = ' ' + ' '.join(sorted(executable_fixtures())) + ' '
+        commands = [normalized(command) for command in self.commands]
+        for expected in (f"executable_fixtures='{executables}'",
+                         'for path in "$repo_root"/scripts/fixtures/*.lean; do',
+                         'run_lake env lean -DwarningAsError=true --run "$path"',
+                         'run_lake env lean -DwarningAsError=true "$path"',
+                         'for path in "$repo_root"/scripts/fixtures/*.v; do',
+                         '"$coqc_bin" -q -R "$flocq_dir/src" Flocq -o "$scratch/$fixture.vo" "$path"'):
+            with self.subTest(command=expected):
+                self.assertIn(normalized(expected), commands)
+        for command in commands:
+            if re.search(r'\blake env lean\b', command) and 'scripts/fixtures/' in command:
+                with self.subTest(command=command):
+                    self.assertIn('-DwarningAsError=true', command)
+
     def test_every_driver_command_is_hosted_or_accounted(self):
         known = {'set', 'trap', 'if', 'else', 'fi', 'for', 'done', 'git', 'rm', 'echo', 'exit',
                  'cat', '}', 'cleanup()', 'run_lake()', 'uv', 'python3', 'run_lake', 'lake', 'elan',
