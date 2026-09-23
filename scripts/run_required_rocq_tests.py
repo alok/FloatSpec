@@ -28,6 +28,7 @@ LIVE_MODULES = (
     'test_zaux_prelude_bridge', 'test_zaux_power_contracts',
     'test_zaux_division_contracts', 'test_pff_basic_contracts',
     'test_pff_integer_bridge', 'test_remainder_contracts',
+    'test_flocq_exemplars',
 )
 
 
