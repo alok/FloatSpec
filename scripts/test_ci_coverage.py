@@ -74,6 +74,7 @@ INVOCATION = r'(?:opam exec --switch=floatspec-rocq -- )?(?:python3 )?scripts/'
 # Steps pinned command for command; `{executables}` is derived from the fixtures.
 LEAN_GATE = (r"rg -n 'warningAsError|#guard_msgs|#exit|\baxiom\b|implemented_by|\bextern\b"
              r"|native_decide|decide\s*\+native|native\s*:=\s*true|ofReduceBool|skipKernelTC"
+             r"|addDecl(WithoutChecking|Core)|doCheck|setEnv|modifyEnv|run_(cmd|elab|meta)"
              r"|sorryAx|drop\s+(all|error|warning)' scripts/fixtures/*.lean || status=$?")
 ROCQ_GATE = (r"rg -n '\b(Admitted|Admit|admit|Abort|Axioms?|Parameters?|Conjectures?|Declare)\b"
              r"|native_compute|native_cast_no_check|Unset (Guard|Positivity|Universe) Checking"
@@ -82,15 +83,18 @@ PINNED_STEPS = {
     'Run every Lean regression fixture': [
         'status=0', LEAN_GATE, 'test "$status" -eq 1',
         "executable_fixtures='{executables}'",
+        'oleans="$(mktemp -d)"',
         'for path in scripts/fixtures/*.lean; do',
         'fixture="$(basename "$path" .lean)"',
         'echo "== $fixture"',
         'if [[ "$executable_fixtures" == *" $fixture "* ]]; then',
-        'lake env lean -DwarningAsError=true --run "$path"',
+        'lake env lean -DwarningAsError=true -o "$oleans/$fixture.olean" --run "$path"',
         'else',
-        'lake env lean -DwarningAsError=true "$path"',
+        'lake env lean -DwarningAsError=true -o "$oleans/$fixture.olean" "$path"',
         'fi',
         'done 2>&1 | tee "$FLOCQ_CI_OUTPUT/lean-fixtures.log"',
+        'lake env lean --run scripts/KernelReplay.lean "$oleans"/*.olean 2>&1 '
+        '| tee -a "$FLOCQ_CI_OUTPUT/lean-fixtures.log"',
         'lake exe floatspec_demo 2>&1 | tee -a "$FLOCQ_CI_OUTPUT/lean-fixtures.log"',
     ],
     'Run pure Rocq regressions': [
@@ -453,7 +457,11 @@ class WorkflowTests(unittest.TestCase):
             LEAN_GATE: (['axiom cheat : False', '/-- error: x -/ #guard_msgs in', '#exit',
                          '@[implemented_by f] def g', '@[extern "c"] opaque h', 'by native_decide',
                          'by decide +native', 'set_option warningAsError false',
-                         'Lean.ofReduceBool', 'debug.skipKernelTC', 'sorryAx'],
+                         'Lean.ofReduceBool', 'debug.skipKernelTC', 'sorryAx',
+                         'env.addDeclCore 0 0 decl none', '(doCheck := false)',
+                         '@Kernel.Environment.addDeclWithoutChecking', 'setEnv env',
+                         'modifyEnv (·.addExtraName n)', 'run_cmd do', 'run_elab pure ()',
+                         'run_meta pure ()'],
                         ['#print axioms t', 'theorem t : 1 = 1 := by decide']),
             ROCQ_GATE: (['Admitted.', 'Admit Obligations.', 'admit.', 'Abort.', 'Axiom a : False.',
                          'Parameter p : nat.', 'Conjecture c : False.', 'Declare Instance b : B.',
@@ -552,9 +560,14 @@ class ConformanceDriverTests(unittest.TestCase):
         executables = ' ' + ' '.join(sorted(executable_fixtures())) + ' '
         commands = [normalized(command) for command in self.commands]
         for expected in (f"executable_fixtures='{executables}'",
+                         'fixture_oleans="$(mktemp -d "$scratch/oleans.XXXXXX")"',
                          'for path in "$repo_root"/scripts/fixtures/*.lean; do',
-                         'run_lake env lean -DwarningAsError=true --run "$path"',
-                         'run_lake env lean -DwarningAsError=true "$path"',
+                         'run_lake env lean -DwarningAsError=true -o "$fixture_oleans/$fixture.olean" '
+                         '--run "$path"',
+                         'run_lake env lean -DwarningAsError=true -o "$fixture_oleans/$fixture.olean" '
+                         '"$path"',
+                         'run_lake env lean --run "$repo_root/scripts/KernelReplay.lean" '
+                         '"$fixture_oleans"/*.olean',
                          'for path in "$repo_root"/scripts/fixtures/*.v; do',
                          '"$coqc_bin" -q -R "$flocq_dir/src" Flocq -o "$scratch/$fixture.vo" "$path"'):
             with self.subTest(command=expected):

@@ -87,25 +87,30 @@ jobs:
         run: |
           # `lake env lean` ignores the lakefile, so fixtures meet Lean's default
           # linters plus warnings-as-errors, stricter than the product build.
-          # Reject what would defeat that, assume a result, fake a run's output
-          # or bypass the kernel; only ripgrep's explicit no-match result passes.
+          # Reject what would defeat that, assume a result, fake a run's output,
+          # bypass the kernel or rewrite the environment; only ripgrep's explicit
+          # no-match result passes.
           status=0
-          rg -n 'warningAsError|#guard_msgs|#exit|\baxiom\b|implemented_by|\bextern\b|native_decide|decide\s*\+native|native\s*:=\s*true|ofReduceBool|skipKernelTC|sorryAx|drop\s+(all|error|warning)' \
+          rg -n 'warningAsError|#guard_msgs|#exit|\baxiom\b|implemented_by|\bextern\b|native_decide|decide\s*\+native|native\s*:=\s*true|ofReduceBool|skipKernelTC|addDecl(WithoutChecking|Core)|doCheck|setEnv|modifyEnv|run_(cmd|elab|meta)|sorryAx|drop\s+(all|error|warning)' \
             scripts/fixtures/*.lean || status=$?
           test "$status" -eq 1
           # Discover fixtures by glob so none is left unrun. Those defining `main`
           # also execute, and GuidedDemo runs again as the compiled floatspec_demo;
-          # scripts/test_ci_coverage.py checks this list.
+          # scripts/test_ci_coverage.py checks this list. Each fixture's olean is
+          # then replayed through the kernel, since elaboration alone can add a
+          # declaration the kernel never checked.
           executable_fixtures=' GuidedDemo PffWalkthrough '
+          oleans="$(mktemp -d)"
           for path in scripts/fixtures/*.lean; do
             fixture="$(basename "$path" .lean)"
             echo "== $fixture"
             if [[ "$executable_fixtures" == *" $fixture "* ]]; then
-              lake env lean -DwarningAsError=true --run "$path"
+              lake env lean -DwarningAsError=true -o "$oleans/$fixture.olean" --run "$path"
             else
-              lake env lean -DwarningAsError=true "$path"
+              lake env lean -DwarningAsError=true -o "$oleans/$fixture.olean" "$path"
             fi
           done 2>&1 | tee "$FLOCQ_CI_OUTPUT/lean-fixtures.log"
+          lake env lean --run scripts/KernelReplay.lean "$oleans"/*.olean 2>&1 | tee -a "$FLOCQ_CI_OUTPUT/lean-fixtures.log"
           lake exe floatspec_demo 2>&1 | tee -a "$FLOCQ_CI_OUTPUT/lean-fixtures.log"
 
       - name: Reject proof and semantic placeholders

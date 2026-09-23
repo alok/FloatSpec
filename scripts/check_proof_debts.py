@@ -17,9 +17,10 @@ an error except:
 - `#guard_msgs in` guarding a `#` command (never a declaration, whose
   elaboration errors it could otherwise swallow while the declaration is added
   with `sorryAx`), with no expected message that mentions `sorry`;
-- the scanner's own negative controls in scripts/fixtures/audit/, and the
-  constant names the compiled trust audit must refer to, at exactly their
-  expected counts.
+- the scanner's own negative controls in scripts/fixtures/audit/, the
+  constant names the compiled trust audit must refer to, and the kernel
+  replayer's two `unsafe def`s (it frees each module's imports), at exactly
+  their expected counts.
 """
 
 import json
@@ -54,6 +55,9 @@ EXPECTED_REFERENCES = Counter({
     ("scripts/fixtures/audit/Extern.lean", "opaque"): 1,
     # The compiled trust audit looks for `sorryAx` by name.
     ("scripts/AuditCompiledTrust.lean", "sorry_ax"): 3,
+    # Freeing a replayed module's imported regions is unsafe; the replayer
+    # only runs as a script and adds no declaration anything imports.
+    ("scripts/KernelReplay.lean", "unsafe_declaration"): 2,
 })
 
 

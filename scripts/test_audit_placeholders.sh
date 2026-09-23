@@ -112,6 +112,8 @@ sorry_option	set_option debug.terminalTacticsAsSorry true in\nexample : 1 = 2 :=
 kernel_bypass	set_option debug.skipKernelTC true in\ntheorem kernelSkipped : 2 + 2 = 4 := rfl
 kernel_bypass	set_option debug.«skipKernelTC» true in\ntheorem kernelSkippedEscaped : 2 + 2 = 4 := rfl
 kernel_bypass	open Lean in\nexample := @Kernel.Environment.addDeclWithoutChecking
+kernel_bypass	open Lean in\nexample := @Environment.addDeclCore
+kernel_bypass	def checkFlag (doCheck : Bool := true) : Bool := doCheck
 warning_as_error	set_option warningAsError false in\nexample : True := trivial
 sorry_tactic,warning_as_error	set_option warningAsError\n  false in\nexample : False := by all_goals stop trivial
 guard_msgs	#guard_msgs (drop warning) in\nexample : True := trivial

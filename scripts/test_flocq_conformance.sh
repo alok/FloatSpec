@@ -115,17 +115,20 @@ run_lake env lean "$repo_root/FloatSpec/Test/NativeModelAdapters.lean"
 run_lake env lean "$repo_root/FloatSpec/Test/LpoSourceContracts.lean"
 run_lake env lean "$repo_root/FloatSpec/Test/UlpSourceChoice.lean"
 # Every Lean fixture, discovered by glob with warnings as errors, as in CI;
-# fixtures defining `main` also execute.
+# fixtures defining `main` also execute, and every fixture's declarations are
+# then replayed through the kernel.
 executable_fixtures=' GuidedDemo PffWalkthrough '
+fixture_oleans="$(mktemp -d "$scratch/oleans.XXXXXX")"
 for path in "$repo_root"/scripts/fixtures/*.lean; do
   fixture="$(basename "$path" .lean)"
   echo "== $fixture"
   if [[ "$executable_fixtures" == *" $fixture "* ]]; then
-    run_lake env lean -DwarningAsError=true --run "$path"
+    run_lake env lean -DwarningAsError=true -o "$fixture_oleans/$fixture.olean" --run "$path"
   else
-    run_lake env lean -DwarningAsError=true "$path"
+    run_lake env lean -DwarningAsError=true -o "$fixture_oleans/$fixture.olean" "$path"
   fi
 done
+run_lake env lean --run "$repo_root/scripts/KernelReplay.lean" "$fixture_oleans"/*.olean
 echo 'Pure Lean loop passed: examples and 10,734 kernel-checked arithmetic invariant cases'
 run_lake exe floatspec_demo
 echo 'Lean bit/order loops passed: 20,000 roundtrips, 2,000 pure laws, 200,000 native comparisons'

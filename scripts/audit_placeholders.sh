@@ -118,7 +118,7 @@ lean	raw	compiler_trust	\b(ofReduceBool|ofReduceNat|reduceBool|reduceNat|trustCo
 lean	raw	sorry_ax	\bsorryAx\b
 lean	raw	sorry_meta	\b(mkSorry|mkLabeledSorry|mkSyntheticSorry|mkSyntheticSorryFor|exceptionToSorry|admitGoal)\b
 lean	raw	sorry_option	\b(proofAsSorry|byAsSorry|terminalTacticsAsSorry)\b
-lean	raw	kernel_bypass	\bskipKernelTC\b|\baddDeclWithoutChecking\b
+lean	raw	kernel_bypass	\bskipKernelTC\b|\baddDecl(WithoutChecking|Core)\b|\bdoCheck\b
 lean	raw	warning_as_error	\bwarningAsError\b
 lean	raw	guard_msgs	#guard_msgs\b
 lean	raw	exit_command	#exit\b
