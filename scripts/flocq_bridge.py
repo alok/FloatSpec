@@ -1305,15 +1305,119 @@ def require_lean_source_snapshot(expected: str) -> None:
         raise RuntimeError("Lean sources/configuration changed during verification; rebuild and rerun")
 
 
-def verify_reference(flocq: Path) -> str:
-    """Reject a different or modified reference, even if its build succeeds."""
-    pin = run(["git", "rev-parse", "HEAD:Deps/flocq"]).strip()
-    if run(["git", "-C", str(flocq), "rev-parse", "HEAD"]).strip() != pin:
+def generated_reference_source(root: Path, path: str) -> bytes | None:
+    """Content Flocq's build derives from tracked files for an ignored .v output."""
+    if path == "examples/ComputeMore.v":  # Remakefile.in copies examples/Compute.v
+        return (root / "examples/Compute.v").read_bytes()
+    if path == "src/Version.v":  # configure.in: AC_CONFIG_FILES([... src/Version.v])
+        version = re.search(r"^AC_INIT\(\[Flocq\], \[([^]]+)\]", (root / "configure.in").read_text(), re.M)
+        if version:
+            return (root / "src/Version.v.in").read_bytes().replace(b"@PACKAGE_VERSION@", version[1].encode())
+    return None
+
+
+def git_object_id(kind: str, data: bytes, width: int) -> str:
+    """Git's name for an object, SHA-1 for 40 hex digits and SHA-256 for 64."""
+    return hashlib.new("sha1" if width == 40 else "sha256",
+                       b"%s %d\0" % (kind.encode(), len(data)) + data).hexdigest()
+
+
+def pinned_files(git: list[str], pin: str) -> dict[str, tuple[str, str]]:
+    """Map each path of commit pin to (mode, blob id) without trusting stored objects.
+
+    Every commit and tree read is hashed again and must equal the id naming it:
+    Git does not recheck subtrees, so a rewritten object would otherwise swap
+    the pinned files unnoticed.
+    """
+    def read(kind: str, oid: str) -> bytes:
+        data = subprocess.run([*git, "cat-file", kind, oid], check=True, capture_output=True,
+                              timeout=120).stdout
+        if git_object_id(kind, data, len(pin)) != oid:
+            raise ValueError(f"reference object store does not match the pin: {kind} {oid}")
+        return data
+
+    files: dict[str, tuple[str, str]] = {}
+    trees = [("", re.match(rb"tree ([0-9a-f]+)\n", read("commit", pin))[1].decode())]
+    while trees:
+        prefix, tree = trees.pop()
+        data = read("tree", tree)
+        while data:
+            header, data = data.split(b"\0", 1)
+            mode, name = header.decode().split(" ", 1)
+            oid, data = data[:len(pin) // 2].hex(), data[len(pin) // 2:]
+            if mode == "40000":
+                trees.append((f"{prefix}{name}/", oid))
+            else:
+                files[prefix + name] = (mode, oid)
+    return files
+
+
+def verify_reference(flocq: Path, expected_pin: str | None = None) -> str:
+    """Reject a different or modified reference, even if its build succeeds.
+
+    The pinned file list comes from rehashed commit and tree objects, and each
+    file is hashed from disk here rather than by Git, so replace refs, rewritten
+    objects, clean filters, assume-unchanged, skip-worktree, and stale stat
+    caches cannot hide an edit. Nothing may be staged. Walking the directory
+    itself, no symlink, nested repository, or untracked or ignored .v file may
+    exist except the configure/remake outputs derived from tracked templates.
+    Each .vo needs its source beside it and a .glob whose DIGEST line, written
+    by coqc, is the MD5 of that source: this rejects a build from an edit that
+    was later reverted, or from another commit. It is not an attestation; a .vo
+    swapped without its .glob still passes. Other build products are allowed.
+    expected_pin defaults to the parent repository's gitlink.
+    """
+    pin = expected_pin or run(["git", "rev-parse", "HEAD:Deps/flocq"]).strip()
+    root = (ROOT / flocq).resolve()
+    git = ["git", "--no-optional-locks", "--no-replace-objects", "-C", str(root)]
+    if Path(run([*git, "rev-parse", "--show-toplevel"]).strip()).resolve() != root:
+        raise ValueError("reference path is not the top level of its own work tree")
+    if run([*git, "rev-parse", "HEAD"]).strip() != pin:
         raise ValueError("reference checkout does not match the parent repository's gitlink")
-    run(["git", "-C", str(flocq), "diff", "--exit-code", "HEAD", "--", "src"])
-    untracked = run(["git", "-C", str(flocq), "ls-files", "--others", "--exclude-standard", "src"])
-    if any(path.endswith(".v") for path in untracked.splitlines()):
-        raise ValueError("reference contains untracked Rocq source files")
+    staged_or_edited = sorted({path for scope in (["HEAD"], ["--cached", "HEAD"])
+                               for path in run([*git, "diff", "--name-only", "-z", *scope]).split("\0") if path})
+    if staged_or_edited:
+        raise ValueError(f"reference has uncommitted tracked changes: {staged_or_edited[:10]}")
+    committed, edited = pinned_files(git, pin), []
+    for path, (mode, blob) in committed.items():
+        file = root / path
+        if mode not in ("100644", "100755") or file.resolve() != file or not file.is_file():
+            raise ValueError(f"reference file is missing or not a regular file: {path}")
+        if (git_object_id("blob", file.read_bytes(), len(pin)) != blob or
+                bool(file.stat().st_mode & 0o100) != (mode == "100755")):
+            edited.append(path)
+    if edited:
+        raise ValueError(f"reference files differ from the pinned commit: {edited[:10]}")
+
+    def fail(error: OSError) -> None:
+        raise error
+
+    stale = []
+    for directory, subdirectories, names in os.walk(root, onerror=fail):
+        here = Path(directory)
+        if ".git" in subdirectories + names:
+            if here != root:
+                raise ValueError(f"reference contains a nested repository: {here.relative_to(root)}")
+            (subdirectories if ".git" in subdirectories else names).remove(".git")
+        for name in subdirectories + names:
+            if (here / name).is_symlink():
+                raise ValueError(f"reference contains a symlink: {(here / name).relative_to(root)}")
+        for name in names:
+            file, path = here / name, (here / name).relative_to(root).as_posix()
+            if path in committed:
+                continue
+            if name.endswith(".v") and (not file.is_file() or
+                                        file.read_bytes() != generated_reference_source(root, path)):
+                raise ValueError(f"reference contains an untracked or ignored Rocq source: {path}")
+            if name.endswith(".vo"):
+                source, glob = file.with_suffix(".v"), file.with_suffix(".glob")
+                digest = source.is_file() and hashlib.md5(source.read_bytes(), usedforsecurity=False).hexdigest()
+                if not (digest and glob.is_file() and
+                        glob.read_bytes().partition(b"\n")[0] == f"DIGEST {digest}".encode()):
+                    stale.append(path)
+    if stale:
+        raise ValueError(f"reference build products were compiled from other sources; "
+                         f"delete them and rebuild with ./remake: {sorted(stale)[:10]}")
     return pin
 
 

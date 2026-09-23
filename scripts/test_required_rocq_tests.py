@@ -11,6 +11,13 @@ import unittest
 from run_required_rocq_tests import run_required_suite
 
 
+def module_case(module):
+    """A passing test whose id is attributed to `module`, as a loaded module's is."""
+    case = type('LiveTests', (unittest.TestCase,),
+                {'__module__': module, 'test_live': lambda self: None})
+    return case('test_live')
+
+
 class RequiredSuiteTests(unittest.TestCase):
     def check_case(self, body):
         suite = unittest.TestSuite([unittest.FunctionTestCase(body)])
@@ -22,6 +29,26 @@ class RequiredSuiteTests(unittest.TestCase):
     def test_empty_is_not_success(self):
         report = run_required_suite(unittest.TestSuite(), stream=io.StringIO())
         self.assertEqual(report['status'], 'failed')
+
+    def test_per_module_counts_are_recorded(self):
+        suite = unittest.TestSuite([module_case('test_live_a'), module_case('test_live_a'),
+                                    module_case('test_live_b')])
+        report = run_required_suite(suite, modules=('test_live_a', 'test_live_b'),
+                                    stream=io.StringIO())
+        self.assertEqual(report['status'], 'passed')
+        self.assertEqual(report['module_tests'], {'test_live_a': 2, 'test_live_b': 1})
+        self.assertEqual(report['empty_modules'], [])
+
+    def test_required_module_without_tests_is_not_success(self):
+        # Another module's passing tests must not hide one that ran nothing,
+        # nor may a module whose name merely extends the required one.
+        suite = unittest.TestSuite([module_case('test_live_a'),
+                                    module_case('test_live_bridge')])
+        report = run_required_suite(suite, modules=('test_live_a', 'test_live'),
+                                    stream=io.StringIO())
+        self.assertEqual(report['status'], 'failed')
+        self.assertEqual(report['module_tests'], {'test_live_a': 1, 'test_live': 0})
+        self.assertEqual(report['empty_modules'], ['test_live'])
 
     def test_skip_is_not_success(self):
         def skipped():
@@ -36,6 +63,17 @@ class RequiredSuiteTests(unittest.TestCase):
         report = self.check_case(failed)
         self.assertEqual(report['status'], 'failed')
         self.assertEqual(len(report['failures']), 1)
+
+    def test_expected_failure_is_not_success(self):
+        # One decorator must not silence a live Lean/Rocq disagreement.
+        case = type('LiveTests', (unittest.TestCase,), {
+            '__module__': 'test_live_a',
+            'test_live': unittest.expectedFailure(lambda self: self.fail('disagreement'))})
+        report = run_required_suite(unittest.TestSuite([case('test_live')]),
+                                    modules=('test_live_a',), stream=io.StringIO())
+        self.assertEqual(report['status'], 'failed')
+        self.assertEqual(report['failures'], [])
+        self.assertEqual(len(report['expected_failures']), 1)
 
     def test_error_or_timeout_is_not_success(self):
         def timed_out():

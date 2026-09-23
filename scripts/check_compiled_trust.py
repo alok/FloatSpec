@@ -5,13 +5,17 @@ The textual gate still enforces named source markers. This complementary gate
 reads actual Lean declarations, requiring source direct and propagated sorry
 dependence to match the manifest (or no debt at all in test scope), and rejects
 project axioms, unsafe declarations, runtime
-overrides, and nonstandard axiom dependencies. This is not a semantics audit of
-the standard library or the compiler/FFI.
+overrides, and nonstandard axiom dependencies. It then replays every module of
+the scope through the kernel (scripts/KernelReplay.lean), because a metaprogram
+can add a declaration the kernel never checked and the axiom report cannot see
+that. This is not a semantics audit of the standard library or the
+compiler/FFI.
 """
 
 import argparse
 import json
 from pathlib import Path
+import re
 import tempfile
 
 from flocq_bridge import ROOT, lean_source_fingerprint, require_lean_source_snapshot, run
@@ -32,6 +36,26 @@ def audit_source(scope: str, modules: set[str]) -> str:
     return ''.join(f'import {name}\n' for name in sorted(modules)) + source
 
 
+REPLAYED = re.compile(r'replayed (\S+) (\d+)')
+
+
+def kernel_replay(targets: list[str]) -> dict[str, int]:
+    """Replay each module (or .olean path) through the kernel; declarations per target.
+
+    Any kernel rejection makes KernelReplay exit nonzero with a message on
+    stderr, which `run` turns into an error.
+    """
+    output = run(['lake', 'env', 'lean', '--run', str(ROOT / 'scripts/KernelReplay.lean'), *targets],
+                 timeout=1800)
+    counts: dict[str, int] = {}
+    for line in output.splitlines():
+        match = REPLAYED.fullmatch(line)
+        if match is None or match[1] in counts:
+            raise RuntimeError(f'unexpected kernel replay output: {line!r}')
+        counts[match[1]] = int(match[2])
+    return counts
+
+
 def validate(report: dict, debts: list[dict], expected_modules: set[str]) -> list[str]:
     failures = []
     names = [debt["lean_name"] for debt in debts]
@@ -42,6 +66,12 @@ def validate(report: dict, debts: list[dict], expected_modules: set[str]) -> lis
     if set(report["source_modules"]) != expected_modules:
         failures.append("compiled source module coverage differs from source files: " +
                         str(sorted(set(report["source_modules"]) ^ expected_modules)))
+    replayed = report.get("kernel_replay", {})
+    if set(replayed) != expected_modules:
+        failures.append("kernel replay coverage differs from source files: " +
+                        str(sorted(set(replayed) ^ expected_modules)))
+    if not sum(replayed.values()):
+        failures.append("kernel replay checked no declarations")
     for field in ("project_axioms", "unsafe_declarations", "runtime_overrides",
                   "unexpected_axiom_dependencies"):
         if report[field]:
@@ -73,6 +103,7 @@ def main() -> None:
         path = Path(temporary) / 'TrustInspection.lean'
         path.write_text(audit_source(args.scope, modules))
         report = json.loads(run(['lake', 'env', 'lean', str(path)], timeout=600))
+    report['kernel_replay'] = kernel_replay(sorted(modules))
     require_lean_source_snapshot(snapshot)
     report["lean_source_sha256"] = snapshot
     report["fresh_build"] = not args.skip_build
@@ -85,7 +116,8 @@ def main() -> None:
     if failures:
         raise SystemExit("\n".join(failures))
     print(f"Compiled trust audit passed: {report['project_declarations']} {args.scope} declarations, "
-          f"{len(modules)} modules, {len(debts)} manifest-only direct/transitive proof debts.")
+          f"{len(modules)} modules, {sum(report['kernel_replay'].values())} declarations "
+          f"replayed through the kernel, {len(debts)} manifest-only direct/transitive proof debts.")
 
 
 if __name__ == "__main__":
