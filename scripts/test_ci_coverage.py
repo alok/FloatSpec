@@ -356,6 +356,28 @@ def executable_fixtures() -> set[str]:
     return {path.stem for path in FIXTURES.glob('*.lean') if MAIN.search(path.read_text())}
 
 
+def ci_test_modules(commands: list[str]) -> list[Path]:
+    """Test scripts CI runs: those it invokes by name, and, when it invokes the
+    required runner, every live module that runner loads. This policy module is
+    left out: the gates it pins name fixture globs without running them."""
+    paths = [path for path in sorted(SCRIPTS.glob('test_*'))
+             if invokes(commands, path.name) and path.resolve() != THIS]
+    if invokes(commands, 'run_required_rocq_tests.py'):
+        paths += [SCRIPTS / f'{module}.py' for module in LIVE_MODULES]
+    return paths
+
+
+def consumes(text: str, path: Path) -> bool:
+    """A test names a nested fixture by a glob over its folder, by its own path,
+    or in a `for name in ...` list whose body names fixtures/<folder>/$name."""
+    folder = re.escape(path.parent.relative_to(FIXTURES).as_posix())
+    listed = (rf'for (\w+) in ([\w ]+); do\n(?:[^\n]*\n){{0,2}}?[^\n]*'
+              rf'fixtures/{folder}/\$\1{re.escape(path.suffix)}')
+    return (re.search(rf'fixtures/{folder}/(?:\*|{re.escape(path.stem)})'
+                      rf'{re.escape(path.suffix)}(?![\w.])', text) is not None
+            or any(path.stem in names.split() for _, names in re.findall(listed, text)))
+
+
 class LiveModuleTests(unittest.TestCase):
     def test_live_modules_partition_the_reference_gated_modules(self):
         gated = {path.stem for path in test_modules() if REFERENCE in path.read_text()}
@@ -447,6 +469,20 @@ class ParserTests(unittest.TestCase):
                         'a 2>&1 | tee b', 'test "$status" -eq 1'):
             with self.subTest(keeps=command):
                 self.assertIsNone(SWALLOWS.search(command))
+
+    def test_fixture_consumption(self):
+        readme, lean = FIXTURES / 'x/README.md', FIXTURES / 'x/A.lean'
+        for text in ('glob("scripts/fixtures/x/*.lean")', 'fixtures/x/A.lean', 'p = "fixtures/x/A.lean"\n',
+                     'for name in B A; do\n  lean "fixtures/x/$name.lean"\ndone\n'):
+            with self.subTest(consumes=text):
+                self.assertTrue(consumes(text, lean))
+        for text in ('fixtures/x/*.v', 'fixtures/y/*.lean', 'fixtures/x/', 'fixtures/x/AB.lean',
+                     'fixtures/x/A.lean.orig', 'fixtures/x/B.lean', 'x/A.lean',
+                     'for name in B; do\n  lean "fixtures/x/$name.lean"\ndone\n'):
+            with self.subTest(ignores=text):
+                self.assertFalse(consumes(text, lean))
+        self.assertTrue(consumes('FIXTURES / "fixtures/x/README.md"', readme))
+        self.assertFalse(consumes('fixtures/x/*.lean', readme))
 
     def test_test_invocations(self):
         for command, expected in (('python3 scripts/test_a.py -v', ('test_a.py', ' -v')),
@@ -598,22 +634,25 @@ class WorkflowTests(unittest.TestCase):
         self.assertEqual(sorted(FIXTURES.rglob('*.json')), sorted(FIXTURES.glob('*.json')))
 
     def test_subdirectory_fixtures_are_consumed_by_ci_tests(self):
-        # A nested fixture runs only through a loop over its folder's glob, or a
-        # `for name in ...` list whose body names fixtures/<folder>/$name.
-        consumers = [path.read_text() for path in SCRIPTS.glob('test_*')
-                     if invokes(self.commands, path.name)]
+        # No CI glob reaches a nested fixture, so a test CI runs must name it.
+        texts = [path.read_text() for path in ci_test_modules(self.commands)]
         nested = [path for path in FIXTURES.rglob('*')
                   if path.is_file() and path.parent != FIXTURES]
         self.assertTrue(nested)
         for path in nested:
-            folder = path.parent.relative_to(FIXTURES).as_posix()
-            listed = (rf'for (\w+) in ([\w ]+); do\n(?:[^\n]*\n){{0,2}}?[^\n]*'
-                      rf'fixtures/{re.escape(folder)}/\$\1{re.escape(path.suffix)}')
             with self.subTest(fixture=path.relative_to(FIXTURES).as_posix()):
-                self.assertTrue(any(f'fixtures/{folder}/*{path.suffix}' in text
-                                    or any(path.stem in names.split()
-                                           for _, names in re.findall(listed, text))
-                                    for text in consumers))
+                self.assertTrue(any(consumes(text, path) for text in texts))
+
+    def test_live_modules_count_as_ci_tests(self):
+        # CI runs every live module through the required runner, which rejects a
+        # skip or an empty module, so a live module consumes fixtures as surely
+        # as a test CI invokes by name. Without the runner, none is a consumer.
+        live = {SCRIPTS / f'{module}.py' for module in LIVE_MODULES}
+        self.assertTrue(invokes(self.commands, 'run_required_rocq_tests.py'))
+        self.assertLessEqual(live, set(ci_test_modules(self.commands)))
+        without_runner = [command for command in self.commands
+                          if not re.match(rf'{INVOCATION}run_required_rocq_tests\.py', command)]
+        self.assertFalse(live & set(ci_test_modules(without_runner)))
 
     def test_evidence_upload_fails_closed(self):
         [upload] = [step for step in steps()
