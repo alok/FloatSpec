@@ -616,7 +616,7 @@ greater-than. This is a total raw contract mismatch, not a demonstrated
 failure on valid binary64 operands.
 
 The exact source is
-[Corelib SpecFloat.v:163–213](https://github.com/rocq-prover/rocq/blob/adfbf1855c348766beb4b790dcc8ebc02f908f63/theories/Corelib/Floats/SpecFloat.v#L163),
+[Corelib SpecFloat.v:177–227](https://github.com/rocq-prover/rocq/blob/adfbf1855c348766beb4b790dcc8ebc02f908f63/theories/Corelib/Floats/SpecFloat.v#L177),
 at the peeled Rocq 9.2.0 release commit, not a declaration owned by the
 pinned Flocq checkout. The Lean declarations carry explicit external links
 and a `flocq_local` classification explaining that provenance.

@@ -1803,7 +1803,7 @@ checkpoint, `FaithfulPrimFloat.SFeqb` said true, proved by a closed Lean calcula
 Rocq 9.2's actual raw `SpecFloat.SFcompare` returns `Some Gt`, and
 `SFeqb` returns false: it compares exponent then mantissa and relies on
 canonicality for that order to mean numerical order. Its
-[pinned Corelib definition](https://github.com/rocq-prover/rocq/blob/adfbf1855c348766beb4b790dcc8ebc02f908f63/theories/Corelib/Floats/SpecFloat.v#L163)
+[pinned Corelib definition](https://github.com/rocq-prover/rocq/blob/adfbf1855c348766beb4b790dcc8ebc02f908f63/theories/Corelib/Floats/SpecFloat.v#L177)
 matches the inspected compiled definition. The raw comparison has no
 canonicality argument, so total-function correspondence must retain that
 behavior rather than silently reinterpret noncanonical inputs by real value.

@@ -429,7 +429,7 @@ theorem get_sign_equiv (x : PrimitiveFloat) :
   cases Prim2B x <;> rfl
 
 /-- Rocq's raw encoding comparison. This matches
-[Corelib SpecFloat.SFcompare](https://github.com/rocq-prover/rocq/blob/adfbf1855c348766beb4b790dcc8ebc02f908f63/theories/Corelib/Floats/SpecFloat.v#L163), imported by pinned Flocq.
+[Corelib SpecFloat.SFcompare](https://github.com/rocq-prover/rocq/blob/adfbf1855c348766beb4b790dcc8ebc02f908f63/theories/Corelib/Floats/SpecFloat.v#L177), imported by pinned Flocq.
 Its exponent-first finite branch is a numerical ordering only on canonical
 representations; it is not a general comparator for arbitrary dyadic encodings.
 The source finite mantissa is positive; the Lean raw carrier also admits zero. -/
@@ -449,19 +449,19 @@ def SFcompare (x y : StandardFloat) : Option Ordering :=
         let c := (Ord.compare ex ey).then (Ord.compare mx my)
         if sx then c.swap else c)
 
-/-- [Rocq SpecFloat.SFeqb](https://github.com/rocq-prover/rocq/blob/adfbf1855c348766beb4b790dcc8ebc02f908f63/theories/Corelib/Floats/SpecFloat.v#L196):
+/-- [Rocq SpecFloat.SFeqb](https://github.com/rocq-prover/rocq/blob/adfbf1855c348766beb4b790dcc8ebc02f908f63/theories/Corelib/Floats/SpecFloat.v#L211):
 only an equal comparison result is true; NaN remains unordered. -/
 @[flocq_local "Rocq Corelib.SpecFloat.SFeqb primitive; not defined in Flocq itself"]
 def SFeqb (x y : StandardFloat) : Bool :=
   match SFcompare x y with | some .eq => true | _ => false
 
-/-- [Rocq SpecFloat.SFltb](https://github.com/rocq-prover/rocq/blob/adfbf1855c348766beb4b790dcc8ebc02f908f63/theories/Corelib/Floats/SpecFloat.v#L202):
+/-- [Rocq SpecFloat.SFltb](https://github.com/rocq-prover/rocq/blob/adfbf1855c348766beb4b790dcc8ebc02f908f63/theories/Corelib/Floats/SpecFloat.v#L217):
 only a less-than comparison result is true. -/
 @[flocq_local "Rocq Corelib.SpecFloat.SFltb primitive; not defined in Flocq itself"]
 def SFltb (x y : StandardFloat) : Bool :=
   match SFcompare x y with | some .lt => true | _ => false
 
-/-- [Rocq SpecFloat.SFleb](https://github.com/rocq-prover/rocq/blob/adfbf1855c348766beb4b790dcc8ebc02f908f63/theories/Corelib/Floats/SpecFloat.v#L208):
+/-- [Rocq SpecFloat.SFleb](https://github.com/rocq-prover/rocq/blob/adfbf1855c348766beb4b790dcc8ebc02f908f63/theories/Corelib/Floats/SpecFloat.v#L223):
 less-than or equal is true; an unordered result is false. -/
 @[flocq_local "Rocq Corelib.SpecFloat.SFleb primitive; not defined in Flocq itself"]
 def SFleb (x y : StandardFloat) : Bool :=

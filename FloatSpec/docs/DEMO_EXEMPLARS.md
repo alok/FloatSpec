@@ -130,7 +130,7 @@ comparison is greater-than. They are consistent propositions about different
 interfaces, not a contradiction.
 
 This definition comes from
-[Rocq Corelib, not Flocq itself](https://github.com/rocq-prover/rocq/blob/adfbf1855c348766beb4b790dcc8ebc02f908f63/theories/Corelib/Floats/SpecFloat.v#L163).
+[Rocq Corelib, not Flocq itself](https://github.com/rocq-prover/rocq/blob/adfbf1855c348766beb4b790dcc8ebc02f908f63/theories/Corelib/Floats/SpecFloat.v#L177).
 The matching [Rocq fixture](../../scripts/fixtures/PrimitiveComparison.v)
 calls that raw API, the native primitive, and Flocq's proof-carrying API
 separately. A closed structural Lean theorem connects the raw comparator to
