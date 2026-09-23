@@ -1,0 +1,3202 @@
+{
+ "flocq_commit": "7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f",
+ "rocq": "9.1",
+ "floatspec_base": "6644539f",
+ "anchors": 456,
+ "verdicts": [
+  {
+   "coq_path": "src/Calc/Bracket.v",
+   "coq_name": "inbetween_float",
+   "lean_name": "FloatSpec.Calc.Bracket.inbetween_float",
+   "verdict": "match",
+   "explanation": "Types agree: Coq has radix -> Z -> Z -> R -> location -> Prop, and Lean has (beta : Int) [ValidRadix beta] -> Int -> Int -> R -> Location -> Prop. On bodies, Coq defines it as inbetween (F2R (Float beta m e)) (F2R (Float beta (m+1) e)) x l. Lean inlines F2R as (m:R) * (beta:R)^e and ((m+1:Int):R) * (beta:R)^e. That is IZR m * bpow beta e, since bpow is the integer power of IZR beta. The Lean inductive `inbetween` has constructors inbetween_Exact (x = d) and inbetween_Inexact (d < x < u together with compare x ((d+u)/2) = l), which matches Coq's Inductive inbetween exactly."
+  },
+  {
+   "coq_path": "src/Calc/Bracket.v",
+   "coq_name": "inbetween_loc",
+   "lean_name": "FloatSpec.Calc.Bracket.inbetween_loc",
+   "verdict": "match",
+   "explanation": "Types agree (R -> R -> R -> location). I checked the bodies too. Coq matches `Rcompare x d` and returns loc_Inexact (Rcompare x ((d+u)/2)) on Gt and loc_Exact otherwise. Lean returns loc_Inexact (Bracket.compare x ((d+u)/2)) when x > d and loc_Exact otherwise. Bracket.compare is lt/gt/eq by real `<`/`>`, which is exactly Rcompare, so the two bodies compute the same thing. Lean's Location (loc_Exact | loc_Inexact Ordering) is isomorphic to SpecFloat.location."
+  },
+  {
+   "coq_path": "src/Calc/Bracket.v",
+   "coq_name": "new_location",
+   "lean_name": "FloatSpec.Calc.Bracket.new_location",
+   "verdict": "match",
+   "explanation": "Types agree. Coq picks new_location_even when `Z.even nb_steps` holds and new_location_odd otherwise. Lean picks new_location_even when `nb_steps % 2 = 0` and new_location_odd otherwise. Lean's Int `%` is Euclidean (Int.emod), so this test is equivalent to Z.even for every integer, negative ones included. Lean applies the arguments k and l directly (eta-expanded) where Coq returns the partial application, which makes no difference."
+  },
+  {
+   "coq_path": "src/Calc/Bracket.v",
+   "coq_name": "new_location_even",
+   "lean_name": "FloatSpec.Calc.Bracket.new_location_even",
+   "verdict": "match",
+   "explanation": "Types agree (Z -> Z -> location -> location), and I compared the bodies case by case. When k = 0 both keep an Exact l and map any Inexact to Inexact Lt. Otherwise, when 2k < nb both give Inexact Lt. When 2k = nb, both give Inexact Eq for Exact and Inexact Gt for Inexact. When 2k > nb both give Inexact Gt. Lean uses explicit if-branches on the integer comparison where Coq uses `2*k ?= nb_steps`, but the results are the same."
+  },
+  {
+   "coq_path": "src/Calc/Bracket.v",
+   "coq_name": "new_location_odd",
+   "lean_name": "FloatSpec.Calc.Bracket.new_location_odd",
+   "verdict": "match",
+   "explanation": "Types agree, and I compared the bodies case by case. When k = 0 both keep an Exact l and map any Inexact to Inexact Lt. Otherwise the comparison is on 2k+1 against nb. When 2k+1 < nb both give Inexact Lt. When 2k+1 = nb, both give Inexact Lt for Exact and Inexact l0 for Inexact l0. When 2k+1 > nb both give Inexact Gt."
+  },
+  {
+   "coq_path": "src/Calc/Bracket.v",
+   "coq_name": "inbetween_int",
+   "lean_name": "FloatSpec.Calc.Round.inbetween_int",
+   "verdict": "match",
+   "explanation": "Types agree (Z -> R -> location -> Prop). Coq defines it as inbetween (IZR m) (IZR (m+1)) x l, and Lean as Bracket.inbetween (m:R) ((m+1:Int):R) x l, which is the same. The only difference is where it lives: Lean declares it in the FloatSpec.Calc.Round namespace/module rather than in Bracket. That does not change its meaning."
+  },
+  {
+   "coq_path": "src/Calc/Div.v",
+   "coq_name": "Fdiv",
+   "lean_name": "FloatSpec.Calc.Div.Fdiv",
+   "verdict": "match",
+   "explanation": "The types match: radix beta (Coq implicit; Lean explicit Int + [ValidRadix beta]), fexp : Z -> Z, and two floats, returning Z * Z * location. The bodies agree. Lean reads Fnum and Fexp by projection where Coq destructures. Both compute e' = Zdigits m1 + e1 - (Zdigits m2 + e2) and e = min (min (fexp e') (fexp (e'+1))) (e1 - e2), then call Fdiv_core beta m1 e1 m2 e2 e and return (m, e, l)."
+  },
+  {
+   "coq_path": "src/Calc/Div.v",
+   "coq_name": "Fdiv_core",
+   "lean_name": "FloatSpec.Calc.Div.Fdiv_core",
+   "verdict": "match",
+   "explanation": "The types match: Coq is radix -> Z^5 -> Z * location and Lean is Int -> Int^5 -> Int × Location. Lean's Fdiv_core does not require [ValidRadix], so it accepts any Int beta; that only widens the domain and does not change results for valid radices. The bodies agree. (1) Both use the same branch test, e <= e1 - e2 (Coq's Z.leb). (2) Coq's Z.pow exponents (e1-e2-e) and (e-(e1-e2)) are nonnegative inside their branches, so Lean's `natAbs` of the same exponent gives the same power. (3) Lean's Z_div_eucl is (Int.fdiv a b, a - b*fdiv a b), which is floor division and matches Coq's Z.div_eucl, including a zero divisor. (4) Both return (q, new_location m2' r loc_Exact). Lean's new_location tests nb_steps % 2 = 0 in place of Coq's Z.even, and its even and odd branches match Coq's case analysis."
+  },
+  {
+   "coq_path": "src/Calc/Div.v",
+   "coq_name": "Fdiv_core_correct",
+   "lean_name": "FloatSpec.Calc.Div.Fdiv_core_correct",
+   "verdict": "match",
+   "explanation": "The hypotheses are the same: radix beta ([ValidRadix beta] in Lean), m1 e1 m2 e2 e, 0 < m1 and 0 < m2. Coq destructures the result with `let '(m, l) := Fdiv_core ...` and states inbetween_float beta m e (F2R(m1,e1)/F2R(m2,e2)) l. Lean binds `have result := Fdiv_core ...` and uses result.1 and result.2, which is the same statement because pair eta holds. Lean's inbetween_float unfolds to inbetween (m*beta^e) ((m+1)*beta^e) x l, matching Coq's F2R (Float m e) and F2R (Float (m+1) e). It is a direct proposition, not a Hoare triple. The helper Fdiv_core_correct_left_branch is a triple, but it is used only inside the proof. The proof has no sorry."
+  },
+  {
+   "coq_path": "src/Calc/Div.v",
+   "coq_name": "mag_div_F2R",
+   "lean_name": "FloatSpec.Calc.Div.mag_div_F2R",
+   "verdict": "match",
+   "explanation": "Both statements take radix beta (Lean: Int + [ValidRadix beta]), integers m1 e1 m2 e2, and the hypotheses 0 < m1 and 0 < m2. Both bind e := Zdigits m1 + e1 - (Zdigits m2 + e2): Coq uses `let`, Lean uses a `have` that beta-reduces to the same term. Both conclude e <= mag(F2R(m1,e1)/F2R(m2,e2)) <= e + 1; Coq's chained <= is a conjunction, which Lean writes with ∧. Lean's `mag` is floor(log|x|/log beta)+1, and Lean's `Zdigits` returns a plain Int with Zdigits 0 = 0; both match Coq for the nonzero arguments that occur here. The proof has no sorry."
+  },
+  {
+   "coq_path": "src/Calc/Operations.v",
+   "coq_name": "Fabs",
+   "lean_name": "FloatSpec.Calc.Operations.Fabs",
+   "verdict": "match",
+   "explanation": "Both types are float beta → float beta. Lean's body is FlocqFloat.mk (↑(Int.natAbs f1.Fnum)) f1.Fexp. The cast of natAbs back to ℤ is |m1|, which equals Coq's Z.abs m1, and the exponent is unchanged on both sides."
+  },
+  {
+   "coq_path": "src/Calc/Operations.v",
+   "coq_name": "Falign",
+   "lean_name": "FloatSpec.Calc.Operations.Falign",
+   "verdict": "match",
+   "explanation": "Both types are radix → float → float → Z*Z*Z; Lean's (beta : ℤ) [ValidRadix beta] (1 < beta, i.e. 2 ≤ beta) corresponds to Coq's radix subtype. The bodies also agree. Both branch on e1 ≤ e2 and return (m1, m2*beta^(e2-e1), e1) or (m1*beta^(e1-e2), m2, e2). Lean writes the power as beta ^ Int.natAbs (e2 - e1) with a Nat exponent, while Coq uses Z.pow. In each branch the difference is nonnegative, so natAbs is the identity and the two powers are equal."
+  },
+  {
+   "coq_path": "src/Calc/Operations.v",
+   "coq_name": "Fminus",
+   "lean_name": "FloatSpec.Calc.Operations.Fminus",
+   "verdict": "match",
+   "explanation": "Both types are float → float → float. Both bodies are Fplus f1 (Fopp f2)."
+  },
+  {
+   "coq_path": "src/Calc/Operations.v",
+   "coq_name": "Fmult",
+   "lean_name": "FloatSpec.Calc.Operations.Fmult",
+   "verdict": "match",
+   "explanation": "Both types are float → float → float. Both bodies return Float (m1*m2) (e1+e2); Lean reads the fields with projections where Coq uses pattern matching."
+  },
+  {
+   "coq_path": "src/Calc/Operations.v",
+   "coq_name": "Fopp",
+   "lean_name": "FloatSpec.Calc.Operations.Fopp",
+   "verdict": "match",
+   "explanation": "Both types are float beta → float beta. Both bodies return Float (-m1) e1."
+  },
+  {
+   "coq_path": "src/Calc/Operations.v",
+   "coq_name": "Fplus",
+   "lean_name": "FloatSpec.Calc.Operations.Fplus",
+   "verdict": "match",
+   "explanation": "Both types are float → float → float. Both bodies destructure Falign f1 f2 into (m1, m2, e) and return Float (m1 + m2) e. Falign itself matches, as shown above."
+  },
+  {
+   "coq_path": "src/Calc/Plus.v",
+   "coq_name": "Fplus",
+   "lean_name": "FloatSpec.Calc.Plus.Fplus",
+   "verdict": "match",
+   "explanation": "Types agree: beta, fexp : Z -> Z and two floats, returning Z * Z * location. Neither compiled type includes Monotone_exp. Coq declares it as a section Context used only by the proofs, and the Lean [Monotone_exp fexp] section variable is likewise dropped from the def. The bodies agree. If m1 = 0, both return (m2, e2, loc_Exact); if m2 = 0, both return (m1, e1, loc_Exact). Both set p_i = Zdigits beta m_i + e_i. Lean's guard `2 ≤ Int.natAbs (p1 - p2)` (a Nat comparison) is equivalent to Coq's Zle_bool 2 (Z.abs (p1 - p2)). In that branch both set e = min (max e1 e2) (fexp (max p1 p2 - 1)) and call Fplus_core with the operands swapped exactly when e1 < e, returning (m, e, l). Otherwise both take Operations.Fplus f1 f2, which is Falign followed by adding the mantissas in both sources, and return (Fnum, Fexp, loc_Exact). The Lean Zdigits uses a different, fuel-based algorithm; this pair does not check whether it equals Coq's Zdigits."
+  },
+  {
+   "coq_path": "src/Calc/Plus.v",
+   "coq_name": "Fplus_core",
+   "lean_name": "FloatSpec.Calc.Plus.Fplus_core",
+   "verdict": "match",
+   "explanation": "Types agree: beta plus five Z/Int arguments, returning Z * location / Int × Location. Coq's radix subtype corresponds to Lean's Int with [ValidRadix beta]. The bodies also agree step by step. Both set k := e - e2. If 0 < k, both call truncate_aux beta (m2, e2, loc_Exact) k; otherwise both return (m2 * Zpower beta (-k), e, loc_Exact). Both add m1 * Zpower beta (e1 - e) to the mantissa and return the location. Lean's Zpower returns 0 for negative exponents, like Coq's Z.pow. Lean's truncate_aux uses Euclidean `/` and `%` where Coq uses Z.div and Z.modulo. These agree because p = beta^k >= 0, and both give /0 = 0 and mod 0 = m. new_location, new_location_even and new_location_odd mirror Coq's case structure. The Lean Location type has the same two constructors, loc_Exact and loc_Inexact of an ordering. Lean's destructuring (t.1, t.2.2) matches Coq's let '(m2', _, l) pattern."
+  },
+  {
+   "coq_path": "src/Calc/Round.v",
+   "coq_name": "cond_incr",
+   "lean_name": "FloatSpec.Calc.Round.cond_incr",
+   "verdict": "match",
+   "explanation": "Both have type bool -> Z -> Z with body `if b then m + 1 else m`, identical to Coq."
+  },
+  {
+   "coq_path": "src/Calc/Round.v",
+   "coq_name": "round_N",
+   "lean_name": "FloatSpec.Calc.Round.round_N",
+   "verdict": "match",
+   "explanation": "Both have type bool -> location -> bool. The cases are: Inexact eq gives p, Inexact gt gives true, and loc_Exact and Inexact lt give false. This is the same case split as Coq's `loc_Inexact Eq => p | loc_Inexact Gt => true | _ => false`."
+  },
+  {
+   "coq_path": "src/Calc/Round.v",
+   "coq_name": "round_UP",
+   "lean_name": "FloatSpec.Calc.Round.round_UP",
+   "verdict": "match",
+   "explanation": "Both have type location -> bool. loc_Exact gives false and every inexact location gives true. Lean writes the second case as the wildcard `_ => true`, which is the same function."
+  },
+  {
+   "coq_path": "src/Calc/Round.v",
+   "coq_name": "round_ZR",
+   "lean_name": "FloatSpec.Calc.Round.round_ZR",
+   "verdict": "match",
+   "explanation": "Both have type bool -> location -> bool. loc_Exact gives false and an inexact location gives s, identical to Coq."
+  },
+  {
+   "coq_path": "src/Calc/Round.v",
+   "coq_name": "round_sign_DN",
+   "lean_name": "FloatSpec.Calc.Round.round_sign_DN",
+   "verdict": "match",
+   "explanation": "Both have type bool -> location -> bool. loc_Exact gives false and an inexact location gives s, identical to Coq."
+  },
+  {
+   "coq_path": "src/Calc/Round.v",
+   "coq_name": "round_sign_UP",
+   "lean_name": "FloatSpec.Calc.Round.round_sign_UP",
+   "verdict": "match",
+   "explanation": "Both have type bool -> location -> bool. loc_Exact gives false and an inexact location gives !s, which is Coq's negb s."
+  },
+  {
+   "coq_path": "src/Calc/Round.v",
+   "coq_name": "truncate",
+   "lean_name": "FloatSpec.Calc.Round.truncate",
+   "verdict": "match",
+   "explanation": "The types match: (Z -> Z) -> triple -> triple. The Lean `truncate` is an abbrev for `truncate_triple`. Its body computes k := fexp (Zdigits beta m + e) - e, then returns truncate_aux beta t k when 0 < k and t otherwise. That is exactly Coq's body."
+  },
+  {
+   "coq_path": "src/Calc/Round.v",
+   "coq_name": "truncate_FIX",
+   "lean_name": "FloatSpec.Calc.Round.truncate_FIX",
+   "verdict": "match",
+   "explanation": "The types match: radix -> Z -> triple -> triple. The body sets k := emin - e. When 0 < k it returns (m / p, e + k, new_location p (m mod p) l) with p = beta^k, and otherwise returns t. That is identical to Coq, and here p > 0, so floor division and Euclidean division agree."
+  },
+  {
+   "coq_path": "src/Calc/Round.v",
+   "coq_name": "truncate_aux",
+   "lean_name": "FloatSpec.Calc.Round.truncate_aux",
+   "verdict": "match",
+   "explanation": "The types match: radix/beta, an (m,e,l) triple and k, returning a triple. The bodies also agree. Both use p := beta^k and return (m / p, e + k, new_location p (m mod p) l). Lean's Zpower returns 0 for a negative exponent, which is what Coq's Z.pow does. Lean's Int ediv/emod and Coq's Z.div/Z.modulo agree for p >= 0, including p = 0. I checked this concretely: x/0 = 0 and x mod 0 = x on both sides."
+  },
+  {
+   "coq_path": "src/Calc/Sqrt.v",
+   "coq_name": "Fsqrt",
+   "lean_name": "FloatSpec.Calc.Sqrt.Fsqrt",
+   "verdict": "match",
+   "explanation": "The types match: radix, (Z -> Z), float beta -> Z * Z * location becomes Int with [ValidRadix beta], (Int -> Int), FlocqFloat beta -> Int × Int × Location. The bodies also agree. Both compute e' = Zdigits beta m1 + e1 + 1 and e = min (fexp (div2 e')) (div2 e1), where Lean's Int `/ 2` is floor division and so equals Z.div2. Both then call Fsqrt_core beta m1 e1 e and return (m, e, l). Lean reads x.Fnum and x.Fexp where Coq pattern-matches x, which is equivalent. The extra `d` let is harmless."
+  },
+  {
+   "coq_path": "src/Calc/Sqrt.v",
+   "coq_name": "Fsqrt_core",
+   "lean_name": "FloatSpec.Calc.Sqrt.Fsqrt_core",
+   "verdict": "match",
+   "explanation": "The types match: radix -> Z -> Z -> Z -> Z * location becomes Int -> Int -> Int -> Int -> Int × Location, where Bracket.Location is loc_Exact | loc_Inexact Ordering, mirroring SpecFloat.location. The bodies also agree. m1' = m1 * Zpower beta (e1 - 2e), and Lean's Zaux.Zpower returns 0 for a negative exponent, like Z.pow. Coq's Z.sqrtrem is reproduced as (Int.sqrt m1', m1' - q*q) for m1' >= 0 and (0, 0) for m1' < 0, which is Z.sqrtrem's value on Zneg. The location is loc_Exact when r = 0, and otherwise loc_Inexact (if r <= q then lt else gt), matching Zeq_bool and Zle_bool. Coq's unused binding d1 is dropped."
+  },
+  {
+   "coq_path": "src/Calc/Sqrt.v",
+   "coq_name": "Fsqrt_core_correct",
+   "lean_name": "FloatSpec.Calc.Sqrt.Fsqrt_core_correct",
+   "verdict": "match",
+   "explanation": "Same hypotheses (0 < m1 and 2*e <= e1). The conclusion destructures Fsqrt_core the same way (Coq's let '(m,l) becomes a Lean match) and gives inbetween_float beta m e (sqrt (F2R (m1, e1))) l. Lean's inbetween_float unfolds F2R (Float beta m e) as m * beta^e and (m+1) * beta^e, which is the same bracket as Coq's inbetween (F2R m e) (F2R (m+1) e). This is a direct proposition, not a triple."
+  },
+  {
+   "coq_path": "src/Calc/Sqrt.v",
+   "coq_name": "Fsqrt_correct",
+   "lean_name": "FloatSpec.Calc.Sqrt.Fsqrt_correct",
+   "verdict": "match",
+   "explanation": "Same single hypothesis (0 < F2R x). Neither side assumes Valid_exp: in Coq, fexp is a bare section Variable. Same conclusion after destructuring (m, e, l) := Fsqrt fexp x: e <= cexp beta fexp (sqrt (F2R x)) and inbetween_float beta m e (sqrt (F2R x)) l. Coq's implicit [beta] is explicit in Lean, which is only a binder difference. This is a direct proposition with no sorry."
+  },
+  {
+   "coq_path": "src/Calc/Sqrt.v",
+   "coq_name": "mag_sqrt_F2R",
+   "lean_name": "FloatSpec.Calc.Sqrt.mag_sqrt_F2R",
+   "verdict": "match",
+   "explanation": "Same hypothesis (0 < m1) and the same conclusion, mag beta (sqrt (F2R (m1, e1))) = div2 (Zdigits beta m1 + e1 + 1). Lean's `/ 2` on Int is Euclidean division, which for a positive divisor is floor division, so it agrees with Coq's Z.div2 on every integer, negatives included. The radix subtype corresponds to Int + [ValidRadix beta]. The proof is sorry-free."
+  },
+  {
+   "coq_path": "src/Core/Defs.v",
+   "coq_name": "F2R",
+   "lean_name": "FloatSpec.Core.Defs.F2R",
+   "verdict": "match",
+   "explanation": "The types match: a float over the radix maps to a real, with Coq's radix subtype corresponding to Lean's Int plus [ValidRadix beta] (1 < beta, the same as Coq's 2 <= beta). The bodies agree. Lean computes Fnum * (beta:ℝ)^Fexp with zpow. Coq computes IZR (Fnum f) * bpow beta (Fexp f), and bpow is IZR(beta^p) for positive exponents, its inverse for negative ones, and 1 at zero, which is integer zpow. Coq's float and Lean's FlocqFloat both have exactly the fields Fnum:Z and Fexp:Z."
+  },
+  {
+   "coq_path": "src/Core/Defs.v",
+   "coq_name": "Rnd_DN_pt",
+   "lean_name": "FloatSpec.Core.Defs.Rnd_DN_pt",
+   "verdict": "match",
+   "explanation": "The types match: (ℝ→Prop)→ℝ→ℝ→Prop. The bodies are identical: F f ∧ f ≤ x ∧ ∀ g, F g → g ≤ x → g ≤ f."
+  },
+  {
+   "coq_path": "src/Core/Defs.v",
+   "coq_name": "Rnd_N0_pt",
+   "lean_name": "FloatSpec.Core.Defs.Rnd_N0_pt",
+   "verdict": "match",
+   "explanation": "The types match. The bodies are identical: Rnd_N_pt F x f ∧ ∀ f2, Rnd_N_pt F x f2 → |f| ≤ |f2|. The ties-toward-zero direction is correct."
+  },
+  {
+   "coq_path": "src/Core/Defs.v",
+   "coq_name": "Rnd_NA_pt",
+   "lean_name": "FloatSpec.Core.Defs.Rnd_NA_pt",
+   "verdict": "match",
+   "explanation": "The types match. The bodies are identical: Rnd_N_pt F x f ∧ ∀ f2, Rnd_N_pt F x f2 → |f2| ≤ |f|. The ties-away direction is correct."
+  },
+  {
+   "coq_path": "src/Core/Defs.v",
+   "coq_name": "Rnd_NG_pt",
+   "lean_name": "FloatSpec.Core.Defs.Rnd_NG_pt",
+   "verdict": "match",
+   "explanation": "The types match: (ℝ→Prop)→(ℝ→ℝ→Prop)→ℝ→ℝ→Prop. The bodies are identical: Rnd_N_pt F x f ∧ (P x f ∨ ∀ f2, Rnd_N_pt F x f2 → f2 = f)."
+  },
+  {
+   "coq_path": "src/Core/Defs.v",
+   "coq_name": "Rnd_N_pt",
+   "lean_name": "FloatSpec.Core.Defs.Rnd_N_pt",
+   "verdict": "match",
+   "explanation": "The types match. The bodies are identical: F f ∧ ∀ g, F g → |f - x| ≤ |g - x|. Coq writes Rabs where Lean writes |·|."
+  },
+  {
+   "coq_path": "src/Core/Defs.v",
+   "coq_name": "Rnd_UP_pt",
+   "lean_name": "FloatSpec.Core.Defs.Rnd_UP_pt",
+   "verdict": "match",
+   "explanation": "The types match. The bodies are identical: F f ∧ x ≤ f ∧ ∀ g, F g → x ≤ g → f ≤ g."
+  },
+  {
+   "coq_path": "src/Core/Defs.v",
+   "coq_name": "Rnd_ZR_pt",
+   "lean_name": "FloatSpec.Core.Defs.Rnd_ZR_pt",
+   "verdict": "match",
+   "explanation": "The types match. The bodies are identical: (0 ≤ x → Rnd_DN_pt F x f) ∧ (x ≤ 0 → Rnd_UP_pt F x f)."
+  },
+  {
+   "coq_path": "src/Core/Defs.v",
+   "coq_name": "round_pred",
+   "lean_name": "FloatSpec.Core.Defs.round_pred",
+   "verdict": "match",
+   "explanation": "The types match. The bodies are identical: round_pred_total P ∧ round_pred_monotone P."
+  },
+  {
+   "coq_path": "src/Core/Defs.v",
+   "coq_name": "round_pred_monotone",
+   "lean_name": "FloatSpec.Core.Defs.round_pred_monotone",
+   "verdict": "match",
+   "explanation": "The types match. The bodies are identical: ∀ x y f g, P x f → P y g → x ≤ y → f ≤ g."
+  },
+  {
+   "coq_path": "src/Core/Defs.v",
+   "coq_name": "round_pred_total",
+   "lean_name": "FloatSpec.Core.Defs.round_pred_total",
+   "verdict": "match",
+   "explanation": "The types match: (ℝ→ℝ→Prop)→Prop. The bodies are identical: ∀ x, ∃ f, P x f."
+  },
+  {
+   "coq_path": "src/Core/FIX.v",
+   "coq_name": "FIX_exp",
+   "lean_name": "FloatSpec.Core.FIX.FIX_exp",
+   "verdict": "match",
+   "explanation": "Both have type Z -> Z -> Z, taking section variable emin and then e. The bodies are also the same: Coq `fun emin _ => emin` and Lean `FIX_exp (_ : Int) : Int := emin`, with emin a section variable. The Lean `FIX_exp_spec` is rfl."
+  },
+  {
+   "coq_path": "src/Core/FIX.v",
+   "coq_name": "FIX_format",
+   "lean_name": "FloatSpec.Core.FIX.FIX_format",
+   "verdict": "match",
+   "explanation": "Coq's type is radix -> Z -> R -> Prop, and Lean's is emin -> (beta : Int) -> [ValidRadix beta] -> R -> Prop. Only the binder order and the radix encoding (Int + ValidRadix) differ. Coq has a single-constructor inductive `FIX_spec (f : float beta) : x = F2R f -> Fexp f = emin -> FIX_format x`. Lean instead defines `∃ f : FlocqFloat beta, x = F2R f ∧ f.Fexp = emin`. The two are logically equivalent, because an inductive with one constructor, one witness and two Prop premises is the same as that existential. FlocqFloat (Fnum Fexp : Int) and F2R (Fnum * beta^Fexp) match Coq's float and F2R."
+  },
+  {
+   "coq_path": "src/Core/FLT.v",
+   "coq_name": "FLT_exp",
+   "lean_name": "FloatSpec.Core.FLT.FLT_exp",
+   "verdict": "match",
+   "explanation": "Both are Z -> Z -> Z -> Z. The Lean body is `max (e - prec) emin` and the Coq body is `Z.max (e - prec) emin`, so they agree. The only difference is parameter order: Lean takes (prec emin e) and Coq takes (emin prec e). Lean `FLT_exp prec emin` therefore corresponds to Coq `FLT_exp emin prec`, and every theorem below uses that consistently."
+  },
+  {
+   "coq_path": "src/Core/FLT.v",
+   "coq_name": "FLT_format",
+   "lean_name": "FloatSpec.Core.FLT.FLT_format",
+   "verdict": "match",
+   "explanation": "Coq defines a one-constructor Inductive, FLT_spec: there exists f : float beta with x = F2R f, Z.abs (Fnum f) < beta ^ prec, and emin <= Fexp f. Lean uses a def with `∃ f : FlocqFloat beta, x = F2R f ∧ |f.Fnum| < Zaux.Zpower beta prec ∧ emin ≤ f.Fexp`, which is the same proposition. Lean `Zpower b e` is `if 0 ≤ e then b ^ e.toNat else 0`, which is Coq Z.pow semantics, including 0 for a negative exponent. F2R is Fnum * beta^Fexp on both sides. Neither side takes Prec_gt_0, and ValidRadix (1 < beta) corresponds to Coq's radix."
+  },
+  {
+   "coq_path": "src/Core/FLT.v",
+   "coq_name": "cexp_FLT_FIX",
+   "lean_name": "FloatSpec.Core.FLT.cexp_FLT_FIX",
+   "verdict": "match",
+   "explanation": "The hypotheses are the same: x ≠ 0 and |x| < beta^(emin+prec). The conclusion is the same: cexp with FLT_exp equals cexp with FIX_exp emin."
+  },
+  {
+   "coq_path": "src/Core/FLT.v",
+   "coq_name": "cexp_FLT_FLX",
+   "lean_name": "FloatSpec.Core.FLT.cexp_FLT_FLX",
+   "verdict": "match",
+   "explanation": "The hypothesis is the same: beta^(emin+prec-1) ≤ |x|. The conclusion is the same: cexp beta (FLT_exp) x = cexp beta (FLX_exp prec) x. Lean cexp is fexp (mag beta x), as in Coq."
+  },
+  {
+   "coq_path": "src/Core/FLT.v",
+   "coq_name": "generic_format_FIX_FLT",
+   "lean_name": "FloatSpec.Core.FLT.generic_format_FIX_FLT",
+   "verdict": "match",
+   "explanation": "Both state that generic_format with FLT_exp implies generic_format with FIX_exp emin. There are no extra hypotheses on either side. Lean FIX_exp emin is the constant function returning emin, as in Coq."
+  },
+  {
+   "coq_path": "src/Core/FLT.v",
+   "coq_name": "generic_format_FLT_FLX",
+   "lean_name": "FloatSpec.Core.FLT.generic_format_FLT_FLX",
+   "verdict": "match",
+   "explanation": "The hypotheses are the same: beta^(emin+prec-1) ≤ |x| and generic_format beta (FLX_exp prec) x. The conclusion is generic_format beta (FLT_exp prec emin) x, which is Coq's FLT_exp emin prec under the swapped argument order. Neither side has a Prec_gt_0 premise."
+  },
+  {
+   "coq_path": "src/Core/FLT.v",
+   "coq_name": "generic_format_FLX_FLT",
+   "lean_name": "FloatSpec.Core.FLT.generic_format_FLX_FLT",
+   "verdict": "match",
+   "explanation": "Both state that generic_format with FLT_exp implies generic_format with FLX_exp prec. There are no extra premises on either side, and neither takes Prec_gt_0."
+  },
+  {
+   "coq_path": "src/Core/FLT.v",
+   "coq_name": "pred_FLT_exact_shift",
+   "lean_name": "FloatSpec.Core.FLT.pred_FLT_exact_shift",
+   "verdict": "match",
+   "explanation": "The hypotheses are the same: x ≠ 0, emin+prec+1 ≤ mag beta x, and emin+prec - mag beta x + 1 ≤ e. The conclusion is the same: pred FLT_exp (x*beta^e) = pred FLT_exp x * beta^e. Lean pred is -(succ (-x)), as in Coq."
+  },
+  {
+   "coq_path": "src/Core/FLT.v",
+   "coq_name": "round_FLT_FLX",
+   "lean_name": "FloatSpec.Core.FLT.round_FLT_FLX",
+   "verdict": "match",
+   "explanation": "The rnd function is arbitrary (ℝ → ℤ) on both sides; there is no Valid_rnd premise in Coq or Lean. The hypothesis beta^(emin+prec-1) ≤ |x| is the same. Lean round_to_generic is roundR, which computes (rnd (scaled_mantissa x)) * beta^(cexp x). That equals Coq's round, F2R (Float (rnd (scaled_mantissa x)) (cexp x)). The conclusion equates FLT rounding with FLX rounding."
+  },
+  {
+   "coq_path": "src/Core/FLT.v",
+   "coq_name": "succ_FLT_exact_shift",
+   "lean_name": "FloatSpec.Core.FLT.succ_FLT_exact_shift",
+   "verdict": "match",
+   "explanation": "The hypotheses are the same: x ≠ 0, emin+prec+1 ≤ mag beta x, and emin+prec - mag beta x + 1 ≤ e. The conclusion is the same: succ FLT_exp (x*beta^e) = succ FLT_exp x * beta^e."
+  },
+  {
+   "coq_path": "src/Core/FLT.v",
+   "coq_name": "succ_FLT_exact_shift_pos",
+   "lean_name": "FloatSpec.Core.FLT.succ_FLT_exact_shift_pos",
+   "verdict": "match",
+   "explanation": "The hypotheses are the same: 0 < x, emin+prec ≤ mag beta x, and emin+prec - mag beta x ≤ e. The conclusion is the same: succ FLT_exp (x*beta^e) = succ FLT_exp x * beta^e. Lean succ and pred_pos mirror Coq's definitions and take no extra instance arguments."
+  },
+  {
+   "coq_path": "src/Core/FLT.v",
+   "coq_name": "ulp_FLT_exact_shift",
+   "lean_name": "FloatSpec.Core.FLT.ulp_FLT_exact_shift",
+   "verdict": "match",
+   "explanation": "The hypotheses are the same: x ≠ 0, emin+prec ≤ mag beta x, and emin+prec - mag beta x ≤ e. The conclusion is the same: ulp FLT_exp (x * beta^e) = ulp FLT_exp x * beta^e."
+  },
+  {
+   "coq_path": "src/Core/FLT.v",
+   "coq_name": "ulp_FLT_le",
+   "lean_name": "FloatSpec.Core.FLT.ulp_FLT_le",
+   "verdict": "match",
+   "explanation": "The hypothesis is the same: beta^(emin+prec-1) ≤ |x|. The conclusion is the same: ulp beta FLT_exp x ≤ |x| * beta^(1-prec). I checked with pp.explicit that Lean ulp takes only (beta, ValidRadix, fexp, x) and no hidden Valid_exp or Prec_gt_0 instance. Its body mirrors Coq's: the negligible_exp branch at 0, otherwise beta^(cexp x)."
+  },
+  {
+   "coq_path": "src/Core/FLX.v",
+   "coq_name": "FLXN_format",
+   "lean_name": "FloatSpec.Core.FLX.FLXN_format",
+   "verdict": "match",
+   "explanation": "Coq's `FLXN_spec : forall f, x = F2R f -> (x <> 0 -> beta^(prec-1) <= Z.abs (Fnum f) < beta^prec) -> FLXN_format beta prec x` is equivalent to the Lean `∃ f, x = F2R f ∧ (x ≠ 0 → Zpower beta (prec-1) ≤ |f.Fnum| ∧ |f.Fnum| < Zpower beta prec)`. Coq's chained `a <= b < c` is a conjunction. Zpower matches Z.pow, including 0 for negative exponents. Neither side has a precision hypothesis."
+  },
+  {
+   "coq_path": "src/Core/FLX.v",
+   "coq_name": "FLX_exp",
+   "lean_name": "FloatSpec.Core.FLX.FLX_exp",
+   "verdict": "match",
+   "explanation": "Both have type Z -> Z -> Z with arguments (prec e). The bodies are identical: Coq `fun prec e => (e - prec)%Z`, Lean `e - prec`. Neither side depends on Prec_gt_0."
+  },
+  {
+   "coq_path": "src/Core/FLX.v",
+   "coq_name": "FLX_format",
+   "lean_name": "FloatSpec.Core.FLX.FLX_format",
+   "verdict": "match",
+   "explanation": "Coq's single-constructor inductive `FLX_spec : forall f : float beta, x = F2R f -> Z.abs (Fnum f) < beta ^ prec -> FLX_format beta prec x` is logically equivalent to the Lean definition `∃ f : FlocqFloat beta, x = F2R f ∧ |f.Fnum| < Zaux.Zpower beta prec`. Lean `Zpower b e = if 0 ≤ e then b^e.toNat else 0` agrees with Coq Z.pow, which also gives 0 for negative exponents. F2R is Fnum * beta^Fexp on both sides. Neither side assumes Prec_gt_0: the compiled Coq type is radix -> Z -> R -> Prop. The only other differences are the radix encoding (radix subtype vs Int + ValidRadix) and argument order (prec before beta)."
+  },
+  {
+   "coq_path": "src/Core/FLX.v",
+   "coq_name": "succ_FLX_1",
+   "lean_name": "FloatSpec.Core.FLX.succ_FLX_1",
+   "verdict": "match",
+   "explanation": "Coq: `forall beta prec, succ beta (FLX_exp prec) 1 = 1 + bpow beta (-prec + 1)`, with no Prec_gt_0. Lean: `succ beta (FLX_exp prec) 1 = 1 + (beta:ℝ)^(1 - prec)` under only ValidRadix beta. Lean succ mirrors Coq succ: `if 0 ≤ x then x + ulp x else -(pred_pos (-x))`. The exponents are equal and neither side has extra or missing hypotheses."
+  },
+  {
+   "coq_path": "src/Core/FLX.v",
+   "coq_name": "ulp_FLX_1",
+   "lean_name": "FloatSpec.Core.FLX.ulp_FLX_1",
+   "verdict": "match",
+   "explanation": "Coq: `forall beta prec, ulp beta (FLX_exp prec) 1 = bpow beta (-prec + 1)`, with no Prec_gt_0 in the compiled type. Lean: `∀ prec beta [ValidRadix beta], ulp beta (FLX_exp prec) 1 = (beta:ℝ)^(1 - prec)`. The exponents -prec+1 and 1-prec are equal, and bpow is the integer power of beta on both sides. Lean ulp mirrors Coq ulp: the zero branch goes through negligible_exp, otherwise bpow (cexp x). Neither side has extra hypotheses. The direct proposition is not triple-shaped."
+  },
+  {
+   "coq_path": "src/Core/FTZ.v",
+   "coq_name": "FLXN_format_FTZ",
+   "lean_name": "FloatSpec.Core.FTZ.FLXN_format_FTZ",
+   "verdict": "match",
+   "explanation": "Both state: forall beta emin prec x, FTZ_format x -> FLXN_format beta prec x. Neither side has extra hypotheses; Coq's compiled type drops the section Prec_gt_0, and Lean has no Fact (0 < prec). Lean's FLX.FLXN_format prec beta x is the existential form of Coq's FLXN_format inductive, with the same normalized-mantissa conjuncts. The argument threading is consistent: prec and emin reach FTZ_format, and prec reaches FLXN_format."
+  },
+  {
+   "coq_path": "src/Core/FTZ.v",
+   "coq_name": "FTZ_exp",
+   "lean_name": "FloatSpec.Core.FTZ.FTZ_exp",
+   "verdict": "match",
+   "explanation": "Both have type Z -> Z -> Z -> Z. The bodies agree: Coq is `if Zlt_bool (e - prec) emin then emin + prec - 1 else e - prec`, and Lean is `if e - prec < emin then emin + prec - 1 else e - prec`. The parameter order also matches, with Lean (prec emin e) against Coq (emin prec e) after the section variables are reordered. Lean call sites use the order `FTZ_exp prec emin` consistently."
+  },
+  {
+   "coq_path": "src/Core/FTZ.v",
+   "coq_name": "FTZ_format",
+   "lean_name": "FloatSpec.Core.FTZ.FTZ_format",
+   "verdict": "match",
+   "explanation": "Coq defines this as an inductive with one constructor, FTZ_spec. It takes f : float beta with x = F2R f, (x <> 0 -> Zpower beta (prec-1) <= |Fnum f| < Zpower beta prec), and emin <= Fexp f. Lean states it as an existential over f : FlocqFloat beta with the same three conjuncts. This is logically equivalent, since a single-constructor Prop inductive is the same as an existential. Lean's Zaux.Zpower (b^e.toNat when e >= 0, otherwise 0) agrees with Coq's Zpower/Z.pow, including on negative exponents. The compiled Coq type carries no Prec_gt_0 argument, and neither does the Lean one. The only differences are binder order and radix versus Int + [ValidRadix]."
+  },
+  {
+   "coq_path": "src/Core/FTZ.v",
+   "coq_name": "Zrnd_FTZ",
+   "lean_name": "FloatSpec.Core.FTZ.Zrnd_FTZ",
+   "verdict": "match",
+   "explanation": "Both have type (R -> Z) -> R -> Z. The bodies are identical: `if Rle_bool 1 |x| then rnd x else 0`, where Lean uses Raux.Rle_bool and Coq uses Rle_bool 1 (Rabs x)."
+  },
+  {
+   "coq_path": "src/Core/FTZ.v",
+   "coq_name": "generic_format_FTZ",
+   "lean_name": "FloatSpec.Core.FTZ.generic_format_FTZ",
+   "verdict": "match",
+   "explanation": "Both state: forall beta emin prec x, FTZ_format beta emin prec x -> generic_format beta (FTZ_exp emin prec) x. Lean writes this with its own argument order, FTZ_format prec emin beta x -> generic_format beta (FTZ_exp prec emin) x, which is consistent with how its definitions order their parameters. The compiled Coq type has no Prec_gt_0 hypothesis, and the Lean type has no Fact (0 < prec). The conclusion is the same."
+  },
+  {
+   "coq_path": "src/Core/Generic_fmt.v",
+   "coq_name": "round_0",
+   "lean_name": "FloatSpec.Calc.Round.round_0",
+   "verdict": "real-mismatch",
+   "explanation": "The Lean statement uses a different constant and different arguments. It is ∀ (mode : Calc.Round.Mode), Calc.Round.round beta fexp mode 0 = 0. Mode is a Lean-only structure bundling rnd : ℝ → ℤ with the single property rnd_zero : rnd 0 = 0, and Calc.Round.round unfolds to Generic_fmt.roundR beta fexp mode.rnd. Coq's round_0 instead takes a bare rnd plus the hypothesis Valid_rnd rnd (monotone and exact on integers). The Lean hypothesis is weaker (only rnd 0 = 0), so the Lean theorem is a strict generalization: it implies Coq's through Mode.ofRnd, but not conversely. It is sound, but it is not the same proposition. The faithful anchor for Coq round_0 is FloatSpec.Core.Generic_fmt.round_0 (pair 17), which matches exactly. This Calc-level declaration carries a @[flocq_source \"src/Core/Generic_fmt.v\" 763 \"round_0\"] tag and should be relabelled flocq_local or treated as an adapter.",
+   "resolution": "anchor removed: relabelled @[flocq_local]; FloatSpec.Core.Generic_fmt.round_0 is the faithful anchor (match)"
+  },
+  {
+   "coq_path": "src/Core/Generic_fmt.v",
+   "coq_name": "cexp_ge_bpow",
+   "lean_name": "FloatSpec.Core.Generic_fmt.cexp_ge_bpow",
+   "verdict": "match",
+   "explanation": "The extra 1 < beta is implied by ValidRadix. The Monotone_exp instance, the premise bpow(e-1) ≤ |x| and the conclusion fexp e ≤ cexp x agree."
+  },
+  {
+   "coq_path": "src/Core/Generic_fmt.v",
+   "coq_name": "cexp_le_bpow",
+   "lean_name": "FloatSpec.Core.Generic_fmt.cexp_le_bpow",
+   "verdict": "match",
+   "explanation": "The extra 1 < beta is implied by ValidRadix. [Monotone_exp fexp] corresponds to Coq's Monotone_exp. The premises x ≠ 0 and |x| < bpow e, and the conclusion cexp x ≤ fexp e, agree."
+  },
+  {
+   "coq_path": "src/Core/Generic_fmt.v",
+   "coq_name": "exp_small_round_0_pos",
+   "lean_name": "FloatSpec.Core.Generic_fmt.exp_small_round_0_pos",
+   "verdict": "match",
+   "explanation": "Valid_rnd rnd, bpow(ex-1) ≤ x < bpow ex, and round x = 0 imply ex ≤ fexp ex. Identical."
+  },
+  {
+   "coq_path": "src/Core/Generic_fmt.v",
+   "coq_name": "generic_format_ge_bpow",
+   "lean_name": "FloatSpec.Core.Generic_fmt.generic_format_ge_bpow",
+   "verdict": "match",
+   "explanation": "The Lean premise is the conjunction (1 < beta ∧ ∀ e, emin ≤ fexp e). The 1 < beta conjunct is already implied by [ValidRadix beta] (class field valid : 1 < beta, which is the same as Coq's radix 2 ≤ beta over Z), so under the instance it is equivalent to Coq's (∀ e, emin ≤ fexp e). The x > 0 premise, the generic_format premise and the conclusion bpow emin ≤ x agree. generic_format has the same body in both: x = Ztrunc(scaled_mantissa x) * beta^(cexp x)."
+  },
+  {
+   "coq_path": "src/Core/Generic_fmt.v",
+   "coq_name": "lt_cexp",
+   "lean_name": "FloatSpec.Core.Generic_fmt.lt_cexp",
+   "verdict": "match",
+   "explanation": "The extra 1 < beta is implied by ValidRadix. The Monotone_exp instance, the premises y ≠ 0 and cexp x < cexp y, and the conclusion |x| < |y| agree."
+  },
+  {
+   "coq_path": "src/Core/Generic_fmt.v",
+   "coq_name": "lt_cexp_pos",
+   "lean_name": "FloatSpec.Core.Generic_fmt.lt_cexp_pos",
+   "verdict": "match",
+   "explanation": "The extra 1 < beta is implied by ValidRadix. [Monotone_exp fexp] has the same field as the Coq class (a ≤ b → fexp a ≤ fexp b). The premises 0 < y and cexp x < cexp y, and the conclusion x < y, agree."
+  },
+  {
+   "coq_path": "src/Core/Generic_fmt.v",
+   "coq_name": "round_opp",
+   "lean_name": "FloatSpec.Core.Generic_fmt.roundR_opp",
+   "verdict": "match",
+   "explanation": "Only the redundant 1 < beta premise (implied by ValidRadix) is added. roundR equals Coq's round. Zrnd_opp rnd x = -(rnd(-x)) is the same as Coq's Z.opp (rnd (-x)). The conclusion round rnd (-x) = -round (Zrnd_opp rnd) x agrees."
+  },
+  {
+   "coq_path": "src/Core/Generic_fmt.v",
+   "coq_name": "round_0",
+   "lean_name": "FloatSpec.Core.Generic_fmt.round_0",
+   "verdict": "match",
+   "explanation": "Valid_rnd rnd → round rnd 0 = 0. Identical."
+  },
+  {
+   "coq_path": "src/Core/Generic_fmt.v",
+   "coq_name": "round_AW_DN",
+   "lean_name": "FloatSpec.Core.Generic_fmt.round_AW_DN",
+   "verdict": "match",
+   "explanation": "∀ x, x ≤ 0 → round Zaway x = round Zfloor x. Identical."
+  },
+  {
+   "coq_path": "src/Core/Generic_fmt.v",
+   "coq_name": "round_AW_UP",
+   "lean_name": "FloatSpec.Core.Generic_fmt.round_AW_UP",
+   "verdict": "match",
+   "explanation": "0 ≤ x → round Zaway x = round Zceil x. Identical."
+  },
+  {
+   "coq_path": "src/Core/Generic_fmt.v",
+   "coq_name": "round_AW_opp",
+   "lean_name": "FloatSpec.Core.Generic_fmt.round_AW_opp",
+   "verdict": "match",
+   "explanation": "round Zaway (-x) = -round Zaway x. Identical."
+  },
+  {
+   "coq_path": "src/Core/Generic_fmt.v",
+   "coq_name": "round_DN_opp",
+   "lean_name": "FloatSpec.Core.Generic_fmt.round_DN_opp",
+   "verdict": "match",
+   "explanation": "round Zfloor (-x) = -round Zceil x. rnd_floor and rnd_ceil are Zfloor and Zceil."
+  },
+  {
+   "coq_path": "src/Core/Generic_fmt.v",
+   "coq_name": "round_DN_or_UP",
+   "lean_name": "FloatSpec.Core.Generic_fmt.round_DN_or_UP",
+   "verdict": "match",
+   "explanation": "rnd_floor and rnd_ceil are defined as Raux.Zfloor and Raux.Zceil (⌊x⌋ and ⌈x⌉). Valid_rnd is an instance argument with the same two fields as Coq's class (Zrnd_le and Zrnd_IZR). The conclusion, a disjunction of equalities, is the same."
+  },
+  {
+   "coq_path": "src/Core/Generic_fmt.v",
+   "coq_name": "round_DN_small_pos",
+   "lean_name": "FloatSpec.Core.Generic_fmt.round_DN_small_pos",
+   "verdict": "match",
+   "explanation": "Only the premise order differs, plus the redundant 1 < beta, which ValidRadix implies. bpow(ex-1) ≤ x < bpow ex and ex ≤ fexp ex imply round Zfloor x = 0. roundR with rnd_floor is Coq's round with Zfloor."
+  },
+  {
+   "coq_path": "src/Core/Generic_fmt.v",
+   "coq_name": "round_N0_opp",
+   "lean_name": "FloatSpec.Core.Generic_fmt.round_N0_opp",
+   "verdict": "match",
+   "explanation": "`decide (t < 0)` corresponds to Coq's `(t <? 0)%Z`. The statement is the same odd-symmetry equation with no hypotheses."
+  },
+  {
+   "coq_path": "src/Core/Generic_fmt.v",
+   "coq_name": "round_NA_opp",
+   "lean_name": "FloatSpec.Core.Generic_fmt.round_NA_opp",
+   "verdict": "match",
+   "explanation": "Coq's ZnearestA is the notation Znearest (Zle_bool 0), i.e. fun t => 0 <=? t, and Lean spells it out as Znearest (fun t => decide (0 ≤ t)). The equation round ZnearestA (-x) = -round ZnearestA x is the same, with no hypotheses."
+  },
+  {
+   "coq_path": "src/Core/Generic_fmt.v",
+   "coq_name": "round_N_middle",
+   "lean_name": "FloatSpec.Core.Generic_fmt.round_N_middle",
+   "verdict": "match",
+   "explanation": "Lean has an extra 1 < beta premise, which the ValidRadix instance already implies. roundR is Coq's round with the same body (rnd(scaled_mantissa x) * beta^(cexp x)). `fun y => Zfloor y` is an eta-expansion of Zfloor, and `if choice (...) = true` is Coq's bool if. The hypothesis x - round Zfloor x = round Zceil x - x and the conclusion agree."
+  },
+  {
+   "coq_path": "src/Core/Generic_fmt.v",
+   "coq_name": "round_N_opp",
+   "lean_name": "FloatSpec.Core.Generic_fmt.round_N_opp",
+   "verdict": "match",
+   "explanation": "The tie-break `fun t => !choice (-(t + 1))` is Coq's `fun t => negb (choice (-(t+1)))`. Lean's Znearest has the same body as Coq's: it compares x - floor x with 1/2 (Coq writes /2) and chooses between floor and ceil the same way. There are no extra hypotheses and the conclusion is the same."
+  },
+  {
+   "coq_path": "src/Core/Generic_fmt.v",
+   "coq_name": "round_N_small",
+   "lean_name": "FloatSpec.Core.Generic_fmt.round_N_small",
+   "verdict": "match",
+   "explanation": "The extra 1 < beta is implied by ValidRadix. The premise bpow(ex-1) ≤ |x| < bpow ex, the premise ex < fexp ex (written fexp ex > ex), and the conclusion round (Znearest choice) x = 0 all agree."
+  },
+  {
+   "coq_path": "src/Core/Generic_fmt.v",
+   "coq_name": "round_N_small_pos",
+   "lean_name": "FloatSpec.Core.Generic_fmt.round_N_small_pos",
+   "verdict": "match",
+   "explanation": "The extra 1 < beta is implied by ValidRadix. `fexp ex > ex` is the same as Coq's (ex < fexp ex). The premise bpow(ex-1) ≤ x < bpow ex and the conclusion round (Znearest choice) x = 0 agree. Neither side needs Valid_exp."
+  },
+  {
+   "coq_path": "src/Core/Generic_fmt.v",
+   "coq_name": "round_UP_opp",
+   "lean_name": "FloatSpec.Core.Generic_fmt.round_UP_opp",
+   "verdict": "match",
+   "explanation": "round Zceil (-x) = -round Zfloor x. rnd_ceil and rnd_floor are Zceil and Zfloor."
+  },
+  {
+   "coq_path": "src/Core/Generic_fmt.v",
+   "coq_name": "round_UP_small_pos",
+   "lean_name": "FloatSpec.Core.Generic_fmt.round_UP_small_pos",
+   "verdict": "triple-shaped",
+   "explanation": "This is a legacy Id Hoare triple of the form ⦃1 < beta ∧ ex ≤ fexp ex ∧ bpow(ex-1) ≤ x ∧ x < bpow ex⦄ pure (round_to_generic rnd_ceil x) ⦃r => r = bpow (fexp ex)⦄. Its P→Q reading matches Coq's (bpow(ex-1) ≤ x < bpow ex) → ex ≤ fexp ex → round Zceil x = bpow (fexp ex), because the 1 < beta conjunct is implied by ValidRadix."
+  },
+  {
+   "coq_path": "src/Core/Generic_fmt.v",
+   "coq_name": "round_ZR_DN",
+   "lean_name": "FloatSpec.Core.Generic_fmt.round_ZR_DN",
+   "verdict": "match",
+   "explanation": "0 ≤ x → round Ztrunc x = round Zfloor x. Identical."
+  },
+  {
+   "coq_path": "src/Core/Generic_fmt.v",
+   "coq_name": "round_ZR_UP",
+   "lean_name": "FloatSpec.Core.Generic_fmt.round_ZR_UP",
+   "verdict": "match",
+   "explanation": "`∀ x ≤ 0, ...` is binder notation for ∀ x, x ≤ 0 → round Ztrunc x = round Zceil x. Identical to Coq."
+  },
+  {
+   "coq_path": "src/Core/Generic_fmt.v",
+   "coq_name": "round_ZR_opp",
+   "lean_name": "FloatSpec.Core.Generic_fmt.round_ZR_opp",
+   "verdict": "match",
+   "explanation": "round Ztrunc (-x) = -round Ztrunc x. Identical."
+  },
+  {
+   "coq_path": "src/Core/Generic_fmt.v",
+   "coq_name": "round_ZR_or_AW",
+   "lean_name": "FloatSpec.Core.Generic_fmt.round_ZR_or_AW",
+   "verdict": "match",
+   "explanation": "Valid_rnd rnd → round rnd x = round Ztrunc x ∨ round rnd x = round Zaway x. Lean's Ztrunc (ceil if x<0, else floor) and Zaway (floor if x<0, else ceil) have Coq's bodies."
+  },
+  {
+   "coq_path": "src/Core/Generic_fmt.v",
+   "coq_name": "round_bounded_large_pos",
+   "lean_name": "FloatSpec.Core.Generic_fmt.round_bounded_large_pos",
+   "verdict": "match",
+   "explanation": "Valid_rnd rnd, fexp ex < ex, and bpow(ex-1) ≤ x < bpow ex imply bpow(ex-1) ≤ round x ≤ bpow ex. Identical."
+  },
+  {
+   "coq_path": "src/Core/Generic_fmt.v",
+   "coq_name": "round_bounded_small_pos",
+   "lean_name": "FloatSpec.Core.Generic_fmt.round_bounded_small_pos",
+   "verdict": "match",
+   "explanation": "Valid_rnd rnd, ex ≤ fexp ex, and bpow(ex-1) ≤ x < bpow ex imply round x = 0 ∨ round x = bpow (fexp ex). Implicit {x} {ex} are only a binder difference. Neither side requires Valid_exp."
+  },
+  {
+   "coq_path": "src/Core/Generic_fmt.v",
+   "coq_name": "round_ext",
+   "lean_name": "FloatSpec.Core.Generic_fmt.round_ext",
+   "verdict": "match",
+   "explanation": "(∀ x, rnd1 x = rnd2 x) → ∀ x, round rnd1 x = round rnd2 x. Identical."
+  },
+  {
+   "coq_path": "src/Core/Generic_fmt.v",
+   "coq_name": "round_generic",
+   "lean_name": "FloatSpec.Core.Generic_fmt.round_generic",
+   "verdict": "match",
+   "explanation": "Valid_rnd rnd → generic_format x → round rnd x = x. round_to_generic is definitionally Coq's round. Identical."
+  },
+  {
+   "coq_path": "src/Core/Generic_fmt.v",
+   "coq_name": "round_generic",
+   "lean_name": "FloatSpec.Core.Generic_fmt.round_generic_identity",
+   "verdict": "match",
+   "explanation": "This is a duplicate Lean anchor of round_generic with the same compiled type: Valid_rnd rnd → generic_format x → round_to_generic rnd x = x. It matches Coq round_generic."
+  },
+  {
+   "coq_path": "src/Core/Generic_fmt.v",
+   "coq_name": "round_large_pos_ge_bpow",
+   "lean_name": "FloatSpec.Core.Generic_fmt.round_large_pos_ge_bpow",
+   "verdict": "match",
+   "explanation": "Valid_rnd rnd, 0 < round x, and bpow e ≤ x imply bpow e ≤ round x. Identical, and neither side takes Valid_exp."
+  },
+  {
+   "coq_path": "src/Core/Generic_fmt.v",
+   "coq_name": "round_opp",
+   "lean_name": "FloatSpec.Core.Generic_fmt.round_opp",
+   "verdict": "match",
+   "explanation": "round rnd (-x) = -round (Zrnd_opp rnd) x, with no hypotheses on either side. Zrnd_opp is defined the same way in both (Z.opp (rnd (-x)))."
+  },
+  {
+   "coq_path": "src/Core/Generic_fmt.v",
+   "coq_name": "round",
+   "lean_name": "FloatSpec.Core.Generic_fmt.round_to_generic",
+   "verdict": "match",
+   "explanation": "The types agree once radix is read as Int + [ValidRadix]: (ℤ → ℤ) → (ℝ → ℤ) → ℝ → ℝ. The bodies also agree: round_to_generic := roundR = ((rnd (scaled_mantissa x)) : ℝ) * beta^(cexp x), and Coq's round x := F2R (Float beta (rnd (scaled_mantissa x)) (cexp x)) = IZR(...) * bpow (cexp x)."
+  },
+  {
+   "coq_path": "src/Core/Generic_fmt.v",
+   "coq_name": "scaled_mantissa_generic",
+   "lean_name": "FloatSpec.Core.Generic_fmt.scaled_mantissa_generic",
+   "verdict": "triple-shaped",
+   "explanation": "This is a legacy Id Hoare triple of the form ⦃generic_format x⦄ pure (scaled_mantissa x) ⦃r => r = ↑(Ztrunc r)⦄. Its P→Q reading is generic_format x → scaled_mantissa x = IZR (Ztrunc (scaled_mantissa x)), exactly Coq's statement. P→Q matches."
+  },
+  {
+   "coq_path": "src/Core/Raux.v",
+   "coq_name": "Rcompare",
+   "lean_name": "BinarySingleNaN.RcompareOrdering",
+   "verdict": "match",
+   "explanation": "Type R -> R -> comparison vs ℝ → ℝ → Ordering, where Ordering.lt/eq/gt correspond to Lt/Eq/Gt. The bodies agree: Coq matches `total_order_T x y` (x<y gives Lt, x=y gives Eq, y<x gives Gt), and Lean is `if x < y then .lt else if x = y then .eq else .gt`. This is the anchored definition. The Raux.v theorems above are stated over the separate Int-coded `FloatSpec.Core.Raux.Rcompare`, which `orderingOfCompareCode_Rcompare` links to this function."
+  },
+  {
+   "coq_path": "src/Core/Raux.v",
+   "coq_name": "LPO",
+   "lean_name": "FloatSpec.Core.Raux.LPO",
+   "verdict": "match",
+   "explanation": "Coq: {n : nat | P n} + {forall n, ~P n}, given decidability-as-disjunction for every n. Lean: PSum {n // P n} (∀ n, ¬P n) with the same hypothesis. The types are identical up to sumor/PSum and nat/ℕ."
+  },
+  {
+   "coq_path": "src/Core/Raux.v",
+   "coq_name": "LPO_Z",
+   "lean_name": "FloatSpec.Core.Raux.LPO_Z",
+   "verdict": "match",
+   "explanation": "Coq: forall P : Z -> Prop, (forall n, P n \\/ ~P n) -> {n : Z | P n} + {forall n : Z, ~P n}. Lean: PSum {n : ℤ // P n} (∀ n : ℤ, ¬P n) with the same hypothesis. The types are identical. The body follows Rocq's strategy: search nonnegative witnesses first, then negated naturals."
+  },
+  {
+   "coq_path": "src/Core/Raux.v",
+   "coq_name": "LPO_min",
+   "lean_name": "FloatSpec.Core.Raux.LPO_min",
+   "verdict": "match",
+   "explanation": "Coq: forall P : nat -> Prop, (forall n, P n \\/ ~P n) -> {n | P n /\\ forall i, i < n -> ~P i} + {forall n, ~P n} (sumor). Lean: PSum {n // P n ∧ ∀ i < n, ¬P i} (∀ n, ¬P n). The hypothesis, the minimal-witness subtype and the Prop alternative are all the same. Coq's opaque Theorem is a Lean noncomputable def, which is fine for the type. The body uses Nat.find, so the witness is minimal as the type requires."
+  },
+  {
+   "coq_path": "src/Core/Raux.v",
+   "coq_name": "Rcompare_Eq",
+   "lean_name": "FloatSpec.Core.Raux.Rcompare_Eq",
+   "verdict": "match",
+   "explanation": "Same hypothesis (x = y). The conclusion `Rcompare x y = 0` is Coq's `Rcompare x y = Eq` in the documented Int encoding (Lt=-1, Eq=0, Gt=1). It is equivalent via orderingOfCompareCode_Rcompare, and nothing is weakened or strengthened."
+  },
+  {
+   "coq_path": "src/Core/Raux.v",
+   "coq_name": "Rcompare_Gt",
+   "lean_name": "FloatSpec.Core.Raux.Rcompare_Gt",
+   "verdict": "match",
+   "explanation": "Same hypothesis (y < x). The conclusion `Rcompare x y = 1` is Coq's `= Gt` in the Int encoding, equivalent via orderingOfCompareCode_Rcompare. The argument order is x, y as in Coq."
+  },
+  {
+   "coq_path": "src/Core/Raux.v",
+   "coq_name": "Rcompare_IZR",
+   "lean_name": "FloatSpec.Core.Raux.Rcompare_IZR",
+   "verdict": "match",
+   "explanation": "Coq: Rcompare (IZR x) (IZR y) = Z.compare x y. Lean: Rcompare ↑m ↑n = Zcompare_int m n. Here `Zcompare_int m n := if m<n then -1 else if m=n then 0 else 1` (Raux.lean:1282), which is Z.compare in the same -1/0/1 encoding used for Rcompare. There are no hypotheses on either side. The statement is equivalent under the encoding; only the codomain representation differs (Int codes instead of `comparison`/Ordering)."
+  },
+  {
+   "coq_path": "src/Core/Raux.v",
+   "coq_name": "Rcompare_Lt",
+   "lean_name": "FloatSpec.Core.Raux.Rcompare_Lt",
+   "verdict": "match",
+   "explanation": "Same hypothesis (x < y). The conclusion uses the Int-coded Lean `Raux.Rcompare` (`if x<y then -1 else if x=y then 0 else 1`, Raux.lean:683), not Coq's `comparison`: `= -1` stands for `= Lt`. The docstring documents this legacy encoding. It is not the anchored `RcompareOrdering`, but `BinarySingleNaN.orderingOfCompareCode_Rcompare` (compiled, no sorry) proves `orderingOfCompareCode (Rcompare x y) = RcompareOrdering x y`, so the two propositions are equivalent. The meaning is unchanged; only the encoding differs."
+  },
+  {
+   "coq_path": "src/Core/Raux.v",
+   "coq_name": "Rcompare_not_Gt",
+   "lean_name": "FloatSpec.Core.Raux.Rcompare_not_Gt",
+   "verdict": "match",
+   "explanation": "Same hypothesis (x <= y). The conclusion `Rcompare x y ≠ 1` corresponds to `<> Gt` in the Int encoding (1 happens exactly when neither x<y nor x=y holds). The two statements are equivalent."
+  },
+  {
+   "coq_path": "src/Core/Raux.v",
+   "coq_name": "Rcompare_not_Lt",
+   "lean_name": "FloatSpec.Core.Raux.Rcompare_not_Lt",
+   "verdict": "match",
+   "explanation": "Same hypothesis (y <= x). The conclusion `Rcompare x y ≠ -1` corresponds to `<> Lt`. The Int-coded Rcompare only takes the values -1, 0 and 1, and -1 happens exactly when x<y, so this is equivalent to Coq's statement under the encoding."
+  },
+  {
+   "coq_path": "src/Core/Round_NE.v",
+   "coq_name": "DN_UP_parity_aux",
+   "lean_name": "FloatSpec.Core.RoundNE.DN_UP_parity_aux",
+   "verdict": "match",
+   "explanation": "Direct proposition: forall beta fexp, DN_UP_parity_pos_prop beta fexp -> DN_UP_parity_prop beta fexp. Lean has no Valid_exp or Exists_NE instance (checked with pp.explicit), matching Coq, whose compiled type also has no section context arguments. It is not a Hoare triple; the triple version is the separately named DN_UP_parity_aux_payload."
+  },
+  {
+   "coq_path": "src/Core/Round_NE.v",
+   "coq_name": "DN_UP_parity_pos_prop",
+   "lean_name": "FloatSpec.Core.RoundNE.DN_UP_parity_pos_prop",
+   "verdict": "match",
+   "explanation": "Both types are radix -> (Z->Z) -> Prop. Coq's section Context valid_exp is unused, so it drops out, and Lean likewise takes only [ValidRadix beta]. The bodies agree clause by clause: forall x xd xu, 0<x, ~generic_format x, canonical xd, canonical xu, F2R xd = round Zfloor x, F2R xu = round Zceil x, conclusion Zeven xu.Fnum = !Zeven xd.Fnum. Lean's round_to_generic is roundR, which is IZR(rnd (scaled_mantissa x)) * beta^(cexp x) and matches Coq's round. rnd_floor/rnd_ceil are Int.floor/Int.ceil, matching Zfloor/Zceil. Zeven z := decide (2 | z) matches Z.even, and ! is negb. canonical is Fexp f = fexp (mag (F2R f)), as in Coq."
+  },
+  {
+   "coq_path": "src/Core/Round_NE.v",
+   "coq_name": "DN_UP_parity_prop",
+   "lean_name": "FloatSpec.Core.RoundNE.DN_UP_parity_prop",
+   "verdict": "match",
+   "explanation": "Same type, radix -> (Z->Z) -> Prop. The body is the positive version with the 0<x premise removed, exactly as in Coq: ~format x, canonical xd/xu, F2R xd = round Zfloor x, F2R xu = round Zceil x, conclusion Zeven xu.Fnum = negb (Zeven xd.Fnum)."
+  },
+  {
+   "coq_path": "src/Core/Round_NE.v",
+   "coq_name": "Rnd_NE_pt_monotone",
+   "lean_name": "FloatSpec.Core.RoundNE.Rnd_NE_pt_monotone",
+   "verdict": "match",
+   "explanation": "Same hypotheses, Valid_exp and Exists_NE. Same conclusion, round_pred_monotone (Rnd_NE_pt beta fexp). Lean's round_pred_monotone is forall x y f g, P x f -> P y g -> x <= y -> f <= g, identical to Defs.v."
+  },
+  {
+   "coq_path": "src/Core/Round_NE.v",
+   "coq_name": "Rnd_NE_pt_round",
+   "lean_name": "FloatSpec.Core.RoundNE.Rnd_NE_pt_round",
+   "verdict": "match",
+   "explanation": "Same hypotheses, Valid_exp and Exists_NE. Same conclusion, round_pred (Rnd_NE_pt beta fexp), where round_pred is total /\\ monotone as in Defs.v."
+  },
+  {
+   "coq_path": "src/Core/Round_NE.v",
+   "coq_name": "Rnd_NE_pt_total",
+   "lean_name": "FloatSpec.Core.RoundNE.Rnd_NE_pt_total",
+   "verdict": "match",
+   "explanation": "Both have the hypotheses Valid_exp fexp and Exists_NE beta fexp, and conclude round_pred_total (Rnd_NE_pt beta fexp). Lean's Exists_NE (beta % 2 != 0, or for all e the two fexp conditions) is equivalent to Coq's (Z.even beta = false, or the same). Rnd_NE_pt = Rnd_NG_pt generic_format NE_prop, where Rnd_NG_pt = Rnd_N_pt /\\ (P \\/ uniqueness), as in Defs.v. NE_prop's g.Fnum % 2 = 0 is equivalent to Z.even (Fnum g) = true. round_pred_total is forall x, exists f, P x f. Explicit printing shows Rnd_NE_pt takes no Valid_exp or Monotone_exp instance."
+  },
+  {
+   "coq_path": "src/Core/Round_NE.v",
+   "coq_name": "round_NE_abs",
+   "lean_name": "FloatSpec.Core.RoundNE.round_NE_abs",
+   "verdict": "match",
+   "explanation": "Both take only Valid_exp, with no Exists_NE on either side, and state round ZnearestE |x| = |round ZnearestE x|. The rounding function, choice function and abs/Rabs correspond."
+  },
+  {
+   "coq_path": "src/Core/Round_NE.v",
+   "coq_name": "round_NE_opp",
+   "lean_name": "FloatSpec.Core.RoundNE.round_NE_opp",
+   "verdict": "match",
+   "explanation": "Neither side has a Valid_exp or Exists_NE hypothesis: Coq's compiled type drops the unused section contexts, and Lean's explicit type confirms only ValidRadix. Both state round ZnearestE (-x) = -(round ZnearestE x), with the same ZnearestE choice function and the same round."
+  },
+  {
+   "coq_path": "src/Core/Round_NE.v",
+   "coq_name": "round_NE_pt",
+   "lean_name": "FloatSpec.Core.RoundNE.round_NE_pt",
+   "verdict": "match",
+   "explanation": "Both take Valid_exp and Exists_NE and state forall x, Rnd_NE_pt beta fexp x (round beta fexp ZnearestE x). Rnd_NE_pt, ZnearestE and round all correspond as verified above."
+  },
+  {
+   "coq_path": "src/Core/Round_NE.v",
+   "coq_name": "round_NE_pt_pos",
+   "lean_name": "FloatSpec.Core.RoundNE.round_NE_pt_pos",
+   "verdict": "match",
+   "explanation": "Both take Valid_exp and Exists_NE and state forall x, 0 < x -> Rnd_NE_pt x (round ZnearestE x). Lean's rounding mode is Znearest (fun t => !decide (2 | t)), which is Coq's ZnearestE = Znearest (fun x => negb (Z.even x)). Lean's Znearest matches Coq's Rcompare-based definition: Lt gives floor, Eq gives the choice, Gt gives ceil. roundR matches Coq's round."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "NG_existence_prop",
+   "lean_name": "FloatSpec.Core.Round_pred.NG_existence_prop",
+   "verdict": "match",
+   "explanation": "Def type matches; body forall x d u, ~F x -> Rnd_DN_pt F x d -> Rnd_UP_pt F x u -> P x u \\/ P x d is identical."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "Only_DN_or_UP",
+   "lean_name": "FloatSpec.Core.Round_pred.Only_DN_or_UP",
+   "verdict": "match",
+   "explanation": "DN fd, UP fu, F f, fd <= f <= fu -> f = fd \\/ f = fu, same as Coq."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "Rnd_DN",
+   "lean_name": "FloatSpec.Core.Round_pred.Rnd_DN",
+   "verdict": "match",
+   "explanation": "Def type matches; body forall x, Rnd_DN_pt F x (rnd x) identical to Coq."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "Rnd_DN_UP_pt_split",
+   "lean_name": "FloatSpec.Core.Round_pred.Rnd_DN_UP_pt_split",
+   "verdict": "match",
+   "explanation": "DN d, UP u, F f -> f <= d \\/ u <= f, same as Coq."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "Rnd_DN_opp",
+   "lean_name": "FloatSpec.Core.Round_pred.Rnd_DN_opp",
+   "verdict": "match",
+   "explanation": "Same hypotheses (symmetric F, Rnd_DN F rnd1, Rnd_UP F rnd2) and conclusion rnd1 (-x) = -rnd2 x."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "Rnd_DN_pt_equiv_format",
+   "lean_name": "FloatSpec.Core.Round_pred.Rnd_DN_pt_equiv_format",
+   "verdict": "match",
+   "explanation": "F1 a, F1 and F2 agree on [a,b], x in [a,b], DN_pt F1 x f -> DN_pt F2 x f, same as Coq."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "Rnd_DN_pt_idempotent",
+   "lean_name": "FloatSpec.Core.Round_pred.Rnd_DN_pt_idempotent",
+   "verdict": "match",
+   "explanation": "Rnd_DN_pt F x f -> F x -> f = x, same as Coq."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "Rnd_DN_pt_monotone",
+   "lean_name": "FloatSpec.Core.Round_pred.Rnd_DN_pt_monotone",
+   "verdict": "match",
+   "explanation": "Same statement; Lean Round_pred.Rnd_DN_pt is an abbrev of Defs.Rnd_DN_pt whose body (F f /\\ f <= x /\\ forall g, F g -> g <= x -> g <= f) matches Coq Defs.v."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "Rnd_DN_pt_opp",
+   "lean_name": "FloatSpec.Core.Round_pred.Rnd_DN_pt_opp",
+   "verdict": "match",
+   "explanation": "Symmetric-format hypothesis, UP_pt F x f -> DN_pt F (-x) (-f), same as Coq."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "Rnd_DN_pt_refl",
+   "lean_name": "FloatSpec.Core.Round_pred.Rnd_DN_pt_refl",
+   "verdict": "match",
+   "explanation": "F x -> Rnd_DN_pt F x x, same as Coq."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "Rnd_DN_pt_unique",
+   "lean_name": "FloatSpec.Core.Round_pred.Rnd_DN_pt_unique",
+   "verdict": "match",
+   "explanation": "Same hypotheses and conclusion as the Coq compiled type."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "Rnd_DN_unique",
+   "lean_name": "FloatSpec.Core.Round_pred.Rnd_DN_unique",
+   "verdict": "match",
+   "explanation": "Same hypotheses and conclusion as the Coq compiled type."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "Rnd_N",
+   "lean_name": "FloatSpec.Core.Round_pred.Rnd_N",
+   "verdict": "match",
+   "explanation": "Def type matches; body forall x, Rnd_N_pt F x (rnd x) identical."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "Rnd_N0",
+   "lean_name": "FloatSpec.Core.Round_pred.Rnd_N0",
+   "verdict": "match",
+   "explanation": "Def type matches; body forall x, Rnd_N0_pt F x (rnd x) identical."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "Rnd_N0_NG_pt",
+   "lean_name": "FloatSpec.Core.Round_pred.Rnd_N0_NG_pt",
+   "verdict": "match",
+   "explanation": "F 0 -> (N0_pt x f <-> NG_pt F (fun x f => |f| <= |x|) x f), same as Coq."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "Rnd_N0_pt_N",
+   "lean_name": "FloatSpec.Core.Round_pred.Rnd_N0_pt_N",
+   "verdict": "match",
+   "explanation": "F 0 -> N_pt x f -> |f| <= |x| -> N0_pt x f, same as Coq."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "Rnd_N0_pt_idempotent",
+   "lean_name": "FloatSpec.Core.Round_pred.Rnd_N0_pt_idempotent",
+   "verdict": "match",
+   "explanation": "N0_pt x f -> F x -> f = x, same as Coq."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "Rnd_N0_pt_monotone",
+   "lean_name": "FloatSpec.Core.Round_pred.Rnd_N0_pt_monotone",
+   "verdict": "match",
+   "explanation": "F 0 -> round_pred_monotone (Rnd_N0_pt F), same as Coq."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "Rnd_N0_pt_refl",
+   "lean_name": "FloatSpec.Core.Round_pred.Rnd_N0_pt_refl",
+   "verdict": "match",
+   "explanation": "F x -> Rnd_N0_pt F x x, same as Coq."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "Rnd_N0_pt_unique",
+   "lean_name": "FloatSpec.Core.Round_pred.Rnd_N0_pt_unique",
+   "verdict": "match",
+   "explanation": "F 0 -> N0_pt x f -> N0_pt x g -> f = g, same as Coq."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "Rnd_N0_pt_unique_prop",
+   "lean_name": "FloatSpec.Core.Round_pred.Rnd_N0_pt_unique_prop",
+   "verdict": "match",
+   "explanation": "F 0 -> Rnd_NG_pt_unique_prop F (fun x f => |f| <= |x|), same as Coq."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "Rnd_N0_unique",
+   "lean_name": "FloatSpec.Core.Round_pred.Rnd_N0_unique",
+   "verdict": "match",
+   "explanation": "F 0, Rnd_N0 F rnd1, Rnd_N0 F rnd2 -> rnd1 x = rnd2 x, same as Coq."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "Rnd_NA",
+   "lean_name": "FloatSpec.Core.Round_pred.Rnd_NA",
+   "verdict": "match",
+   "explanation": "Def type matches; body forall x, Rnd_NA_pt F x (rnd x) identical."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "Rnd_NA_NG_pt",
+   "lean_name": "FloatSpec.Core.Round_pred.Rnd_NA_NG_pt",
+   "verdict": "match",
+   "explanation": "F 0 -> (NA_pt x f <-> NG_pt F (fun x f => |x| <= |f|) x f), same tie predicate as Coq."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "Rnd_NA_pt_N",
+   "lean_name": "FloatSpec.Core.Round_pred.Rnd_NA_pt_N",
+   "verdict": "match",
+   "explanation": "F 0 -> N_pt x f -> |x| <= |f| -> NA_pt x f, same as Coq."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "Rnd_NA_pt_idempotent",
+   "lean_name": "FloatSpec.Core.Round_pred.Rnd_NA_pt_idempotent",
+   "verdict": "match",
+   "explanation": "NA_pt x f -> F x -> f = x, same as Coq."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "Rnd_NA_pt_monotone",
+   "lean_name": "FloatSpec.Core.Round_pred.Rnd_NA_pt_monotone",
+   "verdict": "match",
+   "explanation": "F 0 -> round_pred_monotone (Rnd_NA_pt F), same as Coq."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "Rnd_NA_pt_refl",
+   "lean_name": "FloatSpec.Core.Round_pred.Rnd_NA_pt_refl",
+   "verdict": "match",
+   "explanation": "F x -> Rnd_NA_pt F x x, same as Coq."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "Rnd_NA_pt_unique",
+   "lean_name": "FloatSpec.Core.Round_pred.Rnd_NA_pt_unique",
+   "verdict": "match",
+   "explanation": "F 0 -> NA_pt x f -> NA_pt x g -> f = g, same as Coq."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "Rnd_NA_pt_unique_prop",
+   "lean_name": "FloatSpec.Core.Round_pred.Rnd_NA_pt_unique_prop",
+   "verdict": "match",
+   "explanation": "F 0 -> Rnd_NG_pt_unique_prop F (fun a b => |a| <= |b|), same as Coq."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "Rnd_NA_unique",
+   "lean_name": "FloatSpec.Core.Round_pred.Rnd_NA_unique",
+   "verdict": "match",
+   "explanation": "F 0, Rnd_NA F rnd1, Rnd_NA F rnd2 -> rnd1 x = rnd2 x, same as Coq."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "Rnd_NG",
+   "lean_name": "FloatSpec.Core.Round_pred.Rnd_NG",
+   "verdict": "match",
+   "explanation": "Def type matches; body forall x, Rnd_NG_pt F P x (rnd x) identical."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "Rnd_NG_pt_monotone",
+   "lean_name": "FloatSpec.Core.Round_pred.Rnd_NG_pt_monotone",
+   "verdict": "match",
+   "explanation": "unique_prop F P -> round_pred_monotone (Rnd_NG_pt F P), same as Coq."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "Rnd_NG_pt_opp_inv",
+   "lean_name": "FloatSpec.Core.Round_pred.Rnd_NG_pt_opp_inv",
+   "verdict": "match",
+   "explanation": "Symmetric F, P closed under negation, NG_pt (-x) (-f) -> NG_pt x f, same as Coq; Rnd_NG_pt body matches Defs.v."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "Rnd_NG_pt_refl",
+   "lean_name": "FloatSpec.Core.Round_pred.Rnd_NG_pt_refl",
+   "verdict": "match",
+   "explanation": "F x -> Rnd_NG_pt F P x x, same as Coq."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "Rnd_NG_pt_unique",
+   "lean_name": "FloatSpec.Core.Round_pred.Rnd_NG_pt_unique",
+   "verdict": "match",
+   "explanation": "unique_prop F P -> NG_pt x f -> NG_pt x g -> f = g; only binder names differ (f g vs f1 f2)."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "Rnd_NG_pt_unique_prop",
+   "lean_name": "FloatSpec.Core.Round_pred.Rnd_NG_pt_unique_prop",
+   "verdict": "match",
+   "explanation": "Coq P : R->R->Type, Lean P : R->R->Sort u (an allowed Type vs Sort u difference); body forall x d u, DN d -> N d -> UP u -> N u -> P x d -> P x u -> d = u identical."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "Rnd_NG_unique",
+   "lean_name": "FloatSpec.Core.Round_pred.Rnd_NG_unique",
+   "verdict": "match",
+   "explanation": "unique_prop, Rnd_NG F P rnd1, Rnd_NG F P rnd2 -> rnd1 x = rnd2 x, same as Coq."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "Rnd_N_pt_0",
+   "lean_name": "FloatSpec.Core.Round_pred.Rnd_N_pt_0",
+   "verdict": "match",
+   "explanation": "F 0 -> Rnd_N_pt F 0 0, same as Coq."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "Rnd_N_pt_DN",
+   "lean_name": "FloatSpec.Core.Round_pred.Rnd_N_pt_DN",
+   "verdict": "match",
+   "explanation": "DN d, UP u, x-d <= u-x -> N_pt x d, same as Coq."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "Rnd_N_pt_DN_UP",
+   "lean_name": "FloatSpec.Core.Round_pred.Rnd_N_pt_DN_UP",
+   "verdict": "match",
+   "explanation": "F f, DN d, UP u, |f-x| <= x-d, |f-x| <= u-x -> N_pt x f, same as Coq."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "Rnd_N_pt_DN_or_UP",
+   "lean_name": "FloatSpec.Core.Round_pred.Rnd_N_pt_DN_or_UP",
+   "verdict": "match",
+   "explanation": "Rnd_N_pt F x f -> DN_pt F x f \\/ UP_pt F x f, same as Coq."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "Rnd_N_pt_DN_or_UP_eq",
+   "lean_name": "FloatSpec.Core.Round_pred.Rnd_N_pt_DN_or_UP_eq",
+   "verdict": "match",
+   "explanation": "Same statement; only binder names differ (Lean d u vs Coq fd fu)."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "Rnd_N_pt_UP",
+   "lean_name": "FloatSpec.Core.Round_pred.Rnd_N_pt_UP",
+   "verdict": "match",
+   "explanation": "DN d, UP u, u-x <= x-d -> N_pt x u, same as Coq."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "Rnd_N_pt_abs",
+   "lean_name": "FloatSpec.Core.Round_pred.Rnd_N_pt_abs",
+   "verdict": "match",
+   "explanation": "F 0, symmetric F, N_pt x f -> N_pt |x| |f|, same as Coq."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "Rnd_N_pt_ge_0",
+   "lean_name": "FloatSpec.Core.Round_pred.Rnd_N_pt_ge_0",
+   "verdict": "match",
+   "explanation": "F 0 -> 0 <= x -> N_pt x f -> 0 <= f, same as Coq."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "Rnd_N_pt_idempotent",
+   "lean_name": "FloatSpec.Core.Round_pred.Rnd_N_pt_idempotent",
+   "verdict": "match",
+   "explanation": "Rnd_N_pt F x f -> F x -> f = x, same as Coq."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "Rnd_N_pt_le_0",
+   "lean_name": "FloatSpec.Core.Round_pred.Rnd_N_pt_le_0",
+   "verdict": "match",
+   "explanation": "F 0 -> x <= 0 -> N_pt x f -> f <= 0, same as Coq."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "Rnd_N_pt_monotone",
+   "lean_name": "FloatSpec.Core.Round_pred.Rnd_N_pt_monotone",
+   "verdict": "match",
+   "explanation": "N_pt x f, N_pt y g, x < y -> f <= g (strict premise as in Coq)."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "Rnd_N_pt_opp_inv",
+   "lean_name": "FloatSpec.Core.Round_pred.Rnd_N_pt_opp_inv",
+   "verdict": "match",
+   "explanation": "Symmetric F, Rnd_N_pt F (-x) (-f) -> Rnd_N_pt F x f; only binder order differs."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "Rnd_N_pt_refl",
+   "lean_name": "FloatSpec.Core.Round_pred.Rnd_N_pt_refl",
+   "verdict": "match",
+   "explanation": "F x -> Rnd_N_pt F x x, same as Coq."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "Rnd_N_pt_unique",
+   "lean_name": "FloatSpec.Core.Round_pred.Rnd_N_pt_unique",
+   "verdict": "match",
+   "explanation": "DN d, UP u, x - d <> u - x, N f1, N f2 -> f1 = f2, same as Coq."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "Rnd_UP",
+   "lean_name": "FloatSpec.Core.Round_pred.Rnd_UP",
+   "verdict": "match",
+   "explanation": "Def type matches; body forall x, Rnd_UP_pt F x (rnd x) identical."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "Rnd_UP_pt_equiv_format",
+   "lean_name": "FloatSpec.Core.Round_pred.Rnd_UP_pt_equiv_format",
+   "verdict": "match",
+   "explanation": "F1 b, F1 and F2 agree on [a,b], x in [a,b], UP_pt F1 x f -> UP_pt F2 x f, same as Coq."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "Rnd_UP_pt_idempotent",
+   "lean_name": "FloatSpec.Core.Round_pred.Rnd_UP_pt_idempotent",
+   "verdict": "match",
+   "explanation": "Rnd_UP_pt F x f -> F x -> f = x, same as Coq."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "Rnd_UP_pt_monotone",
+   "lean_name": "FloatSpec.Core.Round_pred.Rnd_UP_pt_monotone",
+   "verdict": "match",
+   "explanation": "Same statement; Rnd_UP_pt body matches Coq Defs.v."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "Rnd_UP_pt_opp",
+   "lean_name": "FloatSpec.Core.Round_pred.Rnd_UP_pt_opp",
+   "verdict": "match",
+   "explanation": "Symmetric-format hypothesis, DN_pt F x f -> UP_pt F (-x) (-f), same as Coq."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "Rnd_UP_pt_refl",
+   "lean_name": "FloatSpec.Core.Round_pred.Rnd_UP_pt_refl",
+   "verdict": "match",
+   "explanation": "F x -> Rnd_UP_pt F x x, same as Coq."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "Rnd_UP_pt_unique",
+   "lean_name": "FloatSpec.Core.Round_pred.Rnd_UP_pt_unique",
+   "verdict": "match",
+   "explanation": "Same hypotheses and conclusion as the Coq compiled type."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "Rnd_UP_unique",
+   "lean_name": "FloatSpec.Core.Round_pred.Rnd_UP_unique",
+   "verdict": "match",
+   "explanation": "Same hypotheses and conclusion as the Coq compiled type."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "Rnd_ZR",
+   "lean_name": "FloatSpec.Core.Round_pred.Rnd_ZR",
+   "verdict": "match",
+   "explanation": "Def type matches; body forall x, Rnd_ZR_pt F x (rnd x) (Defs.Rnd_ZR_pt = both 0<=x->DN and x<=0->UP, as in Coq Defs.v)."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "Rnd_ZR_abs",
+   "lean_name": "FloatSpec.Core.Round_pred.Rnd_ZR_abs",
+   "verdict": "match",
+   "explanation": "Rnd_ZR F rnd -> forall x, |rnd x| <= |x|, same as Coq (Rabs vs |.| notation only)."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "Rnd_ZR_pt_monotone",
+   "lean_name": "FloatSpec.Core.Round_pred.Rnd_ZR_pt_monotone",
+   "verdict": "match",
+   "explanation": "F 0 -> round_pred_monotone (Rnd_ZR_pt F), same as Coq."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "round_fun_of_pred",
+   "lean_name": "FloatSpec.Core.Round_pred.round_fun_of_pred",
+   "verdict": "match",
+   "explanation": "Coq Theorem returning {f : R->R | forall x, rnd x (f x)} under round_pred rnd; Lean Subtype of the same shape."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "round_pred_ge_0",
+   "lean_name": "FloatSpec.Core.Round_pred.round_pred_ge_0",
+   "verdict": "match",
+   "explanation": "monotone P, P 0 0, P x f, 0 <= x -> 0 <= f; binder order differs only."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "round_pred_gt_0",
+   "lean_name": "FloatSpec.Core.Round_pred.round_pred_gt_0",
+   "verdict": "match",
+   "explanation": "monotone P, P 0 0, P x f, 0 < f -> 0 < x, same as Coq."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "round_pred_le_0",
+   "lean_name": "FloatSpec.Core.Round_pred.round_pred_le_0",
+   "verdict": "match",
+   "explanation": "monotone P, P 0 0, P x f, x <= 0 -> f <= 0, same as Coq."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "round_pred_lt_0",
+   "lean_name": "FloatSpec.Core.Round_pred.round_pred_lt_0",
+   "verdict": "match",
+   "explanation": "monotone P, P 0 0, P x f, f < 0 -> x < 0, same as Coq."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "round_unique",
+   "lean_name": "FloatSpec.Core.Round_pred.round_unique",
+   "verdict": "match",
+   "explanation": "round_pred_monotone rnd -> rnd x f1 -> rnd x f2 -> f1 = f2, same as Coq; Lean round_pred_monotone body (forall x y f g, P x f -> P y g -> x <= y -> f <= g) matches Coq Defs.v."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "round_val_of_pred",
+   "lean_name": "FloatSpec.Core.Round_pred.round_val_of_pred",
+   "verdict": "match",
+   "explanation": "Coq Theorem returning sig {f | rnd x f} under round_pred rnd; Lean noncomputable def returning Subtype {f // rnd x f}; same type (Coq body is opaque)."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "satisfies_any",
+   "lean_name": "FloatSpec.Core.Round_pred.satisfies_any",
+   "verdict": "match",
+   "explanation": "Single-constructor inductive in Prop with fields F 0, (forall x, F x -> F (-x)), round_pred_total (Rnd_DN_pt F), in the same order as Coq Satisfies_any."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "satisfies_any_eq",
+   "lean_name": "FloatSpec.Core.Round_pred.satisfies_any_eq",
+   "verdict": "match",
+   "explanation": "(forall x, F1 x <-> F2 x) -> satisfies_any F1 -> satisfies_any F2, same as Coq."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "satisfies_any_imp_DN",
+   "lean_name": "FloatSpec.Core.Round_pred.satisfies_any_imp_DN",
+   "verdict": "match",
+   "explanation": "satisfies_any F -> round_pred (Rnd_DN_pt F); round_pred = total /\\ monotone as in Coq."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "satisfies_any_imp_N0",
+   "lean_name": "FloatSpec.Core.Round_pred.satisfies_any_imp_N0",
+   "verdict": "match",
+   "explanation": "F 0 -> satisfies_any F -> round_pred (Rnd_N0_pt F), same as Coq, including the extra F 0 premise."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "satisfies_any_imp_NA",
+   "lean_name": "FloatSpec.Core.Round_pred.satisfies_any_imp_NA",
+   "verdict": "match",
+   "explanation": "satisfies_any F -> round_pred (Rnd_NA_pt F), same as Coq."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "satisfies_any_imp_NG",
+   "lean_name": "FloatSpec.Core.Round_pred.satisfies_any_imp_NG",
+   "verdict": "match",
+   "explanation": "satisfies_any F -> NG_existence_prop F P -> round_pred_total (Rnd_NG_pt F P); conclusion is total only, exactly as in Coq."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "satisfies_any_imp_UP",
+   "lean_name": "FloatSpec.Core.Round_pred.satisfies_any_imp_UP",
+   "verdict": "match",
+   "explanation": "satisfies_any F -> round_pred (Rnd_UP_pt F), same as Coq."
+  },
+  {
+   "coq_path": "src/Core/Round_pred.v",
+   "coq_name": "satisfies_any_imp_ZR",
+   "lean_name": "FloatSpec.Core.Round_pred.satisfies_any_imp_ZR",
+   "verdict": "match",
+   "explanation": "satisfies_any F -> round_pred (Rnd_ZR_pt F), same as Coq."
+  },
+  {
+   "coq_path": "src/Core/Ulp.v",
+   "coq_name": "id_m_ulp_ge_bpow",
+   "lean_name": "FloatSpec.Core.Ulp.id_m_ulp_ge_bpow",
+   "verdict": "triple-shaped",
+   "explanation": "Hypotheses generic_format x, x ≠ ulp x and beta^e < x. Lean adds hβ : 1 < beta, which is redundant with ValidRadix. The triple's precondition is True and its postcondition is beta^e ≤ x - ulp x. Neither side assumes Valid_exp. P -> Q matches the Rocq statement."
+  },
+  {
+   "coq_path": "src/Core/Ulp.v",
+   "coq_name": "id_p_ulp_le_bpow",
+   "lean_name": "FloatSpec.Core.Ulp.id_p_ulp_le_bpow",
+   "verdict": "triple-shaped",
+   "explanation": "Hypotheses 0 < x, generic_format x and x < beta^e. The triple's precondition 1 < beta is redundant with ValidRadix, and its postcondition is x + ulp x ≤ beta^e. P -> Q matches the Rocq statement."
+  },
+  {
+   "coq_path": "src/Core/Ulp.v",
+   "coq_name": "negligible_exp",
+   "lean_name": "FloatSpec.Core.Ulp.negligible_exp",
+   "verdict": "match",
+   "explanation": "Types agree: (Z->Z) -> option Z. The bodies agree too: both match on LPO_Z (fun z => z <= fexp z), returning Some witness or None. Lean's Raux.LPO_Z takes the minimal nonnegative witness first, then the minimal negated-natural one, which mirrors the Rocq LPO_Z/LPO/LPO_min structure. Rocq's LPO_Z is opaque (Qed), so Lean's concrete witness is one valid model of it."
+  },
+  {
+   "coq_path": "src/Core/Ulp.v",
+   "coq_name": "negligible_exp_spec",
+   "lean_name": "FloatSpec.Core.Ulp.negligible_exp_spec",
+   "verdict": "match",
+   "explanation": "The statements are the same: negligible_exp_prop fexp (negligible_exp fexp). Lean's inductive negligible_exp_prop has the same two constructors as Rocq's: negligible_None requires forall n, fexp n < n, and negligible_Some requires n <= fexp n."
+  },
+  {
+   "coq_path": "src/Core/Ulp.v",
+   "coq_name": "negligible_exp_spec'",
+   "lean_name": "FloatSpec.Core.Ulp.negligible_exp_spec'",
+   "verdict": "match",
+   "explanation": "The disjunction is identical: (negligible_exp = None and forall n, fexp n < n) or (exists n, negligible_exp = Some n and n <= fexp n). Neither side assumes Valid_exp."
+  },
+  {
+   "coq_path": "src/Core/Ulp.v",
+   "coq_name": "not_FTZ_generic_format_ulp",
+   "lean_name": "FloatSpec.Core.Ulp.not_FTZ_generic_format_ulp",
+   "verdict": "match",
+   "explanation": "Both sides assume (∀ x, generic_format (ulp x)) and conclude Exp_not_FTZ fexp. Lean's Exp_not_FTZ alias points to the Generic_fmt class with exp_not_FTZ : ∀ e, fexp (fexp e + 1) ≤ fexp e, the same as Rocq's Class. Lean adds an explicit hβ : 1 < beta, which is the content of ValidRadix (valid : 1 < beta), so it adds no real premise and the propositions are logically equivalent. It is a cosmetic redundant binder. Neither side assumes Valid_exp."
+  },
+  {
+   "coq_path": "src/Core/Ulp.v",
+   "coq_name": "pred",
+   "lean_name": "FloatSpec.Core.Ulp.pred",
+   "verdict": "match",
+   "explanation": "Types agree. Both bodies are -(succ (-x))."
+  },
+  {
+   "coq_path": "src/Core/Ulp.v",
+   "coq_name": "pred_0",
+   "lean_name": "FloatSpec.Core.Ulp.pred_0",
+   "verdict": "triple-shaped",
+   "explanation": "Legacy Hoare triple with precondition True, over the pair (pred 0, ulp 0), with postcondition r.1 = -r.2, i.e. pred 0 = -ulp 0. P -> Q matches the Rocq statement exactly."
+  },
+  {
+   "coq_path": "src/Core/Ulp.v",
+   "coq_name": "pred_le_id",
+   "lean_name": "FloatSpec.Core.Ulp.pred_le_id",
+   "verdict": "triple-shaped",
+   "explanation": "No hypotheses. The triple's precondition 1 < beta is redundant with ValidRadix, and its postcondition is pred x ≤ x. P -> Q matches the Rocq statement."
+  },
+  {
+   "coq_path": "src/Core/Ulp.v",
+   "coq_name": "pred_lt_id",
+   "lean_name": "FloatSpec.Core.Ulp.pred_lt_id",
+   "verdict": "triple-shaped",
+   "explanation": "Hypothesis x ≠ 0. The triple's precondition 1 < beta is redundant with ValidRadix, and its postcondition is pred x < x. P -> Q matches the Rocq statement."
+  },
+  {
+   "coq_path": "src/Core/Ulp.v",
+   "coq_name": "pred_lt_le",
+   "lean_name": "FloatSpec.Core.Ulp.pred_lt_le",
+   "verdict": "triple-shaped",
+   "explanation": "Hypotheses x ≠ 0 and x ≤ y. The triple's precondition 1 < beta is implied by ValidRadix, and its postcondition is pred x < y. Neither side assumes Valid_exp. P -> Q matches the Rocq statement."
+  },
+  {
+   "coq_path": "src/Core/Ulp.v",
+   "coq_name": "pred_pos",
+   "lean_name": "FloatSpec.Core.Ulp.pred_pos",
+   "verdict": "match",
+   "explanation": "Types agree: radix -> (Z->Z) -> R -> R. The bodies agree: if x = bpow (mag x - 1) the result is x - bpow (fexp (mag x - 1)), otherwise x - ulp x. Lean's `if x = ...` corresponds to Rocq's Req_bool."
+  },
+  {
+   "coq_path": "src/Core/Ulp.v",
+   "coq_name": "pred_pos_lt_id",
+   "lean_name": "FloatSpec.Core.Ulp.pred_pos_lt_id",
+   "verdict": "triple-shaped",
+   "explanation": "Hypothesis x ≠ 0. The triple's precondition 1 < beta is redundant with ValidRadix, and its postcondition is pred_pos x < x. P -> Q matches the Rocq statement."
+  },
+  {
+   "coq_path": "src/Core/Ulp.v",
+   "coq_name": "pred_pos_plus_ulp_aux1",
+   "lean_name": "FloatSpec.Core.Ulp.pred_pos_plus_ulp_aux1",
+   "verdict": "triple-shaped",
+   "explanation": "Hypotheses 0 < x, generic_format x and x ≠ beta^(mag x - 1); the Lean power corresponds to bpow. The triple's precondition 1 < beta is redundant with ValidRadix. Its postcondition is x - ulp x + ulp (x - ulp x) = x. Neither side assumes Valid_exp. P -> Q matches the Rocq statement."
+  },
+  {
+   "coq_path": "src/Core/Ulp.v",
+   "coq_name": "round_N_eq_DN",
+   "lean_name": "FloatSpec.Core.Ulp.round_N_eq_DN",
+   "verdict": "match",
+   "explanation": "Lean has Valid_exp, like Rocq. Rocq's let-bound d and u are inlined in Lean. roundR is Generic_fmt.round (scaled-mantissa rounding times bpow cexp), and rnd_floor/rnd_ceil are defined as Zfloor/Zceil. The hypothesis is x < (d+u)/2 and the conclusion is round (Znearest choice) x = d on both sides."
+  },
+  {
+   "coq_path": "src/Core/Ulp.v",
+   "coq_name": "round_N_eq_DN_pt",
+   "lean_name": "FloatSpec.Core.Ulp.round_N_eq_DN_pt",
+   "verdict": "match",
+   "explanation": "Both sides take Valid_exp, Rnd_DN_pt F x d and Rnd_UP_pt F x u (Round_pred.Rnd_*_pt are aliases of Defs.Rnd_*_pt, which have the same F f /\\ f <= x /\\ maximality shape), and x < (d+u)/2. The conclusion on both sides is round (Znearest choice) x = d."
+  },
+  {
+   "coq_path": "src/Core/Ulp.v",
+   "coq_name": "round_N_eq_UP",
+   "lean_name": "FloatSpec.Core.Ulp.round_N_eq_UP",
+   "verdict": "match",
+   "explanation": "Both sides take Valid_exp and the hypothesis (round Zfloor x + round Zceil x)/2 < x. The conclusion on both sides is round (Znearest choice) x = round Zceil x. Rocq's let-bound d and u are inlined in Lean."
+  },
+  {
+   "coq_path": "src/Core/Ulp.v",
+   "coq_name": "round_N_eq_UP_pt",
+   "lean_name": "FloatSpec.Core.Ulp.round_N_eq_UP_pt",
+   "verdict": "match",
+   "explanation": "Both sides take Valid_exp, Rnd_DN_pt F x d, Rnd_UP_pt F x u and (d+u)/2 < x. The conclusion on both sides is round (Znearest choice) x = u."
+  },
+  {
+   "coq_path": "src/Core/Ulp.v",
+   "coq_name": "round_N_eq_ties",
+   "lean_name": "FloatSpec.Core.Ulp.round_N_eq_ties",
+   "verdict": "match",
+   "explanation": "Both sides take Valid_exp and the hypothesis x - round Zfloor x <> round Zceil x - x. The conclusion on both sides is round (Znearest c1) x = round (Znearest c2) x."
+  },
+  {
+   "coq_path": "src/Core/Ulp.v",
+   "coq_name": "round_N_ge_midp",
+   "lean_name": "FloatSpec.Core.Ulp.round_N_ge_midp",
+   "verdict": "match",
+   "explanation": "Both sides take Valid_exp, generic_format u and (u + pred u)/2 < v. The conclusion on both sides is u ≤ round (Znearest choice) v, with round_to_generic = roundR = round."
+  },
+  {
+   "coq_path": "src/Core/Ulp.v",
+   "coq_name": "round_N_le_midp",
+   "lean_name": "FloatSpec.Core.Ulp.round_N_le_midp",
+   "verdict": "match",
+   "explanation": "Both sides take Valid_exp, generic_format u and v < (u + succ u)/2. The conclusion on both sides is round (Znearest choice) v ≤ u. Lean's round_to_generic is definitionally roundR, which is Rocq's round."
+  },
+  {
+   "coq_path": "src/Core/Ulp.v",
+   "coq_name": "round_N_plus_ulp_ge",
+   "lean_name": "FloatSpec.Core.Ulp.round_N_plus_ulp_ge",
+   "verdict": "match",
+   "explanation": "Both sides take Valid_exp and Monotone_exp and bind rx := round (Znearest choice2) x (let in Rocq, have in Lean). The conclusion on both sides is x ≤ round (Znearest choice1) (rx + ulp rx)."
+  },
+  {
+   "coq_path": "src/Core/Ulp.v",
+   "coq_name": "round_UP_DN_ulp",
+   "lean_name": "FloatSpec.Core.Ulp.round_UP_DN_ulp",
+   "verdict": "match",
+   "explanation": "The hypothesis is ¬generic_format x and the conclusion is round Zceil x = round Zfloor x + ulp x (rnd_ceil/rnd_floor are defined as Zceil/Zfloor, and roundR is round). Neither side assumes Valid_exp; the compiled Rocq type confirms the section Valid_exp is unused."
+  },
+  {
+   "coq_path": "src/Core/Ulp.v",
+   "coq_name": "succ",
+   "lean_name": "FloatSpec.Core.Ulp.succ",
+   "verdict": "match",
+   "explanation": "Types agree. The bodies agree: if 0 <= x the result is x + ulp x, otherwise -(pred_pos (-x)). Lean's `if 0 ≤ x` corresponds to Rocq's Rle_bool 0 x."
+  },
+  {
+   "coq_path": "src/Core/Ulp.v",
+   "coq_name": "succ_0",
+   "lean_name": "FloatSpec.Core.Ulp.succ_0",
+   "verdict": "triple-shaped",
+   "explanation": "Legacy Hoare triple with precondition True, over the pair (succ 0, ulp 0), with postcondition r.1 = r.2, i.e. succ 0 = ulp 0. Neither side assumes Valid_exp. P -> Q matches the Rocq statement exactly."
+  },
+  {
+   "coq_path": "src/Core/Ulp.v",
+   "coq_name": "succ_ge_id",
+   "lean_name": "FloatSpec.Core.Ulp.succ_ge_id",
+   "verdict": "triple-shaped",
+   "explanation": "No hypotheses. The triple's precondition 1 < beta is redundant with ValidRadix, and its postcondition is x ≤ succ x. P -> Q matches the Rocq statement."
+  },
+  {
+   "coq_path": "src/Core/Ulp.v",
+   "coq_name": "succ_gt_ge",
+   "lean_name": "FloatSpec.Core.Ulp.succ_gt_ge",
+   "verdict": "triple-shaped",
+   "explanation": "Hypotheses y ≠ 0 and x ≤ y. The triple's precondition 1 < beta is redundant with ValidRadix, and its postcondition is x < succ y. P -> Q matches the Rocq statement."
+  },
+  {
+   "coq_path": "src/Core/Ulp.v",
+   "coq_name": "succ_gt_id",
+   "lean_name": "FloatSpec.Core.Ulp.succ_gt_id",
+   "verdict": "triple-shaped",
+   "explanation": "Hypothesis x ≠ 0. The triple's precondition 1 < beta is redundant with ValidRadix, and its postcondition is x < succ x. P -> Q matches the Rocq statement."
+  },
+  {
+   "coq_path": "src/Core/Ulp.v",
+   "coq_name": "succ_le_plus_ulp",
+   "lean_name": "FloatSpec.Core.Ulp.succ_le_plus_ulp",
+   "verdict": "triple-shaped",
+   "explanation": "Legacy Hoare triple. Both sides take the same hypotheses: [Monotone_exp fexp] in Lean matches Rocq's Monotone_exp argument, and neither side has Valid_exp. The precondition 1 < beta is already implied by ValidRadix, and the postcondition r.1 <= x + r.2 with r = (succ x, ulp x) says succ x <= x + ulp x. P -> Q matches the Rocq statement."
+  },
+  {
+   "coq_path": "src/Core/Ulp.v",
+   "coq_name": "ulp",
+   "lean_name": "FloatSpec.Core.Ulp.ulp",
+   "verdict": "match",
+   "explanation": "Types agree: radix -> (Z->Z) -> R -> R, with Int + [ValidRadix] standing in for radix. The bodies agree: at x = 0, a negligible_exp witness n gives bpow (fexp n) and None gives 0; otherwise the result is bpow (cexp x). Lean's `if x = 0` corresponds to Rocq's Req_bool x 0, and cexp = fexp (mag x) on both sides."
+  },
+  {
+   "coq_path": "src/Core/Ulp.v",
+   "coq_name": "ulp_succ_pos",
+   "lean_name": "FloatSpec.Core.Ulp.ulp_succ_pos",
+   "verdict": "triple-shaped",
+   "explanation": "Hypotheses generic_format x and 0 < x. The triple's precondition 1 < beta is redundant with ValidRadix. It runs over ((ulp (succ x), ulp x), succ x, mag x), so the postcondition r.1.1 = r.1.2 ∨ r.2.1 = beta^r.2.2 unpacks to ulp (succ x) = ulp x ∨ succ x = bpow (mag x). P -> Q matches the Rocq statement."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "radix",
+   "lean_name": "FloatSpec.Core.Zaux.Radix",
+   "verdict": "match",
+   "explanation": "Lean structure {val : Int, prop : 2 <= val} : Type corresponds to Coq Record {radix_val :> Z; radix_prop : Zle_bool 2 radix_val = true} : Set. The two field propositions are equivalent and both proof fields are proof-irrelevant, so the carriers are the same subtype of Z."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "ZOdiv_mod_mult",
+   "lean_name": "FloatSpec.Core.Zaux.ZOdiv_mod_mult",
+   "verdict": "match",
+   "explanation": "Both state quot (rem n (a*b)) a = rem (quot n a) b with no hypotheses; tdiv/tmod correspond to Z.quot/Z.rem."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "ZOdiv_plus",
+   "lean_name": "FloatSpec.Core.Zaux.ZOdiv_plus",
+   "verdict": "match",
+   "explanation": "Same hypothesis 0 <= a*b and the same truncating-division identity (a+b)÷c = a÷c + b÷c + (rem a c + rem b c)÷c."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "ZOdiv_small_abs",
+   "lean_name": "FloatSpec.Core.Zaux.ZOdiv_small_abs",
+   "verdict": "match",
+   "explanation": "(natAbs a : Int) < b corresponds to Z.abs a < b. Both conclude quot a b = 0."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "ZOmod_eq",
+   "lean_name": "FloatSpec.Core.Zaux.ZOmod_eq",
+   "verdict": "match",
+   "explanation": "Int.tmod and Int.tdiv are truncating division, matching Coq's Z.rem and Z.quot. Both state rem a b = a - quot a b * b."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "ZOmod_mod_mult",
+   "lean_name": "FloatSpec.Core.Zaux.ZOmod_mod_mult",
+   "verdict": "match",
+   "explanation": "Both state rem (rem n (a*b)) b = rem n b with no hypotheses; tmod corresponds to Z.rem."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "ZOmod_small_abs",
+   "lean_name": "FloatSpec.Core.Zaux.ZOmod_small_abs",
+   "verdict": "match",
+   "explanation": "Same hypothesis |a| < b; both conclude rem a b = a."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zdiv_mod_mult",
+   "lean_name": "FloatSpec.Core.Zaux.Zdiv_mod_mult",
+   "verdict": "match",
+   "explanation": "Lean's `/` and `%` on Int are the Euclidean ediv and emod, and Coq's are the floor Z.div and Z.modulo. With 0<=a and 0<=b every divisor is nonnegative, so the two agree, including at 0. Same hypotheses, same conclusion (n mod (a*b))/a = (n/a) mod b."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zeven_Zpower_odd",
+   "lean_name": "FloatSpec.Core.Zaux.Zeven_Zpower_odd",
+   "verdict": "match",
+   "explanation": "`decide (Even b) = false` is equivalent to Coq's `Z.even b = false`. The hypotheses (0<=e and an odd base) and the conclusion (Z.even (b^e) = false) are the same, and Lean's Zpower agrees with Coq's Z.pow."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zeven_ex",
+   "lean_name": "FloatSpec.Core.Zaux.Zeven_ex",
+   "verdict": "match",
+   "explanation": "Both state exists p, x = 2*p + (if even x then 0 else 1). Lean's decidable `Even x` plays the role of Coq's `Z.even x`, and both are true exactly for even integers."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zgt_not_eq",
+   "lean_name": "FloatSpec.Core.Zaux.Zgt_not_eq",
+   "verdict": "match",
+   "explanation": "Both: y < x -> x <> y over Z."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zmod_mod_mult",
+   "lean_name": "FloatSpec.Core.Zaux.Zmod_mod_mult",
+   "verdict": "match",
+   "explanation": "Lean's Int `%` is emod and Coq's Z.modulo is the floor modulo. With 0<a and 0<=b every divisor here is >= 0, and for such divisors the two agree, including the divisor-0 case where both give n. Same hypotheses, same conclusion."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zopp_le_cancel",
+   "lean_name": "FloatSpec.Core.Zaux.Zopp_le_cancel",
+   "verdict": "match",
+   "explanation": "Both: forall x y : Z, -y <= -x -> x <= y."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zpower_Zpower_nat",
+   "lean_name": "FloatSpec.Core.Zaux.Zpower_Zpower_nat",
+   "verdict": "match",
+   "explanation": "Same hypothesis 0<=e. Coq's Zpower_nat b n is b^n (iterated multiplication), and Z.abs_nat corresponds to Int.natAbs. So the conclusion Zpower b e = b^(natAbs e) is the same."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zpower_ge_0",
+   "lean_name": "FloatSpec.Core.Zaux.Zpower_ge_0",
+   "verdict": "match",
+   "explanation": "Both state 0 <= r^e for every e, with no hypothesis. This holds because negative exponents give 0 in both Lean's Zpower and Coq's Z.pow."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zpower_gt_0",
+   "lean_name": "FloatSpec.Core.Zaux.Zpower_gt_0",
+   "verdict": "match",
+   "explanation": "For a radix r and 0 <= p, both conclude 0 < r^p."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zpower_gt_1",
+   "lean_name": "FloatSpec.Core.Zaux.Zpower_gt_1",
+   "verdict": "match",
+   "explanation": "For a radix r and 0 < p, both conclude 1 < r^p. Coq's r is the section Variable; Lean passes it explicitly and uses r.val."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zpower_gt_id",
+   "lean_name": "FloatSpec.Core.Zaux.Zpower_gt_id",
+   "verdict": "match",
+   "explanation": "Both state n < r^n for every n. For n<0 the power is 0 on both sides, so the negative case agrees."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zpower_le",
+   "lean_name": "FloatSpec.Core.Zaux.Zpower_le",
+   "verdict": "match",
+   "explanation": "Both state e1 <= e2 -> r^e1 <= r^e2, and the negative-exponent semantics are the same (0) on both sides."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zpower_lt",
+   "lean_name": "FloatSpec.Core.Zaux.Zpower_lt",
+   "verdict": "match",
+   "explanation": "Same hypotheses 0 <= e2 and e1 < e2, and the same conclusion r^e1 < r^e2."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zpower_lt_Zpower",
+   "lean_name": "FloatSpec.Core.Zaux.Zpower_lt_Zpower",
+   "verdict": "match",
+   "explanation": "Both state r^(e1-1) < r^e2 -> e1 <= e2, with no extra hypotheses."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zpower_nat_S",
+   "lean_name": "FloatSpec.Core.Zaux.Zpower_nat_S",
+   "verdict": "match",
+   "explanation": "Lean uses the Monoid power b^n in place of Coq's Zpower_nat b n, which is the same function. So b^(e+1) = b * b^e is the same statement as Zpower_nat b (S e) = b * Zpower_nat b e."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zpower_plus",
+   "lean_name": "FloatSpec.Core.Zaux.Zpower_plus",
+   "verdict": "match",
+   "explanation": "Same hypotheses 0<=k1 and 0<=k2, same conclusion. Lean `Zpower b e := if 0 <= e then b^e.toNat else 0` agrees with Coq's Z.pow: 1 at e=0, the positive power for e>0, and 0 for e<0."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zpower_pos_gt_0",
+   "lean_name": "FloatSpec.Core.Zaux.Zpower_pos_gt_0",
+   "verdict": "match",
+   "explanation": "Lean's Positive mirrors Coq's positive constructors (xH/xO/xI), and Lean `Zpower_pos v e = v ^ positiveToNat e` equals Coq Z.pow_pos. The hypothesis 0<b and the conclusion 0 < Zpower_pos b p are the same."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "cond_Zopp",
+   "lean_name": "FloatSpec.Core.Zaux.cond_Zopp",
+   "verdict": "match",
+   "explanation": "Coq's cond_Zopp is a notation for SpecFloat.cond_Zopp : bool -> Z -> Z, defined as `if b then Z.opp m else m`. Lean's Bool -> Int -> Int is defined as `if b then -x else x`, so both type and body match."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "eqbool_dep",
+   "lean_name": "FloatSpec.Core.Zaux.eqbool_dep",
+   "verdict": "match",
+   "explanation": "Types match: (P : Bool -> Sort u) -> P true -> (b : Bool) -> P b -> Prop, where Lean's Sort u is a harmless generalization of Coq's Type. The bodies also match: at true it is h1 = h2, at false it is False."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "eqbool_irrelevance",
+   "lean_name": "FloatSpec.Core.Zaux.eqbool_irrelevance",
+   "verdict": "match",
+   "explanation": "Identical: forall (b : bool) (h1 h2 : b = true), h1 = h2."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "iter_pos",
+   "lean_name": "FloatSpec.Core.Zaux.iter_pos",
+   "verdict": "match",
+   "explanation": "Coq's iter_pos is a notation for SpecFloat.iter_pos : forall A, (A->A) -> positive -> A -> A. Lean's {A : Type} -> (A->A) -> Positive -> A -> A has the same type up to an implicit binder. The bodies match constructor by constructor: xH => f x, xO p => iter p (iter p x), xI p => iter p (iter p (f x))."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "radix2",
+   "lean_name": "FloatSpec.Core.Zaux.radix2",
+   "verdict": "match",
+   "explanation": "Both have type radix and value 2: Lean ⟨2, _⟩, Coq Build_radix 2 (refl_equal _)."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "radix_gt_0",
+   "lean_name": "FloatSpec.Core.Zaux.radix_gt_0",
+   "verdict": "match",
+   "explanation": "0 < r (coerced) vs 0 < r.val, for an arbitrary radix r (the Coq section Variable)."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "radix_gt_1",
+   "lean_name": "FloatSpec.Core.Zaux.radix_gt_1",
+   "verdict": "match",
+   "explanation": "1 < r vs 1 < r.val, for an arbitrary radix r."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "radix_val_inj",
+   "lean_name": "FloatSpec.Core.Zaux.radix_val_inj",
+   "verdict": "match",
+   "explanation": "Coq's printed `r1 = r2 -> r1 = r2` hides the radix_val coercion. The source states radix_val r1 = radix_val r2 -> r1 = r2, which is exactly Lean's r1.val = r2.val -> r1 = r2."
+  },
+  {
+   "coq_path": "src/IEEE754/Binary.v",
+   "coq_name": "B2R_inj",
+   "lean_name": "B2R_inj",
+   "verdict": "match",
+   "explanation": "Lean's `binary_float` is the exact Flocq inductive, carrying a nan_pl proof and a specFloat_bounded proof. Hypotheses are is_finite_strict x = true, is_finite_strict y = true and B2R x = B2R y; conclusion x = y. These are identical to Coq, and neither side has extra section hypotheses. binary_float.is_finite_strict and binary_float.B2R match Coq's definitions."
+  },
+  {
+   "coq_path": "src/IEEE754/Binary.v",
+   "coq_name": "B2R_Bsign_inj",
+   "lean_name": "Binary.B2R_Bsign_inj",
+   "verdict": "match",
+   "explanation": "Same premises: is_finite x, is_finite y, B2R x = B2R y and Bsign x = Bsign y. Same conclusion x = y, on the exact binary_float. Binary.is_finite is true exactly on zero and finite, as in Coq. Bsign reads the sign field of every constructor, as in Coq."
+  },
+  {
+   "coq_path": "src/IEEE754/Binary.v",
+   "coq_name": "B2R_inj",
+   "lean_name": "Binary.B2R_inj",
+   "verdict": "match",
+   "explanation": "This is a namespace twin of the root B2R_inj. Binary.is_finite_strict and Binary.B2R are defined equal to the binary_float versions. Premises and conclusion are identical to Coq."
+  },
+  {
+   "coq_path": "src/IEEE754/Binary.v",
+   "coq_name": "Bcompare",
+   "lean_name": "Binary.Bcompare",
+   "verdict": "match",
+   "explanation": "Option Ordering corresponds to option comparison. The body is BinarySingleNaN.Bcompare (B2BSN x) (B2BSN y), mirroring Coq. The Lean BSN Bcompare reproduces SFcompare case by case, including the negative-negative case where it swaps the exponent-then-mantissa comparison (Coq's CompOpp)."
+  },
+  {
+   "coq_path": "src/IEEE754/Binary.v",
+   "coq_name": "Bcompare_correct",
+   "lean_name": "Binary.Bcompare_correct",
+   "verdict": "match",
+   "explanation": "Premises are is_finite on both sides, and the conclusion is Bcompare x y = some (Rcompare (B2R x) (B2R y)). RcompareOrdering (lt if x<y, eq if x=y, gt otherwise) is Coq's Rcompare on the three-constructor Ordering."
+  },
+  {
+   "coq_path": "src/IEEE754/Binary.v",
+   "coq_name": "Bcompare_swap",
+   "lean_name": "Binary.Bcompare_swap",
+   "verdict": "match",
+   "explanation": "Identical statement: Bcompare y x = match Bcompare x y with some c => some c.swap | none => none. Ordering.swap is CompOpp: lt and gt swap, eq stays eq."
+  },
+  {
+   "coq_path": "src/IEEE754/Binary.v",
+   "coq_name": "Bfrexp",
+   "lean_name": "Binary.Bfrexp",
+   "verdict": "match",
+   "explanation": "Type matches: only Prec_gt_0, as in Coq, returning binary_float × Z. The body is (lift x (BfrexpSingle (B2BSN x)).1, .2). BfrexpSingle is (SF2B (fst (Ffrexp_core_binary s m e)), snd …) on finite values and (x, -2*emax - prec) otherwise, which is Coq's BSN.Bfrexp."
+  },
+  {
+   "coq_path": "src/IEEE754/Binary.v",
+   "coq_name": "Bldexp",
+   "lean_name": "Binary.Bldexp",
+   "verdict": "match",
+   "explanation": "Type matches: Prec_gt_0, Prec_lt_emax, mode, x and k, returning binary_float. The body lifts BldexpSingle through `lift`, which preserves the input NaN, as Coq does. BldexpSingle is binary_round mode s m (e+k) on finite values and the identity elsewhere, which is Coq's BSN.Bldexp."
+  },
+  {
+   "coq_path": "src/IEEE754/Binary.v",
+   "coq_name": "Bnearbyint",
+   "lean_name": "Binary.Bnearbyint",
+   "verdict": "match",
+   "explanation": "Arguments match Coq: [Prec_lt_emax], a NaN handler `binary_float -> {x // is_nan x = true}` (the Binary-namespace BnearbyintNaNHandler abbrev), a mode, and x. The five RoundingMode constructors correspond one-to-one to Coq's mode. The body BSN2B (nearbyint_nan x) (BnearbyintSingle mode (B2BSN x)) mirrors Coq's BSN2B (nearbyint_nan x) (BSN.Bnearbyint m (B2BSN x)). BnearbyintSingle is SF2B of SFnearbyint_binary on finite values and the identity elsewhere, matching Coq's BSN.Bnearbyint."
+  },
+  {
+   "coq_path": "src/IEEE754/Binary.v",
+   "coq_name": "Bnearbyint_correct",
+   "lean_name": "Binary.Bnearbyint_correct",
+   "verdict": "match",
+   "explanation": "Same three-part conclusion as Coq: B2R result = round radix2 (FIX_exp 0) (round_mode md) (B2R x), is_finite is preserved, and a non-NaN result keeps Bsign. roundR is Coq's round. rnd_of_mode maps each mode to the same rounding function as Coq's round_mode: RNE -> Znearest (negb even), RNA -> Znearest (0 <= t), RTZ -> Ztrunc, RTN -> Zfloor, RTP -> Zceil. The Prec_lt_emax instance corresponds to Coq's explicit argument."
+  },
+  {
+   "coq_path": "src/IEEE754/Binary.v",
+   "coq_name": "Bone",
+   "lean_name": "Binary.Bone",
+   "verdict": "match",
+   "explanation": "Type matches ([Prec_gt_0] [Prec_lt_emax] -> binary_float). The body is BSN2B' BoneSingle, where BoneSingle = SF2B (binary_round RNE false 1 0). That is Coq's BSN2B' BSN.Bone with BSN.Bone = SF2B (binary_round mode_NE false 1 0)."
+  },
+  {
+   "coq_path": "src/IEEE754/Binary.v",
+   "coq_name": "Bpred",
+   "lean_name": "Binary.Bpred",
+   "verdict": "match",
+   "explanation": "Type matches. The body is lift x (BpredSingle (B2BSN x)) with BpredSingle = Bopp ∘ BsuccSingle ∘ Bopp, which is Coq's BSN.Bpred x = Bopp (Bsucc (Bopp x))."
+  },
+  {
+   "coq_path": "src/IEEE754/Binary.v",
+   "coq_name": "Bsucc",
+   "lean_name": "Binary.Bsucc",
+   "verdict": "match",
+   "explanation": "Type matches. The body is lift x (BsuccSingle (B2BSN x)). BsuccSingle follows Coq's BSN.Bsucc case by case. Zero -> finite false 1 emin. +inf -> itself. -inf -> Bopp Bmax_float. NaN -> NaN. A positive finite value -> binary_round RTP false (m+1) e. A negative finite value -> binary_round RTZ true (2m-1) (e-1), which is Coq's xO mx - 1."
+  },
+  {
+   "coq_path": "src/IEEE754/Binary.v",
+   "coq_name": "Btrunc",
+   "lean_name": "Binary.Btrunc",
+   "verdict": "match",
+   "explanation": "Type matches: binary_float prec emax -> Z. The body is BtruncSingle (B2BSN x), mirroring Coq's BSN.Btrunc (B2BSN x). BtruncSingle computes cond_Zopp s (SFnearbyint_binary_aux prec RTZ s m e) on finite values and 0 otherwise, which is the Coq BSN.Btrunc body with mode_ZR."
+  },
+  {
+   "coq_path": "src/IEEE754/Binary.v",
+   "coq_name": "Btrunc_correct",
+   "lean_name": "Binary.Btrunc_correct",
+   "verdict": "match",
+   "explanation": "The Prec_lt_emax instance corresponds to Coq's explicit Prec_lt_emax argument, and there is no Prec_gt_0 on either side. The conclusion (Btrunc x : R) = round_to_generic 2 (FIX_exp 0) Ztrunc (B2R x) matches IZR (Btrunc x) = round radix2 (FIX_exp 0) Ztrunc (B2R x). round_to_generic is the flocq_source-tagged `round` and is definitionally roundR, so it multiplies rnd(scaled_mantissa) by beta^cexp. Ztrunc takes the ceiling for negatives and the floor otherwise."
+  },
+  {
+   "coq_path": "src/IEEE754/Binary.v",
+   "coq_name": "Bulp",
+   "lean_name": "Binary.Bulp",
+   "verdict": "match",
+   "explanation": "Type matches. The Lean body is written directly rather than via lift, but it gives the same results. Zero -> finite false 1 emin. Infinity -> +inf. NaN -> the same NaN, which is what lift does. Finite -> SF2B (binary_round RTZ false 1 e), which equals Coq's binary_normalize mode_ZR 1 e false because a positive mantissa selects the binary_round branch."
+  },
+  {
+   "coq_path": "src/IEEE754/Binary.v",
+   "coq_name": "binary_normalize",
+   "lean_name": "Binary.binary_normalize",
+   "verdict": "match",
+   "explanation": "Type matches: [Prec_gt_0] [Prec_lt_emax], mode, m, e and szero, returning binary_float. The body is m=0 -> B754_zero szero; m>0 -> binary_round mode false m e; m<0 -> binary_round mode true |m| e, converted to the proof-carrying carrier. That equals Coq's BSN2B' (BSN.binary_normalize …)."
+  },
+  {
+   "coq_path": "src/IEEE754/Binary.v",
+   "coq_name": "binary_overflow",
+   "lean_name": "Binary.binary_overflow_exact",
+   "verdict": "match",
+   "explanation": "The names differ (Lean `_exact`), but the type is the same: implicit prec and emax, mode, bool, returning the exact positive-payload full_float. The body is SF2FF_exact (bsn_binary_overflow mode s): if overflow_to_inf then S754_infinity s, else S754_finite s rawOverflowMantissa (emax-prec). This is Coq's SF2FF (BSN.binary_overflow m s), with rawOverflowMantissa = Z.to_pos(2^prec - 1), falling back to 1 when prec <= 0. overflow_to_inf's mode table matches Coq's."
+  },
+  {
+   "coq_path": "src/IEEE754/Binary.v",
+   "coq_name": "binary_round",
+   "lean_name": "Binary.binary_round",
+   "verdict": "match",
+   "explanation": "Type matches: mode, bool, Positive mx and Z, returning full_float. The body is SF2FF_exact (binary_round mode sx (positiveToNat mx) ex), where the root binary_round is shl_align_fexp followed by binary_round_aux … loc_Exact. That is Coq's SF2FF (BSN.binary_round …)."
+  },
+  {
+   "coq_path": "src/IEEE754/Binary.v",
+   "coq_name": "binary_round_aux",
+   "lean_name": "Binary.binary_round_aux",
+   "verdict": "match",
+   "explanation": "Type matches. Loc is FloatSpec.Calc.Bracket.Location, with loc_Exact and loc_Inexact : Ordering, which is SpecFloat.location. The body is SF2FF_exact of the root binary_round_aux, which is Coq's BSN.binary_round_aux shape: two shr_fexp passes, then 0 -> zero, positive -> binary_fit_aux, negative -> NaN. It mirrors Coq's SF2FF (BSN.binary_round_aux …). The m=0 fallback in SF2FF_exact is unreachable, because every finite output of binary_round_aux has a positive mantissa."
+  },
+  {
+   "coq_path": "src/IEEE754/Binary.v",
+   "coq_name": "canonical_canonical_mantissa",
+   "lean_name": "Binary.canonical_canonical_mantissa",
+   "verdict": "match",
+   "explanation": "Premise: canonical_mantissa (positiveToNat mx) ex = true, which is Coq's `fexp(Zdigits2 m + e) =? e` with FLT_exp (3-emax-prec) prec. Conclusion: canonical 2 (FLT_exp (3-emax-prec) prec) {Fnum := if sx then -mx else mx, Fexp := ex}. This equals Coq's canonical radix2 (SpecFloat.fexp prec emax) {cond_Zopp sx (Zpos mx), ex}, because SpecFloat.fexp = max(e-prec, emin) with emin = 3-emax-prec, and the root FLT_exp emin prec is Core.FLT.FLT_exp = max(e-prec, emin). The Lean canonical (Fexp = fexp(mag(F2R f))) is Coq's canonical. Neither side has instance hypotheses."
+  },
+  {
+   "coq_path": "src/IEEE754/Binary.v",
+   "coq_name": "valid_binary",
+   "lean_name": "valid_binary",
+   "verdict": "match",
+   "explanation": "Same signature shape (prec emax, float, bool). The only difference is the carrier: Lean uses the Nat-payload FullFloat, Coq uses the positive-payload full_float. The body is the Coq body plus explicit `0 < m` and `0 < payload` guards. Finite values get specFloat_bounded (= SpecFloat.bounded, i.e. canonical_mantissa && e <= emax-prec, with fexp = max(e-prec, 3-emax-prec)). NaN gets Zlt_bool (digits2_pos pl) prec (= nan_pl). Zero and infinity give true. I checked in Lean that `valid_binary x.toFullFloat = valid_full_float_binary x` for every exact `full_float` x (`cases x <;> simp` closes it), so the two agree on the Coq image. Zero-mantissa junk values are rejected."
+  },
+  {
+   "coq_path": "src/IEEE754/Binary.v",
+   "coq_name": "valid_binary_SF2FF",
+   "lean_name": "valid_binary_SF2FF",
+   "verdict": "match",
+   "explanation": "Hypothesis is_nan_SF x = false; conclusion valid_binary (SF2FF x) = SpecFloat.valid_binary x. Lean's validBinarySingleNaNStandardFloat is SpecFloat.valid_binary on the Nat-mantissa StandardFloat carrier, with a `0 < m` guard standing in for Coq's positive mantissa. SF2FF agrees with Coq, including S754_nan -> F754_nan false 1. Implicit prec and emax are threaded explicitly to both sides. The only difference is the carrier, which is the same encoding used for valid_binary."
+  },
+  {
+   "coq_path": "src/IEEE754/BinarySingleNaN.v",
+   "coq_name": "Beqb",
+   "lean_name": "Beqb",
+   "verdict": "match",
+   "explanation": "Types agree. The body is `Some Eq => true`, i.e. SFeqb applied to B2SF."
+  },
+  {
+   "coq_path": "src/IEEE754/BinarySingleNaN.v",
+   "coq_name": "Bnearbyint",
+   "lean_name": "Binary.BnearbyintSingle",
+   "verdict": "match",
+   "explanation": "Types agree: Prec_lt_emax, then mode, then binary_float to binary_float. The body passes special values through and applies SF2B to SFnearbyint_binary on finite inputs, as in Coq."
+  },
+  {
+   "coq_path": "src/IEEE754/BinarySingleNaN.v",
+   "coq_name": "Bone",
+   "lean_name": "Binary.BoneSingle",
+   "verdict": "match",
+   "explanation": "Types agree (Prec_gt_0, Prec_lt_emax, then binary_float). The body is SF2B of `binary_round RNE false 1 0`, as in Coq."
+  },
+  {
+   "coq_path": "src/IEEE754/BinarySingleNaN.v",
+   "coq_name": "Bpred",
+   "lean_name": "Binary.BpredSingle",
+   "verdict": "match",
+   "explanation": "Types agree. The body is `Bopp (Bsucc (Bopp x))`, as in Coq."
+  },
+  {
+   "coq_path": "src/IEEE754/BinarySingleNaN.v",
+   "coq_name": "Bsucc",
+   "lean_name": "Binary.BsuccSingle",
+   "verdict": "match",
+   "explanation": "Types agree. The body follows Coq: zero goes to finite 1·2^emin, +inf stays, -inf goes to -Bmax_float and NaN stays. Positive finite values use `binary_round UP (mx+1) ex`. Negative finite values use `binary_round ZR (2mx-1) (ex-1)`."
+  },
+  {
+   "coq_path": "src/IEEE754/BinarySingleNaN.v",
+   "coq_name": "Btrunc",
+   "lean_name": "Binary.BtruncSingle",
+   "verdict": "match",
+   "explanation": "Both have type `binary_float prec emax -> Z` with no hypotheses. The body is `cond_Zopp s (SFnearbyint_binary_aux prec RTZ s m e)` on finite inputs and 0 otherwise, as in Coq."
+  },
+  {
+   "coq_path": "src/IEEE754/BinarySingleNaN.v",
+   "coq_name": "Btrunc_correct",
+   "lean_name": "Binary.BtruncSingle_correct",
+   "verdict": "match",
+   "explanation": "Same single Prec_lt_emax hypothesis. The conclusion `IZR (Btrunc x) = round radix2 (FIX_exp 0) Ztrunc (B2R x)` matches: `round_to_generic` is Flocq `round`, and `B754_to_R (binarySingleNaNFloatToB754 x)` is B2R x."
+  },
+  {
+   "coq_path": "src/IEEE754/BinarySingleNaN.v",
+   "coq_name": "Bcompare",
+   "lean_name": "BinarySingleNaN.Bcompare",
+   "verdict": "match",
+   "explanation": "Both have type `binary_float -> binary_float -> option comparison`, with Option Ordering on the Lean side. The body reproduces SFcompare on B2SF, including the exponent-then-mantissa lexicographic comparison, swapped for negative values."
+  },
+  {
+   "coq_path": "src/IEEE754/BinarySingleNaN.v",
+   "coq_name": "Bcompare_correct",
+   "lean_name": "BinarySingleNaN.Bcompare_correct",
+   "verdict": "match",
+   "explanation": "Same premises (both inputs finite) and the same conclusion `Bcompare f1 f2 = Some (Rcompare (B2R f1) (B2R f2))`. `RcompareOrdering` is the three-way real comparison."
+  },
+  {
+   "coq_path": "src/IEEE754/BinarySingleNaN.v",
+   "coq_name": "Bcompare_swap",
+   "lean_name": "BinarySingleNaN.Bcompare_swap",
+   "verdict": "match",
+   "explanation": "Same statement, with `Ordering.swap` in place of CompOpp."
+  },
+  {
+   "coq_path": "src/IEEE754/BinarySingleNaN.v",
+   "coq_name": "Bdiv",
+   "lean_name": "BinarySingleNaN.Bdiv",
+   "verdict": "match",
+   "explanation": "Types agree. Special cases match, and the finite case applies binary_round_aux to SFdiv_core_binary, as in Coq."
+  },
+  {
+   "coq_path": "src/IEEE754/BinarySingleNaN.v",
+   "coq_name": "Beqb",
+   "lean_name": "BinarySingleNaN.Beqb",
+   "verdict": "match",
+   "explanation": "Abbrev for the root `Beqb`, which matches. This is a duplicate anchor for the same Coq declaration."
+  },
+  {
+   "coq_path": "src/IEEE754/BinarySingleNaN.v",
+   "coq_name": "Bfma",
+   "lean_name": "BinarySingleNaN.Bfma",
+   "verdict": "match",
+   "explanation": "Types agree. The case analysis, including Bfma_szero, the Fmult and Fplus steps, and normalization, mirrors Coq Bfma."
+  },
+  {
+   "coq_path": "src/IEEE754/BinarySingleNaN.v",
+   "coq_name": "Bfrexp",
+   "lean_name": "BinarySingleNaN.Bfrexp",
+   "verdict": "match",
+   "explanation": "Types agree: only Prec_gt_0, with result binary_float × Z. On finite inputs the body pairs SF2B of the Ffrexp_core_binary result with its exponent. Otherwise it returns `(x, -2*emax - prec)`, as in Coq."
+  },
+  {
+   "coq_path": "src/IEEE754/BinarySingleNaN.v",
+   "coq_name": "Bldexp",
+   "lean_name": "BinarySingleNaN.Bldexp",
+   "verdict": "match",
+   "explanation": "Abbrev for `BldexpSingle`. Types agree (mode, x, e). The body applies SF2B to `binary_round mode sx mx (ex+e)` on finite inputs and returns x otherwise, as in Coq."
+  },
+  {
+   "coq_path": "src/IEEE754/BinarySingleNaN.v",
+   "coq_name": "Bleb",
+   "lean_name": "BinarySingleNaN.Bleb",
+   "verdict": "match",
+   "explanation": "Abbrev for the root `Bleb`, which matches. This is a duplicate anchor."
+  },
+  {
+   "coq_path": "src/IEEE754/BinarySingleNaN.v",
+   "coq_name": "Bltb",
+   "lean_name": "BinarySingleNaN.Bltb",
+   "verdict": "match",
+   "explanation": "Abbrev for the root `Bltb`, which matches. This is a duplicate anchor."
+  },
+  {
+   "coq_path": "src/IEEE754/BinarySingleNaN.v",
+   "coq_name": "Bminus",
+   "lean_name": "BinarySingleNaN.Bminus",
+   "verdict": "match",
+   "explanation": "Types agree. The body is `Bplus m x (Bopp y)`, as in Coq."
+  },
+  {
+   "coq_path": "src/IEEE754/BinarySingleNaN.v",
+   "coq_name": "Bmult",
+   "lean_name": "BinarySingleNaN.Bmult",
+   "verdict": "match",
+   "explanation": "Types agree: Prec_gt_0, Prec_lt_emax, mode, then x y, on the proof-carrying carrier (`binary_float` is an abbrev for BinarySingleNaNFloat). RoundingMode is in bijection with the five-constructor Coq mode. The special cases and the finite `binary_round_aux (xor) (mx*my) (ex+ey) loc_Exact` step match Coq."
+  },
+  {
+   "coq_path": "src/IEEE754/BinarySingleNaN.v",
+   "coq_name": "Bnearbyint",
+   "lean_name": "BinarySingleNaN.Bnearbyint",
+   "verdict": "match",
+   "explanation": "Abbrev for `Binary.BnearbyintSingle`. The types (Prec_lt_emax only) and the body match."
+  },
+  {
+   "coq_path": "src/IEEE754/BinarySingleNaN.v",
+   "coq_name": "Bnearbyint_correct",
+   "lean_name": "BinarySingleNaN.Bnearbyint_correct",
+   "verdict": "match",
+   "explanation": "Same hypothesis (Prec_lt_emax only) and the same three-part conjunction: B2R equals `round radix2 (FIX_exp 0) (round_mode md) (B2R x)`, is_finite is preserved, and the sign is preserved when the result is not NaN. `roundR` is Flocq `round`, and `rnd_of_mode` equals `round_mode` constructor by constructor (NE is Znearest(not even), plus ZR, DN, UP and NA)."
+  },
+  {
+   "coq_path": "src/IEEE754/BinarySingleNaN.v",
+   "coq_name": "Bone",
+   "lean_name": "BinarySingleNaN.Bone",
+   "verdict": "match",
+   "explanation": "Abbrev for `Binary.BoneSingle`. The types (Prec_gt_0, Prec_lt_emax) and the body (SF2B of `binary_round NE false 1 0`) match."
+  },
+  {
+   "coq_path": "src/IEEE754/BinarySingleNaN.v",
+   "coq_name": "Bplus",
+   "lean_name": "BinarySingleNaN.Bplus",
+   "verdict": "match",
+   "explanation": "Types agree. Special cases match, with mode_DN corresponding to RTN. The finite case normalizes `Fplus_naive` at `min ex ey` through `Binary.normalize` followed by B2BSN, which is equivalent to Coq's `binary_normalize`."
+  },
+  {
+   "coq_path": "src/IEEE754/BinarySingleNaN.v",
+   "coq_name": "Bpred",
+   "lean_name": "BinarySingleNaN.Bpred",
+   "verdict": "match",
+   "explanation": "Abbrev for `Binary.BpredSingle`, which matches."
+  },
+  {
+   "coq_path": "src/IEEE754/BinarySingleNaN.v",
+   "coq_name": "Bpred_pos'",
+   "lean_name": "BinarySingleNaN.Bpred_pos'",
+   "verdict": "match",
+   "explanation": "Types agree. The body mirrors Coq. The test `2*m == 2^prec.toNat` equals Coq's `mx~0 =? shift_pos (Z.to_pos prec) 1` under Prec_gt_0. It then applies `Bminus NE` with `Bldexp NE Bone (fexp (e_frexp - 1))` or Bulp'."
+  },
+  {
+   "coq_path": "src/IEEE754/BinarySingleNaN.v",
+   "coq_name": "Bsqrt",
+   "lean_name": "BinarySingleNaN.Bsqrt",
+   "verdict": "match",
+   "explanation": "Types agree. Special cases match (-inf and negative finite give NaN). The finite positive case applies binary_round_aux to SFsqrt_core_binary, as in Coq."
+  },
+  {
+   "coq_path": "src/IEEE754/BinarySingleNaN.v",
+   "coq_name": "Bsucc",
+   "lean_name": "BinarySingleNaN.Bsucc",
+   "verdict": "match",
+   "explanation": "Abbrev for `Binary.BsuccSingle`, which matches."
+  },
+  {
+   "coq_path": "src/IEEE754/BinarySingleNaN.v",
+   "coq_name": "Bsucc'",
+   "lean_name": "BinarySingleNaN.Bsucc'",
+   "verdict": "match",
+   "explanation": "Types agree; Coq takes prec and emax explicitly, which is ignored. The body mirrors Coq: `Bldexp NE Bone emin` for zero, then inf/NaN handling, `Bplus NE x (Bulp x)` for positive values and `Bopp (Bpred_pos' (Bopp x))` for negative ones."
+  },
+  {
+   "coq_path": "src/IEEE754/BinarySingleNaN.v",
+   "coq_name": "Btrunc",
+   "lean_name": "BinarySingleNaN.Btrunc",
+   "verdict": "match",
+   "explanation": "Delegates to `Binary.BtruncSingle`, which matches. The type is `binary_float -> Z` with no hypotheses."
+  },
+  {
+   "coq_path": "src/IEEE754/BinarySingleNaN.v",
+   "coq_name": "Btrunc_correct",
+   "lean_name": "BinarySingleNaN.Btrunc_correct",
+   "verdict": "match",
+   "explanation": "Same Prec_lt_emax hypothesis and the same conclusion `IZR (Btrunc x) = round radix2 (FIX_exp 0) Ztrunc (B2R x)`."
+  },
+  {
+   "coq_path": "src/IEEE754/BinarySingleNaN.v",
+   "coq_name": "Bulp",
+   "lean_name": "BinarySingleNaN.Bulp",
+   "verdict": "match",
+   "explanation": "Types agree. Zero maps to finite 1·2^emin, inf to +inf and NaN to NaN. On finite inputs `binary_round ZR false 1 e` equals Coq's `binary_normalize mode_ZR 1 e false`."
+  },
+  {
+   "coq_path": "src/IEEE754/BinarySingleNaN.v",
+   "coq_name": "Bulp'",
+   "lean_name": "BinarySingleNaN.Bulp'",
+   "verdict": "match",
+   "explanation": "Types agree. The body is `Bldexp NE Bone (fexp (snd (Bfrexp x)))`, as in Coq."
+  },
+  {
+   "coq_path": "src/IEEE754/BinarySingleNaN.v",
+   "coq_name": "binary_normalize",
+   "lean_name": "BinarySingleNaN.binary_normalize",
+   "verdict": "match",
+   "explanation": "Types agree: Prec_gt_0, Prec_lt_emax, mode, m, e, szero, then binary_float. The body goes through `Binary.normalize` (0 gives zero szero; ±m gives binary_round with the matching sign) and B2BSN, which is equivalent to Coq's SF2B of binary_round."
+  },
+  {
+   "coq_path": "src/IEEE754/BinarySingleNaN.v",
+   "coq_name": "binary_overflow",
+   "lean_name": "BinarySingleNaN.binary_overflow",
+   "verdict": "match",
+   "explanation": "Abbrev for `bsn_binary_overflow`, which matches Coq. Implicit versus explicit prec and emax is ignored."
+  },
+  {
+   "coq_path": "src/IEEE754/BinarySingleNaN.v",
+   "coq_name": "binary_round",
+   "lean_name": "BinarySingleNaN.binary_round",
+   "verdict": "match",
+   "explanation": "Same parameters, with a Positive mantissa. The body applies shl_align_fexp and then `binary_round_aux ... loc_Exact`, as in Coq."
+  },
+  {
+   "coq_path": "src/IEEE754/BinarySingleNaN.v",
+   "coq_name": "binary_round_aux",
+   "lean_name": "BinarySingleNaN.binary_round_aux",
+   "verdict": "match",
+   "explanation": "Same parameters (prec, emax, mode, sx, mx : Z, ex : Z, location) returning spec_float. The body is two shr_fexp passes around choice_mode, then zero, binary_fit_aux or NaN on the sign of the mantissa, as in Coq."
+  },
+  {
+   "coq_path": "src/IEEE754/BinarySingleNaN.v",
+   "coq_name": "Bleb",
+   "lean_name": "Bleb",
+   "verdict": "match",
+   "explanation": "Types agree. The body is `Some Lt | Some Eq => true`, i.e. SFleb."
+  },
+  {
+   "coq_path": "src/IEEE754/BinarySingleNaN.v",
+   "coq_name": "Bltb",
+   "lean_name": "Bltb",
+   "verdict": "match",
+   "explanation": "Types agree. The body is `Some Lt => true`, i.e. SFltb."
+  },
+  {
+   "coq_path": "src/IEEE754/BinarySingleNaN.v",
+   "coq_name": "Bdiv",
+   "lean_name": "FloatSpec.IEEE754.BinarySingleNaN.Source.Bdiv",
+   "verdict": "match",
+   "explanation": "Takes `Source.mode` and delegates to `BinarySingleNaN.Bdiv`. Types match."
+  },
+  {
+   "coq_path": "src/IEEE754/BinarySingleNaN.v",
+   "coq_name": "Bfma",
+   "lean_name": "FloatSpec.IEEE754.BinarySingleNaN.Source.Bfma",
+   "verdict": "match",
+   "explanation": "Takes `Source.mode` and delegates to `BinarySingleNaN.Bfma`. Types match."
+  },
+  {
+   "coq_path": "src/IEEE754/BinarySingleNaN.v",
+   "coq_name": "Bminus",
+   "lean_name": "FloatSpec.IEEE754.BinarySingleNaN.Source.Bminus",
+   "verdict": "match",
+   "explanation": "Takes `Source.mode` and delegates to `BinarySingleNaN.Bminus`. Types match."
+  },
+  {
+   "coq_path": "src/IEEE754/BinarySingleNaN.v",
+   "coq_name": "Bmult",
+   "lean_name": "FloatSpec.IEEE754.BinarySingleNaN.Source.Bmult",
+   "verdict": "match",
+   "explanation": "Takes the source-faithful `Source.mode`, whose five constructors are in bijection with RoundingMode, and delegates to `BinarySingleNaN.Bmult`. Types match Coq exactly."
+  },
+  {
+   "coq_path": "src/IEEE754/BinarySingleNaN.v",
+   "coq_name": "Bplus",
+   "lean_name": "FloatSpec.IEEE754.BinarySingleNaN.Source.Bplus",
+   "verdict": "match",
+   "explanation": "Takes `Source.mode` and delegates to `BinarySingleNaN.Bplus`. Types match."
+  },
+  {
+   "coq_path": "src/IEEE754/BinarySingleNaN.v",
+   "coq_name": "Bsqrt",
+   "lean_name": "FloatSpec.IEEE754.BinarySingleNaN.Source.Bsqrt",
+   "verdict": "match",
+   "explanation": "Takes `Source.mode` and delegates to `BinarySingleNaN.Bsqrt`. Types match."
+  },
+  {
+   "coq_path": "src/IEEE754/BinarySingleNaN.v",
+   "coq_name": "SF2B'",
+   "lean_name": "SF2B'",
+   "verdict": "real-mismatch",
+   "explanation": "The codomain is different. Coq returns `binary_float prec emax`, whose finite constructor carries `bounded m e = true`. The anchored Lean `SF2B'` returns the raw, unindexed `B754`, so prec and emax are phantom and the result carries no boundedness invariant. The body itself mirrors Coq: it checks `0<m && specFloat_bounded m e` and falls back to NaN. A faithful counterpart exists as `BinarySingleNaN.SF2B'` (abbrev for `standardFloatToBinarySingleNaNFloat'`, which returns `BinarySingleNaNFloat prec emax`), but it has no anchor. The `flocq_source` anchor should move to that declaration.",
+   "resolution": "anchor moved to BinarySingleNaN.SF2B' : {prec emax : Int} -> StandardFloat -> BinarySingleNaNFloat prec emax, matching Rocq's forall prec emax : Z, spec_float -> binary_float prec emax"
+  },
+  {
+   "coq_path": "src/IEEE754/BinarySingleNaN.v",
+   "coq_name": "SFnearbyint_binary",
+   "lean_name": "SFnearbyint_binary",
+   "verdict": "match",
+   "explanation": "Same parameters (prec, emax, mode, sx, mx, ex) returning spec_float/StandardFloat. The mantissa is Nat instead of positive, which only widens the domain. The body matches the Coq case split on the sign of the aux result: shl_align_fexp, then finite, NaN or zero."
+  },
+  {
+   "coq_path": "src/IEEE754/BinarySingleNaN.v",
+   "coq_name": "SFnearbyint_binary_aux",
+   "lean_name": "SFnearbyint_binary_aux",
+   "verdict": "match",
+   "explanation": "Same parameters (prec, mode, sx, mx, ex) and result Z. The mantissa is Nat instead of positive, which widens the domain; the function agrees on positive inputs. The body mirrors Coq, including the `ex < -prec` zero-sticky record {0,false,true}, `shr`, and `choice_mode`."
+  },
+  {
+   "coq_path": "src/IEEE754/BinarySingleNaN.v",
+   "coq_name": "binary_fit_aux_correct",
+   "lean_name": "binary_fit_aux_correct",
+   "verdict": "match",
+   "explanation": "Same Prec_gt_0 and Prec_lt_emax hypotheses, same canonical_mantissa premise, and the same conclusion: validity plus the if-Rlt_bool finite/overflow split. The extra `0 < mx` premise only encodes Coq's `mx : positive`. Lean `canonical_mantissa` uses `Zdigits 2 m`, which equals Coq's `digits2_pos` for positive m."
+  },
+  {
+   "coq_path": "src/IEEE754/BinarySingleNaN.v",
+   "coq_name": "binary_overflow",
+   "lean_name": "bsn_binary_overflow",
+   "verdict": "match",
+   "explanation": "Types agree (prec, emax, mode, sign) and no hypotheses on either side. `rawOverflowMantissa prec` reproduces `Z.to_pos (2^prec - 1)`, including the value 1 when prec ≤ 0. The overflow_to_inf mode mapping matches."
+  },
+  {
+   "coq_path": "src/IEEE754/BinarySingleNaN.v",
+   "coq_name": "valid_binary_B2SF",
+   "lean_name": "valid_binary_B2SF",
+   "verdict": "match",
+   "explanation": "Same statement on the proof-carrying carrier. `validBinarySingleNaNStandardFloat` is Coq `valid_binary` (finite: bounded; else true), plus a `0<m` check needed only because Lean uses a Nat mantissa. `binarySingleNaNFloatToStandardFloat` is `B2SF`."
+  },
+  {
+   "coq_path": "src/IEEE754/Bits.v",
+   "coq_name": "binary_float_of_bits",
+   "lean_name": "FloatSpec.IEEE754.Bits.Source.binary_float_of_bits",
+   "verdict": "match",
+   "explanation": "Types agree: forall mw ew, 0 < mw -> 0 < ew -> mw + 1 < 2^(ew-1) -> Z -> binary_float (mw+1) (2^(ew-1)). The hypotheses are the same three, in the same order. The body is fullFloatToBinaryFloat (binary_float_of_bits_aux mw ew x) applied to binary_float_of_bits_aux_correct, the analogue of Coq's FF2B with the aux correctness proof."
+  },
+  {
+   "coq_path": "src/IEEE754/Bits.v",
+   "coq_name": "binary_float_of_bits_aux",
+   "lean_name": "FloatSpec.IEEE754.Bits.Source.binary_float_of_bits_aux",
+   "verdict": "match",
+   "explanation": "Types agree: Z -> Z -> Z -> full_float. The body matches Coq's: split_bits, then e = 0 matched on mx (0 is zero, pos is finite at emin, neg is NaN false 1). Then e = 2^ew - 1 matched on mx (0 is infinity, pos is NaN with that payload, neg is NaN false 1). Otherwise match mx + 2^mw (pos is finite at ex + emin - 1, anything else is NaN false 1). Lean matches Int as ofNat 0 / ofNat (n+1) / negSucc, which corresponds to Z0 / Zpos / Zneg. Coq and Lean produced identical full_float outputs on 23 inputs, including negative x and mw = -1."
+  },
+  {
+   "coq_path": "src/IEEE754/Bits.v",
+   "coq_name": "bits_of_binary_float",
+   "lean_name": "FloatSpec.IEEE754.Bits.Source.bits_of_binary_float",
+   "verdict": "match",
+   "explanation": "Types agree: forall mw ew : Z, binary_float (mw+1) (2^(ew-1)) -> Z, where Lean's Zpower 2 (ew-1) equals Coq's Z.pow. The body matches Coq's printed body branch for branch: zero gives join 0 0; infinity gives join 0 (2^ew-1); NaN gives join (Zpos pl) (2^ew-1). For finite values, m = Zpos mx - 2^mw; if 0 <= m it is join m (ex - emin + 1), otherwise join (Zpos mx) 0. Here emin = 3 - emax - prec, as in SpecFloat.emin."
+  },
+  {
+   "coq_path": "src/IEEE754/Bits.v",
+   "coq_name": "join_bits",
+   "lean_name": "FloatSpec.IEEE754.Bits.Source.join_bits",
+   "verdict": "match",
+   "explanation": "Types agree: Z -> Z -> bool -> Z -> Z -> Z, with integer widths as in Coq. The body is zshiftl ((if s then Zpower 2 ew else 0) + e) mw + m. Zpower 2 w is 0 for w<0, the same as Coq's Z.pow. zshiftl divides by 2^-n for a negative count, and Lean's Euclidean division by a positive divisor equals Coq's floor division in Z.shiftr. Negative-width cases evaluate identically in Coq and Lean, e.g. join_bits (-2) 3 true (-5) 7 = -2."
+  },
+  {
+   "coq_path": "src/IEEE754/Bits.v",
+   "coq_name": "split_bits",
+   "lean_name": "FloatSpec.IEEE754.Bits.Source.split_bits",
+   "verdict": "match",
+   "explanation": "Types agree: Z -> Z -> Z -> bool * Z * Z. The body is (decide (mm*em <= x), x % mm, (x / mm) % em) with mm = Zpower 2 mw and em = Zpower 2 ew. Lean's emod/ediv agree with Coq's floor mod/div for positive divisors. For divisor 0 both give x mod 0 = x and x / 0 = 0 (Coq behavior checked). Five edge cases, including negative widths and negative x, gave identical triples."
+  },
+  {
+   "coq_path": "src/IEEE754/Bits.v",
+   "coq_name": "split_bits_of_binary_float",
+   "lean_name": "FloatSpec.IEEE754.Bits.Source.split_bits_of_binary_float",
+   "verdict": "match",
+   "explanation": "Types agree: forall mw ew : Z, binary_float (mw+1) (2^(ew-1)) -> bool * Z * Z. The body is a branch-for-branch copy of Coq's printed body, with the same triples, the same emin = 3 - 2^(ew-1) - (mw+1), and the same 0 <= Zpos mx - 2^mw test."
+  },
+  {
+   "coq_path": "src/IEEE754/Bits.v",
+   "coq_name": "b32_compare",
+   "lean_name": "b32_compare",
+   "verdict": "match",
+   "explanation": "Both types are binary32 -> binary32 -> option comparison, with Lean's Option Ordering standing in for option comparison. Coq is Binary.Bcompare 24 128 = SFcompare (B2SF _) (B2SF _). Lean is Binary.Bcompare, which is BinarySingleNaN.Bcompare (B2BSN x) (B2BSN y). That function matches SFcompare case by case: NaN gives none; infinities by sign; finite vs zero by sign; zero vs zero gives Eq; for finite pairs, differing signs decide, otherwise compare exponent then mantissa, swapped for negatives. On a 17x17 grid of boundary bit patterns, Lean and Coq returned the same results."
+  },
+  {
+   "coq_path": "src/IEEE754/Bits.v",
+   "coq_name": "b32_div",
+   "lean_name": "b32_div",
+   "verdict": "match",
+   "explanation": "Types agree: mode -> binary32 -> binary32 -> binary32. Both bodies are Bdiv 24 128 applied to binop_nan_pl32. Bit outputs agree with Coq on 13x13 inputs x 5 modes, including division by +-0 and inf/inf."
+  },
+  {
+   "coq_path": "src/IEEE754/Bits.v",
+   "coq_name": "b32_fma",
+   "lean_name": "b32_fma",
+   "verdict": "match",
+   "explanation": "Types agree: mode -> binary32^3 -> binary32. Both bodies are Bfma 24 128 applied to ternop_nan_pl32, and Lean's ternop_nan_pl32 matches the source's first-NaN-wins order. Bit outputs agree with Coq on 9^3 inputs x 2 modes (NE, DN)."
+  },
+  {
+   "coq_path": "src/IEEE754/Bits.v",
+   "coq_name": "b32_minus",
+   "lean_name": "b32_minus",
+   "verdict": "match",
+   "explanation": "Types agree: mode -> binary32 -> binary32 -> binary32. Both bodies are Bminus 24 128 applied to binop_nan_pl32. Bit outputs agree with Coq on 9x9 inputs x 5 modes."
+  },
+  {
+   "coq_path": "src/IEEE754/Bits.v",
+   "coq_name": "b32_mult",
+   "lean_name": "b32_mult",
+   "verdict": "match",
+   "explanation": "Types agree: mode -> binary32 -> binary32 -> binary32. Both bodies are Bmult 24 128 applied to binop_nan_pl32. Bit outputs agree with Coq on 9x9 inputs x 5 modes."
+  },
+  {
+   "coq_path": "src/IEEE754/Bits.v",
+   "coq_name": "b32_plus",
+   "lean_name": "b32_plus",
+   "verdict": "match",
+   "explanation": "Types agree: mode -> binary32 -> binary32 -> binary32. Both bodies are Bplus 24 128 applied to binop_nan_pl32. Lean's binop_nan_pl32 is source-shaped: the first NaN wins, otherwise the default NaN. Bit outputs agree with Coq on 13x13 inputs x 5 modes, including inf-inf, NaN payloads, overflow and ties."
+  },
+  {
+   "coq_path": "src/IEEE754/Bits.v",
+   "coq_name": "b32_pred",
+   "lean_name": "b32_pred",
+   "verdict": "match",
+   "explanation": "Types agree: binary32 -> binary32. Coq is Binary.Bpred 24 128, which lifts BSN.Bpred and keeps NaN inputs unchanged. Lean does not call Binary.Bpred; it reimplements it on the bit encoding. NaN is returned unchanged, +0 goes to -min subnormal, a positive value goes to bits-1, -inf stays fixed, and any other negative goes to bits+1. By case analysis this matches Coq's Bpred = Bopp o Bsucc o Bopp. I evaluated both on +-0, +-min subnormal, max subnormal, min normal, +-max, +-inf, NaNs and +-1: all 17 results were identical in Coq and Lean. The equality is not proven in Lean; the repo only has an execution test against Lean's Binary.Bpred."
+  },
+  {
+   "coq_path": "src/IEEE754/Bits.v",
+   "coq_name": "b32_sqrt",
+   "lean_name": "b32_sqrt",
+   "verdict": "match",
+   "explanation": "Types agree: mode -> binary32 -> binary32, with Lean's RoundingMode having 5 constructors that map to NE/ZR/DN/UP/NA. Both bodies are Bsqrt 24 128 applied to unop_nan_pl32. Lean's unop_nan_pl32 and default_nan_pl32 (payload iter_nat xO 22 xH) match Coq. Lean discharges an extra Monotone_exp instance locally, which does not change the type. Coq and Lean agree on 13 inputs x 5 modes."
+  },
+  {
+   "coq_path": "src/IEEE754/Bits.v",
+   "coq_name": "b32_succ",
+   "lean_name": "b32_succ",
+   "verdict": "match",
+   "explanation": "Types agree: binary32 -> binary32. Coq is Binary.Bsucc 24 128, which lifts BSN.Bsucc and keeps NaNs. Lean reimplements it on bits: NaN is kept, -0 goes to +min subnormal, a positive value goes to bits+1 (so max goes to +inf), +inf stays fixed, and a negative goes to bits-1 (so -min subnormal goes to -0 and -inf to -max). This matches Coq's Bsucc: mode_UP on (mx+1) for positives and mode_ZR on (2mx-1, ex-1) for negatives. Coq and Lean gave the same outputs on all 17 boundary patterns. The equality is tested, not proven."
+  },
+  {
+   "coq_path": "src/IEEE754/Bits.v",
+   "coq_name": "b64_compare",
+   "lean_name": "b64_compare",
+   "verdict": "match",
+   "explanation": "Types agree: binary64 -> binary64 -> option comparison, with Ordering for comparison. Coq is Binary.Bcompare 53 1024 and Lean delegates to the same Binary.Bcompare, i.e. BSN.Bcompare composed with B2BSN, which is SFcompare-shaped. Same body shape as b32_compare, which was checked against Coq."
+  },
+  {
+   "coq_path": "src/IEEE754/Bits.v",
+   "coq_name": "b64_div",
+   "lean_name": "b64_div",
+   "verdict": "match",
+   "explanation": "Types agree: mode -> binary64 -> binary64 -> binary64. Both bodies are Bdiv 53 1024 applied to binop_nan_pl64. Bit outputs agree with Coq on 9x9 inputs x 5 modes."
+  },
+  {
+   "coq_path": "src/IEEE754/Bits.v",
+   "coq_name": "b64_fma",
+   "lean_name": "b64_fma",
+   "verdict": "match",
+   "explanation": "Types agree: mode -> binary64^3 -> binary64. Both bodies are Bfma 53 1024 applied to ternop_nan_pl64. Bit outputs agree with Coq on 9^3 inputs x 2 modes (NE, UP)."
+  },
+  {
+   "coq_path": "src/IEEE754/Bits.v",
+   "coq_name": "b64_minus",
+   "lean_name": "b64_minus",
+   "verdict": "match",
+   "explanation": "Types agree: mode -> binary64 -> binary64 -> binary64. Both bodies are Bminus 53 1024 applied to binop_nan_pl64. Bit outputs agree with Coq on 9x9 inputs x 5 modes."
+  },
+  {
+   "coq_path": "src/IEEE754/Bits.v",
+   "coq_name": "b64_mult",
+   "lean_name": "b64_mult",
+   "verdict": "match",
+   "explanation": "Types agree: mode -> binary64 -> binary64 -> binary64. Both bodies are Bmult 53 1024 applied to binop_nan_pl64. Bit outputs agree with Coq on 9x9 inputs x 5 modes."
+  },
+  {
+   "coq_path": "src/IEEE754/Bits.v",
+   "coq_name": "b64_plus",
+   "lean_name": "b64_plus",
+   "verdict": "match",
+   "explanation": "Types agree: mode -> binary64 -> binary64 -> binary64. Both bodies are Bplus 53 1024 applied to binop_nan_pl64. Bit outputs agree with Coq on 9x9 inputs x 5 modes."
+  },
+  {
+   "coq_path": "src/IEEE754/Bits.v",
+   "coq_name": "b64_pred",
+   "lean_name": "b64_pred",
+   "verdict": "match",
+   "explanation": "Types agree: binary64 -> binary64. Coq is Binary.Bpred 53 1024. Lean uses the same bits+-1 reimplementation as b32_pred, with NaN kept, +0 going to -min subnormal and -inf fixed. Coq and Lean gave the same outputs on 13 boundary patterns: +-0, +-min subnormal, +-max, +-inf, NaN, +-1, and max subnormal / min normal. The equality is tested, not proven."
+  },
+  {
+   "coq_path": "src/IEEE754/Bits.v",
+   "coq_name": "b64_sqrt",
+   "lean_name": "b64_sqrt",
+   "verdict": "match",
+   "explanation": "Types agree: mode -> binary64 -> binary64. Both bodies are Bsqrt 53 1024 applied to unop_nan_pl64, and the default payload iter_nat xO 51 xH matches Coq. Coq and Lean agree on 9 inputs x 5 modes."
+  },
+  {
+   "coq_path": "src/IEEE754/Bits.v",
+   "coq_name": "b64_succ",
+   "lean_name": "b64_succ",
+   "verdict": "match",
+   "explanation": "Types agree: binary64 -> binary64. Coq is Binary.Bsucc 53 1024. Lean uses the same bit-level reimplementation as b32_succ. Outputs agree with Coq on the 13 binary64 boundary patterns, including -min subnormal going to -0, max going to +inf, and -inf going to -max. The equality is tested, not proven."
+  },
+  {
+   "coq_path": "src/Pff/Pff.v",
+   "coq_name": "FNPred",
+   "lean_name": "FloatSpec.Pff.Source.FNPred",
+   "verdict": "match",
+   "explanation": "Both bodies are FPred b radix precision (Fnormalize radix b precision x)."
+  },
+  {
+   "coq_path": "src/Pff/Pff.v",
+   "coq_name": "FNSucc",
+   "lean_name": "FloatSpec.Pff.Source.FNSucc",
+   "verdict": "match",
+   "explanation": "Both bodies are FSucc b radix precision (Fnormalize radix b precision x)."
+  },
+  {
+   "coq_path": "src/Pff/Pff.v",
+   "coq_name": "FNeven",
+   "lean_name": "FloatSpec.Pff.Source.FNeven",
+   "verdict": "match",
+   "explanation": "Both bodies are Feven (Fnormalize radix b precision p)."
+  },
+  {
+   "coq_path": "src/Pff/Pff.v",
+   "coq_name": "FNodd",
+   "lean_name": "FloatSpec.Pff.Source.FNodd",
+   "verdict": "match",
+   "explanation": "Both bodies are Fodd (Fnormalize radix b precision p)."
+  },
+  {
+   "coq_path": "src/Pff/Pff.v",
+   "coq_name": "FPred",
+   "lean_name": "FloatSpec.Pff.Source.FPred",
+   "verdict": "match",
+   "explanation": "The branch structure mirrors FSucc and is identical to Coq: -pPred vNum, then nNormMin, with the nested -dExp test."
+  },
+  {
+   "coq_path": "src/Pff/Pff.v",
+   "coq_name": "FSucc",
+   "lean_name": "FloatSpec.Pff.Source.FSucc",
+   "verdict": "match",
+   "explanation": "The branch structure is identical: Fnum = pPred vNum (vNum - 1), then Fnum = -nNormMin, with the nested Fexp = -dExp test. The results use the same succ and pred values."
+  },
+  {
+   "coq_path": "src/Pff/Pff.v",
+   "coq_name": "Fabs",
+   "lean_name": "FloatSpec.Pff.Source.Fabs",
+   "verdict": "match",
+   "explanation": "float -> float. Coq's Z.abs (Fnum x) equals Lean's ↑(Fnum.natAbs), and the exponent is unchanged."
+  },
+  {
+   "coq_path": "src/Pff/Pff.v",
+   "coq_name": "Fabs_Fzero",
+   "lean_name": "FloatSpec.Pff.Source.Fabs_Fzero",
+   "verdict": "match",
+   "explanation": "forall x, ~is_Fzero x -> ~is_Fzero (Fabs x)."
+  },
+  {
+   "coq_path": "src/Pff/Pff.v",
+   "coq_name": "Fabs_correct",
+   "lean_name": "FloatSpec.Pff.Source.Fabs_correct",
+   "verdict": "match",
+   "explanation": "Both sides have the hypothesis 0 < radix, then FtoR radix (Fabs x) = |FtoR radix x|."
+  },
+  {
+   "coq_path": "src/Pff/Pff.v",
+   "coq_name": "Fbound",
+   "lean_name": "FloatSpec.Pff.Source.Fbound",
+   "verdict": "match",
+   "explanation": "Coq's record {vNum : positive; dExp : N} is isomorphic to Lean's {vNum dExp : Nat; vNum_pos : 0 < vNum}. The positivity proof field encodes Coq's positive."
+  },
+  {
+   "coq_path": "src/Pff/Pff.v",
+   "coq_name": "Fbounded",
+   "lean_name": "FloatSpec.Pff.Source.Fbounded",
+   "verdict": "match",
+   "explanation": "Both bodies are |Fnum| < vNum /\\ -dExp <= Fexp, with the same integer casts."
+  },
+  {
+   "coq_path": "src/Pff/Pff.v",
+   "coq_name": "Fcanonic",
+   "lean_name": "FloatSpec.Pff.Source.Fcanonic",
+   "verdict": "match",
+   "explanation": "Both bodies are Fnormal \\/ Fsubnormal."
+  },
+  {
+   "coq_path": "src/Pff/Pff.v",
+   "coq_name": "Fdigit",
+   "lean_name": "FloatSpec.Pff.Source.Fdigit",
+   "verdict": "match",
+   "explanation": "Both bodies are digit radix (Fnum p)."
+  },
+  {
+   "coq_path": "src/Pff/Pff.v",
+   "coq_name": "Feven",
+   "lean_name": "FloatSpec.Pff.Source.Feven",
+   "verdict": "match",
+   "explanation": "Coq uses Pff's Even (exists z1, z = 2*z1). Lean uses Mathlib's Even (exists r, a = r + r). The two are equivalent."
+  },
+  {
+   "coq_path": "src/Pff/Pff.v",
+   "coq_name": "Fle",
+   "lean_name": "FloatSpec.Pff.Source.Fle",
+   "verdict": "match",
+   "explanation": "Z -> float -> float -> Prop. Both bodies are FtoR radix x <= FtoR radix y."
+  },
+  {
+   "coq_path": "src/Pff/Pff.v",
+   "coq_name": "Fminus",
+   "lean_name": "FloatSpec.Pff.Source.Fminus",
+   "verdict": "match",
+   "explanation": "Both bodies are Fplus radix x (Fopp y)."
+  },
+  {
+   "coq_path": "src/Pff/Pff.v",
+   "coq_name": "Fminus_correct",
+   "lean_name": "FloatSpec.Pff.Source.Fminus_correct",
+   "verdict": "match",
+   "explanation": "Both sides have the hypothesis 0 < radix, then FtoR (Fminus radix x y) = FtoR x - FtoR y."
+  },
+  {
+   "coq_path": "src/Pff/Pff.v",
+   "coq_name": "Fmult",
+   "lean_name": "FloatSpec.Pff.Source.Fmult",
+   "verdict": "match",
+   "explanation": "float -> float -> float. Both bodies are {Fnum x * Fnum y, Fexp x + Fexp y}."
+  },
+  {
+   "coq_path": "src/Pff/Pff.v",
+   "coq_name": "Fmult_correct",
+   "lean_name": "FloatSpec.Pff.Source.Fmult_correct",
+   "verdict": "match",
+   "explanation": "Both sides have the hypothesis 0 < radix, then FtoR (Fmult x y) = FtoR x * FtoR y. Coq closes this proof with Defined, which is why its kind is Definition; the statement is the same."
+  },
+  {
+   "coq_path": "src/Pff/Pff.v",
+   "coq_name": "Fnormal",
+   "lean_name": "FloatSpec.Pff.Source.Fnormal",
+   "verdict": "match",
+   "explanation": "Both bodies are Fbounded b p /\\ vNum <= |radix * Fnum p|."
+  },
+  {
+   "coq_path": "src/Pff/Pff.v",
+   "coq_name": "Fnormalize",
+   "lean_name": "FloatSpec.Pff.Source.Fnormalize",
+   "verdict": "match",
+   "explanation": "Both bodies are: if Fnum = 0 then {0, -dExp}, else Fshift radix (min (precision - Fdigit) (abs_nat (dExp + Fexp))). Nat subtraction truncates on both sides."
+  },
+  {
+   "coq_path": "src/Pff/Pff.v",
+   "coq_name": "Fodd",
+   "lean_name": "FloatSpec.Pff.Source.Fodd",
+   "verdict": "match",
+   "explanation": "Coq uses Pff's Odd (exists z1, z = 2*z1 + 1). Lean uses Mathlib's Odd, which is the same form."
+  },
+  {
+   "coq_path": "src/Pff/Pff.v",
+   "coq_name": "Fopp",
+   "lean_name": "FloatSpec.Pff.Source.Fopp",
+   "verdict": "match",
+   "explanation": "float -> float. Both bodies are {Fnum := -Fnum x; Fexp := Fexp x}."
+  },
+  {
+   "coq_path": "src/Pff/Pff.v",
+   "coq_name": "Fopp_Fopp",
+   "lean_name": "FloatSpec.Pff.Source.Fopp_Fopp",
+   "verdict": "match",
+   "explanation": "forall p, Fopp (Fopp p) = p."
+  },
+  {
+   "coq_path": "src/Pff/Pff.v",
+   "coq_name": "Fopp_correct",
+   "lean_name": "FloatSpec.Pff.Source.Fopp_correct",
+   "verdict": "match",
+   "explanation": "forall radix x, FtoR radix (Fopp x) = -FtoR radix x. Neither side has a hypothesis."
+  },
+  {
+   "coq_path": "src/Pff/Pff.v",
+   "coq_name": "Fplus",
+   "lean_name": "FloatSpec.Pff.Source.Fplus",
+   "verdict": "match",
+   "explanation": "Z -> float -> float -> float. Both bodies use the common exponent min(Fexp x, Fexp y) and scale each mantissa by radix^natAbs(Fexp - min), which Coq writes as Zpower_nat. The bodies agree."
+  },
+  {
+   "coq_path": "src/Pff/Pff.v",
+   "coq_name": "Fplus_correct",
+   "lean_name": "FloatSpec.Pff.Source.Fplus_correct",
+   "verdict": "match",
+   "explanation": "Both sides have the hypothesis 0 < radix, then FtoR (Fplus radix x y) = FtoR x + FtoR y."
+  },
+  {
+   "coq_path": "src/Pff/Pff.v",
+   "coq_name": "Fshift",
+   "lean_name": "FloatSpec.Pff.Source.Fshift",
+   "verdict": "match",
+   "explanation": "Both bodies are {Fnum * radix^n, Fexp - n}; Coq writes the power as Zpower_nat."
+  },
+  {
+   "coq_path": "src/Pff/Pff.v",
+   "coq_name": "Fsubnormal",
+   "lean_name": "FloatSpec.Pff.Source.Fsubnormal",
+   "verdict": "match",
+   "explanation": "Both bodies are Fbounded /\\ Fexp = -dExp /\\ |radix * Fnum| < vNum."
+  },
+  {
+   "coq_path": "src/Pff/Pff.v",
+   "coq_name": "FtoR",
+   "lean_name": "FloatSpec.Pff.Source.FtoR",
+   "verdict": "match",
+   "explanation": "Z -> float -> R. Coq's Fnum * powerRZ radix Fexp equals Lean's Fnum * radix ^ Fexp (zpow). Both use the same negative-exponent inverse and the same 0^0 = 1 convention."
+  },
+  {
+   "coq_path": "src/Pff/Pff.v",
+   "coq_name": "Fulp",
+   "lean_name": "FloatSpec.Pff.Source.Fulp",
+   "verdict": "match",
+   "explanation": "Fbound -> Z -> nat -> float -> R. Both bodies are radix raised to Fexp (Fnormalize radix b precision p): powerRZ in Coq, zpow in Lean."
+  },
+  {
+   "coq_path": "src/Pff/Pff.v",
+   "coq_name": "Fzero",
+   "lean_name": "FloatSpec.Pff.Source.Fzero",
+   "verdict": "match",
+   "explanation": "Z -> float. Both bodies are {Fnum := 0; Fexp := x}."
+  },
+  {
+   "coq_path": "src/Pff/Pff.v",
+   "coq_name": "FzeroisReallyZero",
+   "lean_name": "FloatSpec.Pff.Source.FzeroisReallyZero",
+   "verdict": "match",
+   "explanation": "forall radix z, FtoR radix (Fzero z) = 0. Neither side has a radix hypothesis."
+  },
+  {
+   "coq_path": "src/Pff/Pff.v",
+   "coq_name": "MinExList",
+   "lean_name": "FloatSpec.Pff.Source.MinExList",
+   "verdict": "match",
+   "explanation": "Same disjunction: every f in L has r < FtoR f, or some min in L has FtoR min <= r and bounds every f in L with FtoR f <= r. Lean's ∃ min ∈ L is Coq's exists min, In min L /\\ ..."
+  },
+  {
+   "coq_path": "src/Pff/Pff.v",
+   "coq_name": "MonotoneP",
+   "lean_name": "FloatSpec.Pff.Source.MonotoneP",
+   "verdict": "match",
+   "explanation": "Both bodies are forall p q p' q', p < q -> P p p' -> P q q' -> FtoR p' <= FtoR q'."
+  },
+  {
+   "coq_path": "src/Pff/Pff.v",
+   "coq_name": "RND_EvenClosest",
+   "lean_name": "FloatSpec.Pff.Source.RND_EvenClosest",
+   "verdict": "match",
+   "explanation": "Both sides compare |Max - r| <= |Min - r| (Coq's Rle_dec). A strict inequality (Rle_lt_or_eq_dec) returns Max. On a tie, Coq's OddEvenDec (Fnum Min) returns Max when Odd and Min when Even, which is Lean's 'if Odd lower.Fnum then upper else lower'. Otherwise both return Min. All three Coq deciders choose between mutually exclusive alternatives, so the two bodies agree extensionally."
+  },
+  {
+   "coq_path": "src/Pff/Pff.v",
+   "coq_name": "RND_Max",
+   "lean_name": "FloatSpec.Pff.Source.RND_Max",
+   "verdict": "match",
+   "explanation": "Both bodies are: if 0 <= r then RND_Max_Pos r else Fopp (RND_Min_Pos (-r))."
+  },
+  {
+   "coq_path": "src/Pff/Pff.v",
+   "coq_name": "RND_Max_Pos",
+   "lean_name": "FloatSpec.Pff.Source.RND_Max_Pos",
+   "verdict": "match",
+   "explanation": "Both bodies are: if r = FtoR (RND_Min_Pos r) then RND_Min_Pos r else FSucc (RND_Min_Pos r), with the same explicit radix."
+  },
+  {
+   "coq_path": "src/Pff/Pff.v",
+   "coq_name": "RND_Min",
+   "lean_name": "FloatSpec.Pff.Source.RND_Min",
+   "verdict": "match",
+   "explanation": "Both bodies are: if 0 <= r then RND_Min_Pos r else Fopp (RND_Max_Pos (-r))."
+  },
+  {
+   "coq_path": "src/Pff/Pff.v",
+   "coq_name": "RND_Min_Pos",
+   "lean_name": "FloatSpec.Pff.Source.RND_Min_Pos",
+   "verdict": "match",
+   "explanation": "Both test FtoR (firstNormalPos) <= r. The exponent is e = IRNDD (ln r / ln radix + (-Z.pred p)). Lean writes the last term as -(p) + 1 and uses rocqLn, which is Rocq's ln with value 0 for inputs <= 0. The branches are {IRNDD (r * radix^(-e)), e} and {IRNDD (r * radix^dExp), -dExp}. IRNDD is Z.pred (up r) in Coq and Int.floor in Lean. The bodies agree."
+  },
+  {
+   "coq_path": "src/Pff/Pff.v",
+   "coq_name": "UniqueP",
+   "lean_name": "FloatSpec.Pff.Source.UniqueP",
+   "verdict": "match",
+   "explanation": "Both bodies are forall r p q, P r p -> P r q -> FtoR radix p = FtoR radix q."
+  },
+  {
+   "coq_path": "src/Pff/Pff.v",
+   "coq_name": "boundNat",
+   "lean_name": "FloatSpec.Pff.Source.boundNat",
+   "verdict": "match",
+   "explanation": "Z -> nat -> float, with body {Fnum := 1; Fexp := digit radix n}. Lean calls _root_.digit (pffDigit), which uses Core Zdigits when 1 < radix and the structural Pff algorithm otherwise. Lean evaluation gave the same results as the structural Source.digit for radix 0..39 with q in [-1500,1500], and for radix in [-20,19] with q in [-150,150]."
+  },
+  {
+   "coq_path": "src/Pff/Pff.v",
+   "coq_name": "boundR",
+   "lean_name": "FloatSpec.Pff.Source.boundR",
+   "verdict": "match",
+   "explanation": "Z -> R -> float. Coq's boundNat radix (Z.abs_nat (up (Rabs r))) matches Lean's boundNat radix (natAbs (floor |r| + 1)), because Coq's up x is floor x + 1 (the archimed characterization)."
+  },
+  {
+   "coq_path": "src/Pff/Pff.v",
+   "coq_name": "boundRrOpp",
+   "lean_name": "FloatSpec.Pff.Source.boundRrOpp",
+   "verdict": "match",
+   "explanation": "forall radix r, boundR radix r = boundR radix (-r)."
+  },
+  {
+   "coq_path": "src/Pff/Pff.v",
+   "coq_name": "digit",
+   "lean_name": "FloatSpec.Pff.Source.digit",
+   "verdict": "match",
+   "explanation": "Z -> Z -> nat. Lean's fuel, log2|q| + 1, equals the non-xH depth of Coq's xO q', and each step does the same r > v test before multiplying r by the radix. Coq and Lean gave identical results (3,4,4,1,3,3,3,1) on inputs that include radix 1, 0 and -2."
+  },
+  {
+   "coq_path": "src/Pff/Pff.v",
+   "coq_name": "firstNormalPos",
+   "lean_name": "FloatSpec.Pff.Source.firstNormalPos",
+   "verdict": "match",
+   "explanation": "Both bodies are {nNormMin radix precision, -dExp b}."
+  },
+  {
+   "coq_path": "src/Pff/Pff.v",
+   "coq_name": "float",
+   "lean_name": "FloatSpec.Pff.Source.float",
+   "verdict": "match",
+   "explanation": "The Coq record {Fnum : Z; Fexp : Z} in Set is the same as the Lean structure {Fnum Fexp : Int} in Type. Lean also derives DecidableEq and Repr."
+  },
+  {
+   "coq_path": "src/Pff/Pff.v",
+   "coq_name": "is_Fzero",
+   "lean_name": "FloatSpec.Pff.Source.is_Fzero",
+   "verdict": "match",
+   "explanation": "float -> Prop. Both bodies are Fnum x = 0."
+  },
+  {
+   "coq_path": "src/Pff/Pff.v",
+   "coq_name": "is_Fzero_rep1",
+   "lean_name": "FloatSpec.Pff.Source.is_Fzero_rep1",
+   "verdict": "match",
+   "explanation": "forall radix x, is_Fzero x -> FtoR radix x = 0. The hypotheses and conclusion are the same."
+  },
+  {
+   "coq_path": "src/Pff/Pff.v",
+   "coq_name": "is_Fzero_rep2",
+   "lean_name": "FloatSpec.Pff.Source.is_Fzero_rep2",
+   "verdict": "match",
+   "explanation": "Both sides have the explicit hypothesis 1 < radix, then FtoR radix x = 0 -> is_Fzero x."
+  },
+  {
+   "coq_path": "src/Pff/Pff.v",
+   "coq_name": "nNormMin",
+   "lean_name": "FloatSpec.Pff.Source.nNormMin",
+   "verdict": "match",
+   "explanation": "Coq's dependent type (fun _ => Z) (pred precision) reduces to Z. Both bodies are Zpower_nat radix (pred precision)."
+  },
+  {
+   "coq_path": "src/Pff/Pff.v",
+   "coq_name": "Pdiv",
+   "lean_name": "Pdiv",
+   "verdict": "match",
+   "explanation": "The types match. Lean computes (p/q, p%q) through Nat div/mod and encodes zero as None. Coq uses a structural binary Fixpoint instead. By Coq's Pdiv_correct (p = q*quot + rem with rem < q) and uniqueness of Euclidean division, the two are extensionally equal. Spot evaluation in Rocq and Lean gave identical outputs for p = 1..12."
+  },
+  {
+   "coq_path": "src/Pff/Pff.v",
+   "coq_name": "ZdividesP",
+   "lean_name": "ZdividesP",
+   "verdict": "match",
+   "explanation": "Coq's sumbool {Zdivides n m}+{~Zdivides n m} corresponds to Lean's Decidable (Zdivides n m). Zdivides is the same on both sides (exists q, n = m*q). The Lean decision uses m ∣ n, which unfolds to the same existential."
+  },
+  {
+   "coq_path": "src/Pff/Pff.v",
+   "coq_name": "Zquotient",
+   "lean_name": "Zquotient",
+   "verdict": "match",
+   "explanation": "Z -> Z -> Z. Coq's sign-case analysis over Pdiv of the magnitudes is truncated division with x/0 = 0, which is Lean's Int.tdiv. Checked on (7,-2), (-7,2), (-7,-2), (7,0) and (0,3): both sides give -3, -3, 3, 0, 0."
+  },
+  {
+   "coq_path": "src/Pff/Pff.v",
+   "coq_name": "maxDiv",
+   "lean_name": "maxDiv",
+   "verdict": "match",
+   "explanation": "Z -> Z -> nat -> nat. The bodies agree: 0 maps to 0, and S p' gives p if v is divisible by Zpower_nat radix p, otherwise maxDiv v p'. Lean's Zpower_nat n k is n^k."
+  },
+  {
+   "coq_path": "src/Pff/Pff.v",
+   "coq_name": "oZ",
+   "lean_name": "oZ",
+   "verdict": "match",
+   "explanation": "Option Positive -> Nat. The bodies agree: None maps to 0, and Some p maps to nat_of_P p (= val+1), which is Coq's Pos.to_nat p. Lean's Positive ({val : Nat}, read as val+1) is isomorphic to Coq's positive."
+  },
+  {
+   "coq_path": "src/Pff/Pff.v",
+   "coq_name": "oZ1",
+   "lean_name": "oZ1",
+   "verdict": "match",
+   "explanation": "Option Positive -> Int. None maps to 0 and Some z maps to Zpos z, the same as Lean's Int.ofNat (nat_of_P p)."
+  },
+  {
+   "coq_path": "src/Pff/Pff2Flocq.v",
+   "coq_name": "mult_error_FLT_ge_bpow'",
+   "lean_name": "mult_error_FLT_ge_bpow'",
+   "verdict": "match",
+   "explanation": "The two statements say the same thing. Both assume a and b are in FLT format and that a*b = 0 or bpow beta e <= |a*b|. Both conclude that the nearest-even rounding error of a*b is either 0 or at least bpow beta (e+1-2*prec) in absolute value. The Lean side's `let rnd := Znearest (fun t => !decide (2 ∣ t))` is Coq's `ZnearestE`, which is defined as `Znearest (fun x => negb (Z.even x))` in Round_NE.v:26; `decide (2 ∣ t)` holds exactly when `Z.even t` is true. Lean's `Znearest` (Generic_fmt.lean:1927) uses the same Rcompare/floor/ceil case split as Coq's. `roundR` (Generic_fmt.lean:2639) computes `(rnd (scaled_mantissa x)) * beta^(cexp x)`, which is Coq's `round`, i.e. F2R of that float. Lean also takes an extra explicit hypothesis `hβ : 1 < beta`. It adds no real assumption, because the `[ValidRadix beta]` instance already contains `valid : 1 < beta` (Defs.lean:46), just as Coq's `radix` type carries 2 <= beta. The Coq lemma has no other section hypotheses (for example, no prec > 0). The Lean proof uses only the standard axioms and no sorry."
+  },
+  {
+   "coq_path": "src/Pff/Pff2FlocqAux.v",
+   "coq_name": "bdouble",
+   "lean_name": "bdouble",
+   "verdict": "match",
+   "explanation": "Both sides have type Fbound. Both bodies are `make_bound radix2 53 1074`. Evaluation in both systems gives vNum = 9007199254740992 (2^53) and dExp = 1074."
+  },
+  {
+   "coq_path": "src/Pff/Pff2FlocqAux.v",
+   "coq_name": "bsingle",
+   "lean_name": "bsingle",
+   "verdict": "match",
+   "explanation": "Both sides have type Fbound. Both bodies are `make_bound radix2 24 (-149)`. Evaluation in both systems gives vNum = 16777216 (2^24) and dExp = 149."
+  },
+  {
+   "coq_path": "src/Pff/Pff2FlocqAux.v",
+   "coq_name": "make_bound",
+   "lean_name": "make_bound",
+   "verdict": "match",
+   "explanation": "The types agree. Coq has `radix -> Z -> Z -> Pff.Fbound`. Lean has `(beta : ℤ) → ℤ → ℤ → autoParam (1 < beta) → Fbound`, and the autoParam `1 < beta` is the Lean stand-in for Coq's radix subtype (2 <= beta). The section hypothesis precisionNotZero (1 < p) is not used by the Coq definition, so neither side has it in its type. The two Fbound records carry the same information. Coq has vNum : positive and dExp : N. Lean has Int fields with proofs of vNum_pos and dExp_nonneg. The bodies also agree. Coq's vNum is Z.to_pos (beta^p), which is 1 when p < 0 because Z.pow gives 0 and Z.to_pos 0 = 1, and beta^p otherwise. Lean's vNum is `if p < 0 then 1 else Zpower_nat beta p.natAbs`. Coq's dExp is Z.abs_N E. Lean's is `if E ≤ 0 then -E else E`, which is |E|. Evaluation confirms this: for make_bound 2 (-3) (-5), both systems return vNum = 1 and dExp = 5."
+  },
+  {
+   "coq_path": "src/Prop/Div_sqrt_error.v",
+   "coq_name": "format_REM",
+   "lean_name": "format_REM",
+   "verdict": "match",
+   "explanation": "Same hypotheses (Valid_exp, Monotone_exp, Valid_rnd rnd; (|x/y| < /2 -> rnd(x/y) = 0); format x; format y) and the same conclusion, format (x - IZR(rnd(x/y))*y). Coq's Valid_rnd argument is explicit and Lean's is an instance, which is only an implicitness difference. The extra hβ : 1 < beta is redundant with ValidRadix. On division by zero, Lean's x/0 = 0 agrees with Coq's Rinv 0 = 0 (Rinv_0 in modern stdlib)."
+  },
+  {
+   "coq_path": "src/Prop/Div_sqrt_error.v",
+   "coq_name": "format_REM_N",
+   "lean_name": "format_REM_N",
+   "verdict": "match",
+   "explanation": "Same hypotheses (Valid_exp, Monotone_exp, choice : Z -> bool, format x, format y) and the same conclusion, format (x - IZR(Znearest choice (x/y))*y). Lean's Generic_fmt.Znearest compares x - Zfloor x with 1/2 through Rcompare. It returns floor, ceil, or (if choice floor then ceil else floor), mirroring Coq's Znearest. The extra hβ : 1 < beta is redundant with ValidRadix."
+  },
+  {
+   "coq_path": "src/Prop/Div_sqrt_error.v",
+   "coq_name": "format_REM_ZR",
+   "lean_name": "format_REM_ZR",
+   "verdict": "match",
+   "explanation": "Same hypotheses (Valid_exp, Monotone_exp, format x, format y) and the same conclusion, format (x - IZR(Ztrunc(x/y))*y). Lean's Ztrunc (Raux.Ztrunc x = if x < 0 then ceil x else floor x, returning Int) matches Coq's Ztrunc. The extra hβ : 1 < beta is redundant with ValidRadix."
+  },
+  {
+   "coq_path": "src/Prop/Div_sqrt_error.v",
+   "coq_name": "format_REM_aux",
+   "lean_name": "format_REM_aux",
+   "verdict": "match",
+   "explanation": "Section contexts Valid_exp, Monotone_exp and Valid_rnd rnd are typeclass instances. Premises format x, format y, 0 <= x, 0 < y and (0 < x/y < /2 -> rnd(x/y) = 0) are identical; Lean's 1/2 equals Coq's /2. The conclusion format (x - IZR(rnd(x/y))*y) is the same. Lean's Valid_rnd has the same two fields as Coq (Zrnd_le monotonicity, Zrnd_IZR). The extra hβ : 1 < beta is redundant with ValidRadix."
+  },
+  {
+   "coq_path": "src/Prop/Div_sqrt_error.v",
+   "coq_name": "generic_format_plus_prec",
+   "lean_name": "generic_format_plus_prec",
+   "verdict": "match",
+   "explanation": "Same hypotheses (fexp e <= e - prec for all e, x = F2R fx, y = F2R fy, |x+y| < bpow(prec+Fexp fx), |x+y| < bpow(prec+Fexp fy)) and the same conclusion, generic_format (x+y). Lean's extra hβ : 1 < beta is implied by [ValidRadix beta], whose field is 1 < beta, so it corresponds to Coq's radix invariant. _root_.F2R is an abbrev for Defs.F2R = Fnum * beta^Fexp, and Raux.bpow beta e = (beta:ℝ)^e, both as in Coq. Prec_gt_0 is omitted on both sides."
+  },
+  {
+   "coq_path": "src/Prop/Div_sqrt_error.v",
+   "coq_name": "sqrt_error_N_FLX_aux1",
+   "lean_name": "sqrt_error_N_FLX_aux1",
+   "verdict": "match",
+   "explanation": "Same premises, generic_format (FLX_exp prec) x and 0 < x. Same conclusion: there exist mu : ℝ and e : Int with format mu, x = mu * beta^(2e) and 1 <= mu < beta^2. The source writes (beta:ℝ)^(2*e) and (beta:ℝ)^(2:Int), which unfold definitionally to Raux.bpow beta (2*e) and bpow beta 2. The extra hβ : 1 < beta is redundant with ValidRadix. Prec_gt_0 is omitted, as in Coq's printed type."
+  },
+  {
+   "coq_path": "src/Prop/Mult_error.v",
+   "coq_name": "mult_bpow_exact_FLT",
+   "lean_name": "mult_bpow_exact_FLT",
+   "verdict": "match",
+   "explanation": "Same statement: format x -> emin + prec - mag beta x <= e -> format (x * bpow e) in FLT_exp emin prec. The FLT_exp order is correct (Compat abbrev = max (e - prec) emin). mag is Compat's alias for Raux.mag, which is floor(log|x|/log beta)+1 and 1 at zero, the same as Coq's concrete mag witness. The extra hβ : 1 < beta is implied by [ValidRadix beta]."
+  },
+  {
+   "coq_path": "src/Prop/Mult_error.v",
+   "coq_name": "mult_bpow_exact_FLX",
+   "lean_name": "mult_bpow_exact_FLX",
+   "verdict": "match",
+   "explanation": "Same statement: generic_format beta (FLX_exp prec) x -> generic_format beta (FLX_exp prec) (x * bpow beta e). Lean's extra hypothesis hβ : 1 < beta adds no condition, because [ValidRadix beta] already gives it (ValidRadix.valid : 1 < beta), just as Coq's radix gives 2 <= beta. The root-level FLX_exp in Compat.lean is an abbrev for FloatSpec.Core.FLX.FLX_exp prec, which is e - prec, the same as Coq. Raux.bpow is (beta:ℝ)^e. Coq's section Context Prec_gt_0 is unused and absent from the compiled type, and Lean omits it too (omit [Prec_gt_0 prec])."
+  },
+  {
+   "coq_path": "src/Prop/Mult_error.v",
+   "coq_name": "mult_bpow_pos_exact_FLT",
+   "lean_name": "mult_bpow_pos_exact_FLT",
+   "verdict": "match",
+   "explanation": "Same statement: format x -> 0 <= e -> format (x * bpow e) for FLT_exp emin prec (the argument order is correct via the Compat abbrev). The only difference is the redundant hβ : 1 < beta, which [ValidRadix beta] already gives. Prec_gt_0 is absent on both sides."
+  },
+  {
+   "coq_path": "src/Prop/Mult_error.v",
+   "coq_name": "mult_error_FLT_ge_bpow",
+   "lean_name": "mult_error_FLT_ge_bpow",
+   "verdict": "match",
+   "explanation": "Same hypotheses and conclusion: Valid_rnd rnd (a Lean instance, a Coq Context), format x, format y, bpow(e+2*prec-1) <= |x*y|, and round(x*y) - x*y <> 0. The conclusion is bpow e <= |round(x*y) - x*y| on both sides. The FLT_exp argument order is correct: Compat's FLT_exp emin prec unfolds to FloatSpec.Core.FLT.FLT_exp prec emin = max (e - prec) emin, which is Coq's FLT_exp emin prec. Lean's roundR is rnd(scaled_mantissa) * beta^cexp, the same as Coq's round = F2R (Float (rnd (scaled_mantissa x)) (cexp x)). Lean's Valid_rnd has the same two fields (Zrnd_le, Zrnd_IZR). The extra hβ : 1 < beta follows from ValidRadix. Prec_gt_0 is absent on both sides."
+  },
+  {
+   "coq_path": "src/Prop/Plus_error.v",
+   "coq_name": "ex_shift",
+   "lean_name": "ex_shift",
+   "verdict": "match",
+   "explanation": "Neither side has typeclass premises: Coq's compiled type has no Valid_exp, Monotone_exp or Valid_rnd, and Lean has none either. Same premises: generic_format x and e <= cexp x. Same conclusion: exists m : Z, x = IZR m * bpow e. Lean writes (m:R) * (beta:R)^e, a real zpow that equals Coq's bpow. The extra hβ is redundant."
+  },
+  {
+   "coq_path": "src/Prop/Plus_error.v",
+   "coq_name": "plus_error_le_l",
+   "lean_name": "plus_error_le_l",
+   "verdict": "match",
+   "explanation": "Same instance: Valid_exp only, with Monotone_exp and Exp_not_FTZ omitted. Same premises: choice, format x, format y. Same conclusion: |round(Znearest choice)(x+y) - (x+y)| <= |x|. Lean's `Znearest choice` is the root compat abbrev for a Calc.Round.Mode whose rnd field is Generic_fmt.Znearest choice. Calc.Round.round beta fexp mode x is defined as roundR beta fexp mode.rnd x. So the term unfolds to Coq's round beta fexp (Znearest choice) (x+y). Generic_fmt.Znearest has the same floor/ceil/Rcompare-with-1/2/choice body as Coq's. The extra hβ is redundant."
+  },
+  {
+   "coq_path": "src/Prop/Plus_error.v",
+   "coq_name": "plus_error_le_r",
+   "lean_name": "plus_error_le_r",
+   "verdict": "match",
+   "explanation": "Same as plus_error_le_l, with bound |y| in place of |x|. The Mode wrapper (Znearest choice : Mode, with rnd = Generic_fmt.Znearest choice) unfolds to the same rounding as Coq. Same premises: Valid_exp, format x, format y. Same conclusion. The extra hβ is redundant."
+  },
+  {
+   "coq_path": "src/Prop/Plus_error.v",
+   "coq_name": "round_plus_F2R",
+   "lean_name": "round_plus_F2R",
+   "verdict": "match",
+   "explanation": "Same instances: Valid_exp, Monotone_exp, Valid_rnd. Same premises: format x, format y, x <> 0. Same conclusion: exists m, round(x+y) = F2R(Float m (cexp (x / IZR beta))). Lean's division x / (beta:R) is Coq's x / IZR beta. The extra hβ is redundant."
+  },
+  {
+   "coq_path": "src/Prop/Plus_error.v",
+   "coq_name": "round_plus_eq_0",
+   "lean_name": "round_plus_eq_0",
+   "verdict": "match",
+   "explanation": "Same instances: Valid_exp, Exp_not_FTZ, Valid_rnd. Same premises: format x, format y, round(x+y) = 0. Same conclusion: x+y = 0. The extra hβ is redundant with ValidRadix."
+  },
+  {
+   "coq_path": "src/Prop/Plus_error.v",
+   "coq_name": "round_plus_ge_ulp",
+   "lean_name": "round_plus_ge_ulp",
+   "verdict": "match",
+   "explanation": "Coq's type carries one more instance, Exp_not_FTZ fexp. Lean drops it explicitly (`omit [Exp_not_FTZ fexp]`). This does not change the meaning. Both libraries derive Exp_not_FTZ from Valid_exp + Monotone_exp through a global instance: Coq's `monotone_exp_not_FTZ` (Generic_fmt.v:1551) and Lean's instance `monotone_exp_not_FTZ` (Generic_fmt.lean:3594). So under the shared Valid_exp/Monotone_exp/Valid_rnd context the two statements are equivalent, and Lean's is formally no weaker. Same premises: format x, format y, round(x+y) <> 0. Same conclusion: ulp(x / beta) <= |round(x+y)|. The root `ulp` is an abbrev of Core.Ulp.ulp. The extra hβ is redundant."
+  },
+  {
+   "coq_path": "src/Prop/Plus_error.v",
+   "coq_name": "round_plus_neq_0",
+   "lean_name": "round_plus_neq_0",
+   "verdict": "match",
+   "explanation": "Same instances: Valid_exp, Exp_not_FTZ, Valid_rnd. Same premises: format x, format y, x+y <> 0. Same conclusion: round(x+y) <> 0. The extra hβ is redundant with ValidRadix."
+  },
+  {
+   "coq_path": "src/Prop/Plus_error.v",
+   "coq_name": "round_plus_neq_0_aux",
+   "lean_name": "round_plus_neq_0_aux",
+   "verdict": "match",
+   "explanation": "Same instances: Valid_exp, Exp_not_FTZ, Valid_rnd (Monotone_exp is correctly omitted). Same premises: cexp x <= cexp y, format x, format y, 0 < x+y. Same conclusion: round(x+y) <> 0. The root `cexp` and `generic_format` are abbrevs of the Generic_fmt versions. The extra hβ : 1 < beta is implied by ValidRadix."
+  },
+  {
+   "coq_path": "src/Prop/Plus_error.v",
+   "coq_name": "round_repr_same_exp",
+   "lean_name": "round_repr_same_exp",
+   "verdict": "match",
+   "explanation": "Same parameters: beta, fexp, rnd, [Valid_rnd rnd], m e. Neither side takes Valid_exp; Lean drops it with `omit`, and the compiled Coq type has no Valid_exp because the proof never uses it. The conclusion is the same: exists m', round(F2R(m,e)) = F2R(m',e). Lean's roundR computes (rnd (scaled_mantissa x) : R) * beta^(cexp x), which is Coq's `round` = F2R(Float (rnd (scaled_mantissa x)) (cexp x)). The only extra premise, hβ : 1 < beta, already follows from [ValidRadix beta] (valid : 1 < beta), so it adds nothing."
+  },
+  {
+   "coq_path": "src/Prop/Relative.v",
+   "coq_name": "relative_error_le_conversion",
+   "lean_name": "relative_error_le_conversion",
+   "verdict": "match",
+   "explanation": "Same shape as the lt version: Valid_rnd is the only context premise, then 0 ≤ b and |round x - x| ≤ b*|x|, concluding ∃ eps, |eps| ≤ b ∧ round x = x*(1+eps). The Lean wrapper `Calc.Round.round beta fexp (Mode.ofRnd rnd)` is checked equal by rfl to Generic_fmt.round, which is roundR, which is Coq's round. No hypotheses are added or missing."
+  },
+  {
+   "coq_path": "src/Prop/Relative.v",
+   "coq_name": "relative_error_le_conversion_inv",
+   "lean_name": "relative_error_le_conversion_inv",
+   "verdict": "match",
+   "explanation": "The compiled Coq type has no Valid_rnd or Valid_exp, because neither is used in the proof and the section closure drops them. Lean's exported lemma likewise takes an arbitrary rnd : ℝ → ℤ with no instance, and omits Valid_exp. Premise: ∃ eps, |eps| ≤ b ∧ roundR beta fexp rnd x = x*(1+eps). Conclusion: |roundR x - x| ≤ b*|x|. roundR is rfl-equal to Generic_fmt.round, which matches Coq round. A separate lemma, `_from_valid_rnd_payload`, has an extra Valid_rnd premise but is not the anchored one."
+  },
+  {
+   "coq_path": "src/Prop/Relative.v",
+   "coq_name": "relative_error_le_conversion_round_inv",
+   "lean_name": "relative_error_le_conversion_round_inv",
+   "verdict": "match",
+   "explanation": "Neither side has a Valid_rnd or Valid_exp premise. Premise: ∃ eps, |eps| ≤ b ∧ x = round x * (1+eps). Conclusion: |round x - x| ≤ b * |round x|. Lean's roundR is rfl-equal to Generic_fmt.round, which is Coq's round. The argument structure is identical."
+  },
+  {
+   "coq_path": "src/Prop/Relative.v",
+   "coq_name": "relative_error_lt_conversion",
+   "lean_name": "relative_error_lt_conversion",
+   "verdict": "match",
+   "explanation": "Same hypotheses and conclusion. Coq takes Valid_rnd rnd from section Context, and Lean takes it as an instance. Valid_exp appears on neither side: Coq's section closure drops it and Lean uses `omit`. Hypotheses are 0 < b and x ≠ 0 → |round x - x| < b*|x|; the conclusion is ∃ eps, |eps| < b ∧ round x = x*(1+eps). Lean writes the rounding as `Calc.Round.round beta fexp (Mode.ofRnd rnd) x`, a Lean-only wrapper. `lake env lean` confirms by rfl that it equals Core.Generic_fmt.round beta fexp rnd x, which unfolds to roundR = IZR(rnd(scaled_mantissa x)) * beta^(cexp x). That is Coq's F2R (Float (rnd (scaled_mantissa x)) (cexp x)). mag is floor+1 on both sides, and cexp and scaled_mantissa agree."
+  },
+  {
+   "coq_path": "src/Prop/Relative.v",
+   "coq_name": "u_ro_pos",
+   "lean_name": "u_ro_pos",
+   "verdict": "match",
+   "explanation": "Both conclude 0 ≤ u_ro beta prec. The u_ro definitions agree: Lean has (1/2) * beta^(-prec+1) (rfl-checked) and Coq has /2 * bpow (-prec+1). Coq's unused Prec_gt_0 is dropped by the section closure, and Lean omits it too. Lean has one extra explicit premise, hβ : 1 < beta, which is redundant. It is exactly ValidRadix.valid from the [ValidRadix beta] instance already present, and it matches Coq's radix_prop (2 ≤ beta). So the proposition is logically equivalent. Only the calling API differs: callers must pass hβ. The same redundant hβ appears on the sibling lemmas u_ro_lt_1 and u_rod1pu_ro_pos, among others. This could be cleaned up but is not a fidelity mismatch."
+  },
+  {
+   "coq_path": "src/Prop/Round_odd.v",
+   "coq_name": "Fm",
+   "lean_name": "Fm",
+   "verdict": "match",
+   "explanation": "Coq's hypotheses are Even_beta, Valid_exp fexp, Exists_NE beta fexp, fexpe_fexp, Hd, Cd, Hu, Cu and 0 < x. Lean has each one: Ebeta ∃ b, beta = 2*b is equivalent to Z.even beta = true, [Valid_exp fexp] is an instance argument, and hNE : Exists_NE is an explicit argument whose Lean class body (beta % 2 ≠ 0 ∨ ...) matches Coq's (Z.even beta = false ∨ ...). hrel matches fexpe_fexp; Hd, Cd, Hu, Cu and xPos match directly. Neither side requires Valid_exp fexpe: Coq drops valid_expe as unused, and Lean omits it. Both conclude generic_format beta fexpe ((F2R d + F2R u)/2), written as m in Lean. Lean's extra hβ : 1 < beta is already implied by ValidRadix."
+  },
+  {
+   "coq_path": "src/Prop/Round_odd.v",
+   "coq_name": "Rnd_odd_pt_opp_inv",
+   "lean_name": "Rnd_odd_pt_opp_inv",
+   "verdict": "match",
+   "explanation": "Both state Rnd_odd_pt beta fexp (-x) (-f) -> Rnd_odd_pt beta fexp x f, with no Valid_exp on either side. The Lean Rnd_odd_pt (Round_odd.lean:34) follows the Coq definition clause for clause: format f, and either f = x or (DN or UP witness) plus a canonical g with f = F2R g. The one encoding difference is the odd-mantissa test: Lean's g.Fnum % 2 ≠ 0 is equivalent to Coq's Z.even (Fnum g) = false. Rnd_DN_pt, Rnd_UP_pt and canonical (Fexp f = fexp (mag (F2R f))) are also the same as in Coq."
+  },
+  {
+   "coq_path": "src/Prop/Round_odd.v",
+   "coq_name": "Zm",
+   "lean_name": "Zm",
+   "verdict": "match",
+   "explanation": "Zm has the same hypothesis set as Fm, matching Coq in the same way: Even_beta via Ebeta, Valid_exp fexp, Exists_NE, fexpe_fexp, Hd, Cd, Hu, Cu, 0 < x, and no Valid_exp fexpe. Coq concludes exists g, F2R g = m /\\ canonical beta fexpe g /\\ Z.even (Fnum g) = true. Lean concludes ∃ g, F2R g = m beta d u ∧ canonical beta fexpe g ∧ g.Fnum % 2 = 0. The two conclusions are equivalent: the Lean m is the Coq midpoint, and g.Fnum % 2 = 0 is equivalent to Z.even (Fnum g) = true. Lean's extra hβ is already implied by ValidRadix."
+  },
+  {
+   "coq_path": "src/Prop/Round_odd.v",
+   "coq_name": "d_le_m",
+   "lean_name": "d_le_m",
+   "verdict": "match",
+   "explanation": "Both take Rnd_DN_pt format x (F2R d) and Rnd_UP_pt format x (F2R u). Coq concludes F2R d <= (F2R d + F2R u)/2. Lean concludes F2R d <= m beta d u, and m is defined (Round_odd.lean:1519) as (F2R d + F2R u) / 2, exactly Coq's section-local m. Neither side has any other section hypothesis (Cd, Cu, xPos, Valid_exp)."
+  },
+  {
+   "coq_path": "src/Prop/Round_odd.v",
+   "coq_name": "generic_format_fexpe_fexp",
+   "lean_name": "generic_format_fexpe_fexp",
+   "verdict": "match",
+   "explanation": "Both take (forall e, fexpe e <= fexp e - 2) and prove generic_format beta fexp x -> generic_format beta fexpe x. Neither side requires Valid_exp or Even_beta: the Coq section hypotheses are unused and dropped, and the Lean side omits them. Lean's extra hβ : 1 < beta is already implied by [ValidRadix beta], so it adds nothing."
+  },
+  {
+   "coq_path": "src/Prop/Round_odd.v",
+   "coq_name": "m_eq_0",
+   "lean_name": "m_eq_0",
+   "verdict": "match",
+   "explanation": "Coq's hypotheses are Z.even beta = true, Rnd_UP_pt format x (F2R u), canonical beta fexp u and 0 = F2R d. Lean takes the same set, with Ebeta : ∃ b, beta = 2*b in place of Z.even beta = true (equivalent over Int). Both conclude ∃ f, F2R f = (F2R d + F2R u)/2 ∧ Fexp f = fexp (mag beta (F2R u)) - 1, where Lean writes the midpoint as m. Neither side requires Valid_exp. Lean's extra hβ : 1 < beta is already implied by ValidRadix."
+  },
+  {
+   "coq_path": "src/Prop/Round_odd.v",
+   "coq_name": "m_le_u",
+   "lean_name": "m_le_u",
+   "verdict": "match",
+   "explanation": "Same hypotheses as Coq (a DN witness d and an UP witness u, nothing else). The conclusion m beta d u <= F2R u unfolds to (F2R d + F2R u)/2 <= F2R u, which is exactly Coq's statement."
+  },
+  {
+   "coq_path": "src/Prop/Round_odd.v",
+   "coq_name": "round_odd_opp",
+   "lean_name": "round_odd_opp",
+   "verdict": "match",
+   "explanation": "Lean states round beta fexp oddMode (-x) = -round beta fexp oddMode x. Calc.Round.round with oddMode unfolds to roundR beta fexp Zodd, and roundR is rnd(scaled_mantissa x) * beta^(cexp x), which is Coq's round = F2R (Float (rnd (scaled_mantissa x)) (cexp x)). Zodd follows Zrnd_odd branch for branch: floor if x is an integer, otherwise ceil when floor is even (n % 2 = 0 is equivalent to Z.even n = true), else floor. The extra hypothesis hβ : 1 < beta adds nothing, because ValidRadix already gives 1 < beta, which is the same as Coq's radix condition 2 <= beta."
+  },
+  {
+   "coq_path": "src/Version.v",
+   "coq_name": "Flocq_version",
+   "lean_name": "Flocq_version.Flocq_version",
+   "verdict": "match",
+   "explanation": "Both are unary-natural constants. The Coq type is N (binary naturals) and the Lean type is ℕ, which is the same carrier. The bodies also agree. Coq's compiled Print gives `Flocq_version = 40202%N`: its vm_compute'd parser reads \"4.2.2\" with each dotted component in base 100, so 4*10000 + 2*100 + 2 = 40202. The Lean definition is literally `def Flocq_version : Nat := 40202`, and an `example ... := rfl` checks that value. The declaration has no axioms and no sorry. The flocq_source anchor is (src/Version.v, 24), which matches Coq's declaration line 24."
+  }
+ ]
+}
