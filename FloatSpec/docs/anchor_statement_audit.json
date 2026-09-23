@@ -1697,14 +1697,14 @@
    "coq_name": "Zeven_Zpower_odd",
    "lean_name": "FloatSpec.Core.Zaux.Zeven_Zpower_odd",
    "verdict": "match",
-   "explanation": "`decide (Even b) = false` is equivalent to Coq's `Z.even b = false`. The hypotheses (0<=e and an odd base) and the conclusion (Z.even (b^e) = false) are the same, and Lean's Zpower agrees with Coq's Z.pow."
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (b e : ℤ), 0 ≤ e → Z.even b = false → Z.even (Zpower b e) = false. Rocq Check: forall b e : BinNums.Z, BinInt.Z.le BinNums.Z0 e -> BinInt.Z.even b = false -> BinInt.Z.even (BinInt.Z.pow b e) = false. Restated on the port of Rocq's Z.even (Zaux.Z.even), replacing the earlier `decide (Even b) = false`. Lean's Zpower agrees with Rocq's Z.pow (zero on negative exponents). Same hypotheses and conclusion."
   },
   {
    "coq_path": "src/Core/Zaux.v",
    "coq_name": "Zeven_ex",
    "lean_name": "FloatSpec.Core.Zaux.Zeven_ex",
    "verdict": "match",
-   "explanation": "Both state exists p, x = 2*p + (if even x then 0 else 1). Lean's decidable `Even x` plays the role of Coq's `Z.even x`, and both are true exactly for even integers."
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (x : ℤ), ∃ p, x = 2 * p + if Z.even x = true then 0 else 1. Rocq Check: forall x : BinNums.Z, exists p : BinNums.Z, x = BinInt.Z.add (BinInt.Z.mul (BinNums.Zpos (BinNums.xO BinNums.xH)) p) (if BinInt.Z.even x then BinNums.Z0 else BinNums.Zpos BinNums.xH). Restated on the port of Rocq's Z.even (Zaux.Z.even z := decide (2 ∣ z)), replacing the earlier decidable Mathlib Even; `if Z.even x then` is Rocq's `if Z.even x then` on a bool. Same proposition."
   },
   {
    "coq_path": "src/Core/Zaux.v",

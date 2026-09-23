@@ -126,18 +126,31 @@ end ProofIrrelevance
 
 section EvenOdd
 
+/-- Rocq's Boolean parity test `Z.even : Z → bool`: `true` exactly on the even integers.
+Flocq states parity with it, for example in `Zeven_ex` below, `ZnearestE` (Round_NE.v) and
+`Rnd_odd_pt` (Round_odd.v). The Rocq function matches on the binary constructors of `Z`;
+Lean's `Int` has no binary constructors, so the port decides divisibility by two. -/
+@[flocq_local "Rocq Corelib BinNums.IntDef.Z.even (Stdlib Z.even : Z -> bool); not defined in Flocq itself"]
+def Z.even (z : Int) : Bool :=
+  decide (2 ∣ z)
+
+/-- Rocq's `Z.even_spec`, with Mathlib's `Even` for Rocq's `Z.Even`: the Boolean parity test is
+`true` exactly on the even integers. -/
+theorem Z.even_spec (n : Int) : Z.even n = true ↔ Even n := by
+  simp [Z.even, even_iff_two_dvd]
+
 /-- FLoCq `Zeven_ex`. -/
 @[flocq_source "src/Core/Zaux.v" 75 "Zeven_ex"]
 theorem Zeven_ex (x : Int) :
-    ∃ p : Int, x = 2 * p + if Even x then 0 else 1 := by
+    ∃ p : Int, x = 2 * p + if Z.even x then 0 else 1 := by
   refine ⟨x / 2, ?_⟩
   have hdiv := Int.emod_add_mul_ediv x 2
   rcases Int.emod_two_eq_zero_or_one x with hrem | hrem
-  · have heven : Even x := Int.even_iff.mpr hrem
-    simp [heven, hrem] at hdiv ⊢
+  · have heven : Z.even x = true := by simp [Z.even, Int.dvd_iff_emod_eq_zero, hrem]
+    simp only [heven, ↓reduceIte]
     omega
-  · have hodd : ¬ Even x := by simpa [Int.even_iff, hrem]
-    simp [hodd, hrem] at hdiv ⊢
+  · have hodd : Z.even x = false := by simp [Z.even, Int.dvd_iff_emod_eq_zero, hrem]
+    simp only [hodd, Bool.false_eq_true, ↓reduceIte]
     omega
 
 end EvenOdd
@@ -238,14 +251,13 @@ section ParityPower
 /-- Coq-compatible name: an odd base to a nonnegative exponent remains odd -/
 @[flocq_source "src/Core/Zaux.v" 135 "Zeven_Zpower_odd"]
 theorem Zeven_Zpower_odd (b e : Int) :
-    0 ≤ e → decide (Even b) = false → decide (Even (Zpower b e)) = false := by
+    0 ≤ e → Z.even b = false → Z.even (Zpower b e) = false := by
   intro he hb
-  have hbNotEven : ¬ Even b := of_decide_eq_false hb
-  have hbOdd : Odd b := Int.not_even_iff_odd.mp hbNotEven
-  have hpOdd : Odd (b ^ e.toNat) := hbOdd.pow
-  have hpNotEven : ¬ Even (b ^ e.toNat) := Int.not_even_iff_odd.mpr hpOdd
-  simpa [Zpower, he] using (show decide (Even (b ^ e.toNat)) = false from
-    decide_eq_false hpNotEven)
+  have hbOdd : Odd b := by
+    rw [← Int.not_even_iff_odd, ← Z.even_spec]
+    simpa using hb
+  have hpNotEven : ¬ Even (b ^ e.toNat) := Int.not_even_iff_odd.mpr hbOdd.pow
+  simpa [Zpower, he, ← Z.even_spec] using hpNotEven
 
 end ParityPower
 

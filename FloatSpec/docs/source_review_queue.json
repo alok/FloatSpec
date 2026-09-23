@@ -1977,9 +1977,10 @@
       "source_id": "src/Core/Zaux.v:Zeven_ex@1804",
       "status": "reviewed-contract",
       "lean_names": [
-        "FloatSpec.Core.Zaux.Zeven_ex"
+        "FloatSpec.Core.Zaux.Zeven_ex",
+        "FloatSpec.Core.Zaux.Z.even"
       ],
-      "scope": "Same unrestricted integer parity decomposition. Source Z.even is represented by decidable Lean Even; the paired client checks the Boolean conditional specialization, including negative inputs through the universal theorem.",
+      "scope": "Same unrestricted integer parity decomposition. Re-reviewed 2026-09-23 after the restatement on Zaux.Z.even, the port of Rocq's Boolean Z.even (the decision of 2 dividing z; fingerprinted here), so the conditional is the source's `if Z.even x then 0 else 1` rather than decidable Mathlib Even. Paired exact clients in both assistants.",
       "evidence": [
         "scripts/fixtures/ZauxPowerRadixContracts.lean",
         "scripts/fixtures/ZauxPowerRadixContracts.v",
@@ -1988,8 +1989,13 @@
       ],
       "lean_fingerprints": {
         "FloatSpec.Core.Zaux.Zeven_ex": {
-          "type_hash": "4076891675",
-          "value_hash": "1256808831",
+          "type_hash": "3286838088",
+          "value_hash": "3985586613",
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Z.even": {
+          "type_hash": "420126356",
+          "value_hash": "3600505594",
           "noncomputable": false
         }
       }
@@ -2137,9 +2143,10 @@
       "status": "reviewed-contract",
       "lean_names": [
         "FloatSpec.Core.Zaux.Zeven_Zpower_odd",
-        "FloatSpec.Core.Zaux.Zpower"
+        "FloatSpec.Core.Zaux.Zpower",
+        "FloatSpec.Core.Zaux.Z.even"
       ],
-      "scope": "Same nonnegative exponent and odd-base Boolean hypotheses. Source Z.even is transported to decidable Even; the result refers to actual integer Zpower, not an absolute-exponent substitute.",
+      "scope": "Same nonnegative exponent and odd-base Boolean hypotheses. Re-reviewed 2026-09-23 after the restatement on Zaux.Z.even, the port of Rocq's Boolean Z.even (fingerprinted here): hypothesis Z.even b = false and conclusion Z.even (Zpower b e) = false are the source's, no longer transported to decidable Even. The result refers to actual integer Zpower, not an absolute-exponent substitute. Paired clients reject flipping the parity hypothesis in both assistants.",
       "evidence": [
         "scripts/fixtures/ZauxPowerRadixContracts.lean",
         "scripts/fixtures/ZauxPowerRadixContracts.v",
@@ -2148,13 +2155,18 @@
       ],
       "lean_fingerprints": {
         "FloatSpec.Core.Zaux.Zeven_Zpower_odd": {
-          "type_hash": "35563295",
-          "value_hash": "1816871071",
+          "type_hash": "2498379563",
+          "value_hash": "4060607792",
           "noncomputable": false
         },
         "FloatSpec.Core.Zaux.Zpower": {
           "type_hash": "2368803762",
           "value_hash": "3401477521",
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Zaux.Z.even": {
+          "type_hash": "420126356",
+          "value_hash": "3600505594",
           "noncomputable": false
         }
       }
