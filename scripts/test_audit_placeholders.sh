@@ -414,6 +414,32 @@ if ! python3 "$tree/scripts/check_proof_debts.py" >"$output" 2>&1; then
   exit 1
 fi
 
+# scripts/status_report.sh counts every #guard_msgs or warningAsError use that
+# check_proof_debts.py does not approve as a placeholder. The copy's approved
+# uses (FloatSpec/Test's, and the synthetic debt's exemption) count as none.
+cp scripts/status_report.sh "$tree/scripts/"
+status_counts() {  # prints "SORRY PLACEHOLDERS" for the copied tree
+  (cd "$tree" && scripts/status_report.sh --json) | python3 -c '
+import json, sys
+status = json.load(sys.stdin)
+print(status["sorry_count"], status["placeholder_semantics_count"])'
+}
+if [[ "$(status_counts)" != "1 0" ]]; then
+  echo "status report: expected the approved debt alone ('1 0'), got '$(status_counts)'" >&2
+  exit 1
+fi
+# shellcheck disable=SC2016 # the backquotes are Lean's, not a command substitution
+printf '%s\n' '/-- error: Unknown identifier `bogus` -/' '#guard_msgs in' \
+  'theorem swallowed : False := bogus' >"$tree/FloatSpec/Test/AuditStatusGuard.lean"
+printf '%s\n' 'set_option warningAsError false in' 'example : True := trivial' \
+  >"$tree/FloatSpec/Test/AuditStatusSuppression.lean"
+if [[ "$(status_counts)" != "1 2" ]]; then
+  echo "status report: expected two unapproved uses ('1 2'), got '$(status_counts)'" >&2
+  exit 1
+fi
+rm "$tree/FloatSpec/Test/AuditStatusGuard.lean" "$tree/FloatSpec/Test/AuditStatusSuppression.lean"
+printf '%s\n' 'status report counts unapproved #guard_msgs and warningAsError uses as placeholders'
+
 debt_error() {
   case "$1" in
     sorry) printf 'unnamed sorry: %s\n' "$2" ;;

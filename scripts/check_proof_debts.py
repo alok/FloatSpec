@@ -28,6 +28,7 @@ import re
 import subprocess
 import sys
 from collections import Counter
+from dataclasses import dataclass, field
 from pathlib import Path
 
 
@@ -103,72 +104,73 @@ def approved_guard(source_lines: list[str], line: int) -> bool:
     return "sorry" not in text and "declaration uses" not in text
 
 
-def main() -> int:
-    expected_list = json.loads(MANIFEST.read_text(encoding="utf-8"))
-    expected = {item["id"]: item for item in expected_list}
-    if len(expected) != len(expected_list):
-        raise ValueError("duplicate proof-debt id in manifest")
+@dataclass
+class Review:
+    """The gate's verdict on each scanner finding, before the whole-tree checks."""
+    errors: list[str] = field(default_factory=list)
+    # (kind, path, line) of every finding the gate accepts.
+    approved: set[tuple[str, str, int]] = field(default_factory=set)
+    seen: set[str] = field(default_factory=set)  # manifest debt ids found in place
+    references: Counter[tuple[str, str]] = field(default_factory=Counter)
+    lakefile_enables: int = 0
 
-    paths = scan_paths(ROOT)
-    result = subprocess.run(
-        [str(ROOT / "scripts/audit_placeholders.sh"), "--json", *paths],
-        cwd=ROOT,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-    findings = json.loads(result.stdout)["findings"]
+
+def review(findings: list[dict], expected: dict[str, dict]) -> Review:
+    """Approve or reject each finding; scripts/status_report.sh reuses the approvals."""
+    result = Review()
     sources: dict[str, list[str]] = {}
-    errors = []
-    seen = set()
     debt_theorems = set()
-    references: Counter[tuple[str, str]] = Counter()
     suppressions: list[tuple[str, int]] = []
-    lakefile_enables = 0
     for finding in findings:
         kind = finding["kind"]
         path = finding["path"]
         line = finding["line"]
         if (path, kind) in EXPECTED_REFERENCES:
-            references[(path, kind)] += 1
+            result.references[(path, kind)] += 1
+            result.approved.add((kind, path, line))
             continue
         if path not in sources:
             sources[path] = (ROOT / path).read_text(encoding="utf-8", errors="replace").splitlines()
         source_lines = sources[path]
         if not isinstance(line, int) or not 1 <= line <= len(source_lines):
-            errors.append(f"invalid {kind} location: {path}:{line}")
+            result.errors.append(f"invalid {kind} location: {path}:{line}")
             continue
         text = source_lines[line - 1].strip()
         if kind == "warning_as_error":
             if text in ENABLE_WARNING_AS_ERROR:
+                result.approved.add((kind, path, line))
                 continue
             if path == "lakefile.lean" and text.rstrip(",") == LAKEFILE_WARNING_AS_ERROR:
-                lakefile_enables += 1
+                result.lakefile_enables += 1
+                result.approved.add((kind, path, line))
                 continue
             suppressions.append((path, line))
             continue
         if kind == "guard_msgs":
-            if not approved_guard(source_lines, line):
-                errors.append(f"unapproved #guard_msgs: {path}:{line}")
+            if approved_guard(source_lines, line):
+                result.approved.add((kind, path, line))
+            else:
+                result.errors.append(f"unapproved #guard_msgs: {path}:{line}")
             continue
         if kind != "sorry":
-            errors.append(f"unexpected {kind}: {path}:{line}")
+            result.errors.append(f"unexpected {kind}: {path}:{line}")
             continue
         match = MARKER.search(source_lines[line - 1])
         if not match:
-            errors.append(f"unnamed sorry: {path}:{line}")
+            result.errors.append(f"unnamed sorry: {path}:{line}")
             continue
         debt_id = match.group(1)
         item = expected.get(debt_id)
-        if item is None or item["path"] != path or debt_id in seen:
-            errors.append(f"unapproved or duplicate debt {debt_id}: {path}:{line}")
+        if item is None or item["path"] != path or debt_id in result.seen:
+            result.errors.append(f"unapproved or duplicate debt {debt_id}: {path}:{line}")
             continue
         nearby = "\n".join(source_lines[max(0, line - 12) : line])
         theorem_names = THEOREM.findall(nearby)
         if not theorem_names or theorem_names[-1] != item["theorem"]:
-            errors.append(f"debt {debt_id} is not in theorem {item['theorem']}")
+            result.errors.append(f"debt {debt_id} is not in theorem {item['theorem']}")
             continue
-        seen.add(debt_id)
+        result.seen.add(debt_id)
+        result.approved.add((kind, path, line))
         debt_theorems.add((path, item["theorem"]))
 
     scoped = set()
@@ -177,22 +179,45 @@ def main() -> int:
         target = (path, scoped_theorem(source_lines, line))
         if (source_lines[line - 1].strip() != DISABLE_WARNING_AS_ERROR
                 or target not in debt_theorems or target in scoped):
-            errors.append(f"unapproved warningAsError: {path}:{line}")
+            result.errors.append(f"unapproved warningAsError: {path}:{line}")
             continue
         scoped.add(target)
+        result.approved.add(("warning_as_error", path, line))
+    return result
 
-    if lakefile_enables != 1:
-        errors.append(f"lakefile.lean enables warningAsError {lakefile_enables} times, expected 1")
+
+def load_manifest() -> dict[str, dict]:
+    expected_list = json.loads(MANIFEST.read_text(encoding="utf-8"))
+    expected = {item["id"]: item for item in expected_list}
+    if len(expected) != len(expected_list):
+        raise ValueError("duplicate proof-debt id in manifest")
+    return expected
+
+
+def main() -> int:
+    expected = load_manifest()
+    paths = scan_paths(ROOT)
+    result = subprocess.run(
+        [str(ROOT / "scripts/audit_placeholders.sh"), "--json", *paths],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    verdict = review(json.loads(result.stdout)["findings"], expected)
+    errors = verdict.errors
+    if verdict.lakefile_enables != 1:
+        errors.append(f"lakefile.lean enables warningAsError {verdict.lakefile_enables} times, expected 1")
     for (path, kind), count in EXPECTED_REFERENCES.items():
-        if references[(path, kind)] != count:
-            errors.append(f"expected reference {path} has {references[(path, kind)]} {kind} findings, "
-                          f"expected {count}")
-    for debt_id in expected.keys() - seen:
+        if verdict.references[(path, kind)] != count:
+            errors.append(f"expected reference {path} has {verdict.references[(path, kind)]} {kind} "
+                          f"findings, expected {count}")
+    for debt_id in expected.keys() - verdict.seen:
         errors.append(f"manifest debt missing from sources: {debt_id}")
     if errors:
         print("\n".join(errors), file=sys.stderr)
         return 1
-    print(f"Trust scan passed with {len(seen)} named, unproved proof obligations "
+    print(f"Trust scan passed with {len(verdict.seen)} named, unproved proof obligations "
           f"across {', '.join(paths)}.")
     return 0
 

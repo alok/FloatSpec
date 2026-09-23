@@ -56,9 +56,7 @@ scripts/audit_placeholders.sh --json FloatSpec >"$audit_tmp"
 python3 - "$audit_tmp" "$json_tmp" "$md_tmp" <<'PY'
 import json
 import pathlib
-import subprocess
 import sys
-from collections import defaultdict
 
 audit_path, json_path, md_path = sys.argv[1:4]
 root = pathlib.Path("FloatSpec")
@@ -66,9 +64,20 @@ families = ["Core", "Calc", "Prop", "Pff", "IEEE754", "ErrorBound", "Other"]
 
 with open(audit_path, encoding="utf-8") as f:
     audit = json.load(f)
-# Every use of these is flagged, and scripts/check_proof_debts.py approves the
-# reviewed ones line by line; they are not placeholders.
+# Every use of these is flagged. The ones scripts/check_proof_debts.py approves,
+# line by line, are reviewed rather than placeholders; any other use counts.
 REVIEWED_USES = {"guard_msgs", "warning_as_error"}
+sys.dont_write_bytecode = True
+sys.path.insert(0, "scripts")
+import check_proof_debts
+
+approved = check_proof_debts.review(audit["findings"], check_proof_debts.load_manifest()).approved
+findings = [
+    finding for finding in audit["findings"]
+    if finding["kind"] not in REVIEWED_USES
+    or (finding["kind"], finding["path"], finding["line"]) not in approved
+]
+counts = {kind: sum(finding["kind"] == kind for finding in findings) for kind in audit["counts"]}
 
 lean_files = sorted(root.rglob("*.lean"))
 
@@ -93,26 +102,24 @@ by_module = {
 for path in lean_files:
     by_module[family(path)]["lean_files"] += 1
 
-for finding in audit["findings"]:
+for finding in findings:
     path = pathlib.Path(finding["path"])
     fam = family(path)
     kind = finding["kind"]
     if kind in ("sorry", "axiom", "admit"):
         by_module[fam][kind] += 1
-    elif kind not in REVIEWED_USES:
+    else:
         by_module[fam]["placeholder"] += 1
 
 status = {
     "lean_files": len(lean_files),
-    "sorry_count": audit["counts"].get("sorry", 0),
-    "axiom_count": audit["counts"].get("axiom", 0),
-    "admit_count": audit["counts"].get("admit", 0),
+    "sorry_count": counts.get("sorry", 0),
+    "axiom_count": counts.get("axiom", 0),
+    "admit_count": counts.get("admit", 0),
     "placeholder_semantics_count": sum(
-        count
-        for kind, count in audit["counts"].items()
-        if kind not in {"sorry", "axiom", "admit"} | REVIEWED_USES
+        count for kind, count in counts.items() if kind not in {"sorry", "axiom", "admit"}
     ),
-    "spec_weakened_count": audit["counts"].get("conclusion_as_hypothesis", 0),
+    "spec_weakened_count": counts.get("conclusion_as_hypothesis", 0),
     "by_module": by_module,
 }
 
