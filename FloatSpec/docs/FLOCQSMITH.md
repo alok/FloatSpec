@@ -1348,9 +1348,9 @@ is refused unless `--allow-dirty` is given, and it is recorded either way.
 `test_flocqsmith` and `test_flocq_exemplars` are live modules of the
 required suite (`run_required_rocq_tests.py`), so CI runs both on every push
 with no skip allowed, and `scripts/test_flocq_conformance.sh` runs both too.
-Together they add about five minutes: 235 s for `test_flocqsmith`, most of
-it the 40-program control campaign, and 48-76 s for the exemplars, measured
-on a loaded Mac on 2026-09-22. Large campaigns stay overnight jobs.
+Together they add about five minutes: 235 and 265 s for `test_flocqsmith`,
+most of it the 40-program control campaign, and 56 and 76 s for the
+exemplars, in two passing runs each on a loaded Mac on 2026-09-22. Large campaigns stay overnight jobs.
 
 ## 16. Open questions
 

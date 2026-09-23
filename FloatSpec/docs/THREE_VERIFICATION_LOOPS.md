@@ -108,8 +108,9 @@ about 125-135 minutes when a cold cache rebuilds Mathlib; the kernel replays
 add about two minutes on this Mac (40 s for the source modules, 20 s for the
 tests, 45 s for the fixtures), likely somewhat more on the four-core runner.
 The flocqsmith and exemplar modules add about five minutes to the required
-suite: 235 s for `test_flocqsmith` (most of it the 40-program control
-campaign) and 48-76 s for `test_flocq_exemplars` here, on a loaded machine.
+suite: 235 and 265 s for `test_flocqsmith` (most of it the 40-program
+control campaign) and 56 and 76 s for `test_flocq_exemplars`, in two passing
+runs each here, on a loaded machine.
 That puts a cold run at roughly 130-145 minutes, still inside the timeout.
 
 The per-push bridge selects `power`, `div_eucl`, `location`, `round`, `truncate`,
