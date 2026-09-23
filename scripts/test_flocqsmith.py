@@ -1,12 +1,12 @@
 """flocqsmith regressions; set FLOCQ_AUDIT_DIR to include the live prover tests.
 
-Offline tests cover the signature table, format arithmetic, the draw tape
-(deterministic replay, typed replay errors and the mutated-tape sweep), IR
-typing, renderers and variants, observation decoding, the verdict taxonomy,
-the stream parsers, the cost model and exact numeric tags. Live tests run
+Offline tests cover the draw tape (deterministic replay and the mutated-tape
+sweep), IR typing, renderers, decoding, the verdict taxonomy, stream parsers,
+the cost model, numeric tags and the shrinker's mechanics. Live tests run
 generated programs through Rocq ``vm_compute`` and all three Lean paths:
 generator validity (every table op, form and corner type-checks in both
-provers) and the pinned ``decide +kernel`` rejection text.
+provers), replay from a record, verdict-preserving shrinking, detection of
+every positive control, and offline re-judgement of a published campaign.
 """
 
 from __future__ import annotations
@@ -17,11 +17,14 @@ import json
 import os
 from pathlib import Path
 import random
+import sys
 import tempfile
 import unittest
 
 import flocq_bridge as fb
 from flocqsmith import harness, observe, verdict
+from flocqsmith.campaign import (Options, case_from_program, load_case, new_case, replay, run_campaign,
+                                 shrink_case, verify)
 from flocqsmith.choose import Chooser, Draw, GeneratorBug, ReplayError
 from flocqsmith.cost import pack
 from flocqsmith.formats import FORMATS, Format
@@ -34,6 +37,7 @@ from flocqsmith.numeric import classify, numeric_tags, structural_tags
 from flocqsmith.observe import DecodeError, decode
 from flocqsmith.process import ProcResult
 from flocqsmith.render import BASELINE, lean_term, rocq_term
+from flocqsmith.shrink import Target, cut_after, flatten, pin, shrink
 from flocqsmith.table import LEAN_ALLOWED_PREFIXES, LEAN_FORBIDDEN, OPS, check_table
 from flocqsmith.verdict import CLONE_PATHS, Outcome, Verdict, judge
 
@@ -46,6 +50,10 @@ def programs(seed: int, count: int, config: GenConfig | None = None) -> list[tup
         chooser = Chooser(seed=program_seed(seed, index))
         out.append((chooser, generate(chooser, config or GenConfig()).program))
     return out
+
+
+def one_value(fmt: Format) -> tuple[int, ...]:
+    return (3, 0, 1 << (fmt.p - 1), 1 - fmt.p)
 
 
 def mint_value(fmt: Format, mint: Stmt) -> tuple[int, int, int, int]:
@@ -433,6 +441,60 @@ class NumericTests(unittest.TestCase):
         self.assertEqual(found, 40)
 
 
+class ShrinkOfflineTests(unittest.TestCase):
+    def fake_run(self, programs_: list[Program]):
+        out = []
+        for program in programs_:
+            sig = signature(program)
+            doc: list[int] = []
+            fmt = program.fmt
+
+            def fill(rows):
+                for row in rows:
+                    if row["type"] == "branch":
+                        doc.append(0)
+                        fill(row["arms"][0])
+                    else:
+                        doc.extend(one_value(fmt) if row["type"] in ("BSN", "SF") else [0])
+            fill(sig["bindings"])
+            reference = decode(sig, doc)
+            target = next((v for v in observe.flatten(reference) if v.op == "Bfma"), None)
+            v = (Verdict("lean-meta", "observation-mismatch", divergence={"id": target.id, "op": "Bfma"})
+                 if target is not None else Verdict("lean-meta", "match"))
+            out.append((v, reference))
+        return out
+
+    def test_passes_preserve_types_and_target(self):
+        shrunk = 0
+        for index in range(25):
+            program = generate(Chooser(seed=f"shrink:{index}"),
+                               GenConfig(force_ops=("Bfma",), force_forms=("fold", "branch", "select"))).program
+            (initial, reference), = self.fake_run([program])
+            divergent = str(initial.divergence["id"])  # type: ignore[index]
+            check_program(flatten(program, reference))
+            result = shrink(program, reference, divergent, Target("lean-meta", "observation-mismatch", "Bfma"),
+                            self.fake_run)
+            check_program(result.program)
+            self.assertTrue(Target("lean-meta", "observation-mismatch", "Bfma").holds(self.fake_run([result.program])[0][0]))
+            self.assertLessEqual(len(result.program.stmts), len(program.stmts))
+            shrunk += len(result.program.stmts) < len(program.stmts)
+            self.assertLessEqual(len(result.program.stmts), 4)
+        self.assertGreater(shrunk, 20)
+
+    def test_pin_uses_reference_values(self):
+        fmt = FORMATS["t3_4"]
+        program = Program(fmt, (Stmt("v0", "op", "BSN", op="Bone"),
+                                Stmt("v1", "op", "BSN", op="Bplus", mode=0, args=(Arg.ref("v0"), Arg.ref("v0"))),
+                                Stmt("v2", "op", "E", op="Bfrexp.2", args=(Arg.ref("v1"),)),
+                                Stmt("v3", "op", "BSN", op="Bldexp", mode=2, args=(Arg.ref("v1"), Arg.ref("v2")))))
+        reference = decode(signature(program), [3, 0, 4, -2, 3, 0, 4, -1, 2, 3, 0, 4, 1])
+        pinned = pin(cut_after(program, "v3"), "v3", reference)
+        check_program(pinned)
+        self.assertEqual([s.id for s in pinned.stmts], ["v1", "v3"])
+        self.assertEqual(pinned.stmts[0].args, (Arg.sf(3, 0, 4, -1),))
+        self.assertEqual(pinned.stmts[1].args, (Arg.ref("v1"), Arg.int_(2)))
+
+
 # -- live ----------------------------------------------------------------------
 
 @unittest.skipUnless(LIVE, "live test requires FLOCQ_AUDIT_DIR")
@@ -476,6 +538,95 @@ class LiveTests(unittest.TestCase):
                 result = harness.run_capture(harness._lean(folder / f"K{negated}.lean"), 600)
                 got = parse_kernel(result, lean.ranges)["pin"]
                 self.assertEqual(got, Outcome("kernel-true") if negated else REJECTED)
+
+    def test_replay_from_record_is_deterministic(self):
+        case = new_case(424242, 3, GenConfig(max_size=6))
+        with tempfile.TemporaryDirectory(prefix="flocqsmith-replay-") as directory:
+            root = Path(directory)
+            record = root / "case.json"
+            record.write_text(json.dumps(case.to_json()))
+            from_tape = load_case(json.loads(record.read_text()))
+            self.assertEqual(from_tape.program, case.program)
+            self.assertEqual(load_case(json.loads(record.read_text()), from_ir=True).program, case.program)
+            reports = [replay(record, self.flocq, root / "tape", allow_dirty=True),
+                       replay(record, self.flocq, root / "ir", allow_dirty=True, from_ir=True)]
+            self.assertEqual([r["status"] for r in reports], ["passed", "passed"])
+            streams = [sorted((root / name / "batches").rglob("rocq.stdout"))[0].read_text() for name in ("tape", "ir")]
+            self.assertEqual(streams[0], streams[1])
+            tampered = case.to_json()
+            tampered["rocq_sha256"] = "0" * 64
+            with self.assertRaises(ReplayError):
+                load_case(tampered)
+
+    def test_shrinking_preserves_the_verdict(self):
+        fmt = FORMATS["t4_8"]
+        e = fmt.emin
+        stmts = (
+            Stmt("v0", "op", "BSN", op="Bone"),
+            Stmt("v1", "op", "BSN", op="SF2B'", args=(Arg.sf(3, 0, 13, -3),)),
+            Stmt("v2", "op", "BSN", op="binary_normalize", mode=0, args=(Arg.int_(1), Arg.int_(e), Arg.bool_(False))),
+            Stmt("v3", "op", "Bool", op="Bltb", args=(Arg.ref("v2"), Arg.ref("v1"))),
+            Stmt("v4", "select", "BSN", args=(Arg.ref("v3"), Arg.ref("v2"), Arg.ref("v1"))),
+            Stmt("v5", "op", "BSN", op="Bopp", args=(Arg.ref("v4"),)),
+            Stmt("v6", "fold", "BSN", op="Bplus", mode=0, args=(Arg.ref("v0"),),
+                 steps=((Arg.ref("v1"),), (Arg.ref("v1"),))),
+            Stmt("v7", "op", "BSN", op="Bfma", mode=1, args=(Arg.ref("v4"), Arg.ref("v4"), Arg.ref("v5"))),
+            Stmt("v8", "op", "BSN", op="Bsqrt", mode=0, args=(Arg.ref("v7"),)),
+        )
+        case = case_from_program("hand-fma", Program(fmt, stmts), origin="test")
+        with tempfile.TemporaryDirectory(prefix="flocqsmith-shrink-") as directory:
+            root = Path(directory)
+            record = root / "case.json"
+            record.write_text(json.dumps(case.to_json()))
+            report = shrink_case(record, self.flocq, root / "out", "fma_double_rounding", "lean-meta",
+                                 allow_dirty=True)
+            self.assertEqual(report["status"], "preserved", json.dumps(report.get("steps"))[:2000])
+            self.assertEqual(report["target"], {"path": "lean-meta", "verdict": "observation-mismatch", "op": "Bfma"})
+            self.assertEqual(report["final"]["divergence"]["op"], "Bfma")  # type: ignore[index]
+            self.assertLess(report["statements_after"], report["statements_before"])
+            minimized = json.loads((root / "out" / "minimized.json").read_text())
+            self.assertEqual(load_case(minimized).program.stmts[-1].op, "Bfma")
+            # The minimized record replays on the unmutated port as an all-path match.
+            replayed = replay(root / "out" / "minimized.json", self.flocq, root / "again",
+                              controls=("fma_double_rounding",), allow_dirty=True)
+            self.assertEqual(replayed["verdicts"], {p: {"match": 1} for p in CLONE_PATHS})
+            self.assertEqual(replayed["controls"]["fma_double_rounding"]["detected"], 1)  # type: ignore[index]
+
+    def test_every_positive_control_is_detected(self):
+        with tempfile.TemporaryDirectory(prefix="flocqsmith-controls-") as directory:
+            names = tuple(c.name for c in CONTROLS)
+            report = run_campaign(Options(self.flocq, Path(directory) / "out", seed=5, n=40,
+                                          config=GenConfig(), controls=names, allow_dirty=True,
+                                          focus_controls=True))
+            print("\ncontrol detection (seed 5, n 40, control-focused corpus):", file=sys.stderr)
+            controls = report["controls"]
+            for name in names:
+                row = controls[name]  # type: ignore[index]
+                print(f"  {name:26s} exposed {row['exposed']:3d} detected {row['detected']:3d} "
+                      f"rate {row['detection_rate']} first {row['cases_to_first_detection']} "
+                      f"paths {row['detected_by_path']}", file=sys.stderr)
+                self.assertGreater(row["detected"], 0, name)
+                self.assertEqual(row["non_mismatch_verdicts"], {}, name)
+                self.assertTrue(row["ok"], name)
+            self.assertEqual(report["mismatches"], [])
+            self.assertEqual(report["infra"], [])
+            self.assertEqual(report["harness_errors"], [])
+            self.assertEqual(report["verdicts"], {p: {"match": 40} for p in CLONE_PATHS})
+
+    def test_verify_rejudges_and_detects_tampering(self):
+        with tempfile.TemporaryDirectory(prefix="flocqsmith-verify-") as directory:
+            out = Path(directory) / "out"
+            report = run_campaign(Options(self.flocq, out, seed=99, n=6, controls=("enc_sign_flip",),
+                                          allow_dirty=True))
+            self.assertEqual(report["status"], "passed")
+            self.assertEqual(verify(out)["status"], "verified")
+            stream = next(out.glob("batches/batch_*/meta.stdout"))
+            text = stream.read_text()
+            stream.write_text(text.replace("Int.ofNat 3,", "Int.ofNat 2,", 1))
+            result = verify(out)
+            self.assertEqual(result["status"], "failed")
+            self.assertTrue(any("digest mismatch" in p for p in result["problems"]))
+            self.assertTrue(any("re-judged verdicts differ" in p for p in result["problems"]))
 
 
 if __name__ == "__main__":
