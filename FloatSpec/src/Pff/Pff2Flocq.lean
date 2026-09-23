@@ -375,13 +375,11 @@ theorem Fast2Sum_correct (emin prec : Int) [Prec_gt_0 prec]
   have hMinTotal : TotalP (isMin (beta:=2) bo 2) := by
     intro r
     have h := MinEx_from_finite_box_payload (beta:=2) bo 2 r
-    simpa only [wp, PostCond.noThrow, pure, MinEx_check, Id.run,
-      ULift.up_down, PredTrans.pure, PredTrans.apply, SPred.down_pure_nil, Int.cast_ofNat] using h ⟨rfl, hbeta, hvNum_gt, hBoundExpAll r⟩
+    simpa only [Int.cast_ofNat] using h rfl hbeta hvNum_gt (hBoundExpAll r)
   have hMaxTotal : TotalP (isMax (beta:=2) bo 2) := by
     intro r
     have h := MaxEx_from_finite_box_payload (beta:=2) bo 2 r
-    simpa only [wp, PostCond.noThrow, pure, MaxEx_check, Id.run,
-      ULift.up_down, PredTrans.pure, PredTrans.apply, SPred.down_pure_nil, Int.cast_ofNat] using h ⟨rfl, hbeta, hvNum_gt, hBoundExpAll r⟩
+    simpa only [Int.cast_ofNat] using h rfl hbeta hvNum_gt (hBoundExpAll r)
   have hTotal : TotalP (Closest (beta:=2) bo (2 : ℝ)) := by
     intro r
     have h := ClosestTotal_from_extrema_payload (beta:=2) bo 2 (2 : ℝ) r
@@ -653,13 +651,11 @@ theorem TwoSum_correct (emin prec : Int) [Prec_gt_0 prec]
   have hMinTotal : TotalP (isMin (beta:=2) bo 2) := by
     intro r
     have h := MinEx_from_finite_box_payload (beta:=2) bo 2 r
-    simpa only [wp, PostCond.noThrow, pure, MinEx_check, Id.run,
-      ULift.up_down, PredTrans.pure, PredTrans.apply, SPred.down_pure_nil, Int.cast_ofNat] using h ⟨rfl, hbeta, hvNum_gt, hBoundExpAll r⟩
+    simpa only [Int.cast_ofNat] using h rfl hbeta hvNum_gt (hBoundExpAll r)
   have hMaxTotal : TotalP (isMax (beta:=2) bo 2) := by
     intro r
     have h := MaxEx_from_finite_box_payload (beta:=2) bo 2 r
-    simpa only [wp, PostCond.noThrow, pure, MaxEx_check, Id.run,
-      ULift.up_down, PredTrans.pure, PredTrans.apply, SPred.down_pure_nil, Int.cast_ofNat] using h ⟨rfl, hbeta, hvNum_gt, hBoundExpAll r⟩
+    simpa only [Int.cast_ofNat] using h rfl hbeta hvNum_gt (hBoundExpAll r)
   have hTotal : TotalP (Closest (beta:=2) bo (2 : ℝ)) := by
     intro r
     have h := ClosestTotal_from_extrema_payload (beta:=2) bo 2 (2 : ℝ) r
@@ -5595,16 +5591,14 @@ theorem Axpy_from_min_or_max (emin prec : Int) [Prec_gt_0 prec]
         isMin (beta:=2) bo 2 r q →
         _root_.F2R (beta:=2) p = _root_.F2R (beta:=2) q := by
     have h := MinUniqueP (beta:=2) bo 2
-    simpa only [wp, PostCond.noThrow, pure, MinUniqueP_check,
-      Id.run, ULift.up_down, PredTrans.pure, PredTrans.apply, SPred.down_pure_nil, Int.cast_ofNat] using h True.intro
+    simpa only [Int.cast_ofNat] using h
   have hMaxUnique :
       ∀ (r : ℝ) (p q : FloatSpec.Core.Defs.FlocqFloat 2),
         isMax (beta:=2) bo 2 r p →
         isMax (beta:=2) bo 2 r q →
         _root_.F2R (beta:=2) p = _root_.F2R (beta:=2) q := by
     have h := MaxUniqueP (beta:=2) bo 2
-    simpa only [wp, PostCond.noThrow, pure, MaxUniqueP_check,
-      Id.run, ULift.up_down, PredTrans.pure, PredTrans.apply, SPred.down_pure_nil, Int.cast_ofNat] using h True.intro
+    simpa only [Int.cast_ofNat] using h
   rcases hMinOrMax with hMin | hMax
   · left
     have hRndMin :
