@@ -15,22 +15,38 @@ import unittest
 
 import flocq_exemplars as lane
 
+ROOT = Path(__file__).resolve().parents[1]
+# The exemplar sources, by globs scripts/test_ci_coverage.py recognizes as
+# consumption; InventoryTests ties them to the lane's registry and the live
+# tests compile and run every pair.
+FIXTURE_GLOBS = ("scripts/fixtures/exemplars/*.v", "scripts/fixtures/exemplars/*.lean")
 FIXTURE_SUFFIXES = {".v", ".lean"}
+README = ROOT / "scripts/fixtures/exemplars/README.md"
 
 
 def fixture_paths():
-    return sorted(path for path in lane.FIXTURES.iterdir() if path.suffix in FIXTURE_SUFFIXES)
+    return sorted(path for glob in FIXTURE_GLOBS for path in ROOT.glob(glob))
 
 
 class InventoryTests(unittest.TestCase):
+    def test_the_folder_holds_only_the_fixtures_and_their_readme(self):
+        self.assertEqual({path.parent for path in fixture_paths()}, {lane.FIXTURES})
+        self.assertEqual(set(lane.FIXTURES.iterdir()), {*fixture_paths(), README})
+
     def test_every_module_has_both_sides_and_a_readme_entry(self):
-        readme = (lane.FIXTURES / "README.md").read_text()
+        readme = README.read_text()
         expected = {*lane.SHARED, *lane.EXEMPLARS}
         self.assertEqual({path.stem for path in fixture_paths()}, expected)
         for name in expected:
             for suffix in FIXTURE_SUFFIXES:
                 self.assertTrue((lane.FIXTURES / f"{name}{suffix}").is_file(), name + suffix)
             self.assertTrue(re.search(rf"\| `{name}` \|", readme), f"README.md has no table row for {name}")
+
+    def test_every_exemplar_runs_live(self):
+        # One LiveExemplarTests method per registered exemplar; the shared
+        # modules are compiled by its setUpClass.
+        checked = re.findall(r'self\.check\("(\w+)"\)', Path(__file__).read_text())
+        self.assertEqual(sorted(checked), sorted(lane.EXEMPLARS))
 
     def test_non_verbatim_fixtures_state_their_provenance(self):
         for path in fixture_paths():

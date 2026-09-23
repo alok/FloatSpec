@@ -22,7 +22,7 @@
    - `fma x y z = round radix2 register_fmt rndNE (x * y + z)` becomes
      Compute.plus (NE) of the exact Operations.Fmult x y and z. fnma is
      handled the same way. plus_correct proves them equal.
-   - Upstream, `Axiom frcpa : R -> R` is only specified by `frcpa_spec`
+   - Upstream postulates `frcpa : R -> R`, specified only by `frcpa_spec`
      (11-bit format and relative error <= 4433 * 2^-21). Here it becomes
      four executable models, Compute.div of 1 by b:
      - model 0: nearest-even at 11 bits;

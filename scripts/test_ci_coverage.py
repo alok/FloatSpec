@@ -81,10 +81,21 @@ TEST_INVOCATION = re.compile(rf'{INVOCATION}(test_\w+\.(?:py|sh))((?:\s+[^\s|>]+
 LEAN_GATE = (r"rg -n 'warningAsError|#guard_msgs|#exit|\baxiom\b|implemented_by|\bextern\b"
              r"|native_decide|decide\s*\+native|native\s*:=\s*true|ofReduceBool|skipKernelTC"
              r"|addDecl(WithoutChecking|Core)|doCheck|setEnv|modifyEnv|run_(cmd|elab|meta)"
-             r"|sorryAx|drop\s+(all|error|warning)' scripts/fixtures/*.lean || status=$?")
+             r"|sorryAx|drop\s+(all|error|warning)' scripts/fixtures/*.lean"
+             r" scripts/fixtures/exemplars/*.lean || status=$?")
 ROCQ_GATE = (r"rg -n '\b(Admitted|Admit|admit|Abort|Axioms?|Parameters?|Conjectures?|Declare)\b"
              r"|native_compute|native_cast_no_check|Unset (Guard|Positivity|Universe) Checking"
-             r"|bypass_check' scripts/fixtures/*.v || status=$?")
+             r"|bypass_check' scripts/fixtures/*.v scripts/fixtures/exemplars/*.v || status=$?")
+GATE = re.compile(r"rg -n '(.*)' ((?:scripts/fixtures/(?:[\w-]+/)?\*\.(?:lean|v) )+)\|\| status=\$\?")
+# Nested fixture globs the admission gates do not scan, and why. Each folder
+# holds deliberate violations for the tool its consumer tests.
+UNGATED_FIXTURES = {
+    'scripts/fixtures/audit/*.lean':
+        'negative controls for scripts/audit_placeholders.sh: each must contain an axiom or extern',
+    'scripts/fixtures/coq_source/*.lean':
+        'inputs to the Coq source-link linter, which set warningAsError to turn its warnings into '
+        'the errors test_coq_source_linter.sh expects',
+}
 PINNED_STEPS = {
     'Check that CI runs every check': [
         'python3 scripts/test_ci_coverage.py -v 2>&1 | tee "$FLOCQ_CI_OUTPUT/ci-coverage.log"',
@@ -352,6 +363,10 @@ def runs_every_test(path: Path) -> bool:
             and [ast.unparse(node) for node in last.body] == ['unittest.main()'])
 
 
+def gate_globs(gate: str) -> list[str]:
+    return GATE.fullmatch(gate)[2].split()
+
+
 def executable_fixtures() -> set[str]:
     return {path.stem for path in FIXTURES.glob('*.lean') if MAIN.search(path.read_text())}
 
@@ -484,6 +499,14 @@ class ParserTests(unittest.TestCase):
         self.assertTrue(consumes('FIXTURES / "fixtures/x/README.md"', readme))
         self.assertFalse(consumes('fixtures/x/*.lean', readme))
 
+    def test_gate_globs(self):
+        self.assertEqual(gate_globs("rg -n 'a|b' scripts/fixtures/*.v scripts/fixtures/c/*.v || status=$?"),
+                         ['scripts/fixtures/*.v', 'scripts/fixtures/c/*.v'])
+        for gate in ("rg -n 'a' scripts/fixtures/**/*.v || status=$?", "rg -n 'a' || status=$?",
+                     "rg -n 'a' scripts/fixtures/*.v"):
+            with self.subTest(gate=gate), self.assertRaises(TypeError):
+                gate_globs(gate)
+
     def test_test_invocations(self):
         for command, expected in (('python3 scripts/test_a.py -v', ('test_a.py', ' -v')),
                                   ('python3 scripts/test_a.py -v 2>&1 | tee "$x/y.log"',
@@ -581,8 +604,26 @@ class WorkflowTests(unittest.TestCase):
                                   for command in expected])
         self.assertIn('GuidedDemo', executable_fixtures())  # positive control for MAIN
         self.assertIn('floatspec_demo', lean_action_targets())
-        self.assertEqual(sorted(FIXTURES.rglob('*.v')), sorted(FIXTURES.glob('*.v')),
-                         'the CI glob does not reach Rocq fixtures in subdirectories')
+
+    def test_nested_sources_meet_the_admission_gates(self):
+        # CI's compile loops glob only the top level; a nested .lean or .v runs
+        # through the test that consumes it (checked below), which applies no
+        # text gate of its own. So the gates must scan its folder too, unless
+        # the folder's point is to hold the violations the gates reject.
+        gated = {glob for gate in (LEAN_GATE, ROCQ_GATE) for glob in gate_globs(gate)}
+        nested = {f'scripts/fixtures/{path.parent.relative_to(FIXTURES).as_posix()}/*{path.suffix}'
+                  for path in FIXTURES.rglob('*')
+                  if path.suffix in ('.lean', '.v') and path.parent != FIXTURES}
+        self.assertTrue(nested)
+        for glob in sorted(nested):
+            with self.subTest(glob=glob):
+                self.assertTrue(glob in gated or glob in UNGATED_FIXTURES,
+                                'add this glob to its admission gate, or say in UNGATED_FIXTURES why not')
+        for glob, reason in UNGATED_FIXTURES.items():
+            with self.subTest(exempt=glob):
+                self.assertIn(glob, nested, 'stale exemption')
+                self.assertNotIn(glob, gated, 'a gated glob needs no exemption')
+                self.assertTrue(reason.strip())
 
     def test_fixture_gates_reject_admissions(self):
         probes = {  # gate: (lines it must reject, lines it must accept)
@@ -601,16 +642,20 @@ class WorkflowTests(unittest.TestCase):
                         ['Print Assumptions t.', 'Proof. vm_compute. reflexivity. Qed.']),
         }
         for gate, (bad, good) in probes.items():
-            pattern, glob = re.fullmatch(r"rg -n '(.*)' (\S+) \|\| status=\$\?", gate).groups()
+            pattern = GATE.fullmatch(gate)[1]
             for line in bad:
-                with self.subTest(gate=glob, rejects=line):
+                with self.subTest(gate=gate[-20:], rejects=line):
                     self.assertRegex(line, pattern)
             for line in good:
-                with self.subTest(gate=glob, accepts=line):
+                with self.subTest(gate=gate[-20:], accepts=line):
                     self.assertNotRegex(line, pattern)
-            for path in FIXTURES.glob(glob.removeprefix('scripts/fixtures/')):
-                with self.subTest(fixture=path.name):
-                    self.assertIsNone(re.search(pattern, path.read_text()))
+            for glob in gate_globs(gate):
+                # An unmatched glob reaches rg literally, which exits 2 and fails the step.
+                paths = sorted(ROOT.glob(glob))
+                self.assertTrue(paths, f'{glob} matches no fixture')
+                for path in paths:
+                    with self.subTest(fixture=path.relative_to(FIXTURES).as_posix()):
+                        self.assertIsNone(re.search(pattern, path.read_text()))
 
     def test_every_replay_fixture_is_replayed(self):
         # A replay runs as a top-level bridge command, or as the sole command of

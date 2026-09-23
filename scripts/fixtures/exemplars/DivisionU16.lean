@@ -6,7 +6,7 @@ commit 7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f (upstream Copyright (C)
 2014-2018 Guillaume Melquiond, GNU LGPL version 3 or later; this
 transliteration is distributed under the same terms). DivisionU16.v lists
 what was kept and replaced, including the frcpa models that stand in for
-the upstream axiom.
+the function upstream only postulates.
 -/
 import Exemplars.Compute
 import Exemplars.Choices

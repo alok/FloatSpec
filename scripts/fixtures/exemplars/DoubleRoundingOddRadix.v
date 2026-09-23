@@ -34,7 +34,7 @@
    plus/mult/div/sqrt with the choice Choices.rnd_N c. The outer rounding of
    an already-rounded float is Compute.plus with 0 (plus_correct).
    Dropped: the proofs.
-   Parameters:
+   Grid:
    - outer: FLX 2, FLT (-4) 2, FTZ (-4) 2;
    - inner: FLX 3, FLT (-6) 3, FTZ (-5) 3;
    - radices: 3, 5 and 7, plus radix 2 as a positive control, since the

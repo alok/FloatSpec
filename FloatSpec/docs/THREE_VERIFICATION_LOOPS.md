@@ -37,7 +37,8 @@ does not read the lakefile, so fixtures meet Lean's default linters plus
 warnings-as-errors, which is stricter than the product build. The two fixtures
 that define `main`, `GuidedDemo` and `PffWalkthrough`, also execute, and
 `GuidedDemo` runs again as the compiled `floatspec_demo`. Two text gates in
-those steps reject what compiles without error but proves nothing: Lean
+those steps, which also scan the exemplar pairs in `scripts/fixtures/exemplars/`,
+reject what compiles without error but proves nothing: Lean
 `axiom`, `#guard_msgs`, `#exit`, `implemented_by`, `extern`, native decision
 procedures, kernel bypasses (`skipKernelTC`, `addDeclCore`, `doCheck`,
 `addDeclWithoutChecking`) and environment writes (`setEnv`, `modifyEnv`,
@@ -71,8 +72,10 @@ switching the check off also takes an edit to the evidence step. It fails if a
 reference-gated test module is missing from the required runner, a test
 script or `*_bridge.py` never runs in CI, a test module CI invokes lacks a
 closing `unittest.main()` or takes any argument but `-v`, a replay is not
-replayed, a fixture defining `main` is only elaborated, a nested fixture has
-no consumer, or the local driver runs a check CI does not (only the random
+replayed, a fixture defining `main` is only elaborated, a nested fixture is
+named by no test CI runs (by name, or as a live module of the required
+runner), a nested Lean or Rocq source escapes the admission gates without a
+stated reason, or the local driver runs a check CI does not (only the random
 corpora it lists, with their measured cost, are exempt). It also parses the
 workflow and each step's shell, and fails on trigger filters, `if:` conditions
 other than the cache save and the evidence upload, a missing `shell: bash`,
@@ -391,6 +394,14 @@ checks that `Compute.v` is byte-identical to the pinned
 
 The CLI reports `rocq-infra`, `lean-infra` and `harness-error` verdicts;
 none of them counts as a pass.
+
+CI runs `test_flocq_exemplars` in the required suite, as a live module, so a
+skipped exemplar fails the job. CI's fixture loops glob only the top level of
+`scripts/fixtures/` and never compile the exemplars themselves: the Lean
+sides import shared `Exemplars.*` modules that only the test builds and puts
+on `LEAN_PATH`. Both admission gates do scan the exemplar sources. The
+inventory tests require every registered exemplar to have its own live test
+and the folder to hold nothing but the pairs and their README.
 
 The Lean side runs compiled definitions through `#eval`; it has no
 kernel-reduction path yet. Agreement is finite testing of these programs,
