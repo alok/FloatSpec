@@ -58,6 +58,7 @@ definitions are equivalent.
 | `ComputeGrid` | exemplar | driver over `Compute.v` (FloatSpec-authored) | radices 2/3/10 × FLX/FLT/FIX/FTZ × DN/UP/ZR/NE/NA × 16 input pairs | same | `plus/mult/div/sqrt_correct`: exact rounding of the exact result |
 | `CodyWaite` | exemplar | Flocq `examples/Cody_Waite.v` (`7aab8f55`) | `cw_exp` on binary64 via `Compute.v`, 30 inputs, every intermediate observed | same | `exp_correct` (relative error ≤ 2⁻⁵¹ against `exp` at 120 digits) and `argument_reduction` |
 | `SqrtSqr` | exemplar | Flocq `examples/Sqrt_sqr.v` §Sec6 (`7aab8f55`) | `sqrt ∘ mult` in radix 5, precision 3, all 125 mantissas × 4 × 4 tie predicates | same | `sqrt_sqr_special_case` (`Fnum (f mx) = 0`), and `y` and `z` are exact `Znearest` roundings |
+| `Average` | exemplar | Flocq `examples/Average.v` (`7aab8f55`) | `avg_naive`, `avg_sum_half`, `avg_half_sub` and `average` at FLT(−6, 3) and FLT(−4, 4), all pairs of 17 values | same | the upstream correctness, symmetry, sign, betweenness, zero and no-underflow lemmas; `avg_sum_half` below its bound is a positive control |
 | `DoubleRoundingOddRadix` | exemplar | Flocq `examples/Double_rounding_odd_radix.v` (`7aab8f55`) | `round_round_eq` executed for mult/plus/minus/sqrt/div over radices 3/5/7 (+2), FLX/FLT/FTZ, tie-predicate pairs | same | the identity for odd radix and in-format inputs, and each of the three roundings re-derived exactly; radix-2 rows are positive controls |
 | `DivisionU16` | exemplar | Flocq `examples/Division_u16.v` (`7aab8f55`) | `div_u16` in the 64-bit register format, four executable `frcpa` models × 38 pairs | same | `div_u16_spec` (= `a / b`) wherever the observed `y0` satisfies `frcpa_spec`; the 8-bit model is a positive control |
 
@@ -144,6 +145,28 @@ because guessing gets it wrong: the ZR choice is `m` itself, not
   `Zle_bool 0`, always true and always false. Every mantissa and every
   intermediate is printed.
 - Dropped: Sections Sec1–Sec5 and Sec7, which are proofs over R.
+
+### `Average` (Flocq `examples/Average.v`, LGPL-3.0-or-later)
+
+- Kept: `avg_naive`, `avg_sum_half`, `avg_half_sub` and `average`, with the
+  same case split, in radix 2 with `round_flt` at `FLT_exp emin prec`
+  (NE).
+- Replaced:
+  - `round_flt (u ± v)` becomes `plus`, and `round_flt (u / 2)` becomes
+    `div` by `Float 2 0`;
+  - `average`'s real tests `Rle_bool 0 x` and `Rle_bool |x| |y|` become
+    integer tests on `Fnum x` and on `Fnum (Fminus (Fabs x) (Fabs y))`.
+    Two Rocq lemmas in `Average.v`, `Rle_bool_0_F2R` and
+    `Rle_bool_abs_F2R`, prove that the replacements are equal to the
+    originals.
+- Dropped: every proof. The oracle checks the lemma statements instead,
+  with each premise evaluated per row.
+- Inputs: all pairs from 17 values per format (zero, subnormals, the
+  smallest normal, larger values, both signs). They cover the underflow
+  cases that the lemmas' premises separate.
+- Positive control: `avg_sum_half_correct` needs
+  `2^(emin + 2·prec + 1) ≤ |x|`. Below that bound, 76 rows lose the average,
+  for example `x = y = 2^-6`, where both halves tie to 0.
 
 ### `DoubleRoundingOddRadix` (Flocq `examples/Double_rounding_odd_radix.v`, LGPL-3.0-or-later)
 

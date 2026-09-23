@@ -323,6 +323,52 @@ def oracle_double_rounding(rows: Sequence[Row]) -> OracleReport:
     return report
 
 
+def ulp_flt(emin: int, prec: int, x: Fraction) -> Fraction:
+    """Flocq ulp for FLT_exp emin prec in radix 2; ulp 0 = 2^emin."""
+    if x == 0:
+        return Fraction(2) ** emin
+    return Fraction(2) ** flt(emin, prec)(mag_rational(2, x))
+
+
+def oracle_average(rows: Sequence[Row]) -> OracleReport:
+    """Average.v: the correctness lemmas of the three averages and `average`."""
+    report = OracleReport()
+    table = {(row[0], row[1], value(2, row[2], row[3]), value(2, row[4], row[5])):
+             value(2, row[12], row[13]) for row in rows}
+    for index, row in enumerate(rows):
+        emin, prec, mx, ex, my, ey, nm, ne, sm, se, hm, he, am, ae = row
+        fexp = flt(emin, prec)
+        x, y = value(2, mx, ex), value(2, my, ey)
+        naive, sum_half, half_sub, average = (value(2, nm, ne), value(2, sm, se),
+                                              value(2, hm, he), value(2, am, ae))
+        a = (x + y) / 2
+        rounded = round_rational(2, fexp, "NE", a)
+        three_halves_ulp = Fraction(3, 2) * ulp_flt(emin, prec, a)
+        label = f"row {index} ({x}, {y})"
+        if not (in_generic_format(2, fexp, x) and in_generic_format(2, fexp, y)):
+            report.check(label, None)
+            continue
+        report.check(f"{label} avg_naive_correct", naive == rounded)
+        if abs(x) >= Fraction(2) ** (emin + 2 * prec + 1):
+            report.check(f"{label} avg_sum_half_correct", sum_half == rounded)
+        else:
+            report.check(f"{label} avg_sum_half_correct", None)
+            report.control_breaks += sum_half != rounded
+        same_sign = (x >= 0 and y >= 0) or (x <= 0 and y <= 0)
+        report.check(f"{label} avg_half_sub_correct",
+                     abs(half_sub - a) <= three_halves_ulp if same_sign else None)
+        report.check(f"{label} average_correct", abs(average - a) <= three_halves_ulp)
+        report.check(f"{label} average_between", min(x, y) <= average <= max(x, y))
+        report.check(f"{label} average_zero", average == 0 if a == 0 else None)
+        report.check(f"{label} average_no_underflow",
+                     average != 0 if abs(a) >= Fraction(2) ** emin else None)
+        report.check(f"{label} average_same_sign",
+                     (a < 0 or average >= 0) and (a > 0 or average <= 0))
+        report.check(f"{label} average_symmetry", table.get((emin, prec, y, x)) == average)
+        report.check(f"{label} average_symmetry_Ropp", table.get((emin, prec, -x, -y)) == -average)
+    return report
+
+
 # ---------------------------------------------------------------------------
 # Exemplar registry
 # ---------------------------------------------------------------------------
@@ -344,6 +390,7 @@ EXEMPLARS: dict[str, Exemplar] = {e.name: e for e in (
     Exemplar("CodyWaite", rows=30, width=15, oracle=oracle_cody_waite),
     Exemplar("DivisionU16", rows=152, width=12, oracle=oracle_division_u16,
              needs_control_break=True),
+    Exemplar("Average", rows=578, width=14, oracle=oracle_average, needs_control_break=True),
     Exemplar("SqrtSqr", rows=2000, width=8, oracle=oracle_sqrt_sqr),
     Exemplar("DoubleRoundingOddRadix", rows=2448, width=16, oracle=oracle_double_rounding,
              needs_control_break=True),

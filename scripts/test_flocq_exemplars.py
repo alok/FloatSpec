@@ -155,6 +155,19 @@ class OracleControlTests(unittest.TestCase):
         odd = lane.oracle_double_rounding([[3, 0, 0, 0, 0, 4, 0, 4, 0, 16, 0, 15, 0, 15, 0, 1]])
         self.assertEqual(odd.violations, ["row 0 round_round_eq"])
 
+    def test_average_oracle_properties_and_subnormal_control(self):
+        zero = [-6, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        report = lane.oracle_average([zero])
+        self.assertEqual((report.holds, report.premise_false, report.violations), (8, 2, []))
+        broken = zero[:12] + [1, -6]
+        self.assertIn("row 0 (0, 0) average_between", lane.oracle_average([broken]).violations)
+        # x = y = 2^-6 at FLT(-6, 3): each half ties to 0, so avg_sum_half
+        # returns 0 instead of 2^-6. Its premise |x| >= 2^1 is false, so this is
+        # a control break, not a violation.
+        tiny = [[-6, 3, m, -6, m, -6, m, -6, 0, 0, m, -6, m, -6] for m in (1, -1)]
+        report = lane.oracle_average(tiny)
+        self.assertEqual((report.control_breaks, report.violations), (2, []))
+
     def test_a_missing_control_break_fails_the_oracle_verdict(self):
         exemplar = lane.Exemplar("Probe", rows=1, width=1,
                                  oracle=lambda rows: lane.OracleReport(holds=1),
@@ -207,6 +220,10 @@ class LiveExemplarTests(unittest.TestCase):
 
     def test_sqrt_sqr(self):
         self.check("SqrtSqr")
+
+    def test_average(self):
+        result = self.check("Average")
+        self.assertGreater(result["oracle_rocq"]["control_breaks"], 0)
 
     def test_double_rounding_odd_radix(self):
         result = self.check("DoubleRoundingOddRadix")
