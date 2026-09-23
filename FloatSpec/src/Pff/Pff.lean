@@ -1,4 +1,3 @@
-import Std.Do.Triple
 import FloatSpec.src.Core
 import FloatSpec.src.Compat
 import Mathlib.Data.Real.Basic
@@ -9,7 +8,6 @@ import FloatSpec.src.SimprocWP
 -- Translated from Coq file: flocq/src/Pff/Pff.v
 
 open Real
-open Std.Do
 
 set_option linter.style.haveILetI false
 

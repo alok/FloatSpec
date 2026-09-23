@@ -28,7 +28,6 @@ require_no_matches -n --glob '*.lean' \
 legacy_std_do=(
   Calc/Sqrt.lean
   Core/Zaux.lean
-  Pff/Pff.lean
   SimprocWP.lean
 )
 legacy_globs=()

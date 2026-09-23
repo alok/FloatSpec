@@ -523,12 +523,11 @@ witness predicate is now restored, and the nontrivial equivalence proof was
 completed in `d4c44d9b`. Its fresh axiom check found only Lean's standard
 `propext`, `Classical.choice`, and `Quot.sound`, not `sorryAx`.
 
-Many older theorems wrap pure computations in `Id` Hoare triples. Read
-these as a legacy way of presenting a mathematical proposition. The project
-does not invoke `mvcgen` or `mspec`; their unused annotations/imports and
-the Hoare-style linter were removed. New source-facing work prefers pure
-definitions and direct propositions. Existing triples are migrated with
-their callers, not removed indiscriminately.
+Older revisions wrapped pure computations in `Id` Hoare triples, a legacy
+way of presenting a mathematical proposition. Every such theorem, Pff.lean
+included, now states the direct proposition, and its callers were migrated
+with it. The project does not invoke `mvcgen` or `mspec`; their unused
+annotations/imports and the Hoare-style linter were removed.
 
 No explicit proof debts remain in `proof_debts.json`. `Binary64.ofBits_flipSign`
 proves, for every `UInt64`, that XOR with the sign mask decodes to `Bopp` of

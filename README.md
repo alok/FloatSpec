@@ -7,7 +7,7 @@ Formally verified floating‑point library for Lean 4, ported from the Coq Flocq
 
 - Provide a Lean 4 formalization of floating‑point arithmetic that mirrors the structure and guarantees of Flocq (by Boldo & Melquiond), while integrating with Lean 4 tooling and Mathlib.
 - Offer executable reference operations and source-facing mathematical
-  specifications; existing `Id` Hoare triples remain as compatibility proofs.
+  specifications stated as direct propositions.
 - Serve as a foundation for reasoning about rounding, ulp, error bounds, and IEEE 754 encodings/decodings in Lean 4.
 
 
@@ -52,8 +52,9 @@ distinct.
   executable crashed on this macOS host; plain `lake build` now works here.
 - Proof framework: no source proof invokes `mvcgen` or `mspec`. Their unused
   `@[spec]` annotations, tactic imports, and Hoare-style linter were removed.
-  Existing `Std.Do` triples remain until their callers are migrated to direct
-  propositions.
+  Every theorem now states a direct proposition; the legacy `Id` Hoare
+  triples are retired. `scripts/test_unused_mvcgen.sh` keeps them out, allowing
+  `Std.Do` only in `SimprocWP.lean`, `Core/Zaux.lean` and `Calc/Sqrt.lean`.
 - Trust gates: `scripts/audit_placeholders.sh` and
   `scripts/check_proof_debts.py` reject unregistered proof holes and trust
   escapes in every Lean and Rocq source outside `Deps/`, standalone fixtures
@@ -81,7 +82,7 @@ distinct.
   - Progress PDF: `FloatSpec_status.pdf`
   - Detailed Core status: `FloatSpec/src/Core/Status.md`
 - Examples of completed or near‑complete components:
-  - Executable alignment, negation, absolute value, addition, and multiplication with Hoare‑triple specifications: `FloatSpec/src/Calc/Operations.lean`
+  - Executable alignment, negation, absolute value, addition, and multiplication with direct specifications: `FloatSpec/src/Calc/Operations.lean`
   - Executable square root core and top‑level structure theorem: `FloatSpec/src/Calc/Sqrt.lean`
   - Foundational definitions and simple structural specs: `FloatSpec/src/Core/Defs.lean`
 
@@ -133,9 +134,9 @@ require FloatSpec from git "https://github.com/Beneficial-AI-Foundation/FloatSpe
 
 ## Proof Style and Workflow
 
-New source-facing theorems should use direct propositions. Some existing proofs
-still use `Std.Do.Triple` over pure `Id` computations; migrate one theorem and
-its callers at a time. A concise playbook lives in `PIPELINE.md`.
+Source-facing theorems use direct propositions. The former `Std.Do.Triple`
+wrappers over pure `Id` computations are retired; do not reintroduce them. A
+concise playbook lives in `PIPELINE.md`.
 
 - Preferred pattern: reduce executable specs to pure facts using small helper equalities, then discharge via `unfold`/`simp`/`calc`.
 - Bool/Prop conversions: use `decide` when the spec relates boolean results to propositions.
