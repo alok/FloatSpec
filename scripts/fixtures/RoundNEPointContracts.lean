@@ -1,6 +1,6 @@
 import FloatSpec.src.Core.Round_NE
 
-/-! Typed source clients distinguish the hypotheses on seven nearest-even exports.
+/-! Typed source clients distinguish the hypotheses on eight nearest-even exports.
 The point theorems refer to the concrete rounded value, not merely existence. -/
 
 namespace FloatSpec.Test.RoundNEPointContracts
@@ -12,6 +12,9 @@ variable (beta : Int) [ValidRadix beta] (fexp : Int → Int)
 #check (round_NE_opp (beta := beta) (fexp := fexp) : ∀ x : Real,
   roundR beta fexp (Znearest (fun t ↦ !decide (2 ∣ t))) (-x) =
     -roundR beta fexp (Znearest (fun t ↦ !decide (2 ∣ t))) x)
+
+#check (round_NE_opp_check_spec (beta := beta) (fexp := fexp) : ∀ x f : Real,
+  Rnd_NE_pt beta fexp x f ↔ Rnd_NE_pt beta fexp (-x) (-f))
 
 variable [Valid_exp fexp]
 
@@ -37,6 +40,7 @@ variable [Exists_NE beta fexp]
   Rnd_NE_pt beta fexp x (roundR beta fexp (Znearest (fun t ↦ !decide (2 ∣ t))) x))
 
 #print axioms round_NE_opp
+#print axioms round_NE_opp_check_spec
 #print axioms round_NE_abs
 #print axioms round_NE_pt_pos
 #print axioms round_NE_pt

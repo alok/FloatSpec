@@ -2381,6 +2381,35 @@ private theorem NE_prop_opp (x f : ℝ) (h : NE_prop beta fexp x f) :
       (m := g.Fnum) (e := g.Fexp) hcanon
   · simpa using heven
 
+omit [FloatSpec.Core.Generic_fmt.Valid_exp fexp] [Exists_NE beta fexp] in
+/-- The nearest-even point predicate is invariant under negating both the
+input and the result: `Rnd_NE_pt x f ↔ Rnd_NE_pt (-x) (-f)`.
+
+This is a predicate-level Lean statement with no standalone Coq theorem. Coq
+proves the same fact inline in `round_NE_pt` (`Round_NE.v`, lines 527-537) by
+applying `Rnd_NG_pt_opp_inv` with `generic_format_opp`, `F2R_Zopp`,
+`canonical_opp` and `Z.even_opp`. It is distinct from the value-level
+`round_NE_opp` (`Round_NE.v:482`), which states that the concrete rounding
+operation commutes with negation. The source radix premise `beta > 1` is
+carried by `ValidRadix`. -/
+theorem round_NE_opp_check_spec (x f : ℝ) :
+    Rnd_NE_pt beta fexp x f ↔ Rnd_NE_pt beta fexp (-x) (-f) := by
+  have hF : ∀ y, FloatSpec.Core.Generic_fmt.generic_format beta fexp y →
+      FloatSpec.Core.Generic_fmt.generic_format beta fexp (-y) :=
+    fun y hy => FloatSpec.Core.Generic_fmt.generic_format_opp
+      (beta := beta) (fexp := fexp) (x := y) hy
+  constructor
+  · intro h
+    exact FloatSpec.Core.Round_pred.Rnd_NG_pt_opp_inv
+      (fun y => FloatSpec.Core.Generic_fmt.generic_format beta fexp y)
+      (NE_prop beta fexp) hF (NE_prop_opp (beta := beta) (fexp := fexp))
+      (-x) (-f) (by rw [neg_neg, neg_neg]; exact h)
+  · intro h
+    exact FloatSpec.Core.Round_pred.Rnd_NG_pt_opp_inv
+      (fun y => FloatSpec.Core.Generic_fmt.generic_format beta fexp y)
+      (NE_prop beta fexp) hF (NE_prop_opp (beta := beta) (fexp := fexp))
+      x f h
+
 /-- The concrete nearest-even rounded value satisfies the source predicate. -/
 @[flocq_source "src/Core/Round_NE.v" 521 "round_NE_pt"]
 theorem round_NE_pt (x : ℝ) :
