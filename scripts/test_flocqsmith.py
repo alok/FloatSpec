@@ -1,8 +1,12 @@
-"""flocqsmith regressions (generator layer).
+"""flocqsmith regressions; set FLOCQ_AUDIT_DIR to include the live prover tests.
 
 Offline tests cover the signature table, format arithmetic, the draw tape
 (deterministic replay, typed replay errors and the mutated-tape sweep), IR
-typing, observation decoding, the cost model and exact numeric tags.
+typing, renderers and variants, observation decoding, the verdict taxonomy,
+the stream parsers, the cost model and exact numeric tags. Live tests run
+generated programs through Rocq ``vm_compute`` and all three Lean paths:
+generator validity (every table op, form and corner type-checks in both
+provers) and the pinned ``decide +kernel`` rejection text.
 """
 
 from __future__ import annotations
@@ -10,19 +14,30 @@ from __future__ import annotations
 from collections import Counter
 from fractions import Fraction
 import json
+import os
+from pathlib import Path
 import random
+import tempfile
 import unittest
 
-from flocqsmith import observe
+import flocq_bridge as fb
+from flocqsmith import harness, observe, verdict
 from flocqsmith.choose import Chooser, Draw, GeneratorBug, ReplayError
 from flocqsmith.cost import pack
 from flocqsmith.formats import FORMATS, Format
 from flocqsmith.generate import CORNERS, GenConfig, generate, program_seed
+from flocqsmith.harness import (DECIDE_REJECTION_PREFIXES, REJECTED, Message, Subject, Toolchain,
+                                combine_kernel, execute_batch, parse_ir, parse_kernel, parse_meta, parse_rocq)
 from flocqsmith.ir import Arg, IRError, Program, Stmt, check_program, signature
+from flocqsmith.mutants import CONTROLS, CONTROL_BY_NAME, exposed
 from flocqsmith.numeric import classify, numeric_tags, structural_tags
 from flocqsmith.observe import DecodeError, decode
-from flocqsmith.render import lean_term, rocq_term
+from flocqsmith.process import ProcResult
+from flocqsmith.render import BASELINE, lean_term, rocq_term
 from flocqsmith.table import LEAN_ALLOWED_PREFIXES, LEAN_FORBIDDEN, OPS, check_table
+from flocqsmith.verdict import CLONE_PATHS, Outcome, Verdict, judge
+
+LIVE = os.environ.get("FLOCQ_AUDIT_DIR")
 
 
 def programs(seed: int, count: int, config: GenConfig | None = None) -> list[tuple[Chooser, Program]]:
@@ -187,6 +202,30 @@ class IRTests(unittest.TestCase):
                 self.assertIn(name, rocq)
 
 
+class RenderTests(unittest.TestCase):
+    def test_variants_change_only_lean(self):
+        program = programs(6, 1, GenConfig(force_ops=("Bplus", "Bltb")))[0][1]
+        for control in CONTROLS:
+            mutated = lean_term(program, control.variant)
+            if exposed(control, program):
+                self.assertNotEqual(mutated, lean_term(program), control.name)
+            self.assertEqual(rocq_term(program), rocq_term(program))
+        swap = CONTROL_BY_NAME["mode_swap_up_dn"].variant
+        stmt = Stmt("v1", "op", "BSN", op="Bplus", mode=3, args=(Arg.ref("v0"), Arg.ref("v0")))
+        tiny = Program(FORMATS["t3_4"], (Stmt("v0", "op", "BSN", op="Bone"), stmt))
+        self.assertIn("Bplus .RTN", lean_term(tiny, swap))
+        self.assertIn("mode_UP", rocq_term(tiny))
+
+    def test_line_ranges_point_at_case_markers(self):
+        subjects = [Subject(f"c{k}", p, BASELINE) for k, (_, p) in enumerate(programs(9, 5))]
+        for lean in (harness.meta_file(subjects, 1000, ""), harness.ir_file(subjects, "PRE\n"),
+                     harness.kernel_file(subjects, {s.case_id: (1,) for s in subjects}, 1000, "")):
+            lines = lean.text.splitlines()
+            for label, (start, end) in lean.ranges.items():
+                self.assertEqual(lines[start - 1], f"-- FSCASE {label}")
+                self.assertTrue(end >= start + 1)
+
+
 class DecodeTests(unittest.TestCase):
     def setUp(self):
         self.sig = {"p": 3, "emax": 4, "bindings": [
@@ -209,6 +248,145 @@ class DecodeTests(unittest.TestCase):
                     [3, 0, 4, -2, 1, 1, 7, 3, 0, 0, 9]):
             with self.subTest(doc=doc), self.assertRaises(DecodeError):
                 decode(self.sig, doc)
+
+
+class VerdictTests(unittest.TestCase):
+    SIG = {"p": 3, "emax": 4, "bindings": [{"id": "v0", "type": "BSN", "op": "Bone"},
+                                            {"id": "v1", "type": "Bool", "op": "Bltb"}]}
+    DOC = (3, 0, 4, -2, 1)
+    OTHER = (3, 0, 5, -2, 1)
+    INVALID = (3, 0, 4, -2)
+
+    def outcomes(self) -> list[Outcome]:
+        return [Outcome("ok", document=self.DOC), Outcome("ok", document=self.OTHER),
+                Outcome("ok", document=self.INVALID), Outcome("harness", detail="x"),
+                Outcome("kernel-true"), Outcome("kernel-false"), Outcome("not-run"),
+                *(Outcome("infra", stage=s) for s in sorted(verdict.STAGES)), Outcome("infra", stage="lean-elab:k")]
+
+    def test_infra_is_never_a_match_and_taxonomy_is_closed(self):
+        references = [Outcome("ok", document=self.DOC), Outcome("ok", document=self.INVALID),
+                      Outcome("infra", stage="timeout"), Outcome("harness")]
+        seen: Counter[str] = Counter()
+        for path in CLONE_PATHS:
+            for reference in references:
+                for clone in self.outcomes():
+                    v = judge(self.SIG, path, reference, clone)
+                    seen[v.verdict] += 1
+                    self.assertIn(v.verdict, verdict.VERDICTS)
+                    ref_valid = reference.status == "ok" and reference.document == self.DOC
+                    if v.verdict == "match":
+                        self.assertTrue(ref_valid)
+                        self.assertTrue((path != "lean-kernel" and clone.document == self.DOC) or
+                                        (path == "lean-kernel" and clone.status == "kernel-true"))
+                    if clone.status == "infra" or reference.status == "infra":
+                        self.assertNotIn(v.verdict, ("match", "observation-mismatch"))
+                    if reference.status == "infra" and clone.status not in ("harness",):
+                        self.assertIn(v.verdict, ("reference-infra-failure", "both-infra-failure"))
+                    if reference.status == "ok" and clone.status == "infra":
+                        self.assertEqual(v.verdict, "clone-infra-failure" if ref_valid else "harness-error")
+                        if ref_valid:
+                            self.assertEqual(v.stage, clone.stage)
+                    if "harness" in (reference.status, clone.status):
+                        self.assertEqual(v.verdict, "harness-error")
+        self.assertEqual(set(seen), set(verdict.VERDICTS))
+
+    def test_mismatch_records_first_divergence(self):
+        v = judge(self.SIG, "lean-meta", Outcome("ok", document=self.DOC), Outcome("ok", document=(3, 0, 4, -2, 0)))
+        self.assertEqual(v.verdict, "observation-mismatch")
+        self.assertEqual(v.divergence, {"id": "v1", "op": "Bltb", "type": "Bool", "reference": [1], "clone": [0]})
+
+    def test_outcome_invariants(self):
+        for bad in (lambda: Outcome("infra"), lambda: Outcome("infra", stage="made-up"),
+                    lambda: Outcome("ok"), lambda: Outcome("match"), lambda: Outcome("kernel-true", stage="timeout")):
+            with self.assertRaises(ValueError):
+                bad()
+        with self.assertRaises(ValueError):
+            Verdict("lean-meta", "sort-of-match")
+
+
+def proc(stdout: str = "", stderr: str = "", returncode: int | None = 0, timed_out: bool = False) -> ProcResult:
+    return ProcResult(("x",), stdout, stderr, returncode, timed_out, 0.0)
+
+
+def message(line: int, severity: str, data: str, kind: str = "[anonymous]") -> str:
+    return json.dumps({"pos": {"line": line, "column": 0}, "severity": severity, "kind": kind, "data": data})
+
+
+class ParserTests(unittest.TestCase):
+    def test_rocq(self):
+        out = "FSCASE a\nOK [1; -2]\nFSCASE b\nOK\n[1; 2;\n 3]\nFSCASE c\nTIMEOUT\n"
+        got = parse_rocq(out, "", 0, False, ["a", "b", "c", "d"])
+        self.assertEqual(got["a"].document, (1, -2))
+        self.assertEqual(got["b"].document, (1, 2, 3))
+        self.assertEqual((got["c"].status, got["c"].stage), ("infra", "timeout"))
+        self.assertEqual(got["d"].status, "harness")
+        for stderr, code, timed_out in (("Error: x", 1, False), ("", 1, False), ("warning", 0, False), ("", None, True)):
+            got = parse_rocq(out, stderr, code, timed_out, ["a", "b"])
+            self.assertTrue(all(o.status == "harness" for o in got.values()))
+
+    def test_meta(self):
+        ranges = {"a": (10, 12), "b": (13, 15), "c": (16, 18), "d": (19, 21), "e": (22, 24)}
+        lines = [message(12, "information", "[Int.ofNat 3, Int.negSucc 1]"),
+                 message(15, "error", "failed", "lean.synthInstanceFailed._namedError"),
+                 message(15, "information", "?m.6.1 1 true"),
+                 message(18, "error", "timeout", "runtime.maxHeartbeats"),
+                 message(21, "information", "BinarySingleNaN.Bplus x ⋯")]
+        got = parse_meta(proc("\n".join(lines) + "\n", returncode=1), ranges)
+        self.assertEqual(got["a"].document, (3, -2))
+        self.assertEqual(got["b"].stage, "lean-elab:synthInstanceFailed")
+        self.assertEqual(got["c"].stage, "heartbeats")
+        self.assertEqual(got["d"].stage, "meta-stuck")
+        self.assertEqual(got["e"].status, "harness")
+        timed = parse_meta(proc(lines[0] + "\n", returncode=None, timed_out=True), ranges)
+        self.assertEqual(timed["e"].stage, "timeout")
+        stray = parse_meta(proc(message(2, "error", "header broke", "lean.x._namedError") + "\n", returncode=1), ranges)
+        self.assertTrue(all(o.status == "harness" for o in stray.values()))
+        anonymous = parse_meta(proc(message(12, "error", "Type mismatch") + "\n", returncode=1), ranges)
+        self.assertEqual(anonymous["a"].status, "harness")
+
+    def test_ir(self):
+        ranges = {"a": (10, 12), "b": (13, 15), "c": (16, 18)}
+        ok = parse_ir(proc("FSOUT a [1, -2]\nFSOUT b [3]\n", "FSBEGIN a\nFSBEGIN b\nFSBEGIN c\n", returncode=0),
+                      ["a", "b", "c"], ranges)
+        self.assertEqual(ok[0]["a"].document, (1, -2))
+        self.assertEqual(ok[0]["c"].stage, "ir-crash")
+        panic = parse_ir(proc("FSOUT a [0]\n", "FSBEGIN a\nPANIC at x\nbacktrace\n", returncode=0), ["a"], ranges)
+        self.assertEqual(panic[0]["a"].stage, "ir-panic")
+        crash = parse_ir(proc("FSOUT a [0]\n", "FSBEGIN a\nFSBEGIN b\nStack overflow\n", returncode=134),
+                         ["a", "b", "c"], ranges)
+        self.assertEqual(crash[0]["b"].stage, "ir-crash")
+        self.assertEqual(crash[1], ["c"])
+        compile_error = parse_ir(proc(message(14, "error", "noncomputable", "lean.dependsOnNoncomputable._namedError")
+                                      + "\n", returncode=1), ["a", "b", "c"], ranges)
+        self.assertEqual(compile_error[0]["b"].stage, "noncomputable")
+        self.assertEqual(compile_error[1], ["a", "c"])
+        garbage = parse_ir(proc("hello\n", "", returncode=0), ["a"], ranges)
+        self.assertEqual(garbage[0]["a"].status, "harness")
+
+    def test_kernel_two_pass(self):
+        ranges = {"a": (10, 12), "b": (13, 15), "c": (16, 18), "d": (19, 21)}
+        first = parse_kernel(proc("\n".join([
+            message(15, "error", DECIDE_REJECTION_PREFIXES[0] + "\n  p\nis false"),
+            message(18, "error", DECIDE_REJECTION_PREFIXES[1] + "\n  p\ndid not reduce"),
+            message(21, "error", "(deterministic) timeout", "runtime.maxHeartbeats")]) + "\n", returncode=1), ranges)
+        self.assertEqual(first["a"], Outcome("kernel-true"))
+        self.assertEqual((first["b"], first["c"]), (REJECTED, REJECTED))
+        self.assertEqual(first["d"].stage, "heartbeats")
+        second = parse_kernel(proc(message(18, "error", DECIDE_REJECTION_PREFIXES[1]) + "\n", returncode=1),
+                              {"b": (13, 15), "c": (16, 18)})
+        final = combine_kernel(first, second)
+        self.assertEqual(final["a"].status, "kernel-true")
+        self.assertEqual(final["b"].status, "kernel-false")
+        self.assertEqual(final["c"].stage, "kernel-stuck")
+        self.assertEqual(combine_kernel({"x": REJECTED}, {})["x"].status, "harness")
+        timed = parse_kernel(proc("", returncode=None, timed_out=True), ranges)
+        self.assertTrue(all(o.stage == "timeout" for o in timed.values()))  # type: ignore[union-attr]
+
+    def test_message_classification_is_by_kind(self):
+        self.assertEqual(harness.classify_error(Message(1, "error", "runtime.maxRecDepth", "x"), "lean-meta").stage,
+                         "max-recdepth")
+        self.assertEqual(harness.classify_error(Message(1, "error", "[anonymous]", "maximum recursion depth"),
+                                                "lean-meta").status, "harness")
 
 
 class CostTests(unittest.TestCase):
@@ -253,6 +431,51 @@ class NumericTests(unittest.TestCase):
             found += tags["tie"] + tags["exact"]
             self.assertFalse(tags["inexact"], (program.fmt.name, values, corner.op))
         self.assertEqual(found, 40)
+
+
+# -- live ----------------------------------------------------------------------
+
+@unittest.skipUnless(LIVE, "live test requires FLOCQ_AUDIT_DIR")
+class LiveTests(unittest.TestCase):
+    """Real Rocq vm_compute and Lean #reduce / lean --run / decide +kernel."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.flocq = Path(os.environ["FLOCQ_AUDIT_DIR"]).resolve()
+        cls.tools = Toolchain(cls.flocq, fb.configured_coqc(cls.flocq))
+
+    def test_generator_validity_every_op_form_and_corner_in_both_provers(self):
+        names = list(FORMATS)
+        configs = [GenConfig(format_weights=((names[k % len(names)], 1),), force_ops=(row.name,), max_size=4)
+                   for k, row in enumerate(OPS)]
+        forms = ["select", "case4", "fold", "branch", *(f"corner:{c}" for c in CORNERS)]
+        configs += [GenConfig(format_weights=((names[(k * 3) % len(names)], 1),), force_forms=(form,), max_size=4)
+                    for k, form in enumerate(forms)]
+        subjects = [Subject(f"valid{k:02d}", generate(Chooser(seed=f"valid:{k}"), config).program, BASELINE)
+                    for k, config in enumerate(configs)]
+        covered = Counter()
+        for s in subjects:
+            covered.update(structural_tags(s.program))
+        self.assertTrue(all(covered[f"op:{row.name}"] for row in OPS))
+        self.assertTrue(all(covered[f"fmt:{name}"] for name in FORMATS))
+        with tempfile.TemporaryDirectory(prefix="flocqsmith-validity-") as directory:
+            batch = execute_batch(subjects, Path(directory) / "batch", self.tools)
+            self.assertTrue(all(o.status == "ok" for o in batch.rocq.values()), "Rocq rejected a program")
+            for case_id, rows in batch.verdicts.items():
+                for v in rows:
+                    self.assertEqual(v.verdict, "match", (case_id, v.to_json()))
+            self.assertEqual(batch.disagreements, [])
+
+    def test_decide_rejection_text_is_pinned(self):
+        subject = Subject("pin", Program(FORMATS["t3_4"], (Stmt("v0", "op", "BSN", op="Bone"),)), BASELINE)
+        with tempfile.TemporaryDirectory(prefix="flocqsmith-decide-") as directory:
+            folder = Path(directory)
+            for negated in (False, True):
+                lean = harness.kernel_file([subject], {"pin": (3, 0, 5, -2)}, 10 ** 7, "", negated=negated)
+                (folder / f"K{negated}.lean").write_text(lean.text)
+                result = harness.run_capture(harness._lean(folder / f"K{negated}.lean"), 600)
+                got = parse_kernel(result, lean.ranges)["pin"]
+                self.assertEqual(got, Outcome("kernel-true") if negated else REJECTED)
 
 
 if __name__ == "__main__":
