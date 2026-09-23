@@ -427,24 +427,21 @@ theorem Fast2Sum_correct (emin prec : Int) [Prec_gt_0 prec]
     intro p q _hp _hq
     have h := RND_Closest_correct (beta:=2) bo 2 prec choice
       (_root_.F2R (beta:=2) p + _root_.F2R (beta:=2) q)
-    simpa only [wp, PostCond.noThrow, pure, RND_Closest_correct_check,
-      Id.run, ULift.up_down, Iplus, PredTrans.pure, PredTrans.apply, SPred.down_pure_nil, Int.cast_ofNat] using h ⟨rfl, hbeta, hprec, hvNum⟩
+    simpa only [Iplus, Int.cast_ofNat] using h rfl hbeta hprec hvNum
   have hIplusCan :
       ∀ p q : FloatSpec.Core.Defs.FlocqFloat 2,
         Fcanonic (beta:=2) 2 bo (Iplus p q) := by
     intro p q
     have h := RND_Closest_canonic (beta:=2) bo 2 prec choice
       (_root_.F2R (beta:=2) p + _root_.F2R (beta:=2) q)
-    simpa only [wp, PostCond.noThrow, pure, RND_Closest_canonic_check,
-      Id.run, ULift.up_down, Iplus, PredTrans.pure, PredTrans.apply, SPred.down_pure_nil, Int.cast_ofNat] using h ⟨rfl, hbeta, hprec, hvNum⟩
+    simpa only [Iplus, Int.cast_ofNat] using h rfl hbeta hprec hvNum
   have hIminusCan :
       ∀ p q : FloatSpec.Core.Defs.FlocqFloat 2,
         Fcanonic (beta:=2) 2 bo (Iminus p q) := by
     intro p q
     have h := RND_Closest_canonic (beta:=2) bo 2 prec choice
       (_root_.F2R (beta:=2) p - _root_.F2R (beta:=2) q)
-    simpa only [wp, PostCond.noThrow, pure, RND_Closest_canonic_check,
-      Id.run, ULift.up_down, Iminus, PredTrans.pure, PredTrans.apply, SPred.down_pure_nil, Int.cast_ofNat] using h ⟨rfl, hbeta, hprec, hvNum⟩
+    simpa only [Iminus, Int.cast_ofNat] using h rfl hbeta hprec hvNum
   have hIplusOp :
       ∀ p q : FloatSpec.Core.Defs.FlocqFloat 2,
         Fopp (beta:=2) (Iplus p q) =
@@ -705,24 +702,21 @@ theorem TwoSum_correct (emin prec : Int) [Prec_gt_0 prec]
     intro p q _hp _hq
     have h := RND_Closest_correct (beta:=2) bo 2 prec choice
       (_root_.F2R (beta:=2) p + _root_.F2R (beta:=2) q)
-    simpa only [wp, PostCond.noThrow, pure, RND_Closest_correct_check,
-      Id.run, ULift.up_down, Iplus, PredTrans.pure, PredTrans.apply, SPred.down_pure_nil, Int.cast_ofNat] using h ⟨rfl, hbeta, hprec, hvNum⟩
+    simpa only [Iplus, Int.cast_ofNat] using h rfl hbeta hprec hvNum
   have hIplusCan :
       ∀ p q : FloatSpec.Core.Defs.FlocqFloat 2,
         Fcanonic (beta:=2) 2 bo (Iplus p q) := by
     intro p q
     have h := RND_Closest_canonic (beta:=2) bo 2 prec choice
       (_root_.F2R (beta:=2) p + _root_.F2R (beta:=2) q)
-    simpa only [wp, PostCond.noThrow, pure, RND_Closest_canonic_check,
-      Id.run, ULift.up_down, Iplus, PredTrans.pure, PredTrans.apply, SPred.down_pure_nil, Int.cast_ofNat] using h ⟨rfl, hbeta, hprec, hvNum⟩
+    simpa only [Iplus, Int.cast_ofNat] using h rfl hbeta hprec hvNum
   have hIminusCan :
       ∀ p q : FloatSpec.Core.Defs.FlocqFloat 2,
         Fcanonic (beta:=2) 2 bo (Iminus p q) := by
     intro p q
     have h := RND_Closest_canonic (beta:=2) bo 2 prec choice
       (_root_.F2R (beta:=2) p - _root_.F2R (beta:=2) q)
-    simpa only [wp, PostCond.noThrow, pure, RND_Closest_canonic_check,
-      Id.run, ULift.up_down, Iminus, PredTrans.pure, PredTrans.apply, SPred.down_pure_nil, Int.cast_ofNat] using h ⟨rfl, hbeta, hprec, hvNum⟩
+    simpa only [Iminus, Int.cast_ofNat] using h rfl hbeta hprec hvNum
   have hIplusCompatible :
       ∀ p q r s : FloatSpec.Core.Defs.FlocqFloat 2,
         Fbounded (beta:=2) bo p → Fbounded (beta:=2) bo q →
@@ -4720,13 +4714,11 @@ theorem ErrFMA_correct (beta emin prec : Int) [ValidRadix beta] [Prec_gt_0 prec]
   have hcan (z : ℝ) :
       Fcanonic (beta:=beta) beta bo (RND_Closest (beta:=beta) bo beta prec choice z) := by
     have h := RND_Closest_canonic (beta:=beta) bo beta prec choice z
-    simpa only [wp, PostCond.noThrow, pure, RND_Closest_canonic_check,
-      Id.run, ULift.up_down, PredTrans.pure, PredTrans.apply, SPred.down_pure_nil, Int.cast_ofNat] using h ⟨rfl, hβ, hprec, hvNum⟩
+    simpa only [Int.cast_ofNat] using h rfl hβ hprec hvNum
   have hclose (z : ℝ) : Closest (beta:=beta) bo (beta : ℝ) z
       (RND_Closest (beta:=beta) bo beta prec choice z) := by
     have h := RND_Closest_correct (beta:=beta) bo beta prec choice z
-    simpa only [wp, PostCond.noThrow, pure, RND_Closest_correct_check,
-      Id.run, ULift.up_down, PredTrans.pure, PredTrans.apply, SPred.down_pure_nil, Int.cast_ofNat] using h ⟨rfl, hβ, hprec, hvNum⟩
+    simpa only [Int.cast_ofNat] using h rfl hβ hprec hvNum
   have hval (z : ℝ) :
       _root_.F2R (beta:=beta) (RND_Closest (beta:=beta) bo beta prec choice z) =
         FloatSpec.Core.Generic_fmt.roundR beta (FLT_exp emin prec) rnd z := by
@@ -4825,21 +4817,19 @@ theorem ErrFMA_correct (beta emin prec : Int) [ValidRadix beta] [Prec_gt_0 prec]
           _root_.F2R (beta:=beta) fy =
         _root_.F2R (beta:=beta) fr1 + _root_.F2R (beta:=beta) fga +
           _root_.F2R (beta:=beta) fal2 := by
-    simpa only [wp, PostCond.noThrow, pure, FmaErr_check, Id.run, ULift.up_down,
-      PredTrans.pure, PredTrans.apply, SPred.down_pure_nil]
-      using hfma
-        ⟨rfl, hβ, hvNum, by omega, hEven, hPClosest, hPCompat,
-          hfa.2, hfx.2, hfy.2, hfbe1Can, hfr1Can, hfal1Can, hfu1Can,
-          hfal1Exp, hfu1Exp, hfbe1Exp, hfr1Normal, hprodExp,
-          by simpa [fu1, hfa.1, hfx.1, PredTrans.pure, PredTrans.apply, SPred.down_pure_nil, Int.cast_ofNat] using hclose (a*x),
-          by rw [hfu2.1, hfa.1, hfx.1, hfu1Val],
-          by simpa [fal1, hfy.1, hfu2.1] using hclose (y+u2),
-          by rw [hfal2.1, hfy.1, hfu2.1, hfal1Val],
-          by rw [hfbe2.1, hfu1Val, hfal1Val, hfbe1Val],
-          by simpa [fgat, hfbe1Val, hfr1Val] using hclose (beta1-r1),
-          by simpa [fga, hfgatVal, hfbe2.1] using hclose (gat+beta2),
-          by simp [P, fr1, hfa.1, hfx.1, hfy.1],
-          by simp [P, fbe1, hfu1Val, hfal1Val]⟩
+    exact hfma
+        rfl hβ hvNum (by omega) hEven hPClosest hPCompat
+          hfa.2 hfx.2 hfy.2 hfbe1Can hfr1Can hfal1Can hfu1Can
+          hfal1Exp hfu1Exp hfbe1Exp hfr1Normal hprodExp
+          (by simpa [fu1, hfa.1, hfx.1, PredTrans.pure, PredTrans.apply, SPred.down_pure_nil, Int.cast_ofNat] using hclose (a*x))
+          (by rw [hfu2.1, hfa.1, hfx.1, hfu1Val])
+          (by simpa [fal1, hfy.1, hfu2.1] using hclose (y+u2))
+          (by rw [hfal2.1, hfy.1, hfu2.1, hfal1Val])
+          (by rw [hfbe2.1, hfu1Val, hfal1Val, hfbe1Val])
+          (by simpa [fgat, hfbe1Val, hfr1Val] using hclose (beta1-r1))
+          (by simpa [fga, hfgatVal, hfbe2.1] using hclose (gat+beta2))
+          (by simp [P, fr1, hfa.1, hfx.1, hfy.1])
+          (by simp [P, fbe1, hfu1Val, hfal1Val])
   have hcore : a * x + y = r1 + gamma + alpha2 := by
     simpa [hfa.1, hfx.1, hfy.1, hfr1Val, hfgaVal, hfal2.1] using hcorePff
   simpa [rnd, r1, u1, u2, alpha1, alpha2, beta1, beta2, gat, gamma] using
@@ -5611,8 +5601,7 @@ theorem Axpy_from_min_or_max (emin prec : Int) [Prec_gt_0 prec]
         isMin (beta:=2) bo 2 (y + a * x)
           (RND_Min (beta:=2) bo 2 prec (y + a * x)) := by
       have h := RND_Min_correct (beta:=2) bo 2 prec (y + a * x)
-      simpa only [wp, PostCond.noThrow, pure, RND_Min_correct_check,
-        Id.run, ULift.up_down, PredTrans.pure, PredTrans.apply, SPred.down_pure_nil, Int.cast_ofNat] using h ⟨rfl, hβ, hprec, hvnum⟩
+      simpa only [Int.cast_ofNat] using h rfl hβ hprec hvnum
     have hval_eq :
         _root_.F2R (beta:=2) ftv =
           _root_.F2R (beta:=2) (RND_Min (beta:=2) bo 2 prec (y + a * x)) :=
@@ -5634,8 +5623,7 @@ theorem Axpy_from_min_or_max (emin prec : Int) [Prec_gt_0 prec]
         isMax (beta:=2) bo 2 (y + a * x)
           (RND_Max (beta:=2) bo 2 prec (y + a * x)) := by
       have h := RND_Max_correct (beta:=2) bo 2 prec (y + a * x)
-      simpa only [wp, PostCond.noThrow, pure, RND_Max_correct_check,
-        Id.run, ULift.up_down, PredTrans.pure, PredTrans.apply, SPred.down_pure_nil, Int.cast_ofNat] using h ⟨rfl, hβ, hprec, hvnum⟩
+      simpa only [Int.cast_ofNat] using h rfl hβ hprec hvnum
     have hval_eq :
         _root_.F2R (beta:=2) ftv =
           _root_.F2R (beta:=2) (RND_Max (beta:=2) bo 2 prec (y + a * x)) :=
@@ -5780,11 +5768,10 @@ theorem Axpy (emin prec : Int) [Prec_gt_0 prec]
       FloatSpec.Core.Raux.bpow] using H2
   have hMinMax : MinOrMax (beta:=2) bo 2 (a * x + y) ftv := by
     have h := Axpy_opt (beta:=2) bo prec.toNat fta ftx fty fg ftv a x y
-    simpa only [wp, PostCond.noThrow, pure, Axpy_opt_check,
-      Id.run, ULift.up_down, PredTrans.pure, PredTrans.apply, SPred.down_pure_nil, Int.cast_ofNat] using h
-      ⟨hftaBound, hftxBound, hftyBound, hfgClose.1, hftvClose.1,
-        hproductClose, hsumClose, by simpa [bo] using hftvCan,
-        by simpa [bo] using hfgCan, hlarge, herror, rfl, by omega, hvNum⟩
+    simpa only [Int.cast_ofNat] using h
+      hftaBound hftxBound hftyBound hfgClose.1 hftvClose.1
+        hproductClose hsumClose (by simpa [bo] using hftvCan)
+        (by simpa [bo] using hfgCan) hlarge herror rfl (by omega) hvNum
   have hbridge := Axpy_from_min_or_max (emin:=emin) (prec:=prec)
     (a:=a) (x:=x) (y:=y) (tv:=tv)
   simpa [wp, PostCond.noThrow, pure, Axpy_from_min_or_max_check, Id.run,
@@ -6886,17 +6873,16 @@ private theorem discri_correct_test_nonexceptional
         2 * Fulp (beta:=2) bo 2 prec.toNat fd := by
     have h := discri (beta:=2) bo 2 prec.toNat
       fa fb fc fp fq ft fdp fdq fs fd
-    simpa only [wp, PostCond.noThrow, pure, discri_source_check, Id.run,
-      ULift.up_down, PredTrans.pure, PredTrans.apply, SPred.down_pure_nil, Int.cast_ofNat] using h
-      ⟨rfl, rfl, hprecNatGt, hvNum, hfaBound, hfbBound, hfcBound,
-        hfpBound, hfqBound, hfdBound, hftBound, hfsBound, hfdpBound,
-        hfdqBound, by omega, by omega, hprod1, hprod2,
-        Or.inr hfpNormal, Or.inr hfqNormal,
-        by simpa [hfpAlg, hfqAlg, hfsAlg] using hfsNormalIf,
-        hfdNormal, hRoundp, hRoundq, hFirstRound, hRoundtIf,
-        by intro _; simpa [hfdpVal, hfbVal, hfpAlg, dp],
-        by intro _; simpa [hfdqVal, hfaVal, hfcVal, hfqAlg, dq],
-        hRoundsIf, hRounddIf⟩
+    simpa only [Int.cast_ofNat] using h
+      rfl rfl hprecNatGt hvNum hfaBound hfbBound hfcBound
+        hfpBound hfqBound hfdBound hftBound hfsBound hfdpBound
+        hfdqBound (by omega) (by omega) hprod1 hprod2
+        (Or.inr hfpNormal) (Or.inr hfqNormal)
+        (by simpa [hfpAlg, hfqAlg, hfsAlg] using hfsNormalIf)
+        hfdNormal hRoundp hRoundq hFirstRound hRoundtIf
+        (by intro _; simpa [hfdpVal, hfbVal, hfpAlg, dp])
+        (by intro _; simpa [hfdqVal, hfaVal, hfcVal, hfqAlg, dq])
+        hRoundsIf hRounddIf
   exact discri_bound_from_pff_delta (emin := emin) (prec := prec)
     (d := d) (target := b * b - a * c) (fd := fd) hprec hemin hfdVal
     (by simpa [bo] using hfdBound)
@@ -7355,14 +7341,13 @@ theorem discri_fp_test (emin prec : Int) [Prec_gt_0 prec]
         2 * Fulp (beta:=2) bo 2 prec.toNat fd := by
     have h := discri16 (beta:=2) bo 2 prec.toNat
       fa fb fc fp fq ft fdp fdq fs fd fu fv
-    simpa only [wp, PostCond.noThrow, pure, discri16_check, Id.run,
-      ULift.up_down, PredTrans.pure, PredTrans.apply, SPred.down_pure_nil, Int.cast_ofNat] using h
-      ⟨rfl, rfl, hprecNatGt, hprecNat4, hvNum, hfaBound, hfbBound,
-        hfcBound, fun _ => hfdpBound, fun _ => hfdqBound, hU1, hU2,
-        hRoundp, hRoundq, hRoundt, hRoundu, hRoundv, hFRoundd,
-        by simpa [hfdpVal, hfbVal, hfpAlg, dp],
-        by simpa [hfdqVal, hfaVal, hfcVal, hfqAlg, dq],
-        hSRounds, hSRoundd⟩
+    simpa only [Int.cast_ofNat] using h
+      rfl rfl hprecNatGt hprecNat4 hvNum hfaBound hfbBound
+        hfcBound (fun _ => hfdpBound) (fun _ => hfdqBound) hU1 hU2
+        hRoundp hRoundq hRoundt hRoundu hRoundv hFRoundd
+        (by simpa [hfdpVal, hfbVal, hfpAlg, dp])
+        (by simpa [hfdqVal, hfaVal, hfcVal, hfqAlg, dq])
+        hSRounds hSRoundd
   have hdelta := hsplit.resolve_left (by
     intro hfdZero
     apply hdNe
