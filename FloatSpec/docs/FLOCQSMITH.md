@@ -90,9 +90,10 @@ provide:
 - **Generated boundary pressure across formats**, from precision 1 through
   binary16, bfloat16-shaped, binary32 and binary64, in all five modes.
   Coverage is measured per tag instead of hand-listed per family.
-- **Programs taken from real Flocq clients.** Flocq's own `examples/`,
-  CompCert, VCFloat, CoqInterval and LAProof are trimmed to their Flocq-only
-  cores (section 11).
+- **Programs taken from real Flocq clients.** Programs from Flocq's own
+  `examples/` and from CompCert are trimmed to their Flocq-only cores and run
+  on both sides (section 11). VCFloat, CoqInterval and LAProof were surveyed
+  but are not ported yet.
 - **Per-case attribution.** Today any failure, stray stderr output or timeout
   aborts the whole run (`run()` at lines 1250-1274; `main` at 1499-1502).
   That is correct for fixed families but wrong for generated programs, where
@@ -823,6 +824,31 @@ source could be committed or left in a build. The existing precedent is
 requires each replacement string to occur exactly once, and asserts that the
 mismatch appears on both Lean paths and only in the expected columns.
 
+**As implemented (2026-09-23).** `scripts/flocqsmith/mutants.py` has 13
+controls. Three change an encoder or the renderer: the BSN encoder flips
+the sign of finite values, the Boolean encoder is negated, and the renderer
+swaps UP and DN. Ten are planted semantic defects. Five of them are §10.2
+families: tie handling (`tie_rne_as_rna`), mode dispatch
+(`updn_swap_negative`), the ZR overflow result (`zr_overflow_to_inf`), the
+FLT emin clamp (`subnormal_exp_off_by_one`) and `Bsucc` at the maximum
+(`succ_max_saturates`). The other five are `dn_zero_sign`,
+`fma_double_rounding`, `ltb_as_leb`, `trunc_floor` and
+`nearbyint_na_as_ne`. A control is a Lean rendering
+policy; its wrappers are written into the preamble of the generated Lean
+files, never into a copied table or under `FloatSpec/`.
+
+The rest of this section is still design only:
+
+- the other §10.1 mutations (mantissa or exponent ±1, zero ↔ finite,
+  payload dropped, `lt ↔ gt`, RNE ↔ RNA in the renderer, reordered
+  observations and a changed format parameter);
+- the requirement-driven control pool;
+- two §10.2 families: the Calc `truncate` location defect, and NaN operand
+  selection, which needs the unimplemented `B` world;
+- a declared bound on cases to first detection. Reports record that
+  number, but the live test only requires at least one detection;
+- degenerate clones (§10.3) and fix-pair campaigns (§10.4).
+
 ### 10.1 Encoder and renderer shape matrix
 
 Mutate one Lean encoder or template in a temporary copy of the table. The
@@ -947,6 +973,16 @@ A re-extraction script fetches the pinned commit, applies the manifest, and
 fails closed if the upstream text has drifted. Trimmed text lives only in the
 batch folder, or in an isolated fixture directory that keeps its original
 headers.
+
+**As implemented (2026-09-22).** The eight exemplars in
+`scripts/fixtures/exemplars/` take the second option. The trimmed text is
+committed there with its upstream header and licence. The README's "Trim
+manifests" section records in prose what was kept verbatim and what was
+replaced. There is no re-extraction script. Only `Compute.v` is checked byte
+for byte against the pinned upstream file, so the other trims could drift
+from upstream without any check noticing. Whether committing the
+CompCert-derived text is acceptable is still open question 2 (§16). VCFloat,
+CoqInterval and LAProof in the table above are surveyed, not ported.
 
 ### 11.2 Seeds, in order
 
@@ -1150,9 +1186,9 @@ kernel. So programs may be DAGs without blowing up exponentially.
 | No Flocq-executable export in Binary/BSN/Bits/PrimFloat/Calc is missing from the Lean side | **Observed once.** Scratch probe, 2026-09-22: 40 groups, `#eval` and `#reduce` against Rocq `vm_compute`, all equal. Not committed, and not a gate. |
 | Composed BSN programs agree | **Observed once.** Scratch smoke: 150 programs, size 10, five formats, 7,410 observed integers, 0 mismatches across `lean-meta`, `lean-ir` and `rocq-vm`; 150 `decide +kernel` regressions passed. Caveats: 47% of finite raw leaves were non-canonical (§3.5), and features were counted from rendered text (§4.5). |
 | Select, branch-local tagged blocks, unrolled folds and binary16 (BSN and generic Bits) render and agree | **Observed once**, for this document. 2 programs on 4 paths (§3.7). Binary16 words `0x7E01`, `0x7C01`, `0x8000`, `0x0001` and `0x7BFF` re-encoded identically. The minimum subnormal decoded as `[3,0,1,-24]` and the maximum finite as `[3,0,2047,5]` (65504). |
-| `case4` (match on `Bcompare`), the rolled-fold control, and `Fl(β)` programs at β ≠ 2 | **Designed, not run.** |
+| The rolled-fold control, and `Fl(β)` programs at β ≠ 2 | **Designed, not run.** (`case4`, a match on `Bcompare`, was listed here before it was built. It now runs: the 2026-09-23 campaigns judged 1,540 `case4` statements.) |
 | `Compute.v` trim agrees | **Observed once.** Scratch: 104/104 observations on three paths. |
-| Exemplar feasibility | **Observed once**, all scratch: Cody–Waite 8 inputs; CompCert conversion identities 88/88; Sqrt_sqr §6 radix 5, all 125 mantissas × 4 choice pairs; Division_u16 16 × 3 frcpa models; CoqInterval `Generic.v` against `Compute.v` 72/72, **Rocq only**. The CompCert NaN-payload flow is **Rocq only**. |
+| Exemplar feasibility | **Observed once**, all scratch: Cody–Waite 8 inputs; CompCert conversion identities 88/88; Sqrt_sqr §6 radix 5, all 125 mantissas × 4 choice pairs; Division_u16 16 × 3 frcpa models; CoqInterval `Generic.v` against `Compute.v` 72/72, **Rocq only**. The CompCert NaN-payload flow was **Rocq only** in this probe. The committed exemplar lane (§11.1 note) supersedes these probes: `CompCertNaN` now runs the NaN flow on both sides. The CoqInterval comparison remains an uncommitted, Rocq-only probe. |
 | Rocq per-case `timeout` wrapper; the Lean `--json` failed-`#reduce` hazard | **Observed**, and re-run for this document. |
 | Adapter mislabel and hidden kernel skip in `flocq_bridge.py` | **Observed in source.** Fix not in this commit (§2). |
 
@@ -1254,9 +1290,12 @@ What building the slice changed or added, each with the incident behind it:
 Build one vertical slice first, then extend. Each step names the incident or
 need that justifies it.
 
-Progress: steps 1-5 and 10 are done for the BSN world, and the
-campaign-integrity half of step 9. Steps 0, 6, 7, 8 and the ledger half of
-step 9 remain.
+Progress: for the BSN world, steps 1-5 and 10 are done, as is the
+campaign-integrity half of step 9. Step 7 is done in
+`scripts/flocq_exemplars.py`, with prose trim manifests and no
+re-extraction script (§11.1 note). Of step 6, only `select`/`branch`/`fold_k`
+are done. Step 0, the rest of step 6, step 8 and the ledger half of step 9
+remain.
 
 0. **Adapter naming.** Rename the paths in `flocq_bridge.py` and
    THREE_VERIFICATION_LOOPS.md, and give `lean-kernel` a per-case judged
