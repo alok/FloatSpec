@@ -143,6 +143,11 @@ class BatchTests(unittest.TestCase):
             self.assertEqual(len(json.loads((output / 'cases.json').read_text())), len(cases))
             self.assertEqual(report['batch_policy'],
                              'ordered mixed-light and homogeneous capped-heavy')
+            # Each observation key and the kernel count carry their honest path name.
+            self.assertEqual({key: label.split(':')[0] for key, label in report['execution_paths'].items()},
+                             {'rocq': 'rocq-vm', 'lean': 'lean-meta', 'compiled': 'lean-ir',
+                              'bootstrapped_lean_cases': 'lean-kernel'})
+            self.assertIn('bootstrapped_lean_cases', report)
             self.assertEqual(observed, bootstrapped)
             return report, observed, cases
 

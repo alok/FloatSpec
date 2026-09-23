@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """Execute source ldexp/frexp in Lean and Rocq, retaining exact NaN payloads.
 
-Compiled Lean, kernel reduction, and pinned Rocq must agree on every column.
+Lean on lean-ir (`lean --run`) and lean-meta (`#reduce`, not the kernel) and
+pinned Rocq must agree on every column; a batch whose lean-meta rows all agree
+becomes lean-kernel (`decide +kernel`) regressions.
 A fourth, native Float/Float32 path checks scaleB only for nearest-even mode,
 and frExp only for nonzero finite values. Its other observations are retained
 but are not mistaken for assertions outside those operation contracts.
@@ -203,7 +205,8 @@ def main():
               "fresh_build": not args.skip_build, "status": "running", "compared_cases": 0,
               "bootstrapped_lean_cases": 0, "mismatches": [], "native_scope_exceptions": [],
               "groups": dict(Counter(f"binary{c[0]}:{MODES[c[1]]}" for c in cases)),
-              "method": "Exact compiled/kernel/Rocq scale/decompose; native nearest-even scale and finite frexp"}
+              "method": "Exact lean-ir/lean-meta/Rocq scale/decompose, lean-kernel regressions of agreeing "
+                        "batches; native nearest-even scale and finite frexp"}
     def save():
         (output / "report.json").write_text(json.dumps(report, indent=2) + "\n")
         if report["mismatches"]:

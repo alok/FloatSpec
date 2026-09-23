@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
-"""Compare native Lean binary64, compiled/kernel Lean models, and pinned Flocq.
+"""Compare native Lean binary64, the Lean logical model, and pinned Flocq.
 
 All inputs are raw uint64 words. NaNs are canonicalized explicitly through the
 single-NaN observation model. Native frexp equality is checked only on nonzero
-finite inputs; exceptional observations are still retained and reported. Both compiled and kernel
-Lean-model results are compared with Rocq, including exceptional inputs, and each
-agreeing result is promoted to a kernel-checked Lean equality.
+finite inputs; exceptional observations are still retained and reported. The
+native path is lean-ir (`lean --run`) whose `Float` operations are native FFI
+calls. The model runs on lean-ir and on lean-meta (`#reduce`, not the kernel),
+and both are compared with Rocq, including exceptional inputs. When every
+lean-meta row of a batch agrees, each is promoted to a lean-kernel
+(`decide +kernel`) equality; one disagreement withholds the whole batch.
 """
 
 from __future__ import annotations
@@ -177,7 +180,8 @@ def main() -> None:
               "lean_version": run(["lake", "env", "lean", "--version"]).strip(),
               "rocq_version": run([coqc, "--version"]).strip(),
               "host": run(["uname", "-sm"]).strip(),
-              "method": "Native FFI execution, compiled Lean model, Lean kernel reduction, Rocq vm_compute",
+              "method": "Native Float FFI (under lean --run), lean-ir and lean-meta model, lean-kernel "
+                        "regressions of agreeing batches, Rocq vm_compute",
               "nan_observation": "single canonical NaN; payload identity not claimed",
               "compared_cases": 0, "compiled_model_cases": 0, "bootstrapped_lean_cases": 0,
               "mismatches": [], "exceptional_frexp_observations": []}

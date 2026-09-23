@@ -1,5 +1,25 @@
 # Run the three verification loops
 
+## Execution path names
+
+Earlier bridge descriptions called two Lean paths "compiled Lean" and "kernel
+reduction". Neither name was accurate. This document uses these names:
+
+| Name | What runs | What it is |
+|---|---|---|
+| `rocq-vm` | `coqc` with `Eval vm_compute`, on the pinned Flocq | the reference |
+| `lean-meta` | `#reduce`, which is `Lean.Meta.reduce` at transparency `.all` | the elaborator's reducer, **not** the kernel |
+| `lean-ir` | `lean --run`, and `#eval`: Lean compiles to its IR and interprets it | the IR interpreter; native code runs only for builtin and `@[extern]` symbols, such as `Float` operations; **not** a native build of FloatSpec |
+| `lean-kernel` | `example : expr = expected := by decide +kernel`, with Rocq's rows as `expected` | the kernel, and the only bridge path that reaches it |
+| `lean-native` | `lake exe` of a compiled executable, such as `floatspec_demo` | native code for FloatSpec itself |
+
+The report keys are older than these names and stay as they are: `lean` is
+lean-meta, `compiled` and `compiled_model` are lean-ir, and
+`bootstrapped_lean_cases` counts lean-kernel equalities. Reports from
+`flocq_bridge.py` carry this mapping in `execution_paths`, and each batch
+records its own `kernel_checked_cases`. The native adapters' `native` path is
+lean-ir, with each `Float` operation running as a native FFI call.
+
 ## Hosted CI and required prerequisites
 
 The workflow now installs **Rocq 9.1.0 and Stdlib 9.0.0**, initializes
@@ -50,8 +70,9 @@ every declaration of all 35 back through the kernel (436 declarations, about
 `#print axioms` reports as axiom-free, and only a replay sees that however it
 is spelled.
 CI then runs a 4,309-case core shared-input bridge (seed 865509, five random
-cases per selected family plus boundary grids), generated Lean kernel
-equalities and six permanent counterexample replays: raw IEEE rounding, raw
+cases per selected family plus boundary grids) on lean-meta, lean-ir and
+rocq-vm, generated lean-kernel equalities and six permanent counterexample
+replays: raw IEEE rounding, raw
 overflow, primitive comparison, primitive conversion, Pff sign laws and Pff
 integer division. A final step fails unless every piece of evidence exists: one
 `.vo` per Rocq fixture, one report per replay, the reference build, fixture,
@@ -181,7 +202,7 @@ Select the compiler matching the pinned reference build (locally Rocq 9.2 at
 The tests reject four contract mutations per assistant. Snapshot `f2fb5d00`
 passes 228 deduplicated power cases in all three execution paths and 228
 generated kernel equalities. Existing live runner tests also reject a Lean
-negative-exponent/natAbs mutation and a compiled-only wrong answer.
+negative-exponent/natAbs mutation and a wrong answer on lean-ir alone.
 
 ## Source-ordered prelude (September 21)
 
@@ -334,8 +355,8 @@ replace the universal Lean observer proofs or certify the whole Pff facade.
 `Zquotient`, `ZdividesP` and `maxDiv` exports. The Lean fixture also proves that
 the constructive `maxDiv` agrees universally with its prior classical body.
 That preservation theorem is separate from cross-assistant finite agreement.
-`Pdiv`, `Zquotient` and `ZdividesP` transcribe Coq's bodies, and compiled
-code, kernel equalities and the `#reduce` path all run those transcriptions.
+`Pdiv`, `Zquotient` and `ZdividesP` transcribe Coq's bodies, and lean-ir,
+lean-meta and lean-kernel all run those transcriptions.
 Closed theorems equate the first two with natural division and `Int.tdiv`.
 Here "constructive" means executable: `ZdividesP` and `maxDiv` list
 `Classical.choice` only through erased proof fields.
@@ -403,9 +424,9 @@ on `LEAN_PATH`. Both admission gates do scan the exemplar sources. The
 inventory tests require every registered exemplar to have its own live test
 and the folder to hold nothing but the pairs and their README.
 
-The Lean side runs compiled definitions through `#eval`; it has no
-kernel-reduction path yet. Agreement is finite testing of these programs,
-not an equivalence proof.
+The Lean side evaluates with `#eval`, which is the lean-ir path; the
+exemplar lane has no lean-meta or lean-kernel path yet. Agreement is finite
+testing of these programs, not an equivalence proof.
 
 ## 1. Lean checks itself
 
@@ -427,7 +448,7 @@ These Lean statements are proved by reduction in the kernel, without
 finite grids, not all integers.
 
 `Test/BitsExecution.lean` additionally executes 10,000 binary32 and 10,000
-binary64 decode/re-encode roundtrips in compiled Lean, retaining NaN payloads.
+binary64 decode/re-encode roundtrips with `#eval` (lean-ir), retaining NaN payloads.
 It uses a documented fixed-seed recurrence, not floating-point arithmetic to
 generate inputs. Kernel examples separately pin ordinary values and a signed
 signaling NaN. The paired `BitsProperties.v` checks the same independent
@@ -485,7 +506,7 @@ The standalone paired fixtures add independent contract and error checks:
   through both the direct and source-mode SingleNaN APIs. The cases cover
   overflow, signed cancellation, underflow ties, square root, and an FMA whose
   unrounded intermediate product would overflow if evaluated separately.
-  Lean checks both APIs by kernel reduction and compiled execution; the paired
+  Lean checks both APIs with `decide +kernel` and with `#eval` (lean-ir); the paired
   Rocq fixture proves the same literal results independently.
 - `MultiplicationErrorGrid`: 55 independently enumerated exact inputs and
   5,385 multiplication-error representability checks in all five modes.
@@ -696,8 +717,8 @@ A sixteenth family executes the integer-width `Bits.Source.join_bits` and
 It observes packing, splitting, and both compositions. A negative shift is a
 right shift, not a clamp to width zero. These total-function tests do not assert
 the roundtrip theorem outside its width/field hypotheses. An 836-case run
-(seed `593873`, 500 random inputs) agreed in compiled Lean, kernel reduction,
-and Rocq and generated 836 passing kernel regression equalities.
+(seed `593873`, 500 random inputs) agreed on lean-ir, lean-meta and Rocq,
+and all 836 generated lean-kernel equalities passed.
 
 Two further families execute the fixed-width comparison APIs, negation,
 absolute value, proof erasure, predecessor, and successor. Their fourteen output
@@ -724,8 +745,8 @@ must reproduce the noncanonical `(mantissa=1, exponent=0)` failure.
 The fifteenth observation column now checks the repaired legacy
 `valid_binary_SF` name independently too. Its always-true predecessor disagreed
 with Rocq on three of a five-case red corpus; that corpus is retained for
-replay. A separate deliberate always-true mutation must be rejected in both
-compiled Lean and kernel reduction.
+replay. A separate deliberate always-true mutation must be rejected on both
+lean-ir and lean-meta.
 
 The twenty-first family directly exercises generic SingleNaN successor,
 predecessor, and ulp across precisions 1, 2, 3, 4, 24, and 53, with seeded
@@ -736,7 +757,7 @@ overflow boundary, and include signed zero, infinities, NaN, and invalid raw
 carriers. Invalid raw inputs are visibly rejected to NaN before arithmetic;
 they are not mislabeled as valid arithmetic inputs. The operation's precision
 premises `0 < prec < emax` remain enforced. A successor-to-predecessor mutation
-must fail in both compiled Lean and kernel reduction against Rocq.
+must fail on both lean-ir and lean-meta against Rocq.
 
 The twenty-second family executes generic comparison over ten formats,
 including nonpositive precision and `emax <= prec`. These exports have no
@@ -806,18 +827,19 @@ uv run scripts/flocq_bridge.py --flocq-dir /path/to/pinned-flocq \
   --replay scripts/fixtures/RawIEEERoundingReplay.json
 ```
 
-Lean both executes compiled calls with `--run` and reduces them with `#reduce`;
-Rocq uses `vm_compute`. Enabling compiled execution required removing
+Lean runs each call on lean-ir (`lean --run`) and on lean-meta (`#reduce`);
+Rocq uses `vm_compute`. Neither Lean path is the kernel, and lean-ir is not
+native code. Enabling lean-ir execution required removing
 unnecessary `noncomputable` markers from twelve integer-only Calc definitions
 and three bit decoders; their bodies and public types did not change. The runner rejects
 compiler failures, unknown output, abbreviated output, missing rows, and empty
 corpora. It compares all expected columns of all three result streams. For
-every case whose `#reduce` row equals Rocq's, it then generates, in
+every case whose lean-meta row equals Rocq's, it then generates, in
 `OracleRegressions.lean`, a separate equality statement with Rocq's observed
-values as the expected results, and Lean checks each with `decide +kernel`.
-Separate statements avoid the expensive normalization
+values as the expected results, and Lean checks each with `decide +kernel`:
+the lean-kernel path. Separate statements avoid the expensive normalization
 of one enormous conjunction/list equality for the more complex operations.
-The choice is per case. Earlier, one `#reduce` mismatch withheld the whole
+The choice is per case. Earlier, one lean-meta mismatch withheld the whole
 batch from the kernel without saying so. Now only the mismatched case is
 left out, the mismatch still fails the run, and each entry of the report's
 `batches` list gives `kernel_checked_cases` and the `not_kernel_checked`
@@ -957,9 +979,9 @@ both Lean execution paths.
 
 The requested batch size is a maximum, not a promise to put every family in
 one large compiler input. The three primitive families are capped at 25 cases
-per homogeneous batch: a saved 200-case arithmetic input exceeded the kernel
-runner's 120-second limit, while the same inputs passed in eight smaller
-batches. Input order, duplicates, global case indices, and replay contents are
+per homogeneous batch: a saved 200-case arithmetic input exceeded the
+120-second limit of its lean-meta (`#reduce`) process, while the same inputs
+passed in eight smaller batches. Input order, duplicates, global case indices, and replay contents are
 preserved. Ordinary families may share a batch: each result row is still
 validated against its own operation's exact column count. For seed `848933`
 and 100 samples, this reduces 48,614 unchanged inputs from 2,502 mostly tiny
@@ -995,7 +1017,7 @@ checks this driver runs that per-push CI does not: `LOCAL_CORPORA` in
 `--samples 100` grid of `flocq_bridge.py`). Live mutations recreate the
 historical negative-exponent bug and replace
 native successor by predecessor, swap native arithmetic operands, and alter
-only compiled Lean while kernel/Rocq still agree. Each
+only lean-ir while lean-meta, lean-kernel and Rocq still agree. Each
 mutation must cause a failed comparison
 and emit a replay case. The temporary reference worktree is removed; bridge
 artifacts are retained at the paths printed by the runners.
@@ -1039,11 +1061,12 @@ unit tests, and the required live Rocq bridge and paired-client suites.
 
 ## 5. Native binary64: four execution paths, one input
 
-`scripts/native_ieee_bridge.py` adds actual native execution via `lean --run`
-and its floating-point FFI. For each raw 64-bit input, it compares five fields:
+`scripts/native_ieee_bridge.py` adds native execution of Lean's `Float`
+operations: `lean --run` interprets the harness, and each `Float` operation
+calls its native `@[extern]` implementation. For each raw 64-bit input, it compares five fields:
 decoded/canonicalized input, successor, predecessor, `frExp` significand, and
-signed `frExp` exponent. Three further paths execute the Lean logical Flocq
-carrier as compiled code, reduce that same carrier in the kernel, and execute
+signed `frExp` exponent. Three further paths run the Lean logical Flocq
+carrier on lean-ir and on lean-meta, and execute
 the pinned Rocq definitions with `vm_compute`. These are four execution paths
 inside the three verification loops, not four independent algorithms or proofs.
 The logical model adapter is executable without changing its body or type.
@@ -1066,16 +1089,18 @@ Two qualifications are deliberate and visible in the report:
   execution in `scripts/fixtures/NativeFrexpAgreement.lean`, not by the kernel. The observed exceptional exponent is `0` on this
   Mac, versus `-2101` in the logical Flocq model. Those exceptional observations
   remain in the report; their input decoding and successor/predecessor results
-  are still compared. Both compiled-model and kernel-model versus Rocq
+  are still compared. Both the lean-ir and the lean-meta model versus Rocq
   comparisons include **all** fields on **all** inputs, including exceptions.
 
-Every agreeing model/Rocq row becomes a checked Lean equality. This proves the
+When every lean-meta model row of a batch agrees with Rocq, each row becomes a
+lean-kernel equality; a batch with any disagreement gets none (unlike
+`flocq_bridge.py`, which now chooses per case). This proves the
 individual logical-model result, not the native FFI correspondence theorem.
 The native minimum-subnormal case is also a permanent model regression in
 `FloatSpec/Test/NativeIEEE.lean`, paired with `scripts/fixtures/NativeIEEE.v`.
-Independent mutations alter only native successor or only compiled-model
-observations. A compiled-only error must still produce a mismatch and replay
-even when the separate kernel/Rocq equality proof succeeds.
+Independent mutations alter only native successor or only lean-ir model
+observations. A lean-ir-only error must still produce a mismatch and replay
+even when the separate lean-kernel equality proof succeeds.
 
 ```sh
 uv run scripts/native_ieee_bridge.py --flocq-dir /path/to/pinned-flocq \
@@ -1089,7 +1114,7 @@ The combined shell runner accepts `FLOCQ_NATIVE_SAMPLES` and
 ## 6. Arithmetic at real binary64 sizes
 
 `scripts/native_arithmetic_bridge.py` sends each pair of raw binary64 words
-through native Lean arithmetic, compiled and kernel execution of the port's
+through native Lean `Float` arithmetic, lean-ir and lean-meta evaluation of the port's
 `FaithfulPrimFloat` operations, and
 Flocq's `b64_plus`, `b64_minus`, `b64_mult`, `b64_div`, and `b64_sqrt`. All use
 round-to-nearest, ties-to-even. Each row contains seven fields: both canonical
@@ -1102,7 +1127,8 @@ The fixed grid crosses 32 boundary words with each other. Random pairs are
 augmented with equal operands, opposite signs (cancellation), and adjacent bit
 patterns. Particular boundaries include half an ULP at one, half the smallest
 subnormal, the normal/subnormal transition, and maximum finite overflow.
-Every model/Rocq agreement is again checked as a separate kernel theorem.
+When a batch's lean-meta model rows all agree with Rocq and pass the exact
+oracle, each row is again checked as a separate lean-kernel theorem.
 
 Running this exposed a practical defect hidden by the old small grids:
 `binaryPositiveOfNat` constructed its answer using `n-1` successor operations.
@@ -1119,7 +1145,7 @@ uv run scripts/native_arithmetic_bridge.py --flocq-dir /path/to/pinned-flocq \
 
 The combined runner accepts `FLOCQ_ARITHMETIC_SAMPLES` and
 `FLOCQ_ARITHMETIC_BATCH_SIZE`. Its harness tests each output column, deliberately
-swaps native operands and independently swaps only compiled-model operands,
+swaps native operands and independently swaps only lean-ir model operands,
 and verifies that timeout/interruption records are
 errors with zero completed cases, never passes. Do not rebuild dependencies
 or edit imported Lean source during an active run: rebuilding can temporarily
@@ -1148,8 +1174,9 @@ each as `(kind, sign, mantissa, exponent)`. NaN has one constructor in those
 two APIs; this does not erase the separate full-payload observations.
 The complete 57-column row is retained with its column names in the receipt.
 
-This runs compiled integer-only Lean, Lean kernel reduction, and Rocq,
-**not** native hardware directed rounding. The fixed-width source operations
+This runs the integer-only Lean port on lean-ir and lean-meta, with
+lean-kernel regressions, against Rocq; it is **not** native hardware directed
+rounding. The fixed-width source operations
 now compile directly. Most of that repair only removed unnecessary
 `noncomputable` markers. Square root additionally needed its real-valued input
 witness moved inside the erased validity proof; its integer computation and
@@ -1168,7 +1195,8 @@ FLOCQ_AUDIT_DIR=/path/to/pinned-flocq uv run scripts/test_ieee_modes_bridge.py -
 
 The live harness replaces upward rounding with nearest-even in only the Lean
 adapter and requires a failed comparison with the exact replay input. A second
-mutation changes only compiled Lean and must fail even when kernel/Rocq agree.
+mutation changes only lean-ir and must fail even when lean-meta, lean-kernel
+and Rocq agree.
 Two further live mutations independently change direct and source-mode
 SingleNaN addition to subtraction. Both Lean execution paths must disagree
 only in the mutated API's result fields; every untouched field must still
@@ -1198,7 +1226,8 @@ seconds). The audit ledger retains both separate reports and their scopes.
 ## 8. Scaling and decomposition: four execution paths
 
 `scripts/ieee_scale_bridge.py` runs `Binary.Bldexp` and `Binary.Bfrexp`
-directly as compiled Lean, kernel reduction, and pinned Rocq. Those three
+directly on lean-ir, lean-meta and pinned Rocq, with lean-kernel regressions
+of fully agreeing batches. Those three
 paths compare all five fields exactly: original bits, scaled bits, fraction
 bits, exponent, and the reconstructed input. NaN signs/payloads are retained.
 The definitions are integer-only; enabling execution removed unnecessary
@@ -1221,8 +1250,8 @@ FLOCQ_AUDIT_DIR=/path/to/pinned-flocq uv run scripts/test_ieee_scale_bridge.py -
 The first extended run passed **2,360 cases and 2,360 kernel regressions**
 in 408.335 seconds, at source SHA-256
 `f5db09e6d0e537474ceb0d2d02e391d8646ed86e9588e43d0103728de8f790cd`.
-All seven harness tests pass, including separately mutated kernel/compiled/
-native scaling, missing paths/columns, and interruption/timeout/source drift.
+All seven harness tests pass, including separately mutated lean-meta, lean-ir
+and native scaling, missing paths/columns, and interruption/timeout/source drift.
 The corpus crosses signed zeros, least subnormals, the normal transition,
 finite overflow, infinities, and signed NaNs in all five modes and both widths.
 Its shifts are bounded; it does not claim practical execution of arbitrary
@@ -1232,7 +1261,8 @@ enormous integer shifts. The combined runner now includes this phase through
 ## 9. Integer rounding and unbounded truncation
 
 `scripts/ieee_integer_bridge.py` executes the actual Binary and SingleNaN
-`Bnearbyint`/`Btrunc` APIs in compiled Lean, kernel reduction, and pinned Rocq.
+`Bnearbyint`/`Btrunc` APIs on lean-ir, lean-meta and pinned Rocq, with
+lean-kernel regressions of fully agreeing batches.
 Its five observations are input bits, full-float nearby bits, full-float
 truncation integer, SingleNaN nearby bits, and SingleNaN truncation integer.
 Source paths retain NaN signs/payloads exactly; integer outputs are unbounded.
@@ -1306,7 +1336,7 @@ retains the corpus/seed and mismatch replay, and rejects interrupted or
 timed-out runs. Its fresh build targets the actual source facade; a supplied
 `--skip-build` is explicit in the report. The profile restores every shared
 runner binding on exit, including exceptions. Harness tests corrupt each
-of the 61 observation columns, distinguish compiled-only mistakes, reject
+of the 61 observation columns, distinguish lean-ir-only mistakes, reject
 wrong bootstrap expectations, and test partial/invalid outputs and failure
 reporting. Actual-program shared mutations erase a zero's exponent or negate
 one multiplication operand in all three paths; independent exact record checks
@@ -1409,8 +1439,8 @@ boundary. Its current Nat-transport bound is capped at 4096.
 The original seed-859111 targeted replay had **200** cases and **1,000**
 premise-gated normalization/neighbor assertions. Its September 20 continuation
 replays the same inputs with a stronger oracle: **1,400** such assertions,
-including **400 exact adjacency checks**. Every compiled/kernel/Rocq observation
-and generated Lean equality passes in both runs.
+including **400 exact adjacency checks**. Every lean-ir, lean-meta and Rocq
+observation and every generated lean-kernel equality passes in both runs.
 
 The independent oracle views a format as one bounded integer grid per exponent.
 At each exponent, exact rational floor and ceiling locate the nearest strict

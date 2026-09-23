@@ -139,8 +139,8 @@ These three paths are genuinely different in what they can compute.
 A probe during this design (`K.lean`) reduced a well-founded definition under
 `decide +kernel` and under `#reduce`, but elaborator `decide` got stuck.
 
-**Two consequences for the existing bridge.** These belong in their own
-commit, not in this document:
+**Two consequences for the existing bridge.** Both are now fixed, in
+their own commits (see step 0 in §15):
 
 1. The phrase "kernel reduction" in `flocq_bridge.py` (lines 7 and 1456) and in
    THREE_VERIFICATION_LOOPS.md (lines 356, 552, 581, 592, 987, 1037 and 1071)
@@ -1194,7 +1194,7 @@ kernel. So programs may be DAGs without blowing up exponentially.
 | `Compute.v` trim agrees | **Observed once.** Scratch: 104/104 observations on three paths. |
 | Exemplar feasibility | **Observed once**, all scratch: Cody–Waite 8 inputs; CompCert conversion identities 88/88; Sqrt_sqr §6 radix 5, all 125 mantissas × 4 choice pairs; Division_u16 16 × 3 frcpa models; CoqInterval `Generic.v` against `Compute.v` 72/72, **Rocq only**. The CompCert NaN-payload flow was **Rocq only** in this probe. The committed exemplar lane (§11.1 note) supersedes these probes: `CompCertNaN` now runs the NaN flow on both sides. The CoqInterval comparison remains an uncommitted, Rocq-only probe. |
 | Rocq per-case `timeout` wrapper; the Lean `--json` failed-`#reduce` hazard | **Observed**, and re-run for this document. |
-| Adapter mislabel and hidden kernel skip in `flocq_bridge.py` | **Observed in source.** Fix not in this commit (§2). |
+| Adapter mislabel and hidden kernel skip in `flocq_bridge.py` | **Fixed** (§2, step 0 in §15). The bridge and THREE_VERIFICATION_LOOPS.md use `lean-meta`, `lean-ir` and `lean-kernel`; reports add `execution_paths`, and each batch reports `kernel_checked_cases`. A single mismatch leaves the batch's other cases in the kernel check, which a live control in `test_flocq_bridge.py` verifies. The five bridges with their own loops (IEEE modes, scale, integer, native IEEE and native arithmetic) are relabelled but still check only fully agreeing batches in the kernel. |
 
 "Scratch" means the probes ran in a session scratch directory against this
 worktree at `ab738ab3`, under heavy machine load. None of them is committed,
@@ -1298,12 +1298,14 @@ Progress: for the BSN world, steps 1-5 and 10 are done, as is the
 campaign-integrity half of step 9. Step 7 is done in
 `scripts/flocq_exemplars.py`, with prose trim manifests and no
 re-extraction script (§11.1 note). Of step 6, only `select`/`branch`/`fold_k`
-are done. Step 0, the rest of step 6, step 8 and the ledger half of step 9
-remain.
+are done, and so is step 0 for `flocq_bridge.py`. The rest of step 6,
+step 8 and the ledger half of step 9 remain.
 
 0. **Adapter naming.** Rename the paths in `flocq_bridge.py` and
    THREE_VERIFICATION_LOOPS.md, and give `lean-kernel` a per-case judged
-   count. Separate commit; incident: §2.
+   count. Separate commit; incident: §2. Done: the names are in the docs, the
+   docstrings and a report `execution_paths` field (the old keys stay), and
+   each batch reports `kernel_checked_cases` and `not_kernel_checked`.
 1. **Slice.** `scripts/flocqsmith/{ir,choose,table,render_lean,render_rocq,observe,harness}.py`
    over the 30 BSN ops and the tiny formats plus binary16, with
    every-binding observation, a per-case verdict, and `case.json`. Tests go in

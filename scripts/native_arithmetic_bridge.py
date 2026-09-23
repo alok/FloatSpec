@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
-"""Execute binary64 arithmetic in native Lean, compiled/kernel models, and Rocq.
+"""Execute binary64 arithmetic in native Lean `Float`, the Lean model, and Rocq.
 
-Round-to-nearest-even; NaNs are canonicalized, signed zeros are not. Every model
-result agreeing with pinned Rocq becomes a kernel-checked Lean regression.
+The model runs on lean-ir (`lean --run`) and lean-meta (`#reduce`, not the
+kernel); the native path is lean-ir whose `Float` operations are native FFI calls.
+Round-to-nearest-even; NaNs are canonicalized, signed zeros are not. When every
+lean-meta model row of a batch agrees with pinned Rocq and the exact oracle, each
+becomes a lean-kernel (`decide +kernel`) regression; one disagreement withholds
+the whole batch.
 """
 
 from __future__ import annotations
@@ -158,7 +162,8 @@ def main() -> None:
               "worktree_status": run(["git", "status", "--porcelain"]).strip(),
               "lean_version": run(["lake", "env", "lean", "--version"]).strip(),
               "rocq_version": run([coqc, "--version"]).strip(), "host": run(["uname", "-sm"]).strip(),
-              "method": "Native FFI execution, compiled Lean model, Lean kernel reduction, Rocq vm_compute",
+              "method": "Native Float FFI (under lean --run), lean-ir and lean-meta model, lean-kernel "
+                        "regressions of agreeing batches, Rocq vm_compute",
               "rounding": "nearest, ties to even", "columns": COLUMNS,
               "nan_observation": "single canonical NaN; payload identity not claimed",
               "compared_cases": 0, "compiled_model_cases": 0, "bootstrapped_lean_cases": 0,

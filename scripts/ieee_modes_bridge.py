@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """Cross-test source IEEE arithmetic in every rounding mode, retaining NaN payloads.
 
-This compares compiled Lean and kernel reduction of the port's own bit
-decoders/operations with pinned Rocq. Full-payload results retain exact NaN
+This compares the port's own bit decoders/operations on lean-ir (`lean --run`)
+and lean-meta (`#reduce`, not the kernel) with pinned Rocq. Full-payload results retain exact NaN
 bits; separate direct and source-mode SingleNaN results retain constructors,
 signs, mantissas, and exponents. It does not claim native hardware execution
 of directed rounding. Inputs and complete generated prover programs are
-retained, with per-case kernel regression proofs.
+retained. A batch whose lean-meta rows all agree with Rocq and the exact oracle
+becomes one lean-kernel (`decide +kernel`) regression proof per case.
 """
 
 import argparse
@@ -221,7 +222,8 @@ def main():
               "lean_version": run(["lake", "env", "lean", "--version"]).strip(),
               "rocq_version": run([coqc, "--version"]).strip(), "host": run(["uname", "-sm"]).strip(),
               "columns": COLUMNS,
-              "method": "Compiled Lean and kernel reduction versus pinned Rocq, all 5 modes; full-payload bits plus direct/source-mode SingleNaN constructors",
+              "method": "lean-ir and lean-meta versus pinned Rocq, lean-kernel regressions of agreeing batches, "
+                        "all 5 modes; full-payload bits plus direct/source-mode SingleNaN constructors",
               "groups": dict(Counter(f"binary{c[0]}:{LEAN_MODES[c[1]]}" for c in cases)),
               "fresh_build": not args.skip_build, "status": "running", "compared_cases": 0,
               "compiled_cases": 0, "bootstrapped_lean_cases": 0,
