@@ -12,8 +12,6 @@ import FloatSpec.src.Prop.Div_sqrt_error
 import FloatSpec.src.Prop.Plus_error
 import FloatSpec.src.Prop.Mult_error
 
-open Std.Do
-
 /-!
 # Pff source-contract regression surface
 
@@ -431,10 +429,8 @@ example : pos_length ⟨2⟩ = 1 := by decide
 example : digitAux 2 5 1 ⟨0⟩ = 0 := by decide
 example : digitAux 2 5 1 ⟨1⟩ = 1 := by decide
 
-example : 0 < (2 : Int) ^ (0 : Nat) := by
-  simpa only [wp, PostCond.noThrow, pure, Zpower_nat_less_check,
-    Id.run, ULift.up_down, PredTrans.pure, PredTrans.apply,
-    SPred.down_pure_nil] using Zpower_nat_less 2 0 (by norm_num)
+example : 0 < (2 : Int) ^ (0 : Nat) :=
+  Zpower_nat_less 2 (by norm_num) 0
 
 example : FloatSpec.Pff.Source.UniqueP 1
     (fun _ p => p = ⟨1, 0⟩) := by
@@ -453,29 +449,21 @@ example : FloatSpec.Pff.Source.FtoR 0 ⟨1, 1⟩ = 0 := by
 example := FloatSpec.Pff.Source.MinExList 1 0 []
 
 /-- A concrete application of the restored source-facing contract.  This
-guards the public theorem's Hoare wrapper as well as its binder order. -/
+guards the public theorem's direct statement as well as its binder order. -/
 example :
     |(2 : Real) - _root_.F2R (beta := 2)
         (⟨2, 0⟩ : FloatSpec.Core.Defs.FlocqFloat 2)| ≤
       |_root_.F2R (beta := 2)
         (⟨2, 0⟩ : FloatSpec.Core.Defs.FlocqFloat 2)| *
         ((1 / 2 : Real) * (2 : Real) ^ (1 - (2 : Int))) := by
-  have h := ClosestErrorBoundNormal
-        ({ dExp := 0, vNum := 4 } : Fbound_skel)
-        2 2 (2 : Real)
-        (⟨2, 0⟩ : FloatSpec.Core.Defs.FlocqFloat 2)
-        ⟨by norm_num,
-         by norm_num,
-         by norm_num [Zpower_nat],
-         by
-           constructor
-           · norm_num [Fbounded]
-           · intro g _hg
-             norm_num [_root_.F2R],
-         by
-           norm_num [Fnormal, Fnormalize, Fbounded, Fdigit, Fshift,
-             FloatSpec.Core.Digits.Zdigits]⟩
-  simp only [wp, PostCond.noThrow, pure, ClosestErrorBoundNormal_check,
-    Id.run, ULift.up_down, PredTrans.pure, PredTrans.apply,
-    SPred.down_pure_nil] at h
+  have h := ClosestErrorBoundNormal ({ dExp := 0, vNum := 4 } : Fbound_skel) 2 2 (by norm_num)
+      (by norm_num) (by norm_num [Zpower_nat]) (2 : Real)
+      (⟨2, 0⟩ : FloatSpec.Core.Defs.FlocqFloat 2) (by
+          constructor
+          · norm_num [Fbounded]
+          · intro g _hg
+            norm_num [_root_.F2R])
+      (by
+          norm_num [Fnormal, Fnormalize, Fbounded, Fdigit, Fshift,
+            FloatSpec.Core.Digits.Zdigits])
   convert h using 1 <;> norm_num

@@ -199,6 +199,7 @@ FLOCQ_AUDIT_DIR="$flocq_dir" uv run "$repo_root/scripts/test_remainder_contracts
 FLOCQ_AUDIT_DIR="$flocq_dir" uv run "$repo_root/scripts/test_pff_basic_contracts.py" -v
 FLOCQ_AUDIT_DIR="$flocq_dir" uv run "$repo_root/scripts/test_flocq_exemplars.py" -v
 FLOCQ_AUDIT_DIR="$flocq_dir" uv run "$repo_root/scripts/test_flocqsmith.py" -v
+FLOCQ_AUDIT_DIR="$flocq_dir" uv run "$repo_root/scripts/test_pff_statement_contracts.py" -v
 
 uv run "$repo_root/scripts/pff_integer_bridge.py" --flocq-dir "$flocq_dir" --coqc "$coqc_bin" \
   --seed "${FLOCQ_BRIDGE_SEED:-20260919}" --samples "${FLOCQ_PFF_INTEGER_SAMPLES:-100}" \
