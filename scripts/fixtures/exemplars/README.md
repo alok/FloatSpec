@@ -55,11 +55,14 @@ definitions are equivalent.
 |---|---|---|---|---|---|
 | `Compute` | shared | Flocq `examples/Compute.v` (`7aab8f55`) | verbatim copy; the test checks byte equality with the pinned reference | transliteration of the four definitions over `Calc.Operations`/`Round`/`Div`/`Sqrt` | (library) |
 | `Choices` | shared | not upstream; derived from Flocq `src/Calc/Round.v` (`7aab8f55`) | choice functions, each proved to satisfy `Compute.v`'s `rnd_choice` via `inbetween_int_*_sign` | same functions, same proofs via the FloatSpec ports of those lemmas | (library) |
+| `CompCertFloats` | shared | CompCert `lib/Floats.v`, `lib/IEEE754_extra.v`, `lib/Zbits.v`, `lib/Coqlib.v`, `{x86_64,aarch64,riscV}/Archi.v` (`bd2b382`) | `BofZ`/`ZofB`/`Bconv`, NaN payload policy, Float/Float32 ops over Flocq's `Binary`/`Bits`; `Archi` as a record | transliteration over FloatSpec `Binary.*` and `Bits` | (library) |
 | `ComputeGrid` | exemplar | driver over `Compute.v` (FloatSpec-authored) | radices 2/3/10 × FLX/FLT/FIX/FTZ × DN/UP/ZR/NE/NA × 16 input pairs | same | `plus/mult/div/sqrt_correct`: exact rounding of the exact result |
 | `CodyWaite` | exemplar | Flocq `examples/Cody_Waite.v` (`7aab8f55`) | `cw_exp` on binary64 via `Compute.v`, 30 inputs, every intermediate observed | same | `exp_correct` (relative error ≤ 2⁻⁵¹ against `exp` at 120 digits) and `argument_reduction` |
 | `SqrtSqr` | exemplar | Flocq `examples/Sqrt_sqr.v` §Sec6 (`7aab8f55`) | `sqrt ∘ mult` in radix 5, precision 3, all 125 mantissas × 4 × 4 tie predicates | same | `sqrt_sqr_special_case` (`Fnum (f mx) = 0`), and `y` and `z` are exact `Znearest` roundings |
 | `Average` | exemplar | Flocq `examples/Average.v` (`7aab8f55`) | `avg_naive`, `avg_sum_half`, `avg_half_sub` and `average` at FLT(−6, 3) and FLT(−4, 4), all pairs of 17 values | same | the upstream correctness, symmetry, sign, betweenness, zero and no-underflow lemmas; `avg_sum_half` below its bound is a positive control |
 | `DoubleRoundingOddRadix` | exemplar | Flocq `examples/Double_rounding_odd_radix.v` (`7aab8f55`) | `round_round_eq` executed for mult/plus/minus/sqrt/div over radices 3/5/7 (+2), FLX/FLT/FTZ, tie-predicate pairs | same | the identity for odd radix and in-format inputs, and each of the three roundings re-derived exactly; radix-2 rows are positive controls |
+| `CompCertConversions` | exemplar | CompCert `lib/Floats.v` identities (`bd2b382`) | both sides of 16 conversion theorems on 16 (32-bit, 64-bit) integer pairs, plus round trips | same | every identity (premises checked); every conversion equals the exact nearest-even value from `ieee_exact_oracle.py`; `of_long(u)_double_2` below `2^36` is a positive control |
+| `CompCertNaN` | exemplar | CompCert NaN policy, `Floats.v` + `Archi.v` (`bd2b382`) | 46 NaN-producing cases × x86_64/aarch64/riscV | same | an independent Python model of the CompCert NaN policy (payload choice, quieting, `fma` order, conversions) |
 | `DivisionU16` | exemplar | Flocq `examples/Division_u16.v` (`7aab8f55`) | `div_u16` in the 64-bit register format, four executable `frcpa` models × 38 pairs | same | `div_u16_spec` (= `a / b`) wherever the observed `y0` satisfies `frcpa_spec`; the 8-bit model is a positive control |
 
 ## Trim manifests
@@ -190,6 +193,71 @@ because guessing gets it wrong: the ZR choice is `m` itself, not
   `6 − 3/4 = 21/4`, which rounds to 5 at three bits and then ties to 4 at
   two bits.
 
+### `CompCertFloats` (CompCert, LGPL-2.1-or-later / INRIA Non-Commercial)
+
+- Kept verbatim:
+  - `BofZ`, `ZofB`, `ZofB_range` and `Bconv` from `IEEE754_extra.v`;
+  - the NaN machinery and the Float/Float32 operations from `Floats.v`:
+    `quiet_nan_*`, `expand/reduce_nan_payload`, the neg/abs/unop/binop/fma
+    NaN handlers, `of_single`/`to_single` and the `to_*`/`of_*`
+    conversions;
+  - `P_mod_two_p` from `Zbits.v` and two lemmas from `Coqlib.v`, which
+    `normalized_nan` and `quiet_nan_64_proof` need.
+- Replaced:
+  - `Integers.int`/`int64` become `Z` in `[0, 2^32)` and `[0, 2^64)`:
+    `repr` is `mod 2^w`, and there are `signed`, `hiword`, `loword` and
+    `ofwords`;
+  - the `Archi` module becomes a record with instances `x86_64`,
+    `aarch64` and `riscV` whose definitions are copied from each
+    `Archi.v`;
+  - `fma_order` becomes a Boolean;
+  - Coqlib's `zeq` becomes `Z.eq_dec`.
+- Lean side: the Rocq standard-library functions `Pos.lor`, `div2`,
+  `shiftl_nat`, `shiftr_nat`, `testbit`, `Z.to_pos`, `Z.land` and `Z.lor`
+  are transliterated from Rocq 9.1's `PosDef.v`/`BinPosDef.v` onto
+  FloatSpec's `Positive`. CompCert's proof that quieted payloads satisfy
+  `nan_pl` is not ported. Lean decides `nan_pl` at run time, and the else
+  branch returns a marker NaN (payload 1, sign true) that no CompCert
+  handler can produce. A failure there would show up as a mismatch, never
+  as a silently correct default.
+- The Lean `Binary` operations need two things Flocq does not: extra
+  `Monotone_exp` instances for the FLT exponent functions, and the mode
+  spelled `RoundingMode.RNE`.
+
+### `CompCertConversions` (CompCert identities; FloatSpec-authored driver)
+
+- Each row evaluates both sides of these `Floats.v` theorems on one 32-bit
+  integer and one 64-bit integer:
+  - `of_intu_from_words`, `of_int_from_words`,
+    `of_intu_of_int_1/2/3`;
+  - `of_longu_from_words`, `of_longu_decomp`, `of_long_from_words`,
+    `of_long_decomp`, `of_longu_of_long_1/2`;
+  - `Float32.of_longu_double_1/2` and `of_long_double_1/2`;
+  - `mul2_add`.
+- It also observes `to_int(u)`/`to_long(u)` round trips and truncating
+  conversions of quotients. These reach `ZofB`'s negative-exponent branch.
+- The oracle checks the premises of each theorem. It also checks that every
+  conversion is the exact nearest-even value, using the repository's
+  independent `ieee_exact_oracle.py`.
+- Positive control: `of_long(u)_double_2` needs `2^36 ≤ |l|`, and below that
+  bound the round-to-odd right-hand side really differs (for `l = 1` it
+  gives `2048.0f`).
+
+### `CompCertNaN` (CompCert NaN policy; FloatSpec-authored cases)
+
+- 46 cases × 3 architectures. The inputs are signaling and quiet NaNs of
+  both signs, including one with high payload bits, and invalid operations.
+  The cases reach add/sub/mul/div/fma/sqrt, neg/abs (payload kept, not
+  quieted), `to_single`/`of_single` (payload shifted by 29) and the Float32
+  operations.
+- The Python oracle is a separate model of the policy:
+  - x86_64 takes the first NaN; aarch64 takes the first signaling NaN,
+    then the first NaN; riscV always takes the default NaN;
+  - payloads are quieted by setting the top payload bit;
+  - aarch64 uses the fma order `(z, x, y)` and treats `fma 0 ∞ z` as
+    invalid;
+  - riscV converts every NaN to the default NaN.
+
 ## Exclusions
 
 None so far. If the Lean side lacks an executable counterpart for part of
@@ -203,6 +271,10 @@ third-party text keep that text's licence. Each such file says so in its
 header, and the table above names the source:
 
 - Flocq examples: LGPL-3.0-or-later.
+- CompCert files: LGPL-2.1-or-later, also distributed under the INRIA
+  Non-Commercial License Agreement. The LGPL option governs their use
+  here. Whether committing trimmed CompCert text is acceptable, rather than
+  fetching and trimming it at test time, is FLOCQSMITH.md open question 2.
 
 The FloatSpec-authored drivers and `Choices` are Apache-2.0, like the rest
 of the repository.

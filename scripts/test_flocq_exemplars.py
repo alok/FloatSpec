@@ -168,6 +168,35 @@ class OracleControlTests(unittest.TestCase):
         report = lane.oracle_average(tiny)
         self.assertEqual((report.control_breaks, report.violations), (2, []))
 
+    def test_compcert_conversion_oracle_on_a_known_row(self):
+        one64, one32, two64 = 4607182418800017408, 1065353216, 4611686018427387904
+        row = [1, 1, *[one64] * 13, one32, one32, 1157627904, one32, one32, 1157627904,
+               1, 1, 1, 1, two64, two64, 0, 0]
+        report = lane.oracle_compcert_conversions([row])
+        # l = 1 is below the 2^36 premise of of_long(u)_double_2, and the
+        # round-to-odd right-hand side really is 2048.0f there.
+        self.assertEqual((report.violations, report.control_breaks), ([], 2))
+        mutated = row[:]
+        mutated[3] += 1
+        self.assertEqual(lane.oracle_compcert_conversions([mutated]).violations,
+                         ["row 0 of_intu_from_words"])
+
+    def test_compcert_nan_policy_per_architecture(self):
+        sn, qn = 0x7FF0000000000001, 0x7FF8000000000005
+        # add(qNaN, sNaN): x86_64 takes the first NaN, aarch64 the signaling one,
+        # riscV the default NaN; every result is quieted.
+        expected = {0: 0x7FF8000000000005, 1: 0x7FF8000000000001, 2: 0x7FF8000000000000}
+        for arch, bits in expected.items():
+            self.assertEqual(lane.expected_compcert_nan(arch, 0, qn, sn, 0), bits)
+        # fma(0, inf, qNaN): only aarch64 treats the invalid product as the default NaN.
+        self.assertEqual(lane.expected_compcert_nan(1, 4, 0, 0x7FF0000000000000, qn),
+                         0x7FF8000000000000)
+        self.assertEqual(lane.expected_compcert_nan(0, 4, 0, 0x7FF0000000000000, qn), qn)
+        # to_single(sNaN) quiets, then drops the low 29 payload bits.
+        self.assertEqual(lane.expected_compcert_nan(0, 8, sn, 0, 0), 0x7FC00000)
+        report = lane.oracle_compcert_nan([[0, 0, qn, sn, 0, 0x7FF8000000000001]])
+        self.assertEqual(len(report.violations), 1)
+
     def test_a_missing_control_break_fails_the_oracle_verdict(self):
         exemplar = lane.Exemplar("Probe", rows=1, width=1,
                                  oracle=lambda rows: lane.OracleReport(holds=1),
@@ -220,6 +249,13 @@ class LiveExemplarTests(unittest.TestCase):
 
     def test_sqrt_sqr(self):
         self.check("SqrtSqr")
+
+    def test_compcert_conversions(self):
+        result = self.check("CompCertConversions")
+        self.assertGreater(result["oracle_rocq"]["control_breaks"], 0)
+
+    def test_compcert_nan(self):
+        self.check("CompCertNaN")
 
     def test_average(self):
         result = self.check("Average")

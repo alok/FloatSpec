@@ -39,16 +39,18 @@ import tempfile
 import time
 
 import flocq_bridge as bridge
+import ieee_exact_oracle as ieee
 
 FIXTURES = bridge.ROOT / "scripts" / "fixtures" / "exemplars"
 # Upstream commits the fixtures were trimmed from (see the README).
 UPSTREAM_COMMITS = {
     "flocq": "7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f",
+    "compcert": "bd2b3826ccc94127995de44a44166745891c1260",
 }
 # Fixture files that must stay byte-identical to the pinned upstream file.
 UPSTREAM_VERBATIM = {"Compute.v": "examples/Compute.v"}
 # Shared modules, compiled in this order and importable as Exemplars.NAME.
-SHARED = ("Compute", "Choices")
+SHARED = ("Compute", "Choices", "CompCertFloats")
 # Deprecation warnings from the verbatim upstream file are its own; any
 # other Rocq or Lean diagnostic fails the run.
 VERBATIM_ROCQ_FLAGS = ("-w", "-deprecated")
@@ -369,6 +371,177 @@ def oracle_average(rows: Sequence[Row]) -> OracleReport:
     return report
 
 
+BINARY64, BINARY32 = ieee.FORMATS[64], ieee.FORMATS[32]
+
+
+def round_bits(fmt: ieee.Format, value: Fraction | int) -> int:
+    """Correctly rounded (nearest-even) bit pattern, from the repository's
+    independent exact IEEE oracle."""
+    return ieee.round_rational(fmt, 0, Fraction(value))
+
+
+def signed_word(width: int, x: int) -> int:
+    return x - 2**width if x >= 2 ** (width - 1) else x
+
+
+def truncated_in_range(fmt: ieee.Format, word: int, low: int, high: int, width: int) -> int:
+    """CompCert to_int/to_long: truncate toward zero, None (-1) out of range."""
+    value = ieee.decode(fmt, word)
+    if value is None:
+        return -1
+    truncated = int(value)  # int() of a Fraction truncates toward zero, like ZofB
+    return truncated % 2**width if low <= truncated <= high else -1
+
+
+def oracle_compcert_conversions(rows: Sequence[Row]) -> OracleReport:
+    """CompCert Floats.v conversion identities, plus exact conversion values."""
+    report = OracleReport()
+    for index, row in enumerate(rows):
+        x, l, *c = row
+        c = [None, None, *c]  # c[k] is column k of the row
+        long_signed = signed_word(64, l)
+        for name, lhs, rhs in (("of_intu_from_words", 2, 3), ("of_int_from_words", 4, 5),
+                               ("of_intu_of_int_1/2", 2, 6), ("of_intu_of_int_3", 2, 7),
+                               ("of_longu_from_words", 8, 9), ("of_longu_decomp", 8, 10),
+                               ("of_long_from_words", 11, 12), ("of_long_decomp", 11, 13),
+                               ("of_longu_of_long_1/2", 8, 14), ("mul2_add", 25, 26)):
+            report.check(f"row {index} {name}", c[lhs] == c[rhs])
+        for name, lhs, rhs, premise in (
+                ("of_longu_double_1", 15, 16, l <= 2**53), ("of_longu_double_2", 15, 17, l >= 2**36),
+                ("of_long_double_1", 18, 19, abs(long_signed) <= 2**53),
+                ("of_long_double_2", 18, 20, abs(long_signed) >= 2**36)):
+            if premise:
+                report.check(f"row {index} {name}", c[lhs] == c[rhs])
+            else:
+                report.check(f"row {index} {name}", None)
+                report.control_breaks += c[lhs] != c[rhs]
+        of_int = round_bits(BINARY64, signed_word(32, x))
+        of_long = round_bits(BINARY64, long_signed)
+        of_longu = round_bits(BINARY64, l)
+        for name, observed, expected in (
+                ("of_intu", c[2], round_bits(BINARY64, x)), ("of_int", c[4], of_int),
+                ("of_longu", c[8], of_longu), ("of_long", c[11], of_long),
+                ("Float32.of_longu", c[15], round_bits(BINARY32, l)),
+                ("Float32.of_long", c[18], round_bits(BINARY32, long_signed)),
+                ("to_int (of_int x)", c[21], x), ("to_intu (of_intu x)", c[22], x),
+                ("to_long (of_long l)", c[23],
+                 truncated_in_range(BINARY64, of_long, -2**63, 2**63 - 1, 64)),
+                ("to_longu (of_longu l)", c[24],
+                 truncated_in_range(BINARY64, of_longu, 0, 2**64 - 1, 64)),
+                ("to_int (x / 7)", c[27], truncated_in_range(
+                    BINARY64, round_bits(BINARY64, ieee.decode(BINARY64, of_int) / 7),
+                    -2**31, 2**31 - 1, 32)),
+                ("to_long (l / 1000)", c[28], truncated_in_range(
+                    BINARY64, round_bits(BINARY64, ieee.decode(BINARY64, of_long) / 1000),
+                    -2**63, 2**63 - 1, 64))):
+            report.check(f"row {index} {name}", observed == expected)
+    return report
+
+
+# CompCert Archi NaN parameters: (default sign, payload choice rule, fma order
+# (z, x, y), fma 0*inf is invalid, conversions return the default NaN).
+COMPCERT_ARCHS = {0: (1, "first", False, False, False),     # x86_64
+                  1: (0, "signaling", True, True, False),   # aarch64
+                  2: (0, "default", False, False, True)}    # riscV
+
+
+def _unpack(fmt: ieee.Format, word: int) -> tuple[str, int, int | Fraction]:
+    """(kind, sign bit, payload or value) with kind in nan/inf/zero/finite."""
+    sign = word >> (fmt.width - 1)
+    payload = word & ((1 << fmt.fraction_bits) - 1)
+    if (word & (fmt.sign_bit - 1)) >> fmt.fraction_bits == (1 << fmt.exponent_bits) - 1:
+        return ("nan", sign, payload) if payload else ("inf", sign, 0)
+    value = ieee.decode(fmt, word)
+    return ("zero", sign, 0) if value == 0 else ("finite", sign, value)
+
+
+def _nan_word(fmt: ieee.Format, sign: int, payload: int) -> int:
+    return (sign << (fmt.width - 1)) | fmt.infinity | payload
+
+
+def _quiet(fmt: ieee.Format, payload: int) -> int:
+    quiet = (payload | 1 << (fmt.fraction_bits - 1)) % (1 << fmt.fraction_bits)
+    return quiet or 1  # Z.to_pos 0 = 1; unreachable because the quiet bit is set
+
+
+def _choose(arch: int, fmt: ieee.Format, nans: list[tuple[int, int]]) -> tuple[int, int]:
+    default_sign, rule, *_ = COMPCERT_ARCHS[arch]
+    default = (default_sign, 1 << (fmt.fraction_bits - 1))
+    if rule == "default":
+        return default
+    if rule == "signaling":
+        for sign, payload in nans:
+            if not payload >> (fmt.fraction_bits - 1) & 1:
+                return sign, payload
+    return nans[0] if nans else default
+
+
+def _invalid(op: int, args: list[tuple[str, int, int | Fraction]]) -> bool:
+    """IEEE invalid operation (or a NaN operand) for the fixture's operations."""
+    kinds = [kind for kind, _sign, _ in args]
+    if "nan" in kinds:
+        return True
+    if op in (0, 10):   # add: inf + -inf
+        return kinds == ["inf", "inf"] and args[0][1] != args[1][1]
+    if op == 1:         # sub: inf - inf
+        return kinds == ["inf", "inf"] and args[0][1] == args[1][1]
+    if op in (2, 11):   # mul: 0 * inf
+        return sorted(kinds) == ["inf", "zero"]
+    if op == 3:         # div: 0/0, inf/inf
+        return kinds in (["zero", "zero"], ["inf", "inf"])
+    if op == 5:         # sqrt of a negative nonzero number
+        return kinds[0] in ("inf", "finite") and args[0][1] == 1
+    if op == 4:         # fma: 0 * inf, or an infinite product meeting the opposite infinity
+        if sorted(kinds[:2]) == ["inf", "zero"]:
+            return True
+        return "inf" in kinds[:2] and kinds[2] == "inf" and args[0][1] ^ args[1][1] != args[2][1]
+    return False
+
+
+def expected_compcert_nan(arch: int, op: int, a: int, b: int, c: int) -> int:
+    """CompCert's NaN policy (Floats.v and Archi.v), written out independently."""
+    default_sign, _rule, zxy, invalid_mul, conversion_default = COMPCERT_ARCHS[arch]
+    fmt = BINARY32 if op in (9, 10, 11, 12) else BINARY64
+    words = (a, b, c) if op == 4 else (a, b) if op in (0, 1, 2, 3, 10, 11) else (a,)
+    args = [_unpack(fmt, word) for word in words]
+
+    def quiet_result(chosen: tuple[int, int], result_fmt: ieee.Format = fmt) -> int:
+        return _nan_word(result_fmt, chosen[0], _quiet(result_fmt, chosen[1]))
+
+    if op in (6, 12):   # neg: flip the sign bit; a NaN keeps its payload unquieted
+        return a ^ fmt.sign_bit
+    if op == 7:         # abs: clear the sign bit
+        return a & (fmt.sign_bit - 1)
+    if op in (8, 9):    # to_single / of_single
+        kind, sign, payload = args[0]
+        target = BINARY32 if op == 8 else BINARY64
+        if kind == "finite":
+            return round_bits(target, payload)
+        if kind != "nan":
+            return (sign << (target.width - 1)) | (target.infinity if kind == "inf" else 0)
+        if conversion_default:
+            return quiet_result((default_sign, 1 << (target.fraction_bits - 1)), target)
+        converted = _quiet(BINARY64, payload) >> 29 if op == 8 else payload << 29
+        return quiet_result((sign, converted), target)
+    if not _invalid(op, args):
+        raise ValueError(f"case op={op} {a} {b} {c} does not produce a NaN")
+    nans = [(sign, payload) for kind, sign, payload in args if kind == "nan"]
+    if op == 4:
+        if sorted(kind for kind, _s, _p in args[:2]) == ["inf", "zero"] and invalid_mul:
+            third = [(args[2][1], args[2][2])] if args[2][0] == "nan" else []
+            return quiet_result(_choose(arch, fmt, [(default_sign, 1 << 51)] + third))
+        order = (2, 0, 1) if zxy else (0, 1, 2)
+        nans = [(args[i][1], args[i][2]) for i in order if args[i][0] == "nan"]
+    return quiet_result(_choose(arch, fmt, nans))
+
+
+def oracle_compcert_nan(rows: Sequence[Row]) -> OracleReport:
+    report = OracleReport()
+    for index, (arch, op, a, b, c, result) in enumerate(rows):
+        report.check(f"row {index} arch {arch} op {op}", result == expected_compcert_nan(arch, op, a, b, c))
+    return report
+
+
 # ---------------------------------------------------------------------------
 # Exemplar registry
 # ---------------------------------------------------------------------------
@@ -394,6 +567,9 @@ EXEMPLARS: dict[str, Exemplar] = {e.name: e for e in (
     Exemplar("SqrtSqr", rows=2000, width=8, oracle=oracle_sqrt_sqr),
     Exemplar("DoubleRoundingOddRadix", rows=2448, width=16, oracle=oracle_double_rounding,
              needs_control_break=True),
+    Exemplar("CompCertConversions", rows=16, width=29, oracle=oracle_compcert_conversions,
+             needs_control_break=True),
+    Exemplar("CompCertNaN", rows=138, width=6, oracle=oracle_compcert_nan),
 )}
 
 
