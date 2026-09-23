@@ -22,7 +22,7 @@ require_no_matches() {
 
 require_no_matches -n --glob '*.lean' \
   '^[[:space:]]*(@\[spec\]|mvcgen\b|mspec\b)|^import Std\.Tactic\.Do$' FloatSpec/src
-require_no_matches -n '[⦃⦄]' FloatSpec/src/Core/FIX.lean
+require_no_matches -n '[⦃⦄]' FloatSpec/src/Core/FIX.lean FloatSpec/src/Core/Raux.lean
 
 test ! -e FloatSpec/Linter/HoareStyleLinter.lean
-echo 'Unused mvcgen surface is absent; FIX stays direct.'
+echo 'Unused mvcgen surface is absent; FIX and Raux stay direct.'

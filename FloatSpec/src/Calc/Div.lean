@@ -43,7 +43,7 @@ lemma mag_div_F2R (m1 e1 m2 e2 : Int) (Hm1 : 0 < m1) (Hm2 : 0 < m2)
     (beta := beta) (f := FlocqFloat.mk m1 e1) Hβ Hm1
   have hy := FloatSpec.Core.Float_prop.F2R_gt_0
     (beta := beta) (f := FlocqFloat.mk m2 e2) Hβ Hm2
-  have h := FloatSpec.Core.Raux.mag_div beta _ _ Hβ (ne_of_gt hx) (ne_of_gt hy) trivial
+  have h := FloatSpec.Core.Raux.mag_div beta _ _ Hβ (ne_of_gt hx) (ne_of_gt hy)
   have hmx := FloatSpec.Core.Float_prop.Raux_mag_F2R_Zdigits beta m1 e1 Hβ (ne_of_gt Hm1)
   have hmy := FloatSpec.Core.Float_prop.Raux_mag_F2R_Zdigits beta m2 e2 Hβ (ne_of_gt Hm2)
   change mag beta (F2R (FlocqFloat.mk m1 e1 : FlocqFloat beta)) -

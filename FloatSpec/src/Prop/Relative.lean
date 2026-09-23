@@ -212,11 +212,11 @@ theorem relative_error (rnd : ℝ → Int) [FloatSpec.Core.Generic_fmt.Valid_rnd
       · have hmag_abs := FloatSpec.Core.Raux.mag_abs (beta := beta) (x := x) hβ
         have hmag_abs_run :
             FloatSpec.Core.Raux.mag beta |x| = FloatSpec.Core.Raux.mag beta x := by
-          simpa [Std.Do.wp, Std.Do.PostCond.noThrow, Id.run, pure] using hmag_abs trivial
+          simpa [Std.Do.wp, Std.Do.PostCond.noThrow, Id.run, pure] using hmag_abs
         have hmag_bpow := FloatSpec.Core.Raux.mag_bpow (beta := beta) (e := emin) hβ
         have hmag_bpow_run :
             FloatSpec.Core.Raux.mag beta ((beta : ℝ) ^ emin) = emin + 1 := by
-          simpa [Std.Do.wp, Std.Do.PostCond.noThrow, Id.run, pure] using hmag_bpow trivial
+          simpa [Std.Do.wp, Std.Do.PostCond.noThrow, Id.run, pure] using hmag_bpow
         have hmag_x : emin + 1 = M := by
           calc
             emin + 1 = FloatSpec.Core.Raux.mag beta ((beta : ℝ) ^ emin) := hmag_bpow_run.symm
@@ -235,10 +235,8 @@ theorem relative_error (rnd : ℝ → Int) [FloatSpec.Core.Generic_fmt.Valid_rnd
       zpow_le_zpow_right₀ hbge1 he_le
     have hmag_low : (beta : ℝ) ^ (M - 1) ≤ |x| := by
       have h :=
-        (FloatSpec.Core.Raux.mag_lower_bound (beta := beta) (x := x) hβ hx)
-          True.intro
-      simpa [Std.Do.wp, Std.Do.PostCond.noThrow, Id.run, pure, M,
-        FloatSpec.Core.Raux.abs_val] using h
+        (FloatSpec.Core.Raux.bpow_mag_le (beta := beta) (x := x) hβ hx)
+      simpa [Std.Do.wp, Std.Do.PostCond.noThrow, Id.run, pure, M] using h
     have hpow_factor :
         (beta : ℝ) ^ (M - p) = (beta : ℝ) ^ (-p + 1) * (beta : ℝ) ^ (M - 1) := by
       rw [← zpow_add₀ hbne]
@@ -385,11 +383,11 @@ theorem relative_error_N (x : ℝ)
       · have hmag_abs := FloatSpec.Core.Raux.mag_abs (beta := beta) (x := x) hβ
         have hmag_abs_run :
             FloatSpec.Core.Raux.mag beta |x| = FloatSpec.Core.Raux.mag beta x := by
-          simpa [Std.Do.wp, Std.Do.PostCond.noThrow, Id.run, pure] using hmag_abs trivial
+          simpa [Std.Do.wp, Std.Do.PostCond.noThrow, Id.run, pure] using hmag_abs
         have hmag_bpow := FloatSpec.Core.Raux.mag_bpow (beta := beta) (e := emin) hβ
         have hmag_bpow_run :
             FloatSpec.Core.Raux.mag beta ((beta : ℝ) ^ emin) = emin + 1 := by
-          simpa [Std.Do.wp, Std.Do.PostCond.noThrow, Id.run, pure] using hmag_bpow trivial
+          simpa [Std.Do.wp, Std.Do.PostCond.noThrow, Id.run, pure] using hmag_bpow
         have hmag_x : emin + 1 = M := by
           calc
             emin + 1 = FloatSpec.Core.Raux.mag beta ((beta : ℝ) ^ emin) := hmag_bpow_run.symm
@@ -408,10 +406,8 @@ theorem relative_error_N (x : ℝ)
       zpow_le_zpow_right₀ hbge1 he_le
     have hmag_low : (beta : ℝ) ^ (M - 1) ≤ |x| := by
       have h :=
-        (FloatSpec.Core.Raux.mag_lower_bound (beta := beta) (x := x) hβ hx)
-          True.intro
-      simpa [Std.Do.wp, Std.Do.PostCond.noThrow, Id.run, pure, M,
-        FloatSpec.Core.Raux.abs_val] using h
+        (FloatSpec.Core.Raux.bpow_mag_le (beta := beta) (x := x) hβ hx)
+      simpa [Std.Do.wp, Std.Do.PostCond.noThrow, Id.run, pure, M] using h
     have hpow_factor :
         (beta : ℝ) ^ (M - p) = (beta : ℝ) ^ (-p + 1) * (beta : ℝ) ^ (M - 1) := by
       rw [← zpow_add₀ hbne]
@@ -641,14 +637,14 @@ theorem relative_error_N_round (h_pos : 0 < p) (x : ℝ)
       exact mul_le_mul_of_nonneg_right hnearest hpow_nonneg
     have hmag_low : (beta : ℝ) ^ (ex - 1) ≤ |x| := by
       have h :=
-        (FloatSpec.Core.Raux.mag_lower_bound (beta := beta) (x := x) hβ hx0) True.intro
+        (FloatSpec.Core.Raux.bpow_mag_le (beta := beta) (x := x) hβ hx0)
       simpa [Std.Do.wp, Std.Do.PostCond.noThrow, Id.run, pure,
-        FloatSpec.Core.Raux.abs_val, ex] using h
+        ex] using h
     have hmag_high : |x| < (beta : ℝ) ^ ex := by
       have h :=
-        (FloatSpec.Core.Raux.mag_upper_bound (beta := beta) (x := x) hβ hx0) True.intro
+        (FloatSpec.Core.Raux.bpow_mag_gt (beta := beta) (x := x) hβ)
       simpa [Std.Do.wp, Std.Do.PostCond.noThrow, Id.run, pure,
-        FloatSpec.Core.Raux.abs_val, ex] using h
+        ex] using h
     have hemin_lt_ex : emin < ex := by
       rcases lt_or_eq_of_le h_bound with hlt | heq
       · have hmag :=
@@ -658,12 +654,12 @@ theorem relative_error_N_round (h_pos : 0 < p) (x : ℝ)
           simpa [ex] using hmag
         omega
       · have hmag_abs :=
-          (FloatSpec.Core.Raux.mag_abs (beta := beta) (x := x) hβ) True.intro
+          (FloatSpec.Core.Raux.mag_abs (beta := beta) (x := x) hβ)
         have hmag_abs_run :
             FloatSpec.Core.Raux.mag beta |x| = ex := by
           simpa [Std.Do.wp, Std.Do.PostCond.noThrow, Id.run, pure, ex] using hmag_abs
         have hmag_bpow :=
-          (FloatSpec.Core.Raux.mag_bpow beta emin hβ) True.intro
+          (FloatSpec.Core.Raux.mag_bpow beta emin hβ)
         have hmag_bpow_run :
             FloatSpec.Core.Raux.mag beta ((beta : ℝ) ^ emin) = emin + 1 := by
           simpa [Std.Do.wp, Std.Do.PostCond.noThrow, Id.run, pure] using hmag_bpow
@@ -713,8 +709,8 @@ theorem relative_error_N_round (h_pos : 0 < p) (x : ℝ)
         have hp_le : p ≤ ex - fexp ex := h_min ex hemin_lt_ex
         omega
       have hpow_le_exp : (beta : ℝ) ^ e ≤ (beta : ℝ) ^ (ex - p) := by
-        have h := (FloatSpec.Core.Raux.bpow_le beta e (ex - p) hβ he_le_exp) True.intro
-        simpa [FloatSpec.Core.Raux.bpow_le_check, Std.Do.wp,
+        have h := FloatSpec.Core.Raux.bpow_le beta e (ex - p) hβ he_le_exp
+        simpa [Std.Do.wp,
           Std.Do.PostCond.noThrow, Id.run, pure] using h
       have hprod_eq :
           (beta : ℝ) ^ (-p + 1) * (beta : ℝ) ^ (ex - 1) =
@@ -810,11 +806,10 @@ theorem relative_error_round (rnd : ℝ → Int) [FloatSpec.Core.Generic_fmt.Val
     exact (not_le_of_gt hpow_pos) hbad
   let M : Int := FloatSpec.Core.Raux.mag beta x
   have hM_gt : emin < M := by
-    have hupp := FloatSpec.Core.Raux.mag_upper_bound
-      (beta := beta) (x := x) hβ hx
+    have hupp := FloatSpec.Core.Raux.bpow_mag_gt
+      (beta := beta) (x := x) hβ
     have hupp' : |x| < (beta : ℝ) ^ M := by
-      simpa [Std.Do.wp, Std.Do.PostCond.noThrow, Id.run, pure, M,
-        FloatSpec.Core.Raux.abs_val] using hupp True.intro
+      simpa [Std.Do.wp, Std.Do.PostCond.noThrow, Id.run, pure, M] using hupp
     by_contra hnot
     have hpow_le : (beta : ℝ) ^ M ≤ (beta : ℝ) ^ emin :=
       zpow_le_zpow_right₀ hbge1 (le_of_not_gt hnot)
@@ -835,10 +830,9 @@ theorem relative_error_round (rnd : ℝ → Int) [FloatSpec.Core.Generic_fmt.Val
     congr 1
     ring
   have hmag_low : (beta : ℝ) ^ (M - 1) ≤ |x| := by
-    have h := FloatSpec.Core.Raux.mag_lower_bound
+    have h := FloatSpec.Core.Raux.bpow_mag_le
       (beta := beta) (x := x) hβ hx
-    simpa [Std.Do.wp, Std.Do.PostCond.noThrow, Id.run, pure, M,
-      FloatSpec.Core.Raux.abs_val] using h True.intro
+    simpa [Std.Do.wp, Std.Do.PostCond.noThrow, Id.run, pure, M] using h
   have hfmt : FloatSpec.Core.Generic_fmt.generic_format beta fexp
       ((beta : ℝ) ^ (M - 1)) := by
     have hfexp : fexp M ≤ M - 1 := by
@@ -939,10 +933,8 @@ theorem relative_error_FLX (rnd : ℝ → Int) [FloatSpec.Core.Generic_fmt.Valid
   let ex : Int := FloatSpec.Core.Raux.mag beta x
   have hlow : (beta : ℝ) ^ (ex - 1) ≤ |x| := by
     have h :=
-      (FloatSpec.Core.Raux.mag_lower_bound (beta := beta) (x := x) hβ h_nonzero)
-        True.intro
-    simpa [Std.Do.wp, Std.Do.PostCond.noThrow, Id.run, pure, ex,
-      FloatSpec.Core.Raux.abs_val] using h
+      (FloatSpec.Core.Raux.bpow_mag_le (beta := beta) (x := x) hβ h_nonzero)
+    simpa [Std.Do.wp, Std.Do.PostCond.noThrow, Id.run, pure, ex] using h
   have hmin : ∀ k, ex - 1 < k → prec ≤ k - FLX_exp prec k := by
     intro k _
     exact relative_error_FLX_aux (prec := prec) k
@@ -969,10 +961,8 @@ theorem relative_error_FLX_round (rnd : ℝ → Int) [FloatSpec.Core.Generic_fmt
   let ex : Int := FloatSpec.Core.Raux.mag beta x
   have hlow : (beta : ℝ) ^ (ex - 1) ≤ |x| := by
     have h :=
-      (FloatSpec.Core.Raux.mag_lower_bound (beta := beta) (x := x) hβ h_nonzero)
-        True.intro
-    simpa [Std.Do.wp, Std.Do.PostCond.noThrow, Id.run, pure, ex,
-      FloatSpec.Core.Raux.abs_val] using h
+      (FloatSpec.Core.Raux.bpow_mag_le (beta := beta) (x := x) hβ h_nonzero)
+    simpa [Std.Do.wp, Std.Do.PostCond.noThrow, Id.run, pure, ex] using h
   have hmin : ∀ k, ex - 1 < k → prec ≤ k - FLX_exp prec k := by
     intro k _
     exact relative_error_FLX_aux (prec := prec) k
@@ -1204,10 +1194,9 @@ private lemma relative_error_N_FLX'_pos (hβ : 1 < beta) {x : ℝ} (hxpos : 0 < 
     simpa [sm, FloatSpec.Core.Generic_fmt.scaled_mantissa, e]
   have hlow_abs : (beta : ℝ) ^ (M - 1) ≤ |x| := by
     have h :=
-      (FloatSpec.Core.Raux.mag_lower_bound (beta := beta) (x := x) hβ
-        (ne_of_gt hxpos)) True.intro
-    simpa [Std.Do.wp, Std.Do.PostCond.noThrow, Id.run, pure, M,
-      FloatSpec.Core.Raux.abs_val] using h
+      (FloatSpec.Core.Raux.bpow_mag_le (beta := beta) (x := x) hβ
+        (ne_of_gt hxpos))
+    simpa [Std.Do.wp, Std.Do.PostCond.noThrow, Id.run, pure, M] using h
   have hlow_x : (beta : ℝ) ^ (M - 1) ≤ x := by
     simpa [abs_of_nonneg (le_of_lt hxpos)] using hlow_abs
   have hpow_nonneg_neg : 0 ≤ (beta : ℝ) ^ (-e) := le_of_lt (zpow_pos hbposℝ (-e))
@@ -1501,11 +1490,11 @@ private lemma mag_gt_of_bpow_le (x : ℝ) (e : Int)
   · have hmag_abs := FloatSpec.Core.Raux.mag_abs (beta := beta) (x := x) hβ
     have hmag_abs_run :
         FloatSpec.Core.Raux.mag beta |x| = FloatSpec.Core.Raux.mag beta x := by
-      simpa [Std.Do.wp, Std.Do.PostCond.noThrow, Id.run, pure] using hmag_abs trivial
+      simpa [Std.Do.wp, Std.Do.PostCond.noThrow, Id.run, pure] using hmag_abs
     have hmag_bpow := FloatSpec.Core.Raux.mag_bpow (beta := beta) (e := e) hβ
     have hmag_bpow_run :
         FloatSpec.Core.Raux.mag beta ((beta : ℝ) ^ e) = e + 1 := by
-      simpa [Std.Do.wp, Std.Do.PostCond.noThrow, Id.run, pure] using hmag_bpow trivial
+      simpa [Std.Do.wp, Std.Do.PostCond.noThrow, Id.run, pure] using hmag_bpow
     have hmag_x : e + 1 = FloatSpec.Core.Raux.mag beta x := by
       calc
         e + 1 = FloatSpec.Core.Raux.mag beta ((beta : ℝ) ^ e) := hmag_bpow_run.symm
@@ -1582,8 +1571,8 @@ theorem relative_error_FLT_F2R_emin (rnd : ℝ → Int) [FloatSpec.Core.Generic_
         (beta : ℝ) ^ (emin + prec - 1) ≤ (beta : ℝ) ^ (emin + prec) := by
       have hpow :=
         (FloatSpec.Core.Raux.bpow_le (beta := beta) (e1 := emin + prec - 1)
-          (e2 := emin + prec) hβ (by omega)) True.intro
-      simpa [FloatSpec.Core.Raux.bpow_le_check, Std.Do.wp, Std.Do.PostCond.noThrow,
+          (e2 := emin + prec) hβ (by omega))
+      simpa [Std.Do.wp, Std.Do.PostCond.noThrow,
         Id.run, pure] using hpow
     have hle : |x| ≤ (beta : ℝ) ^ (emin + prec) :=
       le_trans (le_of_lt hxsmall) hthreshold
@@ -1702,8 +1691,8 @@ theorem relative_error_N_FLT_F2R_emin (m : Int) (hβ : 1 < beta) :
         (beta : ℝ) ^ (emin + prec - 1) ≤ (beta : ℝ) ^ (emin + prec) := by
       have hpow :=
         (FloatSpec.Core.Raux.bpow_le (beta := beta) (e1 := emin + prec - 1)
-          (e2 := emin + prec) hβ (by omega)) True.intro
-      simpa [FloatSpec.Core.Raux.bpow_le_check, Std.Do.wp, Std.Do.PostCond.noThrow,
+          (e2 := emin + prec) hβ (by omega))
+      simpa [Std.Do.wp, Std.Do.PostCond.noThrow,
         Id.run, pure] using hpow
     have hle : |x| ≤ (beta : ℝ) ^ (emin + prec) := by
       exact le_trans (le_of_lt hxsmall) hthreshold
@@ -1801,8 +1790,8 @@ theorem relative_error_N_FLT_round_F2R_emin (m : Int) (hβ : 1 < beta) :
         (beta : ℝ) ^ (emin + prec - 1) ≤ (beta : ℝ) ^ (emin + prec) := by
       have hpow :=
         (FloatSpec.Core.Raux.bpow_le (beta := beta) (e1 := emin + prec - 1)
-          (e2 := emin + prec) hβ (by omega)) True.intro
-      simpa [FloatSpec.Core.Raux.bpow_le_check, Std.Do.wp, Std.Do.PostCond.noThrow,
+          (e2 := emin + prec) hβ (by omega))
+      simpa [Std.Do.wp, Std.Do.PostCond.noThrow,
         Id.run, pure] using hpow
     have hle : |x| ≤ (beta : ℝ) ^ (emin + prec) := by
       exact le_trans (le_of_lt hxsmall) hthreshold
@@ -1862,7 +1851,7 @@ lemma error_N_FLT_aux (x : ℝ) (hβ : 1 < beta) (h_pos : 0 < x) :
     have hmag_le : FloatSpec.Core.Raux.mag beta x ≤ emin + prec := by
       have htrip := FloatSpec.Core.Raux.mag_le_bpow
         (beta := beta) (x := x) (e := emin + prec) hβ hx_ne hxabs_small
-      simpa [Std.Do.wp, Std.Do.PostCond.noThrow, Id.run, pure] using htrip trivial
+      simpa [Std.Do.wp, Std.Do.PostCond.noThrow, Id.run, pure] using htrip
     have hcexp : e = emin := by
       have hmax : max (FloatSpec.Core.Raux.mag beta x - prec) emin = emin := by
         apply max_eq_right
@@ -1952,14 +1941,14 @@ theorem relative_error_N_FLT'_ex (x : ℝ) (hβ : 1 < beta) :
           (beta : ℝ) ^ (emin + prec - 1) ≤ (beta : ℝ) ^ (emin + prec) := by
         have h := FloatSpec.Core.Raux.bpow_le (beta := beta)
           (e1 := emin + prec - 1) (e2 := emin + prec) hβ (by omega)
-        simpa [FloatSpec.Core.Raux.bpow_le_check, Std.Do.wp,
-          Std.Do.PostCond.noThrow, Id.run, pure] using h trivial
+        simpa [Std.Do.wp,
+          Std.Do.PostCond.noThrow, Id.run, pure] using h
       have hxabs_small : |x| < (beta : ℝ) ^ (emin + prec) :=
         lt_of_lt_of_le hsmall hpow_step
       have hmag_le : FloatSpec.Core.Raux.mag beta x ≤ emin + prec := by
         have htrip := FloatSpec.Core.Raux.mag_le_bpow
           (beta := beta) (x := x) (e := emin + prec) hβ hx0 hxabs_small
-        simpa [Std.Do.wp, Std.Do.PostCond.noThrow, Id.run, pure] using htrip trivial
+        simpa [Std.Do.wp, Std.Do.PostCond.noThrow, Id.run, pure] using htrip
       have hcexp : e = emin := by
         have hmax : max (FloatSpec.Core.Raux.mag beta x - prec) emin = emin := by
           apply max_eq_right

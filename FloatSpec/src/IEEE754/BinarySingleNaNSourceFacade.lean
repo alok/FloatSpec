@@ -432,8 +432,8 @@ theorem abs_B2R_le_emax_minus_prec {prec emax : Int}
       have hpow : FloatSpec.Core.Raux.bpow 2 (emax - prec) ≤
           FloatSpec.Core.Raux.bpow 2 emax := by
         simpa [wp, Std.Do.PostCond.noThrow, pure,
-          FloatSpec.Core.Raux.bpow_le_check, FloatSpec.Core.Raux.bpow] using
-          htrip trivial
+          FloatSpec.Core.Raux.bpow] using
+          htrip
       simp [B2R, binarySingleNaNFloatToB754, B754_to_R]
       exact hpow
   | B754_finite s m e hm hb =>
@@ -1039,8 +1039,8 @@ private theorem Bldexp_Bone_spec {prec emax : Int}
     (x:=FloatSpec.Core.Raux.bpow 2 k) (hβ:=by norm_num) hfmt
   have hltTrip := FloatSpec.Core.Raux.bpow_lt 2 k emax (by norm_num) hmax
   have hlt : FloatSpec.Core.Raux.bpow 2 k < FloatSpec.Core.Raux.bpow 2 emax := by
-    simpa [FloatSpec.Core.Raux.bpow_lt_check, FloatSpec.Core.Raux.bpow,
-      wp, Std.Do.PostCond.noThrow, pure] using hltTrip trivial
+    simpa [FloatSpec.Core.Raux.bpow,
+      wp, Std.Do.PostCond.noThrow, pure] using hltTrip
   have hbone := Binary.BoneSingle_value_finite_sign (prec:=prec) (emax:=emax)
   have hinput : B2R (Bone (prec:=prec) (emax:=emax)) *
       FloatSpec.Core.Raux.bpow 2 k = FloatSpec.Core.Raux.bpow 2 k := by
@@ -1189,7 +1189,7 @@ theorem Bfrexp_correct {prec emax : Int}
           exact (FloatSpec.Core.Raux.mag_unique 2 (SF2R 2 core.1) 0
             (by norm_num)
             (by norm_num; exact hnorm.1)
-            (by norm_num; exact hnorm.2)) trivial
+            (by norm_num; exact hnorm.2))
         have hmagMul := FloatSpec.Core.Raux.mag_mult_bpow
           2 (SF2R 2 core.1) core.2 (by norm_num) hz
         have hmagEq : FloatSpec.Core.Raux.mag 2
@@ -1358,7 +1358,7 @@ theorem Bulp'_correct {prec emax : Int}
       have hmagTrip := FloatSpec.Core.Raux.mag_le_bpow 2 (B2R xf) emax
         (by norm_num) hxne (abs_B2R_lt_emax xf)
       have hmagLe : FloatSpec.Core.Raux.mag 2 (B2R xf) ≤ emax := by
-        simpa [wp, Std.Do.PostCond.noThrow, pure] using hmagTrip trivial
+        simpa [wp, Std.Do.PostCond.noThrow, pure] using hmagTrip
       let k := FLT_exp (3 - emax - prec) prec (Bfrexp xf).2
       have hkmin : 3 - emax - prec ≤ k := by
         simp [k, FLT_exp, FloatSpec.Core.FLT.FLT_exp]
@@ -1576,7 +1576,7 @@ private theorem BpredPosPrime_toB754 {prec emax : Int}
       have hmagTrip := FloatSpec.Core.Raux.mag_le_bpow 2 (B2R xf) emax
         (by norm_num) hxne (abs_B2R_lt_emax xf)
       have hmagLe : FloatSpec.Core.Raux.mag 2 (B2R xf) ≤ emax := by
-        simpa [wp, Std.Do.PostCond.noThrow, pure] using hmagTrip trivial
+        simpa [wp, Std.Do.PostCond.noThrow, pure] using hmagTrip
       let k := FLT_exp (3 - emax - prec) prec ((Bfrexp xf).2 - 1)
       have hkmin : 3 - emax - prec ≤ k := by
         simp [k, FLT_exp, FloatSpec.Core.FLT.FLT_exp]

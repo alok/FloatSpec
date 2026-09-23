@@ -483,7 +483,7 @@ theorem cexp_FLT_FLX (beta : Int) [ValidRadix beta] (x : ℝ)
   have h_e1_le_M : (emin + prec) ≤ M := by
     have hpow : (beta : ℝ) ^ ((emin + prec) - 1) < (beta : ℝ) ^ M :=
       lt_of_le_of_lt hx_lb hx_upper
-    exact (FloatSpec.Core.Raux.bpow_lt_bpow beta (emin + prec) M hβ hpow) True.intro
+    exact FloatSpec.Core.Raux.bpow_lt_bpow beta (emin + prec) M hβ hpow
   -- Under this condition, FLT_exp and FLX_exp coincide at M
   have hEqExp : FLT_exp prec emin M = FLX.FLX_exp prec M := by
     have : emin ≤ M - prec := by
@@ -714,7 +714,7 @@ theorem ulp_FLT_small (beta : Int) [ValidRadix beta] (x : ℝ)
     have hM_le : M ≤ (emin + prec) := by
       -- Use `mag_le_bpow` with separate arguments and unwrap the Hoare triple.
       have hspec := FloatSpec.Core.Raux.mag_le_bpow (beta := beta) (x := x) (e := (emin + prec)) hβ hx_ne hx_lt
-      have hcall := hspec trivial
+      have hcall := hspec
       simpa [FloatSpec.Core.Raux.mag, hM, wp, PostCond.noThrow, Id.run, pure]
         using hcall
     -- Hence M - prec ≤ emin, so FLT_exp M = emin.
@@ -765,7 +765,7 @@ theorem cexp_FLT_FIX (beta : Int) [ValidRadix beta] (x : ℝ)
   have hM_le : M ≤ (emin + prec) := by
     have := FloatSpec.Core.Raux.mag_le_bpow (beta := beta) (x := x) (e := (emin + prec))
     have hspec := this hβ hx_ne hx_lt
-    have hcall := hspec trivial
+    have hcall := hspec
     simpa [FloatSpec.Core.Raux.mag, hM, wp, PostCond.noThrow, Id.run, pure] using hcall
   -- Hence M - prec ≤ emin, so FLT_exp M = emin
   have hsub_le : M - prec ≤ emin := by
@@ -915,10 +915,10 @@ theorem ulp_FLT_le (beta : Int) [ValidRadix beta] (x : ℝ)
         simpa [FLT_exp, max_eq_left hcase]
       -- From `mag` lower bound: β^(M - 1) ≤ |x|
       have hcall :=
-        (FloatSpec.Core.Raux.bpow_mag_le_from_exp_payload (beta := beta) (x := x) (e := M) hβ hx_ne le_rfl) trivial
+        (FloatSpec.Core.Raux.bpow_mag_le_from_exp_payload (beta := beta) (x := x) (e := M) hβ hx_ne le_rfl)
       -- Simplify the returned triple and rewrite the exponent
       have hM_lb : (beta : ℝ) ^ (M - 1) ≤ |x| := by
-        simpa [FloatSpec.Core.Raux.abs_val, hM, wp, PostCond.noThrow, Id.run, pure, sub_eq_add_neg]
+        simpa [hM, wp, PostCond.noThrow, Id.run, pure, sub_eq_add_neg]
           using hcall
       -- Convert the goal exponent using `hfexp_eq`
       simpa [hfexp_eq, sub_eq_add_neg, add_comm, add_left_comm, add_assoc]
@@ -1768,7 +1768,7 @@ theorem ulp_FLT_pred_pos (beta : Int) [ValidRadix beta] (x : ℝ)
         have hM_prev_lb : emin + prec ≤ M - 1 := by
           have h := FloatSpec.Core.Raux.le_bpow (beta := beta) (e1 := emin + prec) (e2 := M - 1)
               hβ hT_le_pow
-          simpa [wp, PostCond.noThrow, Id.run, pure] using (h True.intro)
+          simpa [wp, PostCond.noThrow, Id.run, pure] using h
         have hM_large : emin ≤ M - prec := by omega
         have hM_prev_large : emin ≤ M - 1 - prec := by omega
         have hpred_pos :

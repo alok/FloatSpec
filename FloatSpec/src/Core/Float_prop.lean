@@ -1281,7 +1281,7 @@ theorem mag_F2R_bounds (x : ℝ) (m e : Int) (hbeta : 1 < beta) :
     change |x| < (beta : ℝ) ^ (FloatSpec.Core.Raux.mag beta f)
     rw [abs_of_pos hx_pos]
     exact lt_of_lt_of_le hx_hi hf1_le
-  exact (FloatSpec.Core.Raux.mag_unique beta x (mag beta f) hbeta hlow hupp) True.intro
+  exact FloatSpec.Core.Raux.mag_unique beta x (mag beta f) hbeta hlow hupp
 
 /- Legacy proof for the accidentally weakened interval-only contract.
   intro hm_pos ⟨hx_lo, hx_hi⟩
@@ -1478,7 +1478,7 @@ theorem Zdigits_mag (n : Int) (hbeta : 1 < beta) :
   have hupp : |(n : ℝ)| < (beta : ℝ) ^ d := by
     simpa [hupp_pow]
       using hupp_nat
-  have hmag := (FloatSpec.Core.Raux.mag_unique beta (n : ℝ) d hbeta hlow hupp) True.intro
+  have hmag := FloatSpec.Core.Raux.mag_unique beta (n : ℝ) d hbeta hlow hupp
   have hmag_eq : FloatSpec.Core.Raux.mag beta (n : ℝ) = d := by
     simpa using hmag
   simpa [d, hd] using hmag_eq.symm
@@ -1602,7 +1602,7 @@ theorem Raux_mag_F2R_Zdigits (m e : Int) (hbeta : 1 < beta) :
   have hmag_eq :
       FloatSpec.Core.Raux.mag beta
           (F2R (FlocqFloat.mk m e : FlocqFloat beta)) = d + e := by
-    simpa using hmag True.intro
+    simpa using hmag
   simpa [d, hd] using hmag_eq
 
 /-- Coq-compatible magnitude for values strictly between adjacent positive
@@ -1712,7 +1712,7 @@ theorem mag_F2R_bounds_Zdigits (x : ℝ) (m e : Int) (hbeta : 1 < beta) :
     (beta := beta) (x := x) (e := d + e)
     hbeta hlow_scaled hupp_scaled
   have hmag_eq : FloatSpec.Core.Raux.mag beta x = d + e := by
-    simpa using hmag True.intro
+    simpa using hmag
   simpa [d, hd] using hmag_eq
 
 /-

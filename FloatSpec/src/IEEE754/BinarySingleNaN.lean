@@ -390,7 +390,7 @@ theorem Bnormfr_mantissa_correct {prec emax : Int}
             (prec:=prec) (emax:=emax)
             (BinarySingleNaNFloat.B754_finite s m e hm_pos hbounded)))
           0 (by norm_num : (1 : Int) < 2) hlow hupp
-        simpa [wp, PostCond.noThrow, pure] using htrip trivial
+        simpa [wp, PostCond.noThrow, pure] using htrip
       have hsigned_ne :
           (if s then -(m : Int) else (m : Int)) ≠ 0 := by
         have hm_int_ne : (m : Int) ≠ 0 := by
@@ -3487,7 +3487,7 @@ private theorem binary_round_aux_correct_proof
       have hbpow_trip := FloatSpec.Core.Raux.bpow_gt_0 2 emax
         (by norm_num : (1 : Int) < 2)
       have hbpow_pos : 0 < FloatSpec.Core.Raux.bpow 2 emax := by
-        simpa [wp, PostCond.noThrow, pure] using hbpow_trip trivial
+        simpa [wp, PostCond.noThrow, pure] using hbpow_trip
       simp [FloatSpec.Core.Raux.Rlt_bool, hrounded_zero, hbpow_pos]
     constructor
     · simp [binary_round_aux, bsn_shr_fexp, hmx_nonneg, fexp, sx, r1, m1, e1, l1, m1',
@@ -3821,7 +3821,7 @@ theorem sign_plus_overflow {prec emax : Int}
                 (fexp := FLT_exp (3 - emax - prec) prec))
           have hbpow_trip := FloatSpec.Core.Raux.bpow_gt_0 2 emax (by norm_num)
           have hbpow_pos : 0 < FloatSpec.Core.Raux.bpow 2 emax := by
-            simpa [wp, PostCond.noThrow, pure] using hbpow_trip trivial
+            simpa [wp, PostCond.noThrow, pure] using hbpow_trip
           rw [hround0, abs_zero] at Hover
           linarith
         have hz_neg : z < 0 := lt_of_le_of_ne hz_nonpos hz_ne
@@ -4709,8 +4709,8 @@ theorem Bulp_correct
         have htrip := FloatSpec.Core.Raux.bpow_lt
           (beta := 2) (e1 := ex) (e2 := emax)
           (hβ := by norm_num) hex_lt_emax
-        simpa [FloatSpec.Core.Raux.bpow_lt_check, FloatSpec.Core.Raux.bpow,
-          wp, PostCond.noThrow, Id.run, pure] using htrip trivial
+        simpa [FloatSpec.Core.Raux.bpow,
+          wp, PostCond.noThrow, Id.run, pure] using htrip
       have hover_true :
           FloatSpec.Core.Raux.Rlt_bool
             |FloatSpec.Core.Generic_fmt.roundR 2 (FLT_exp (3 - emax - prec) prec)
@@ -4965,8 +4965,8 @@ theorem binary_round_one_payload
   have hlt : FloatSpec.Core.Raux.bpow 2 e < FloatSpec.Core.Raux.bpow 2 emax := by
     have htrip := FloatSpec.Core.Raux.bpow_lt
       (beta:=2) (e1:=e) (e2:=emax) (hβ:=by norm_num) hemax
-    have hp := htrip trivial
-    simpa [FloatSpec.Core.Raux.bpow_lt_check, FloatSpec.Core.Raux.bpow,
+    have hp := htrip
+    simpa [FloatSpec.Core.Raux.bpow,
       wp, PostCond.noThrow, pure] using hp
   have hcond :
       FloatSpec.Core.Raux.Rlt_bool
@@ -5253,16 +5253,16 @@ theorem Bfrexp_correct_aux
       simpa [FloatSpec.Core.Raux.bpow] using hmagMul
     rw [← heqMag] at hmagEq
     omega
-  have hlow := FloatSpec.Core.Raux.mag_lower_bound
+  have hlow := FloatSpec.Core.Raux.bpow_mag_le
     2 (SF2R 2 z) (by norm_num) hzne
-  have hupp := FloatSpec.Core.Raux.mag_upper_bound
-    2 (SF2R 2 z) (by norm_num) hzne
+  have hupp := FloatSpec.Core.Raux.bpow_mag_gt
+    2 (SF2R 2 z) (by norm_num)
   constructor
-  · have := hlow trivial
+  · have := hlow
     rw [hmagZero] at this
     norm_num [FloatSpec.Core.Raux.bpow] at this ⊢
     exact this
-  · have := hupp trivial
+  · have := hupp
     rw [hmagZero] at this
     norm_num [FloatSpec.Core.Raux.bpow] at this ⊢
     exact this
@@ -6812,8 +6812,7 @@ private theorem one_lt_bpow_emax {prec emax : Int}
     (1 : ℝ) < FloatSpec.Core.Raux.bpow 2 emax := by
   have he := (inferInstance : Prec_lt_emax prec emax).emax_ge_2
   have h := FloatSpec.Core.Raux.bpow_lt 2 0 emax (by norm_num) (by omega)
-  simpa [wp, PostCond.noThrow, pure, FloatSpec.Core.Raux.bpow_lt_check,
-    FloatSpec.Core.Raux.bpow] using h trivial
+  simpa [wp, PostCond.noThrow, pure, FloatSpec.Core.Raux.bpow] using h
 
 theorem BoneSingle_value_finite_sign {prec emax : Int}
     [Prec_gt_0 prec] [Prec_lt_emax prec emax] :
@@ -6984,7 +6983,7 @@ theorem Bldexp_correct {prec emax : Int}
       round_to_generic_rnd_of_mode_zero mode (FLT_exp (3 - emax - prec) prec)
   have hbpow_pos : 0 < FloatSpec.Core.Raux.bpow 2 emax := by
     have h := FloatSpec.Core.Raux.bpow_gt_0 2 emax (by norm_num)
-    simpa [wp, PostCond.noThrow, pure] using h trivial
+    simpa [wp, PostCond.noThrow, pure] using h
   cases x with
   | B754_zero s =>
       simp [Bldexp, BldexpSingle, lift, B2BSN, is_nan, B2R, is_finite,
@@ -7137,7 +7136,7 @@ theorem Bfrexp_correct {prec emax : Int}
           norm_num
           exact hnorm.2
         exact (FloatSpec.Core.Raux.mag_unique
-          2 (SF2R 2 core.1) 0 (by norm_num) hlow hupp) trivial
+          2 (SF2R 2 core.1) 0 (by norm_num) hlow hupp)
       have hdecomp :
           SF2R 2 (StandardFloat.S754_finite s mn ex) =
             SF2R 2 core.1 * FloatSpec.Core.Raux.bpow 2 core.2 := by
@@ -7778,7 +7777,7 @@ theorem normalize_correct {prec emax : Int}
   · subst m
     have hbtrip := FloatSpec.Core.Raux.bpow_gt_0 2 emax (by norm_num)
     have hb : 0 < FloatSpec.Core.Raux.bpow 2 emax := by
-      simpa [wp, PostCond.noThrow, pure] using hbtrip trivial
+      simpa [wp, PostCond.noThrow, pure] using hbtrip
     have hlt : FloatSpec.Core.Raux.Rlt_bool
         |FloatSpec.Core.Generic_fmt.roundR 2
           (FLT_exp (3 - emax - prec) prec) (rnd_of_mode mode)
@@ -10684,14 +10683,14 @@ private theorem roundRSqrtBinaryFiniteLtEmax {prec emax : Int}
     simpa [input, abs_of_pos hinputPos] using h
   have hbpowPos : 0 < FloatSpec.Core.Raux.bpow 2 emax := by
     have htrip := FloatSpec.Core.Raux.bpow_gt_0 2 emax (by norm_num)
-    simpa [wp, PostCond.noThrow, pure] using htrip trivial
+    simpa [wp, PostCond.noThrow, pure] using htrip
   have hsqrtLt : Real.sqrt input <
       Real.sqrt (FloatSpec.Core.Raux.bpow 2 emax) :=
     Real.sqrt_lt_sqrt (le_of_lt hinputPos) hinputLt
   let ceiling := FloatSpec.Core.Raux.bpow 2 (emax - 1)
   have hceilingPos : 0 < ceiling := by
     have htrip := FloatSpec.Core.Raux.bpow_gt_0 2 (emax - 1) (by norm_num)
-    simpa [wp, PostCond.noThrow, pure, ceiling] using htrip trivial
+    simpa [wp, PostCond.noThrow, pure, ceiling] using htrip
   have hpowSquare : FloatSpec.Core.Raux.bpow 2 emax ≤ ceiling ^ 2 := by
     have hexp : emax ≤ 2 * (emax - 1) := by
       have hemax := (inferInstance : Prec_lt_emax prec emax).emax_ge_2
@@ -10700,7 +10699,7 @@ private theorem roundRSqrtBinaryFiniteLtEmax {prec emax : Int}
       (by norm_num) hexp
     have hpow : FloatSpec.Core.Raux.bpow 2 emax ≤
         FloatSpec.Core.Raux.bpow 2 (2 * (emax - 1)) := by
-      have hrun := htrip trivial
+      have hrun := htrip
       change (2 : ℝ) ^ emax ≤ (2 : ℝ) ^ (2 * (emax - 1)) at hrun
       simpa [FloatSpec.Core.Raux.bpow] using hrun
     have htwoNe : (2 : ℝ) ≠ 0 := by norm_num
@@ -10743,7 +10742,7 @@ private theorem roundRSqrtBinaryFiniteLtEmax {prec emax : Int}
   have hceilingLt : ceiling < FloatSpec.Core.Raux.bpow 2 emax := by
     have htrip := FloatSpec.Core.Raux.bpow_lt 2 (emax - 1) emax
       (by norm_num) (by omega)
-    have hrun := htrip trivial
+    have hrun := htrip
     change (2 : ℝ) ^ (emax - 1) < (2 : ℝ) ^ emax at hrun
     simpa [FloatSpec.Core.Raux.bpow, ceiling] using hrun
   have hroundLt : FloatSpec.Core.Generic_fmt.roundR 2
@@ -12436,7 +12435,7 @@ private theorem roundR_RTZ_eq_floor_of_nonneg {prec emax : Int}
   have hrnd : rnd_of_mode RoundingMode.RTZ sm =
       FloatSpec.Core.Generic_fmt.rnd_floor sm := by
     simpa [rnd_of_mode, FloatSpec.Core.Generic_fmt.rnd_floor] using
-      (FloatSpec.Core.Raux.Ztrunc_floor sm hsm True.intro)
+      (FloatSpec.Core.Raux.Ztrunc_floor sm hsm)
   simp only [FloatSpec.Core.Generic_fmt.roundR]
   rw [hrnd]
 
@@ -12718,7 +12717,7 @@ private theorem value_boundary_of_mantissa_boundary {prec : Int}
     (beta:=2) (e:=prec + ex - 1) (by norm_num : (1 : Int) < 2)
   have hmag : FloatSpec.Core.Raux.mag 2 xr = prec + ex := by
     rw [hxrPower]
-    simpa [wp, PostCond.noThrow, pure] using hmagTrip trivial
+    simpa [wp, PostCond.noThrow, pure] using hmagTrip
   change xr = (2 : ℝ) ^ (FloatSpec.Core.Raux.mag 2 xr - 1)
   rw [hmag, hxrPower]
 
@@ -12852,7 +12851,7 @@ private theorem Bpred_pos'_positive_correct {prec emax : Int}
     (ne_of_gt hxrPos) (by
       simpa only [abs_of_pos hxrPos, FloatSpec.Core.Raux.bpow] using hxrLt)
   have hmagLe : FloatSpec.Core.Raux.mag 2 xr ≤ emax := by
-    simpa [wp, PostCond.noThrow, pure] using hmagTrip trivial
+    simpa [wp, PostCond.noThrow, pure] using hmagTrip
   have hfrexpMag := Bfrexp_exp_eq_mag_of_finite (prec:=prec) (emax:=emax)
     hmax false mx ex hmx hbounded
   let ed := fp ((Bfrexp_bsn (prec:=prec) (emax:=emax) x).2 - 1)
@@ -13566,9 +13565,8 @@ theorem Bsucc_correct {prec emax : Int}
       have hpowLt : FloatSpec.Core.Raux.bpow 2 (3 - emax - prec) <
           FloatSpec.Core.Raux.bpow 2 emax := by
         have htrip := FloatSpec.Core.Raux.bpow_lt 2 _ _ (by norm_num) heminLt
-        have h := htrip trivial
-        simpa [FloatSpec.Core.Raux.bpow_lt_check,
-          FloatSpec.Core.Raux.bpow, wp, PostCond.noThrow, Id.run, pure] using h
+        have h := htrip
+        simpa [FloatSpec.Core.Raux.bpow, wp, PostCond.noThrow, Id.run, pure] using h
       simp [binarySingleNaNFloatToB754, B754_to_R, hsucc, hulp,
         FloatSpec.Core.Raux.Rlt_bool, hpowLt, Bsucc, B2SF_BSN,
         BSN_is_finite, BSN_is_finite_strict, BSN_sign,
@@ -13744,7 +13742,7 @@ theorem Bsucc_correct {prec emax : Int}
           have hbpowPos : 0 < FloatSpec.Core.Raux.bpow 2 emax :=
             by
               have h := FloatSpec.Core.Raux.bpow_gt_0 2 emax (by norm_num)
-              simpa [wp, PostCond.noThrow, pure] using h trivial
+              simpa [wp, PostCond.noThrow, pure] using h
           have hlt : FloatSpec.Core.Raux.Rlt_bool successor
               (FloatSpec.Core.Raux.bpow 2 emax) = true := by
             simp [FloatSpec.Core.Raux.Rlt_bool, lt_of_le_of_lt hsuccNonpos hbpowPos]

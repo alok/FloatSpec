@@ -91,7 +91,7 @@ theorem generic_format_plus (x y : ℝ)
       have htrip :=
         FloatSpec.Core.Raux.mag_le_bpow (beta := beta) (x := x + y) (e := e)
           hβ hz (by simpa [e, he] using hlt)
-      simpa [Std.Do.PostCond.noThrow, wp, pure] using htrip trivial
+      simpa [Std.Do.PostCond.noThrow, wp, pure] using htrip
     have hcexp_le :
         FloatSpec.Core.Generic_fmt.cexp beta fexp (x + y) ≤ fxy.Fexp := by
       have hmono_xy :
@@ -144,10 +144,10 @@ theorem generic_format_plus_weak (x y : ℝ)
       min_eq_left hmag_xy
     have hx_upper : |x| ≤ (beta : ℝ) ^ (min (mag beta x) (mag beta y)) := by
       have h :=
-        FloatSpec.Core.Raux.mag_upper_bound (beta := beta) (x := x) hβ hx0
+        FloatSpec.Core.Raux.bpow_mag_gt (beta := beta) (x := x) hβ
       have hx_lt : |x| < (beta : ℝ) ^ (mag beta x) := by
-        simpa [FloatSpec.Core.Raux.abs_val, Std.Do.PostCond.noThrow, wp, pure]
-          using h trivial
+        simpa [Std.Do.PostCond.noThrow, wp, pure]
+          using h
       simpa [hmin_mag] using le_of_lt hx_lt
     have hmin_abs : min |x| |y| = |x| := min_eq_left hxy_abs
     exact le_trans h_bound (by simpa [hmin_abs] using hx_upper)
@@ -158,10 +158,10 @@ theorem generic_format_plus_weak (x y : ℝ)
       min_eq_right hmag_yx
     have hy_upper : |y| ≤ (beta : ℝ) ^ (min (mag beta x) (mag beta y)) := by
       have h :=
-        FloatSpec.Core.Raux.mag_upper_bound (beta := beta) (x := y) hβ hy0
+        FloatSpec.Core.Raux.bpow_mag_gt (beta := beta) (x := y) hβ
       have hy_lt : |y| < (beta : ℝ) ^ (mag beta y) := by
-        simpa [FloatSpec.Core.Raux.abs_val, Std.Do.PostCond.noThrow, wp, pure]
-          using h trivial
+        simpa [Std.Do.PostCond.noThrow, wp, pure]
+          using h
       simpa [hmin_mag] using le_of_lt hy_lt
     have hmin_abs : min |x| |y| = |y| := min_eq_right hyx_abs
     exact le_trans h_bound (by simpa [hmin_abs] using hy_upper)

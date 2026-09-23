@@ -222,8 +222,7 @@ lemma mag_eq_Zdigits (m : Int) (hm_pos : 0 < m) (hβ : 1 < beta) :
   -- Use mag_unique_pos from Raux: if β^(e-1) ≤ x < β^e then mag β x = e
   -- The bounds from Zdigits_correct exactly match!
   have hmag := FloatSpec.Core.Raux.mag_unique_pos_from_positive_payload beta (m : ℝ) d
-  simp only [wp, PostCond.noThrow, Id.run, bind, pure] at hmag
-  exact hmag hβ hm_real_pos hlow_real hupp_real trivial
+  exact hmag hβ hm_real_pos hlow_real hupp_real
 
 /-
  Helper lemma: mag(x * β^e) = mag(x) + e for nonzero x.

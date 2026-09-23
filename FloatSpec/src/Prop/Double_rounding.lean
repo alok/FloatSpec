@@ -402,8 +402,8 @@ theorem round_round_gt_mid_further_place' (fexp1 fexp2 : Int → Int)
     have hbpow_lt : (beta : ℝ) ^ e2 < (beta : ℝ) ^ e1 := by
       have htrip := FloatSpec.Core.Raux.bpow_lt (beta := beta)
         (e1 := e2) (e2 := e1) hβ hfexp_lt
-      simpa [FloatSpec.Core.Raux.bpow_lt_check, wp, PostCond.noThrow, Id.run, pure]
-        using htrip True.intro
+      simpa [wp, PostCond.noThrow, Id.run, pure]
+        using htrip
     have hx_lt_half_e1 : x < (1 / 2) * (beta : ℝ) ^ e1 := by
       nlinarith [hhalf_pos, hx_le_half_e2, hbpow_lt]
     have hsm_pos : 0 < sm := by
@@ -456,7 +456,7 @@ theorem round_round_gt_mid_further_place' (fexp1 fexp2 : Int → Int)
     have hmag_le : FloatSpec.Core.Raux.mag beta xnn ≤ m := by
       have htrip := FloatSpec.Core.Raux.mag_le_bpow (beta := beta)
         (x := xnn) (e := m) hβ hxnn0 hxnn_abs_lt
-      exact htrip True.intro
+      exact htrip
     have hmag_ge : m ≤ FloatSpec.Core.Raux.mag beta xnn := by
       have h := FloatSpec.Core.Generic_fmt.mag_roundR_ge
         (beta := beta) (fexp := fexp2)
@@ -553,9 +553,8 @@ theorem round_round_gt_mid_further_place (fexp1 fexp2 : Int → Int)
         (x := x) (hx := hx_ne)) True.intro
       simpa [wp, PostCond.noThrow, Id.run, pure, e2, hcexp2x] using h
     have hx_lt_bpow : x < (beta : ℝ) ^ m := by
-      have htrip := FloatSpec.Core.Raux.mag_upper_bound (beta := beta) (x := x) hβ hx_ne
-      simpa [wp, PostCond.noThrow, Id.run, pure, FloatSpec.Core.Raux.abs_val,
-        abs_of_pos hx_pos, m, hm] using htrip True.intro
+      have htrip := FloatSpec.Core.Raux.bpow_mag_gt (beta := beta) (x := x) hβ
+      simpa [wp, PostCond.noThrow, Id.run, pure, abs_of_pos hx_pos, m, hm] using htrip
     have herr :
         |xnn - x| ≤ (1 / 2) * ulp beta fexp2 x := by
       simpa [xnn, hxnn] using
@@ -938,8 +937,8 @@ theorem round_round_lt_mid_further_place' (fexp1 fexp2 : Int → Int)
     have hbpow_lt : (beta : ℝ) ^ e2 < (beta : ℝ) ^ e1 := by
       have htrip := FloatSpec.Core.Raux.bpow_lt (beta := beta)
         (e1 := e2) (e2 := e1) hβ hfexp_lt
-      simpa [FloatSpec.Core.Raux.bpow_lt_check, wp, PostCond.noThrow, Id.run, pure]
-        using htrip True.intro
+      simpa [wp, PostCond.noThrow, Id.run, pure]
+        using htrip
     have hx_lt_half_e1 : x < (1 / 2) * (beta : ℝ) ^ e1 := by
       nlinarith [hhalf_pos, hx_le_half_e2, hbpow_lt]
     have hsm_pos : 0 < sm := by
@@ -995,7 +994,7 @@ theorem round_round_lt_mid_further_place' (fexp1 fexp2 : Int → Int)
     have hmag_le : FloatSpec.Core.Raux.mag beta xnn ≤ m := by
       have htrip := FloatSpec.Core.Raux.mag_le_bpow (beta := beta)
         (x := xnn) (e := m) hβ hxnn0 hxnn_abs_lt
-      exact htrip True.intro
+      exact htrip
     have hmag_ge : m ≤ FloatSpec.Core.Raux.mag beta xnn := by
       have h := FloatSpec.Core.Generic_fmt.mag_roundR_ge
         (beta := beta) (fexp := fexp2)
@@ -1110,8 +1109,8 @@ theorem round_round_lt_mid_further_place (fexp1 fexp2 : Int → Int)
       have hulp1_le : ulp beta fexp1 x ≤ (beta : ℝ) ^ m := by
         have htrip := FloatSpec.Core.Raux.bpow_le (beta := beta)
           (e1 := e1) (e2 := m) hβ he1_le_m
-        simpa [hulp1, FloatSpec.Core.Raux.bpow_le_check, wp,
-          PostCond.noThrow, Id.run, pure] using htrip True.intro
+        simpa [hulp1, wp,
+          PostCond.noThrow, Id.run, pure] using htrip
       have hulp1_nonneg : 0 ≤ ulp beta fexp1 x := by
         rw [hulp1]
         exact le_of_lt hpow1_pos
@@ -1132,10 +1131,9 @@ theorem round_round_lt_mid_further_place (fexp1 fexp2 : Int → Int)
             (beta := beta) (fexp := fexp1)
             (rnd := FloatSpec.Core.Generic_fmt.rnd_floor) (x := x) hβ
       have hxdn_lt_bpow : xdn < (beta : ℝ) ^ m := by
-        have htrip := FloatSpec.Core.Raux.mag_upper_bound (beta := beta) (x := x) hβ hx_ne
+        have htrip := FloatSpec.Core.Raux.bpow_mag_gt (beta := beta) (x := x) hβ
         have hx_lt : x < (beta : ℝ) ^ m := by
-          simpa [wp, PostCond.noThrow, Id.run, pure, FloatSpec.Core.Raux.abs_val,
-            abs_of_pos hx_pos, m, hm] using htrip True.intro
+          simpa [wp, PostCond.noThrow, Id.run, pure, abs_of_pos hx_pos, m, hm] using htrip
         exact lt_of_le_of_lt hxdn_le_x hx_lt
       have hid :
           xdn + ulp beta fexp1 xdn ≤ (beta : ℝ) ^ m := by
@@ -1148,7 +1146,7 @@ theorem round_round_lt_mid_further_place (fexp1 fexp2 : Int → Int)
       have hmag_le : FloatSpec.Core.Raux.mag beta xdn ≤ m := by
         have htrip := FloatSpec.Core.Raux.mag_le_bpow (beta := beta)
           (x := xdn) (e := m) hβ hxdn0 hxdn_abs_lt
-        exact htrip True.intro
+        exact htrip
       have hmag_ge : m ≤ FloatSpec.Core.Raux.mag beta xdn := by
         have h := FloatSpec.Core.Generic_fmt.mag_roundR_ge
           (beta := beta) (fexp := fexp1)
@@ -1318,17 +1316,17 @@ theorem round_round_really_zero (fexp1 fexp2 : Int → Int)
     (FloatSpec.Core.Generic_fmt.Znearest choice2) x with hxnn
   have hx_ne : x ≠ 0 := ne_of_gt hx_pos
   have hlow_x : (beta : ℝ) ^ (m - 1) ≤ x := by
-    have htrip := FloatSpec.Core.Raux.mag_lower_bound
+    have htrip := FloatSpec.Core.Raux.bpow_mag_le
       (beta := beta) (x := x) hβ hx_ne
     simpa [wp, PostCond.noThrow, Id.run, pure,
-      FloatSpec.Core.Raux.abs_val, abs_of_pos hx_pos, m, hm]
-      using htrip True.intro
+      abs_of_pos hx_pos, m, hm]
+      using htrip
   have hupp_x : x < (beta : ℝ) ^ m := by
-    have htrip := FloatSpec.Core.Raux.mag_upper_bound
-      (beta := beta) (x := x) hβ hx_ne
+    have htrip := FloatSpec.Core.Raux.bpow_mag_gt
+      (beta := beta) (x := x) hβ
     simpa [wp, PostCond.noThrow, Id.run, pure,
-      FloatSpec.Core.Raux.abs_val, abs_of_pos hx_pos, m, hm]
-      using htrip True.intro
+      abs_of_pos hx_pos, m, hm]
+      using htrip
   have hf1_really_m : m ≤ fexp1 m - 2 := by
     simpa [m, hm] using hf1_really
   have hf1_gt_m : fexp1 m > m := by omega
@@ -1381,7 +1379,7 @@ theorem round_round_really_zero (fexp1 fexp2 : Int → Int)
         have hmag_le : FloatSpec.Core.Raux.mag beta xnn ≤ m := by
           have htrip := FloatSpec.Core.Raux.mag_le_bpow
             (beta := beta) (x := xnn) (e := m) hβ hxnn0 hxnn_abs_lt
-          exact htrip True.intro
+          exact htrip
         have hmag_ge : m ≤ FloatSpec.Core.Raux.mag beta xnn := by
           have h := FloatSpec.Core.Generic_fmt.mag_roundR_ge
             (beta := beta) (fexp := fexp2)
@@ -1390,11 +1388,11 @@ theorem round_round_really_zero (fexp1 fexp2 : Int → Int)
         have hmag_eq : FloatSpec.Core.Raux.mag beta xnn = m :=
           le_antisymm hmag_le hmag_ge
         have hlow_xnn : (beta : ℝ) ^ (m - 1) ≤ xnn := by
-          have htrip := FloatSpec.Core.Raux.mag_lower_bound
+          have htrip := FloatSpec.Core.Raux.bpow_mag_le
             (beta := beta) (x := xnn) hβ hxnn0
           simpa [wp, PostCond.noThrow, Id.run, pure,
-            FloatSpec.Core.Raux.abs_val, abs_of_nonneg hxnn_nonneg, hmag_eq]
-            using htrip True.intro
+            abs_of_nonneg hxnn_nonneg, hmag_eq]
+            using htrip
         have hleft :
             FloatSpec.Core.Generic_fmt.roundR beta fexp1
                 (FloatSpec.Core.Generic_fmt.Znearest choice1) xnn = 0 :=
@@ -1420,8 +1418,7 @@ theorem round_round_really_zero (fexp1 fexp2 : Int → Int)
         have hupp_bpow : (beta : ℝ) ^ m < (beta : ℝ) ^ (m + 1) := by
           have htrip := FloatSpec.Core.Raux.bpow_lt
             (beta := beta) (e1 := m) (e2 := m + 1) hβ (by omega)
-          simpa [wp, PostCond.noThrow, Id.run, pure,
-            FloatSpec.Core.Raux.bpow_lt_check] using htrip True.intro
+          simpa [wp, PostCond.noThrow, Id.run, pure] using htrip
         have hleft_bpow :
             FloatSpec.Core.Generic_fmt.roundR beta fexp1
                 (FloatSpec.Core.Generic_fmt.Znearest choice1) ((beta : ℝ) ^ m) = 0 :=
@@ -1468,17 +1465,17 @@ theorem round_round_zero (fexp1 fexp2 : Int → Int)
     (FloatSpec.Core.Generic_fmt.Znearest choice2) x with hxnn
   have hx_ne : x ≠ 0 := ne_of_gt hx_pos
   have hlow_x : (beta : ℝ) ^ (m - 1) ≤ x := by
-    have htrip := FloatSpec.Core.Raux.mag_lower_bound
+    have htrip := FloatSpec.Core.Raux.bpow_mag_le
       (beta := beta) (x := x) hβ hx_ne
     simpa [wp, PostCond.noThrow, Id.run, pure,
-      FloatSpec.Core.Raux.abs_val, abs_of_pos hx_pos, m, hm]
-      using htrip True.intro
+      abs_of_pos hx_pos, m, hm]
+      using htrip
   have hupp_x : x < (beta : ℝ) ^ m := by
-    have htrip := FloatSpec.Core.Raux.mag_upper_bound
-      (beta := beta) (x := x) hβ hx_ne
+    have htrip := FloatSpec.Core.Raux.bpow_mag_gt
+      (beta := beta) (x := x) hβ
     simpa [wp, PostCond.noThrow, Id.run, pure,
-      FloatSpec.Core.Raux.abs_val, abs_of_pos hx_pos, m, hm]
-      using htrip True.intro
+      abs_of_pos hx_pos, m, hm]
+      using htrip
   have hf1_top_m : fexp1 m = m + 1 := by
     simpa [m, hm] using hf1_top
   have hf1_gt : fexp1 m > m := by
@@ -1529,7 +1526,7 @@ theorem round_round_zero (fexp1 fexp2 : Int → Int)
     have hmag_le : FloatSpec.Core.Raux.mag beta xnn ≤ m := by
       have htrip := FloatSpec.Core.Raux.mag_le_bpow
         (beta := beta) (x := xnn) (e := m) hβ hxnn0 hxnn_abs_lt
-      exact htrip True.intro
+      exact htrip
     have hmag_ge : m ≤ FloatSpec.Core.Raux.mag beta xnn := by
       have h := FloatSpec.Core.Generic_fmt.mag_roundR_ge
         (beta := beta) (fexp := fexp2)
@@ -1538,11 +1535,11 @@ theorem round_round_zero (fexp1 fexp2 : Int → Int)
     have hmag_eq : FloatSpec.Core.Raux.mag beta xnn = m :=
       le_antisymm hmag_le hmag_ge
     have hlow_xnn : (beta : ℝ) ^ (m - 1) ≤ xnn := by
-      have htrip := FloatSpec.Core.Raux.mag_lower_bound
+      have htrip := FloatSpec.Core.Raux.bpow_mag_le
         (beta := beta) (x := xnn) hβ hxnn0
       simpa [wp, PostCond.noThrow, Id.run, pure,
-        FloatSpec.Core.Raux.abs_val, abs_of_nonneg hxnn_nonneg, hmag_eq]
-        using htrip True.intro
+        abs_of_nonneg hxnn_nonneg, hmag_eq]
+        using htrip
     have hleft :
         FloatSpec.Core.Generic_fmt.roundR beta fexp1
             (FloatSpec.Core.Generic_fmt.Znearest choice1) xnn = 0 :=
@@ -1747,7 +1744,7 @@ theorem mag_sqrt_disj (x : ℝ) (hβ : 1 < beta) :
   have hmag_sqrt :
       FloatSpec.Core.Raux.mag beta (Real.sqrt x) =
         Int.floor ((Real.log x / Real.log (beta : ℝ)) / 2) + 1 := by
-    exact (FloatSpec.Core.Raux.mag_sqrt_from_log_payload beta x hβ hx_pos) True.intro
+    exact FloatSpec.Core.Raux.mag_sqrt_from_log_payload beta x hβ hx_pos
   have hmag_x :
       FloatSpec.Core.Raux.mag beta x =
         Int.floor (Real.log x / Real.log (beta : ℝ)) + 1 := by
@@ -1804,7 +1801,7 @@ theorem mag_mult_disj (x y : ℝ) (hβ : 1 < beta)
           FloatSpec.Core.Raux.mag beta x + FloatSpec.Core.Raux.mag beta y ∧
         FloatSpec.Core.Raux.mag beta x + FloatSpec.Core.Raux.mag beta y - 1 ≤
           FloatSpec.Core.Raux.mag beta (x * y) := by
-    simpa [wp, PostCond.noThrow, Id.run, pure] using htrip True.intro
+    simpa [wp, PostCond.noThrow, Id.run, pure] using htrip
   omega
 
 /-- Coq: `mag_minus_disj`.
@@ -1821,16 +1818,16 @@ theorem mag_minus_disj (x y : ℝ) (hβ : 1 < beta)
   have hy_ne : y ≠ 0 := ne_of_gt hy_pos
   have hy_upper :
       y < (beta : ℝ) ^ FloatSpec.Core.Raux.mag beta y := by
-    have htrip := FloatSpec.Core.Raux.mag_upper_bound
-      (beta := beta) (x := y) hβ hy_ne
-    simpa [FloatSpec.Core.Raux.abs_val, abs_of_pos hy_pos]
-      using htrip True.intro
+    have htrip := FloatSpec.Core.Raux.bpow_mag_gt
+      (beta := beta) (x := y) hβ
+    simpa [abs_of_pos hy_pos]
+      using htrip
   have hx_lower :
       (beta : ℝ) ^ (FloatSpec.Core.Raux.mag beta x - 1) ≤ x := by
-    have htrip := FloatSpec.Core.Raux.mag_lower_bound
+    have htrip := FloatSpec.Core.Raux.bpow_mag_le
       (beta := beta) (x := x) hβ hx_ne
-    simpa [FloatSpec.Core.Raux.abs_val, abs_of_pos hx_pos]
-      using htrip True.intro
+    simpa [abs_of_pos hx_pos]
+      using htrip
   have hpow_y_le :
       (beta : ℝ) ^ FloatSpec.Core.Raux.mag beta y ≤
         (beta : ℝ) ^ (FloatSpec.Core.Raux.mag beta x - 2) := by
@@ -1838,7 +1835,7 @@ theorem mag_minus_disj (x y : ℝ) (hβ : 1 < beta)
       (beta := beta)
       (e1 := FloatSpec.Core.Raux.mag beta y)
       (e2 := FloatSpec.Core.Raux.mag beta x - 2) hβ hmy
-    simpa [FloatSpec.Core.Raux.bpow_le_check] using htrip True.intro
+    simpa using htrip
   have hpow_lt :
       (beta : ℝ) ^ (FloatSpec.Core.Raux.mag beta x - 2) <
         (beta : ℝ) ^ (FloatSpec.Core.Raux.mag beta x - 1) := by
@@ -1848,7 +1845,7 @@ theorem mag_minus_disj (x y : ℝ) (hβ : 1 < beta)
       (beta := beta)
       (e1 := FloatSpec.Core.Raux.mag beta x - 2)
       (e2 := FloatSpec.Core.Raux.mag beta x - 1) hβ hlt
-    simpa [FloatSpec.Core.Raux.bpow_lt_check] using htrip True.intro
+    simpa using htrip
   have hy_lt_x : y < x := by
     linarith
   have hminus := FloatSpec.Core.Raux.mag_minus
@@ -1858,11 +1855,11 @@ theorem mag_minus_disj (x y : ℝ) (hβ : 1 < beta)
   have hupper :
       FloatSpec.Core.Raux.mag beta (x - y) ≤
         FloatSpec.Core.Raux.mag beta x := by
-    simpa [wp, PostCond.noThrow, Id.run, pure] using hminus True.intro
+    simpa [wp, PostCond.noThrow, Id.run, pure] using hminus
   have hlower :
       FloatSpec.Core.Raux.mag beta x - 1 ≤
         FloatSpec.Core.Raux.mag beta (x - y) := by
-    simpa [wp, PostCond.noThrow, Id.run, pure] using hlb True.intro
+    simpa [wp, PostCond.noThrow, Id.run, pure] using hlb
   omega
 
 /-- Coq: `mag_minus_separated`.
@@ -1890,10 +1887,10 @@ theorem mag_minus_separated (fexp : Int → Int)
   have hxy_abs : |x - y| = x - y := abs_of_pos hxy_pos
   have hy_upper :
       y < (beta : ℝ) ^ FloatSpec.Core.Raux.mag beta y := by
-    have htrip := FloatSpec.Core.Raux.mag_upper_bound
-      (beta := beta) (x := y) hβ hy_ne
-    simpa [FloatSpec.Core.Raux.abs_val, abs_of_pos hy_pos]
-      using htrip True.intro
+    have htrip := FloatSpec.Core.Raux.bpow_mag_gt
+      (beta := beta) (x := y) hβ
+    simpa [abs_of_pos hy_pos]
+      using htrip
   have hpow_y_le :
       (beta : ℝ) ^ FloatSpec.Core.Raux.mag beta y ≤
         (beta : ℝ) ^ (fexp (FloatSpec.Core.Raux.mag beta x)) := by
@@ -1901,7 +1898,7 @@ theorem mag_minus_separated (fexp : Int → Int)
       (beta := beta)
       (e1 := FloatSpec.Core.Raux.mag beta y)
       (e2 := fexp (FloatSpec.Core.Raux.mag beta x)) hβ hmy
-    simpa [FloatSpec.Core.Raux.bpow_le_check] using htrip True.intro
+    simpa using htrip
   have hy_lt_ulp_edge :
       y < ulp beta fexp edge := by
     have hulp := FloatSpec.Core.Ulp.ulp_bpow
@@ -1960,16 +1957,16 @@ theorem mag_minus_separated (fexp : Int → Int)
   have hupp : |x - y| < (beta : ℝ) ^ FloatSpec.Core.Raux.mag beta x := by
     have hx_upper :
         x < (beta : ℝ) ^ FloatSpec.Core.Raux.mag beta x := by
-      have htrip := FloatSpec.Core.Raux.mag_upper_bound
-        (beta := beta) (x := x) hβ hx_ne
-      simpa [FloatSpec.Core.Raux.abs_val, abs_of_pos hx_pos]
-        using htrip True.intro
+      have htrip := FloatSpec.Core.Raux.bpow_mag_gt
+        (beta := beta) (x := x) hβ
+      simpa [abs_of_pos hx_pos]
+        using htrip
     have hxy_lt_x : x - y < x := by linarith
     simpa [hxy_abs] using lt_trans hxy_lt_x hx_upper
   have hmag := FloatSpec.Core.Raux.mag_unique
     (beta := beta) (x := x - y) (e := FloatSpec.Core.Raux.mag beta x)
     hβ hlow hupp
-  simpa [wp, PostCond.noThrow, Id.run, pure] using hmag True.intro
+  simpa [wp, PostCond.noThrow, Id.run, pure] using hmag
 
 /-- Coq: `round_round_mult_hyp`. -/
 def round_round_mult_hyp (fexp1 fexp2 : Int → Int) : Prop :=
@@ -2030,7 +2027,7 @@ theorem round_round_mult_aux (fexp1 fexp2 : Int → Int)
                 rw [(_root_.zpow_add₀ hbne (fexp1 ex) (fexp1 ey)).symm]
       _ = (((mx * my : Int) : ℝ) * (beta : ℝ) ^ eprod) := by
                 simp [Int.cast_mul, eprod]
-  have hmag_raw := (FloatSpec.Core.Raux.mag_mult beta x y hβ hx0 hy0) (by trivial)
+  have hmag_raw := FloatSpec.Core.Raux.mag_mult beta x y hβ hx0 hy0
   have hmag :
       FloatSpec.Core.Raux.mag beta (x * y) ≤ ex + ey ∧
         ex + ey - 1 ≤ FloatSpec.Core.Raux.mag beta (x * y) := by
@@ -2930,10 +2927,10 @@ theorem round_round_sqrt_center_lt_bpow_of_pos_floor
   have ha_le_s : a ≤ s := hdn.2.1
   have hs_lt_bpow :
       s < (beta : ℝ) ^ FloatSpec.Core.Raux.mag beta s := by
-    have htrip := FloatSpec.Core.Raux.mag_upper_bound
-      (beta := beta) (x := s) hβ hs_ne
+    have htrip := FloatSpec.Core.Raux.bpow_mag_gt
+      (beta := beta) (x := s) hβ
     simpa [wp, PostCond.noThrow, Id.run, pure,
-      FloatSpec.Core.Raux.abs_val, abs_of_pos hs_pos] using htrip True.intro
+      abs_of_pos hs_pos] using htrip
   have ha_lt_bpow :
       a < (beta : ℝ) ^ FloatSpec.Core.Raux.mag beta s :=
     lt_of_le_of_lt ha_le_s hs_lt_bpow
@@ -5105,7 +5102,7 @@ theorem mag_div_disj (x y : ℝ)
           FloatSpec.Core.Raux.mag beta (x / y) ∧
         FloatSpec.Core.Raux.mag beta (x / y) ≤
           FloatSpec.Core.Raux.mag beta x - FloatSpec.Core.Raux.mag beta y + 1 := by
-    simpa [wp, PostCond.noThrow, Id.run, pure] using htrip True.intro
+    simpa [wp, PostCond.noThrow, Id.run, pure] using htrip
   omega
 
 /-- Coq: `round_round_div_hyp`. -/
@@ -5327,11 +5324,11 @@ theorem round_round_div_aux0_half_ulp_lt_first_gap
   have hxy_ne : x / y ≠ 0 := ne_of_gt hxy_pos
   have hy_ne : y ≠ 0 := ne_of_gt hy_pos
   have hy_lt : y < (beta : ℝ) ^ my := by
-    have htrip := FloatSpec.Core.Raux.mag_upper_bound
-      (beta := beta) (x := y) hβ hy_ne
+    have htrip := FloatSpec.Core.Raux.bpow_mag_gt
+      (beta := beta) (x := y) hβ
     simpa [wp, PostCond.noThrow, Id.run, pure,
-      FloatSpec.Core.Raux.abs_val, abs_of_pos hy_pos, my]
-      using htrip True.intro
+      abs_of_pos hy_pos, my]
+      using htrip
   have hulp :
       ulp beta fexp2 (x / y) = (beta : ℝ) ^ (fexp2 mxy) := by
     have htrip := FloatSpec.Core.Ulp.ulp_neq_0
@@ -5388,11 +5385,11 @@ theorem round_round_div_ulp_lt_first_gap
   have hxy_ne : x / y ≠ 0 := ne_of_gt hxy_pos
   have hy_ne : y ≠ 0 := ne_of_gt hy_pos
   have hy_lt : y < (beta : ℝ) ^ my := by
-    have htrip := FloatSpec.Core.Raux.mag_upper_bound
-      (beta := beta) (x := y) hβ hy_ne
+    have htrip := FloatSpec.Core.Raux.bpow_mag_gt
+      (beta := beta) (x := y) hβ
     simpa [wp, PostCond.noThrow, Id.run, pure,
-      FloatSpec.Core.Raux.abs_val, abs_of_pos hy_pos, my]
-      using htrip True.intro
+      abs_of_pos hy_pos, my]
+      using htrip
   have hulp :
       ulp beta fexp2 (x / y) = (beta : ℝ) ^ (fexp2 mxy) := by
     have htrip := FloatSpec.Core.Ulp.ulp_neq_0
@@ -5446,11 +5443,11 @@ theorem round_round_div_aux0_half_ulp_lt_second_gap
   have hxy_ne : x / y ≠ 0 := ne_of_gt hxy_pos
   have hy_ne : y ≠ 0 := ne_of_gt hy_pos
   have hy_lt : y < (beta : ℝ) ^ my := by
-    have htrip := FloatSpec.Core.Raux.mag_upper_bound
-      (beta := beta) (x := y) hβ hy_ne
+    have htrip := FloatSpec.Core.Raux.bpow_mag_gt
+      (beta := beta) (x := y) hβ
     simpa [wp, PostCond.noThrow, Id.run, pure,
-      FloatSpec.Core.Raux.abs_val, abs_of_pos hy_pos, my]
-      using htrip True.intro
+      abs_of_pos hy_pos, my]
+      using htrip
   have hulp :
       ulp beta fexp2 (x / y) = (beta : ℝ) ^ (fexp2 mxy) := by
     have htrip := FloatSpec.Core.Ulp.ulp_neq_0
@@ -5501,11 +5498,11 @@ theorem round_round_div_ulp_lt_second_gap
   have hxy_ne : x / y ≠ 0 := ne_of_gt hxy_pos
   have hy_ne : y ≠ 0 := ne_of_gt hy_pos
   have hy_lt : y < (beta : ℝ) ^ my := by
-    have htrip := FloatSpec.Core.Raux.mag_upper_bound
-      (beta := beta) (x := y) hβ hy_ne
+    have htrip := FloatSpec.Core.Raux.bpow_mag_gt
+      (beta := beta) (x := y) hβ
     simpa [wp, PostCond.noThrow, Id.run, pure,
-      FloatSpec.Core.Raux.abs_val, abs_of_pos hy_pos, my]
-      using htrip True.intro
+      abs_of_pos hy_pos, my]
+      using htrip
   have hulp :
       ulp beta fexp2 (x / y) = (beta : ℝ) ^ (fexp2 mxy) := by
     have htrip := FloatSpec.Core.Ulp.ulp_neq_0
@@ -5623,11 +5620,11 @@ theorem round_round_div_ulp_lt_first_gap_low
   have hxy_ne : x / y ≠ 0 := ne_of_gt hxy_pos
   have hy_ne : y ≠ 0 := ne_of_gt hy_pos
   have hy_lt : y < (beta : ℝ) ^ my := by
-    have htrip := FloatSpec.Core.Raux.mag_upper_bound
-      (beta := beta) (x := y) hβ hy_ne
+    have htrip := FloatSpec.Core.Raux.bpow_mag_gt
+      (beta := beta) (x := y) hβ
     simpa [wp, PostCond.noThrow, Id.run, pure,
-      FloatSpec.Core.Raux.abs_val, abs_of_pos hy_pos, my]
-      using htrip True.intro
+      abs_of_pos hy_pos, my]
+      using htrip
   have hulp :
       ulp beta fexp2 (x / y) = (beta : ℝ) ^ (fexp2 mxy) := by
     have htrip := FloatSpec.Core.Ulp.ulp_neq_0
@@ -5678,11 +5675,11 @@ theorem round_round_div_ulp_lt_second_gap_low
   have hxy_ne : x / y ≠ 0 := ne_of_gt hxy_pos
   have hy_ne : y ≠ 0 := ne_of_gt hy_pos
   have hy_lt : y < (beta : ℝ) ^ my := by
-    have htrip := FloatSpec.Core.Raux.mag_upper_bound
-      (beta := beta) (x := y) hβ hy_ne
+    have htrip := FloatSpec.Core.Raux.bpow_mag_gt
+      (beta := beta) (x := y) hβ
     simpa [wp, PostCond.noThrow, Id.run, pure,
-      FloatSpec.Core.Raux.abs_val, abs_of_pos hy_pos, my]
-      using htrip True.intro
+      abs_of_pos hy_pos, my]
+      using htrip
   have hulp :
       ulp beta fexp2 (x / y) = (beta : ℝ) ^ (fexp2 mxy) := by
     have htrip := FloatSpec.Core.Ulp.ulp_neq_0
@@ -6313,11 +6310,11 @@ theorem round_round_div_aux0_from_format
   have hxy_ne : x / y ≠ 0 := ne_of_gt hxy_pos
   have hdiv_lt :
       x / y < (beta : ℝ) ^ FloatSpec.Core.Raux.mag beta (x / y) := by
-    have htrip := FloatSpec.Core.Raux.mag_upper_bound
-      (beta := beta) (x := x / y) hβ hxy_ne
+    have htrip := FloatSpec.Core.Raux.bpow_mag_gt
+      (beta := beta) (x := x / y) hβ
     simpa [wp, PostCond.noThrow, Id.run, pure,
-      FloatSpec.Core.Raux.abs_val, abs_of_pos hxy_pos]
-      using htrip True.intro
+      abs_of_pos hxy_pos]
+      using htrip
   exact round_round_div_aux0_gap_cases_from_format (beta := beta)
     (fexp1 := fexp1) (x := x) (y := y) hβ hy_pos
     hx_fmt hy_fmt hdiv_lt
@@ -9509,7 +9506,7 @@ theorem mag_plus_disj (x y : ℝ)
   have hbounds :
       FloatSpec.Core.Raux.mag beta x ≤ FloatSpec.Core.Raux.mag beta (x + y) ∧
         FloatSpec.Core.Raux.mag beta (x + y) ≤ FloatSpec.Core.Raux.mag beta x + 1 := by
-    simpa [wp, PostCond.noThrow, Id.run, pure] using htrip True.intro
+    simpa [wp, PostCond.noThrow, Id.run, pure] using htrip
   omega
 
 /-- Coq: `mag_plus_separated`. -/
@@ -9538,20 +9535,20 @@ theorem mag_plus_separated (fexp : Int → Int)
       simpa [hy0, hulp_eq]
         using hpow_pos
     · have hy_abs : |y| = y := abs_of_nonneg hy_nonneg
-      have hmag_upper := FloatSpec.Core.Raux.mag_upper_bound
-        (beta := beta) (x := y) hβ hy0
+      have hmag_upper := FloatSpec.Core.Raux.bpow_mag_gt
+        (beta := beta) (x := y) hβ
       have hy_lt_mag :
           y < (beta : ℝ) ^ (FloatSpec.Core.Raux.mag beta y) := by
-        simpa [FloatSpec.Core.Raux.abs_val, hy_abs, wp, PostCond.noThrow, Id.run, pure]
-          using hmag_upper True.intro
+        simpa [hy_abs, wp, PostCond.noThrow, Id.run, pure]
+          using hmag_upper
       have hbpow_le := FloatSpec.Core.Raux.bpow_le beta
         (FloatSpec.Core.Raux.mag beta y)
         (fexp (FloatSpec.Core.Raux.mag beta x)) hβ hsep
       have hpow_le :
           (beta : ℝ) ^ (FloatSpec.Core.Raux.mag beta y) ≤
             (beta : ℝ) ^ (fexp (FloatSpec.Core.Raux.mag beta x)) := by
-        simpa [FloatSpec.Core.Raux.bpow_le_check, wp, PostCond.noThrow, Id.run, pure]
-          using hbpow_le True.intro
+        simpa [wp, PostCond.noThrow, Id.run, pure]
+          using hbpow_le
       have hy_lt_bpow :
           y < (beta : ℝ) ^ (fexp (FloatSpec.Core.Raux.mag beta x)) :=
         lt_of_lt_of_le hy_lt_mag hpow_le
@@ -9883,18 +9880,18 @@ theorem round_round_plus_aux1_aux (k : Int)
       have hy_ne : y ≠ 0 := ne_of_gt hy_pos
       have hy_lt_mag :
           y < (beta : ℝ) ^ (FloatSpec.Core.Raux.mag beta y) := by
-        have htrip := FloatSpec.Core.Raux.mag_upper_bound
-          (beta := beta) (x := y) hβ hy_ne
-        simpa [FloatSpec.Core.Raux.abs_val, abs_of_pos hy_pos, wp,
-          PostCond.noThrow, Id.run, pure] using htrip True.intro
+        have htrip := FloatSpec.Core.Raux.bpow_mag_gt
+          (beta := beta) (x := y) hβ
+        simpa [abs_of_pos hy_pos, wp,
+          PostCond.noThrow, Id.run, pure] using htrip
       have hbpow_le := FloatSpec.Core.Raux.bpow_le beta
         (FloatSpec.Core.Raux.mag beta y) (ex - k) hβ (by
           simpa [ex] using hln)
       have hy_lt_ex_sub_k : y < (beta : ℝ) ^ (ex - k) := by
         exact lt_of_lt_of_le hy_lt_mag
           (by
-            simpa [FloatSpec.Core.Raux.bpow_le_check, wp,
-              PostCond.noThrow, Id.run, pure] using hbpow_le True.intro)
+            simpa [wp,
+              PostCond.noThrow, Id.run, pure] using hbpow_le)
       have hpow_cancel :
           (beta : ℝ) ^ (ex - k) * (beta : ℝ) ^ (-ex) =
             (beta : ℝ) ^ (-k) := by
@@ -9908,8 +9905,8 @@ theorem round_round_plus_aux1_aux (k : Int)
           _ = (beta : ℝ) ^ (-k) := by ring_nf
       have hbpow_neg_k_le_one : (beta : ℝ) ^ (-k) ≤ 1 := by
         have hle := FloatSpec.Core.Raux.bpow_le beta (-k) 0 hβ (by omega)
-        simpa [FloatSpec.Core.Raux.bpow_le_check, wp, PostCond.noThrow, Id.run,
-          pure, zpow_zero] using hle True.intro
+        simpa [wp, PostCond.noThrow, Id.run,
+          pure, zpow_zero] using hle
       have hscale_pos : 0 < (beta : ℝ) ^ (-ex) := by
         have hbposℤ : (0 : Int) < beta := lt_trans Int.zero_lt_one hβ
         have hbposR : (0 : ℝ) < (beta : ℝ) := by exact_mod_cast hbposℤ
@@ -9962,18 +9959,18 @@ theorem round_round_plus_aux1_aux (k : Int)
   · have hy_ne : y ≠ 0 := ne_of_gt hy_pos
     have hy_lt_mag :
         y < (beta : ℝ) ^ (FloatSpec.Core.Raux.mag beta y) := by
-      have htrip := FloatSpec.Core.Raux.mag_upper_bound
-        (beta := beta) (x := y) hβ hy_ne
-      simpa [FloatSpec.Core.Raux.abs_val, abs_of_pos hy_pos, wp,
-        PostCond.noThrow, Id.run, pure] using htrip True.intro
+      have htrip := FloatSpec.Core.Raux.bpow_mag_gt
+        (beta := beta) (x := y) hβ
+      simpa [abs_of_pos hy_pos, wp,
+        PostCond.noThrow, Id.run, pure] using htrip
     have hbpow_le := FloatSpec.Core.Raux.bpow_le beta
       (FloatSpec.Core.Raux.mag beta y) (ex - k) hβ (by
         simpa [ex] using hln)
     have hy_lt_bound : y < (beta : ℝ) ^ (ex - k) :=
       lt_of_lt_of_le hy_lt_mag
         (by
-          simpa [FloatSpec.Core.Raux.bpow_le_check, wp,
-            PostCond.noThrow, Id.run, pure] using hbpow_le True.intro)
+          simpa [wp,
+            PostCond.noThrow, Id.run, pure] using hbpow_le)
     simpa [hdiff_eq, ex] using hy_lt_bound
 
 /-- Coq: `round_round_plus_aux1`.
@@ -10124,8 +10121,8 @@ theorem round_round_plus_aux1 (fexp1 fexp2 : Int → Int)
         (beta : ℝ) ^ e2 ≤ (beta : ℝ) ^ (e - 1) := by
       have htrip := FloatSpec.Core.Raux.bpow_le (beta := beta)
         (e1 := e2) (e2 := e - 1) hβ (by simpa [e, e2, hsum_mag] using hfurther)
-      simpa [FloatSpec.Core.Raux.bpow_le_check, wp, PostCond.noThrow, Id.run,
-        pure] using htrip True.intro
+      simpa [wp, PostCond.noThrow, Id.run,
+        pure] using htrip
     have hpow_to_diff :
         (beta : ℝ) ^ (e - 2) ≤
           (1 / 2 : ℝ) * ((beta : ℝ) ^ e - (beta : ℝ) ^ e2) := by
@@ -10279,7 +10276,7 @@ theorem round_round_minus_aux0_aux (fexp1 fexp2 : Int → Int)
   have hmag_opp :
       FloatSpec.Core.Raux.mag beta (-y) = FloatSpec.Core.Raux.mag beta y := by
     have htrip := FloatSpec.Core.Raux.mag_opp (beta := beta) (x := y) hβ
-    simpa [wp, PostCond.noThrow, Id.run, pure] using htrip True.intro
+    simpa [wp, PostCond.noThrow, Id.run, pure] using htrip
   have hy_opp_fmt :
       FloatSpec.Core.Generic_fmt.generic_format beta fexp1 (-y) := by
     have htrip := FloatSpec.Core.Generic_fmt.generic_format_opp
@@ -10320,7 +10317,7 @@ theorem round_round_minus_aux0 (fexp1 fexp2 : Int → Int)
         FloatSpec.Core.Raux.mag beta x := by
     have htrip := FloatSpec.Core.Raux.mag_minus
       (beta := beta) (x := x) (y := y) hβ hy_pos hyx
-    simpa [wp, PostCond.noThrow, Id.run, pure] using htrip True.intro
+    simpa [wp, PostCond.noThrow, Id.run, pure] using htrip
   have hmy_le_mx :
       FloatSpec.Core.Raux.mag beta y ≤
         FloatSpec.Core.Raux.mag beta x := by
@@ -10367,7 +10364,7 @@ theorem round_round_minus_aux0 (fexp1 fexp2 : Int → Int)
           FloatSpec.Core.Raux.mag beta (x - y) := by
       have htrip := FloatSpec.Core.Raux.mag_minus_lb
         (beta := beta) (x := x) (y := y) hβ hx_pos hy_pos hmy_small
-      simpa [wp, PostCond.noThrow, Id.run, pure] using htrip True.intro
+      simpa [wp, PostCond.noThrow, Id.run, pure] using htrip
     have hcases :
         FloatSpec.Core.Raux.mag beta (x - y) =
             FloatSpec.Core.Raux.mag beta x ∨
@@ -10436,7 +10433,7 @@ theorem round_round_minus_aux1 (fexp1 fexp2 : Int → Int)
         FloatSpec.Core.Raux.mag beta x := by
     have htrip := FloatSpec.Core.Raux.mag_minus
       (beta := beta) (x := x) (y := y) hβ hy_pos hyx
-    simpa [wp, PostCond.noThrow, Id.run, pure] using htrip True.intro
+    simpa [wp, PostCond.noThrow, Id.run, pure] using htrip
   exact round_round_minus_aux0_aux (beta := beta)
     (fexp1 := fexp1) (fexp2 := fexp2) (x := x) (y := y)
     (hβ := hβ)
@@ -10558,10 +10555,10 @@ theorem round_round_minus_aux2 (fexp1 fexp2 : Int → Int)
     le_of_lt (zpow_pos hbposR (e1 - 2))
   have hy_lt_mag :
       y < (beta : ℝ) ^ (FloatSpec.Core.Raux.mag beta y) := by
-    have htrip := FloatSpec.Core.Raux.mag_upper_bound
-      (beta := beta) (x := y) hβ hy_ne
-    simpa [FloatSpec.Core.Raux.abs_val, abs_of_pos hy_pos, wp,
-      PostCond.noThrow, Id.run, pure] using htrip True.intro
+    have htrip := FloatSpec.Core.Raux.bpow_mag_gt
+      (beta := beta) (x := y) hβ
+    simpa [abs_of_pos hy_pos, wp,
+      PostCond.noThrow, Id.run, pure] using htrip
   have hy_lt_e1_sub2 : y < (beta : ℝ) ^ (e1 - 2) := by
     have hpow_le :
         (beta : ℝ) ^ (FloatSpec.Core.Raux.mag beta y) ≤
@@ -10569,8 +10566,8 @@ theorem round_round_minus_aux2 (fexp1 fexp2 : Int → Int)
       have htrip := FloatSpec.Core.Raux.bpow_le (beta := beta)
         (e1 := FloatSpec.Core.Raux.mag beta y) (e2 := e1 - 2) hβ
         (by simpa [mz, hmz, e1, he1, z, hz] using hly')
-      simpa [FloatSpec.Core.Raux.bpow_le_check, wp, PostCond.noThrow, Id.run,
-        pure] using htrip True.intro
+      simpa [wp, PostCond.noThrow, Id.run,
+        pure] using htrip
     exact lt_of_lt_of_le hy_lt_mag hpow_le
   have hulp1 :
       ulp beta fexp1 z = (beta : ℝ) ^ e1 := by
@@ -10633,8 +10630,8 @@ theorem round_round_minus_aux2 (fexp1 fexp2 : Int → Int)
         (beta : ℝ) ^ e2 ≤ (beta : ℝ) ^ (e1 - 1) := by
       have htrip := FloatSpec.Core.Raux.bpow_le (beta := beta)
         (e1 := e2) (e2 := e1 - 1) hβ hfurther'
-      simpa [FloatSpec.Core.Raux.bpow_le_check, wp, PostCond.noThrow, Id.run,
-        pure] using htrip True.intro
+      simpa [wp, PostCond.noThrow, Id.run,
+        pure] using htrip
     have hpow_two_to_half_diff :
         (beta : ℝ) ^ (e1 - 2) ≤
           (1 / 2 : ℝ) * ((beta : ℝ) ^ e1 - (beta : ℝ) ^ e2) := by
@@ -11440,8 +11437,8 @@ theorem round_round_plus_radix_ge_3_aux1 (fexp1 fexp2 : Int → Int)
       have htrip := FloatSpec.Core.Raux.bpow_le (beta := beta)
         (e1 := e2) (e2 := e - 1) hβ1
         (by simpa [e, e2, hsum_mag] using hfurther)
-      simpa [FloatSpec.Core.Raux.bpow_le_check, wp, PostCond.noThrow, Id.run,
-        pure] using htrip True.intro
+      simpa [wp, PostCond.noThrow, Id.run,
+        pure] using htrip
     have hpow_to_diff :
         (beta : ℝ) ^ (e - 1) ≤
           (1 / 2 : ℝ) * ((beta : ℝ) ^ e - (beta : ℝ) ^ e2) := by
@@ -11598,7 +11595,7 @@ theorem round_round_minus_radix_ge_3_aux0 (fexp1 fexp2 : Int → Int)
         FloatSpec.Core.Raux.mag beta x := by
     have htrip := FloatSpec.Core.Raux.mag_minus
       (beta := beta) (x := x) (y := y) hβ hy_pos hyx
-    simpa [wp, PostCond.noThrow, Id.run, pure] using htrip True.intro
+    simpa [wp, PostCond.noThrow, Id.run, pure] using htrip
   have hmy_le_mx :
       FloatSpec.Core.Raux.mag beta y ≤
         FloatSpec.Core.Raux.mag beta x := by
@@ -11645,7 +11642,7 @@ theorem round_round_minus_radix_ge_3_aux0 (fexp1 fexp2 : Int → Int)
           FloatSpec.Core.Raux.mag beta (x - y) := by
       have htrip := FloatSpec.Core.Raux.mag_minus_lb
         (beta := beta) (x := x) (y := y) hβ hx_pos hy_pos hmy_small
-      simpa [wp, PostCond.noThrow, Id.run, pure] using htrip True.intro
+      simpa [wp, PostCond.noThrow, Id.run, pure] using htrip
     have hcases :
         FloatSpec.Core.Raux.mag beta (x - y) =
             FloatSpec.Core.Raux.mag beta x ∨
@@ -11716,7 +11713,7 @@ theorem round_round_minus_radix_ge_3_aux1 (fexp1 fexp2 : Int → Int)
               FloatSpec.Core.Raux.mag beta x := by
           have htrip := FloatSpec.Core.Raux.mag_minus
             (beta := beta) (x := x) (y := y) hβ hy_pos hyx
-          simpa [wp, PostCond.noThrow, Id.run, pure] using htrip True.intro
+          simpa [wp, PostCond.noThrow, Id.run, pure] using htrip
         omega))
     (hlny := hsame (FloatSpec.Core.Raux.mag beta (x - y))
       (FloatSpec.Core.Raux.mag beta y) hln')
@@ -11803,10 +11800,10 @@ theorem round_round_minus_radix_ge_3_aux2 (fexp1 fexp2 : Int → Int)
     le_of_lt (zpow_pos hbposR (e1 - 1))
   have hy_lt_mag :
       y < (beta : ℝ) ^ (FloatSpec.Core.Raux.mag beta y) := by
-    have htrip := FloatSpec.Core.Raux.mag_upper_bound
-      (beta := beta) (x := y) hβ1 hy_ne
-    simpa [FloatSpec.Core.Raux.abs_val, abs_of_pos hy_pos, wp,
-      PostCond.noThrow, Id.run, pure] using htrip True.intro
+    have htrip := FloatSpec.Core.Raux.bpow_mag_gt
+      (beta := beta) (x := y) hβ1
+    simpa [abs_of_pos hy_pos, wp,
+      PostCond.noThrow, Id.run, pure] using htrip
   have hy_lt_e1_sub1 : y < (beta : ℝ) ^ (e1 - 1) := by
     have hpow_le :
         (beta : ℝ) ^ (FloatSpec.Core.Raux.mag beta y) ≤
@@ -11814,8 +11811,8 @@ theorem round_round_minus_radix_ge_3_aux2 (fexp1 fexp2 : Int → Int)
       have htrip := FloatSpec.Core.Raux.bpow_le (beta := beta)
         (e1 := FloatSpec.Core.Raux.mag beta y) (e2 := e1 - 1) hβ1
         (by simpa [mz, hmz, e1, he1, z, hz] using hly')
-      simpa [FloatSpec.Core.Raux.bpow_le_check, wp, PostCond.noThrow, Id.run,
-        pure] using htrip True.intro
+      simpa [wp, PostCond.noThrow, Id.run,
+        pure] using htrip
     exact lt_of_lt_of_le hy_lt_mag hpow_le
   have hulp1 :
       ulp beta fexp1 z = (beta : ℝ) ^ e1 := by
@@ -11879,8 +11876,8 @@ theorem round_round_minus_radix_ge_3_aux2 (fexp1 fexp2 : Int → Int)
         (beta : ℝ) ^ e2 ≤ (beta : ℝ) ^ (e1 - 1) := by
       have htrip := FloatSpec.Core.Raux.bpow_le (beta := beta)
         (e1 := e2) (e2 := e1 - 1) hβ1 hfurther'
-      simpa [FloatSpec.Core.Raux.bpow_le_check, wp, PostCond.noThrow, Id.run,
-        pure] using htrip True.intro
+      simpa [wp, PostCond.noThrow, Id.run,
+        pure] using htrip
     have hpow_one_to_half_diff :
         (beta : ℝ) ^ (e1 - 1) ≤
           (1 / 2 : ℝ) * ((beta : ℝ) ^ e1 - (beta : ℝ) ^ e2) := by

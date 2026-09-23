@@ -28,7 +28,7 @@ private theorem bpow_le_plain (beta e1 e2 : Int) [ValidRadix beta]
     (hβ : 1 < beta) (hle : e1 ≤ e2) :
     FloatSpec.Core.Raux.bpow beta e1 ≤ FloatSpec.Core.Raux.bpow beta e2 := by
   change (beta : ℝ) ^ e1 ≤ (beta : ℝ) ^ e2
-  exact FloatSpec.Core.Raux.bpow_le beta e1 e2 hβ hle True.intro
+  exact FloatSpec.Core.Raux.bpow_le beta e1 e2 hβ hle
 
 -- Convert Pff float to Flocq float
 def pff_to_float (f : PffFloat beta) : FloatSpec.Core.Defs.FlocqFloat beta :=
@@ -918,10 +918,10 @@ theorem C_format (beta emin prec s : Int) [ValidRadix beta] [Prec_gt_0 prec] :
         rw [pow_succ]
         simp [abs_of_pos (by positivity : (0 : ℝ) < (beta : ℝ) ^ n + 1)]
         nlinarith [hpow_one_lt, hpow_pos, hβtwo]
-      have htrip := FloatSpec.Core.Raux.mag_le_abs_from_bpow_payload (beta := beta)
+      have htrip := FloatSpec.Core.Raux.mag_le_bpow (beta := beta)
         (x := (beta : ℝ) ^ n + 1)
         (e := s + 1) hβ hx_ne hx_lt
-      simpa [Std.Do.wp, Std.Do.PostCond.noThrow, Id.run, pure] using (htrip (by trivial))
+      simpa [Std.Do.wp, Std.Do.PostCond.noThrow, Id.run, pure] using htrip
     omega
   · exact hemin_le
 
@@ -3770,7 +3770,7 @@ private theorem F2R_sum3_ge_bpow
   have hpow_le : FloatSpec.Core.Raux.bpow beta e ≤
       FloatSpec.Core.Raux.bpow beta fxyz.Fexp := by
     have h := FloatSpec.Core.Raux.bpow_le beta e fxyz.Fexp hβ he_le_exp
-    exact h True.intro
+    exact h
   have hfxyz_ne : _root_.F2R fxyz ≠ 0 := by
     intro hzero
     apply hsum_ne
@@ -4447,8 +4447,8 @@ theorem ErrFMA_correct_simpl_of_y_eq_zero (beta emin prec : Int) [ValidRadix bet
               change (beta : ℝ) ^ (emin + 2 * prec - 1) ≤
                 (beta : ℝ) ^ (emin + 4 * prec - 3)
               simpa [wp, PostCond.noThrow, pure,
-                FloatSpec.Core.Raux.bpow_le_check, PredTrans.pure,
-                PredTrans.apply, SPred.down_pure_nil] using h True.intro
+                PredTrans.pure,
+                PredTrans.apply, SPred.down_pure_nil] using h
             exact le_trans hbpow_le hbound)
     have hopp := FloatSpec.Core.Generic_fmt.generic_format_opp
       (beta := beta) (fexp := FLT_exp emin prec)
@@ -4898,7 +4898,7 @@ theorem ErrFMA_correct_simpl (beta emin prec : Int) [ValidRadix beta] [Prec_gt_0
     · exact False.elim (hprod hz)
     · have hp := FloatSpec.Core.Raux.bpow_le beta
           (emin + 2 * prec - 1) (emin + 4 * prec - 3) hβ (by omega)
-      exact le_trans (hp True.intro) hb
+      exact le_trans (hp) hb
   have V1_Und2 := V2_Und2 beta emin prec a x y hβ hprecision Fa Fx Fy U1 U2
   have V1_Und4 := V2_Und4 beta emin prec a x y hβ hprecision Fa Fx Fy U1
   have V1_Und5 := V2_Und5 beta emin prec a x y hβ hprecision Fa Fx Fy U1 U2
@@ -5485,8 +5485,8 @@ theorem ErrFmaAppr_correct
           FloatSpec.Core.Raux.bpow beta (emin + prec) := by
         change (beta : ℝ) ^ (emin + prec - 1) ≤ (beta : ℝ) ^ (emin + prec)
         simpa [wp, PostCond.noThrow, pure,
-          FloatSpec.Core.Raux.bpow_le_check, PredTrans.pure,
-          PredTrans.apply, SPred.down_pure_nil] using hp True.intro
+          PredTrans.pure,
+          PredTrans.apply, SPred.down_pure_nil] using hp
       exact le_trans
         hp'
         (by simpa [rnd, u1] using hm)
@@ -6410,9 +6410,8 @@ theorem U5_discri1 (emin prec : Int) [Prec_gt_0 prec]
           (by decide : (1 : Int) < 2) (by
             have hprec_pos : 0 < prec := Prec_gt_0.pos
             omega)
-        simpa [FloatSpec.Core.Raux.bpow, FloatSpec.Core.Raux.bpow_le_check,
-          wp, PostCond.noThrow, Id.run, pure]
-          using hmono True.intro
+        simpa [FloatSpec.Core.Raux.bpow, wp, PostCond.noThrow, Id.run, pure]
+          using hmono
       exact le_trans hpow_le (U1 hne')
     have hmul :=
       mult_error_FLT
@@ -6435,9 +6434,8 @@ theorem U5_discri1 (emin prec : Int) [Prec_gt_0 prec]
           (by decide : (1 : Int) < 2) (by
             have hprec_pos : 0 < prec := Prec_gt_0.pos
             omega)
-        simpa [FloatSpec.Core.Raux.bpow, FloatSpec.Core.Raux.bpow_le_check,
-          wp, PostCond.noThrow, Id.run, pure]
-          using hmono True.intro
+        simpa [FloatSpec.Core.Raux.bpow, wp, PostCond.noThrow, Id.run, pure]
+          using hmono
       exact le_trans hpow_le (U2 hne')
     have hmul :=
       mult_error_FLT
@@ -6481,9 +6479,8 @@ theorem U5_discri1 (emin prec : Int) [Prec_gt_0 prec]
         have hmono := FloatSpec.Core.Raux.bpow_le (beta := 2)
           (e1 := emin + prec - 1) (e2 := emin + prec + 1)
           (by decide : (1 : Int) < 2) (by omega)
-        simpa [FloatSpec.Core.Raux.bpow, FloatSpec.Core.Raux.bpow_le_check,
-          wp, PostCond.noThrow, Id.run, pure]
-          using hmono True.intro
+        simpa [FloatSpec.Core.Raux.bpow, wp, PostCond.noThrow, Id.run, pure]
+          using hmono
       have hbound' :
           FloatSpec.Core.Raux.bpow 2 (emin + prec + 1) ≤ |dp| := by
         simpa [dp, p, rnd, hexp, abs_sub_comm] using hbound
@@ -6518,9 +6515,8 @@ theorem U5_discri1 (emin prec : Int) [Prec_gt_0 prec]
         have hmono := FloatSpec.Core.Raux.bpow_le (beta := 2)
           (e1 := emin + prec - 1) (e2 := emin + prec + 1)
           (by decide : (1 : Int) < 2) (by omega)
-        simpa [FloatSpec.Core.Raux.bpow, FloatSpec.Core.Raux.bpow_le_check,
-          wp, PostCond.noThrow, Id.run, pure]
-          using hmono True.intro
+        simpa [FloatSpec.Core.Raux.bpow, wp, PostCond.noThrow, Id.run, pure]
+          using hmono
       have hbound' :
           FloatSpec.Core.Raux.bpow 2 (emin + prec + 1) ≤ |-dq| := by
         simpa [dq, q, rnd, hexp, abs_neg, abs_sub_comm] using hbound
@@ -6764,7 +6760,7 @@ private theorem discri_correct_test_nonexceptional
     have hpow := FloatSpec.Core.Raux.bpow_le 2
       (emin + prec - 1) (emin + 3 * prec) hbeta (by omega)
     have hle : FloatSpec.Core.Raux.bpow 2 (emin + prec - 1) ≤ |p| :=
-      le_trans (hpow True.intro) hpMagStrong
+      le_trans (hpow) hpMagStrong
     simpa [hbndExp, hfpAlg, FloatSpec.Core.Raux.bpow] using hle
   have hqMagNormal :
       (2 : ℝ) ^ (-bnd.dExp + prec - 1) ≤
@@ -6772,7 +6768,7 @@ private theorem discri_correct_test_nonexceptional
     have hpow := FloatSpec.Core.Raux.bpow_le 2
       (emin + prec - 1) (emin + 3 * prec) hbeta (by omega)
     have hle : FloatSpec.Core.Raux.bpow 2 (emin + prec - 1) ≤ |q| :=
-      le_trans (hpow True.intro) hqMagStrong
+      le_trans (hpow) hqMagStrong
     simpa [hbndExp, hfqAlg, FloatSpec.Core.Raux.bpow] using hle
   have hfpNormal : Fnormal (beta:=2) 2 bo fp := by
     have h := CanonicGeNormal 2 bnd prec fp

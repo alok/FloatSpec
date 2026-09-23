@@ -352,8 +352,8 @@ theorem FLXN_format_generic (beta : Int) [ValidRadix beta] [Prec_gt_0 prec]
     have hbne : (beta : ℝ) ≠ 0 := ne_of_gt hbpos
     constructor
     · have hmag : (beta : ℝ) ^ (mag beta x - 1) ≤ |x| := by
-        simpa [FloatSpec.Core.Raux.abs_val] using
-          (FloatSpec.Core.Raux.mag_lower_bound beta x ValidRadix.valid hx0) True.intro
+        simpa using
+          (FloatSpec.Core.Raux.bpow_mag_le beta x ValidRadix.valid hx0)
       have hscale : 0 ≤ (beta : ℝ) ^ (-(cexp beta (FLX_exp prec) x)) :=
         (zpow_pos hbpos _).le
       have hmul := mul_le_mul_of_nonneg_right hmag hscale
@@ -579,7 +579,7 @@ theorem ulp_FLX_1 (beta : Int) [ValidRadix beta] :
     FloatSpec.Core.Ulp.ulp beta (FLX_exp prec) 1 = (beta : ℝ) ^ (1 - prec) := by
   have hmag : FloatSpec.Core.Raux.mag beta (1 : ℝ) = 1 := by
     simpa [wp, PostCond.noThrow, pure] using
-      (FloatSpec.Core.Raux.mag_1 beta ValidRadix.valid) trivial
+      (FloatSpec.Core.Raux.mag_1 beta ValidRadix.valid)
   simp [FloatSpec.Core.Ulp.ulp, FloatSpec.Core.Generic_fmt.cexp, FLX_exp, hmag]
 
 /-- Coq ({lit}`FLX.v`):
@@ -633,8 +633,8 @@ theorem ulp_FLX_le (beta : Int) [ValidRadix beta] [Prec_gt_0 prec] (x : ℝ) :
     -- Lower bound: β^(m - 1) ≤ |x|
     have hlow : (beta : ℝ) ^ (m - 1) ≤ |x| := by
       have htr := FloatSpec.Core.Raux.bpow_mag_le_from_exp_payload (beta := beta) (x := x) (e := m)
-      simpa [FloatSpec.Core.Raux.abs_val, wp, PostCond.noThrow, Id.run, hm, sub_eq_add_neg]
-        using htr hβ hxne le_rfl True.intro
+      simpa [wp, PostCond.noThrow, Id.run, hm, sub_eq_add_neg]
+        using htr hβ hxne le_rfl
     -- Multiply both sides by β^(-(prec - 1)) (positive), then rewrite
     have hnonneg : 0 ≤ (beta : ℝ) ^ (-(prec - 1)) := le_of_lt (zpow_pos hbpos (-(prec - 1)))
     have hmul :

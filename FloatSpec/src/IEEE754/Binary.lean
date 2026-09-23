@@ -1721,10 +1721,10 @@ theorem Bfrexp_correct_compat (x : Binary754 prec emax)
         cases s <;> simp [mul_ne_zero, h2pos.ne', hm_real_ne, neg_ne_zero]
       -- Get the mag lower bound: 2^(e-1) ≤ |rx|
       have h2gt1 : (1 : Int) < 2 := by norm_num
-      have hmag_lower := FloatSpec.Core.Raux.mag_lower_bound (beta := 2) (x := rx) h2gt1 hrx_ne
+      have hmag_lower := FloatSpec.Core.Raux.bpow_mag_le (beta := 2) (x := rx) h2gt1 hrx_ne
       have hlower : (2 : ℝ) ^ (e - 1) ≤ |rx| := by
-        have hrun := hmag_lower True.intro
-        simpa [wp, PostCond.noThrow, Id.run, bind, pure, FloatSpec.Core.Raux.abs_val] using hrun
+        have hrun := hmag_lower
+        simpa [wp, PostCond.noThrow, Id.run, bind, pure] using hrun
       -- Now relate |rz| to |rx| / 2^e
       have hrz_eq : rz = rx * (2 : ℝ) ^ (-e) := by
         simp only [hrz_def, hrx_def, F2R, FloatSpec.Core.Defs.F2R]
@@ -1766,10 +1766,10 @@ theorem Bfrexp_correct_compat (x : Binary754 prec emax)
         cases s <;> simp [mul_ne_zero, h2pos.ne', hm_real_ne, neg_ne_zero]
       -- Get the mag upper bound: |rx| < 2^e
       have h2gt1 : (1 : Int) < 2 := by norm_num
-      have hmag_upper := FloatSpec.Core.Raux.mag_upper_bound (beta := 2) (x := rx) h2gt1 hrx_ne
+      have hmag_upper := FloatSpec.Core.Raux.bpow_mag_gt (beta := 2) (x := rx) h2gt1
       have hupper : |rx| < (2 : ℝ) ^ e := by
-        have hrun := hmag_upper True.intro
-        simpa [wp, PostCond.noThrow, Id.run, bind, pure, FloatSpec.Core.Raux.abs_val] using hrun
+        have hrun := hmag_upper
+        simpa [wp, PostCond.noThrow, Id.run, bind, pure] using hrun
       -- Now relate |rz| to |rx| / 2^e
       have hrz_eq : rz = rx * (2 : ℝ) ^ (-e) := by
         simp only [hrz_def, hrx_def, F2R, FloatSpec.Core.Defs.F2R]
@@ -4624,8 +4624,7 @@ theorem bounded_canonical_lt_emax {prec emax : Int}
     have hspec := FloatSpec.Core.Raux.mag_le_bpow 2
       (F2R (FloatSpec.Core.Defs.FlocqFloat.mk (mx : Int) ex : FloatSpec.Core.Defs.FlocqFloat 2))
       emax h2gt1 hf2r_ne habs_lt
-    simp only [wp, PostCond.noThrow, pure, Id.run] at hspec
-    exact hspec trivial
+    exact hspec
 
   -- mag 2 (F2R ⟨mx, ex⟩) = Zdigits 2 mx + ex
   have hmag_eq_digits : M = FloatSpec.Core.Digits.Zdigits 2 (mx : Int) + ex := by

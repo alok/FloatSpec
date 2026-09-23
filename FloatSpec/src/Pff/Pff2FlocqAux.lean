@@ -260,11 +260,9 @@ private lemma FLT_mantissa_bound (beta emin p : Int) [ValidRadix beta] (x : ℝ)
     have h_abs_x : |x| = |(mx : ℝ)| * (beta : ℝ) ^ ex := by
       rw [hx_eq, abs_mul, abs_of_pos h_pow_pos]
     -- From mag, |x| < beta^(mag x) for x ≠ 0
-    have hmag_bound := FloatSpec.Core.Raux.mag_upper_bound beta x hβ hx0
-    simp only [wp, PostCond.noThrow, Id.run, pure] at hmag_bound
+    have hmag_bound := FloatSpec.Core.Raux.bpow_mag_gt beta x hβ
     have h_abs_x_lt : |x| < (beta : ℝ) ^ (mag beta x) := by
-      unfold FloatSpec.Core.Raux.abs_val at hmag_bound
-      exact hmag_bound trivial
+      exact hmag_bound
     -- Thus |mx| * beta^ex < beta^(mag x)
     -- Dividing by beta^ex: |mx| < beta^(mag x - ex)
     have h_mx_lt_pow : |(mx : ℝ)| < (beta : ℝ) ^ (mag beta x - ex) := by
@@ -573,7 +571,7 @@ theorem pff_format_is_format_from_hoare_payload (beta : Int) [ValidRadix beta]
       have hmag_m_le := FloatSpec.Core.Raux.mag_le_bpow (beta := beta) (x := (m : ℝ))
                           (e := p) hbeta_gt1 hm_real_ne hm_real_lt
       have hmag_m_le_p : FloatSpec.Core.Raux.mag beta (m : ℝ) ≤ p := by
-        simpa [wp, PostCond.noThrow, Id.run] using (hmag_m_le trivial)
+        simpa [wp, PostCond.noThrow, Id.run] using hmag_m_le
       --
       -- Step 4: Prove mag(F2R flocq) = mag(m) + f.Fexp directly
       -- F2R flocq = m * beta^(f.Fexp)
@@ -728,7 +726,7 @@ private theorem flocq_bounded_FLT_cexp_le (beta : Int) [ValidRadix beta] (b : Fb
       (beta := beta) (x := (f.Fnum : ℝ)) (e := p)
       hbeta hm_real_ne hm_real_lt
     have hmag_m_le_p : FloatSpec.Core.Raux.mag beta (f.Fnum : ℝ) ≤ p := by
-      simpa [wp, PostCond.noThrow, Id.run] using hmag_m_le True.intro
+      simpa [wp, PostCond.noThrow, Id.run] using hmag_m_le
     have hpow_pos : (0 : ℝ) < (beta : ℝ) ^ f.Fexp :=
       zpow_pos hβposReal f.Fexp
     have hpow_ne : (beta : ℝ) ^ f.Fexp ≠ 0 := ne_of_gt hpow_pos

@@ -72,19 +72,17 @@ theorem valid_format_can_have_decreasing_ulp :
 
 /-- Seven quarters lies in the binade with finer spacing. -/
 theorem zigzag_magnitude_seven_quarters :
-    FloatSpec.Core.Raux.mag 2 (7 / 4 : Real) = 1 := by
-  simpa [wp, PostCond.noThrow, pure] using
-    (FloatSpec.Core.Raux.mag_unique 2 (7 / 4) 1
-      (by decide) (by norm_num) (by norm_num)) trivial
+    FloatSpec.Core.Raux.mag 2 (7 / 4 : Real) = 1 :=
+  FloatSpec.Core.Raux.mag_unique 2 (7 / 4) 1
+    (by decide) (by norm_num) (by norm_num)
 
 #print axioms zigzag_magnitude_seven_quarters
 
 /-- Three quarters falls back into the binade with coarser spacing. -/
 theorem zigzag_magnitude_three_quarters :
-    FloatSpec.Core.Raux.mag 2 (3 / 4 : Real) = 0 := by
-  simpa [wp, PostCond.noThrow, pure] using
-    (FloatSpec.Core.Raux.mag_unique 2 (3 / 4) 0
-      (by decide) (by norm_num) (by norm_num)) trivial
+    FloatSpec.Core.Raux.mag 2 (3 / 4 : Real) = 0 :=
+  FloatSpec.Core.Raux.mag_unique 2 (3 / 4) 0
+    (by decide) (by norm_num) (by norm_num)
 
 #print axioms zigzag_magnitude_three_quarters
 

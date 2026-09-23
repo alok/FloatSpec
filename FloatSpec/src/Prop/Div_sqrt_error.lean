@@ -57,13 +57,13 @@ lemma generic_format_plus_prec (fexp : Int → Int)
       have htrip :=
         FloatSpec.Core.Raux.mag_le_bpow (beta := beta) (x := x + y)
           (e := prec + fx.Fexp) hβ hz h1
-      simpa [Std.Do.PostCond.noThrow, wp, pure] using htrip trivial
+      simpa [Std.Do.PostCond.noThrow, wp, pure] using htrip
     have hmag_y :
         FloatSpec.Core.Raux.mag beta (x + y) ≤ prec + fy.Fexp := by
       have htrip :=
         FloatSpec.Core.Raux.mag_le_bpow (beta := beta) (x := x + y)
           (e := prec + fy.Fexp) hβ hz h2
-      simpa [Std.Do.PostCond.noThrow, wp, pure] using htrip trivial
+      simpa [Std.Do.PostCond.noThrow, wp, pure] using htrip
     have hcexp_le :
         FloatSpec.Core.Generic_fmt.cexp beta fexp (x + y) ≤ fxy.Fexp := by
       have hx_exp : FloatSpec.Core.Raux.mag beta (x + y) - prec ≤ fx.Fexp := by
@@ -209,9 +209,9 @@ theorem div_error_FLX (rnd : ℝ → Int) [FloatSpec.Core.Generic_fmt.Valid_rnd 
       |r - z| < |z| := by
     have hmag_lower :
         (beta : ℝ) ^ (FloatSpec.Core.Raux.mag beta z - 1) ≤ |z| := by
-      have htrip := FloatSpec.Core.Raux.mag_lower_bound (beta := beta) (x := z) hβ hz0
-      simpa [FloatSpec.Core.Raux.abs_val, wp, Std.Do.PostCond.noThrow, Id.run, pure]
-        using htrip True.intro
+      have htrip := FloatSpec.Core.Raux.bpow_mag_le (beta := beta) (x := z) hβ hz0
+      simpa [wp, Std.Do.PostCond.noThrow, Id.run, pure]
+        using htrip
     have hcexp_le_mag_sub_one :
         FloatSpec.Core.Generic_fmt.cexp beta fexp z ≤ FloatSpec.Core.Raux.mag beta z - 1 := by
       simp [FloatSpec.Core.Generic_fmt.cexp, fexp, FLX_exp, FloatSpec.Core.FLX.FLX_exp]
@@ -222,8 +222,8 @@ theorem div_error_FLX (rnd : ℝ → Int) [FloatSpec.Core.Generic_fmt.Valid_rnd 
       have htrip := FloatSpec.Core.Raux.bpow_le (beta := beta)
         (e1 := FloatSpec.Core.Generic_fmt.cexp beta fexp z)
         (e2 := FloatSpec.Core.Raux.mag beta z - 1) hβ hcexp_le_mag_sub_one
-      simpa [FloatSpec.Core.Raux.bpow_le_check, wp, Std.Do.PostCond.noThrow, Id.run, pure]
-        using htrip True.intro
+      simpa [wp, Std.Do.PostCond.noThrow, Id.run, pure]
+        using htrip
     exact lt_of_lt_of_le hround_err (le_trans hpow_le hmag_lower)
   have hrem_abs :
       |x + -(r * y)| = |r - z| * |y| := by
@@ -248,9 +248,9 @@ theorem div_error_FLX (rnd : ℝ → Int) [FloatSpec.Core.Generic_fmt.Valid_rnd 
           rw [hxy]
     have hx_mag :
         |x| < (beta : ℝ) ^ (FloatSpec.Core.Raux.mag beta x) := by
-      have htrip := FloatSpec.Core.Raux.mag_upper_bound (beta := beta) (x := x) hβ hx0
-      simpa [FloatSpec.Core.Raux.abs_val, wp, Std.Do.PostCond.noThrow, Id.run, pure]
-        using htrip True.intro
+      have htrip := FloatSpec.Core.Raux.bpow_mag_gt (beta := beta) (x := x) hβ
+      simpa [wp, Std.Do.PostCond.noThrow, Id.run, pure]
+        using htrip
     have hx_exp :
         FloatSpec.Core.Generic_fmt.cexp beta fexp x ≤ fx.Fexp := by
       simp [fx]
@@ -263,8 +263,8 @@ theorem div_error_FLX (rnd : ℝ → Int) [FloatSpec.Core.Generic_fmt.Valid_rnd 
           ≤ (beta : ℝ) ^ (prec + fx.Fexp) := by
       have htrip := FloatSpec.Core.Raux.bpow_le (beta := beta)
         (e1 := FloatSpec.Core.Raux.mag beta x) (e2 := prec + fx.Fexp) hβ hmag_to_fx
-      simpa [FloatSpec.Core.Raux.bpow_le_check, wp, Std.Do.PostCond.noThrow, Id.run, pure]
-        using htrip True.intro
+      simpa [wp, Std.Do.PostCond.noThrow, Id.run, pure]
+        using htrip
     exact lt_of_lt_of_le (lt_of_lt_of_eq hlt_x hz_mul) (lt_of_lt_of_le hx_mag hpow_le).le
   have hy_bound :
       |x + -(r * y)| < (beta : ℝ) ^ (prec + (FloatSpec.Calc.Operations.Fopp beta
@@ -277,9 +277,9 @@ theorem div_error_FLX (rnd : ℝ → Int) [FloatSpec.Core.Generic_fmt.Valid_rnd 
       exact mul_lt_mul_of_pos_right hround_err hy_abs_pos
     have hy_mag :
         |y| < (beta : ℝ) ^ (FloatSpec.Core.Raux.mag beta y) := by
-      have htrip := FloatSpec.Core.Raux.mag_upper_bound (beta := beta) (x := y) hβ hy0
-      simpa [FloatSpec.Core.Raux.abs_val, wp, Std.Do.PostCond.noThrow, Id.run, pure]
-        using htrip True.intro
+      have htrip := FloatSpec.Core.Raux.bpow_mag_gt (beta := beta) (x := y) hβ
+      simpa [wp, Std.Do.PostCond.noThrow, Id.run, pure]
+        using htrip
     have hprod_lt :
         (beta : ℝ) ^ (FloatSpec.Core.Generic_fmt.cexp beta fexp z) * |y|
           < (beta : ℝ) ^ (FloatSpec.Core.Generic_fmt.cexp beta fexp z)
@@ -411,8 +411,8 @@ theorem sqrt_error_FLX_N (h_gt1 : 1 < prec) (x : ℝ)
         have hpow_le :
             (beta : ℝ) ^ (-prec + 1) ≤ (beta : ℝ) ^ (-1 : Int) := by
           have htrip := FloatSpec.Core.Raux.bpow_le beta (-prec + 1) (-1) hβ hle_exp
-          simpa [FloatSpec.Core.Raux.bpow_le_check, wp, Std.Do.PostCond.noThrow,
-            Id.run, pure] using htrip True.intro
+          simpa [wp, Std.Do.PostCond.noThrow,
+            Id.run, pure] using htrip
         have hβ2ℤ : (2 : Int) ≤ beta := by omega
         have hβ2 : (2 : ℝ) ≤ (beta : ℝ) := by exact_mod_cast hβ2ℤ
         have hpow_neg_one : (beta : ℝ) ^ (-1 : Int) ≤ (1 / 2 : ℝ) := by
@@ -525,10 +525,10 @@ theorem sqrt_error_FLX_N (h_gt1 : 1 < prec) (x : ℝ)
       have hx_bound :
           x < (beta : ℝ) ^ (prec + fx.Fexp) := by
         have hmag :=
-          FloatSpec.Core.Raux.mag_upper_bound (beta := beta) (x := x) hβ hxne
+          FloatSpec.Core.Raux.bpow_mag_gt (beta := beta) (x := x) hβ
         have hmag_plain : |x| < (beta : ℝ) ^ (FloatSpec.Core.Raux.mag beta x) := by
-          simpa [FloatSpec.Core.Raux.abs_val, wp, Std.Do.PostCond.noThrow,
-            Id.run, pure] using hmag True.intro
+          simpa [wp, Std.Do.PostCond.noThrow,
+            Id.run, pure] using hmag
         have hexp : prec + fx.Fexp = FloatSpec.Core.Raux.mag beta x := by
           simp [fx, FloatSpec.Core.Generic_fmt.cexp, fexp, FLX_exp,
             FloatSpec.Core.FLX.FLX_exp]
@@ -539,10 +539,10 @@ theorem sqrt_error_FLX_N (h_gt1 : 1 < prec) (x : ℝ)
       have hfr_abs_bound :
           |r| < (beta : ℝ) ^ (prec + fr.Fexp) := by
         have hmag :=
-          FloatSpec.Core.Raux.mag_upper_bound (beta := beta) (x := r) hβ hr0
+          FloatSpec.Core.Raux.bpow_mag_gt (beta := beta) (x := r) hβ
         have hmag_plain : |r| < (beta : ℝ) ^ (FloatSpec.Core.Raux.mag beta r) := by
-          simpa [FloatSpec.Core.Raux.abs_val, wp, Std.Do.PostCond.noThrow,
-            Id.run, pure] using hmag True.intro
+          simpa [wp, Std.Do.PostCond.noThrow,
+            Id.run, pure] using hmag
         have hexp : prec + fr.Fexp = FloatSpec.Core.Raux.mag beta r := by
           simp [fr, FloatSpec.Core.Generic_fmt.cexp, fexp, FLX_exp,
             FloatSpec.Core.FLX.FLX_exp]
@@ -558,17 +558,17 @@ theorem sqrt_error_FLX_N (h_gt1 : 1 < prec) (x : ℝ)
             le_of_not_gt hnot_gt
           have hle_mag : |Real.sqrt x| <
               (beta : ℝ) ^ (FloatSpec.Core.Raux.mag beta (Real.sqrt x)) := by
-            have hmag := FloatSpec.Core.Raux.mag_upper_bound
-              (beta := beta) (x := Real.sqrt x) hβ hsqrt_ne
-            simpa [FloatSpec.Core.Raux.abs_val, wp, Std.Do.PostCond.noThrow,
-              Id.run, pure] using hmag True.intro
+            have hmag := FloatSpec.Core.Raux.bpow_mag_gt
+              (beta := beta) (x := Real.sqrt x) hβ
+            simpa [wp, Std.Do.PostCond.noThrow,
+              Id.run, pure] using hmag
           have hpow_le :
               (beta : ℝ) ^ (FloatSpec.Core.Raux.mag beta (Real.sqrt x))
                 ≤ (beta : ℝ) ^ (prec + fr.Fexp) := by
             have htrip := FloatSpec.Core.Raux.bpow_le beta
               (FloatSpec.Core.Raux.mag beta (Real.sqrt x)) (prec + fr.Fexp) hβ hle_exp
-            simpa [FloatSpec.Core.Raux.bpow_le_check, wp, Std.Do.PostCond.noThrow,
-              Id.run, pure] using htrip True.intro
+            simpa [wp, Std.Do.PostCond.noThrow,
+              Id.run, pure] using htrip
           exact hnot (le_trans (le_of_lt hle_mag) hpow_le)
         let g : ℝ :=
           (beta : ℝ) ^ (FloatSpec.Core.Raux.mag beta (Real.sqrt x) - 1)
@@ -584,13 +584,13 @@ theorem sqrt_error_FLX_N (h_gt1 : 1 < prec) (x : ℝ)
             (e := FloatSpec.Core.Raux.mag beta (Real.sqrt x) - 1)
           simpa [g, wp, Std.Do.PostCond.noThrow, Id.run, pure] using htrip ⟨hβ, hpre⟩
         have hg_le_sqrt : g ≤ Real.sqrt x := by
-          have hmag := FloatSpec.Core.Raux.mag_lower_bound
+          have hmag := FloatSpec.Core.Raux.bpow_mag_le
             (beta := beta) (x := Real.sqrt x) hβ hsqrt_ne
           have hplain :
               (beta : ℝ) ^ (FloatSpec.Core.Raux.mag beta (Real.sqrt x) - 1)
                 ≤ |Real.sqrt x| := by
-            simpa [FloatSpec.Core.Raux.abs_val, wp, Std.Do.PostCond.noThrow,
-              Id.run, pure] using hmag True.intro
+            simpa [wp, Std.Do.PostCond.noThrow,
+              Id.run, pure] using hmag
           simpa [g, abs_of_nonneg (Real.sqrt_nonneg x)] using hplain
         have hg_le_r : g ≤ r :=
           FloatSpec.Core.Generic_fmt.roundR_ge_generic
@@ -605,8 +605,8 @@ theorem sqrt_error_FLX_N (h_gt1 : 1 < prec) (x : ℝ)
           have htrip := FloatSpec.Core.Raux.bpow_le beta
             (prec + fr.Fexp)
             (FloatSpec.Core.Raux.mag beta (Real.sqrt x) - 1) hβ hle_exp
-          simpa [g, FloatSpec.Core.Raux.bpow_le_check, wp,
-            Std.Do.PostCond.noThrow, Id.run, pure] using htrip True.intro
+          simpa [g, wp,
+            Std.Do.PostCond.noThrow, Id.run, pure] using htrip
         have hlt_abs_g : |r| < g := lt_of_lt_of_le hfr_abs_bound hbound_le_g
         exact (not_lt_of_ge hg_le_abs_r) hlt_abs_g
       have hsum_lt :
@@ -770,25 +770,25 @@ lemma sqrt_error_N_FLX_aux1 (x : ℝ)
       have : 2 * e = 2 * ((m - 1) / 2) := by simp [e, he]
       omega
     have hlower_mag : (beta : ℝ) ^ (m - 1) ≤ x := by
-      have htrip := FloatSpec.Core.Raux.mag_lower_bound
+      have htrip := FloatSpec.Core.Raux.bpow_mag_le
         (beta := beta) (x := x) hβ hx_ne
       have hrun : (beta : ℝ) ^ (FloatSpec.Core.Raux.mag beta x - 1) ≤ |x| := by
-        simpa [FloatSpec.Core.Raux.abs_val, wp, Std.Do.PostCond.noThrow,
-          Id.run, pure] using htrip trivial
+        simpa [wp, Std.Do.PostCond.noThrow,
+          Id.run, pure] using htrip
       simpa [hm, abs_of_pos px] using hrun
     have hupper_mag : x < (beta : ℝ) ^ m := by
-      have htrip := FloatSpec.Core.Raux.mag_upper_bound
-        (beta := beta) (x := x) hβ hx_ne
+      have htrip := FloatSpec.Core.Raux.bpow_mag_gt
+        (beta := beta) (x := x) hβ
       have hrun : |x| < (beta : ℝ) ^ FloatSpec.Core.Raux.mag beta x := by
-        simpa [FloatSpec.Core.Raux.abs_val, wp, Std.Do.PostCond.noThrow,
-          Id.run, pure] using htrip trivial
+        simpa [wp, Std.Do.PostCond.noThrow,
+          Id.run, pure] using htrip
       simpa [hm, abs_of_pos px] using hrun
     constructor
     · have hpow_le :
           (beta : ℝ) ^ (2 * e) ≤ (beta : ℝ) ^ (m - 1) := by
         have htrip := FloatSpec.Core.Raux.bpow_le beta (2 * e) (m - 1) hβ h2e_le
-        simpa [FloatSpec.Core.Raux.bpow_le_check, wp, Std.Do.PostCond.noThrow,
-          Id.run, pure] using htrip trivial
+        simpa [wp, Std.Do.PostCond.noThrow,
+          Id.run, pure] using htrip
       have hmul_le : 1 * (beta : ℝ) ^ (2 * e) ≤ mu * (beta : ℝ) ^ (2 * e) := by
         calc
           1 * (beta : ℝ) ^ (2 * e) = (beta : ℝ) ^ (2 * e) := by ring
@@ -799,8 +799,8 @@ lemma sqrt_error_N_FLX_aux1 (x : ℝ)
     · have hpow_upper :
           (beta : ℝ) ^ m ≤ (beta : ℝ) ^ (2 + 2 * e) := by
         have htrip := FloatSpec.Core.Raux.bpow_le beta m (2 + 2 * e) hβ hm_le_2e_plus2
-        simpa [FloatSpec.Core.Raux.bpow_le_check, wp, Std.Do.PostCond.noThrow,
-          Id.run, pure] using htrip trivial
+        simpa [wp, Std.Do.PostCond.noThrow,
+          Id.run, pure] using htrip
       have hmul_lt : mu * (beta : ℝ) ^ (2 * e) <
           (beta : ℝ) ^ (2 : Int) * (beta : ℝ) ^ (2 * e) := by
         calc
@@ -1095,8 +1095,8 @@ theorem sqrt_error_N_FLX_without_prec_gt_one_payload (x : ℝ)
       have hsqrt_bpow :
           Real.sqrt ((beta : ℝ) ^ (2 * e)) = (beta : ℝ) ^ e := by
         have htrip := FloatSpec.Core.Raux.sqrt_bpow (beta := beta) (e := e) hβ
-        simpa [FloatSpec.Core.Raux.sqrt_bpow_check, wp, Std.Do.PostCond.noThrow,
-          Id.run, pure] using htrip trivial
+        simpa [wp, Std.Do.PostCond.noThrow,
+          Id.run, pure] using htrip
       calc
         t = Real.sqrt (mu * (beta : ℝ) ^ (2 * e)) := by simpa [t, hmu]
         _ = Real.sqrt mu * Real.sqrt ((beta : ℝ) ^ (2 * e)) := by
@@ -1218,7 +1218,7 @@ theorem sqrt_error_N_FLX_without_prec_gt_one_payload (x : ℝ)
                     simp
           have htrip := FloatSpec.Core.Raux.mag_unique
             (beta := beta) (x := t) (e := e + 1) hβ hlow hupp
-          simpa [wp, Std.Do.PostCond.noThrow, Id.run, pure] using htrip trivial
+          simpa [wp, Std.Do.PostCond.noThrow, Id.run, pure] using htrip
         have hcexp_t : FloatSpec.Core.Generic_fmt.cexp beta fexp t = e + 1 - prec := by
           simp [FloatSpec.Core.Generic_fmt.cexp, fexp, FLX_exp,
             FloatSpec.Core.FLX.FLX_exp, hmag_t]
@@ -1430,11 +1430,11 @@ private lemma mag_gt_of_bpow_le (x : ℝ) (e : Int)
   · have hmag_abs := FloatSpec.Core.Raux.mag_abs (beta := beta) (x := x) hβ
     have hmag_abs_run :
         FloatSpec.Core.Raux.mag beta |x| = FloatSpec.Core.Raux.mag beta x := by
-      simpa [wp, Std.Do.PostCond.noThrow, Id.run, pure] using hmag_abs trivial
+      simpa [wp, Std.Do.PostCond.noThrow, Id.run, pure] using hmag_abs
     have hmag_bpow := FloatSpec.Core.Raux.mag_bpow (beta := beta) (e := e) hβ
     have hmag_bpow_run :
         FloatSpec.Core.Raux.mag beta ((beta : ℝ) ^ e) = e + 1 := by
-      simpa [wp, Std.Do.PostCond.noThrow, Id.run, pure] using hmag_bpow trivial
+      simpa [wp, Std.Do.PostCond.noThrow, Id.run, pure] using hmag_bpow
     have hmag_x : e + 1 = FloatSpec.Core.Raux.mag beta x := by
       calc
         e + 1 = FloatSpec.Core.Raux.mag beta ((beta : ℝ) ^ e) := hmag_bpow_run.symm
@@ -1513,8 +1513,8 @@ theorem sqrt_error_N_FLT_ex_without_prec_gt_one_payload
       have hsqrt_bpow :
           (beta : ℝ) ^ (emin / 2) ≤ Real.sqrt ((beta : ℝ) ^ emin) := by
         have htrip := FloatSpec.Core.Raux.sqrt_bpow_ge (beta := beta) (e := emin) hβ
-        simpa [FloatSpec.Core.Raux.sqrt_bpow_ge_check, wp, Std.Do.PostCond.noThrow,
-          Id.run, pure] using htrip trivial
+        simpa [wp, Std.Do.PostCond.noThrow,
+          Id.run, pure] using htrip
       have hsqrt_mono :
           Real.sqrt ((beta : ℝ) ^ emin) ≤ Real.sqrt x := by
         exact Real.sqrt_le_sqrt hx_lower
@@ -1524,8 +1524,8 @@ theorem sqrt_error_N_FLT_ex_without_prec_gt_one_payload
           (beta : ℝ) ^ (emin + prec - 1) ≤ (beta : ℝ) ^ (emin / 2) := by
         have h := FloatSpec.Core.Raux.bpow_le beta (emin + prec - 1) (emin / 2)
           hβ hexp_le
-        simpa [FloatSpec.Core.Raux.bpow_le_check, wp, Std.Do.PostCond.noThrow,
-          Id.run, pure] using h trivial
+        simpa [wp, Std.Do.PostCond.noThrow,
+          Id.run, pure] using h
       have hsqrt_nonneg : 0 ≤ Real.sqrt x := Real.sqrt_nonneg x
       calc
         (beta : ℝ) ^ (emin + prec - 1) ≤ (beta : ℝ) ^ (emin / 2) := hpow_le
@@ -1819,15 +1819,15 @@ theorem format_REM_aux
           exact (not_le_of_gt hex_lt_ey) this
         have hx_lt_y : x < y := by
           have hx_upper : |x| < (beta : ℝ) ^ (FloatSpec.Core.Raux.mag beta x) := by
-            have htrip := FloatSpec.Core.Raux.mag_upper_bound
-              (beta := beta) (x := x) hβ hx_ne
-            simpa [FloatSpec.Core.Raux.abs_val, wp, Std.Do.PostCond.noThrow,
-              Id.run, pure] using htrip trivial
+            have htrip := FloatSpec.Core.Raux.bpow_mag_gt
+              (beta := beta) (x := x) hβ
+            simpa [wp, Std.Do.PostCond.noThrow,
+              Id.run, pure] using htrip
           have hy_lower : (beta : ℝ) ^ (FloatSpec.Core.Raux.mag beta y - 1) ≤ |y| := by
-            have htrip := FloatSpec.Core.Raux.mag_lower_bound
+            have htrip := FloatSpec.Core.Raux.bpow_mag_le
               (beta := beta) (x := y) hβ hy_ne
-            simpa [FloatSpec.Core.Raux.abs_val, wp, Std.Do.PostCond.noThrow,
-              Id.run, pure] using htrip trivial
+            simpa [wp, Std.Do.PostCond.noThrow,
+              Id.run, pure] using htrip
           have hpow_le :
               (beta : ℝ) ^ (FloatSpec.Core.Raux.mag beta x) ≤
                 (beta : ℝ) ^ (FloatSpec.Core.Raux.mag beta y - 1) := by
@@ -1836,8 +1836,8 @@ theorem format_REM_aux
             have htrip := FloatSpec.Core.Raux.bpow_le beta
               (FloatSpec.Core.Raux.mag beta x)
               (FloatSpec.Core.Raux.mag beta y - 1) hβ hle
-            simpa [FloatSpec.Core.Raux.bpow_le_check, wp, Std.Do.PostCond.noThrow,
-              Id.run, pure] using htrip trivial
+            simpa [wp, Std.Do.PostCond.noThrow,
+              Id.run, pure] using htrip
           calc
             x = |x| := (abs_of_nonneg hx_nonneg).symm
             _ < (beta : ℝ) ^ (FloatSpec.Core.Raux.mag beta x) := hx_upper

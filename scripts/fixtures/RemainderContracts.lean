@@ -33,9 +33,8 @@ variable [Generic_fmt.Valid_exp fexp] [Generic_fmt.Monotone_exp fexp]
     Generic_fmt.generic_format beta fexp (x - (Generic_fmt.Znearest choice (x / y) : Real) * y))
 
 /-- Seven lies in the binade from four inclusive to eight exclusive. -/
-theorem magnitude_minus_seven : Raux.mag 2 (-7 : Real) = 3 := by
-  simpa [Std.Do.wp, Std.Do.PostCond.noThrow, pure] using
-    (Raux.mag_unique 2 (-7) 3 (by decide) (by norm_num) (by norm_num)) trivial
+theorem magnitude_minus_seven : Raux.mag 2 (-7 : Real) = 3 :=
+  Raux.mag_unique 2 (-7) 3 (by decide) (by norm_num) (by norm_num)
 
 #print axioms magnitude_minus_seven
 

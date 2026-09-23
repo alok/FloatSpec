@@ -242,7 +242,7 @@ theorem Fplus_correct (x y : FlocqFloat beta) :
               (F2R (FlocqFloat.mk m2 e2 : FlocqFloat beta))
               (F2R (FlocqFloat.mk m1 e1 : FlocqFloat beta))
               hβ hnz2 hsmall'
-            have hrun := htrip (by trivial)
+            have hrun := htrip
             have : p2 - 1 ≤ FloatSpec.Core.Raux.mag beta z := by
               rw [hmag2] at hrun
               simpa [z, add_comm, wp, PostCond.noThrow, pure] using hrun
@@ -262,7 +262,7 @@ theorem Fplus_correct (x y : FlocqFloat beta) :
               (F2R (FlocqFloat.mk m1 e1 : FlocqFloat beta))
               (F2R (FlocqFloat.mk m2 e2 : FlocqFloat beta))
               hβ hnz1 hsmall'
-            have hrun := htrip (by trivial)
+            have hrun := htrip
             have : p1 - 1 ≤ FloatSpec.Core.Raux.mag beta z := by
               rw [hmag1] at hrun
               simpa [z, wp, PostCond.noThrow, pure] using hrun

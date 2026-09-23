@@ -477,7 +477,7 @@ theorem FTZ_format_FLXN (beta : Int) [ValidRadix beta] (x : ℝ)
             (lt_add_of_pos_right M (by exact Int.zero_lt_one))
         simpa [hM] using And.intro hβ hlt
       -- Discharge the Hoare triple and get the raw inequality
-      simpa [FloatSpec.Core.Raux.abs_val] using (hxlt hpre'.1 hpre'.2 trivial)
+      simpa using (hxlt hpre'.1 hpre'.2)
     -- Pointwise exponent inequality on (e1, M+1]: FTZ_exp e = FLX_exp e
     have hle_band : ∀ e : Int, e1 < e ∧ e ≤ (M + 1) →
         FTZ_exp prec emin e ≤ FloatSpec.Core.FLX.FLX_exp prec e := by
@@ -611,8 +611,8 @@ theorem round_FTZ_FLX (beta : Int) [ValidRadix beta]
   have hexp : FTZ_exp prec emin M = FloatSpec.Core.FLX.FLX_exp prec M := by
     simp [FTZ_exp, FloatSpec.Core.FLX.FLX_exp, hcase]
   have hmagLower : (beta : ℝ) ^ (M - 1) ≤ |x| := by
-    simpa [FloatSpec.Core.Raux.abs_val] using
-      (FloatSpec.Core.Raux.bpow_mag_le_from_exp_payload beta x M hβ hxne le_rfl True.intro)
+    simpa using
+      (FloatSpec.Core.Raux.bpow_mag_le_from_exp_payload beta x M hβ hxne le_rfl)
   have hprec : 0 < prec := Fact.out
   have hpowOne : (1 : ℝ) ≤ (beta : ℝ) ^ (prec - 1) := by
     exact one_le_zpow₀ (le_of_lt (by exact_mod_cast hβ : (1 : ℝ) < beta)) (by omega)

@@ -153,20 +153,20 @@ lemma mult_error_FLX_aux (x y : ℝ)
     simp [ez, fexp, FloatSpec.Core.Generic_fmt.cexp, FLX_exp,
       FloatSpec.Core.FLX.FLX_exp]
   have hx_lower : (beta : ℝ) ^ (FloatSpec.Core.Raux.mag beta x - 1) ≤ |x| := by
-    have h := FloatSpec.Core.Raux.mag_lower_bound (beta := beta) (x := x) hβ hx0
-    simpa [FloatSpec.Core.Raux.abs_val] using h True.intro
+    have h := FloatSpec.Core.Raux.bpow_mag_le (beta := beta) (x := x) hβ hx0
+    simpa using h
   have hy_lower : (beta : ℝ) ^ (FloatSpec.Core.Raux.mag beta y - 1) ≤ |y| := by
-    have h := FloatSpec.Core.Raux.mag_lower_bound (beta := beta) (x := y) hβ hy0
-    simpa [FloatSpec.Core.Raux.abs_val] using h True.intro
+    have h := FloatSpec.Core.Raux.bpow_mag_le (beta := beta) (x := y) hβ hy0
+    simpa using h
   have hz_upper : |z| < (beta : ℝ) ^ (FloatSpec.Core.Raux.mag beta z) := by
-    have h := FloatSpec.Core.Raux.mag_upper_bound (beta := beta) (x := z) hβ hz0
-    simpa [FloatSpec.Core.Raux.abs_val] using h True.intro
+    have h := FloatSpec.Core.Raux.bpow_mag_gt (beta := beta) (x := z) hβ
+    simpa using h
   have hx_upper : |x| < (beta : ℝ) ^ (FloatSpec.Core.Raux.mag beta x) := by
-    have h := FloatSpec.Core.Raux.mag_upper_bound (beta := beta) (x := x) hβ hx0
-    simpa [FloatSpec.Core.Raux.abs_val] using h True.intro
+    have h := FloatSpec.Core.Raux.bpow_mag_gt (beta := beta) (x := x) hβ
+    simpa using h
   have hy_upper : |y| < (beta : ℝ) ^ (FloatSpec.Core.Raux.mag beta y) := by
-    have h := FloatSpec.Core.Raux.mag_upper_bound (beta := beta) (x := y) hβ hy0
-    simpa [FloatSpec.Core.Raux.abs_val] using h True.intro
+    have h := FloatSpec.Core.Raux.bpow_mag_gt (beta := beta) (x := y) hβ
+    simpa using h
   have hpow_lower :
       (beta : ℝ) ^ ((FloatSpec.Core.Raux.mag beta x - 1) +
         (FloatSpec.Core.Raux.mag beta y - 1)) ≤ |z| := by
@@ -221,14 +221,14 @@ lemma mult_error_FLX_aux (x y : ℝ)
     have h := FloatSpec.Core.Raux.lt_bpow beta
       (FloatSpec.Core.Raux.mag beta x + FloatSpec.Core.Raux.mag beta y - 2)
       (FloatSpec.Core.Raux.mag beta z) hβ hpow_lt
-    simpa using h True.intro
+    simpa using h
   have hmag_upper_le :
       FloatSpec.Core.Raux.mag beta z ≤
         FloatSpec.Core.Raux.mag beta x + FloatSpec.Core.Raux.mag beta y := by
     have h := FloatSpec.Core.Raux.mag_le_bpow (beta := beta) (x := z)
       (e := FloatSpec.Core.Raux.mag beta x + FloatSpec.Core.Raux.mag beta y)
       hβ hz0 hpow_upper
-    simpa using h True.intro
+    simpa using h
   have h_ep_le_ez : ep ≤ ez := by
     have hprec : 0 < prec := (Prec_gt_0.pos : 0 < prec)
     omega
@@ -272,7 +272,7 @@ lemma mult_error_FLX_aux (x y : ℝ)
       have h := FloatSpec.Core.Raux.mag_le_bpow (beta := beta)
         (x := _root_.F2R ferr) (e := ez) hβ hferr_ne
         (by rw [herr_repr]; exact herr_lt)
-      simpa using h True.intro
+      simpa using h
     have hcexp_err :
         cexp beta fexp (_root_.F2R ferr) =
           FloatSpec.Core.Raux.mag beta (_root_.F2R ferr) - prec := by
@@ -423,8 +423,8 @@ theorem mult_error_FLT (x y : ℝ)
           (beta : ℝ) ^ (emin + 2 * prec - 1) := by
       have h := FloatSpec.Core.Raux.bpow_le beta (emin + prec)
         (emin + 2 * prec - 1) hβ hexp_le
-      simpa [FloatSpec.Core.Raux.bpow_le_check, Std.Do.wp, Std.Do.PostCond.noThrow,
-        Id.run, pure, FloatSpec.Core.Raux.bpow] using h True.intro
+      simpa [Std.Do.wp, Std.Do.PostCond.noThrow,
+        Id.run, pure, FloatSpec.Core.Raux.bpow] using h
     exact le_trans hbpow_le (by simpa [FloatSpec.Core.Raux.bpow] using hbound_under)
   have hcexp_eq :
       cexp beta (FLT_exp emin prec) z = cexp beta (FLX_exp prec) z := by
@@ -464,14 +464,14 @@ theorem mult_error_FLT (x y : ℝ)
       FloatSpec.Core.Raux.mag beta x + FloatSpec.Core.Raux.mag beta y - 2 <
         FloatSpec.Core.Raux.mag beta z := by
     have hx_lower : (beta : ℝ) ^ (FloatSpec.Core.Raux.mag beta x - 1) ≤ |x| := by
-      have h := FloatSpec.Core.Raux.mag_lower_bound (beta := beta) (x := x) hβ hx0
-      simpa [FloatSpec.Core.Raux.abs_val] using h True.intro
+      have h := FloatSpec.Core.Raux.bpow_mag_le (beta := beta) (x := x) hβ hx0
+      simpa using h
     have hy_lower : (beta : ℝ) ^ (FloatSpec.Core.Raux.mag beta y - 1) ≤ |y| := by
-      have h := FloatSpec.Core.Raux.mag_lower_bound (beta := beta) (x := y) hβ hy0
-      simpa [FloatSpec.Core.Raux.abs_val] using h True.intro
+      have h := FloatSpec.Core.Raux.bpow_mag_le (beta := beta) (x := y) hβ hy0
+      simpa using h
     have hz_upper : |z| < (beta : ℝ) ^ (FloatSpec.Core.Raux.mag beta z) := by
-      have h := FloatSpec.Core.Raux.mag_upper_bound (beta := beta) (x := z) hβ hz0
-      simpa [FloatSpec.Core.Raux.abs_val] using h True.intro
+      have h := FloatSpec.Core.Raux.bpow_mag_gt (beta := beta) (x := z) hβ
+      simpa using h
     have hbne : (beta : ℝ) ≠ 0 := ne_of_gt hbpos_real
     have hpow_lower :
         (beta : ℝ) ^ ((FloatSpec.Core.Raux.mag beta x - 1) +
@@ -501,16 +501,16 @@ theorem mult_error_FLT (x y : ℝ)
     have h := FloatSpec.Core.Raux.lt_bpow beta
       (FloatSpec.Core.Raux.mag beta x + FloatSpec.Core.Raux.mag beta y - 2)
       (FloatSpec.Core.Raux.mag beta z) hβ hpow_lt
-    simpa using h True.intro
+    simpa using h
   have hemin_le_fexp : emin ≤ f.Fexp := by
     have hprec : 0 < prec := (Prec_gt_0.pos : 0 < prec)
     have hbne : (beta : ℝ) ≠ 0 := ne_of_gt hbpos_real
     have hx_upper : |x| < (beta : ℝ) ^ (FloatSpec.Core.Raux.mag beta x) := by
-      have h := FloatSpec.Core.Raux.mag_upper_bound (beta := beta) (x := x) hβ hx0
-      simpa [FloatSpec.Core.Raux.abs_val] using h True.intro
+      have h := FloatSpec.Core.Raux.bpow_mag_gt (beta := beta) (x := x) hβ
+      simpa using h
     have hy_upper : |y| < (beta : ℝ) ^ (FloatSpec.Core.Raux.mag beta y) := by
-      have h := FloatSpec.Core.Raux.mag_upper_bound (beta := beta) (x := y) hβ hy0
-      simpa [FloatSpec.Core.Raux.abs_val] using h True.intro
+      have h := FloatSpec.Core.Raux.bpow_mag_gt (beta := beta) (x := y) hβ
+      simpa using h
     have hpow_upper :
         |z| < (beta : ℝ) ^ (FloatSpec.Core.Raux.mag beta x +
           FloatSpec.Core.Raux.mag beta y) := by
@@ -546,7 +546,7 @@ theorem mult_error_FLT (x y : ℝ)
       have h := FloatSpec.Core.Raux.lt_bpow beta (emin + 2 * prec - 1)
         (FloatSpec.Core.Raux.mag beta x + FloatSpec.Core.Raux.mag beta y)
         hβ hpow_lt
-      simpa using h True.intro
+      simpa using h
     have hfx :
         cexp beta (FLX_exp prec) x = FloatSpec.Core.Raux.mag beta x - prec := by
       simp [cexp, FLX_exp, FloatSpec.Core.Generic_fmt.cexp,
@@ -705,11 +705,11 @@ theorem mult_error_FLT_ge_bpow (x y : ℝ) (e : Int)
             rw [hround_prod, hprod_repr]
             simp [fprod, _root_.F2R, FloatSpec.Core.Defs.F2R]
   have hx_upper : |x| < (beta : ℝ) ^ (FloatSpec.Core.Raux.mag beta x) := by
-    have h := FloatSpec.Core.Raux.mag_upper_bound (beta := beta) (x := x) hβ hx0
-    simpa [FloatSpec.Core.Raux.abs_val] using h True.intro
+    have h := FloatSpec.Core.Raux.bpow_mag_gt (beta := beta) (x := x) hβ
+    simpa using h
   have hy_upper : |y| < (beta : ℝ) ^ (FloatSpec.Core.Raux.mag beta y) := by
-    have h := FloatSpec.Core.Raux.mag_upper_bound (beta := beta) (x := y) hβ hy0
-    simpa [FloatSpec.Core.Raux.abs_val] using h True.intro
+    have h := FloatSpec.Core.Raux.bpow_mag_gt (beta := beta) (x := y) hβ
+    simpa using h
   have hxy_upper :
       |x * y| < (beta : ℝ) ^
         (FloatSpec.Core.Raux.mag beta x + FloatSpec.Core.Raux.mag beta y) := by
@@ -743,7 +743,7 @@ theorem mult_error_FLT_ge_bpow (x y : ℝ) (e : Int)
         FloatSpec.Core.Raux.mag beta x + FloatSpec.Core.Raux.mag beta y := by
     have h := FloatSpec.Core.Raux.lt_bpow beta (e + 2 * prec - 1)
       (FloatSpec.Core.Raux.mag beta x + FloatSpec.Core.Raux.mag beta y) hβ hpow_lt
-    simpa using h True.intro
+    simpa using h
   have he_le_ep : e ≤ ep := by
     have hex_le : FloatSpec.Core.Raux.mag beta x - prec ≤ ex := by
       simp [ex, fexp, FloatSpec.Core.Generic_fmt.cexp, FLT_exp,
@@ -755,8 +755,8 @@ theorem mult_error_FLT_ge_bpow (x y : ℝ) (e : Int)
   have hbpow_le_ep :
       FloatSpec.Core.Raux.bpow beta e ≤ FloatSpec.Core.Raux.bpow beta ep := by
     have h := FloatSpec.Core.Raux.bpow_le beta e ep hβ he_le_ep
-    simpa [FloatSpec.Core.Raux.bpow_le_check, Std.Do.wp, Std.Do.PostCond.noThrow,
-      Id.run, pure, FloatSpec.Core.Raux.bpow] using h True.intro
+    simpa [Std.Do.wp, Std.Do.PostCond.noThrow,
+      Id.run, pure, FloatSpec.Core.Raux.bpow] using h
   have hferr_ge :
       FloatSpec.Core.Raux.bpow beta ferr.Fexp ≤ |_root_.F2R ferr| :=
     F2R_ge (beta := beta) (f := ferr)

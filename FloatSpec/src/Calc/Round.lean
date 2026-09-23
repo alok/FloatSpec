@@ -287,7 +287,7 @@ theorem cexp_inbetween_float
         FloatSpec.Core.Raux.mag beta x = d + e := by
       have Htrip := FloatSpec.Core.Raux.mag_unique_pos_from_positive_payload
         (beta := beta) (x := x) (e := d + e) Hβ Px Hlow_scaled Hupp_scaled
-      simpa using Htrip True.intro
+      simpa using Htrip
     simp [cexp, Hmag, d, hd]
   · have Hm_zero : m = 0 := le_antisymm (le_of_not_gt Hm_pos) Hm_nonneg
     have Hx_ne : x ≠ 0 := ne_of_gt Px
@@ -297,7 +297,7 @@ theorem cexp_inbetween_float
     have Hmag_le : FloatSpec.Core.Raux.mag beta x ≤ e := by
       have Htrip := FloatSpec.Core.Raux.mag_le_bpow
         (beta := beta) (x := x) (e := e) Hβ Hx_ne Hx_upp
-      simpa using Htrip True.intro
+      simpa using Htrip
     have Hdigits0 : FloatSpec.Core.Digits.Zdigits beta m = 0 := by
       simp [Hm_zero, FloatSpec.Core.Digits.Zdigits]
     rcases He with He_left | He_right
@@ -2395,7 +2395,7 @@ theorem truncate_correct_format
     have Hfloor_div :
         FloatSpec.Core.Raux.Zfloor ((m : ℝ) / (p : ℝ)) = q := by
       have htrip := FloatSpec.Core.Raux.Zfloor_div_pos_payload m p Hp_pos
-      simpa [q, hq, wp, Std.Do.PostCond.noThrow, Id.run, pure] using htrip True.intro
+      simpa [q, hq, wp, Std.Do.PostCond.noThrow, Id.run, pure] using htrip
     have Hfloor_sm :
         FloatSpec.Core.Raux.Zfloor sm = FloatSpec.Core.Raux.Ztrunc sm := by
       rw [Hsm_generic]
