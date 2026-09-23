@@ -383,7 +383,7 @@ theorem Fast2Sum_correct (emin prec : Int) [Prec_gt_0 prec]
   have hTotal : TotalP (Closest (beta:=2) bo (2 : ℝ)) := by
     intro r
     have h := ClosestTotal_from_extrema_payload (beta:=2) bo 2 (2 : ℝ) r
-    simpa only [wp, PostCond.noThrow, pure, ClosestTotal_check, Id.run,
+    simpa only [wp, PostCond.noThrow, pure, Id.run,
       ULift.up_down, PredTrans.pure, PredTrans.apply, SPred.down_pure_nil, Int.cast_ofNat] using h hMinTotal hMaxTotal
   let Iplus :
       FloatSpec.Core.Defs.FlocqFloat 2 →
@@ -656,7 +656,7 @@ theorem TwoSum_correct (emin prec : Int) [Prec_gt_0 prec]
   have hTotal : TotalP (Closest (beta:=2) bo (2 : ℝ)) := by
     intro r
     have h := ClosestTotal_from_extrema_payload (beta:=2) bo 2 (2 : ℝ) r
-    simpa only [wp, PostCond.noThrow, pure, ClosestTotal_check, Id.run,
+    simpa only [wp, PostCond.noThrow, pure, Id.run,
       ULift.up_down, PredTrans.pure, PredTrans.apply, SPred.down_pure_nil, Int.cast_ofNat] using h hMinTotal hMaxTotal
   let Iplus :
       FloatSpec.Core.Defs.FlocqFloat 2 →
