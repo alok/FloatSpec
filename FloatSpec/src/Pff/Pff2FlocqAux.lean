@@ -2404,7 +2404,7 @@ theorem round_NE_is_pff_round_generic
   rcases hex with ⟨f, hval, hcan⟩
   have hbounded : PFbounded b f := by
     have hb := FcanonicBound (beta := beta) beta b f
-    simpa only [wp, PostCond.noThrow, pure, FcanonicBound_check,
+    simpa only [wp, PostCond.noThrow, pure,
       Id.run, ULift.up_down, PFcanonic, PFbounded, PredTrans.pure, PredTrans.apply, SPred.down_pure_nil, Int.cast_ofNat] using hb hcan
   exact ⟨f, hbounded, hcan, hval⟩
 

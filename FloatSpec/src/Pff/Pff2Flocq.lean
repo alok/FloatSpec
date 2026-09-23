@@ -386,7 +386,7 @@ theorem Fast2Sum_correct (emin prec : Int) [Prec_gt_0 prec]
     intro r
     have h := ClosestTotal_from_extrema_payload (beta:=2) bo 2 (2 : ℝ) r
     simpa only [wp, PostCond.noThrow, pure, ClosestTotal_check, Id.run,
-      ULift.up_down, PredTrans.pure, PredTrans.apply, SPred.down_pure_nil, Int.cast_ofNat] using h ⟨hMinTotal, hMaxTotal⟩
+      ULift.up_down, PredTrans.pure, PredTrans.apply, SPred.down_pure_nil, Int.cast_ofNat] using h hMinTotal hMaxTotal
   let Iplus :
       FloatSpec.Core.Defs.FlocqFloat 2 →
         FloatSpec.Core.Defs.FlocqFloat 2 →
@@ -452,7 +452,7 @@ theorem Fast2Sum_correct (emin prec : Int) [Prec_gt_0 prec]
     intro p q
     have hcan_left : Fcanonic (beta:=2) 2 bo (Fopp (beta:=2) (Iplus p q)) := by
       have h := FcanonicFopp (beta:=2) 2 bo (Iplus p q)
-      simpa only [wp, PostCond.noThrow, pure, FcanonicFopp_check,
+      simpa only [wp, PostCond.noThrow, pure,
         Id.run, ULift.up_down, PredTrans.pure, PredTrans.apply, SPred.down_pure_nil, Int.cast_ofNat] using h (hIplusCan p q)
     have hcan_right : Fcanonic (beta:=2) 2 bo
         (Iplus (Fopp (beta:=2) p) (Fopp (beta:=2) q)) :=
@@ -492,7 +492,7 @@ theorem Fast2Sum_correct (emin prec : Int) [Prec_gt_0 prec]
     have huniq := FcanonicUnique (beta:=2) 2 bo
       (Fopp (beta:=2) (Iplus p q))
       (Iplus (Fopp (beta:=2) p) (Fopp (beta:=2) q)) hbeta rfl
-    simpa [Fcanonic'] using huniq ⟨hcan_left, hcan_right, hval⟩
+    simpa [Fcanonic'] using huniq hcan_left hcan_right hval
   have hIminusPlus :
       ∀ p q : FloatSpec.Core.Defs.FlocqFloat 2,
         Iminus p q = Iplus p (Fopp (beta:=2) q) := by
@@ -514,7 +514,7 @@ theorem Fast2Sum_correct (emin prec : Int) [Prec_gt_0 prec]
       ring_nf
     have huniq := FcanonicUnique (beta:=2) 2 bo (Iminus p q)
       (Iplus p (Fopp (beta:=2) q)) hbeta rfl
-    simpa [Fcanonic'] using huniq ⟨hcan_left, hcan_right, hval⟩
+    simpa [Fcanonic'] using huniq hcan_left hcan_right hval
   have hAbs' :
       |_root_.F2R (beta:=2) fy| ≤ |_root_.F2R (beta:=2) fx| := by
     simpa [hfx_val, hfy_val] using hAbs
@@ -664,7 +664,7 @@ theorem TwoSum_correct (emin prec : Int) [Prec_gt_0 prec]
     intro r
     have h := ClosestTotal_from_extrema_payload (beta:=2) bo 2 (2 : ℝ) r
     simpa only [wp, PostCond.noThrow, pure, ClosestTotal_check, Id.run,
-      ULift.up_down, PredTrans.pure, PredTrans.apply, SPred.down_pure_nil, Int.cast_ofNat] using h ⟨hMinTotal, hMaxTotal⟩
+      ULift.up_down, PredTrans.pure, PredTrans.apply, SPred.down_pure_nil, Int.cast_ofNat] using h hMinTotal hMaxTotal
   let Iplus :
       FloatSpec.Core.Defs.FlocqFloat 2 →
         FloatSpec.Core.Defs.FlocqFloat 2 →
@@ -745,7 +745,7 @@ theorem TwoSum_correct (emin prec : Int) [Prec_gt_0 prec]
       rw [hIplus_val, hIplus_val]
       congr 1
       ring
-    simpa [Fcanonic'] using huniq ⟨hIplusCan p q, hIplusCan q p, hval⟩
+    simpa [Fcanonic'] using huniq (hIplusCan p q) (hIplusCan q p) hval
   have hIplusOp :
       ∀ p q : FloatSpec.Core.Defs.FlocqFloat 2,
         Fopp (beta:=2) (Iplus p q) =
@@ -753,7 +753,7 @@ theorem TwoSum_correct (emin prec : Int) [Prec_gt_0 prec]
     intro p q
     have hcan_left : Fcanonic (beta:=2) 2 bo (Fopp (beta:=2) (Iplus p q)) := by
       have h := FcanonicFopp (beta:=2) 2 bo (Iplus p q)
-      simpa only [wp, PostCond.noThrow, pure, FcanonicFopp_check,
+      simpa only [wp, PostCond.noThrow, pure,
         Id.run, ULift.up_down, PredTrans.pure, PredTrans.apply, SPred.down_pure_nil, Int.cast_ofNat] using h (hIplusCan p q)
     have hcan_right : Fcanonic (beta:=2) 2 bo
         (Iplus (Fopp (beta:=2) p) (Fopp (beta:=2) q)) :=
@@ -793,7 +793,7 @@ theorem TwoSum_correct (emin prec : Int) [Prec_gt_0 prec]
     have huniq := FcanonicUnique (beta:=2) 2 bo
       (Fopp (beta:=2) (Iplus p q))
       (Iplus (Fopp (beta:=2) p) (Fopp (beta:=2) q)) hbeta rfl
-    simpa [Fcanonic'] using huniq ⟨hcan_left, hcan_right, hval⟩
+    simpa [Fcanonic'] using huniq hcan_left hcan_right hval
   have hIminusPlus :
       ∀ p q : FloatSpec.Core.Defs.FlocqFloat 2,
         Iminus p q = Iplus p (Fopp (beta:=2) q) := by
@@ -815,7 +815,7 @@ theorem TwoSum_correct (emin prec : Int) [Prec_gt_0 prec]
       ring_nf
     have huniq := FcanonicUnique (beta:=2) 2 bo (Iminus p q)
       (Iplus p (Fopp (beta:=2) q)) hbeta rfl
-    simpa [Fcanonic'] using huniq ⟨hcan_left, hcan_right, hval⟩
+    simpa [Fcanonic'] using huniq hcan_left hcan_right hval
   have K := Knuth bo prec.toNat hprecision_nat_gt hvNum Iplus
     hIplusCorrect hIplusCompatible hIplusSym hIplusOp Iminus hIminusPlus
     fx fy hfx_bound hfy_bound
@@ -2401,7 +2401,7 @@ theorem Dekker (beta emin prec : Int) [ValidRadix beta] [Prec_gt_0 prec]
       (hf : Closest (beta:=beta) bo (beta : ℝ) z f) :
       Closest (beta:=beta) bo (beta : ℝ) (-z) (Fopp (beta:=beta) f) := by
     have h := ClosestOpp (beta:=beta) bo (beta : ℝ) f z
-    simpa only [wp, PostCond.noThrow, pure, ClosestOpp_check, Id.run,
+    simpa only [wp, PostCond.noThrow, pure, Id.run,
       ULift.up_down, PredTrans.pure, PredTrans.apply, SPred.down_pure_nil, Int.cast_ofNat] using h hf
   have hD2 : Closest (beta:=beta) bo (beta : ℝ)
       (_root_.F2R (beta:=beta) fr - _root_.F2R (beta:=beta) fx1y1) nt1 := by
