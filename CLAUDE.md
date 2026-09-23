@@ -236,8 +236,11 @@ lake build --verbose
 - [ ] investigate `lake bench`
 
 4. **Docs & examples**: <https://github.com/leanprover/verso> is the (meta)-doc tool. It is very extensible.
-   - [ ] add any accumulated verso extensions to `VersoExt`
-     - [ ] update `lakefile.lean` to include `VersoExt`
+   Docstrings use the Verso docstrings built into Lean core (no external Verso package).
+   - [x] add any accumulated verso extensions to `VersoExt`: it re-exports `FloatSpecRoles`
+     (the `{coq}`/`{coq_file}` roles and `coq` quote blocks; see "Flocq citations" below)
+     - [x] update `lakefile.lean` to include `VersoExt` (in `FloatSpecLib`; `FloatSpecRoles` is
+       its own `lean_lib`)
 
 ## Lean 4 Development Guidelines
 
@@ -298,7 +301,7 @@ algorithm actually needs monadic state, errors, loops, or early return.
 - Figure out the parser by interactively building up toy components.
 - [ ] install https://github.com/GasStationManager/LeanTool as mcp tool
 - Spam `lake build` to verify the pieces work and build up FUNCTORIALLY.
-- Address Verso docstring warnings (code element/code block specificity) promptly; they slow compile times.
+- Address Verso docstring warnings (code element/code block specificity) promptly; they slow compile times. In a Verso docstring nearly every plain code element draws "Code element could be more specific", an error under `warningAsError`: write `{name}`, `{coq}` or `{lit}` instead.
 - **IMPORTANT**: Check compilation with `lake build` every time before marking anything as complete
 - **IMPORTANT**: In Lean 4, `Int.emod` always returns a positive value (Euclidean modulo)
 - Use compiler tooling like extensible error messages, `simproc` (pattern guided reductions), and metaprogramming for pit of success
@@ -510,8 +513,10 @@ auto-update-stale = true    # Auto-update stale working copies when switching co
 
 ## Docs
 
-Do NOT use the `{lit}` verso role if an identifier is missing. Use `{given
--show}`foo` and {givenInstance} roles.
+Do NOT use the `{lit}` verso role if a Lean identifier is missing. Use `{given
+-show}`foo` and {givenInstance} roles. Coq-side names are not Lean identifiers: cite an anchored
+Flocq declaration with `{coq}`, and write any other Coq text (Rocq core names, Coq locals,
+`File.v:line` references) with `{lit}`.
 
 ## Verso Docstring Roles
 
@@ -525,8 +530,11 @@ Do NOT use the `{lit}` verso role if an identifier is missing. Use `{given
 
 ### Flocq citations (`FloatSpecRoles.lean`, Lean's built-in Verso docstrings)
 
-The project default is `doc.verso = false`; opt a declaration in with `set_option doc.verso true in`
-before its docstring.
+These are `@[doc_role]`/`@[doc_code_block]` extensions of the Verso docstrings in Lean core,
+defined in `FloatSpecRoles.lean` (its own `lean_lib`, re-exported by `FloatSpec.VersoExt`). No
+external Verso or VersoCoq package is involved. The project default is `doc.verso = false` (set
+in `lakefile.lean`); opt a single declaration in with `set_option doc.verso true in` before its
+docstring. Markdown docstrings elsewhere stay as they are.
 
 - `{coq}`round_0`` or `{coq}`FloatSpec.Core.Generic_fmt.round_0`` renders the Coq name linked to its
   anchored line at the pinned Flocq commit on GitLab. The argument is a Lean declaration carrying
@@ -536,16 +544,25 @@ before its docstring.
   declaration, are elaboration errors with suggested fixes. Anchors declared later in the same file
   or in a downstream module are not visible yet: write `{lit}`name`` there.
 - `{coq_file}`src/Core/Generic_fmt.v`` (or a unique suffix such as `Generic_fmt.v`) links a whole
-  pinned file.
-- A fenced block with info string `coq ANCHOR` quotes the Rocq source. Its first line must declare
-  the anchored name (`Theorem round_0 :`). `scripts/validate_flocq_source_refs.py` reads the
-  compiled quote back and checks it verbatim against the exact anchor Lean linked, through the end
-  of a Rocq sentence; a final line `...` marks a deliberately shortened quote. Every line opening a
-  `coq` fence must compile to a quote, so build a rejected quote inside a string in tests.
+  pinned file. It checks only that the file exists at the pinned commit.
+- A fenced block with info string `coq ANCHOR` quotes the Rocq source (a validated quote). Its
+  first line must declare the anchored name (`Theorem round_0 :`), so the location header is not
+  written in the block: the hover renders it as a link. `scripts/validate_flocq_source_refs.py`
+  reads the compiled quote back and checks it byte for byte against the exact anchor Lean linked,
+  through the end of a Rocq sentence; a final line `...` marks a deliberately shortened quote, and
+  there is no interior elision, so quote a whole definition. Every line opening a `coq` fence must
+  compile to a quote, so build a rejected quote inside a string in tests.
+- Quotes the validator cannot check (the Rocq core library's `SpecFloat.v`/`FloatOps.v`, or a Flocq
+  declaration no Lean port anchors) go in a plain fence with no info string, whose first line is a
+  location comment such as `(* Rocq V9.1.0 theories/Corelib/Floats/SpecFloat.v:36-37 *)`; nothing
+  checks them. Any other info string is an "unknown code block" error in a Verso docstring.
 - `linter.flocqCitations` (on by default) warns when a Markdown docstring uses `{coq}`,
   `{coq_file}` or a `coq` fence, which would render as unchecked literal text.
-- Examples and rejected cases: `scripts/fixtures/CoqDocRole.lean` and the guided demo,
-  `scripts/fixtures/GuidedDemo.lean`.
+- Examples: `scripts/fixtures/CoqDocRole.lean` (accepted uses, under the fixture step's rules) and
+  the guided demo, `scripts/fixtures/GuidedDemo.lean` (checked and plain quotes side by side).
+  Exact hover text, stored citation data, and every rejected case are in
+  `FloatSpec/Test/FlocqCitations.lean`, a compiled test module because it probes rejected citations
+  with `run_cmd` and a rollback, which the fixture step's text gate forbids.
 
 ## Agent Handoff (2025-12-26)
 
