@@ -285,6 +285,19 @@ class LiveExemplarTests(unittest.TestCase):
         self.assertEqual(result["oracle_rocq"]["verdict"], "holds")
         self.assertEqual(result["oracle_lean"]["verdict"], "violated")
 
+    def test_rocq_side_constant_drift_is_a_mismatch_and_an_oracle_violation(self):
+        # Cody-Waite's Log2l exponent changed from -93 to -83 on the Rocq side
+        # only: the rows diverge and exp_correct fails there.
+        result = self.mutant("CodyWaite", "rocq", "544487923021427 (-93)", "544487923021427 (-83)")
+        self.assertEqual(result["verdict"], "mismatch")
+        self.assertEqual(result["oracle_lean"]["verdict"], "holds")
+        self.assertEqual(result["oracle_rocq"]["verdict"], "violated")
+
+    def test_a_side_that_does_not_compile_is_infrastructure_not_a_pass(self):
+        with self.assertRaises(lane.InfraError) as raised:
+            self.mutant("SqrtSqr", "lean", "def prec : Int := 3", "def prec : Int := three")
+        self.assertEqual(raised.exception.side, "lean")
+
 
 if __name__ == "__main__":
     unittest.main()

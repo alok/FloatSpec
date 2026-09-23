@@ -589,6 +589,15 @@ def fixture_digests() -> dict[str, str]:
             for path in sorted(FIXTURES.iterdir()) if path.suffix in {".v", ".lean"}}
 
 
+class InfraError(RuntimeError):
+    """One side failed to produce a well-formed observation (compile error,
+    timeout, diagnostic, or wrong row count or width)."""
+
+    def __init__(self, side: str, error: BaseException):
+        super().__init__(f"{side}-infra: {error}")
+        self.side = side
+
+
 class Workspace:
     """Temporary copies of the fixtures plus compiled shared modules.
 
@@ -637,10 +646,13 @@ class Workspace:
                     "lean": self.lean_command(str(self.lean / f"{exemplar.name}.lean"))}
 
         def one(side: str) -> list[Row]:
-            output = bridge.run(commands[side], timeout=exemplar.timeout)
-            rows = bridge.parse_result(output, side, exemplar.rows)
-            if any(len(row) != exemplar.width for row in rows):
-                raise ValueError(f"{side}: rows must have exactly {exemplar.width} columns")
+            try:
+                output = bridge.run(commands[side], timeout=exemplar.timeout)
+                rows = bridge.parse_result(output, side, exemplar.rows)
+                if any(len(row) != exemplar.width for row in rows):
+                    raise ValueError(f"rows must have exactly {exemplar.width} columns")
+            except Exception as error:
+                raise InfraError(side, error) from error
             return rows
 
         with ThreadPoolExecutor(max_workers=2) as pool:
@@ -655,7 +667,9 @@ def differing_rows(left: Sequence[Row], right: Sequence[Row]) -> list[int]:
 
 
 def judge(exemplar: Exemplar, observations: dict[str, list[Row]]) -> dict:
-    """Closed verdict set: match or mismatch, plus an oracle verdict per side."""
+    """Differential verdict (match | mismatch) plus an oracle verdict per side
+    (holds | violated). `main` adds rocq-infra, lean-infra and harness-error,
+    which close the verdict set."""
     differences = differing_rows(observations["rocq"], observations["lean"])
     result: dict = {"exemplar": exemplar.name, "rows": exemplar.rows,
                     "verdict": "mismatch" if differences else "match",
@@ -693,23 +707,35 @@ def main() -> None:
         workspace.build_shared()
         for name in names:
             exemplar = EXEMPLARS[name]
-            observations = workspace.observe(exemplar)
-            result = judge(exemplar, observations)
+            try:
+                observations = workspace.observe(exemplar)
+                if args.output:
+                    (folder / f"{name}.observations.json").write_text(
+                        json.dumps(observations) + "\n")
+                result = judge(exemplar, observations)
+            except InfraError as error:
+                result = {"exemplar": name, "rows": exemplar.rows,
+                          "verdict": f"{error.side}-infra", "error": str(error)[:4000]}
+            except Exception as error:  # an oracle or harness defect, never a pass
+                result = {"exemplar": name, "rows": exemplar.rows,
+                          "verdict": "harness-error", "error": repr(error)[:4000]}
             report["results"].append(result)
-            if args.output:
-                (folder / f"{name}.observations.json").write_text(json.dumps(observations) + "\n")
-            print(f"{name}: {result['verdict']}, oracle rocq={result['oracle_rocq']['verdict']} "
-                  f"lean={result['oracle_lean']['verdict']} "
-                  f"(holds={result['oracle_rocq']['holds']}, "
-                  f"premise_false={result['oracle_rocq']['premise_false']}, "
-                  f"control_breaks={result['oracle_rocq']['control_breaks']})", flush=True)
+            if "oracle_rocq" in result:
+                print(f"{name}: {result['verdict']}, oracle rocq={result['oracle_rocq']['verdict']} "
+                      f"lean={result['oracle_lean']['verdict']} "
+                      f"(holds={result['oracle_rocq']['holds']}, "
+                      f"premise_false={result['oracle_rocq']['premise_false']}, "
+                      f"control_breaks={result['oracle_rocq']['control_breaks']})", flush=True)
+            else:
+                print(f"{name}: {result['verdict']}: {result['error'][:500]}", flush=True)
         bridge.require_lean_source_snapshot(report["lean_source_sha256"])
+        failed = [r["exemplar"] for r in report["results"]
+                  if r["verdict"] != "match" or r["oracle_rocq"]["verdict"] != "holds"
+                  or r["oracle_lean"]["verdict"] != "holds"]
+        report["status"] = "failed" if failed else "passed"
         report["elapsed_seconds"] = round(time.monotonic() - started, 3)
         if args.output:
             (folder / "report.json").write_text(json.dumps(report, indent=2) + "\n")
-    failed = [r["exemplar"] for r in report["results"]
-              if r["verdict"] != "match" or r["oracle_rocq"]["verdict"] != "holds"
-              or r["oracle_lean"]["verdict"] != "holds"]
     if failed:
         raise SystemExit(f"exemplar failures: {', '.join(failed)}")
 
