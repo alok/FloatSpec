@@ -1597,4 +1597,3 @@ This is the largest convention gap by count, and the plan explicitly leaves it u
 11. **New 6F:** namespaces (M1), placed before 6C.
 12. **New triple-retirement batches** per module (M4).
 13. **E-table:** add E0 and the PrimFloat row, split E6, overturn E3 and E9, and keep the rest with the corrected reasons.
-
