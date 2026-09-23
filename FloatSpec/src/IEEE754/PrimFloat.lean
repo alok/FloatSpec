@@ -4,13 +4,10 @@
 import FloatSpec.src.IEEE754.Binary
 import FloatSpec.src.IEEE754.BinarySingleNaN
 import FloatSpec.src.IEEE754.Bits
-import FloatSpec.src.SimprocWP
 import Mathlib.Data.Real.Basic
-import Std.Do.Triple
 
 open Real
 open Classical
-open Std.Do
 
 namespace FaithfulPrimFloat
 

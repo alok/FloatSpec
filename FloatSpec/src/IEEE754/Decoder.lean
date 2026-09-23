@@ -103,9 +103,8 @@ theorem ofBits_flipSign (w : UInt64) : ofBits (flipSign w) = negated w := by
 This proves the real-value negation property without asserting the still-missing
 raw bit theorem relating `UInt64.xor` by `signBitMask` to `Bopp`. -/
 theorem negated_toReal (w : UInt64) : B2R (negated w) = -toReal w := by
-  have hopp := B2R_Bopp_compat ((ofBits w).val) True.intro
   change FF2R 2 (Bopp (ofBits w).val) = -FF2R 2 (ofBits w).val
-  exact hopp
+  exact B2R_Bopp_compat (ofBits w).val
 
 end Binary64
 

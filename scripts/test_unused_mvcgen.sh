@@ -28,10 +28,6 @@ require_no_matches -n --glob '*.lean' \
 legacy_std_do=(
   Calc/Sqrt.lean
   Core/Zaux.lean
-  IEEE754/Binary.lean
-  IEEE754/BinarySingleNaN.lean
-  IEEE754/BinarySingleNaNSourceFacade.lean
-  IEEE754/PrimFloat.lean
   Pff/Pff.lean
   Pff/Pff2Flocq.lean
   Pff/Pff2FlocqAux.lean
