@@ -256,7 +256,11 @@ replace the universal Lean observer proofs or certify the whole Pff facade.
 `Zquotient`, `ZdividesP` and `maxDiv` exports. The Lean fixture also proves that
 the constructive `maxDiv` agrees universally with its prior classical body.
 That preservation theorem is separate from cross-assistant finite agreement.
-Integer-only marker removals preserve the other four bodies and types.
+`Pdiv`, `Zquotient` and `ZdividesP` transcribe Coq's bodies, and compiled
+code, kernel equalities and the `#reduce` path all run those transcriptions.
+Closed theorems equate the first two with natural division and `Int.tdiv`.
+Here "constructive" means executable: `ZdividesP` and `maxDiv` list
+`Classical.choice` only through erased proof fields.
 
 ```sh
 lake env lean scripts/fixtures/PffIntegerExecution.lean

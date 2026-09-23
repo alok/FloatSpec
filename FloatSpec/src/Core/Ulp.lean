@@ -6169,8 +6169,10 @@ private theorem round_N_le_midp_theorem
     -- Goal reduces to `d ≤ u`; using `d = u` closes it.
     simpa [hd_eq]
 
-/-- Coq (Ulp.v):
-Theorem round_N_le_midp: forall choice u v, F u -> v < (u + succ u)/2 -> round_N v ≤ u.
+/-- Fixed-choice helper behind Coq (Ulp.v) `round_N_le_midp`, not that theorem.
+It bounds `round_N_to_format`, whose ties round up, so `choice` does not affect
+the rounding. The source theorem, which keeps the supplied tie policy, is
+`round_N_le_midp`.
 -/
 theorem round_N_le_midp_from_fixed_choice_payload
     (choice : Int → Bool) (u v : ℝ)
@@ -7318,8 +7320,10 @@ private theorem round_N_ge_midp_theorem
                 Id.run, hd.symm, hu.symm, hnotlt', hnotgt', hup_eq, pure]
         simpa [hres]
 
-/-- Coq (Ulp.v):
-Theorem {coq}`round_N_ge_midp`: {lit}`forall choice u v, F u -> (u + pred u)/2 < v -> u ≤ round_N v`.
+/-- Fixed-choice helper behind Coq (Ulp.v) `round_N_ge_midp`, not that theorem.
+It bounds `round_N_to_format`, whose ties round up, so `choice` does not affect
+the rounding. The source theorem, which keeps the supplied tie policy, is
+`round_N_ge_midp`.
 -/
 theorem round_N_ge_midp_from_fixed_choice_payload
     (choice : Int → Bool) (u v : ℝ)
@@ -7518,8 +7522,9 @@ private theorem round_N_le_le_midp_theorem
     succ_gt_id (beta := beta) (fexp := fexp) u hne0 hβ
   exact (not_le_of_gt hsucc_gt) this
 
-/-- Coq (Ulp.v):
-Lemma {coq}`round_N_ge_ge_midp`: {lit}`forall choice u v, F u -> u ≤ round_N v -> (u + pred u)/2 ≤ v`.
+/-- Fixed-choice helper behind Coq (Ulp.v) `round_N_ge_ge_midp`, not that lemma.
+It assumes `u ≠ 0` and bounds `round_N_to_format`, whose ties round up. The
+source lemma, which keeps the supplied tie policy, is `round_N_ge_ge_midp`.
 -/
 theorem round_N_ge_ge_midp_from_nonzero_fixed_choice_payload
     (choice : Int → Bool) (u v : ℝ)
@@ -7532,8 +7537,9 @@ theorem round_N_ge_ge_midp_from_nonzero_fixed_choice_payload
   exact round_N_ge_ge_midp_theorem (beta := beta) (fexp := fexp)
     (choice := choice) (u := u) (v := v) Fu hβ hne0 h
 
-/-- Coq (Ulp.v):
-Lemma {coq}`round_N_le_le_midp`: {lit}`forall choice u v, F u -> round_N v ≤ u -> v ≤ (u + succ u)/2`.
+/-- Fixed-choice helper behind Coq (Ulp.v) `round_N_le_le_midp`, not that lemma.
+It assumes `u ≠ 0` and bounds `round_N_to_format`, whose ties round up. The
+source lemma, which keeps the supplied tie policy, is `round_N_le_le_midp`.
 -/
 theorem round_N_le_le_midp_from_nonzero_fixed_choice_payload
     (choice : Int → Bool) (u v : ℝ)
@@ -8922,11 +8928,7 @@ theorem round_UP_plus_eps
     Fsuccx ⟨hlt_left, hle_right⟩ hβ
 
 omit [Valid_exp fexp] in
-/-- Coq (Ulp.v):
-Lemma not_FTZ_generic_format_ulp : (forall x,  F (ulp x)) -> Exp_not_FTZ fexp.
-
-Lean (spec): If ulp x is always representable, the exponent is not FTZ.
--/
+/-- A representable `beta ^ e` has `fexp (e + 1) ≤ e`. -/
 private theorem generic_format_bpow_inv_shift
     (e : Int)
     (hβ : 1 < beta)
@@ -8997,6 +8999,11 @@ private theorem generic_format_bpow_ge_ulp_0_plain
   simpa [wp, PostCond.noThrow, Id.run, bind, pure] using htrip
 
 omit [Valid_exp fexp] in
+/-- Coq (Ulp.v):
+Lemma not_FTZ_generic_format_ulp : (forall x,  F (ulp x)) -> Exp_not_FTZ fexp.
+
+Lean (spec): If ulp x is always representable, the exponent is not FTZ.
+-/
 @[flocq_source "src/Core/Ulp.v" 281 "not_FTZ_generic_format_ulp"]
 theorem not_FTZ_generic_format_ulp :
     (∀ x : ℝ, FloatSpec.Core.Generic_fmt.generic_format beta fexp (ulp beta fexp x)) →

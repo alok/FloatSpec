@@ -15246,6 +15246,79 @@ structure Positive where
 def nat_of_P (p : Positive) : Nat :=
   p.val.succ
 
+-- Coq's binary `positive` constructors over the predecessor encoding. They let
+-- `Pdiv` below follow Coq's structural recursion on `xH`/`xO`/`xI` directly.
+
+/-- Coq `xH`: the positive one. -/
+@[flocq_local "Rocq positive constructor xH over the predecessor-encoded Pff positive"]
+def Positive.xH : Positive := ⟨0⟩
+
+/-- Coq `xO p`: the positive `2 * p`. -/
+@[flocq_local "Rocq positive constructor xO over the predecessor-encoded Pff positive"]
+def Positive.xO (p : Positive) : Positive := ⟨2 * p.val + 1⟩
+
+/-- Coq `xI p`: the positive `2 * p + 1`. -/
+@[flocq_local "Rocq positive constructor xI over the predecessor-encoded Pff positive"]
+def Positive.xI (p : Positive) : Positive := ⟨2 * p.val + 2⟩
+
+/-- The Coq constructor that builds a positive: `xH`, `xO p` or `xI p`. -/
+inductive PositiveView where
+  | xH
+  | xO (p : Positive)
+  | xI (p : Positive)
+
+/-- Read a predecessor-encoded positive as Coq's binary `positive`: predecessor
+`0` is `xH`, `2k + 1` is `xO ⟨k⟩` and `2k + 2` is `xI ⟨k⟩`. -/
+@[flocq_local "Constructor view of the predecessor-encoded Pff positive"]
+def Positive.view : Positive → PositiveView
+  | ⟨0⟩ => .xH
+  | ⟨n + 1⟩ =>
+      match n % 2 with
+      | 0 => .xO ⟨n / 2⟩
+      | _ + 1 => .xI ⟨n / 2⟩
+
+private theorem Positive.view_xO_lt {p p' : Positive} (h : p.view = .xO p') :
+    p'.val < p.val := by
+  match p, h with
+  | ⟨n + 1⟩, h =>
+    dsimp only [Positive.view] at h
+    generalize n % 2 = r at h
+    cases r with
+    | zero => cases h; exact Nat.lt_succ_of_le (Nat.div_le_self n 2)
+    | succ => exact PositiveView.noConfusion h
+
+private theorem Positive.view_xI_lt {p p' : Positive} (h : p.view = .xI p') :
+    p'.val < p.val := by
+  match p, h with
+  | ⟨n + 1⟩, h =>
+    dsimp only [Positive.view] at h
+    generalize n % 2 = r at h
+    cases r with
+    | zero => exact PositiveView.noConfusion h
+    | succ => cases h; exact Nat.lt_succ_of_le (Nat.div_le_self n 2)
+
+private theorem Positive.view_eq_xH_iff {p : Positive} :
+    p.view = .xH ↔ nat_of_P p = 1 := by
+  rcases p with ⟨_ | n⟩
+  · simp [Positive.view, nat_of_P]
+  · simp only [Positive.view, nat_of_P]
+    split <;> simp
+
+private theorem Positive.view_eq_xO_iff {p p' : Positive} :
+    p.view = .xO p' ↔ nat_of_P p = 2 * nat_of_P p' := by
+  rcases p with ⟨_ | n⟩ <;> rcases p' with ⟨m⟩
+  · simp [Positive.view, nat_of_P]
+    omega
+  · simp only [Positive.view, nat_of_P]
+    split <;> simp <;> omega
+
+private theorem Positive.view_eq_xI_iff {p p' : Positive} :
+    p.view = .xI p' ↔ nat_of_P p = 2 * nat_of_P p' + 1 := by
+  rcases p with ⟨_ | n⟩ <;> rcases p' with ⟨m⟩
+  · simp [Positive.view, nat_of_P]
+  · simp only [Positive.view, nat_of_P]
+    split <;> simp <;> omega
+
 -- ---------------------------------------------------------------------------
 -- Coq: Pdiv and its correctness properties over positive numbers
 
@@ -15264,17 +15337,102 @@ theorem oZ_nat_to_positive_option (n : Nat) :
     oZ (nat_to_positive_option n) = n := by
   cases n <;> rfl
 
--- Coq: Pdiv — division with remainder on positives, returning quotient/remainder
-@[flocq_source "src/Pff/Pff.v" 5337 "Pdiv"]
-def Pdiv (p q : Positive) : Option Positive × Option Positive :=
+private theorem nat_to_positive_option_oZ (x : Option Positive) :
+    nat_to_positive_option (oZ x) = x := by
+  rcases x with _ | ⟨n⟩ <;> rfl
+
+/-- Natural-number characterization of `Pdiv`: quotient and remainder by `/`
+and `%`. `Pdiv_eq_PdivNat` proves the source-shaped `Pdiv` equal to it. No
+`csimp` substitutes it, so compiled code, the kernel and `#reduce` all run the
+transcribed `Pdiv`. -/
+@[flocq_local "Natural-division characterization proved equal to Pdiv; not a runtime override"]
+def PdivNat (p q : Positive) : Option Positive × Option Positive :=
   (nat_to_positive_option (nat_of_P p / nat_of_P q),
     nat_to_positive_option (nat_of_P p % nat_of_P q))
+
+-- Coq: Pdiv — division with remainder on positives, returning quotient/remainder.
+-- The body transcribes Coq's `Fixpoint` on `xH`/`xO`/`xI`. In each `Z` match,
+-- `Int.ofNat 0`, `Int.ofNat (r' + 1)` and `Int.negSucc _` are Coq's `Z0`,
+-- `Zpos ⟨r'⟩` and `Zneg _`, and `Int.ofNat (nat_of_P q)` is `Zpos q`.
+@[flocq_source "src/Pff/Pff.v" 5337 "Pdiv"]
+def Pdiv (p q : Positive) : Option Positive × Option Positive :=
+  match _hp : p.view with
+  | .xH =>
+      match q.view with
+      | .xH => (some .xH, none)
+      | .xO _ => (none, some p)
+      | .xI _ => (none, some p)
+  | .xI p' =>
+      match Pdiv p' q with
+      | (none, none) =>
+          match 1 - Int.ofNat (nat_of_P q) with
+          | .ofNat 0 => (some .xH, none)
+          | .ofNat (r' + 1) => (some .xH, some ⟨r'⟩)
+          | .negSucc _ => (none, some .xH)
+      | (none, some r1) =>
+          match Int.ofNat (nat_of_P (.xI r1)) - Int.ofNat (nat_of_P q) with
+          | .ofNat 0 => (some .xH, none)
+          | .ofNat (r' + 1) => (some .xH, some ⟨r'⟩)
+          | .negSucc _ => (none, some (.xI r1))
+      | (some q1, none) =>
+          match 1 - Int.ofNat (nat_of_P q) with
+          | .ofNat 0 => (some (.xI q1), none)
+          | .ofNat (r' + 1) => (some (.xI q1), some ⟨r'⟩)
+          | .negSucc _ => (some (.xO q1), some .xH)
+      | (some q1, some r1) =>
+          match Int.ofNat (nat_of_P (.xI r1)) - Int.ofNat (nat_of_P q) with
+          | .ofNat 0 => (some (.xI q1), none)
+          | .ofNat (r' + 1) => (some (.xI q1), some ⟨r'⟩)
+          | .negSucc _ => (some (.xO q1), some (.xI r1))
+  | .xO p' =>
+      match Pdiv p' q with
+      | (none, none) => (none, none)
+      | (none, some r1) =>
+          match Int.ofNat (nat_of_P (.xO r1)) - Int.ofNat (nat_of_P q) with
+          | .ofNat 0 => (some .xH, none)
+          | .ofNat (r' + 1) => (some .xH, some ⟨r'⟩)
+          | .negSucc _ => (none, some (.xO r1))
+      | (some q1, none) => (some (.xO q1), none)
+      | (some q1, some r1) =>
+          match Int.ofNat (nat_of_P (.xO r1)) - Int.ofNat (nat_of_P q) with
+          | .ofNat 0 => (some (.xI q1), none)
+          | .ofNat (r' + 1) => (some (.xI q1), some ⟨r'⟩)
+          | .negSucc _ => (some (.xO q1), some (.xO r1))
+termination_by p.val
+decreasing_by
+  · exact Positive.view_xI_lt _hp
+  · exact Positive.view_xO_lt _hp
+
+/-- Coq `Pdiv_correct`: `Pdiv` returns quotient and remainder, with the
+remainder below the divisor. Proved as Coq does, by induction on `p` through
+each branch of `Pdiv`. -/
+@[flocq_source "src/Pff/Pff.v" 5397 "Pdiv_correct"]
+theorem Pdiv_correct (p q : Positive) :
+    nat_of_P p = oZ (Prod.fst (Pdiv p q)) * nat_of_P q + oZ (Prod.snd (Pdiv p q)) ∧
+      oZ (Prod.snd (Pdiv p q)) < nat_of_P q := by
+  fun_induction Pdiv p q <;>
+    (try simp only [‹Pdiv _ _ = _›] at *) <;>
+    simp only [Positive.view_eq_xH_iff, Positive.view_eq_xO_iff, Positive.view_eq_xI_iff,
+      Int.ofNat_eq_natCast, oZ, nat_of_P, Positive.xH, Positive.xO, Positive.xI,
+      Nat.succ_eq_add_one, Nat.add_mul, Nat.mul_add, Nat.mul_assoc, Nat.one_mul,
+      Nat.mul_one, Nat.zero_mul] at * <;>
+    omega
+
+/-- The source-shaped `Pdiv` computes natural quotient and remainder. -/
+theorem Pdiv_eq_PdivNat : @Pdiv = @PdivNat := by
+  funext p q
+  obtain ⟨hdecomp, hlt⟩ := Pdiv_correct p q
+  obtain ⟨hquot, hrem⟩ := (Nat.div_mod_unique (a := nat_of_P p) (b := nat_of_P q)
+    (d := oZ (Pdiv p q).1) (c := oZ (Pdiv p q).2) (Nat.succ_pos q.val)).mpr
+    ⟨by rw [hdecomp, Nat.mul_comm, Nat.add_comm], hlt⟩
+  rw [PdivNat, hquot, hrem, nat_to_positive_option_oZ, nat_to_positive_option_oZ]
 
 -- Correctness of Pdiv (quotient-remainder form and remainder bound)
 noncomputable def Pdiv_correct_check (p q : Positive) : Unit :=
   ()
 
-theorem Pdiv_correct (p q : Positive) :
+/-- Legacy Hoare compatibility form of `Pdiv_correct`. -/
+theorem Pdiv_correct_spec (p q : Positive) :
     ⦃⌜True⌝⦄
     (pure (Pdiv_correct_check p q) : Id Unit)
     ⦃⇓_ => ⌜nat_of_P p = oZ (Prod.fst (Pdiv p q)) * nat_of_P q + oZ (Prod.snd (Pdiv p q)) ∧
@@ -15282,18 +15440,7 @@ theorem Pdiv_correct (p q : Positive) :
   intro _
   simp only [wp, PostCond.noThrow, pure, Pdiv_correct_check, Id.run,
     ULift.up_down]
-  show nat_of_P p =
-      oZ (Prod.fst (Pdiv p q)) * nat_of_P q + oZ (Prod.snd (Pdiv p q)) ∧
-      oZ (Prod.snd (Pdiv p q)) < nat_of_P q
-  constructor
-  · simp [Pdiv, oZ_nat_to_positive_option]
-    calc
-      nat_of_P p = nat_of_P q * (nat_of_P p / nat_of_P q) + nat_of_P p % nat_of_P q :=
-        (Nat.div_add_mod (nat_of_P p) (nat_of_P q)).symm
-      _ = nat_of_P p / nat_of_P q * nat_of_P q + nat_of_P p % nat_of_P q := by
-        rw [Nat.mul_comm]
-  · have hq : 0 < nat_of_P q := Nat.succ_pos q.val
-    simpa [Pdiv, oZ_nat_to_positive_option] using Nat.mod_lt (nat_of_P p) hq
+  exact Pdiv_correct p q
 
 -- Bridge Option Positive to Int (Coq oZ1)
 @[flocq_source "src/Pff/Pff.v" 5594 "oZ1"]
@@ -15318,9 +15465,27 @@ theorem inj_oZ1 (z : Option Positive) :
   | none => simp [oZ1, oZ]
   | some p => simp [oZ1, oZ]
 
--- Coq: Zquotient — integer quotient using positive division on magnitudes
+private theorem oZ1_nat_to_positive_option (n : Nat) :
+    oZ1 (nat_to_positive_option n) = n := by
+  cases n <;> rfl
+
+-- Coq: Zquotient — integer quotient using positive division on magnitudes.
+-- `Int.ofNat (x + 1)` and `Int.negSucc x` are Coq's `Zpos ⟨x⟩` and `Zneg ⟨x⟩`.
 @[flocq_source "src/Pff/Pff.v" 5601 "Zquotient"]
-def Zquotient (m n : Int) : Int := m.tdiv n
+def Zquotient (n m : Int) : Int :=
+  match n, m with
+  | .ofNat 0, _ => 0
+  | _, .ofNat 0 => 0
+  | .ofNat (x + 1), .ofNat (y + 1) => match Pdiv ⟨x⟩ ⟨y⟩ with | (x, _) => oZ1 x
+  | .negSucc x, .negSucc y => match Pdiv ⟨x⟩ ⟨y⟩ with | (x, _) => oZ1 x
+  | .ofNat (x + 1), .negSucc y => match Pdiv ⟨x⟩ ⟨y⟩ with | (x, _) => -oZ1 x
+  | .negSucc x, .ofNat (y + 1) => match Pdiv ⟨x⟩ ⟨y⟩ with | (x, _) => -oZ1 x
+
+/-- `Zquotient` truncates toward zero: it is Lean's `Int.tdiv`. -/
+theorem Zquotient_eq_tdiv (n m : Int) : Zquotient n m = n.tdiv m := by
+  rcases n with (_ | x) | x <;> rcases m with (_ | y) | y <;>
+    simp [Zquotient, Pdiv_eq_PdivNat, PdivNat, oZ1_nat_to_positive_option, nat_of_P,
+      Int.tdiv]
 
 -- Coq: `ZquotientProp` — decomposition m = (Zquotient m n) * n + r with bounds
 noncomputable def ZquotientProp_check (m n : Int) : Unit :=
@@ -15336,11 +15501,11 @@ theorem ZquotientProp (m n : Int) :
   intro hn
   simp only [wp, PostCond.noThrow, pure, ZquotientProp_check, Id.run]
   refine ⟨m.tmod n, ?_, ?_, ?_⟩
-  · rw [Zquotient]
+  · rw [Zquotient_eq_tdiv]
     calc
       m = n * m.tdiv n + m.tmod n := (Int.mul_tdiv_add_tmod m n).symm
       _ = m.tdiv n * n + m.tmod n := by ring
-  · rw [Zquotient]
+  · rw [Zquotient_eq_tdiv]
     rw [Int.abs_eq_natAbs, Int.abs_eq_natAbs]
     exact_mod_cast (by
       rw [Int.natAbs_mul, Int.natAbs_tdiv]
@@ -15367,7 +15532,7 @@ theorem ZdividesZquotient (n m : Int) :
     ULift.up_down]
   show n = Zquotient n m * m
   subst n
-  rw [Zquotient]
+  rw [Zquotient_eq_tdiv]
   exact (Int.tdiv_mul_cancel (show m ∣ m * q from ⟨q, rfl⟩)).symm
 
 -- Coq: `ZdividesZquotientInv` — from decomposition n = (Zquotient n m) * m, deduce divisibility
@@ -15429,18 +15594,38 @@ theorem ZdividesDiv (n m p : Int) :
   show Zdivides n m
   exact ⟨q, mul_left_cancel₀ hp (by rw [hq]; ring)⟩
 
--- Coq: `ZdividesP`
+-- Direct forms of `ZdividesZquotientInv` and `ZdividesZquotient`, used by
+-- `ZdividesP` exactly where Coq's proof script applies those theorems.
+private theorem Zdivides_of_Zquotient_mul_eq {n m : Int} (h : Zquotient n m * m = n) :
+    Zdivides n m :=
+  ⟨Zquotient n m, by rw [Int.mul_comm]; exact h.symm⟩
+
+private theorem Zquotient_mul_eq_of_Zdivides {n m : Int} (h : Zdivides n m) :
+    Zquotient n m * m = n := by
+  obtain ⟨q, rfl⟩ := h
+  rw [Zquotient_eq_tdiv]
+  exact Int.tdiv_mul_cancel ⟨q, rfl⟩
+
+-- Coq: `ZdividesP`. Coq cases on `m`: at `Z0` it cases on `n`; at `Zpos p` and
+-- `Zneg p` it tests `Z_eq_bool (Zquotient n m * m) n`, here Lean's decidable `=`.
 @[flocq_source "src/Pff/Pff.v" 5771 "ZdividesP"]
 def ZdividesP (n m : Int) : Decidable (Zdivides n m) :=
-  if h : m ∣ n then
-    isTrue (by
-      rcases h with ⟨q, hq⟩
-      exact ⟨q, hq⟩)
-  else
-    isFalse (by
-      intro hz
-      rcases hz with ⟨q, hq⟩
-      exact h ⟨q, hq⟩)
+  match m with
+  | .ofNat 0 =>
+      match n with
+      | .ofNat 0 => isTrue ⟨0, rfl⟩
+      | .ofNat (_ + 1) => isFalse fun ⟨_, h⟩ => by simp at h; omega
+      | .negSucc _ => isFalse fun ⟨_, h⟩ => by simp at h
+  | .ofNat (p + 1) =>
+      if h : Zquotient n (.ofNat (p + 1)) * .ofNat (p + 1) = n then
+        isTrue (Zdivides_of_Zquotient_mul_eq h)
+      else
+        isFalse fun hd => h (Zquotient_mul_eq_of_Zdivides hd)
+  | .negSucc p =>
+      if h : Zquotient n (.negSucc p) * .negSucc p = n then
+        isTrue (Zdivides_of_Zquotient_mul_eq h)
+      else
+        isFalse fun hd => h (Zquotient_mul_eq_of_Zdivides hd)
 
 -- Coq: `Zdivides1` — every integer divides 1
 noncomputable def Zdivides1_check (m : Int) : Unit :=
@@ -16843,6 +17028,7 @@ theorem ZquotientPos (z1 z2 : Int) :
   simp only [wp, PostCond.noThrow, pure, ZquotientPos_check, Id.run,
     ULift.up_down]
   show 0 ≤ Zquotient z1 z2
+  rw [Zquotient_eq_tdiv]
   exact Int.tdiv_nonneg h.1 h.2
 
 -- Coq: `inject_nat_convert` — if p = Zpos q then Z_of_nat (nat_of_P q) = p
@@ -26515,7 +26701,7 @@ theorem Zquotient_remainder_nonneg_of_nonneg
     (prod n : Int)
     (hprod_nonneg : 0 ≤ prod) :
     0 ≤ prod - Zquotient prod n * n := by
-  rw [Zquotient]
+  rw [Zquotient_eq_tdiv]
   have hdecomp : prod = prod.tdiv n * n + prod.tmod n := by
     calc
       prod = n * prod.tdiv n + prod.tmod n := (Int.mul_tdiv_add_tmod prod n).symm
