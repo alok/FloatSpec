@@ -27,13 +27,29 @@ campaign used it.
 ```sh
 export FLOCQ_AUDIT_DIR=/private/tmp/flocq-audit-rocq91-20260921   # pinned, built Flocq 7aab8f55
 uv run scripts/run_flocqsmith.py campaign \
-    scripts/fixtures/flocqsmith/campaign_2026-09-23.descriptor.json \
+    FloatSpec/docs/flocqsmith/campaign_2026-09-23.descriptor.json \
     --flocq-dir "$FLOCQ_AUDIT_DIR" --out OUT1
 uv run scripts/run_flocqsmith.py campaign \
-    scripts/fixtures/flocqsmith/campaign_2026-09-23-extended.descriptor.json \
+    FloatSpec/docs/flocqsmith/campaign_2026-09-23-extended.descriptor.json \
     --flocq-dir "$FLOCQ_AUDIT_DIR" --out OUT2
 uv run scripts/run_flocqsmith.py verify-campaign OUT1   # offline: digests + every verdict re-judged
+uv run scripts/run_flocqsmith.py check-record \
+    FloatSpec/docs/flocqsmith/campaign_2026-09-23.report.json \
+    FloatSpec/docs/flocqsmith/campaign_2026-09-23.descriptor.json   # offline: the committed record
 ```
+
+The descriptors and reports were committed under `scripts/fixtures/flocqsmith/`
+and have since moved, byte for byte, to `FloatSpec/docs/flocqsmith/`: they are
+the record of these campaigns, not test inputs. Each report's `descriptor.path`
+field still names the old location. The sha256 and git blob it records do not
+depend on the path, and they still match. The offline test
+`test_committed_reports_follow_from_their_pre_registered_descriptors`, which
+CI runs in the required suite, checks each committed report against its
+descriptor: the sha256 and git blob, the pre-registered lanes (name, kind,
+seed, size, configuration), the totals, and a status re-derived from the
+report's own lane, coverage, cluster and exemplar fields by the runner's rule.
+It cannot re-judge a case, because the raw streams are not committed;
+`verify-campaign` does that on a retained output directory.
 
 For each campaign the runner:
 
@@ -74,8 +90,8 @@ verdict and reduced to one statement.
 | Campaign 2 | HEAD `c6c91837`, clean; descriptor blob `320a86e7` (sha256 `4f6de583…`); `campaign.json` sha256 `2a8bb04d…` |
 
 The committed reports are
-`scripts/fixtures/flocqsmith/campaign_2026-09-23.report.json` and
-`scripts/fixtures/flocqsmith/campaign_2026-09-23-extended.report.json`. Each
+`FloatSpec/docs/flocqsmith/campaign_2026-09-23.report.json` and
+`FloatSpec/docs/flocqsmith/campaign_2026-09-23-extended.report.json`. Each
 names every lane's `report.json` and `complete.json` digest. The raw evidence
 is not committed. It holds every generated `.v` and `.lean` file, every raw
 prover stream and every case record: 25 MB for campaign 1 and 104 MB for
@@ -85,8 +101,9 @@ commands above.
 
 ## 3. Campaign 1: the pre-registered plan
 
-Descriptor: `scripts/fixtures/flocqsmith/campaign_2026-09-23.descriptor.json`,
-committed in `a26c90a6` before the run. Report committed in `402b5fad`. It took
+Descriptor: `FloatSpec/docs/flocqsmith/campaign_2026-09-23.descriptor.json`
+(then under `scripts/fixtures/flocqsmith/`), committed in `a26c90a6` before the
+run. Report committed in `402b5fad`. It took
 322 s in total, including the exemplar lane.
 
 Observed bindings compared on each path: 8,054 values and 86 branch tags over

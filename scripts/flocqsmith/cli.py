@@ -9,9 +9,11 @@ Examples (from the repository root)::
     uv run scripts/run_flocqsmith.py verify DIR
     uv run scripts/run_flocqsmith.py campaign DESCRIPTOR.json --flocq-dir "$FLOCQ_AUDIT_DIR" --out DIR4
     uv run scripts/run_flocqsmith.py verify-campaign DIR4
+    uv run scripts/run_flocqsmith.py check-record REPORT.json DESCRIPTOR.json
 
 Exit status is 0 only for ``passed`` (run, replay, campaign), ``controls-ok``
-(controls), ``preserved`` (shrink) and ``verified`` (verify, verify-campaign).
+(controls), ``preserved`` (shrink) and ``verified`` (verify, verify-campaign,
+check-record).
 """
 
 from __future__ import annotations
@@ -22,7 +24,7 @@ from pathlib import Path
 import sys
 
 from .campaign import Options, all_control_names, replay, run_campaign, shrink_case, verify
-from .descriptor import run_descriptor, verify_campaign
+from .descriptor import check_campaign_record, run_descriptor, verify_campaign
 from .formats import DEFAULT_FORMAT_WEIGHTS, FORMATS
 from .generate import GenConfig
 from .verdict import CLONE_PATHS
@@ -93,6 +95,9 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--allow-dirty", action="store_true")
     p = sub.add_parser("verify-campaign")
     p.add_argument("out", type=Path)
+    p = sub.add_parser("check-record", help="check a committed campaign report against its descriptor, offline")
+    p.add_argument("report", type=Path)
+    p.add_argument("descriptor", type=Path)
     args = parser.parse_args(argv)
 
     if args.command in ("run", "controls"):
@@ -144,6 +149,10 @@ def main(argv: list[str] | None = None) -> int:
         result = verify_campaign(args.out.resolve())
         print(json.dumps(result, indent=1))
         return 0 if result["status"] == "verified" else 1
+    if args.command == "check-record":
+        problems = check_campaign_record(json.loads(args.report.read_text()), args.descriptor)
+        print(json.dumps({"status": "verified" if not problems else "failed", "problems": problems}, indent=1))
+        return 0 if not problems else 1
     return 2
 
 

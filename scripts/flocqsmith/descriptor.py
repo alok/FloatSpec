@@ -31,6 +31,9 @@ The campaign status is ``passed`` only if every lane passed (controls lanes:
 every control detected with an all-match baseline), every lane verified,
 coverage has no gap, no disagreement or infrastructure failure occurred and
 the exemplar lane (if requested) passed. Anything else names its reasons.
+
+``check_campaign_record`` rechecks a committed report offline against its
+descriptor, re-deriving that status from the report's own fields.
 """
 
 from __future__ import annotations
@@ -336,6 +339,95 @@ def run_exemplar_lane(flocq: Path, folder: Path, timeout: float) -> dict[str, ob
     return result
 
 
+# -- the campaign verdict -----------------------------------------------------------------------
+
+def campaign_reasons(lane_rows: list[dict[str, object]], covered: dict[str, object],
+                     clusters: list[dict[str, object]], infra_clusters: list[dict[str, object]],
+                     exemplar: dict[str, object] | None) -> list[str]:
+    """Why a campaign failed; empty exactly when it passed (module docstring)."""
+    reasons: list[str] = []
+    for lane_row in lane_rows:
+        wanted = "controls-ok" if lane_row["kind"] == "controls" else "passed"
+        if lane_row["status"] != wanted:
+            reasons.append(f"lane {lane_row['name']}: {lane_row['status']}")
+        if lane_row["verify"]["status"] != "verified":  # type: ignore[index]
+            reasons.append(f"lane {lane_row['name']}: offline verify {lane_row['verify']['status']}")  # type: ignore[index]
+    if covered["gaps"]:
+        reasons.append(f"coverage gaps: {len(covered['gaps'])}")  # type: ignore[arg-type]
+    if clusters:
+        reasons.append(f"disagreement clusters: {len(clusters)}")
+    if infra_clusters:
+        reasons.append(f"infrastructure clusters: {len(infra_clusters)}")
+    if exemplar is not None and exemplar["status"] != "passed":
+        reasons.append("exemplar lane failed")
+    return reasons
+
+
+def verdict_totals(lane_rows: list[dict[str, object]], paths: tuple[str, ...]) -> dict[str, dict[str, int]]:
+    totals: dict[str, Counter[str]] = {p: Counter() for p in paths}
+    for lane_row in lane_rows:
+        verdicts = lane_row["verdicts"]
+        assert isinstance(verdicts, dict)
+        for p, counts in verdicts.items():
+            totals[p].update(counts)
+    return {p: dict(sorted(c.items())) for p, c in totals.items()}
+
+
+def git_blob(data: bytes) -> str:
+    """The id git gives a file with these bytes, computed without a repository."""
+    return hashlib.sha1(b"blob %d\0" % len(data) + data).hexdigest()
+
+
+def check_campaign_record(report: dict[str, object], descriptor: Path) -> list[str]:
+    """Offline: a committed campaign report against its pre-registered descriptor.
+
+    The raw prover streams are not committed, so this cannot re-judge a case;
+    ``verify-campaign`` does that on a retained output directory. It checks what
+    a committed record supports on its own: the report binds these exact
+    descriptor bytes (sha256 and git blob, wherever the file now lives), its
+    lanes are the pre-registered ones, its totals are the sums of its lanes,
+    and its status and reasons follow from its recorded lane, coverage,
+    cluster and exemplar results by the rule the runner applies. An empty
+    list means the record is consistent.
+    """
+    problems: list[str] = []
+    data = descriptor.read_bytes()
+    row, lanes = load_descriptor(descriptor)
+    if report.get("schema") != SCHEMA_CAMPAIGN:
+        problems.append(f"schema is {report.get('schema')!r}, not {SCHEMA_CAMPAIGN}")
+    bound = report.get("descriptor")
+    if not isinstance(bound, dict) or bound.get("sha256") != hashlib.sha256(data).hexdigest():
+        problems.append(f"the report does not bind {descriptor.name} (sha256 differs)")
+    elif not bound.get("committed") or bound.get("git_blob") != git_blob(data):
+        problems.append(f"{descriptor.name} was not committed when the campaign ran, or its blob differs")
+    if report.get("id") != row.get("id"):
+        problems.append(f"campaign id {report.get('id')!r} is not the descriptor's {row.get('id')!r}")
+    paths: tuple[str, ...] = tuple(row.get("paths", CLONE_PATHS))  # type: ignore[arg-type]
+    if report.get("paths") != list(paths):
+        problems.append("paths differ from the descriptor's")
+    lane_rows = report.get("lanes")
+    if not isinstance(lane_rows, list):
+        return problems + ["the report has no lane list"]
+    planned = [[lane.name, lane.kind, lane.seed, lane.n, json.loads(json.dumps(lane.config.to_json()))]
+               for lane in lanes]
+    recorded = [[r.get("name"), r.get("kind"), r.get("seed"), r.get("n"), r.get("config")] for r in lane_rows]
+    if recorded != planned:
+        problems.append("lanes (name, kind, seed, n, config) differ from the pre-registered lanes")
+    if report.get("programs") != sum(lane.n for lane in lanes):
+        problems.append("program count is not the sum of the pre-registered lane sizes")
+    if report.get("verdict_totals") != verdict_totals(lane_rows, paths):
+        problems.append("verdict totals are not the sums of the lane verdicts")
+    if bool(row.get("exemplar_lane")) != (report.get("exemplar_lane") is not None):
+        problems.append("the exemplar lane ran although not requested, or was requested and did not run")
+    reasons = campaign_reasons(lane_rows, report["coverage"], report["clusters"],  # type: ignore[arg-type]
+                               report["infra_clusters"], report["exemplar_lane"])  # type: ignore[arg-type]
+    if reasons != report.get("reasons"):
+        problems.append(f"recorded reasons {report.get('reasons')} are not the re-derived {reasons}")
+    if report.get("status") != ("passed" if not reasons else "failed"):
+        problems.append(f"status {report.get('status')!r} does not follow from the re-derived reasons")
+    return problems
+
+
 # -- the campaign ------------------------------------------------------------------------------
 
 def run_descriptor(descriptor: Path, flocq: Path, out: Path, allow_dirty: bool = False) -> dict[str, object]:
@@ -415,25 +507,7 @@ def run_descriptor(descriptor: Path, flocq: Path, out: Path, allow_dirty: bool =
     if row.get("exemplar_lane"):
         exemplar = run_exemplar_lane(flocq, staging / "exemplars", float(row.get("exemplar_timeout_s", 3600)))
     fb.require_lean_source_snapshot(str(ident["lean_source_sha256"]))
-    reasons: list[str] = []
-    for lane_row in lane_rows:
-        wanted = "controls-ok" if lane_row["kind"] == "controls" else "passed"
-        if lane_row["status"] != wanted:
-            reasons.append(f"lane {lane_row['name']}: {lane_row['status']}")
-        if lane_row["verify"]["status"] != "verified":  # type: ignore[index]
-            reasons.append(f"lane {lane_row['name']}: offline verify {lane_row['verify']['status']}")  # type: ignore[index]
-    if covered["gaps"]:
-        reasons.append(f"coverage gaps: {len(covered['gaps'])}")  # type: ignore[arg-type]
-    if clusters:
-        reasons.append(f"disagreement clusters: {len(clusters)}")
-    if infra_clusters:
-        reasons.append(f"infrastructure clusters: {len(infra_clusters)}")
-    if exemplar is not None and exemplar["status"] != "passed":
-        reasons.append("exemplar lane failed")
-    totals: dict[str, Counter[str]] = {p: Counter() for p in paths}
-    for lane_row in lane_rows:
-        for p, counts in lane_row["verdicts"].items():  # type: ignore[union-attr]
-            totals[p].update(counts)
+    reasons = campaign_reasons(lane_rows, covered, clusters, infra_clusters, exemplar)
     report = {
         "schema": SCHEMA_CAMPAIGN, "id": row.get("id"), "status": "passed" if not reasons else "failed",
         "reasons": reasons,
@@ -441,7 +515,7 @@ def run_descriptor(descriptor: Path, flocq: Path, out: Path, allow_dirty: bool =
                        "git_blob": blob if committed else None, "committed": committed},
         "identities": ident, "paths": list(paths),
         "programs": sum(lane.n for lane in lanes),
-        "verdict_totals": {p: dict(sorted(c.items())) for p, c in totals.items()},
+        "verdict_totals": verdict_totals(lane_rows, paths),
         "lanes": lane_rows, "coverage": covered, "clusters": clusters, "infra_clusters": infra_clusters,
         "shrinks": shrinks, "exemplar_lane": exemplar,
         "elapsed_seconds": round(time.monotonic() - started, 3),

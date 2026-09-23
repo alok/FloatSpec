@@ -758,8 +758,12 @@ typed error. No third outcome is allowed.
 
 Shrunk programs have no tape. They are replayed from `ir`, which both
 renderers accept directly. Minimized findings are committed as
-`scripts/fixtures/flocqsmith/*.json` IR fixtures, and the conformance runner
-replays them, as it does the `*Replay.json` files today.
+`scripts/fixtures/flocqsmith/replays/*.json` IR fixtures, and the conformance runner
+replays them, as it does the `*Replay.json` files today. None exists yet.
+`scripts/test_ci_coverage.py` rejects a JSON fixture below `scripts/fixtures/`
+until a CI step replays it, so the first one must land with that step. Campaign
+descriptors and reports are records, not fixtures, and live in
+`FloatSpec/docs/flocqsmith/`.
 
 ### 8.2 Campaign integrity
 
@@ -1327,9 +1331,11 @@ uv run scripts/run_flocqsmith.py replay DIR/cases/s17-000042.json --flocq-dir "$
 uv run scripts/run_flocqsmith.py shrink CASE.json --control fma_double_rounding \
     --flocq-dir "$FLOCQ_AUDIT_DIR" --out DIR3
 uv run scripts/run_flocqsmith.py verify DIR       # offline re-judgement from retained streams
-uv run scripts/run_flocqsmith.py campaign scripts/fixtures/flocqsmith/NAME.descriptor.json \
+uv run scripts/run_flocqsmith.py campaign FloatSpec/docs/flocqsmith/NAME.descriptor.json \
     --flocq-dir "$FLOCQ_AUDIT_DIR" --out DIR4     # pre-registered lanes, coverage, clusters, shrinks
 uv run scripts/run_flocqsmith.py verify-campaign DIR4
+uv run scripts/run_flocqsmith.py check-record FloatSpec/docs/flocqsmith/NAME.report.json \
+    FloatSpec/docs/flocqsmith/NAME.descriptor.json   # a committed record against its plan
 FLOCQ_AUDIT_DIR=... uv run scripts/test_flocqsmith.py -v
 ```
 

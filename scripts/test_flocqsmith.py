@@ -12,6 +12,7 @@ every positive control, and offline re-judgement of a published campaign.
 from __future__ import annotations
 
 from collections import Counter
+import copy
 from fractions import Fraction
 import json
 import os
@@ -27,8 +28,8 @@ from flocqsmith.campaign import (Options, case_from_program, load_case, new_case
                                  shrink_case, verify)
 from flocqsmith.choose import Chooser, Draw, GeneratorBug, ReplayError
 from flocqsmith.cost import pack
-from flocqsmith.descriptor import (FAMILIES, FAMILY_OF, _root_signature, _signature_key, check_families,
-                                   load_descriptor)
+from flocqsmith.descriptor import (FAMILIES, FAMILY_OF, _root_signature, _signature_key, check_campaign_record,
+                                   check_families, load_descriptor)
 from flocqsmith.formats import FORMATS, Format
 from flocqsmith.generate import CORNERS, GenConfig, generate, program_seed
 from flocqsmith.harness import (DECIDE_REJECTION_PREFIXES, REJECTED, Message, Subject, Toolchain,
@@ -500,6 +501,9 @@ class ShrinkOfflineTests(unittest.TestCase):
 # -- live ----------------------------------------------------------------------
 
 FIXTURES = Path(__file__).resolve().parent / "fixtures" / "flocqsmith"
+# Pre-registered campaign descriptors and their result reports: records, kept
+# beside FLOCQSMITH_CAMPAIGN_*.md rather than among the fixtures.
+CAMPAIGNS = Path(__file__).resolve().parents[1] / "FloatSpec" / "docs" / "flocqsmith"
 
 
 class DescriptorTests(unittest.TestCase):
@@ -509,11 +513,53 @@ class DescriptorTests(unittest.TestCase):
         self.assertEqual(sum(len(ops) for ops in FAMILIES.values()), len(OPS))
 
     def test_committed_descriptors_load_and_cover_every_format(self):
-        for path in sorted(FIXTURES.glob("*.descriptor.json")):
+        descriptors = sorted(CAMPAIGNS.glob("*.descriptor.json"))
+        self.assertTrue(descriptors, f"no campaign descriptor in {CAMPAIGNS}")
+        for path in descriptors:
             row, lanes = load_descriptor(path)
             reachable = {name for lane in lanes for name, weight in lane.config.format_weights if weight > 0}
             self.assertEqual(reachable, set(FORMATS), path.name)
             self.assertIn("controls", {lane.kind for lane in lanes}, f"{path.name}: no positive-control lane")
+
+    def test_committed_reports_follow_from_their_pre_registered_descriptors(self):
+        reports = sorted(CAMPAIGNS.glob("*.report.json"))
+        self.assertTrue(reports, f"no campaign report in {CAMPAIGNS}")
+        for path in reports:
+            descriptor = path.with_name(path.name.replace(".report.json", ".descriptor.json"))
+            with self.subTest(path.name):
+                self.assertEqual(check_campaign_record(json.loads(path.read_text()), descriptor), [])
+        # Controls: each edit a record could receive after the run is caught.
+        report = json.loads(reports[0].read_text())
+        descriptor = reports[0].with_name(reports[0].name.replace(".report.json", ".descriptor.json"))
+
+        def relabel_a_verdict(r):
+            r["lanes"][0]["verdicts"]["lean-kernel"] = {"match": r["lanes"][0]["n"] - 1,
+                                                          "observation-mismatch": 1}
+
+        def fail_a_lane(r):
+            r["lanes"][0]["status"] = "failed"
+
+        def open_a_coverage_gap(r):
+            r["coverage"]["gaps"] = ["t1_2/Bplus"]
+
+        def drop_a_lane(r):
+            del r["lanes"][-1]
+
+        for edit in (relabel_a_verdict, fail_a_lane, open_a_coverage_gap, drop_a_lane):
+            edited = copy.deepcopy(report)
+            edit(edited)
+            with self.subTest(edit.__name__):
+                self.assertNotEqual(check_campaign_record(edited, descriptor), [])
+        plan = json.loads(descriptor.read_text())
+        plan["lanes"][0]["seed"] += 10**6
+        with tempfile.TemporaryDirectory() as tmp:
+            moved = Path(tmp) / descriptor.name
+            moved.write_bytes(descriptor.read_bytes())
+            self.assertEqual(check_campaign_record(report, moved), [], "a moved descriptor still binds")
+            moved.write_text(json.dumps(plan))
+            problems = check_campaign_record(report, moved)
+        self.assertTrue(any("sha256 differs" in p for p in problems), problems)
+        self.assertTrue(any("pre-registered lanes" in p for p in problems), problems)
 
     def test_descriptor_rejects_duplicate_seeds_and_unknown_fields(self):
         base = {"schema": "flocqsmith-campaign-descriptor-v1", "lanes": [
