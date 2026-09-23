@@ -7,9 +7,11 @@ Examples (from the repository root)::
     uv run scripts/run_flocqsmith.py replay DIR/cases/s17-000042.json --flocq-dir "$FLOCQ_AUDIT_DIR" --out DIR2
     uv run scripts/run_flocqsmith.py shrink CASE.json --control fma_double_rounding --flocq-dir ... --out DIR3
     uv run scripts/run_flocqsmith.py verify DIR
+    uv run scripts/run_flocqsmith.py campaign DESCRIPTOR.json --flocq-dir "$FLOCQ_AUDIT_DIR" --out DIR4
+    uv run scripts/run_flocqsmith.py verify-campaign DIR4
 
-Exit status is 0 only for ``passed`` (run, replay), ``controls-ok`` (controls),
-``preserved`` (shrink) and ``verified`` (verify).
+Exit status is 0 only for ``passed`` (run, replay, campaign), ``controls-ok``
+(controls), ``preserved`` (shrink) and ``verified`` (verify, verify-campaign).
 """
 
 from __future__ import annotations
@@ -20,6 +22,7 @@ from pathlib import Path
 import sys
 
 from .campaign import Options, all_control_names, replay, run_campaign, shrink_case, verify
+from .descriptor import run_descriptor, verify_campaign
 from .formats import DEFAULT_FORMAT_WEIGHTS, FORMATS
 from .generate import GenConfig
 from .verdict import CLONE_PATHS
@@ -83,6 +86,13 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--from-ir", action="store_true", help="load the recorded IR instead of the draw tape")
     p = sub.add_parser("verify")
     p.add_argument("out", type=Path)
+    p = sub.add_parser("campaign", help="run a committed campaign descriptor (lanes, coverage, clusters, shrinks)")
+    p.add_argument("descriptor", type=Path)
+    p.add_argument("--flocq-dir", type=Path, required=True)
+    p.add_argument("--out", type=Path, required=True)
+    p.add_argument("--allow-dirty", action="store_true")
+    p = sub.add_parser("verify-campaign")
+    p.add_argument("out", type=Path)
     args = parser.parse_args(argv)
 
     if args.command in ("run", "controls"):
@@ -122,6 +132,16 @@ def main(argv: list[str] | None = None) -> int:
         return 0 if report["status"] == "preserved" else 1
     if args.command == "verify":
         result = verify(args.out.resolve())
+        print(json.dumps(result, indent=1))
+        return 0 if result["status"] == "verified" else 1
+    if args.command == "campaign":
+        report = run_descriptor(args.descriptor.resolve(), args.flocq_dir.resolve(), args.out.resolve(),
+                                args.allow_dirty)
+        print(json.dumps({k: report[k] for k in ("status", "reasons", "programs", "verdict_totals",
+                                                 "elapsed_seconds")}, indent=1))
+        return 0 if report["status"] == "passed" else 1
+    if args.command == "verify-campaign":
+        result = verify_campaign(args.out.resolve())
         print(json.dumps(result, indent=1))
         return 0 if result["status"] == "verified" else 1
     return 2

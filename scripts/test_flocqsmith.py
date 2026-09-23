@@ -27,6 +27,8 @@ from flocqsmith.campaign import (Options, case_from_program, load_case, new_case
                                  shrink_case, verify)
 from flocqsmith.choose import Chooser, Draw, GeneratorBug, ReplayError
 from flocqsmith.cost import pack
+from flocqsmith.descriptor import (FAMILIES, FAMILY_OF, _root_signature, _signature_key, check_families,
+                                   load_descriptor)
 from flocqsmith.formats import FORMATS, Format
 from flocqsmith.generate import CORNERS, GenConfig, generate, program_seed
 from flocqsmith.harness import (DECIDE_REJECTION_PREFIXES, REJECTED, Message, Subject, Toolchain,
@@ -496,6 +498,62 @@ class ShrinkOfflineTests(unittest.TestCase):
 
 
 # -- live ----------------------------------------------------------------------
+
+FIXTURES = Path(__file__).resolve().parent / "fixtures" / "flocqsmith"
+
+
+class DescriptorTests(unittest.TestCase):
+    def test_op_families_partition_the_signature_table(self):
+        check_families()
+        self.assertEqual(set(FAMILY_OF), {row.name for row in OPS})
+        self.assertEqual(sum(len(ops) for ops in FAMILIES.values()), len(OPS))
+
+    def test_committed_descriptors_load_and_cover_every_format(self):
+        for path in sorted(FIXTURES.glob("*.descriptor.json")):
+            row, lanes = load_descriptor(path)
+            reachable = {name for lane in lanes for name, weight in lane.config.format_weights if weight > 0}
+            self.assertEqual(reachable, set(FORMATS), path.name)
+            self.assertIn("controls", {lane.kind for lane in lanes}, f"{path.name}: no positive-control lane")
+
+    def test_descriptor_rejects_duplicate_seeds_and_unknown_fields(self):
+        base = {"schema": "flocqsmith-campaign-descriptor-v1", "lanes": [
+            {"name": "a", "kind": "run", "seed": 1, "n": 1}, {"name": "b", "kind": "run", "seed": 1, "n": 1}]}
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "d.json"
+            path.write_text(json.dumps(base))
+            with self.assertRaises(ValueError):
+                load_descriptor(path)
+            base["lanes"] = [{"name": "a", "kind": "run", "seed": 1, "n": 1, "sede": 2}]
+            path.write_text(json.dumps(base))
+            with self.assertRaises(ValueError):
+                load_descriptor(path)
+            base["lanes"] = [{"name": "a", "kind": "run", "seed": 1, "n": 1, "controls": ["enc_sign_flip"]}]
+            path.write_text(json.dumps(base))
+            with self.assertRaises(ValueError):
+                load_descriptor(path)
+
+    def test_root_signature_names_the_op_mode_and_differing_fields(self):
+        fmt = FORMATS["t3_4"]
+        one = Arg.sf(3, 0, 4, -2)
+        program = Program(fmt, (Stmt("v0", "op", "BSN", op="SF2B'", args=(one,)),
+                                Stmt("v1", "op", "BSN", op="Bplus", mode=4,
+                                     args=(Arg.ref("v0"), Arg.ref("v0")))))
+        divergence = {"id": "v1", "op": "Bplus", "type": "BSN", "reference": [3, 0, 4, -1], "clone": [3, 1, 4, 0]}
+        rows = {"lean-meta": {"path": "lean-meta", "verdict": "observation-mismatch", "divergence": divergence},
+                "lean-ir": {"path": "lean-ir", "verdict": "match"},
+                "lean-kernel": {"path": "lean-kernel", "verdict": "observation-mismatch"}}
+        sig = _root_signature(program, rows, disagree=True)
+        self.assertEqual((sig["op"], sig["mode"], sig["fields"], sig["paths"]),
+                         ("Bplus", "NA", ["sign", "exponent"], ["lean-kernel", "lean-meta"]))
+        self.assertEqual(_signature_key(sig), "Bplus|BSN|sign,exponent|NA|t3_4|lean-kernel+lean-meta")
+        kernel_only = {"lean-kernel": {"path": "lean-kernel", "verdict": "observation-mismatch"}}
+        self.assertEqual(_root_signature(program, kernel_only, disagree=False)["kind"], "kernel-only")
+
+    def test_committed_minimized_replays_regenerate_their_digests(self):
+        for path in sorted((FIXTURES / "replays").glob("*.json")):
+            with self.subTest(path.name):
+                load_case(json.loads(path.read_text()), from_ir=True)
+
 
 @unittest.skipUnless(LIVE, "live test requires FLOCQ_AUDIT_DIR")
 class LiveTests(unittest.TestCase):
