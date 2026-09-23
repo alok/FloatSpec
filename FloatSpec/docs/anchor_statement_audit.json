@@ -2,7 +2,7 @@
  "flocq_commit": "7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f",
  "rocq": "9.1",
  "floatspec_base": "6644539f",
- "anchors": 457,
+ "anchors": 500,
  "verdicts": [
   {
    "coq_path": "src/Calc/Bracket.v",
@@ -1687,10 +1687,108 @@
   },
   {
    "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zcompare_Eq",
+   "lean_name": "FloatSpec.Core.Zaux.Zcompare_Eq",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (x y : ℤ), x = y → compare x y = Ordering.eq. Rocq Check: forall x y : BinNums.Z, x = y -> BinInt.Z.compare x y = Eq. Z.compare is compare on Int and Eq is Ordering.eq; same premise and conclusion."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zcompare_Gt",
+   "lean_name": "FloatSpec.Core.Zaux.Zcompare_Gt",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (x y : ℤ), y < x → compare x y = Ordering.gt. Rocq Check: forall x y : BinNums.Z, BinInt.Z.lt y x -> BinInt.Z.compare x y = Gt. Z.compare is compare on Int and Gt is Ordering.gt; same premise (y < x) and conclusion."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zcompare_Lt",
+   "lean_name": "FloatSpec.Core.Zaux.Zcompare_Lt",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (x y : ℤ), x < y → compare x y = Ordering.lt. Rocq Check: forall x y : BinNums.Z, BinInt.Z.lt x y -> BinInt.Z.compare x y = Lt. Z.compare is compare on Int and Lt is Ordering.lt; same premise and conclusion."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zcompare_prop",
+   "lean_name": "FloatSpec.Core.Zaux.Zcompare_prop",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ℤ → ℤ → Ordering → Prop. Rocq Check: BinNums.Z -> BinNums.Z -> comparison -> Prop. Same inductive over Rocq comparison = Lean Ordering (Lt/Eq/Gt as .lt/.eq/.gt): Zcompare_Lt_ (x < y), Zcompare_Eq_ (x = y), Zcompare_Gt_ (y < x)."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zcompare_spec",
+   "lean_name": "FloatSpec.Core.Zaux.Zcompare_spec",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (x y : ℤ), Zcompare_prop x y (compare x y). Rocq Check: forall x y : BinNums.Z, Zcompare_prop x y (BinInt.Z.compare x y). Rocq's Z.compare is Lean's compare on Int (the deleted Lean-only Zaux.Zcompare was rfl-equal to it), and comparison is Ordering. Same graph statement."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zdiv_eucl_unique",
+   "lean_name": "FloatSpec.Core.Zaux.Zdiv_eucl_unique",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (a b : ℤ), Z_div_eucl a b = (a.fdiv b, a.fmod b). Rocq Check: forall a b : BinNums.Z, BinInt.Z.div_eucl a b = (BinInt.Z.div a b, BinInt.Z.modulo a b). Rocq's floor Z.div/Z.modulo are Int.fdiv/Int.fmod, and Z.div_eucl is the port's Z_div_eucl (fdiv quotient, remainder a - b * fdiv). The Lean statement previously spelled the remainder a - b * Int.fdiv a b; it now names Int.fmod as Rocq names Z.modulo."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
    "coq_name": "Zdiv_mod_mult",
    "lean_name": "FloatSpec.Core.Zaux.Zdiv_mod_mult",
    "verdict": "match",
    "explanation": "Lean's `/` and `%` on Int are the Euclidean ediv and emod, and Coq's are the floor Z.div and Z.modulo. With 0<=a and 0<=b every divisor is nonnegative, so the two agree, including at 0. Same hypotheses, same conclusion (n mod (a*b))/a = (n/a) mod b."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zeq_bool_cond_Zopp",
+   "lean_name": "FloatSpec.Core.Zaux.Zeq_bool_cond_Zopp",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (s : Bool) (m n : ℤ), Zeq_bool (cond_Zopp s m) n = Zeq_bool m (cond_Zopp s n). Rocq Check: forall (s : bool) (m n : BinNums.Z), BinInt.Z.eqb (SpecFloat.cond_Zopp s m) n = BinInt.Z.eqb m (SpecFloat.cond_Zopp s n). Z.eqb is Zeq_bool; same statement. Rocq's Stdlib notations Zeq_bool/Zle_bool/Zlt_bool unfold to Z.eqb/Z.leb/Z.ltb, which the port defines as the Boolean decisions of =, <= and < on Int (equal on every input)."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zeq_bool_diag",
+   "lean_name": "FloatSpec.Core.Zaux.Zeq_bool_diag",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (x : ℤ), Zeq_bool x x = true. Rocq Check: forall x : BinNums.Z, BinInt.Z.eqb x x = true. Rocq's Stdlib notations Zeq_bool/Zle_bool/Zlt_bool unfold to Z.eqb/Z.leb/Z.ltb, which the port defines as the Boolean decisions of =, <= and < on Int (equal on every input). Same statement."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zeq_bool_false",
+   "lean_name": "FloatSpec.Core.Zaux.Zeq_bool_false",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (x y : ℤ), x ≠ y → Zeq_bool x y = false. Rocq Check: forall x y : BinNums.Z, x <> y -> BinInt.Z.eqb x y = false. Rocq's Stdlib notations Zeq_bool/Zle_bool/Zlt_bool unfold to Z.eqb/Z.leb/Z.ltb, which the port defines as the Boolean decisions of =, <= and < on Int (equal on every input). Same statement."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zeq_bool_opp",
+   "lean_name": "FloatSpec.Core.Zaux.Zeq_bool_opp",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (x y : ℤ), Zeq_bool (-x) y = Zeq_bool x (-y). Rocq Check: forall x y : BinNums.Z, BinInt.Z.eqb (BinInt.Z.opp x) y = BinInt.Z.eqb x (BinInt.Z.opp y). Rocq's Stdlib notations Zeq_bool/Zle_bool/Zlt_bool unfold to Z.eqb/Z.leb/Z.ltb, which the port defines as the Boolean decisions of =, <= and < on Int (equal on every input). Same statement."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zeq_bool_opp'",
+   "lean_name": "FloatSpec.Core.Zaux.Zeq_bool_opp'",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (x y : ℤ), Zeq_bool (-x) (-y) = Zeq_bool x y. Rocq Check: forall x y : BinNums.Z, BinInt.Z.eqb (BinInt.Z.opp x) (BinInt.Z.opp y) = BinInt.Z.eqb x y. Rocq's Stdlib notations Zeq_bool/Zle_bool/Zlt_bool unfold to Z.eqb/Z.leb/Z.ltb, which the port defines as the Boolean decisions of =, <= and < on Int (equal on every input). Same statement."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zeq_bool_prop",
+   "lean_name": "FloatSpec.Core.Zaux.Zeq_bool_prop",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ℤ → ℤ → Bool → Prop. Rocq Check: BinNums.Z -> BinNums.Z -> bool -> Prop. Same inductive: parameters x y : Z, index bool, constructors Zeq_bool_true_ (x = y) and Zeq_bool_false_ (x <> y). Lean's constructors live under Zeq_bool_prop and are exported unqualified, as in Rocq."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zeq_bool_spec",
+   "lean_name": "FloatSpec.Core.Zaux.Zeq_bool_spec",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (x y : ℤ), Zeq_bool_prop x y (Zeq_bool x y). Rocq Check: forall x y : BinNums.Z, Zeq_bool_prop x y (BinInt.Z.eqb x y). Rocq's Stdlib notations Zeq_bool/Zle_bool/Zlt_bool unfold to Z.eqb/Z.leb/Z.ltb, which the port defines as the Boolean decisions of =, <= and < on Int (equal on every input). Same statement."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zeq_bool_true",
+   "lean_name": "FloatSpec.Core.Zaux.Zeq_bool_true",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (x y : ℤ), x = y → Zeq_bool x y = true. Rocq Check: forall x y : BinNums.Z, x = y -> BinInt.Z.eqb x y = true. Rocq's Stdlib notations Zeq_bool/Zle_bool/Zlt_bool unfold to Z.eqb/Z.leb/Z.ltb, which the port defines as the Boolean decisions of =, <= and < on Int (equal on every input). Same statement."
   },
   {
    "coq_path": "src/Core/Zaux.v",
@@ -1708,10 +1806,122 @@
   },
   {
    "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zfast_pow_pos",
+   "lean_name": "FloatSpec.Core.Zaux.Zfast_pow_pos",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ℤ → Positive → ℤ. Rocq Check: BinNums.Z -> BinNums.positive -> BinNums.Z. Same type Z -> positive -> Z (Lean Zaux.Positive for positive). The body now follows Rocq's Fixpoint constructor by constructor: xH => v, xO e' => Z.square (rec), xI e' => v * Z.square (rec), with Z.square x written x ^ 2. It previously was v ^ positiveToNat e, the specification rather than the algorithm."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zfast_pow_pos_correct",
+   "lean_name": "FloatSpec.Core.Zaux.Zfast_pow_pos_correct",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (v : ℤ) (e : Positive), Zfast_pow_pos v e = Zpower_pos v e. Rocq Check: forall (v : BinNums.Z) (e : BinNums.positive), Zfast_pow_pos v e = BinInt.Z.pow_pos v e. Rocq's Z.pow_pos is the port's Zpower_pos (v ^ positiveToNat e). Same statement; now a real induction over the squaring algorithm instead of rfl."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
    "coq_name": "Zgt_not_eq",
    "lean_name": "FloatSpec.Core.Zaux.Zgt_not_eq",
    "verdict": "match",
    "explanation": "Both: y < x -> x <> y over Z."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zle_bool_false",
+   "lean_name": "FloatSpec.Core.Zaux.Zle_bool_false",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (x y : ℤ), y < x → Zle_bool x y = false. Rocq Check: forall x y : BinNums.Z, BinInt.Z.lt y x -> BinInt.Z.leb x y = false. Rocq's Stdlib notations Zeq_bool/Zle_bool/Zlt_bool unfold to Z.eqb/Z.leb/Z.ltb, which the port defines as the Boolean decisions of =, <= and < on Int (equal on every input). Same statement."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zle_bool_opp",
+   "lean_name": "FloatSpec.Core.Zaux.Zle_bool_opp",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (x y : ℤ), Zle_bool (-x) (-y) = Zle_bool y x. Rocq Check: forall x y : BinNums.Z, BinInt.Z.leb (BinInt.Z.opp x) (BinInt.Z.opp y) = BinInt.Z.leb y x. Rocq's Stdlib notations Zeq_bool/Zle_bool/Zlt_bool unfold to Z.eqb/Z.leb/Z.ltb, which the port defines as the Boolean decisions of =, <= and < on Int (equal on every input). Same statement."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zle_bool_opp_l",
+   "lean_name": "FloatSpec.Core.Zaux.Zle_bool_opp_l",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (x y : ℤ), Zle_bool (-x) y = Zle_bool (-y) x. Rocq Check: forall x y : BinNums.Z, BinInt.Z.leb (BinInt.Z.opp x) y = BinInt.Z.leb (BinInt.Z.opp y) x. Rocq's Stdlib notations Zeq_bool/Zle_bool/Zlt_bool unfold to Z.eqb/Z.leb/Z.ltb, which the port defines as the Boolean decisions of =, <= and < on Int (equal on every input). Same statement."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zle_bool_opp_r",
+   "lean_name": "FloatSpec.Core.Zaux.Zle_bool_opp_r",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (x y : ℤ), Zle_bool x (-y) = Zle_bool y (-x). Rocq Check: forall x y : BinNums.Z, BinInt.Z.leb x (BinInt.Z.opp y) = BinInt.Z.leb y (BinInt.Z.opp x). Rocq's Stdlib notations Zeq_bool/Zle_bool/Zlt_bool unfold to Z.eqb/Z.leb/Z.ltb, which the port defines as the Boolean decisions of =, <= and < on Int (equal on every input). Same statement."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zle_bool_prop",
+   "lean_name": "FloatSpec.Core.Zaux.Zle_bool_prop",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ℤ → ℤ → Bool → Prop. Rocq Check: BinNums.Z -> BinNums.Z -> bool -> Prop. Same inductive: constructors Zle_bool_true_ (x <= y) and Zle_bool_false_ (y < x)."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zle_bool_spec",
+   "lean_name": "FloatSpec.Core.Zaux.Zle_bool_spec",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (x y : ℤ), Zle_bool_prop x y (Zle_bool x y). Rocq Check: forall x y : BinNums.Z, Zle_bool_prop x y (BinInt.Z.leb x y). Rocq's Stdlib notations Zeq_bool/Zle_bool/Zlt_bool unfold to Z.eqb/Z.leb/Z.ltb, which the port defines as the Boolean decisions of =, <= and < on Int (equal on every input). Same statement."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zle_bool_true",
+   "lean_name": "FloatSpec.Core.Zaux.Zle_bool_true",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (x y : ℤ), x ≤ y → Zle_bool x y = true. Rocq Check: forall x y : BinNums.Z, BinInt.Z.le x y -> BinInt.Z.leb x y = true. Rocq's Stdlib notations Zeq_bool/Zle_bool/Zlt_bool unfold to Z.eqb/Z.leb/Z.ltb, which the port defines as the Boolean decisions of =, <= and < on Int (equal on every input). Same statement."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zlt_bool_false",
+   "lean_name": "FloatSpec.Core.Zaux.Zlt_bool_false",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (x y : ℤ), y ≤ x → Zlt_bool x y = false. Rocq Check: forall x y : BinNums.Z, BinInt.Z.le y x -> BinInt.Z.ltb x y = false. Rocq's Stdlib notations Zeq_bool/Zle_bool/Zlt_bool unfold to Z.eqb/Z.leb/Z.ltb, which the port defines as the Boolean decisions of =, <= and < on Int (equal on every input). Same statement."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zlt_bool_opp",
+   "lean_name": "FloatSpec.Core.Zaux.Zlt_bool_opp",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (x y : ℤ), Zlt_bool (-x) (-y) = Zlt_bool y x. Rocq Check: forall x y : BinNums.Z, BinInt.Z.ltb (BinInt.Z.opp x) (BinInt.Z.opp y) = BinInt.Z.ltb y x. Rocq's Stdlib notations Zeq_bool/Zle_bool/Zlt_bool unfold to Z.eqb/Z.leb/Z.ltb, which the port defines as the Boolean decisions of =, <= and < on Int (equal on every input). Same statement."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zlt_bool_opp_l",
+   "lean_name": "FloatSpec.Core.Zaux.Zlt_bool_opp_l",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (x y : ℤ), Zlt_bool (-x) y = Zlt_bool (-y) x. Rocq Check: forall x y : BinNums.Z, BinInt.Z.ltb (BinInt.Z.opp x) y = BinInt.Z.ltb (BinInt.Z.opp y) x. Rocq's Stdlib notations Zeq_bool/Zle_bool/Zlt_bool unfold to Z.eqb/Z.leb/Z.ltb, which the port defines as the Boolean decisions of =, <= and < on Int (equal on every input). Same statement."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zlt_bool_opp_r",
+   "lean_name": "FloatSpec.Core.Zaux.Zlt_bool_opp_r",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (x y : ℤ), Zlt_bool x (-y) = Zlt_bool y (-x). Rocq Check: forall x y : BinNums.Z, BinInt.Z.ltb x (BinInt.Z.opp y) = BinInt.Z.ltb y (BinInt.Z.opp x). Rocq's Stdlib notations Zeq_bool/Zle_bool/Zlt_bool unfold to Z.eqb/Z.leb/Z.ltb, which the port defines as the Boolean decisions of =, <= and < on Int (equal on every input). Same statement."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zlt_bool_prop",
+   "lean_name": "FloatSpec.Core.Zaux.Zlt_bool_prop",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ℤ → ℤ → Bool → Prop. Rocq Check: BinNums.Z -> BinNums.Z -> bool -> Prop. Same inductive: constructors Zlt_bool_true_ (x < y) and Zlt_bool_false_ (y <= x)."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zlt_bool_spec",
+   "lean_name": "FloatSpec.Core.Zaux.Zlt_bool_spec",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (x y : ℤ), Zlt_bool_prop x y (Zlt_bool x y). Rocq Check: forall x y : BinNums.Z, Zlt_bool_prop x y (BinInt.Z.ltb x y). Rocq's Stdlib notations Zeq_bool/Zle_bool/Zlt_bool unfold to Z.eqb/Z.leb/Z.ltb, which the port defines as the Boolean decisions of =, <= and < on Int (equal on every input). Same statement."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zlt_bool_true",
+   "lean_name": "FloatSpec.Core.Zaux.Zlt_bool_true",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (x y : ℤ), x < y → Zlt_bool x y = true. Rocq Check: forall x y : BinNums.Z, BinInt.Z.lt x y -> BinInt.Z.ltb x y = true. Rocq's Stdlib notations Zeq_bool/Zle_bool/Zlt_bool unfold to Z.eqb/Z.leb/Z.ltb, which the port defines as the Boolean decisions of =, <= and < on Int (equal on every input). Same statement."
   },
   {
    "coq_path": "src/Core/Zaux.v",
@@ -1806,10 +2016,66 @@
   },
   {
    "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zsame_sign_imp",
+   "lean_name": "FloatSpec.Core.Zaux.Zsame_sign_imp",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (u v : ℤ), (0 < u → 0 ≤ v) → (0 < -u → 0 ≤ -v) → 0 ≤ u * v. Rocq Check: forall u v : BinNums.Z, (BinInt.Z.lt BinNums.Z0 u -> BinInt.Z.le BinNums.Z0 v) -> (BinInt.Z.lt BinNums.Z0 (BinInt.Z.opp u) -> BinInt.Z.le BinNums.Z0 (BinInt.Z.opp v)) -> BinInt.Z.le BinNums.Z0 (BinInt.Z.mul u v). Same statement."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zsame_sign_odiv",
+   "lean_name": "FloatSpec.Core.Zaux.Zsame_sign_odiv",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (u v : ℤ), 0 ≤ v → 0 ≤ u * u.tdiv v. Rocq Check: forall u v : BinNums.Z, BinInt.Z.le BinNums.Z0 v -> BinInt.Z.le BinNums.Z0 (BinInt.Z.mul u (BinInt.Z.quot u v)). Rocq's truncating Z.quot is Lean's Int.tdiv; same premise 0 <= v and conclusion."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zsame_sign_trans",
+   "lean_name": "FloatSpec.Core.Zaux.Zsame_sign_trans",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (v u w : ℤ), v ≠ 0 → 0 ≤ u * v → 0 ≤ v * w → 0 ≤ u * w. Rocq Check: forall v u w : BinNums.Z, v <> BinNums.Z0 -> BinInt.Z.le BinNums.Z0 (BinInt.Z.mul u v) -> BinInt.Z.le BinNums.Z0 (BinInt.Z.mul v w) -> BinInt.Z.le BinNums.Z0 (BinInt.Z.mul u w). Same statement."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "Zsame_sign_trans_weak",
+   "lean_name": "FloatSpec.Core.Zaux.Zsame_sign_trans_weak",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (v u w : ℤ), (v = 0 → w = 0) → 0 ≤ u * v → 0 ≤ v * w → 0 ≤ u * w. Rocq Check: forall v u w : BinNums.Z, (v = BinNums.Z0 -> w = BinNums.Z0) -> BinInt.Z.le BinNums.Z0 (BinInt.Z.mul u v) -> BinInt.Z.le BinNums.Z0 (BinInt.Z.mul v w) -> BinInt.Z.le BinNums.Z0 (BinInt.Z.mul u w). Same statement."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "abs_cond_Zopp",
+   "lean_name": "FloatSpec.Core.Zaux.abs_cond_Zopp",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (b : Bool) (m : ℤ), |cond_Zopp b m| = |m|. Rocq Check: forall (b : bool) (m : BinNums.Z), BinInt.Z.abs (SpecFloat.cond_Zopp b m) = BinInt.Z.abs m. Z.abs is |.| on Int; same statement."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
    "coq_name": "cond_Zopp",
    "lean_name": "FloatSpec.Core.Zaux.cond_Zopp",
    "verdict": "match",
    "explanation": "Coq's cond_Zopp is a notation for SpecFloat.cond_Zopp : bool -> Z -> Z, defined as `if b then Z.opp m else m`. Lean's Bool -> Int -> Int is defined as `if b then -x else x`, so both type and body match."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "cond_Zopp_0",
+   "lean_name": "FloatSpec.Core.Zaux.cond_Zopp_0",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (sx : Bool), cond_Zopp sx 0 = 0. Rocq Check: forall sx : bool, SpecFloat.cond_Zopp sx BinNums.Z0 = BinNums.Z0. cond_Zopp is Corelib SpecFloat.cond_Zopp (anchored at Zaux.v:23); same statement."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "cond_Zopp_Zlt_bool",
+   "lean_name": "FloatSpec.Core.Zaux.cond_Zopp_Zlt_bool",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (m : ℤ), cond_Zopp (Zlt_bool m 0) m = |m|. Rocq Check: forall m : BinNums.Z, SpecFloat.cond_Zopp (BinInt.Z.ltb m BinNums.Z0) m = BinInt.Z.abs m. Z.ltb m 0 is Zlt_bool m 0 and Z.abs is |.|; same statement."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "cond_Zopp_negb",
+   "lean_name": "FloatSpec.Core.Zaux.cond_Zopp_negb",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (x : Bool) (y : ℤ), cond_Zopp (!x) y = -cond_Zopp x y. Rocq Check: forall (x : bool) (y : BinNums.Z), SpecFloat.cond_Zopp (negb x) y = BinInt.Z.opp (SpecFloat.cond_Zopp x y). negb is Lean's !, Z.opp is unary minus; same statement."
   },
   {
    "coq_path": "src/Core/Zaux.v",
@@ -1827,10 +2093,45 @@
   },
   {
    "coq_path": "src/Core/Zaux.v",
+   "coq_name": "iter_nat_S",
+   "lean_name": "FloatSpec.Core.Zaux.iter_nat_S",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ {A : Type} (f : A → A) (p : ℕ) (x : A), iter_nat f (p + 1) x = f (iter_nat f p x). Rocq Check: forall (A : Type) (f : A -> A) (p : nat) (x : A), iter_nat f (S p) x = f (iter_nat f p x). Same statement (S p is p + 1)."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "iter_nat_plus",
+   "lean_name": "FloatSpec.Core.Zaux.iter_nat_plus",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ {A : Type} (f : A → A) (p q : ℕ) (x : A), iter_nat f (p + q) x = iter_nat f p (iter_nat f q x). Rocq Check: forall (A : Type) (f : A -> A) (p q : nat) (x : A), iter_nat f (p + q) x = iter_nat f p (iter_nat f q x). Same statement with A implicit (Rocq Context {A}). The port's iter_nat body applies f last where Rocq's applies it first; the two agree extensionally (iter_nat_S), so the definition itself stays unanchored."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
    "coq_name": "iter_pos",
    "lean_name": "FloatSpec.Core.Zaux.iter_pos",
    "verdict": "match",
    "explanation": "Coq's iter_pos is a notation for SpecFloat.iter_pos : forall A, (A->A) -> positive -> A -> A. Lean's {A : Type} -> (A->A) -> Positive -> A -> A has the same type up to an implicit binder. The bodies match constructor by constructor: xH => f x, xO p => iter p (iter p x), xI p => iter p (iter p (f x))."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "iter_pos_nat",
+   "lean_name": "FloatSpec.Core.Zaux.iter_pos_nat",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ {A : Type} (f : A → A) (p : Positive) (x : A), iter_pos f p x = iter_nat f (positiveToNat p) x. Rocq Check: forall (A : Type) (f : A -> A) (p : BinNums.positive) (x : A), SpecFloat.iter_pos f p x = iter_nat f (BinPos.Pos.to_nat p) x. Pos.to_nat is positiveToNat; same statement."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "negb_Zle_bool",
+   "lean_name": "FloatSpec.Core.Zaux.negb_Zle_bool",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (x y : ℤ), (!Zle_bool x y) = Zlt_bool y x. Rocq Check: forall x y : BinNums.Z, negb (BinInt.Z.leb x y) = BinInt.Z.ltb y x. negb is Lean's !. Before this anchor the Lean statement read `!Zle_bool x y = Zlt_bool y x`, which parses as !(Zle_bool x y = Zlt_bool y x); it is now parenthesized as Rocq's negb (Zle_bool x y) = Zlt_bool y x. Rocq's Stdlib notations Zeq_bool/Zle_bool/Zlt_bool unfold to Z.eqb/Z.leb/Z.ltb, which the port defines as the Boolean decisions of =, <= and < on Int (equal on every input)."
+  },
+  {
+   "coq_path": "src/Core/Zaux.v",
+   "coq_name": "negb_Zlt_bool",
+   "lean_name": "FloatSpec.Core.Zaux.negb_Zlt_bool",
+   "verdict": "match",
+   "explanation": "Conventions batch 1E. Lean #check: ∀ (x y : ℤ), (!Zlt_bool x y) = Zle_bool y x. Rocq Check: forall x y : BinNums.Z, negb (BinInt.Z.ltb x y) = BinInt.Z.leb y x. negb is Lean's !. The Lean statement is now parenthesized as Rocq's negb (Zlt_bool x y) = Zle_bool y x (the unparenthesized form parsed as a negated equality). Rocq's Stdlib notations Zeq_bool/Zle_bool/Zlt_bool unfold to Z.eqb/Z.leb/Z.ltb, which the port defines as the Boolean decisions of =, <= and < on Int (equal on every input)."
   },
   {
    "coq_path": "src/Core/Zaux.v",

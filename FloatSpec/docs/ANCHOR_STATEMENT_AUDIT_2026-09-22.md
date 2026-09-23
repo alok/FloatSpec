@@ -54,3 +54,20 @@ compiled hashes and reopen on drift. They are the input that says where
 manual review should look first. The two confirmed mismatches were both
 anchor-placement errors that `validate_flocq_source_refs.py` could not see,
 because it checks names and lines, not propositions.
+
+## Later additions
+
+- **Zaux comparisons and Booleans (2026-09-23, conventions batch 1E).** 43 new
+  Zaux anchors were checked the same way (`#check @X` with `pp.proofs false`
+  against Rocq `Check @X`), all `match`: the 28 `Zeq_bool`/`Zle_bool`/
+  `Zlt_bool`/`Zcompare` declarations of Zaux.v:502–764, the four
+  `Zsame_sign_*` lemmas, five `cond_Zopp` lemmas, `Zfast_pow_pos` and its
+  correctness lemma, `Zdiv_eucl_unique`, `iter_nat_plus`, `iter_nat_S` and
+  `iter_pos_nat`. `Zcompare_*` are now stated about Lean's `compare` on `Int`
+  (Rocq's `Z.compare`); the Lean-only `Zaux.Zcompare` is gone. Anchoring
+  exposed one statement bug: `negb_Zle_bool` and `negb_Zlt_bool` were written
+  `!a = b`, which Lean parses as `!(a = b)`; they now read `(!a) = b`, as in
+  Rocq. `Zfast_pow_pos` now follows Rocq's squaring recursion instead of
+  computing `v ^ n`, and `Zdiv_eucl_unique` names `Int.fmod` for `Z.modulo`.
+  `Zeven_ex` and `Zeven_Zpower_odd` were restated on the new `Zaux.Z.even`
+  (Rocq's Boolean `Z.even`) and re-checked.

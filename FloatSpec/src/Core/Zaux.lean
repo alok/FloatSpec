@@ -508,6 +508,7 @@ end DivMod
 section SameSign
 
 /-- Coq-compatible name: transitivity of nonnegativity through a nonzero factor -/
+@[flocq_source "src/Core/Zaux.v" 450 "Zsame_sign_trans"]
 theorem Zsame_sign_trans (v u w : Int) (hv : v ≠ 0)
     (huv : 0 ≤ u * v) (hvw : 0 ≤ v * w) : 0 ≤ u * w := by
   rcases Int.mul_nonneg_iff.mp huv with ⟨hu, hv0⟩ | ⟨hu, hv0⟩ <;>
@@ -518,6 +519,7 @@ theorem Zsame_sign_trans (v u w : Int) (hv : v ≠ 0)
   · exact mul_nonneg_of_nonpos_of_nonpos hu hw
 
 /-- Coq-compatible name: weak transitivity of nonnegativity -/
+@[flocq_source "src/Core/Zaux.v" 457 "Zsame_sign_trans_weak"]
 theorem Zsame_sign_trans_weak (v u w : Int) (hzero : v = 0 → w = 0)
     (huv : 0 ≤ u * v) (hvw : 0 ≤ v * w) : 0 ≤ u * w := by
   by_cases hv : v = 0
@@ -525,6 +527,7 @@ theorem Zsame_sign_trans_weak (v u w : Int) (hzero : v = 0 → w = 0)
   · exact Zsame_sign_trans v u w hv huv hvw
 
 /-- Coq-compatible name: sign implications imply a nonnegative product. -/
+@[flocq_source "src/Core/Zaux.v" 464 "Zsame_sign_imp"]
 theorem Zsame_sign_imp (u v : Int)
     (hp : 0 < u → 0 ≤ v) (hn : 0 < -u → 0 ≤ -v) : 0 ≤ u * v := by
   by_cases hu : 0 ≤ u
@@ -538,6 +541,7 @@ theorem Zsame_sign_imp (u v : Int)
     exact mul_nonneg_of_nonpos_of_nonpos huNeg hvNeg
 
 /-- Coq-compatible name: a nonnegative divisor gives a same-sign truncated quotient. -/
+@[flocq_source "src/Core/Zaux.v" 483 "Zsame_sign_odiv"]
 theorem Zsame_sign_odiv (u v : Int) (hv : 0 ≤ v) :
     0 ≤ u * Int.tdiv u v := by
   apply Zsame_sign_imp u (Int.tdiv u v)
@@ -549,165 +553,177 @@ theorem Zsame_sign_odiv (u v : Int) (hv : 0 ≤ v) :
 
 end SameSign
 
-section BooleanComparisons
+/-! Boolean comparisons. Rocq's `Zeq_bool`, `Zle_bool` and `Zlt_bool` are Stdlib notations for
+`Z.eqb`, `Z.leb` and `Z.ltb`; the port defines them as the Boolean decisions of the integer
+relations, which compute and agree with Rocq on every input. -/
 
-/-- Boolean equality test for integers
+section Zeq_bool
 
-    Tests whether two integers are equal, returning a boolean.
-    This provides a decidable equality test.
--/
+/-- Boolean integer equality, Rocq's Stdlib `Zeq_bool` (a notation for `Z.eqb`). -/
+@[flocq_local "Rocq Stdlib ZArith.Zbool.Zeq_bool, a notation for Z.eqb; not defined in Flocq itself"]
 def Zeq_bool (x y : Int) : Bool :=
   decide (x = y)
 
 /-- Graph of the integer equality test (FLoCq `Zeq_bool_prop`). -/
+@[flocq_source "src/Core/Zaux.v" 502 "Zeq_bool_prop"]
 inductive Zeq_bool_prop (x y : Int) : Bool → Prop where
   | Zeq_bool_true_ : x = y → Zeq_bool_prop x y true
   | Zeq_bool_false_ : x ≠ y → Zeq_bool_prop x y false
 
 export Zeq_bool_prop (Zeq_bool_true_ Zeq_bool_false_)
 
-/-- Specification: Boolean equality test
-
-    The boolean equality test returns true if and only if
-    the integers are equal. This provides a computational
-    version of equality.
--/
+/-- FLoCq `Zeq_bool_spec`: the graph of the Boolean equality test. -/
+@[flocq_source "src/Core/Zaux.v" 506 "Zeq_bool_spec"]
 theorem Zeq_bool_spec (x y : Int) : Zeq_bool_prop x y (Zeq_bool x y) := by
   by_cases h : x = y
   · simpa [Zeq_bool, h] using Zeq_bool_true_ (x := x) (y := y) h
   · simpa [Zeq_bool, h] using Zeq_bool_false_ (x := x) (y := y) h
 
-/-- Boolean less-or-equal test for integers
+/-- FLoCq `Zeq_bool_true`. -/
+@[flocq_source "src/Core/Zaux.v" 518 "Zeq_bool_true"]
+theorem Zeq_bool_true (x y : Int) (h : x = y) : Zeq_bool x y = true := by
+  simp [Zeq_bool, h]
 
-    Tests whether x ≤ y, returning a boolean result.
-    This provides a decidable ordering test.
--/
+/-- FLoCq `Zeq_bool_false`. -/
+@[flocq_source "src/Core/Zaux.v" 525 "Zeq_bool_false"]
+theorem Zeq_bool_false (x y : Int) (h : x ≠ y) : Zeq_bool x y = false := by
+  simp [Zeq_bool, h]
+
+/-- FLoCq `Zeq_bool_diag`. -/
+@[flocq_source "src/Core/Zaux.v" 537 "Zeq_bool_diag"]
+theorem Zeq_bool_diag (x : Int) : Zeq_bool x x = true := by
+  simp [Zeq_bool]
+
+/-- FLoCq `Zeq_bool_opp`. -/
+@[flocq_source "src/Core/Zaux.v" 544 "Zeq_bool_opp"]
+theorem Zeq_bool_opp (x y : Int) : Zeq_bool (-x) y = Zeq_bool x (-y) := by
+  by_cases h : -x = y <;> simp [Zeq_bool, h] <;> omega
+
+/-- FLoCq `Zeq_bool_opp'`. -/
+@[flocq_source "src/Core/Zaux.v" 561 "Zeq_bool_opp'"]
+theorem Zeq_bool_opp' (x y : Int) : Zeq_bool (-x) (-y) = Zeq_bool x y := by
+  simp [Zeq_bool]
+
+end Zeq_bool
+
+section Zle_bool
+
+/-- Boolean integer order, Rocq's Stdlib `Zle_bool` (a notation for `Z.leb`). -/
+@[flocq_local "Rocq Stdlib ZArith.Zbool.Zle_bool, a notation for Z.leb; not defined in Flocq itself"]
 def Zle_bool (x y : Int) : Bool :=
   decide (x ≤ y)
 
 /-- Graph of the integer less-or-equal test (FLoCq `Zle_bool_prop`). -/
+@[flocq_source "src/Core/Zaux.v" 574 "Zle_bool_prop"]
 inductive Zle_bool_prop (x y : Int) : Bool → Prop where
   | Zle_bool_true_ : x ≤ y → Zle_bool_prop x y true
   | Zle_bool_false_ : y < x → Zle_bool_prop x y false
 
 export Zle_bool_prop (Zle_bool_true_ Zle_bool_false_)
 
-/-- Specification: Boolean ordering test
-
-    The boolean less-or-equal test returns true if and only if
-    x ≤ y. This provides a computational version of the ordering.
--/
+/-- FLoCq `Zle_bool_spec`: the graph of the Boolean order test. -/
+@[flocq_source "src/Core/Zaux.v" 578 "Zle_bool_spec"]
 theorem Zle_bool_spec (x y : Int) : Zle_bool_prop x y (Zle_bool x y) := by
   by_cases h : x ≤ y
   · simpa [Zle_bool, h] using Zle_bool_true_ (x := x) (y := y) h
   · have hyx : y < x := lt_of_not_ge h
     simpa [Zle_bool, h] using Zle_bool_false_ (x := x) (y := y) hyx
 
-/-- Boolean strict less-than test for integers
+/-- FLoCq `Zle_bool_true`. -/
+@[flocq_source "src/Core/Zaux.v" 590 "Zle_bool_true"]
+theorem Zle_bool_true (x y : Int) (h : x ≤ y) : Zle_bool x y = true := by
+  simp [Zle_bool, h]
 
-    Tests whether x < y, returning a boolean result.
-    This provides a decidable strict ordering test.
--/
+/-- FLoCq `Zle_bool_false`. -/
+@[flocq_source "src/Core/Zaux.v" 598 "Zle_bool_false"]
+theorem Zle_bool_false (x y : Int) (h : y < x) : Zle_bool x y = false := by
+  simp [Zle_bool, Int.not_le.mpr h]
+
+/-- FLoCq `Zle_bool_opp_l`. -/
+@[flocq_source "src/Core/Zaux.v" 610 "Zle_bool_opp_l"]
+theorem Zle_bool_opp_l (x y : Int) : Zle_bool (-x) y = Zle_bool (-y) x := by
+  by_cases h : -x ≤ y <;> simp [Zle_bool, h] <;> omega
+
+/-- FLoCq `Zle_bool_opp`. -/
+@[flocq_source "src/Core/Zaux.v" 619 "Zle_bool_opp"]
+theorem Zle_bool_opp (x y : Int) : Zle_bool (-x) (-y) = Zle_bool y x := by
+  simp [Zle_bool]
+
+/-- FLoCq `Zle_bool_opp_r`. -/
+@[flocq_source "src/Core/Zaux.v" 627 "Zle_bool_opp_r"]
+theorem Zle_bool_opp_r (x y : Int) : Zle_bool x (-y) = Zle_bool y (-x) := by
+  by_cases h : x ≤ -y <;> simp [Zle_bool, h] <;> omega
+
+end Zle_bool
+
+section Zlt_bool
+
+/-- Boolean strict integer order, Rocq's Stdlib `Zlt_bool` (a notation for `Z.ltb`). -/
+@[flocq_local "Rocq Stdlib ZArith.Zbool.Zlt_bool, a notation for Z.ltb; not defined in Flocq itself"]
 def Zlt_bool (x y : Int) : Bool :=
   decide (x < y)
 
 /-- Graph of the integer strict-order test (FLoCq `Zlt_bool_prop`). -/
+@[flocq_source "src/Core/Zaux.v" 640 "Zlt_bool_prop"]
 inductive Zlt_bool_prop (x y : Int) : Bool → Prop where
   | Zlt_bool_true_ : x < y → Zlt_bool_prop x y true
   | Zlt_bool_false_ : y ≤ x → Zlt_bool_prop x y false
 
 export Zlt_bool_prop (Zlt_bool_true_ Zlt_bool_false_)
 
-/-- Specification: Boolean strict ordering test -/
+/-- FLoCq `Zlt_bool_spec`: the graph of the Boolean strict-order test. -/
+@[flocq_source "src/Core/Zaux.v" 644 "Zlt_bool_spec"]
 theorem Zlt_bool_spec (x y : Int) : Zlt_bool_prop x y (Zlt_bool x y) := by
   by_cases h : x < y
   · simpa [Zlt_bool, h] using Zlt_bool_true_ (x := x) (y := y) h
   · have hyx : y ≤ x := le_of_not_gt h
     simpa [Zlt_bool, h] using Zlt_bool_false_ (x := x) (y := y) hyx
 
-/-- FLoCq `Zeq_bool_true`. -/
-theorem Zeq_bool_true (x y : Int) (h : x = y) : Zeq_bool x y = true := by
-  simp [Zeq_bool, h]
-
-/-- FLoCq `Zeq_bool_false`. -/
-theorem Zeq_bool_false (x y : Int) (h : x ≠ y) : Zeq_bool x y = false := by
-  simp [Zeq_bool, h]
-
-/-- FLoCq `Zeq_bool_diag`. -/
-theorem Zeq_bool_diag (x : Int) : Zeq_bool x x = true := by
-  simp [Zeq_bool]
-
-/-- FLoCq `Zeq_bool_opp`. -/
-theorem Zeq_bool_opp (x y : Int) : Zeq_bool (-x) y = Zeq_bool x (-y) := by
-  by_cases h : -x = y <;> simp [Zeq_bool, h] <;> omega
-
-/-- FLoCq `Zeq_bool_opp'`. -/
-theorem Zeq_bool_opp' (x y : Int) : Zeq_bool (-x) (-y) = Zeq_bool x y := by
-  simp [Zeq_bool]
-
-/-- FLoCq `Zle_bool_true`. -/
-theorem Zle_bool_true (x y : Int) (h : x ≤ y) : Zle_bool x y = true := by
-  simp [Zle_bool, h]
-
-/-- FLoCq `Zle_bool_false`. -/
-theorem Zle_bool_false (x y : Int) (h : y < x) : Zle_bool x y = false := by
-  simp [Zle_bool, Int.not_le.mpr h]
-
-/-- FLoCq `Zle_bool_opp_l`. -/
-theorem Zle_bool_opp_l (x y : Int) : Zle_bool (-x) y = Zle_bool (-y) x := by
-  by_cases h : -x ≤ y <;> simp [Zle_bool, h] <;> omega
-
-/-- FLoCq `Zle_bool_opp`. -/
-theorem Zle_bool_opp (x y : Int) : Zle_bool (-x) (-y) = Zle_bool y x := by
-  simp [Zle_bool]
-
-/-- FLoCq `Zle_bool_opp_r`. -/
-theorem Zle_bool_opp_r (x y : Int) : Zle_bool x (-y) = Zle_bool y (-x) := by
-  by_cases h : x ≤ -y <;> simp [Zle_bool, h] <;> omega
-
-/-- FLoCq `negb_Zle_bool`. -/
-theorem negb_Zle_bool (x y : Int) : !Zle_bool x y = Zlt_bool y x := by
-  by_cases h : x ≤ y <;> simp [Zle_bool, Zlt_bool, h]
-
-/-- FLoCq `negb_Zlt_bool`. -/
-theorem negb_Zlt_bool (x y : Int) : !Zlt_bool x y = Zle_bool y x := by
-  by_cases h : x < y <;> simp [Zlt_bool, Zle_bool, h]
-
 /-- FLoCq `Zlt_bool_true`. -/
+@[flocq_source "src/Core/Zaux.v" 656 "Zlt_bool_true"]
 theorem Zlt_bool_true (x y : Int) (h : x < y) : Zlt_bool x y = true := by
   simp [Zlt_bool, h]
 
 /-- FLoCq `Zlt_bool_false`. -/
+@[flocq_source "src/Core/Zaux.v" 664 "Zlt_bool_false"]
 theorem Zlt_bool_false (x y : Int) (h : y ≤ x) : Zlt_bool x y = false := by
   simp [Zlt_bool, Int.not_lt.mpr h]
 
+/-- FLoCq `negb_Zle_bool`. The parentheses matter: `!a = b` would parse as `!(a = b)`. -/
+@[flocq_source "src/Core/Zaux.v" 676 "negb_Zle_bool"]
+theorem negb_Zle_bool (x y : Int) : (!Zle_bool x y) = Zlt_bool y x := by
+  simp only [Zle_bool, Zlt_bool, ← decide_not, Int.not_le]
+
+/-- FLoCq `negb_Zlt_bool`. -/
+@[flocq_source "src/Core/Zaux.v" 686 "negb_Zlt_bool"]
+theorem negb_Zlt_bool (x y : Int) : (!Zlt_bool x y) = Zle_bool y x := by
+  simp only [Zlt_bool, Zle_bool, ← decide_not, Int.not_lt]
+
 /-- FLoCq `Zlt_bool_opp_l`. -/
+@[flocq_source "src/Core/Zaux.v" 696 "Zlt_bool_opp_l"]
 theorem Zlt_bool_opp_l (x y : Int) : Zlt_bool (-x) y = Zlt_bool (-y) x := by
   by_cases h : -x < y <;> simp [Zlt_bool, h] <;> omega
 
 /-- FLoCq `Zlt_bool_opp_r`. -/
+@[flocq_source "src/Core/Zaux.v" 705 "Zlt_bool_opp_r"]
 theorem Zlt_bool_opp_r (x y : Int) : Zlt_bool x (-y) = Zlt_bool y (-x) := by
   by_cases h : x < -y <;> simp [Zlt_bool, h] <;> omega
 
 /-- FLoCq `Zlt_bool_opp`. -/
+@[flocq_source "src/Core/Zaux.v" 714 "Zlt_bool_opp"]
 theorem Zlt_bool_opp (x y : Int) : Zlt_bool (-x) (-y) = Zlt_bool y x := by
   simp [Zlt_bool]
 
-end BooleanComparisons
+end Zlt_bool
 
 section Zcompare
 
-/-- Three-way comparison for integers
-
-    Returns Lt if x < y, Eq if x = y, and Gt if x > y.
-    This provides a complete ordering comparison in one operation.
--/
-def Zcompare (x y : Int) : Ordering :=
-  if x < y then Ordering.lt
-  else if x = y then Ordering.eq
-  else Ordering.gt
+/-! Rocq's `comparison` is Lean's `Ordering` (constructors `Lt`/`Eq`/`Gt` are `.lt`/`.eq`/`.gt`),
+and Rocq's `Z.compare` is Lean's `compare` on `Int`, so Flocq's `Zcompare_*` lemmas are stated
+about `compare` directly. -/
 
 /-- Graph of integer comparison (FLoCq `Zcompare_prop`). -/
+@[flocq_source "src/Core/Zaux.v" 727 "Zcompare_prop"]
 inductive Zcompare_prop (x y : Int) : Ordering → Prop where
   | Zcompare_Lt_ : x < y → Zcompare_prop x y .lt
   | Zcompare_Eq_ : x = y → Zcompare_prop x y .eq
@@ -715,126 +731,31 @@ inductive Zcompare_prop (x y : Int) : Ordering → Prop where
 
 export Zcompare_prop (Zcompare_Lt_ Zcompare_Eq_ Zcompare_Gt_)
 
-/-- FLoCq `Zcompare_spec`. -/
-theorem Zcompare_spec (x y : Int) : Zcompare_prop x y (Zcompare x y) := by
-  by_cases hxy : x < y
-  · simpa [Zcompare, hxy] using Zcompare_Lt_ (x := x) (y := y) hxy
-  · by_cases hxeq : x = y
-    · simpa [Zcompare, hxy, hxeq] using Zcompare_Eq_ (x := x) (y := y) hxeq
-    · have hyx : y < x := lt_of_le_of_ne (le_of_not_gt hxy) (Ne.symm hxeq)
-      simpa [Zcompare, hxy, hxeq] using Zcompare_Gt_ (x := x) (y := y) hyx
-
-/-- Specification: Three-way comparison correctness
-
-    The comparison function returns:
-    - Lt when x < y
-    - Eq when x = y
-    - Gt when x > y
-
-    This captures the complete ordering of integers.
--/
-theorem Zcompare_behavior_spec (x y : Int) :
-    (Zcompare x y = Ordering.lt ↔ x < y) ∧
-    (Zcompare x y = Ordering.eq ↔ x = y) ∧
-    (Zcompare x y = Ordering.gt ↔ y < x) := by
-  unfold Zcompare
-
-  -- Split on whether x < y
-  split
-  · -- Case: x < y
-    rename_i h_lt
-    constructor
-    · -- Prove: Ordering.lt = Ordering.lt ↔ x < y
-      exact ⟨fun _ => h_lt, fun _ => rfl⟩
-    constructor
-    · -- Prove: Ordering.lt = Ordering.eq ↔ x = y
-      constructor
-      · intro h_eq
-        -- Ordering.lt = Ordering.eq is impossible
-        cases h_eq
-      · intro h_eq
-        -- If x = y and x < y, contradiction
-        rw [h_eq] at h_lt
-        exact absurd h_lt (lt_irrefl y)
-    · -- Prove: Ordering.lt = Ordering.gt ↔ y < x
-      constructor
-      · intro h_eq
-        -- Ordering.lt = Ordering.gt is impossible
-        cases h_eq
-      · intro h_gt
-        -- If y < x and x < y, contradiction
-        exact absurd h_lt (not_lt.mpr (le_of_lt h_gt))
-
-  · -- Case: ¬(x < y), split on whether x = y
-    rename_i h_not_lt
-    split
-    · -- Case: x = y
-      rename_i h_eq
-      constructor
-      · -- Prove: Ordering.eq = Ordering.lt ↔ x < y
-        constructor
-        · intro h_ord_eq
-          -- Ordering.eq = Ordering.lt is impossible
-          cases h_ord_eq
-        · intro h_lt
-          -- If x < y but ¬(x < y), contradiction
-          exact absurd h_lt h_not_lt
-      constructor
-      · -- Prove: Ordering.eq = Ordering.eq ↔ x = y
-        exact ⟨fun _ => h_eq, fun _ => rfl⟩
-      · -- Prove: Ordering.eq = Ordering.gt ↔ y < x
-        constructor
-        · intro h_ord_eq
-          -- Ordering.eq = Ordering.gt is impossible
-          cases h_ord_eq
-        · intro h_gt
-          -- If y < x and x = y, contradiction
-          rw [← h_eq] at h_gt
-          exact absurd h_gt (lt_irrefl x)
-
-    · -- Case: ¬(x < y) ∧ ¬(x = y), so y < x
-      rename_i h_not_eq
-      -- In this case, y < x
-      have h_gt : y < x := by
-        -- Since ¬(x < y) and ¬(x = y), we must have y < x
-        cases' lt_trichotomy x y with h h
-        · exact absurd h h_not_lt
-        · cases' h with h h
-          · exact absurd h h_not_eq
-          · exact h
-
-      constructor
-      · -- Prove: Ordering.gt = Ordering.lt ↔ x < y
-        constructor
-        · intro h_ord_eq
-          -- Ordering.gt = Ordering.lt is impossible
-          cases h_ord_eq
-        · intro h_lt
-          -- If x < y but ¬(x < y), contradiction
-          exact absurd h_lt h_not_lt
-      constructor
-      · -- Prove: Ordering.gt = Ordering.eq ↔ x = y
-        constructor
-        · intro h_ord_eq
-          -- Ordering.gt = Ordering.eq is impossible
-          cases h_ord_eq
-        · intro h_eq
-          -- If x = y but ¬(x = y), contradiction
-          exact absurd h_eq h_not_eq
-      · -- Prove: Ordering.gt = Ordering.gt ↔ y < x
-        exact ⟨fun _ => h_gt, fun _ => rfl⟩
+/-- FLoCq `Zcompare_spec`: the graph of integer comparison. -/
+@[flocq_source "src/Core/Zaux.v" 732 "Zcompare_spec"]
+theorem Zcompare_spec (x y : Int) : Zcompare_prop x y (compare x y) := by
+  rcases lt_trichotomy x y with h | h | h
+  · rw [compare_lt_iff_lt.mpr h]
+    exact Zcompare_Lt_ h
+  · rw [compare_eq_iff_eq.mpr h]
+    exact Zcompare_Eq_ h
+  · rw [compare_gt_iff_gt.mpr h]
+    exact Zcompare_Gt_ h
 
 /-- FLoCq `Zcompare_Lt`. -/
-theorem Zcompare_Lt (x y : Int) (h : x < y) : Zcompare x y = Ordering.lt := by
-  simp [Zcompare, h]
+@[flocq_source "src/Core/Zaux.v" 749 "Zcompare_Lt"]
+theorem Zcompare_Lt (x y : Int) (h : x < y) : compare x y = Ordering.lt :=
+  compare_lt_iff_lt.mpr h
 
 /-- FLoCq `Zcompare_Eq`. -/
-theorem Zcompare_Eq (x y : Int) (h : x = y) : Zcompare x y = Ordering.eq := by
-  simp [Zcompare, h]
+@[flocq_source "src/Core/Zaux.v" 756 "Zcompare_Eq"]
+theorem Zcompare_Eq (x y : Int) (h : x = y) : compare x y = Ordering.eq :=
+  compare_eq_iff_eq.mpr h
 
 /-- FLoCq `Zcompare_Gt`. -/
-theorem Zcompare_Gt (x y : Int) (h : y < x) : Zcompare x y = Ordering.gt := by
-  simp [Zcompare, Int.not_lt.mpr h.le, ne_of_gt h]
+@[flocq_source "src/Core/Zaux.v" 764 "Zcompare_Gt"]
+theorem Zcompare_Gt (x y : Int) (h : y < x) : compare x y = Ordering.gt :=
+  compare_gt_iff_gt.mpr h
 
 end Zcompare
 
@@ -850,34 +771,25 @@ section CondZopp
 def cond_Zopp (b : Bool) (x : Int) : Int :=
   if b then -x else x
 
-/-- Specification: Conditional negation
-
-    The conditional opposite operation returns:
-    - -x when b is true
-    - x when b is false
-
-    This is fundamental for handling signs in floating-point.
--/
-theorem cond_Zopp_spec (b : Bool) (x : Int) :
-    cond_Zopp b x = if b then -x else x := by
-  unfold cond_Zopp
-  rfl
-
 /-- FLoCq `cond_Zopp_0`. -/
+@[flocq_source "src/Core/Zaux.v" 776 "cond_Zopp_0"]
 theorem cond_Zopp_0 (sx : Bool) : cond_Zopp sx 0 = 0 := by
   cases sx <;> rfl
 
 /-- FLoCq `cond_Zopp_negb`. -/
+@[flocq_source "src/Core/Zaux.v" 782 "cond_Zopp_negb"]
 theorem cond_Zopp_negb (x : Bool) (y : Int) :
     cond_Zopp (!x) y = -cond_Zopp x y := by
   cases x <;> simp [cond_Zopp]
 
 /-- FLoCq `abs_cond_Zopp`. -/
+@[flocq_source "src/Core/Zaux.v" 790 "abs_cond_Zopp"]
 theorem abs_cond_Zopp (b : Bool) (m : Int) :
     |cond_Zopp b m| = |m| := by
   cases b <;> simp [cond_Zopp]
 
 /-- FLoCq `cond_Zopp_Zlt_bool`. -/
+@[flocq_source "src/Core/Zaux.v" 799 "cond_Zopp_Zlt_bool"]
 theorem cond_Zopp_Zlt_bool (m : Int) :
     cond_Zopp (Zlt_bool m 0) m = |m| := by
   by_cases h : m < 0
@@ -885,6 +797,7 @@ theorem cond_Zopp_Zlt_bool (m : Int) :
   · simp [cond_Zopp, Zlt_bool, h, abs_of_nonneg (le_of_not_gt h)]
 
 /-- FLoCq `Zeq_bool_cond_Zopp`. -/
+@[flocq_source "src/Core/Zaux.v" 811 "Zeq_bool_cond_Zopp"]
 theorem Zeq_bool_cond_Zopp (s : Bool) (m n : Int) :
     Zeq_bool (cond_Zopp s m) n = Zeq_bool m (cond_Zopp s n) := by
   cases s
@@ -895,17 +808,27 @@ end CondZopp
 
 section FastPower
 
-/-- Fast exponentiation for positive exponents
-
-    Computes v^e efficiently using repeated squaring.
-    This provides O(log e) complexity instead of O(e).
--/
+/-- Fast exponentiation for positive exponents, by repeated squaring along the binary digits
+of the exponent: FLoCq's `Zfast_pow_pos`, with Rocq's `Z.square x` written `x ^ 2`. -/
+@[flocq_source "src/Core/Zaux.v" 824 "Zfast_pow_pos"]
 def Zfast_pow_pos (v : Int) (e : Positive) : Int :=
-  v ^ positiveToNat e
+  match e with
+  | .xH => v
+  | .xO e' => Zfast_pow_pos v e' ^ 2
+  | .xI e' => v * Zfast_pow_pos v e' ^ 2
 
-/-- Coq-compat name: correctness of fast exponentiation for positive exponents -/
+/-- FLoCq `Zfast_pow_pos_correct`: repeated squaring computes the positive power. -/
+@[flocq_source "src/Core/Zaux.v" 831 "Zfast_pow_pos_correct"]
 theorem Zfast_pow_pos_correct (v : Int) (e : Positive) :
-    Zfast_pow_pos v e = Zpower_pos v e := rfl
+    Zfast_pow_pos v e = Zpower_pos v e := by
+  induction e with
+  | xH => simp [Zfast_pow_pos, Zpower_pos, positiveToNat]
+  | xO e ih =>
+      simp only [Zfast_pow_pos, ih, Zpower_pos, positiveToNat]
+      ring
+  | xI e ih =>
+      simp only [Zfast_pow_pos, ih, Zpower_pos, positiveToNat]
+      ring
 
 end FastPower
 
@@ -916,10 +839,11 @@ def Z_div_eucl (a b : Int) : (Int × Int) :=
   let q := Int.fdiv a b
   (q, a - b * q)
 
-/-- FLoCq `Zdiv_eucl_unique`. -/
+/-- FLoCq `Zdiv_eucl_unique`, with Rocq's floor `Z.div`/`Z.modulo` as `Int.fdiv`/`Int.fmod`. -/
+@[flocq_source "src/Core/Zaux.v" 853 "Zdiv_eucl_unique"]
 theorem Zdiv_eucl_unique (a b : Int) :
-    Z_div_eucl a b =
-      (Int.fdiv a b, a - b * Int.fdiv a b) := rfl
+    Z_div_eucl a b = (Int.fdiv a b, Int.fmod a b) := by
+  simp [Z_div_eucl, Int.fmod_def]
 
 /-- Coq `Zpos`: embed a positive integer into `Int`. -/
 def Zpos (p : Positive) : Int :=
@@ -1060,12 +984,12 @@ end FasterDiv
 
 section Iteration
 
-/-- Generic iteration of a function
+/-- Generic iteration of a function: applies `f` to `x` a total of `n` times.
 
-    Applies function f to x a total of n times.
-    This provides a generic iteration construct used
-    throughout the formalization.
--/
+    FLoCq's `iter_nat` (Zaux.v:980) has the same type but recurses as
+    `iter_nat n' (f x)`, applying `f` first; this body applies it last. The
+    two agree on every input (`iter_nat_S`), but the definitions differ, so
+    this one carries no source anchor. -/
 def iter_nat {A : Type} (f : A → A) (n : Nat) (x : A) : A :=
   match n with
   | 0 => x
@@ -1080,10 +1004,12 @@ theorem iter_nat_spec {A : Type} (f : A → A) (n : Nat) (x : A) :
       simpa [iter_nat, Function.iterate_succ_apply'] using congrArg f (ih x)
 
 /-- FLoCq `iter_nat_S`. -/
+@[flocq_source "src/Core/Zaux.v" 997 "iter_nat_S"]
 theorem iter_nat_S {A : Type} (f : A → A) (p : Nat) (x : A) :
     iter_nat f (p + 1) x = f (iter_nat f p x) := rfl
 
 /-- FLoCq `iter_nat_plus`. -/
+@[flocq_source "src/Core/Zaux.v" 986 "iter_nat_plus"]
 theorem iter_nat_plus {A : Type} (f : A → A) (p q : Nat) (x : A) :
     iter_nat f (p + q) x = iter_nat f p (iter_nat f q x) := by
   induction p with
@@ -1107,6 +1033,7 @@ private theorem iter_nat_apply {A : Type} (f : A → A) (n : Nat) (x : A) :
   | succ n ih => simpa [iter_nat] using congrArg f ih
 
 /-- FLoCq `iter_pos_nat`; also preserves the previous natural-count implementation. -/
+@[flocq_source "src/Core/Zaux.v" 1008 "iter_pos_nat"]
 theorem iter_pos_nat {A : Type} (f : A → A) (p : Positive) (x : A) :
     iter_pos f p x = iter_nat f (positiveToNat p) x := by
   induction p generalizing x with
