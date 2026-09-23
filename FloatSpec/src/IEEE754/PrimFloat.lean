@@ -1530,17 +1530,798 @@ def nativeNextUp (x : Float) : Float := Float.ofBits (nextUpBits x.toBits)
 /-- Native-carrier predecessor implemented through the binary64 bit layout. -/
 def nativeNextDown (x : Float) : Float := Float.ofBits (nextDownBits x.toBits)
 
-set_option warningAsError false in
-/-- Bridge obligation from native-carrier successor to Flocq's `Bsucc` model. -/
+/-! ### Native binary64 neighbours
+
+The proofs below read a binary64 word through its natural-number value.
+`decodeWord64 n` splits `n` into sign, biased exponent, and fraction exactly as
+`Float.Model.UnpackedFloat.unpack` does. Every model word decodes to the
+FLoCq value it encodes, so the word-level successor and predecessor can be
+compared with `Bsucc` and `Bpred` case by case. The finite cases of `Bsucc`
+are identified through `binary_round_correct`, after computing the canonical
+exponent and the rounded scaled mantissa of its argument directly. -/
+
+section NativeNeighbours
+
+open FloatSpec.IEEE754.Native
+
+local instance : Prec_gt_0 primPrec := Hprec
+
+local instance : Prec_lt_emax primPrec primEmax := Hmax
+
+/-- Decode the 63 magnitude bits `r` of a binary64 word with sign `s`:
+biased exponent `r / 2^52`, fraction `r % 2^52`. -/
+private def decodeMagnitude64 (s : Bool) (r : Nat) : StandardFloat :=
+  if r / 4503599627370496 = 2047 then
+    (if r % 4503599627370496 = 0 then .S754_infinity s else .S754_nan)
+  else if r / 4503599627370496 = 0 then
+    (if r % 4503599627370496 = 0 then .S754_zero s
+     else .S754_finite s (r % 4503599627370496) (-1074))
+  else .S754_finite s (4503599627370496 + r % 4503599627370496)
+    (((r / 4503599627370496 : Nat) : Int) - 1075)
+
+/-- Decode the natural-number value of a 64-bit binary64 word. -/
+private def decodeWord64 (n : Nat) : StandardFloat :=
+  decodeMagnitude64 (decide (9223372036854775808 ≤ n)) (n % 9223372036854775808)
+
+/-- `decodeWord64` is Lean's `UnpackedFloat.unpack` read through FLoCq's surface. -/
+private theorem decode_unpack (w : UInt64) :
+    standardFloatOfUnpacked
+      (Float.Model.UnpackedFloat.unpack Float.Model.Format.binary64 w.toBitVec) =
+      decodeWord64 w.toNat := by
+  have hlt : w.toNat < 18446744073709551616 := w.toNat_lt
+  have hmv : (Float.Model.UnpackedFloat.unpackMantissa (spec := Float.Model.Format.binary64)
+      w.toBitVec).toNat = w.toNat % 4503599627370496 := by
+    simp [Float.Model.UnpackedFloat.unpackMantissa]
+  have hev : (Float.Model.UnpackedFloat.unpackExponent (spec := Float.Model.Format.binary64)
+      w.toBitVec).toNat = w.toNat / 4503599627370496 % 2048 := by
+    simp [Float.Model.UnpackedFloat.unpackExponent, Nat.shiftRight_eq_div_pow]
+  have hsv : (Float.Model.UnpackedFloat.unpackSign (spec := Float.Model.Format.binary64)
+      w.toBitVec).toNat = w.toNat / 9223372036854775808 % 2 := by
+    simp [Float.Model.UnpackedFloat.unpackSign, Nat.shiftRight_eq_div_pow]
+  have hE1 : Float.Model.UnpackedFloat.unpackExponent (spec := Float.Model.Format.binary64)
+      w.toBitVec = -1#11 ↔ w.toNat % 9223372036854775808 / 4503599627370496 = 2047 := by
+    rw [← BitVec.toNat_inj, hev]
+    simp only [BitVec.toNat_neg, BitVec.toNat_ofNat]
+    omega
+  have hE0 : Float.Model.UnpackedFloat.unpackExponent (spec := Float.Model.Format.binary64)
+      w.toBitVec = 0#11 ↔ w.toNat % 9223372036854775808 / 4503599627370496 = 0 := by
+    rw [← BitVec.toNat_inj, hev]
+    simp only [BitVec.toNat_ofNat]
+    omega
+  have hM0 : Float.Model.UnpackedFloat.unpackMantissa (spec := Float.Model.Format.binary64)
+      w.toBitVec = 0#52 ↔ w.toNat % 9223372036854775808 % 4503599627370496 = 0 := by
+    rw [← BitVec.toNat_inj, hmv]
+    simp only [BitVec.toNat_ofNat]
+    omega
+  have hsign : boolOfModelSign (Float.Model.UnpackedFloat.Sign.ofBitVec
+      (Float.Model.UnpackedFloat.unpackSign (spec := Float.Model.Format.binary64) w.toBitVec)) =
+      decide (9223372036854775808 ≤ w.toNat) := by
+    unfold Float.Model.UnpackedFloat.Sign.ofBitVec
+    by_cases h : 9223372036854775808 ≤ w.toNat
+    · have hne : Float.Model.UnpackedFloat.unpackSign (spec := Float.Model.Format.binary64)
+          w.toBitVec ≠ 0#1 := by
+        rw [ne_eq, ← BitVec.toNat_inj, hsv]; simp only [BitVec.toNat_ofNat]; omega
+      simp [hne, h, boolOfModelSign]
+    · have heq : Float.Model.UnpackedFloat.unpackSign (spec := Float.Model.Format.binary64)
+          w.toBitVec = 0#1 := by
+        rw [← BitVec.toNat_inj, hsv]; simp only [BitVec.toNat_ofNat]; omega
+      simp [heq, h, boolOfModelSign]
+  have hnorm : (1#1 ++ Float.Model.UnpackedFloat.unpackMantissa
+      (spec := Float.Model.Format.binary64)
+      w.toBitVec).toNat = 4503599627370496 + w.toNat % 9223372036854775808 % 4503599627370496 := by
+    have hmLt : (Float.Model.UnpackedFloat.unpackMantissa (spec := Float.Model.Format.binary64)
+        w.toBitVec).toNat < 2 ^ 52 := BitVec.isLt _
+    have hmEq : (1#1 ++ Float.Model.UnpackedFloat.unpackMantissa
+        (spec := Float.Model.Format.binary64) w.toBitVec).toNat =
+        2 ^ 52 + (Float.Model.UnpackedFloat.unpackMantissa
+          (spec := Float.Model.Format.binary64) w.toBitVec).toNat := by
+      simp only [BitVec.toNat_append]
+      simpa [Nat.shiftLeft_eq] using (Nat.shiftLeft_add_eq_or_of_lt hmLt 1).symm
+    rw [hmEq, hmv]
+    omega
+  unfold Float.Model.UnpackedFloat.unpack
+  simp only [decodeWord64, decodeMagnitude64, hE1, hE0, hM0]
+  split_ifs <;> simp_all [standardFloatOfUnpacked, Float.Model.Format.exponentBias] <;> omega
+
+private theorem unpack_ofBits (w : UInt64) :
+    (Float.Model.ofBits w).unpack =
+      Float.Model.UnpackedFloat.unpack Float.Model.Format.binary64 w.toBitVec := by
+  unfold Float.Model.ofBits Float.Model.pack Float.Model.unpack
+  simp only [UInt64.toBitVec_ofBitVec]
+  rw [Float.Model.UnpackedFloat.pack_unpack]
+  split_ifs with h
+  · rw [Float.Model.UnpackedFloat.unpack_packedNaN]
+    unfold Float.Model.UnpackedFloat.isNaNBits at h
+    simp only [decide_eq_true_eq] at h
+    unfold Float.Model.UnpackedFloat.unpack
+    simp [h.1, h.2]
+  · rfl
+
+private theorem standardFloatOfModel64_eq_decodeWord64 (m : Float.Model) :
+    standardFloatOfModel64 m = decodeWord64 m.toBits.toNat := by
+  unfold standardFloatOfModel64 Float.Model.unpack
+  exact decode_unpack m.toBits
+
+private theorem decodeWord64_model64 (b : FaithfulPrimFloat.PrimBinaryFloat) :
+    decodeWord64 (model64OfBinarySingleNaNFloat b).toBits.toNat = FaithfulPrimFloat.B2SF b := by
+  rw [← standardFloatOfModel64_eq_decodeWord64,
+    model64OfBinarySingleNaNFloat_eq_model64OfStandardFloat]
+  exact standardFloatOfModel64_model64OfStandardFloat _ (FaithfulPrimFloat.B2SF_valid b)
+
+private theorem decodeWord64_ofBits (w : UInt64) :
+    standardFloatOfModel64 (Float.Model.ofBits w) = decodeWord64 w.toNat := by
+  unfold standardFloatOfModel64
+  rw [unpack_ofBits]
+  exact decode_unpack w
+
+
+
+/-- `nextUpBits` on the natural-number value of the word. -/
+private def nextUpWord (n : Nat) : Nat :=
+  if 9218868437227405312 < n % 9223372036854775808 then n
+  else if n = 9218868437227405312 then n
+  else if n % 9223372036854775808 = 0 then 1
+  else if 9223372036854775808 ≤ n then n - 1 else n + 1
+
+/-- `nextDownBits` on the natural-number value of the word. -/
+private def nextDownWord (n : Nat) : Nat :=
+  if 9218868437227405312 < n % 9223372036854775808 then n
+  else if n = 18442240474082181120 then n
+  else if n % 9223372036854775808 = 0 then 9223372036854775809
+  else if 9223372036854775808 ≤ n then n + 1 else n - 1
+
+private theorem magnitudeMask_toNat (w : UInt64) :
+    (w &&& 0x7fffffffffffffff).toNat = w.toNat % 9223372036854775808 := by
+  rw [UInt64.toNat_and]
+  have h : (0x7fffffffffffffff : UInt64).toNat = 2 ^ 63 - 1 := by decide
+  rw [h, Nat.and_two_pow_sub_one_eq_mod]
+
+private theorem signMask_ne_zero (w : UInt64) :
+    (w &&& 0x8000000000000000 != 0) = decide (9223372036854775808 ≤ w.toNat) := by
+  have hlt := w.toNat_lt
+  have hc : (0x8000000000000000 : UInt64).toNat = 2 ^ 63 := by decide
+  have hdiv : (w &&& 0x8000000000000000).toNat / 2 ^ 63 = w.toNat / 2 ^ 63 % 2 := by
+    rw [UInt64.toNat_and, hc, Nat.and_div_two_pow, Nat.div_self (by positivity),
+      Nat.and_one_is_mod]
+  have hmod : (w &&& 0x8000000000000000).toNat % 2 ^ 63 = 0 := by
+    rw [UInt64.toNat_and, hc, Nat.and_mod_two_pow, Nat.mod_self, Nat.and_zero]
+  have hiff : (w &&& 0x8000000000000000 != 0) = true ↔ 9223372036854775808 ≤ w.toNat := by
+    rw [bne_iff_ne, ne_eq, ← UInt64.toNat_inj]
+    simp only [UInt64.toNat_zero]
+    omega
+  by_cases h : 9223372036854775808 ≤ w.toNat
+  · simp only [h, decide_true]; exact hiff.mpr h
+  · simp only [h, decide_false]
+    cases hb : (w &&& 0x8000000000000000 != 0)
+    · rfl
+    · exact absurd (hiff.mp hb) h
+
+private theorem nextUpBits_toNat (w : UInt64) :
+    (nextUpBits w).toNat = nextUpWord w.toNat := by
+  have hlt := w.toNat_lt
+  unfold nextUpBits nextUpWord
+  simp only [signMask_ne_zero]
+  simp only [gt_iff_lt, UInt64.lt_iff_toNat_lt, magnitudeMask_toNat, beq_iff_eq,
+    ← UInt64.toNat_inj]
+  split_ifs <;> simp_all [UInt64.toNat_sub, UInt64.toNat_add] <;> omega
+
+private theorem nextDownBits_toNat (w : UInt64) :
+    (nextDownBits w).toNat = nextDownWord w.toNat := by
+  have hlt := w.toNat_lt
+  unfold nextDownBits nextDownWord
+  simp only [signMask_ne_zero]
+  simp only [gt_iff_lt, UInt64.lt_iff_toNat_lt, magnitudeMask_toNat, beq_iff_eq,
+    ← UInt64.toNat_inj]
+  split_ifs <;> simp_all [UInt64.toNat_sub, UInt64.toNat_add] <;> omega
+
+
+
+/-- Identify an in-range `binary_round` result from its rounded real value. -/
+private theorem binary_round_eq_of_roundR (mode : RoundingMode) (s : Bool) (M : Nat) (E : Int)
+    (hM : 0 < M) (t : StandardFloat)
+    (ht : validBinarySingleNaNStandardFloat (prec := primPrec) (emax := primEmax) t = true)
+    (hfin : is_finite_SF t = true) (hsign : sign_SF t = s)
+    (hround : FloatSpec.Core.Generic_fmt.roundR 2 (FLT_exp (3 - primEmax - primPrec) primPrec)
+      (rnd_of_mode mode) (SF2R 2 (StandardFloat.S754_finite s M E)) = SF2R 2 t)
+    (hlt : |SF2R 2 t| < FloatSpec.Core.Raux.bpow 2 primEmax) :
+    _root_.binary_round (prec := primPrec) (emax := primEmax) mode s M E = t := by
+  have h := _root_.binary_round_correct (prec := primPrec) (emax := primEmax) mode s M E hM
+  obtain ⟨hvalid, hpay⟩ := h
+  simp only [hround] at hpay
+  have hcond : FloatSpec.Core.Raux.Rlt_bool |SF2R 2 t|
+      (FloatSpec.Core.Raux.bpow 2 primEmax) = true := by
+    simp [FloatSpec.Core.Raux.Rlt_bool, hlt]
+  rw [hcond] at hpay
+  simp only [↓reduceIte] at hpay
+  obtain ⟨hv, hf, hs⟩ := hpay
+  exact ExperimentalSingleNaNArithmetic.standardFloat_eq_of_valid_finite_sign_value
+    (prec := primPrec) (emax := primEmax) _ _ hvalid ht hf hfin hv (hs.trans hsign.symm)
+
+/-- A rounded value of magnitude at least `2^emax` makes `binary_round` overflow. -/
+private theorem binary_round_eq_overflow (mode : RoundingMode) (s : Bool) (M : Nat) (E : Int)
+    (hM : 0 < M) (X : ℝ)
+    (hround : FloatSpec.Core.Generic_fmt.roundR 2 (FLT_exp (3 - primEmax - primPrec) primPrec)
+      (rnd_of_mode mode) (SF2R 2 (StandardFloat.S754_finite s M E)) = X)
+    (hge : ¬ |X| < FloatSpec.Core.Raux.bpow 2 primEmax) :
+    _root_.binary_round (prec := primPrec) (emax := primEmax) mode s M E =
+      bsn_binary_overflow (prec := primPrec) (emax := primEmax) mode s := by
+  have h := _root_.binary_round_correct (prec := primPrec) (emax := primEmax) mode s M E hM
+  obtain ⟨hvalid, hpay⟩ := h
+  simp only [hround] at hpay
+  have hcond : FloatSpec.Core.Raux.Rlt_bool |X|
+      (FloatSpec.Core.Raux.bpow 2 primEmax) = false := by
+    simp [FloatSpec.Core.Raux.Rlt_bool, hge]
+  rw [hcond] at hpay
+  simpa using hpay
+
+private theorem primMag_eq (x : ℝ) (k : Int) (h1 : (2 : ℝ) ^ (k - 1) ≤ |x|)
+    (h2 : |x| < (2 : ℝ) ^ k) :
+    FloatSpec.Core.Raux.mag 2 x = k := by
+  have h := FloatSpec.Core.Raux.mag_unique 2 x k (by norm_num) (by exact_mod_cast h1)
+    (by exact_mod_cast h2)
+  simpa [wp, PostCond.noThrow, pure] using h trivial
+
+private theorem primMag_le (x : ℝ) (k : Int) (hx : x ≠ 0) (h2 : |x| < (2 : ℝ) ^ k) :
+    FloatSpec.Core.Raux.mag 2 x ≤ k := by
+  have h := FloatSpec.Core.Raux.mag_le_bpow 2 x k (by norm_num) hx (by exact_mod_cast h2)
+  simpa [wp, PostCond.noThrow, pure] using h trivial
+
+
+private abbrev primFexp : Int → Int := FLT_exp (3 - primEmax - primPrec) primPrec
+
+private theorem primFexp_eq (k : Int) : primFexp k = max (k - 53) (-1074) := by
+  simp [primFexp, FLT_exp, FloatSpec.Core.FLT.FLT_exp, primPrec, primEmax]
+
+private theorem roundR_of_cexp (rnd : ℝ → Int) (x : ℝ) (c : Int)
+    (hc : FloatSpec.Core.Generic_fmt.cexp 2 primFexp x = c) :
+    FloatSpec.Core.Generic_fmt.roundR 2 primFexp rnd x =
+      ((rnd (x * (2 : ℝ) ^ (-c)) : Int) : ℝ) * (2 : ℝ) ^ c := by
+  unfold FloatSpec.Core.Generic_fmt.roundR FloatSpec.Core.Generic_fmt.scaled_mantissa
+  simp only [hc]
+  norm_num
+
+private theorem SF2R_finite (s : Bool) (m : Nat) (e : Int) :
+    SF2R 2 (StandardFloat.S754_finite s m e) =
+      (if s then -(m : ℝ) else (m : ℝ)) * (2 : ℝ) ^ e := by
+  cases s <;> simp [SF2R, FloatSpec.Core.Defs.F2R]
+
+/-- The canonical exponent of a real whose magnitude is `y * 2^e` in the binary64 range. -/
+private theorem cexp_of_real (x y : ℝ) (e : Int) (hx : |x| = y * (2 : ℝ) ^ e)
+    (hy0 : 0 < y) (hy : y < 2 ^ 53) (he1 : -1074 ≤ e)
+    (hsub : y < 2 ^ 52 → e = -1074) :
+    FloatSpec.Core.Generic_fmt.cexp 2 primFexp x = e := by
+  unfold FloatSpec.Core.Generic_fmt.cexp
+  simp only
+  rw [primFexp_eq]
+  have hpos : (0 : ℝ) < (2 : ℝ) ^ e := zpow_pos (by norm_num) e
+  by_cases hn : (2 : ℝ) ^ 52 ≤ y
+  · have hlo : (2 : ℝ) ^ (53 + e - 1) ≤ |x| := by
+      rw [hx, show 53 + e - 1 = (52 : Int) + e by ring, zpow_add₀ (by norm_num)]
+      exact mul_le_mul_of_nonneg_right (by exact_mod_cast hn) hpos.le
+    have hhi : |x| < (2 : ℝ) ^ (53 + e) := by
+      rw [hx, zpow_add₀ (by norm_num)]
+      exact mul_lt_mul_of_pos_right (by exact_mod_cast hy) hpos
+    rw [primMag_eq x (53 + e) hlo hhi]
+    omega
+  · have hx0 : x ≠ 0 := by
+      intro h0
+      rw [h0, abs_zero] at hx
+      have : (0 : ℝ) < y * (2 : ℝ) ^ e := mul_pos hy0 hpos
+      linarith
+    have hhi : |x| < (2 : ℝ) ^ (52 + e) := by
+      rw [hx, zpow_add₀ (by norm_num)]
+      exact mul_lt_mul_of_pos_right (by exact_mod_cast (lt_of_not_ge hn)) hpos
+    have hle := primMag_le x (52 + e) hx0 hhi
+    have he : e = -1074 := hsub (lt_of_not_ge hn)
+    omega
+
+private theorem cexp_of_repr (x : ℝ) (m : Nat) (e : Int) (hx : |x| = (m : ℝ) * (2 : ℝ) ^ e)
+    (hm0 : 0 < m) (hm : m < 2 ^ 53) (he1 : -1074 ≤ e)
+    (hsub : m < 2 ^ 52 → e = -1074) :
+    FloatSpec.Core.Generic_fmt.cexp 2 primFexp x = e := by
+  refine cexp_of_real x m e hx (by exact_mod_cast hm0) ?_ he1 ?_
+  · exact_mod_cast hm
+  · intro h
+    exact hsub (by exact_mod_cast h)
+
+/-- Rounding fixes a value whose binary64 representation is in range. -/
+private theorem roundR_repr (rnd : ℝ → Int) [FloatSpec.Core.Generic_fmt.Valid_rnd rnd]
+    (s : Bool) (m : Nat) (e : Int)
+    (hm0 : 0 < m) (hm : m < 2 ^ 53) (he1 : -1074 ≤ e)
+    (hsub : m < 2 ^ 52 → e = -1074) :
+    FloatSpec.Core.Generic_fmt.roundR 2 primFexp rnd (SF2R 2 (StandardFloat.S754_finite s m e)) =
+      SF2R 2 (StandardFloat.S754_finite s m e) := by
+  have habs : |SF2R 2 (StandardFloat.S754_finite s m e)| = (m : ℝ) * (2 : ℝ) ^ e := by
+    rw [SF2R_finite]
+    have hpos : (0 : ℝ) < (2 : ℝ) ^ e := zpow_pos (by norm_num) e
+    cases s <;> simp [abs_mul, abs_of_pos hpos]
+  rw [roundR_of_cexp rnd _ e (cexp_of_repr _ m e habs hm0 hm he1 hsub)]
+  have hscaled : SF2R 2 (StandardFloat.S754_finite s m e) * (2 : ℝ) ^ (-e) =
+      ((if s then -(m : Int) else (m : Int) : Int) : ℝ) := by
+    rw [SF2R_finite, mul_assoc, ← zpow_add₀ (by norm_num), add_neg_cancel, zpow_zero, mul_one]
+    cases s <;> simp
+  rw [hscaled, FloatSpec.Core.Generic_fmt.Valid_rnd.Zrnd_IZR (rnd := rnd), SF2R_finite]
+  cases s <;> simp
+
+
+/-- Toward-zero rounding of the negative midpoint `-(m - 1/2) * 2^e`. -/
+private theorem roundR_pred_neg (m : Nat) (e : Int) (hm0 : 1 ≤ m)
+    (hcase : (2 ^ 52 < m ∧ m < 2 ^ 53 ∧ -1074 ≤ e) ∨ (m ≤ 2 ^ 52 ∧ e = -1074)) :
+    FloatSpec.Core.Generic_fmt.roundR 2 primFexp (rnd_of_mode RoundingMode.RTZ)
+        (SF2R 2 (StandardFloat.S754_finite true (2 * m - 1) (e - 1))) =
+      -(((m - 1 : Nat) : ℝ) * (2 : ℝ) ^ e) := by
+  have hpos : (0 : ℝ) < (2 : ℝ) ^ e := zpow_pos (by norm_num) e
+  have hmR : (1 : ℝ) ≤ (m : ℝ) := by exact_mod_cast hm0
+  have hx : SF2R 2 (StandardFloat.S754_finite true (2 * m - 1) (e - 1)) =
+      -(((m : ℝ) - 1 / 2) * (2 : ℝ) ^ e) := by
+    rw [SF2R_finite]
+    simp only [↓reduceIte]
+    rw [Nat.cast_sub (by omega : 1 ≤ 2 * m), zpow_sub₀ (by norm_num), zpow_one]
+    push_cast
+    field_simp
+  have hy0 : (0 : ℝ) < (m : ℝ) - 1 / 2 := by linarith
+  have habs : |SF2R 2 (StandardFloat.S754_finite true (2 * m - 1) (e - 1))| =
+      ((m : ℝ) - 1 / 2) * (2 : ℝ) ^ e := by
+    rw [hx, abs_neg, abs_of_pos (mul_pos hy0 hpos)]
+  have hcexp := cexp_of_real _ ((m : ℝ) - 1 / 2) e habs hy0 (by
+      rcases hcase with ⟨_, h, _⟩ | ⟨h, _⟩
+      · have : (m : ℝ) < 2 ^ 53 := by exact_mod_cast h
+        linarith
+      · have : (m : ℝ) ≤ 2 ^ 52 := by exact_mod_cast h
+        linarith)
+    (by rcases hcase with ⟨_, _, h⟩ | ⟨_, h⟩ <;> omega)
+    (by
+      intro hlt
+      rcases hcase with ⟨h, _, _⟩ | ⟨_, h⟩
+      · have : (2 : ℝ) ^ 52 + 1 ≤ (m : ℝ) := by exact_mod_cast h
+        linarith
+      · exact h)
+  rw [roundR_of_cexp _ _ e hcexp]
+  have hscaled : SF2R 2 (StandardFloat.S754_finite true (2 * m - 1) (e - 1)) *
+      (2 : ℝ) ^ (-e) = -((m : ℝ) - 1 / 2) := by
+    rw [hx, neg_mul, mul_assoc, ← zpow_add₀ (by norm_num), add_neg_cancel, zpow_zero, mul_one]
+  rw [hscaled]
+  have htrunc : rnd_of_mode RoundingMode.RTZ (-((m : ℝ) - 1 / 2)) = -((m - 1 : Nat) : Int) := by
+    have hneg : -((m : ℝ) - 1 / 2) < 0 := by linarith
+    simp only [rnd_of_mode, FloatSpec.Core.Raux.Ztrunc, hneg, ↓reduceIte]
+    rw [Int.ceil_eq_iff]
+    push_cast [Nat.cast_sub hm0]
+    constructor <;> linarith
+  rw [htrunc]
+  push_cast
+  ring
+
+
+private theorem bpow_primEmax : FloatSpec.Core.Raux.bpow 2 primEmax = (2 : ℝ) ^ (1024 : Int) := by
+  simp [FloatSpec.Core.Raux.bpow, primEmax]
+
+private theorem abs_SF2R_finite_lt (s : Bool) (m : Nat) (e : Int) (hm : m < 2 ^ 53)
+    (he2 : e ≤ 971) :
+    |SF2R 2 (StandardFloat.S754_finite s m e)| < FloatSpec.Core.Raux.bpow 2 primEmax := by
+  rw [bpow_primEmax, SF2R_finite]
+  have hpos : (0 : ℝ) < (2 : ℝ) ^ e := zpow_pos (by norm_num) e
+  have habs : |(if s then -(m : ℝ) else (m : ℝ)) * (2 : ℝ) ^ e| =
+      (m : ℝ) * (2 : ℝ) ^ e := by
+    cases s <;> simp [abs_mul, abs_of_pos hpos]
+  rw [habs]
+  have hmR : (m : ℝ) < (2 : ℝ) ^ (53 : Int) := by
+    rw [show ((2 : ℝ) ^ (53 : Int)) = ((2 ^ 53 : Nat) : ℝ) by norm_num]
+    exact_mod_cast hm
+  have hpow : (2 : ℝ) ^ e ≤ (2 : ℝ) ^ (971 : Int) :=
+    zpow_le_zpow_right₀ (by norm_num) he2
+  calc (m : ℝ) * (2 : ℝ) ^ e < (2 : ℝ) ^ (53 : Int) * (2 : ℝ) ^ e :=
+        mul_lt_mul_of_pos_right hmR hpos
+    _ ≤ (2 : ℝ) ^ (53 : Int) * (2 : ℝ) ^ (971 : Int) :=
+        mul_le_mul_of_nonneg_left hpow (by positivity)
+    _ = (2 : ℝ) ^ (1024 : Int) := by rw [← zpow_add₀ (by norm_num)]; norm_num
+
+/-- `binary_round` returns the in-range binary64 representation of an exact value. -/
+private theorem binary_round_repr (mode : RoundingMode) (s : Bool) (M : Nat) (E : Int)
+    (m : Nat) (e : Int) (hM : 0 < M)
+    (hval : (M : ℝ) * (2 : ℝ) ^ E = (m : ℝ) * (2 : ℝ) ^ e)
+    (hm0 : 0 < m) (hm : m < 2 ^ 53) (he1 : -1074 ≤ e) (he2 : e ≤ 971)
+    (hsub : m < 2 ^ 52 → e = -1074)
+    (hvalid : validBinarySingleNaNStandardFloat (prec := primPrec) (emax := primEmax)
+      (StandardFloat.S754_finite s m e) = true) :
+    _root_.binary_round (prec := primPrec) (emax := primEmax) mode s M E =
+      StandardFloat.S754_finite s m e := by
+  apply binary_round_eq_of_roundR mode s M E hM _ hvalid rfl rfl
+  · have hx : SF2R 2 (StandardFloat.S754_finite s M E) =
+        SF2R 2 (StandardFloat.S754_finite s m e) := by
+      rw [SF2R_finite, SF2R_finite]
+      cases s <;> simp [hval]
+    rw [hx]
+    exact roundR_repr (rnd_of_mode mode) s m e hm0 hm he1 hsub
+  · exact abs_SF2R_finite_lt s m e hm he2
+
+/-- The positive successor of the largest finite binary64 value overflows. -/
+private theorem binary_round_RTP_top :
+    _root_.binary_round (prec := primPrec) (emax := primEmax) RoundingMode.RTP false
+      (2 ^ 53) 971 = StandardFloat.S754_infinity false := by
+  have hround := roundR_repr (rnd_of_mode RoundingMode.RTP) false (2 ^ 52) 972
+    (by norm_num) (by norm_num) (by norm_num) (by norm_num)
+  have hx : SF2R 2 (StandardFloat.S754_finite false (2 ^ 53) 971) =
+      SF2R 2 (StandardFloat.S754_finite false (2 ^ 52) 972) := by
+    rw [SF2R_finite, SF2R_finite]
+    simp only [Bool.false_eq_true, ↓reduceIte]
+    rw [show (972 : Int) = 971 + 1 by norm_num, zpow_add₀ (by norm_num)]
+    push_cast
+    ring
+  rw [← hx] at hround
+  rw [binary_round_eq_overflow RoundingMode.RTP false (2 ^ 53) 971 (by norm_num) _ hround]
+  · rfl
+  · rw [bpow_primEmax, SF2R_finite]
+    simp only [Bool.false_eq_true, ↓reduceIte]
+    have hv : ((2 ^ 53 : Nat) : ℝ) * (2 : ℝ) ^ (971 : Int) = (2 : ℝ) ^ (1024 : Int) := by
+      rw [show ((2 ^ 53 : Nat) : ℝ) = (2 : ℝ) ^ (53 : Int) by norm_num,
+        ← zpow_add₀ (by norm_num)]
+      norm_num
+    rw [hv, abs_of_pos (by positivity)]
+    exact lt_irrefl _
+
+/-- The `Bsucc` step on a negative finite value away from a binade boundary. -/
+private theorem binary_round_RTZ_pred (m : Nat) (e : Int) (hm1 : 2 ≤ m)
+    (hcase : (2 ^ 52 < m ∧ m < 2 ^ 53 ∧ -1074 ≤ e ∧ e ≤ 971) ∨
+      (m ≤ 2 ^ 52 ∧ e = -1074))
+    (hvalid : validBinarySingleNaNStandardFloat (prec := primPrec) (emax := primEmax)
+      (StandardFloat.S754_finite true (m - 1) e) = true) :
+    _root_.binary_round (prec := primPrec) (emax := primEmax) RoundingMode.RTZ true
+      (2 * m - 1) (e - 1) = StandardFloat.S754_finite true (m - 1) e := by
+  apply binary_round_eq_of_roundR RoundingMode.RTZ true (2 * m - 1) (e - 1) (by omega) _
+    hvalid rfl rfl
+  · rw [roundR_pred_neg m e (by omega) (by
+      rcases hcase with ⟨h1, h2, h3, _⟩ | ⟨h1, h2⟩
+      · exact Or.inl ⟨h1, h2, h3⟩
+      · exact Or.inr ⟨h1, h2⟩), SF2R_finite]
+    simp
+  · exact abs_SF2R_finite_lt true (m - 1) e (by omega)
+      (by rcases hcase with ⟨_, _, _, h⟩ | ⟨_, h⟩ <;> omega)
+
+/-- Toward-zero rounding of `-2^-1075` is negative zero. -/
+private theorem binary_round_RTZ_pred_one :
+    _root_.binary_round (prec := primPrec) (emax := primEmax) RoundingMode.RTZ true
+      (2 * 1 - 1) (-1074 - 1) = StandardFloat.S754_zero true := by
+  apply binary_round_eq_of_roundR RoundingMode.RTZ true (2 * 1 - 1) (-1074 - 1) (by omega) _
+    rfl rfl rfl
+  · rw [roundR_pred_neg 1 (-1074) le_rfl (Or.inr ⟨by norm_num, rfl⟩)]
+    simp [SF2R]
+  · simp [SF2R, bpow_primEmax]
+
+
+/-- Every 64-bit word decodes to a valid FLoCq binary64 value. -/
+private theorem decodeWord64_valid (k : Nat) (hk : k < 18446744073709551616) :
+    validBinarySingleNaNStandardFloat (prec := primPrec) (emax := primEmax)
+      (decodeWord64 k) = true := by
+  have h := validStandardFloatOfModel64 (Float.Model.ofBits (UInt64.ofNat k))
+  rw [decodeWord64_ofBits, UInt64.toNat_ofNat_of_lt' hk] at h
+  exact h
+
+private theorem decodeMagnitude64_finite_inv (s' s : Bool) (r m : Nat) (e : Int)
+    (hr : r < 9223372036854775808)
+    (h : decodeMagnitude64 s' r = StandardFloat.S754_finite s m e) :
+    s' = s ∧ ((r / 4503599627370496 = 0 ∧ r % 4503599627370496 = m ∧ 0 < m ∧ e = -1074) ∨
+      (1 ≤ r / 4503599627370496 ∧ r / 4503599627370496 ≤ 2046 ∧
+        m = 4503599627370496 + r % 4503599627370496 ∧
+        e = ((r / 4503599627370496 : Nat) : Int) - 1075)) := by
+  unfold decodeMagnitude64 at h
+  split_ifs at h with h1 h2 h3 h4 <;> simp only [StandardFloat.S754_finite.injEq,
+    reduceCtorEq] at h
+  · obtain ⟨rfl, rfl, rfl⟩ := h
+    exact ⟨rfl, Or.inl ⟨h3, rfl, by omega, rfl⟩⟩
+  · obtain ⟨rfl, rfl, rfl⟩ := h
+    exact ⟨rfl, Or.inr ⟨by omega, by omega, rfl, rfl⟩⟩
+
+
+private theorem decodeWord64_of_sub (k M : Nat) (s : Bool)
+    (hs : decide (9223372036854775808 ≤ k) = s) (hk : k % 9223372036854775808 = M)
+    (hM0 : 0 < M) (hM : M < 4503599627370496) :
+    decodeWord64 k = StandardFloat.S754_finite s M (-1074) := by
+  unfold decodeWord64 decodeMagnitude64
+  rw [hs]
+  split_ifs <;> first
+    | (exfalso; omega)
+    | (simp only [StandardFloat.S754_finite.injEq, true_and, and_true]; omega)
+
+private theorem decodeWord64_of_norm (k E M : Nat) (s : Bool)
+    (hs : decide (9223372036854775808 ≤ k) = s)
+    (hk : k % 9223372036854775808 = E * 4503599627370496 + M)
+    (hE1 : 1 ≤ E) (hE2 : E ≤ 2046) (hM : M < 4503599627370496) :
+    decodeWord64 k = StandardFloat.S754_finite s (4503599627370496 + M) ((E : Int) - 1075) := by
+  unfold decodeWord64 decodeMagnitude64
+  rw [hs]
+  split_ifs <;> first
+    | (exfalso; omega)
+    | (simp only [StandardFloat.S754_finite.injEq, true_and, and_true]; omega)
+
+private theorem decodeWord64_of_inf (k : Nat) (s : Bool)
+    (hs : decide (9223372036854775808 ≤ k) = s)
+    (hk : k % 9223372036854775808 = 9218868437227405312) :
+    decodeWord64 k = StandardFloat.S754_infinity s := by
+  unfold decodeWord64 decodeMagnitude64
+  rw [hs]
+  split_ifs <;> first
+    | (exfalso; omega)
+    | rfl
+
+private theorem decodeWord64_of_zero (k : Nat) (s : Bool)
+    (hs : decide (9223372036854775808 ≤ k) = s)
+    (hk : k % 9223372036854775808 = 0) :
+    decodeWord64 k = StandardFloat.S754_zero s := by
+  unfold decodeWord64 decodeMagnitude64
+  rw [hs]
+  split_ifs <;> first
+    | (exfalso; omega)
+    | rfl
+
+private theorem decodeWord64_nan_inv (k : Nat) (h : decodeWord64 k = StandardFloat.S754_nan) :
+    9218868437227405312 < k % 9223372036854775808 := by
+  unfold decodeWord64 decodeMagnitude64 at h
+  split_ifs at h <;> simp only [reduceCtorEq] at h
+  omega
+
+private theorem decodeWord64_inf_inv (k : Nat) (s : Bool)
+    (h : decodeWord64 k = StandardFloat.S754_infinity s) :
+    decide (9223372036854775808 ≤ k) = s ∧ k % 9223372036854775808 = 9218868437227405312 := by
+  unfold decodeWord64 decodeMagnitude64 at h
+  split_ifs at h <;> simp only [reduceCtorEq, StandardFloat.S754_infinity.injEq] at h
+  exact ⟨h, by omega⟩
+
+private theorem decodeWord64_zero_inv (k : Nat) (s : Bool)
+    (h : decodeWord64 k = StandardFloat.S754_zero s) :
+    decide (9223372036854775808 ≤ k) = s ∧ k % 9223372036854775808 = 0 := by
+  unfold decodeWord64 decodeMagnitude64 at h
+  split_ifs at h <;> simp only [reduceCtorEq, StandardFloat.S754_zero.injEq] at h
+  exact ⟨h, by omega⟩
+
+
+private theorem B2SF_Bsucc_pos (m : Nat) (e : Int) (hm : 0 < m)
+    (hb : specFloat_bounded (prec := primPrec) (emax := primEmax) m e = true) :
+    B2SF (FaithfulPrimFloat.Bsucc (BinarySingleNaNFloat.B754_finite false m e hm hb)) =
+      _root_.binary_round (prec := primPrec) (emax := primEmax) RoundingMode.RTP false
+        (m + 1) e := by
+  simp only [FaithfulPrimFloat.Bsucc]
+  exact B2SF_SF2B _ _
+
+private theorem B2SF_Bsucc_neg (m : Nat) (e : Int) (hm : 0 < m)
+    (hb : specFloat_bounded (prec := primPrec) (emax := primEmax) m e = true) :
+    B2SF (FaithfulPrimFloat.Bsucc (BinarySingleNaNFloat.B754_finite true m e hm hb)) =
+      _root_.binary_round (prec := primPrec) (emax := primEmax) RoundingMode.RTZ true
+        (2 * m - 1) (e - 1) := by
+  simp only [FaithfulPrimFloat.Bsucc]
+  exact B2SF_SF2B _ _
+
+/-- Word successor agrees with `Bsucc` on the decoded value. -/
+private theorem decodeWord64_nextUpWord (n : Nat) (hn : n < 18446744073709551616)
+    (b : PrimBinaryFloat) (hdec : decodeWord64 n = B2SF b) :
+    decodeWord64 (nextUpWord n) = B2SF (FaithfulPrimFloat.Bsucc b) := by
+  cases b with
+  | B754_nan =>
+      have hr := decodeWord64_nan_inv n hdec
+      have hnext : nextUpWord n = n := by
+        unfold nextUpWord
+        split_ifs <;> omega
+      rw [hnext, hdec]
+      rfl
+  | B754_infinity s =>
+      obtain ⟨hs, hr⟩ := decodeWord64_inf_inv n s hdec
+      cases s with
+      | false =>
+          have hn63 : n < 9223372036854775808 := by simpa using hs
+          have hnext : nextUpWord n = n := by
+            unfold nextUpWord
+            split_ifs <;> omega
+          rw [hnext, hdec]
+          rfl
+      | true =>
+          have hn63 : 9223372036854775808 ≤ n := by simpa using hs
+          have hnext : nextUpWord n = n - 1 := by
+            unfold nextUpWord
+            split_ifs <;> omega
+          rw [hnext, decodeWord64_of_norm (n - 1) 2046 4503599627370495 true
+            (by simp; omega) (by omega) (by norm_num) (by norm_num) (by norm_num)]
+          rfl
+  | B754_zero s =>
+      obtain ⟨hs, hr⟩ := decodeWord64_zero_inv n s hdec
+      have hnext : nextUpWord n = 1 := by
+        unfold nextUpWord
+        split_ifs <;> omega
+      rw [hnext, decodeWord64_of_sub 1 1 false (by decide) (by norm_num) (by norm_num)
+        (by norm_num)]
+      rfl
+  | B754_finite s m e hm hb =>
+      have hdec' :
+          decodeMagnitude64 (decide (9223372036854775808 ≤ n)) (n % 9223372036854775808) =
+          StandardFloat.S754_finite s m e := hdec
+      obtain ⟨hs, hcase⟩ :=
+        decodeMagnitude64_finite_inv _ s _ m e (Nat.mod_lt _ (by norm_num)) hdec'
+      cases s with
+      | false =>
+          have hn63 : n < 9223372036854775808 := by simpa using hs
+          have hnext : nextUpWord n = n + 1 := by
+            unfold nextUpWord
+            split_ifs <;> omega
+          rw [hnext, B2SF_Bsucc_pos]
+          have hv := decodeWord64_valid (n + 1) (by omega)
+          rcases hcase with ⟨hE, hM, hm0, he⟩ | ⟨hE1, hE2, hmM, he⟩
+          · have hd : decodeWord64 (n + 1) = StandardFloat.S754_finite false (m + 1) e := by
+              by_cases hc : n + 1 < 4503599627370496
+              · rw [decodeWord64_of_sub (n + 1) (m + 1) false (by simp; omega) (by omega)
+                  (by omega) (by omega), he]
+              · rw [decodeWord64_of_norm (n + 1) 1 0 false (by simp; omega) (by omega) le_rfl
+                  (by norm_num) (by norm_num)]
+                simp only [StandardFloat.S754_finite.injEq, true_and]
+                omega
+            rw [hd] at hv ⊢
+            exact (binary_round_repr RoundingMode.RTP false (m + 1) e (m + 1) e (by omega) rfl
+              (by omega) (by omega) (by omega) (by omega) (by omega) hv).symm
+          · by_cases hc : n % 9223372036854775808 % 4503599627370496 + 1 < 4503599627370496
+            · have hd : decodeWord64 (n + 1) = StandardFloat.S754_finite false (m + 1) e := by
+                rw [decodeWord64_of_norm (n + 1) (n % 9223372036854775808 / 4503599627370496)
+                  (n % 9223372036854775808 % 4503599627370496 + 1) false (by simp; omega)
+                  (by omega) hE1 hE2 hc]
+                simp only [StandardFloat.S754_finite.injEq, true_and]
+                omega
+              rw [hd] at hv ⊢
+              exact (binary_round_repr RoundingMode.RTP false (m + 1) e (m + 1) e (by omega) rfl
+                (by omega) (by omega) (by omega) (by omega) (by omega) hv).symm
+            · have hm1 : m + 1 = 2 ^ 53 := by omega
+              by_cases hEtop : n % 9223372036854775808 / 4503599627370496 = 2046
+              · have he' : e = 971 := by omega
+                rw [decodeWord64_of_inf (n + 1) false (by simp; omega) (by omega), hm1, he',
+                  binary_round_RTP_top]
+              · have hd : decodeWord64 (n + 1) =
+                    StandardFloat.S754_finite false (2 ^ 52) (e + 1) := by
+                  rw [decodeWord64_of_norm (n + 1) (n % 9223372036854775808 / 4503599627370496 + 1)
+                    0 false (by simp; omega) (by omega) (by omega) (by omega) (by norm_num)]
+                  simp only [StandardFloat.S754_finite.injEq, true_and]
+                  omega
+                rw [hd] at hv ⊢
+                refine (binary_round_repr RoundingMode.RTP false (m + 1) e (2 ^ 52) (e + 1)
+                  (by omega) ?_ (by norm_num) (by norm_num) (by omega) (by omega)
+                  (by norm_num) hv).symm
+                rw [hm1, zpow_add₀ (by norm_num)]
+                push_cast
+                ring
+      | true =>
+          have hn63 : 9223372036854775808 ≤ n := by simpa using hs
+          have hnext : nextUpWord n = n - 1 := by
+            unfold nextUpWord
+            split_ifs <;> omega
+          rw [hnext, B2SF_Bsucc_neg]
+          have hv := decodeWord64_valid (n - 1) (by omega)
+          rcases hcase with ⟨hE, hM, hm0, he⟩ | ⟨hE1, hE2, hmM, he⟩
+          · by_cases hm1 : m = 1
+            · subst hm1
+              subst he
+              rw [decodeWord64_of_zero (n - 1) true (by simp; omega) (by omega)]
+              exact binary_round_RTZ_pred_one.symm
+            · have hd : decodeWord64 (n - 1) = StandardFloat.S754_finite true (m - 1) e := by
+                rw [decodeWord64_of_sub (n - 1) (m - 1) true (by simp; omega) (by omega)
+                  (by omega) (by omega), he]
+              rw [hd] at hv ⊢
+              exact (binary_round_RTZ_pred m e (by omega) (Or.inr ⟨by omega, he⟩) hv).symm
+          · by_cases hM0 : n % 9223372036854775808 % 4503599627370496 = 0
+            · by_cases hEone : n % 9223372036854775808 / 4503599627370496 = 1
+              · have hd : decodeWord64 (n - 1) = StandardFloat.S754_finite true (m - 1) e := by
+                  rw [decodeWord64_of_sub (n - 1) (m - 1) true (by simp; omega) (by omega)
+                    (by omega) (by omega)]
+                  simp only [StandardFloat.S754_finite.injEq, true_and]
+                  omega
+                rw [hd] at hv ⊢
+                exact (binary_round_RTZ_pred m e (by omega)
+                  (Or.inr ⟨by omega, by omega⟩) hv).symm
+              · have hd : decodeWord64 (n - 1) =
+                    StandardFloat.S754_finite true (2 ^ 53 - 1) (e - 1) := by
+                  rw [decodeWord64_of_norm (n - 1) (n % 9223372036854775808 / 4503599627370496 - 1)
+                    4503599627370495 true (by simp; omega) (by omega) (by omega) (by omega)
+                    (by norm_num)]
+                  simp only [StandardFloat.S754_finite.injEq, true_and]
+                  omega
+                rw [hd] at hv ⊢
+                have h2m : 2 * m - 1 = 2 ^ 53 - 1 := by omega
+                refine (binary_round_repr RoundingMode.RTZ true (2 * m - 1) (e - 1) (2 ^ 53 - 1)
+                  (e - 1) (by omega) ?_ (by norm_num) (by norm_num) (by omega) (by omega)
+                  (by intro h; norm_num at h) hv).symm
+                rw [h2m]
+            · have hd : decodeWord64 (n - 1) = StandardFloat.S754_finite true (m - 1) e := by
+                rw [decodeWord64_of_norm (n - 1) (n % 9223372036854775808 / 4503599627370496)
+                  (n % 9223372036854775808 % 4503599627370496 - 1) true (by simp; omega)
+                  (by omega) hE1 hE2 (by omega)]
+                simp only [StandardFloat.S754_finite.injEq, true_and]
+                omega
+              rw [hd] at hv ⊢
+              exact (binary_round_RTZ_pred m e (by omega)
+                (Or.inl ⟨by omega, by omega, by omega, by omega⟩) hv).symm
+
+
+private def flipSignWord (k : Nat) : Nat :=
+  if 9223372036854775808 ≤ k then k - 9223372036854775808 else k + 9223372036854775808
+
+private theorem decodeMagnitude64_not (s : Bool) (r : Nat) :
+    decodeMagnitude64 (!s) r = SFopp (decodeMagnitude64 s r) := by
+  unfold decodeMagnitude64
+  split_ifs <;> rfl
+
+private theorem decodeWord64_flipSignWord (k : Nat) (hk : k < 18446744073709551616) :
+    decodeWord64 (flipSignWord k) = SFopp (decodeWord64 k) := by
+  have hsign : decide (9223372036854775808 ≤ flipSignWord k) =
+      !decide (9223372036854775808 ≤ k) := by
+    unfold flipSignWord
+    split_ifs with h
+    · simp only [h, decide_true, Bool.not_true, decide_eq_false_iff_not]
+      omega
+    · simp only [h, decide_false, Bool.not_false, decide_eq_true_eq]
+      omega
+  have hmag : flipSignWord k % 9223372036854775808 = k % 9223372036854775808 := by
+    unfold flipSignWord
+    split_ifs <;> omega
+  unfold decodeWord64
+  rw [hsign, hmag, decodeMagnitude64_not]
+
+private theorem flipSignWord_lt (k : Nat) (hk : k < 18446744073709551616) :
+    flipSignWord k < 18446744073709551616 := by
+  unfold flipSignWord
+  split_ifs <;> omega
+
+private theorem nextUpWord_lt (k : Nat) (hk : k < 18446744073709551616) :
+    nextUpWord k < 18446744073709551616 := by
+  unfold nextUpWord
+  split_ifs <;> omega
+
+/-- The word predecessor is the word successor conjugated by the sign flip. -/
+private theorem nextDownWord_eq (n : Nat) (hn : n < 18446744073709551616) :
+    nextDownWord n = flipSignWord (nextUpWord (flipSignWord n)) := by
+  unfold nextDownWord nextUpWord flipSignWord
+  split_ifs <;> omega
+
+private theorem B2SF_Bopp (x : PrimBinaryFloat) :
+    B2SF (FaithfulPrimFloat.Bopp x) = SFopp (B2SF x) := by
+  cases x <;> rfl
+
+/-- Word predecessor agrees with `Bpred` on the decoded value. -/
+private theorem decodeWord64_nextDownWord (n : Nat) (hn : n < 18446744073709551616)
+    (b : PrimBinaryFloat) (hdec : decodeWord64 n = B2SF b) :
+    decodeWord64 (nextDownWord n) = B2SF (FaithfulPrimFloat.Bpred b) := by
+  have hflip : decodeWord64 (flipSignWord n) = B2SF (FaithfulPrimFloat.Bopp b) := by
+    rw [decodeWord64_flipSignWord n hn, hdec, B2SF_Bopp]
+  rw [nextDownWord_eq n hn, decodeWord64_flipSignWord _ (nextUpWord_lt _ (flipSignWord_lt n hn)),
+    decodeWord64_nextUpWord (flipSignWord n) (flipSignWord_lt n hn)
+      (FaithfulPrimFloat.Bopp b) hflip]
+  simp only [FaithfulPrimFloat.Bpred, B2SF_Bopp]
+
+end NativeNeighbours
+
+/-- Native-carrier successor agrees with FLoCq's `Bsucc` model on every
+primitive float, including signed zeros, infinities, and NaN. -/
 theorem nativeNextUp_equiv (x : FaithfulPrimFloat.PrimitiveFloat) :
     ofFloat (nativeNextUp (toFloat x)) = FaithfulPrimFloat.next_up x := by
-  sorry -- FLOCQ-DEBT: native_next_up
+  have key : FloatSpec.IEEE754.Native.standardFloatOfModel64 (Float.Model.ofBits
+      (nextUpBits
+        (FloatSpec.IEEE754.Native.model64OfBinarySingleNaNFloat (Prim2B x)).toBits)) =
+      B2SF (FaithfulPrimFloat.Bsucc (Prim2B x)) := by
+    rw [decodeWord64_ofBits, nextUpBits_toNat]
+    exact decodeWord64_nextUpWord _ (UInt64.toNat_lt _) _ (decodeWord64_model64 (Prim2B x))
+  change SF2Prim (FloatSpec.IEEE754.Native.standardFloatOfModel64 (Float.Model.ofBits
+      (nextUpBits
+        (FloatSpec.IEEE754.Native.model64OfBinarySingleNaNFloat (Prim2B x)).toBits))) =
+    SF2Prim (B2SF (FaithfulPrimFloat.Bsucc (Prim2B x)))
+  rw [key]
 
-set_option warningAsError false in
-/-- Bridge obligation from native-carrier predecessor to Flocq's `Bpred` model. -/
+/-- Native-carrier predecessor agrees with FLoCq's `Bpred` model on every
+primitive float, including signed zeros, infinities, and NaN. -/
 theorem nativeNextDown_equiv (x : FaithfulPrimFloat.PrimitiveFloat) :
     ofFloat (nativeNextDown (toFloat x)) = FaithfulPrimFloat.next_down x := by
-  sorry -- FLOCQ-DEBT: native_next_down
+  have key : FloatSpec.IEEE754.Native.standardFloatOfModel64 (Float.Model.ofBits
+      (nextDownBits
+        (FloatSpec.IEEE754.Native.model64OfBinarySingleNaNFloat (Prim2B x)).toBits)) =
+      B2SF (FaithfulPrimFloat.Bpred (Prim2B x)) := by
+    rw [decodeWord64_ofBits, nextDownBits_toNat]
+    exact decodeWord64_nextDownWord _ (UInt64.toNat_lt _) _ (decodeWord64_model64 (Prim2B x))
+  change SF2Prim (FloatSpec.IEEE754.Native.standardFloatOfModel64 (Float.Model.ofBits
+      (nextDownBits
+        (FloatSpec.IEEE754.Native.model64OfBinarySingleNaNFloat (Prim2B x)).toBits))) =
+    SF2Prim (B2SF (FaithfulPrimFloat.Bpred (Prim2B x)))
+  rw [key]
 
 @[simp] theorem toFloat_toModel (x : FaithfulPrimFloat.PrimitiveFloat) :
     (toFloat x).toModel = toModel x := rfl

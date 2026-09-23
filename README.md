@@ -38,9 +38,10 @@ revisions; this combination builds on macOS with stable 4.34.0.
 
 ## Current Progress
 
-The project is actively under development. Four named `sorry` obligations now
-mark native-runtime correspondence and raw-bit sign proofs that remain open;
-they are listed in `FloatSpec/docs/proof_debts.json`. A successful build checks
+The project is actively under development. Two named `sorry` obligations now
+mark the native `frExp` correspondence and the raw-bit sign proof that remain
+open; they are listed in `FloatSpec/docs/proof_debts.json`. The native
+next-up/next-down bit operations are proved equal to FLoCq's `Bsucc`/`Bpred`. A successful build checks
 the definitions and theorem statements, not these proofs or whole-library
 equivalence to Flocq. Source-facing APIs and compatibility helpers remain
 distinct.

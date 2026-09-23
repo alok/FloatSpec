@@ -32,7 +32,7 @@ follow-up is locally verified and still needs its own hosted result. See
 **The port builds and runs on macOS with Lean 4.34.0, but is not yet a fully
 source-audited port.** All 35 built Flocq module names have Lean counterparts.
 That is file coverage, not a percentage of faithful definitions or theorems.
-Four named native/decoder proof obligations remain; the unreviewed source
+Two named native/decoder proof obligations remain; the unreviewed source
 surface is a separate and larger issue.
 
 The continuation is now on `main` in `~/floatspec` (the same directory as
@@ -521,10 +521,11 @@ the Hoare-style linter were removed. New source-facing work prefers pure
 definitions and direct propositions. Existing triples are migrated with
 their callers, not removed indiscriminately.
 
-Three explicit proof debts remain in `proof_debts.json`: native `frExp`,
-native next-up, and native next-down. The former raw sign-bit negation debt
-is closed: `Binary64.ofBits_flipSign` proves, for every `UInt64`, that XOR
-with the sign mask decodes to `Bopp` of the decoded value.
+Two explicit proof debts remain in `proof_debts.json`: raw sign-bit
+negation and native `frExp`. Native next-up and next-down
+(`nativeNextUp_equiv`, `nativeNextDown_equiv` in `PrimFloat.lean`) are proved
+against `Bsucc` and `Bpred` for every primitive float, using only the standard
+axioms.
 A theorem using `sorry` remains unproved even if its statement compiles.
 The lexical debt gate and compiler-level dependency audit check that these
 holes are named and that no additional source declarations silently depend
