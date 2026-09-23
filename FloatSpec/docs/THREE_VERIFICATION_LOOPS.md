@@ -44,11 +44,11 @@ missing/dirty/wrong-pinned reference, an unavailable compiler, and any failure
 or error; its report records each module's test count. Eleven runner-policy
 controls in `scripts/test_required_rocq_tests.py` test these boundaries, and 14
 hermetic controls in `scripts/test_reference_policy.py` test the reference
-policy described in section 2. The runner covers all 24 test modules gated on
-`FLOCQ_AUDIT_DIR`: 238 live tests spanning the core, native IEEE,
+policy described in section 2. The runner covers all 26 test modules gated on
+`FLOCQ_AUDIT_DIR`: 310 tests spanning the core, native IEEE,
 mode/scale/integer, exact-oracle, rounding, ULP, remainder, model-adapter,
-LPO, double-rounding, Zaux and Pff suites. It is not a replacement for every
-deeper profile below.
+LPO, double-rounding, Zaux, Pff, exemplar and flocqsmith suites. It is not a
+replacement for every deeper profile below.
 
 CI also compiles every Rocq fixture (`scripts/fixtures/*.v`, 47 today) against
 the pinned build and elaborates every Lean fixture (`scripts/fixtures/*.lean`,
@@ -107,10 +107,14 @@ minutes: a run takes about 50-60 minutes with lean-action's cache warm and
 about 125-135 minutes when a cold cache rebuilds Mathlib; the kernel replays
 add about two minutes on this Mac (40 s for the source modules, 20 s for the
 tests, 45 s for the fixtures), likely somewhat more on the four-core runner.
+The flocqsmith and exemplar modules add about five minutes to the required
+suite: 235 s for `test_flocqsmith` (most of it the 40-program control
+campaign) and 48-76 s for `test_flocq_exemplars` here, on a loaded machine.
+That puts a cold run at roughly 130-145 minutes, still inside the timeout.
 
 The per-push bridge selects `power`, `div_eucl`, `location`, `round`, `truncate`,
 `div`, `plus`, `sqrt`, `formats`, `digits`, `operations`, `bits32` and `bits64`.
-The 238-test live suite additionally exercises the IEEE/native adapters and
+The 310-test live suite additionally exercises the IEEE/native adapters and
 mutation controls; the saved replays cover prior raw-IEEE and Pff
 counterexamples.
 Omit `--operations` for the larger 35,594-case grid at this seed/sample count.
