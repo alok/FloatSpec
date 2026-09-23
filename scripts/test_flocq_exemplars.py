@@ -30,7 +30,7 @@ class InventoryTests(unittest.TestCase):
         for name in expected:
             for suffix in FIXTURE_SUFFIXES:
                 self.assertTrue((lane.FIXTURES / f"{name}{suffix}").is_file(), name + suffix)
-            self.assertRegex(readme, rf"\| `{name}` \|", f"README.md has no table row for {name}")
+            self.assertTrue(re.search(rf"\| `{name}` \|", readme), f"README.md has no table row for {name}")
 
     def test_non_verbatim_fixtures_state_their_provenance(self):
         for path in fixture_paths():
@@ -108,6 +108,19 @@ class OracleControlTests(unittest.TestCase):
         report = lane.oracle_compute_grid([expected_compute_grid_row(2, 0, 3, 1, 0, 0, 0)])
         self.assertEqual((report.premise_false, report.holds, report.violations), (1, 3, []))
 
+    def test_cody_waite_oracle_bounds_have_teeth(self):
+        # x = 0: k = t = 0, p = 1/4, q = 1/2, r = 1/2, Zfloor k = 0, cw_exp 0 = 1.
+        row = [0, 0, 0, 0, 0, 0, 1, -2, 1, -1, 1, -1, 0, 1, 0]
+        self.assertEqual(lane.oracle_cody_waite([row]).violations, [])
+        too_far = row[:13] + [2**50 + 1, -50]            # relative error 2^-50 > 2^-51
+        wide_t = row[:4] + [356, -10] + row[6:]          # |t| > 355/1024
+        wrong_floor = row[:12] + [1] + row[13:]
+        for label, mutated in (("exp", too_far), ("t", wide_t), ("floor", wrong_floor)):
+            with self.subTest(label):
+                self.assertEqual(len(lane.oracle_cody_waite([mutated]).violations), 1)
+        outside = [1000, 0, *row[2:]]
+        self.assertEqual(lane.oracle_cody_waite([outside]).premise_false, 2)
+
     def test_a_missing_control_break_fails_the_oracle_verdict(self):
         exemplar = lane.Exemplar("Probe", rows=1, width=1,
                                  oracle=lambda rows: lane.OracleReport(holds=1),
@@ -150,6 +163,9 @@ class LiveExemplarTests(unittest.TestCase):
 
     def test_compute_grid(self):
         self.check("ComputeGrid")
+
+    def test_cody_waite(self):
+        self.check("CodyWaite")
 
     def mutant(self, name, side, old, new):
         """Run a copy of an exemplar with one side textually mutated."""

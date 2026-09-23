@@ -28,6 +28,7 @@ import argparse
 from collections.abc import Callable, Sequence
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import asdict, dataclass, field
+from decimal import Decimal, localcontext
 from fractions import Fraction
 import hashlib
 import json
@@ -194,6 +195,43 @@ def oracle_compute_grid(rows: Sequence[Row]) -> OracleReport:
     return report
 
 
+def decimal_value(mantissa: int, exponent: int) -> Decimal:
+    """m * 2^e in the current decimal context (callers set the precision)."""
+    return Decimal(mantissa) * Decimal(2) ** exponent
+
+
+def oracle_cody_waite(rows: Sequence[Row]) -> OracleReport:
+    """Cody_Waite.v exp_correct and argument_reduction, at 120 digits.
+
+    Premise: x is a binary64 value (|m| < 2^53, e >= -1074) in [-746, 710].
+    The decimal context's rounding error is below 10^-100 relative, far
+    below the 2^-51 and 2^-71 scales of the bounds being checked.
+    """
+    report = OracleReport()
+    with localcontext() as context:
+        context.prec, context.Emax, context.Emin = 120, 10**6, -10**6
+        ln2 = Decimal(2).ln()
+        for index, row in enumerate(rows):
+            mx, ex, km, ke, tm, te, _pm, _pe, _qm, _qe, _rm, _re, floor_k, ym, ye = row
+            x = value(2, mx, ex)
+            premise = abs(mx) < 2**53 and ex >= -1074 and -746 <= x <= 710
+            k = value(2, km, ke)
+            # k = nearbyint(...) is an integer, so Zfloor k = k (no premise needed).
+            report.check(f"row {index} Zfloor k", k.denominator == 1 and k == floor_k)
+            if not premise:
+                report.check(f"row {index} exp_correct", None)
+                report.check(f"row {index} argument_reduction", None)
+                continue
+            exact = decimal_value(mx, ex).exp()
+            report.check(f"row {index} exp_correct",
+                         abs(decimal_value(ym, ye) - exact) <= exact * Decimal(2) ** -51)
+            reduced = decimal_value(mx, ex) - decimal_value(km, ke) * ln2
+            report.check(f"row {index} argument_reduction",
+                         abs(value(2, tm, te)) <= Fraction(355, 1024) and
+                         abs(decimal_value(tm, te) - reduced) <= 65537 * Decimal(2) ** -71)
+    return report
+
+
 # ---------------------------------------------------------------------------
 # Exemplar registry
 # ---------------------------------------------------------------------------
@@ -212,6 +250,7 @@ class Exemplar:
 
 EXEMPLARS: dict[str, Exemplar] = {e.name: e for e in (
     Exemplar("ComputeGrid", rows=960, width=15, oracle=oracle_compute_grid),
+    Exemplar("CodyWaite", rows=30, width=15, oracle=oracle_cody_waite),
 )}
 
 
