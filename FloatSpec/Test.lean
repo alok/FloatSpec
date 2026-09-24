@@ -8,6 +8,7 @@ import FloatSpec.Test.FTZSourceShape
 import FloatSpec.Test.NativeBridgeBits
 import FloatSpec.Test.NativeIEEE
 import FloatSpec.Test.NativeArithmetic
+import FloatSpec.Test.NativeFloat
 import FloatSpec.Test.BitsExecution
 import FloatSpec.Test.BitOrderExecution
 import FloatSpec.Test.NativeSourceArithmetic
