@@ -3,6 +3,83 @@
 Formally verified floating‑point library for Lean 4, ported from the Coq Flocq project. FloatSpec aims to provide a clear, modular formalization of IEEE 754 style arithmetic together with executable reference functions and machine‑checked specifications/proofs.
 
 
+## Using FloatSpec with Lean's `Float`
+
+Lean core defines `Float` (binary64) and `Float32` (binary32) arithmetic
+through a logical model: `x + y` is `Float.ofModel (x.toModel + y.toModel)`.
+`FloatSpec.IEEE754.NativeFloat` proves that `+`, `-`, `*`, `/` and
+`Float.sqrt` on these types are correctly rounded over the reals.
+
+```lean
+import FloatSpec.src.IEEE754.NativeFloat
+
+open FloatSpec.IEEE754.NativeFloat
+open FloatSpec.IEEE754.BinarySingleNaN.Source (mode round_mode)
+
+-- Output abbreviated: `roundR` is `FloatSpec.Core.Generic_fmt.roundR`.
+#check @add_eq_round
+-- ∀ (x y : Float), x.isFinite = true → y.isFinite = true →
+--   |roundR 2 (FLT_exp (-1074) 53) (round_mode .mode_NE) (toReal x + toReal y)| < 2 ^ 1024 →
+--   toReal (x + y) = roundR 2 (FLT_exp (-1074) 53) (round_mode .mode_NE) (toReal x + toReal y) ∧
+--   (x + y).isFinite = true
+
+#check @add_standard_model
+-- (same hypotheses) →
+--   ∃ ε η, |ε| ≤ 2 ^ (-53) ∧ |η| ≤ 2 ^ (-1075) ∧ ε * η = 0 ∧
+--     toReal (x + y) = (toReal x + toReal y) * (1 + ε) + η
+```
+
+What is proved:
+
+- `toReal x` is Flocq's `B2R (toBinary x)`, where `toBinary` decodes
+  `x.toModel` into Flocq's binary64 type. `toBinary` is a bijection
+  (`binaryEquiv`). Infinities and NaN have `toReal = 0`, as in Flocq.
+- `add_correct`, `sub_correct`, `mul_correct`, `div_correct` and `sqrt_correct`
+  restate Flocq's `Bplus_correct`, `Bminus_correct`, `Bmult_correct`,
+  `Bdiv_correct` and `Bsqrt_correct` for the native operators. The premises are
+  Flocq's: finite operands for `+` and `-`, `toReal y ≠ 0` for `/`, none for
+  `*` and `sqrt`. So are the conclusions: the rounded value, finiteness and sign
+  when the rounded result is below `2 ^ 1024` in magnitude, and the overflow
+  result otherwise (a square root cannot overflow).
+- `add_eq_round`, `sub_eq_round`, `mul_eq_round` and `div_eq_round` state the
+  no-overflow case with a plain inequality; `sqrt_eq_round` needs no
+  hypothesis. `round_abs_lt_of_abs_le` discharges the inequality when the
+  exact result is at most `(2 ^ 53 - 1) * 2 ^ 971`, the largest finite binary64
+  value, in magnitude.
+- `add_standard_model` through `sqrt_standard_model` give the standard model
+  with underflow, from Flocq's `error_N_FLT`, under the same hypotheses.
+- `FloatSpec.IEEE754.NativeFloat32` has the same theorems for `Float32`, with
+  precision 24, exponent function `FLT_exp (-149) 24`, overflow bound
+  `2 ^ 128`, `|ε| ≤ 2 ^ (-24)` and `|η| ≤ 2 ^ (-150)`.
+- The theorems depend only on `propext`, `Classical.choice` and `Quot.sound`.
+  `FloatSpec/Test/NativeFloat.lean` prints their statements and axioms, and
+  checks concrete values in the kernel, for example that `0.1 + 0.2` is the
+  correctly rounded sum of the binary64 values of `0.1` and `0.2`.
+
+What is not proved:
+
+- The theorems are about Lean's logical model. Compiled code calls the C
+  operators instead (`lean_float_add`, `sqrt` and so on). That these agree with
+  the model is part of what Lean trusts about its compiler and runtime.
+- Only `+`, `-`, `*`, `/` and `sqrt` are covered. Lean 4.34 has no fused
+  multiply-add on `Float`. The transcendental functions, `pow`, `cbrt`, `ceil`,
+  `floor`, `round`, `frExp`, `scaleB` and `toString` are opaque to the kernel,
+  so nothing follows from their definitions. Conversions, comparisons,
+  negation and `abs` have models, and `LeanFloat.lean` relates some of them to
+  Flocq, but `NativeFloat` states no real-valued theorem about them.
+- A real-valued conclusion says little about a non-finite result, since
+  `toReal` is `0` there; the finiteness conjuncts carry that information.
+- Rounding is always to nearest, ties to even. Lean's `Float` has no other
+  rounding modes.
+
+FloatSpec is Hantao Lou's Lean port of Flocq, and the bridge from
+`Float.Model` to Flocq (`FloatSpec/src/IEEE754/LeanFloat.lean` and the
+`FloatSpec.IEEE754.Native` adapters) is his work. `NativeFloat` composes that
+bridge with the ported Flocq theorems. It follows the Lean FRO's suggestion
+that float libraries prove equivalence with `Float.Model` and transfer their
+lemmas to `Float` ([Julia Markus Himmel, "Float Q&A", 2026-06-19](https://juliahimmel.de/blog/float-qanda)).
+
+
 ## Purpose
 
 - Provide a Lean 4 formalization of floating‑point arithmetic that mirrors the structure and guarantees of Flocq (by Boldo & Melquiond), while integrating with Lean 4 tooling and Mathlib.
