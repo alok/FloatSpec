@@ -5,7 +5,7 @@ import FloatSpec.src.Core
 import FloatSpec.src.Compat
 import FloatSpec.src.Calc
 import FloatSpec.Linter.CoqSourceLinter
-import Mathlib.Data.Real.Basic
+import Mathlib.Basic.Real.Basic
 import Mathlib.Data.Nat.BinaryRec
 
 open Real

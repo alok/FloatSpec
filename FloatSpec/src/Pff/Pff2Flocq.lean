@@ -5,7 +5,7 @@ import FloatSpec.src.Pff.Pff2FlocqAux
 import FloatSpec.src.Prop.Mult_error
 import FloatSpec.src.Prop.Plus_error
 import FloatSpec.src.Prop.Sterbenz
-import Mathlib.Data.Real.Basic
+import Mathlib.Basic.Real.Basic
 
 -- Conversion from Pff to Flocq formats
 -- Translated from Coq file: flocq/src/Pff/Pff2Flocq.v

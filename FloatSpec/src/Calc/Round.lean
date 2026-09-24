@@ -13,7 +13,7 @@ import FloatSpec.src.Core.Defs
 import FloatSpec.src.Core.Digits
 import FloatSpec.src.Core.Generic_fmt
 import FloatSpec.src.Core.Raux
-import Mathlib.Data.Real.Basic
+import Mathlib.Basic.Real.Basic
 import Mathlib.Data.Int.Basic
 import FloatSpec.src.SimprocWP
 

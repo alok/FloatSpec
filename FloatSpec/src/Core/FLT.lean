@@ -23,7 +23,7 @@ import FloatSpec.src.Core.Round_NE
 import FloatSpec.src.Core.Ulp
 import FloatSpec.src.Core.FLX
 import FloatSpec.src.Core.FIX
-import Mathlib.Data.Real.Basic
+import Mathlib.Basic.Real.Basic
 
 open Real
 open FloatSpec.Core.Defs

@@ -20,7 +20,7 @@ COPYING file for more details.
 import FloatSpec.src.Core.Defs
 import FloatSpec.src.Core.Generic_fmt
 import FloatSpec.src.Core.Round_NE
-import Mathlib.Data.Real.Basic
+import Mathlib.Basic.Real.Basic
 import Mathlib.Algebra.Ring.Defs
 import Mathlib.Algebra.Ring.Basic
 import FloatSpec.src.Core.Ulp

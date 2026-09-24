@@ -1,6 +1,6 @@
 import FloatSpec.src.Core
 import FloatSpec.src.Compat
-import Mathlib.Data.Real.Basic
+import Mathlib.Basic.Real.Basic
 import FloatSpec.src.Calc.Operations
 import FloatSpec.src.SimprocWP
 

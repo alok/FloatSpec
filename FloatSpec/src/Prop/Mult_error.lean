@@ -3,7 +3,7 @@ import FloatSpec.src.Compat
 import FloatSpec.src.Calc.Round
 import FloatSpec.src.Calc.Sqrt
 import FloatSpec.src.Prop.Plus_error
-import Mathlib.Data.Real.Basic
+import Mathlib.Basic.Real.Basic
 
 -- Error of the multiplication is in the FLX/FLT format
 -- Translated from Coq file: flocq/src/Prop/Mult_error.v

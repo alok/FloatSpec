@@ -19,7 +19,7 @@ COPYING file for more details.
 import FloatSpec.src.Core.Zaux
 import FloatSpecRoles
 import FloatSpec.VersoExt
-import Mathlib.Data.Real.Basic
+import Mathlib.Basic.Real.Basic
 import Mathlib.Data.Int.Basic
 import Mathlib.Data.Nat.Digits.Defs
 import Mathlib.Data.Nat.Log

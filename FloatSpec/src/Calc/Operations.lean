@@ -11,7 +11,7 @@ import FloatSpec.src.Core.Zaux
 import FloatSpec.src.Core.Raux
 import FloatSpec.src.Core.Defs
 import FloatSpec.src.Core.Float_prop
-import Mathlib.Data.Real.Basic
+import Mathlib.Basic.Real.Basic
 
 open Real FloatSpec.Core.Defs
 

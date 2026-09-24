@@ -290,7 +290,7 @@
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_N_pt_ge_0": {
           "type_hash": "1874941508",
-          "value_hash": "1596783371",
+          "value_hash": "4032499713",
           "noncomputable": false
         }
       }
@@ -311,7 +311,7 @@
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_N_pt_le_0": {
           "type_hash": "1465334945",
-          "value_hash": "926026772",
+          "value_hash": "2685963487",
           "noncomputable": false
         }
       }
@@ -353,7 +353,7 @@
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_N_pt_DN_UP": {
           "type_hash": "3196688007",
-          "value_hash": "519447807",
+          "value_hash": "3779392963",
           "noncomputable": false
         }
       }
@@ -374,7 +374,7 @@
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_N_pt_DN": {
           "type_hash": "4245544349",
-          "value_hash": "1525735832",
+          "value_hash": "1502158277",
           "noncomputable": false
         }
       }
@@ -395,7 +395,7 @@
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_N_pt_UP": {
           "type_hash": "3432433165",
-          "value_hash": "2200458609",
+          "value_hash": "678127125",
           "noncomputable": false
         }
       }
@@ -542,7 +542,7 @@
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_NA_NG_pt": {
           "type_hash": "1313149894",
-          "value_hash": "1882943505",
+          "value_hash": "624336244",
           "noncomputable": false
         }
       }
@@ -563,7 +563,7 @@
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_NA_pt_unique_prop": {
           "type_hash": "3523269823",
-          "value_hash": "2581470363",
+          "value_hash": "2846199218",
           "noncomputable": false
         }
       }
@@ -710,7 +710,7 @@
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_N0_NG_pt": {
           "type_hash": "3402619903",
-          "value_hash": "1792434705",
+          "value_hash": "1787875516",
           "noncomputable": false
         }
       }
@@ -731,7 +731,7 @@
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_N0_pt_unique_prop": {
           "type_hash": "1572400916",
-          "value_hash": "185128747",
+          "value_hash": "157435227",
           "noncomputable": false
         }
       }
@@ -1241,7 +1241,7 @@
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.satisfies_any_imp_NG": {
           "type_hash": "2685258716",
-          "value_hash": "2615715886",
+          "value_hash": "3621801237",
           "noncomputable": false
         }
       }
@@ -1262,7 +1262,7 @@
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.satisfies_any_imp_NA": {
           "type_hash": "4082841849",
-          "value_hash": "2873143620",
+          "value_hash": "735505290",
           "noncomputable": false
         }
       }
@@ -1283,7 +1283,7 @@
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.satisfies_any_imp_N0": {
           "type_hash": "1440828472",
-          "value_hash": "1539101887",
+          "value_hash": "3329919226",
           "noncomputable": false
         }
       }
@@ -1640,7 +1640,7 @@
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_ZR_abs": {
           "type_hash": "451388138",
-          "value_hash": "483805345",
+          "value_hash": "775247454",
           "noncomputable": false
         }
       }
@@ -1682,7 +1682,7 @@
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_N_pt_DN_or_UP": {
           "type_hash": "4109915066",
-          "value_hash": "3927922677",
+          "value_hash": "1762736536",
           "noncomputable": false
         }
       }
@@ -1745,7 +1745,7 @@
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_N_pt_monotone": {
           "type_hash": "3383686272",
-          "value_hash": "1913812494",
+          "value_hash": "4058031716",
           "noncomputable": false
         }
       }
@@ -1766,7 +1766,7 @@
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_N_pt_unique": {
           "type_hash": "4172921520",
-          "value_hash": "2408982620",
+          "value_hash": "3415781426",
           "noncomputable": false
         }
       }
@@ -1787,7 +1787,7 @@
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_N_pt_refl": {
           "type_hash": "971246217",
-          "value_hash": "3808594339",
+          "value_hash": "4275593999",
           "noncomputable": false
         }
       }
@@ -1808,7 +1808,7 @@
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_N_pt_idempotent": {
           "type_hash": "130797381",
-          "value_hash": "1692094356",
+          "value_hash": "3218399377",
           "noncomputable": false
         }
       }
@@ -1908,7 +1908,7 @@
       "lean_fingerprints": {
         "FloatSpec.Core.Zaux.Zgt_not_eq": {
           "type_hash": "1733592397",
-          "value_hash": "3623923814",
+          "value_hash": "1772824835",
           "noncomputable": false
         }
       }
@@ -2098,7 +2098,7 @@
       "lean_fingerprints": {
         "FloatSpec.Core.Zaux.Zpower_pos_gt_0": {
           "type_hash": "2443454401",
-          "value_hash": "3911502786",
+          "value_hash": "1418737244",
           "noncomputable": false
         },
         "FloatSpec.Core.Zaux.Zpower": {
@@ -2489,7 +2489,7 @@
       "lean_fingerprints": {
         "FloatSpec.Core.Zaux.Zpower_gt_1": {
           "type_hash": "4083730167",
-          "value_hash": "229042364",
+          "value_hash": "3589608683",
           "noncomputable": false
         },
         "FloatSpec.Core.Zaux.Radix": {
@@ -2540,7 +2540,7 @@
       "lean_fingerprints": {
         "FloatSpec.Core.Zaux.Zpower_gt_0": {
           "type_hash": "133389422",
-          "value_hash": "1745436645",
+          "value_hash": "3716711492",
           "noncomputable": false
         },
         "FloatSpec.Core.Zaux.Radix": {
@@ -2591,7 +2591,7 @@
       "lean_fingerprints": {
         "FloatSpec.Core.Zaux.Zpower_ge_0": {
           "type_hash": "3573630938",
-          "value_hash": "2343094588",
+          "value_hash": "1412691762",
           "noncomputable": false
         },
         "FloatSpec.Core.Zaux.Radix": {
@@ -2642,7 +2642,7 @@
       "lean_fingerprints": {
         "FloatSpec.Core.Zaux.Zpower_le": {
           "type_hash": "706961080",
-          "value_hash": "3023822457",
+          "value_hash": "717489021",
           "noncomputable": false
         },
         "FloatSpec.Core.Zaux.Radix": {
@@ -2693,7 +2693,7 @@
       "lean_fingerprints": {
         "FloatSpec.Core.Zaux.Zpower_lt": {
           "type_hash": "1427752370",
-          "value_hash": "4217211171",
+          "value_hash": "2325627750",
           "noncomputable": false
         },
         "FloatSpec.Core.Zaux.Radix": {
@@ -2744,7 +2744,7 @@
       "lean_fingerprints": {
         "FloatSpec.Core.Zaux.Zpower_lt_Zpower": {
           "type_hash": "2214111573",
-          "value_hash": "4277662654",
+          "value_hash": "3138040490",
           "noncomputable": false
         },
         "FloatSpec.Core.Zaux.Radix": {
@@ -2795,7 +2795,7 @@
       "lean_fingerprints": {
         "FloatSpec.Core.Zaux.Zpower_gt_id": {
           "type_hash": "740845418",
-          "value_hash": "1974099081",
+          "value_hash": "604581480",
           "noncomputable": false
         },
         "FloatSpec.Core.Zaux.Radix": {
@@ -2904,7 +2904,7 @@
       "lean_fingerprints": {
         "FloatSpec.Core.Zaux.Zdiv_mod_mult": {
           "type_hash": "1164618846",
-          "value_hash": "679823628",
+          "value_hash": "1077981414",
           "noncomputable": false
         }
       }

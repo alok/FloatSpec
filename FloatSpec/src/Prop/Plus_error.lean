@@ -2,7 +2,7 @@ import FloatSpec.src.Core
 import FloatSpec.src.Compat
 import FloatSpec.src.Calc.Round
 import FloatSpec.src.Prop.Relative
-import Mathlib.Data.Real.Basic
+import Mathlib.Basic.Real.Basic
 
 set_option linter.style.haveILetI false
 

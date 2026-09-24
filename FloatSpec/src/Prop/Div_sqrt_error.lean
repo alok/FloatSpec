@@ -6,7 +6,7 @@ import FloatSpec.src.Prop.Relative
 import FloatSpec.src.Prop.Sterbenz
 import FloatSpec.src.Prop.Mult_error
 import FloatSpec.src.Prop.Plus_error
-import Mathlib.Data.Real.Basic
+import Mathlib.Basic.Real.Basic
 
 set_option linter.style.haveILetI false
 

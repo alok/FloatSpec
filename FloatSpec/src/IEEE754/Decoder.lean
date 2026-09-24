@@ -5,7 +5,7 @@ Authors: Quang Dao
 -/
 import FloatSpec.src.IEEE754.Binary
 import FloatSpec.src.IEEE754.Bits
-import Mathlib.Data.Real.Basic
+import Mathlib.Basic.Real.Basic
 
 /-!
 # Pure-Lean IEEE-754 Binary64 Decoder

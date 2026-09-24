@@ -5,7 +5,7 @@ import FloatSpec.src.Core
 import FloatSpec.src.IEEE754.Binary
 import FloatSpec.src.IEEE754.BinarySingleNaN
 import Batteries.Data.Float.Lemmas
-import Mathlib.Data.Real.Basic
+import Mathlib.Basic.Real.Basic
 
 open Real
 

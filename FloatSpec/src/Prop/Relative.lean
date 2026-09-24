@@ -1,7 +1,7 @@
 import FloatSpec.src.Core
 import FloatSpec.src.Compat
 import FloatSpec.src.Calc.Round
-import Mathlib.Data.Real.Basic
+import Mathlib.Basic.Real.Basic
 
 -- Relative error of the roundings
 -- Translated from Coq file: flocq/src/Prop/Relative.v

@@ -1,6 +1,6 @@
 import FloatSpec.src.Core
 import FloatSpec.src.Compat
-import Mathlib.Data.Real.Basic
+import Mathlib.Basic.Real.Basic
 
 -- Sterbenz conditions for exact subtraction
 -- Translated from Coq file: flocq/src/Prop/Sterbenz.v

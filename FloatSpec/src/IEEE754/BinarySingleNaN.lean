@@ -7,7 +7,7 @@ import FloatSpec.src.Calc.Div
 import FloatSpec.src.Calc.Round
 import FloatSpec.src.Calc.Sqrt
 import Init.Data.Float
-import Mathlib.Data.Real.Basic
+import Mathlib.Basic.Real.Basic
 import Batteries.Data.Float.Lemmas
 
 open Real

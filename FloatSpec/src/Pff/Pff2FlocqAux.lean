@@ -1,7 +1,7 @@
 import FloatSpec.src.Pff.Pff
 import FloatSpec.src.Compat
 import FloatSpec.src.Core.Round_NE
-import Mathlib.Data.Real.Basic
+import Mathlib.Basic.Real.Basic
 import FloatSpec.src.SimprocWP
 import FloatSpec.Linter.CoqSourceLinter
 

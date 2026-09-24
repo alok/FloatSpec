@@ -36,9 +36,7 @@ package FloatSpec where
 
 /-! Dependencies -/
 
-require cslib from git "https://github.com/leanprover/cslib" @ "v4.34.0-rc2"
-
-require mathlib from git "https://github.com/leanprover-community/mathlib4" @ "v4.34.0-rc2"
+require mathlib from git "https://github.com/leanprover-community/mathlib4" @ "v4.34.0"
 
 /-- Linters for FloatSpec (prefer grind over omega, etc).
     Stdlib only, provides linter.preferGrind option.
@@ -57,7 +55,7 @@ lean_lib FloatSpecLib where
   globs := #[.andSubmodules `FloatSpec.src, .one `FloatSpec, .one `FloatSpec.VersoExt]
   needs := #[FloatSpecLinter, FloatSpecRoles]
 
-/-- Lightweight property tests (Plausible) and smoke checks. -/
+/-- Kernel-checked regression modules under `FloatSpec/Test`. -/
 lean_lib FloatSpecTests where
   globs := #[.andSubmodules `FloatSpec.Test]
   needs := #[FloatSpecLib]

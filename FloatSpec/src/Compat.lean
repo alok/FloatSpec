@@ -11,7 +11,7 @@ import FloatSpec.src.Core.Ulp
 import FloatSpec.src.Calc.Operations
 import FloatSpec.src.Calc.Round
 import FloatSpec.src.Calc.Operations
-import Mathlib.Data.Real.Basic
+import Mathlib.Basic.Real.Basic
 
 open FloatSpec.Core
 open FloatSpec.Core.Defs

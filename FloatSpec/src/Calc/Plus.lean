@@ -13,7 +13,7 @@ import FloatSpec.src.Calc.Operations
 import FloatSpec.src.Calc.Round
 import FloatSpec.src.Core.Digits
 import FloatSpec.src.Core.Generic_fmt
-import Mathlib.Data.Real.Basic
+import Mathlib.Basic.Real.Basic
 import FloatSpec.src.SimprocWP
 
 open Real FloatSpec.Calc.Bracket FloatSpec.Core.Digits FloatSpec.Core.Defs FloatSpec.Core.Generic_fmt

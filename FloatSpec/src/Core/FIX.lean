@@ -21,7 +21,7 @@ import FloatSpec.src.Core.Defs
 import FloatSpec.src.Core.Generic_fmt
 import FloatSpec.src.Core.Round_NE
 import FloatSpec.src.Core.Ulp
-import Mathlib.Data.Real.Basic
+import Mathlib.Basic.Real.Basic
 
 open Real
 open FloatSpec.Core.Generic_fmt

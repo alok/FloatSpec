@@ -4,7 +4,7 @@
 import FloatSpec.src.IEEE754.Binary
 import FloatSpec.src.IEEE754.BinarySingleNaN
 import FloatSpec.src.IEEE754.Bits
-import Mathlib.Data.Real.Basic
+import Mathlib.Basic.Real.Basic
 
 open Real
 open Classical
