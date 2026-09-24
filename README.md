@@ -109,8 +109,10 @@ The library is organized into layered modules. The top‑level aggregator `Float
   - Legacy compatibility modules and conversion helpers from an older floating‑point formalization
 
 Project configuration lives in `lakefile.lean` and `lean-toolchain` (Lean 4
-`v4.34.0`). Mathlib and CSLib remain pinned to their `v4.34.0-rc2` source
-revisions; this combination builds on macOS with stable 4.34.0.
+`v4.34.0`). The only direct dependency is Mathlib at its stable `v4.34.0` tag;
+`lake-manifest.json` pins Mathlib's own dependencies (Batteries, Aesop, Qq,
+ProofWidgets, Plausible, LeanSearchClient, import-graph, Cli) to the
+revisions that the Mathlib release locks.
 
 
 ## Current Progress
@@ -125,8 +127,9 @@ A successful build checks every proof against its statement; it does not by
 itself establish whole-library equivalence to Flocq. Source-facing APIs and compatibility helpers remain
 distinct.
 
-- Build: the checked-in toolchain is stable Lean 4 `v4.34.0`. The rc2 Lake
-  executable crashed on this macOS host; plain `lake build` now works here.
+- Build: Lean 4 `v4.34.0` with Mathlib `v4.34.0`. Because both are stable
+  releases, `lake exe cache get` downloads Mathlib's prebuilt files, and a
+  fresh checkout compiles only FloatSpec itself.
 - Proof framework: no source proof invokes `mvcgen` or `mspec`. Their unused
   `@[spec]` annotations, tactic imports, and Hoare-style linter were removed.
   Every theorem now states a direct proposition; the legacy `Id` Hoare
@@ -175,20 +178,39 @@ Prerequisites
 
 Build locally
 
-1) Build the locked dependencies and library: `lake build` (`lake update`
-   would change the reviewed dependency pins and is not required).
-2) Run trust gates: `scripts/audit_placeholders.sh --json FloatSpec`
+1) Download Mathlib's prebuilt files: `lake exe cache get`. Without this
+   step Lake compiles Mathlib from source, which takes over an hour.
+2) Build the library, the regression modules and the executables:
+   `lake build FloatSpec.Test FloatSpecTests floatspec floatspec_demo`. This
+   takes about 4 minutes on an Apple-silicon Mac once the cache is in place.
+   `lake update` is not needed; `lake-manifest.json` already pins every
+   dependency.
+3) Run trust gates: `scripts/audit_placeholders.sh --json FloatSpec`
    and `scripts/check_proof_debts.py`.
-3) With Rocq and autotools installed, run the executable cross-language
+4) With Rocq and autotools installed, run the executable cross-language
    regressions: `scripts/test_flocq_conformance.sh`. The script checks out the
    exact `Deps/flocq` gitlink in a temporary worktree (or clone), builds it,
    and runs paired Flocq/Lean observations without modifying an existing
    nested checkout.
 
-Lean-level tests (smoke/property checks)
+Tests
 
-- Build and run the lightweight Plausible-based tests: `lake build FloatSpecTests`
-- Or use the helper script: `./scripts/test_lean.sh`
+The checks are:
+
+- `FloatSpec/Test/*.lean`: regression modules that compile only if their
+  statements hold. They check concrete values in the kernel, pin source-facing
+  statements and print axiom dependencies. `lake build FloatSpecTests` builds
+  all of them.
+- `scripts/fixtures/*.lean`: standalone fixtures. CI compiles each with
+  `lake env lean -DwarningAsError=true`, runs those that define `main`, replays
+  the resulting declarations through the kernel with
+  `scripts/KernelReplay.lean`, and runs `lake exe floatspec_demo`.
+- `scripts/test_*.py` and `scripts/test_*.sh`: harness and trust-gate tests.
+  Those that compare against Rocq need a built, pinned Flocq checkout
+  (`FLOCQ_AUDIT_DIR`). CI runs every Python test module, the Rocq-backed ones
+  through `scripts/run_required_rocq_tests.py`, which fails on any skip.
+  `scripts/test_flocq_conformance.sh` is the local driver for all three
+  verification loops.
 
 REPL and usage
 
@@ -202,11 +224,18 @@ REPL and usage
 
 Use as a dependency (Lake)
 
-If you want to depend on this repository, add a line like the following to your project’s `lakefile.lean` (pin to a commit or tag that you control):
+FloatSpec needs Lean `v4.34.0` and Mathlib `v4.34.0`, so it can share a
+workspace with any other project on those stable releases. Add it to your
+`lakefile.lean`, pinned to a commit:
 
 ```
-require FloatSpec from git "https://github.com/Beneficial-AI-Foundation/FloatSpec" @ "<commit-or-tag>"
+require FloatSpec from git "https://github.com/alok/FloatSpec" @ "<commit>"
 ```
+
+Then run `lake update FloatSpec` and `lake exe cache get` before the first
+`lake build`. The upstream
+[Beneficial-AI-Foundation/FloatSpec](https://github.com/Beneficial-AI-Foundation/FloatSpec)
+repository does not yet contain the stable-Mathlib pin.
 
 
 ## Proof Style and Workflow

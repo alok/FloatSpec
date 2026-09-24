@@ -108,15 +108,19 @@ other than the cache save and the evidence upload, a missing `shell: bash`,
 and constructs that can lose a failure (`|| true`, `&&`, a leading `!`,
 backgrounding, `set +e`). The coverage, fixture, Rocq, live-suite, bridge,
 evidence and status steps are pinned command for command. The job timeout is 180
-minutes: a run takes about 50-60 minutes with lean-action's cache warm and
-about 125-135 minutes when a cold cache rebuilds Mathlib; the kernel replays
+minutes: a run takes about 50-60 minutes with lean-action's cache warm. A cold
+cache no longer rebuilds Mathlib: Mathlib is pinned to its stable `v4.34.0`
+tag, so lean-action downloads its prebuilt files (`lake exe cache get`) and
+compiles only FloatSpec, about 4 minutes on this Mac. Under the earlier rc2
+pin that cache did not match the toolchain, and a cold lean-action step took
+73-81 minutes. The kernel replays
 add about two minutes on this Mac (40 s for the source modules, 20 s for the
 tests, 45 s for the fixtures), likely somewhat more on the four-core runner.
 The flocqsmith and exemplar modules add about five minutes to the required
 suite: 235 and 265 s for `test_flocqsmith` (most of it the 40-program
 control campaign) and 56 and 76 s for `test_flocq_exemplars`, in two passing
 runs each here, on a loaded machine.
-That puts a cold run at roughly 130-145 minutes, still inside the timeout.
+The required live suite, not the Lean build, now dominates a cold run.
 
 The per-push bridge selects `power`, `div_eucl`, `location`, `round`, `truncate`,
 `div`, `plus`, `sqrt`, `formats`, `digits`, `operations`, `bits32` and `bits64`.

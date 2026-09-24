@@ -55,8 +55,8 @@ diagnostics or `lake build FloatSpec.src.<Module>`. After a caller migration,
 run `lake build`; before committing, also run `lake build FloatSpec.Test`,
 `lake build FloatSpecTests floatspec`, and the trust gates. Use
 `scripts/test_flocq_conformance.sh` when a changed contract has a paired Rocq
-observation. The checked-in Lean 4.34.0 toolchain supports plain `lake build`
-on macOS.
+observation. Lean and Mathlib are both pinned to stable `v4.34.0`; run
+`lake exe cache get` once per checkout so `lake build` compiles only FloatSpec.
 
 For arithmetic proofs, prefer named helper lemmas and `calc` chains over a
 large `simp` set. Search nearby theorems and Mathlib before proving a new

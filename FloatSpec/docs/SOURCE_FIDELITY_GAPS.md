@@ -184,10 +184,10 @@ kernel. No theorem mentions `Float.frExp`.
 
 ## Build/review usability
 
-macOS Lean 4.34 builds and runs the checked snapshots. Hosted CI
-previously failed before source compilation because it requested a pinned rc2
-Mathlib cache under final Lean 4.34. The approved workflow repair now skips
-that incompatible cache and builds the reviewed sources with stable 4.34.0;
-hosted verification is pending. Local success is not a hosted/Linux pass.
+macOS Lean 4.34 builds and runs the checked snapshots. Mathlib is pinned to
+its stable `v4.34.0` tag, matching the toolchain, so hosted CI downloads
+Mathlib's prebuilt cache instead of compiling Mathlib. The earlier rc2 pin's
+cache did not match final Lean 4.34, so CI had skipped it and rebuilt Mathlib
+from source. Local success is not a hosted/Linux pass.
 Exact source hashes and reviewable fork commits remain the authority for
 which snapshot each test exercised.

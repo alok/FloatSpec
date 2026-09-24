@@ -32,7 +32,10 @@ The current checkout has no `justfile` or `pyproject.toml`; earlier instructions
 for `just build`, `just test`, and `pytest` described an older setup. Use the
 commands actually maintained here:
 
-- `lake build FloatSpec.Test FloatSpecTests floatspec` — full library/test/executable build.
+- `lake exe cache get` — download Mathlib `v4.34.0`'s prebuilt files once per
+  checkout; without it Lake compiles Mathlib from source (over an hour).
+- `lake build FloatSpec.Test FloatSpecTests floatspec` — full library/test/executable build
+  (about 4 minutes on an Apple-silicon Mac once Mathlib's cache is present).
 - `uv run scripts/test_flocq_bridge.py -v` — core harness tests; live prover
   tests require `FLOCQ_AUDIT_DIR` at the pinned, built reference checkout.
 - `bash scripts/test_flocq_conformance.sh` — independent Lean and Rocq loops,
@@ -149,7 +152,9 @@ h_neq : ¬P.card = 2 ^ (Fintype.card S - 1)
 ### Building and Testing
 
 ```bash
-# Full local build (macOS Lean 4.34.0 is verified on the audit branch)
+# Lean v4.34.0 + Mathlib v4.34.0 (stable). Fetch Mathlib's prebuilt files first.
+lake exe cache get
+# Full local build
 lake build FloatSpec.Test FloatSpecTests floatspec
 
 # Standalone Python harness checks; set FLOCQ_AUDIT_DIR for live mutation tests

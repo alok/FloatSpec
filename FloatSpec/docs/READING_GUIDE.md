@@ -178,8 +178,8 @@ at `ca7eb4f7` passed the build, standalone regressions, trust checks, generated
 status and source hygiene on September 21 at 02:37 UTC. The original binary-
 cache incompatibility and subsequent missing-ripgrep failure are both resolved.
 Search/tool failures now fail explicitly; five injected-failure tests cover
-those paths. The reviewed rc2 dependency sources remain pinned under stable
-Lean 4.34.0. Hosted CI runs Lean and non-live harness tests; the live pinned-Rocq
+those paths. That run still used the reviewed rc2 dependency sources; Mathlib
+has since moved to its stable `v4.34.0` tag (see section 6). Hosted CI runs Lean and non-live harness tests; the live pinned-Rocq
 and differential receipts above are separate local verification.
 
 The power/division audit commits (`a0fd6e45`, `aeae41fa`) and documentation
@@ -649,8 +649,12 @@ timed-out, or source-changing runs must remain errors.
 
 ## 6. What is done, and how much is left?
 
-On the audit Mac, the checked-in Lean `v4.34.0` toolchain builds the project.
-Mathlib and CSLib remain at their reviewed rc2 source pins. Compilation,
+On the audit Mac, the checked-in Lean `v4.34.0` toolchain builds the project
+against Mathlib's stable `v4.34.0` tag, its only direct dependency. With
+Mathlib's prebuilt cache (`lake exe cache get`) the full build of library,
+tests and executables takes about 4 minutes there. Until September 24, 2026
+Mathlib was pinned to its `v4.34.0-rc2` revision, with an unused CSLib
+requirement; the move to the stable tag changed no statement. Compilation,
 finite execution agreement, a proof of a Lean theorem, and universal
 source correspondence are four different claims.
 
