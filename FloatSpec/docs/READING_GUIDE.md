@@ -654,7 +654,10 @@ against Mathlib's stable `v4.34.0` tag, its only direct dependency. With
 Mathlib's prebuilt cache (`lake exe cache get`) the full build of library,
 tests and executables takes about 4 minutes there. Until September 24, 2026
 Mathlib was pinned to its `v4.34.0-rc2` revision, with an unused CSLib
-requirement; the move to the stable tag changed no statement. Compilation,
+requirement; the move to the stable tag changed no statement. Its hosted
+[run 36075003395](https://github.com/alok/FloatSpec/actions/runs/36075003395)
+at `c89ad9aa` passed every step on September 25 at 01:02 UTC, from a cold
+build cache, in 69 minutes. Compilation,
 finite execution agreement, a proof of a Lean theorem, and universal
 source correspondence are four different claims.
 

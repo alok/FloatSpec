@@ -111,9 +111,13 @@ evidence and status steps are pinned command for command. The job timeout is 180
 minutes: a run takes about 50-60 minutes with lean-action's cache warm. A cold
 cache no longer rebuilds Mathlib: Mathlib is pinned to its stable `v4.34.0`
 tag, so lean-action downloads its prebuilt files (`lake exe cache get`) and
-compiles only FloatSpec, about 4 minutes on this Mac. Under the earlier rc2
-pin that cache did not match the toolchain, and a cold lean-action step took
-73-81 minutes. The kernel replays
+elaborates only FloatSpec. The first cold run on the stable pin,
+[36075003395](https://github.com/alok/FloatSpec/actions/runs/36075003395),
+spent 15.9 minutes in lean-action (1.6 fetching the cache, about 8 on
+FloatSpec, about 5 compiling C objects for the Mathlib modules the two
+executables link) and 69 minutes in total. Under the earlier rc2 pin that
+cache did not match the toolchain, and a cold lean-action step took 73-81
+minutes. The same targets build in about 4 minutes on this Mac. The kernel replays
 add about two minutes on this Mac (40 s for the source modules, 20 s for the
 tests, 45 s for the fixtures), likely somewhat more on the four-core runner.
 The flocqsmith and exemplar modules add about five minutes to the required
