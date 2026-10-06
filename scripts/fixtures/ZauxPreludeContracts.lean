@@ -21,11 +21,14 @@ private def sourceIter {A : Type} (f : A → A) : Positive → A → A
   | .xO p, x => sourceIter f p (sourceIter f p x)
   | .xI p, x => sourceIter f p (sourceIter f p (f x))
 
+-- Flocq's `iter_nat` applies `f` first, so this unfolding holds definitionally;
+-- `iter_nat_S` is the theorem that moves `f` outside.
+example {A : Type} (f : A → A) (n : Nat) (x : A) :
+    iter_nat f (n + 1) x = iter_nat f n (f x) := rfl
+
 private theorem iter_nat_apply {A : Type} (f : A → A) (n : Nat) (x : A) :
-    iter_nat f n (f x) = f (iter_nat f n x) := by
-  induction n with
-  | zero => rfl
-  | succ n ih => simpa [iter_nat] using congrArg f ih
+    iter_nat f n (f x) = f (iter_nat f n x) :=
+  iter_nat_S f n x
 
 private theorem sourceIter_eq_iter_nat {A : Type} (f : A → A) (p : Positive) (x : A) :
     sourceIter f p x = iter_nat f (positiveToNat p) x := by

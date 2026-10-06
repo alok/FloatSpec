@@ -1182,8 +1182,9 @@ theorem inbetween_shr (x : ℝ) (m e : Int) (l : Loc) (n : Int)
             inbetween_shr_1 x (FloatSpec.Core.Zaux.iter_nat shr_1 k start)
               (e + (k : Int)) ih.1 ih.2
           constructor
-          · exact (le_shr1_le (FloatSpec.Core.Zaux.iter_nat shr_1 k start) ih.1).1
-          · simpa [FloatSpec.Core.Zaux.iter_nat, Nat.cast_add, Nat.cast_one,
+          · rw [FloatSpec.Core.Zaux.iter_nat_S]
+            exact (le_shr1_le (FloatSpec.Core.Zaux.iter_nat shr_1 k start) ih.1).1
+          · simpa [FloatSpec.Core.Zaux.iter_nat_S, Nat.cast_add, Nat.cast_one,
               add_assoc] using hstep
     have hn_cast : (n.toNat : Int) = n := Int.toNat_of_nonneg Hn
     have hres := (hiter n.toNat).2
@@ -1218,7 +1219,7 @@ theorem le_shr_le (mrs : ShrRecord) (e n : Int)
         have hp_nonneg : 0 ≤ (2 : Int) ^ k := pow_nonneg (by norm_num) k
         have hstep := le_shr1_le prev ih.1
         constructor
-        · simpa [FloatSpec.Core.Zaux.iter_nat, prev] using hstep.1
+        · simpa [FloatSpec.Core.Zaux.iter_nat_S, prev] using hstep.1
         · constructor
           · have hmul :
                 (2 : Int) ^ k * (2 * (shr_1 prev).shr_m) ≤
@@ -1233,7 +1234,7 @@ theorem le_shr_le (mrs : ShrRecord) (e n : Int)
                         rw [pow_succ']
                         ring
                 _ ≤ (2 : Int) ^ k * prev.shr_m := hmul
-            simpa [FloatSpec.Core.Zaux.iter_nat, prev] using htarget
+            simpa [FloatSpec.Core.Zaux.iter_nat_S, prev] using htarget
           · have hprev_le :
                 prev.shr_m + 1 ≤ 2 * ((shr_1 prev).shr_m + 1) := by
               omega
@@ -1251,7 +1252,7 @@ theorem le_shr_le (mrs : ShrRecord) (e n : Int)
                 _ = (2 : Int) ^ (k + 1) * ((shr_1 prev).shr_m + 1) := by
                     rw [pow_succ']
                     ring
-            simpa [FloatSpec.Core.Zaux.iter_nat, prev] using htarget
+            simpa [FloatSpec.Core.Zaux.iter_nat_S, prev] using htarget
   simpa [shr, Hn] using hiter n.toNat
 
 private def zeroStickyShrRecord : ShrRecord :=
@@ -1263,14 +1264,6 @@ private def zpow2 (e : Int) : Int :=
 private lemma shr_1_zeroStickyShrRecord :
     shr_1 zeroStickyShrRecord = zeroStickyShrRecord := by
   simp [zeroStickyShrRecord, shr_1]
-
-private lemma iter_nat_apply_comm {A : Type} (f : A → A) :
-    ∀ (k : Nat) (x : A),
-      FloatSpec.Core.Zaux.iter_nat f k (f x) =
-        f (FloatSpec.Core.Zaux.iter_nat f k x)
-  | 0, _ => rfl
-  | k + 1, x => by
-      simp [FloatSpec.Core.Zaux.iter_nat, iter_nat_apply_comm f k x]
 
 private lemma shr_limit_nat (mrs : ShrRecord) :
     ∀ k : Nat,
@@ -1324,12 +1317,8 @@ private lemma shr_limit_nat (mrs : ShrRecord) :
             _ = 2 * (2 : Int) ^ k := by
                 rw [pow_succ']
         exact (Int.mul_lt_mul_left (by norm_num : (0 : Int) < 2)).mp hmul_lt
-      have ih := shr_limit_nat (shr_1 mrs) k hnext0 hnext_lt
-      have hcomm := iter_nat_apply_comm shr_1 (k + 1) mrs
-      change shr_1 (FloatSpec.Core.Zaux.iter_nat shr_1 (k + 1) mrs) =
-        zeroStickyShrRecord
-      rw [← hcomm]
-      exact ih
+      -- Like Flocq's `iter_nat`, `k + 2` steps are `k + 1` steps from `shr_1 mrs`.
+      exact shr_limit_nat (shr_1 mrs) k hnext0 hnext_lt
 
 -- Coq: shr_limit
 theorem shr_limit (mrs : ShrRecord) (e n : Int)
@@ -8558,12 +8547,12 @@ private theorem extendedMantissaOfShrRecord_iter (record : ShrRecord)
     induction k with
     | zero => simpa [FloatSpec.Core.Zaux.iter_nat] using h
     | succ k ih =>
-        simpa [FloatSpec.Core.Zaux.iter_nat] using
+        simpa [FloatSpec.Core.Zaux.iter_nat_S] using
           (le_shr1_le (FloatSpec.Core.Zaux.iter_nat shr_1 k record) ih).1
   induction n with
   | zero => rfl
   | succ n ih =>
-      rw [FloatSpec.Core.Zaux.iter_nat]
+      rw [FloatSpec.Core.Zaux.iter_nat_S]
       rw [extendedMantissaOfShrRecord_shrOne _ (hnonneg n), ih]
       rfl
 

@@ -835,6 +835,7 @@ end FastPower
 section FasterDiv
 
 /-- Coq `Z.div_eucl`: floor quotient and a remainder with the divisor's sign. -/
+@[flocq_local "Rocq Stdlib Z.div_eucl, the floor quotient/remainder pair; not defined in Flocq itself"]
 def Z_div_eucl (a b : Int) : (Int × Int) :=
   let q := Int.fdiv a b
   (q, a - b * q)
@@ -846,175 +847,277 @@ theorem Zdiv_eucl_unique (a b : Int) :
   simp [Z_div_eucl, Int.fmod_def]
 
 /-- Coq `Zpos`: embed a positive integer into `Int`. -/
+@[flocq_local "Rocq Corelib BinNums.Zpos, the positive constructor of Z, as a function into Int"]
 def Zpos (p : Positive) : Int :=
   positiveToNat p
 
-private def Zpos_div_eucl_aux1_nat : Positive → Positive → Nat × Nat
-  | a, Positive.xH => (positiveToNat a, 0)
-  | Positive.xH, Positive.xO _ => (0, 1)
-  | Positive.xO a, Positive.xO b =>
-      let qr := Zpos_div_eucl_aux1_nat a b
-      (qr.1, 2 * qr.2)
-  | Positive.xI a, Positive.xO b =>
-      let qr := Zpos_div_eucl_aux1_nat a b
-      (qr.1, 2 * qr.2 + 1)
-  | a, Positive.xI b =>
-      (positiveToNat a / positiveToNat (Positive.xI b),
-        positiveToNat a % positiveToNat (Positive.xI b))
+theorem Zpos_pos (p : Positive) : 0 < Zpos p := by
+  simpa [Zpos] using positiveToNat_pos p
 
-private theorem Zpos_div_eucl_aux1_nat_correct (a b : Positive) :
-    Zpos_div_eucl_aux1_nat a b =
-      (positiveToNat a / positiveToNat b, positiveToNat a % positiveToNat b) := by
-  induction b generalizing a with
-  | xH =>
-      cases a <;> simp [Zpos_div_eucl_aux1_nat, positiveToNat, Nat.div_one, Nat.mod_one]
-  | xI b =>
-      cases a <;> simp [Zpos_div_eucl_aux1_nat]
-  | xO b ih =>
-      cases a with
-      | xH =>
-          have hbpos : 0 < positiveToNat b := positiveToNat_pos b
-          have hlt : 1 < 2 * positiveToNat b := by omega
-          have hdiv : 1 / (2 * positiveToNat b) = 0 := Nat.div_eq_of_lt hlt
-          have hmod : 1 % (2 * positiveToNat b) = 1 := Nat.mod_eq_of_lt hlt
-          simp [Zpos_div_eucl_aux1_nat, positiveToNat, hdiv, hmod]
-      | xO a =>
-          have ih' := ih a
-          simp only [Zpos_div_eucl_aux1_nat] at ih' ⊢
-          rw [ih']
-          have htwo : 0 < 2 := by decide
-          simp [positiveToNat, Nat.mul_div_mul_left, Nat.mul_mod_mul_left, htwo]
-      | xI a =>
-          have ih' := ih a
-          simp only [Zpos_div_eucl_aux1_nat] at ih' ⊢
-          rw [ih']
-          set A := positiveToNat a
-          set B := positiveToNat b
-          set q := A / B
-          set r := A % B
-          have hBpos : 0 < B := by simpa [B] using positiveToNat_pos b
-          have hden_pos : 0 < 2 * B := by omega
-          have hrem_lt : 2 * r + 1 < 2 * B := by
-            have hr_lt : r < B := by
-              simpa [r] using Nat.mod_lt A hBpos
-            omega
-          have hdecomp : B * q + r = A := by
-            simpa [q, r] using Nat.div_add_mod A B
-          have hnum : 2 * A + 1 = (2 * B) * q + (2 * r + 1) := by
-            rw [← hdecomp]
-            ring
-          have hdiv :
-              (2 * A + 1) / (2 * B) = q := by
-            calc
-              (2 * A + 1) / (2 * B)
-                  = ((2 * B) * q + (2 * r + 1)) / (2 * B) := by
-                      rw [hnum]
-              _ = q + (2 * r + 1) / (2 * B) := by
-                      rw [Nat.mul_add_div hden_pos]
-              _ = q := by rw [Nat.div_eq_of_lt hrem_lt, Nat.add_zero]
-          have hmod :
-              (2 * A + 1) % (2 * B) = 2 * r + 1 := by
-            calc
-              (2 * A + 1) % (2 * B)
-                  = ((2 * B) * q + (2 * r + 1)) % (2 * B) := by
-                      rw [hnum]
-              _ = (2 * r + 1) % (2 * B) := by
-                      rw [Nat.mul_add_mod]
-              _ = 2 * r + 1 := Nat.mod_eq_of_lt hrem_lt
-          simp [positiveToNat, A, B, q, r, hdiv, hmod]
+/-- The positive with value `n` (`xH` for `0`), built from its binary digits. The first
+argument is fuel: `n` itself suffices, and only about `log₂ n` steps are taken. -/
+private def Pos_of_nat_aux : Nat → Nat → Positive
+  | 0, _ => .xH
+  | fuel + 1, n =>
+      if n ≤ 1 then .xH
+      else if n % 2 = 0 then .xO (Pos_of_nat_aux fuel (n / 2))
+      else .xI (Pos_of_nat_aux fuel (n / 2))
 
-/-- Coq `Z.pos_div_eucl` for the positive-divisor case used by this file. -/
+/-- Rocq's `Pos.of_nat`: the positive with value `n`, and `xH` for `0`. -/
+@[flocq_local "Rocq Stdlib PArith Pos.of_nat; not defined in Flocq itself"]
+def Pos_of_nat (n : Nat) : Positive :=
+  Pos_of_nat_aux n n
+
+private theorem Pos_of_nat_aux_spec :
+    ∀ fuel n, 0 < n → n ≤ fuel → positiveToNat (Pos_of_nat_aux fuel n) = n
+  | 0, n, hn, hle => by omega
+  | fuel + 1, n, hn, hle => by
+      unfold Pos_of_nat_aux
+      by_cases h1 : n ≤ 1
+      · simp only [h1, ↓reduceIte, positiveToNat]
+        omega
+      · have ih := Pos_of_nat_aux_spec fuel (n / 2) (by omega) (by omega)
+        by_cases h2 : n % 2 = 0
+        · simp only [h1, h2, ↓reduceIte, positiveToNat, ih]
+          omega
+        · simp only [h1, h2, ↓reduceIte, positiveToNat, ih]
+          omega
+
+theorem Pos_of_nat_spec (n : Nat) (hn : 0 < n) : positiveToNat (Pos_of_nat n) = n :=
+  Pos_of_nat_aux_spec n n hn le_rfl
+
+/-- Rocq's three constructors of `Z`: `Z0`, `Zpos p` and `Zneg p`. -/
+@[flocq_local "View of Int through Rocq's Z constructors Z0/Zpos/Zneg, for literal ports of Rocq matches"]
+inductive ZView where
+  | Z0 : ZView
+  | Zpos : Positive → ZView
+  | Zneg : Positive → ZView
+
+/-- Decompose an integer as Rocq's `Z` constructors would. -/
+@[flocq_local "View of Int through Rocq's Z constructors Z0/Zpos/Zneg, for literal ports of Rocq matches"]
+def zview : Int → ZView
+  | .ofNat 0 => .Z0
+  | .ofNat (n + 1) => .Zpos (Pos_of_nat (n + 1))
+  | .negSucc n => .Zneg (Pos_of_nat (n + 1))
+
+/-- Rocq's `Pos.compare`, the order of the values. -/
+@[flocq_local "Rocq Stdlib PArith Pos.compare; not defined in Flocq itself"]
+def Pos_compare (a b : Positive) : Ordering :=
+  compare (positiveToNat a) (positiveToNat b)
+
+/-- Coq `Z.pos_div_eucl a b`, which Flocq applies only to positive divisors `b`. On that
+domain it is the Euclidean (equivalently, floor) quotient and remainder. -/
+@[flocq_local "Rocq Stdlib Z.pos_div_eucl, on the positive divisors Flocq uses; not defined in Flocq itself"]
 def Z_pos_div_eucl (a : Positive) (b : Int) : Int × Int :=
   (Zpos a / b, Zpos a % b)
 
-/-- Auxiliary division algorithm on positive integers. -/
-def Zpos_div_eucl_aux1 (a b : Positive) : Int × Int :=
-  let qr := Zpos_div_eucl_aux1_nat a b
-  (qr.1, qr.2)
+/-- A quotient/remainder pair is the Euclidean one when it decomposes the dividend with an
+in-range remainder. -/
+private theorem pair_eq_ediv_emod {n d q r : Int} (hd : 0 < d)
+    (h : r + d * q = n) (h0 : 0 ≤ r) (hr : r < d) : (q, r) = (n / d, n % d) := by
+  obtain ⟨h1, h2⟩ := (Int.ediv_emod_unique hd).mpr ⟨h, h0, hr⟩
+  rw [h1, h2]
 
-/-- Coq `Zaux.v`: `Zpos_div_eucl_aux1 a b = Z.pos_div_eucl a (Zpos b)`. -/
+/-- FLoCq `Zpos_div_eucl_aux1`: Euclidean division of positives, peeling the common
+trailing zero digits of an even divisor and falling back to `Z.pos_div_eucl` at an odd one. -/
+@[flocq_source "src/Core/Zaux.v" 862 "Zpos_div_eucl_aux1"]
+def Zpos_div_eucl_aux1 (a b : Positive) : Int × Int :=
+  match b with
+  | .xO b' =>
+    match a with
+    | .xO a' => let (q, r) := Zpos_div_eucl_aux1 a' b'; (q, 2 * r)
+    | .xI a' => let (q, r) := Zpos_div_eucl_aux1 a' b'; (q, 2 * r + 1)
+    | .xH => (0, Zpos a)
+  | .xH => (Zpos a, 0)
+  | .xI _ => Z_pos_div_eucl a (Zpos b)
+termination_by structural b
+
+/-- FLoCq `Zpos_div_eucl_aux1_correct`. -/
+@[flocq_source "src/Core/Zaux.v" 874 "Zpos_div_eucl_aux1_correct"]
 theorem Zpos_div_eucl_aux1_correct (a b : Positive) :
     Zpos_div_eucl_aux1 a b = Z_pos_div_eucl a (Zpos b) := by
-  unfold Zpos_div_eucl_aux1 Z_pos_div_eucl Zpos
-  rw [Zpos_div_eucl_aux1_nat_correct]
-  simp [Int.natCast_ediv, Int.natCast_emod]
+  induction b generalizing a with
+  | xH => simp [Zpos_div_eucl_aux1, Z_pos_div_eucl, Zpos, positiveToNat]
+  | xI b => rfl
+  | xO b ih =>
+      have hB := Zpos_pos b
+      have hb : Zpos (.xO b) = 2 * Zpos b := by simp [Zpos, positiveToNat]
+      cases a with
+      | xH =>
+          simp only [Zpos_div_eucl_aux1, Z_pos_div_eucl, hb]
+          have h1 : Zpos .xH = 1 := by simp [Zpos, positiveToNat]
+          exact pair_eq_ediv_emod (by omega) (by omega) (by omega) (by omega)
+      | xO a =>
+          have ha : Zpos (.xO a) = 2 * Zpos a := by simp [Zpos, positiveToNat]
+          have hq := Int.emod_add_mul_ediv (Zpos a) (Zpos b)
+          have h0 := Int.emod_nonneg (Zpos a) (Int.ne_of_gt hB)
+          have hr := Int.emod_lt_of_pos (Zpos a) hB
+          simp only [Zpos_div_eucl_aux1, ih, Z_pos_div_eucl, ha, hb]
+          exact pair_eq_ediv_emod (by omega) (by linear_combination 2 * hq) (by omega) (by omega)
+      | xI a =>
+          have ha : Zpos (.xI a) = 2 * Zpos a + 1 := by simp [Zpos, positiveToNat]
+          have hq := Int.emod_add_mul_ediv (Zpos a) (Zpos b)
+          have h0 := Int.emod_nonneg (Zpos a) (Int.ne_of_gt hB)
+          have hr := Int.emod_lt_of_pos (Zpos a) hB
+          simp only [Zpos_div_eucl_aux1, ih, Z_pos_div_eucl, ha, hb]
+          exact pair_eq_ediv_emod (by omega) (by linear_combination 2 * hq) (by omega) (by omega)
 
-/-- Secondary auxiliary division algorithm on positive integers. -/
+/-- FLoCq `Zpos_div_eucl_aux`: settle `a ≤ b` by comparison before dividing. -/
+@[flocq_source "src/Core/Zaux.v" 913 "Zpos_div_eucl_aux"]
 def Zpos_div_eucl_aux (a b : Positive) : Int × Int :=
-  if positiveToNat a < positiveToNat b then
-    (0, Zpos a)
-  else if positiveToNat a = positiveToNat b then
-    (1, 0)
-  else
-    Zpos_div_eucl_aux1 a b
+  match Pos_compare a b with
+  | .lt => (0, Zpos a)
+  | .eq => (1, 0)
+  | .gt => Zpos_div_eucl_aux1 a b
 
-/-- Coq `Zaux.v`: `Zpos_div_eucl_aux a b = Z.pos_div_eucl a (Zpos b)`. -/
+/-- FLoCq `Zpos_div_eucl_aux_correct`. -/
+@[flocq_source "src/Core/Zaux.v" 920 "Zpos_div_eucl_aux_correct"]
 theorem Zpos_div_eucl_aux_correct (a b : Positive) :
     Zpos_div_eucl_aux a b = Z_pos_div_eucl a (Zpos b) := by
-  unfold Zpos_div_eucl_aux
-  by_cases hlt : positiveToNat a < positiveToNat b
-  · simp only [hlt, ↓reduceIte]
-    unfold Z_pos_div_eucl Zpos
-    apply Prod.ext
-    · rw [← Int.natCast_ediv, Nat.div_eq_of_lt hlt]
-      rfl
-    · rw [← Int.natCast_emod, Nat.mod_eq_of_lt hlt]
-  · simp only [hlt, ↓reduceIte]
-    by_cases heq : positiveToNat a = positiveToNat b
-    · have hbpos : 0 < positiveToNat b := positiveToNat_pos b
-      simp only [heq, ↓reduceIte]
-      unfold Z_pos_div_eucl Zpos
-      apply Prod.ext
-      · rw [heq, ← Int.natCast_ediv, Nat.div_self hbpos]
-        rfl
-      · rw [heq, ← Int.natCast_emod, Nat.mod_self]
-        rfl
-    · simp [heq, Zpos_div_eucl_aux1_correct]
+  have hA := Zpos_pos a
+  have hB := Zpos_pos b
+  unfold Zpos_div_eucl_aux Pos_compare
+  rcases lt_trichotomy (positiveToNat a) (positiveToNat b) with h | h | h
+  · rw [compare_lt_iff_lt.mpr h]
+    have h' : Zpos a < Zpos b := by simpa [Zpos] using h
+    exact pair_eq_ediv_emod hB (by ring) hA.le h'
+  · rw [compare_eq_iff_eq.mpr h]
+    have h' : Zpos a = Zpos b := by simp [Zpos, h]
+    exact pair_eq_ediv_emod hB (by rw [h']; ring) le_rfl hB
+  · rw [compare_gt_iff_gt.mpr h]
+    exact Zpos_div_eucl_aux1_correct a b
 
-/-- Fast Euclidean division for integers. -/
-def Zfast_div_eucl (a b : Int) : (Int × Int) :=
-  Z_div_eucl a b
+/-- FLoCq `Zfast_div_eucl`: Rocq's `Z.div_eucl`, computed by sign cases from the Euclidean
+division of the absolute values. The zero-divisor branch tests `1 mod 0` as the source does,
+so that it follows whichever convention `Z.modulo` has for zero; in Rocq 9.1 and in Lean
+(`Int.fmod 1 0 = 1`), division by zero returns `(0, a)`. -/
+@[flocq_source "src/Core/Zaux.v" 936 "Zfast_div_eucl"]
+def Zfast_div_eucl (a b : Int) : Int × Int :=
+  match zview a with
+  | .Z0 => (0, 0)
+  | .Zpos a' =>
+    match zview b with
+    | .Z0 => (0, match Int.fmod 1 0 with | 0 => 0 | _ => a)
+    | .Zpos b' => Zpos_div_eucl_aux a' b'
+    | .Zneg b' =>
+      let (q, r) := Zpos_div_eucl_aux a' b'
+      match zview r with
+      | .Z0 => (-q, 0)
+      | .Zpos _ => (-(q + 1), b + r)
+      | .Zneg _ => (-(q + 1), b + r)
+  | .Zneg a' =>
+    match zview b with
+    | .Z0 => (0, match Int.fmod 1 0 with | 0 => 0 | _ => a)
+    | .Zpos b' =>
+      let (q, r) := Zpos_div_eucl_aux a' b'
+      match zview r with
+      | .Z0 => (-q, 0)
+      | .Zpos _ => (-(q + 1), b - r)
+      | .Zneg _ => (-(q + 1), b - r)
+    | .Zneg b' => let (q, r) := Zpos_div_eucl_aux a' b'; (q, -r)
 
-/-- FLoCq `Zfast_div_eucl_correct`: fast division computes the Coq-compatible
-division pair. -/
+/-- The floor pair for a positive divisor, from a decomposition with remainder in `[0, b)`. -/
+private theorem pair_eq_floor_pos {a b q r : Int} (hb : 0 < b)
+    (h : r + b * q = a) (h0 : 0 ≤ r) (hr : r < b) : (q, r) = Z_div_eucl a b := by
+  obtain ⟨h1, h2⟩ := (Int.fdiv_fmod_unique hb).mpr ⟨h, h0, hr⟩
+  rw [Zdiv_eucl_unique, h1, h2]
+
+/-- The floor pair for a negative divisor, from a decomposition with remainder in `(b, 0]`. -/
+private theorem pair_eq_floor_neg {a b q r : Int} (hb : b < 0)
+    (h : r + b * q = a) (h0 : b < r) (hr : r ≤ 0) : (q, r) = Z_div_eucl a b := by
+  obtain ⟨h1, h2⟩ := (Int.fdiv_fmod_unique' hb).mpr ⟨h, h0, hr⟩
+  rw [Zdiv_eucl_unique, h1, h2]
+
+private theorem zview_zero : zview 0 = .Z0 := rfl
+
+private theorem zview_succ (k : Nat) : zview ((k + 1 : Nat) : Int) = .Zpos (Pos_of_nat (k + 1)) :=
+  rfl
+
+/-- Every integer is Rocq's `Z0`, `Zpos p` or `Zneg p`, and `zview` reports which. -/
+private theorem zview_cases (z : Int) :
+    (z = 0 ∧ zview z = .Z0) ∨ (∃ p, z = Zpos p ∧ zview z = .Zpos p) ∨
+      (∃ p, z = -Zpos p ∧ zview z = .Zneg p) := by
+  rcases z with (_ | k) | k
+  · exact Or.inl ⟨rfl, rfl⟩
+  · refine Or.inr (Or.inl ⟨Pos_of_nat (k + 1), ?_, rfl⟩)
+    simp [Zpos, Pos_of_nat_spec]
+  · refine Or.inr (Or.inr ⟨Pos_of_nat (k + 1), ?_, rfl⟩)
+    simp [Zpos, Pos_of_nat_spec, Int.negSucc_eq]
+
+/-- A remainder of a positive divisor is zero or the value of a positive. -/
+private theorem emod_zero_or_succ (A B : Int) (hB : 0 < B) :
+    A % B = 0 ∨ ∃ k : Nat, A % B = ((k + 1 : Nat) : Int) := by
+  have h0 := Int.emod_nonneg A (Int.ne_of_gt hB)
+  by_cases h : A % B = 0
+  · exact Or.inl h
+  · exact Or.inr ⟨(A % B).toNat - 1, by omega⟩
+
+/-- FLoCq `Zfast_div_eucl_correct`: the fast algorithm computes `Z.div_eucl`. -/
+@[flocq_source "src/Core/Zaux.v" 965 "Zfast_div_eucl_correct"]
 theorem Zfast_div_eucl_correct (a b : Int) :
-    Zfast_div_eucl a b = Z_div_eucl a b := rfl
+    Zfast_div_eucl a b = Z_div_eucl a b := by
+  have h10 : Int.fmod 1 0 = 1 := by decide
+  rcases zview_cases a with ⟨rfl, ha⟩ | ⟨a', rfl, ha⟩ | ⟨a', rfl, ha⟩ <;>
+    rcases zview_cases b with ⟨rfl, hb⟩ | ⟨b', rfl, hb⟩ | ⟨b', rfl, hb⟩ <;>
+    simp only [Zfast_div_eucl, ha, hb, h10, Zpos_div_eucl_aux_correct, Z_pos_div_eucl]
+  -- A zero dividend or divisor.
+  all_goals first
+    | (simp [Z_div_eucl]; done)
+    | skip
+  -- Signs: the source corrects the Euclidean division of the absolute values.
+  all_goals
+    have hB := Zpos_pos b'
+    have hq := Int.emod_add_mul_ediv (Zpos a') (Zpos b')
+    have h0 := Int.emod_nonneg (Zpos a') (Int.ne_of_gt hB)
+    have hr := Int.emod_lt_of_pos (Zpos a') hB
+  · exact pair_eq_floor_pos hB hq h0 hr
+  · rcases emod_zero_or_succ (Zpos a') (Zpos b') hB with h | ⟨k, h⟩ <;> rw [h]
+    · rw [zview_zero]
+      exact pair_eq_floor_neg (by omega) (by linear_combination hq - h) (by omega) le_rfl
+    · rw [zview_succ]
+      exact pair_eq_floor_neg (by omega) (by linear_combination hq - h) (by omega) (by omega)
+  · rcases emod_zero_or_succ (Zpos a') (Zpos b') hB with h | ⟨k, h⟩ <;> rw [h]
+    · rw [zview_zero]
+      exact pair_eq_floor_pos hB (by linear_combination -hq + h) le_rfl hB
+    · rw [zview_succ]
+      exact pair_eq_floor_pos hB (by linear_combination -hq + h) (by omega) (by omega)
+  · exact pair_eq_floor_neg (by omega) (by linear_combination -hq) (by omega) (by omega)
 
 end FasterDiv
 
 section Iteration
 
-/-- Generic iteration of a function: applies `f` to `x` a total of `n` times.
-
-    FLoCq's `iter_nat` (Zaux.v:980) has the same type but recurses as
-    `iter_nat n' (f x)`, applying `f` first; this body applies it last. The
-    two agree on every input (`iter_nat_S`), but the definitions differ, so
-    this one carries no source anchor. -/
+/-- FLoCq `iter_nat`: apply `f` to `x` a total of `n` times. As in the source, each step
+applies `f` first and recurses on the result (`iter_nat n' (f x)`), the same unfolding as
+`Function.iterate`; `iter_nat_S` gives the step that applies `f` last. -/
+@[flocq_source "src/Core/Zaux.v" 980 "iter_nat"]
 def iter_nat {A : Type} (f : A → A) (n : Nat) (x : A) : A :=
   match n with
+  | n' + 1 => iter_nat f n' (f x)
   | 0 => x
-  | n' + 1 => f (iter_nat f n' x)
 
 /-- Specification: Iteration applies function n times. -/
 theorem iter_nat_spec {A : Type} (f : A → A) (n : Nat) (x : A) :
     iter_nat f n x = f^[n] x := by
   induction n generalizing x with
-  | zero => simp [iter_nat]
-  | succ n ih =>
-      simpa [iter_nat, Function.iterate_succ_apply'] using congrArg f (ih x)
-
-/-- FLoCq `iter_nat_S`. -/
-@[flocq_source "src/Core/Zaux.v" 997 "iter_nat_S"]
-theorem iter_nat_S {A : Type} (f : A → A) (p : Nat) (x : A) :
-    iter_nat f (p + 1) x = f (iter_nat f p x) := rfl
+  | zero => rfl
+  | succ n ih => exact ih (f x)
 
 /-- FLoCq `iter_nat_plus`. -/
 @[flocq_source "src/Core/Zaux.v" 986 "iter_nat_plus"]
 theorem iter_nat_plus {A : Type} (f : A → A) (p q : Nat) (x : A) :
     iter_nat f (p + q) x = iter_nat f p (iter_nat f q x) := by
-  induction p with
-  | zero => simp [iter_nat]
-  | succ p ih => simpa [iter_nat, Nat.succ_add] using congrArg f ih
+  induction q generalizing x with
+  | zero => rfl
+  | succ q ih => exact ih (f x)
+
+/-- FLoCq `iter_nat_S`. -/
+@[flocq_source "src/Core/Zaux.v" 997 "iter_nat_S"]
+theorem iter_nat_S {A : Type} (f : A → A) (p : Nat) (x : A) :
+    iter_nat f (p + 1) x = f (iter_nat f p x) := by
+  induction p generalizing x with
+  | zero => rfl
+  | succ p ih => exact ih (f x)
 
 /-- Binary-positive iteration, matching the Corelib `SpecFloat.iter_pos`
     body imported by Flocq. It recurses on the positive constructors directly;
@@ -1027,12 +1130,10 @@ def iter_pos {A : Type} (f : A → A) (p : Positive) (x : A) : A :=
   | .xI p => iter_pos f p (iter_pos f p (f x))
 
 private theorem iter_nat_apply {A : Type} (f : A → A) (n : Nat) (x : A) :
-    iter_nat f n (f x) = f (iter_nat f n x) := by
-  induction n with
-  | zero => rfl
-  | succ n ih => simpa [iter_nat] using congrArg f ih
+    iter_nat f n (f x) = f (iter_nat f n x) :=
+  iter_nat_S f n x
 
-/-- FLoCq `iter_pos_nat`; also preserves the previous natural-count implementation. -/
+/-- FLoCq `iter_pos_nat`: binary-positive iteration agrees with natural-count iteration. -/
 @[flocq_source "src/Core/Zaux.v" 1008 "iter_pos_nat"]
 theorem iter_pos_nat {A : Type} (f : A → A) (p : Positive) (x : A) :
     iter_pos f p x = iter_nat f (positiveToNat p) x := by
