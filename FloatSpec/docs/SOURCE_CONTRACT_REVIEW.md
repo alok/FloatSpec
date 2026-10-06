@@ -215,6 +215,49 @@ triples per assistant now also check these four laws, including zero and
 negative divisors. The queue has 40 contiguous Zaux/Version dispositions and
 126 in total; the next entry is the `Zeq_bool_prop` inductive.
 
+### Fifth ordered slice: Boolean comparisons
+
+The four sections at pinned `Zaux.v:502–764` (`Zeq_bool`, `Zle_bool`,
+`Zlt_bool`, `Zcompare`) have the same shape: an inductive *graph* relating
+`x`, `y` and the Boolean (or three-way) answer, a `_spec` theorem saying the
+actual function lands in that graph, and rewriting laws. That is 45 source
+sites: four graphs, nine constructors, eight generated schemes and 24 lemmas.
+The existing Lean statements already matched; no production declaration changed.
+
+What had to be checked, rather than assumed:
+
+| Source | Lean | Note |
+|---|---|---|
+| `Zeq_bool`, `Zle_bool`, `Zlt_bool` | `decide (x = y)`, `decide (x ≤ y)`, `decide (x < y)` | Rocq Stdlib notations for `Z.eqb`, `Z.leb`, `Z.ltb` |
+| `comparison`, `Z.compare` | `Ordering`, `compare` on `Int` | Constructors `Lt`/`Eq`/`Gt` ↦ `.lt`/`.eq`/`.gt` |
+| Constructor `Zeq_bool_true_ x y H` | `Zeq_bool_true_ H` | Rocq parameters explicit, Lean's implicit; clients use `@` |
+| `_ind` scheme, motive `bool → Prop` | `.rec`, dependent motive | Specializing the motive gives the source type exactly |
+| `_sind` scheme, motive into `SProp` | — | Lean has no `SProp`; recorded as adapted infrastructure |
+
+Rocq 9.1 deprecates the three notations, but its hint says "Use Z.eqb"
+for `Zle_bool` and `Zlt_bool` too. The notations expand to `Z.leb` and `Z.ltb`;
+following the hint literally would turn an order test into an equality test.
+The Rocq fixture and bridge use the expansions.
+
+The graphs are functional only because their branches are disjoint. The false
+branch of `Zle_bool_prop` is strict (`y < x`), while the false branch of
+`Zlt_bool_prop` is not (`y ≤ x`). Both assistants prove `¬ Zle_bool_prop 0 0 false`
+and `¬ Zlt_bool_prop 0 0 true`, and swapping either premise is a rejected
+mutation. Orientation matters for the rewriting laws, too: both assistants refute
+`Zle_bool (-x) y = Zle_bool x (-y)` and `!Zle_bool x y = Zlt_bool x y` at
+`x = 0, y = 1`, and `Zeq_bool (-x) y = Zeq_bool x y` at `x = 1, y = −1`.
+
+Evidence: `ZauxBooleanContracts.lean/.v` state all 45 interfaces (Rocq also
+states both `SProp` schemes), prove five counterexamples (no axioms in Lean,
+closed in Rocq), and check every law on 529 signed pairs, including values
+around ±2⁶³ and ±2⁶⁴. Sixteen mutations, eight per language, are rejected.
+The Boolean functions themselves are definitions, so they are also run
+differentially: the Zaux prelude bridge gained a `comparisons` operation that
+evaluates Lean's three tests and `compare` against Rocq's `Z.eqb`/`Z.leb`/
+`Z.ltb`/`Z.compare`, with a Python oracle independent of both. The queue now
+has 85 contiguous Zaux/Version dispositions and 171 in total; the next entry
+is `cond_Zopp_0`.
+
 ## Unindexed Pff negation and absolute value (earlier slice)
 
 The source facade now also exports `Fopp_correct`, `Fopp_Fopp`, `Fabs_correct`

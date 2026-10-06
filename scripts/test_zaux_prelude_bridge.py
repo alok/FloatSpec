@@ -16,10 +16,14 @@ class PreludeTests(unittest.TestCase):
         self.assertEqual(len(cases), len(set(cases)))
         for n in (1, 2, 3, 31, 32, 33, 127, 128, 129, 257):
             self.assertIn(prelude.Case('positive_iteration', (n, 2, 3, -5)), cases)
+        for x, y in [(0, 0), (-1, 1), (1, -1), (2**63, 2**63 - 1), (-2**64, -2**64)]:
+            self.assertIn(prelude.Case('comparisons', (x, y)), cases)
         for op, args in [('positive_iteration', (0, 1, 1, 1)),
                          ('positive_iteration', (-1, 1, 1, 1)),
                          ('conditional_negation', (2, 1)),
                          ('conditional_negation', (True, 1)),
+                         ('comparisons', (1,)),
+                         ('comparisons', (1, 2.0)),
                          ('positive_iteration', (1, 'sorry', 1, 1))]:
             with self.subTest(op=op, args=args), self.assertRaises(ValueError):
                 prelude.Case(op, args)
@@ -35,6 +39,13 @@ class PreludeTests(unittest.TestCase):
         lean, rocq = prelude.expressions(prelude.Case('positive_iteration', (5, 2, 3, -2)))
         self.assertIn('Positive.xI (Positive.xO Positive.xH)', lean)
         self.assertIn('(5)%positive', rocq)
+        # Equality, order, strict order and three-way comparison, computed without the APIs.
+        for (x, y), row in {(3, 3): [1, 1, 0, 0], (-4, 3): [0, 1, 1, -1],
+                            (3, -4): [0, 0, 0, 1]}.items():
+            self.assertEqual(prelude.expected(prelude.Case('comparisons', (x, y))), row)
+        lean, rocq = prelude.expressions(prelude.Case('comparisons', (-4, 3)))
+        self.assertIn('match compare (-4 : Int) (3)', lean)
+        self.assertIn('match Z.compare (-4) (3)', rocq)
 
     def test_profile_restores_globals_and_rejects_shared_wrong_answers(self):
         original = bridge.Case
@@ -49,9 +60,13 @@ class PreludeTests(unittest.TestCase):
     @unittest.skipUnless(os.environ.get('FLOCQ_AUDIT_DIR'), 'requires pinned built Rocq')
     def test_live_oracle_detects_both_sides_mutated(self):
         reference = Path(os.environ['FLOCQ_AUDIT_DIR']).resolve()
-        for case, before, after in [
-            (prelude.Case('positive_iteration', (3, 2, 3, -2)), ' + (3)', ' - (3)'),
-            (prelude.Case('conditional_negation', (1, -7)), 'cond_Zopp true', 'cond_Zopp false')]:
+        # One (before, after) edit per prover: (Lean, Rocq).
+        for case, edits in [
+            (prelude.Case('positive_iteration', (3, 2, 3, -2)), [(' + (3)', ' - (3)')] * 2),
+            (prelude.Case('conditional_negation', (1, -7)),
+             [('cond_Zopp true', 'cond_Zopp false')] * 2),
+            (prelude.Case('comparisons', (5, 5)),
+             [('Zle_bool', 'Zlt_bool'), ('Z.leb', 'Z.ltb')])]:
             with self.subTest(case=case), tempfile.TemporaryDirectory() as tmp, prelude.profile():
                 folder = Path(tmp)
                 rows = bridge.execute([case], reference, bridge.configured_coqc(reference), folder)
@@ -60,8 +75,10 @@ class PreludeTests(unittest.TestCase):
                 original = bridge.expressions
                 def mutated(value):
                     pair = original(value)
-                    self.assertTrue(all(text.count(before) == 1 for text in pair))
-                    return tuple(text.replace(before, after) for text in pair)
+                    self.assertTrue(all(text.count(before) == 1
+                                        for text, (before, _) in zip(pair, edits, strict=True)))
+                    return tuple(text.replace(before, after)
+                                 for text, (before, after) in zip(pair, edits, strict=True))
                 with patch.object(bridge, 'expressions', mutated):
                     wrong = bridge.execute([case], reference, bridge.configured_coqc(reference), folder)
                     self.assertEqual(wrong['rocq'], wrong['lean'])

@@ -4320,6 +4320,34 @@ declaration changed.
 Receipts: `/private/tmp/floatspec-zaux-sign-20261006/` (Codex build, fixture and
 mutation logs) and its `claude/div_eucl.json/report.json`.
 
+### October 6: Zaux Boolean comparisons (45 sites)
+
+The next 45 source sites, `Zaux.v:502–764`, are the `Zeq_bool`, `Zle_bool`,
+`Zlt_bool` and `Zcompare` sections: four graphs, nine constructors, eight
+generated schemes and 24 lemmas. Every Lean statement already matched the
+pinned source after the explicit translations recorded in the contract ledger
+(Stdlib notations to `decide`, `comparison` to `Ordering`, explicit to implicit
+constructor parameters). The 37 contracts are reviewed; the eight `_ind`/`_sind`
+schemes are adapted infrastructure on Lean's `.rec` (no `SProp` in Lean).
+
+New paired fixtures `ZauxBooleanContracts.lean/.v` pass under the CI text gates
+and `warningAsError`; Lean kernel replay covers all 42 fixture declarations.
+Five paired counterexamples are axiom-free in Lean and closed in Rocq. Sixteen
+mutations are rejected (27.4 s). The prelude bridge's new `comparisons`
+operation, at seed 865611 and source digest `8fcd409c`, passes 1485 cases
+(241 comparisons, 1110 iterations, 134 negations) with zero mismatches, 1485
+kernel equalities and 1485 independent-oracle checks (107.4 s). Its live test
+patches both provers' programs from `≤` to `<` and the oracle rejects the shared
+wrong answer. CI coverage policy 28/28; compiled drift gate 171 entries
+(158 contracts, 13 infrastructure, 2545 unreviewed). No production declaration
+changed.
+
+Found along the way: Rocq 9.1's deprecation attributes for `Zle_bool`,
+`Zge_bool`, `Zlt_bool` and `Zgt_bool` all say "use Z.eqb"; the notations are
+`Z.leb`, `Z.geb`, `Z.ltb` and `Z.gtb`.
+
+Receipts: `/private/tmp/floatspec-zaux-boolean-20261006/`.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In

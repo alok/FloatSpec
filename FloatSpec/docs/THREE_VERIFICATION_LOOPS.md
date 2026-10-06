@@ -202,6 +202,29 @@ check validates every observed pair against Python's floor division and exact
 integer reconstruction; it is not a fresh execution. No universal cross-prover
 equivalence is claimed from the finite grid.
 
+## Boolean comparison contracts (October 6)
+
+`Zaux.v:502–764` defines four comparison graphs and their laws. The paired
+fixtures state all 45 source interfaces, prove five counterexamples (graph
+strictness and argument orientation) and check 529 signed pairs, including
+±2⁶³ and ±2⁶⁴ neighbours. The prelude bridge runs the comparison functions
+themselves against Rocq and an independent Python oracle.
+
+```sh
+lake env lean -DwarningAsError=true scripts/fixtures/ZauxBooleanContracts.lean
+coqc -q -R "$FLOCQ_AUDIT_DIR/src" Flocq \
+  -o /tmp/ZauxBooleanContracts.vo scripts/fixtures/ZauxBooleanContracts.v
+uv run scripts/test_zaux_boolean_contracts.py -v
+uv run scripts/zaux_prelude_bridge.py --flocq-dir "$FLOCQ_AUDIT_DIR" \
+  --seed 865611 --samples 120
+```
+
+Sixteen mutations (eight per language) are rejected. With source digest
+`8fcd409c`, seed 865611 runs 1485 three-way cases and kernel equalities, all
+oracle-checked; 241 are comparison pairs. Rocq 9.1 deprecates `Zle_bool` and
+`Zlt_bool` with a hint naming `Z.eqb`; the fixtures use the real expansions
+`Z.leb` and `Z.ltb`, so the hint does not apply.
+
 ## Integer-power/radix contracts (September 21)
 
 The source-ordered audit now covers Zaux through `Zpower_gt_id`. Integer

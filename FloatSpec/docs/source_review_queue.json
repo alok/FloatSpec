@@ -3076,6 +3076,955 @@
           "noncomputable": false
         }
       }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zeq_bool_prop@10662",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zeq_bool_prop"
+      ],
+      "scope": "Same Prop-valued graph Z -> Z -> bool -> Prop with parameters x y and two constructors, true branch x = y, false branch x <> y. Paired constructor/eliminator clients; graph strictness checked by counterexample and mutation.",
+      "evidence": [
+        "scripts/fixtures/ZauxBooleanContracts.lean",
+        "scripts/fixtures/ZauxBooleanContracts.v",
+        "scripts/test_zaux_boolean_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zeq_bool_prop": {
+          "type_hash": "2445824287",
+          "value_hash": null,
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zeq_bool_prop_ind@10662",
+      "status": "adapted-proof-infrastructure",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zeq_bool_prop.rec"
+      ],
+      "scope": "Rocq-generated non-dependent eliminator into Prop is represented by Lean's dependent recursor Zeq_bool_prop.rec specialized to a motive over the index only; paired clients state the exact Rocq scheme type in both assistants. Not a literal port of generated proof terms.",
+      "evidence": [
+        "scripts/fixtures/ZauxBooleanContracts.lean",
+        "scripts/fixtures/ZauxBooleanContracts.v",
+        "scripts/test_zaux_boolean_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zeq_bool_prop.rec": {
+          "type_hash": "1093514834",
+          "value_hash": null,
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zeq_bool_prop_sind@10662",
+      "status": "adapted-proof-infrastructure",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zeq_bool_prop.rec"
+      ],
+      "scope": "Rocq-generated SProp eliminator has no Lean counterpart (Lean has no SProp; Prop is already proof-irrelevant). Mapped to Zeq_bool_prop.rec into Prop; the Rocq fixture checks the exact SProp scheme type. Adapted, not ported.",
+      "evidence": [
+        "scripts/fixtures/ZauxBooleanContracts.lean",
+        "scripts/fixtures/ZauxBooleanContracts.v",
+        "scripts/test_zaux_boolean_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zeq_bool_prop.rec": {
+          "type_hash": "1093514834",
+          "value_hash": null,
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zeq_bool_true_@10708",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zeq_bool_prop.Zeq_bool_true_"
+      ],
+      "scope": "Same constructor of Zeq_bool_prop with premise x = y. Rocq takes x y explicitly; Lean's inductive parameters are implicit, so the client uses @ to state the source shape.",
+      "evidence": [
+        "scripts/fixtures/ZauxBooleanContracts.lean",
+        "scripts/fixtures/ZauxBooleanContracts.v",
+        "scripts/test_zaux_boolean_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zeq_bool_prop.Zeq_bool_true_": {
+          "type_hash": "1270239481",
+          "value_hash": null,
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zeq_bool_false_@10761",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zeq_bool_prop.Zeq_bool_false_"
+      ],
+      "scope": "Same constructor of Zeq_bool_prop with premise x <> y. Rocq takes x y explicitly; Lean's inductive parameters are implicit, so the client uses @ to state the source shape.",
+      "evidence": [
+        "scripts/fixtures/ZauxBooleanContracts.lean",
+        "scripts/fixtures/ZauxBooleanContracts.v",
+        "scripts/test_zaux_boolean_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zeq_bool_prop.Zeq_bool_false_": {
+          "type_hash": "3212686321",
+          "value_hash": null,
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zeq_bool_spec@10823",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zeq_bool_spec"
+      ],
+      "scope": "Graph of the Boolean test at Zeq_bool x y. Lean Zeq_bool is decide (x = y), Rocq's Zeq_bool is a notation for Z.eqb; the prelude bridge compares the two on signed and bignum pairs with an independent oracle.",
+      "evidence": [
+        "scripts/fixtures/ZauxBooleanContracts.lean",
+        "scripts/fixtures/ZauxBooleanContracts.v",
+        "scripts/test_zaux_boolean_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md",
+        "scripts/zaux_prelude_bridge.py"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zeq_bool_spec": {
+          "type_hash": "1791267309",
+          "value_hash": "44529739",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zeq_bool_true@11066",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zeq_bool_true"
+      ],
+      "scope": "Same premise x = y and conclusion Zeq_bool x y = true.",
+      "evidence": [
+        "scripts/fixtures/ZauxBooleanContracts.lean",
+        "scripts/fixtures/ZauxBooleanContracts.v",
+        "scripts/test_zaux_boolean_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zeq_bool_true": {
+          "type_hash": "2356775178",
+          "value_hash": "965689621",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zeq_bool_false@11184",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zeq_bool_false"
+      ],
+      "scope": "Same premise x <> y and conclusion Zeq_bool x y = false.",
+      "evidence": [
+        "scripts/fixtures/ZauxBooleanContracts.lean",
+        "scripts/fixtures/ZauxBooleanContracts.v",
+        "scripts/test_zaux_boolean_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zeq_bool_false": {
+          "type_hash": "1851619614",
+          "value_hash": "168815133",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zeq_bool_diag@11389",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zeq_bool_diag"
+      ],
+      "scope": "Same unconditional statement Zeq_bool x x = true.",
+      "evidence": [
+        "scripts/fixtures/ZauxBooleanContracts.lean",
+        "scripts/fixtures/ZauxBooleanContracts.v",
+        "scripts/test_zaux_boolean_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zeq_bool_diag": {
+          "type_hash": "3987918430",
+          "value_hash": "2588033118",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zeq_bool_opp@11494",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zeq_bool_opp"
+      ],
+      "scope": "Same orientation Zeq_bool (-x) y = Zeq_bool x (-y). Both assistants prove dropping the second negation false at x=1,y=-1; mutation rejected.",
+      "evidence": [
+        "scripts/fixtures/ZauxBooleanContracts.lean",
+        "scripts/fixtures/ZauxBooleanContracts.v",
+        "scripts/test_zaux_boolean_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zeq_bool_opp": {
+          "type_hash": "1312027971",
+          "value_hash": "1378192934",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zeq_bool_opp'@11801",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zeq_bool_opp'"
+      ],
+      "scope": "Same statement Zeq_bool (-x) (-y) = Zeq_bool x y.",
+      "evidence": [
+        "scripts/fixtures/ZauxBooleanContracts.lean",
+        "scripts/fixtures/ZauxBooleanContracts.v",
+        "scripts/test_zaux_boolean_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zeq_bool_opp'": {
+          "type_hash": "41450151",
+          "value_hash": "1722571526",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zle_bool_prop@12002",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zle_bool_prop"
+      ],
+      "scope": "Same Prop-valued graph Z -> Z -> bool -> Prop with parameters x y and two constructors, true branch x <= y, false branch y < x (strict). Paired constructor/eliminator clients; graph strictness checked by counterexample and mutation.",
+      "evidence": [
+        "scripts/fixtures/ZauxBooleanContracts.lean",
+        "scripts/fixtures/ZauxBooleanContracts.v",
+        "scripts/test_zaux_boolean_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zle_bool_prop": {
+          "type_hash": "2445824287",
+          "value_hash": null,
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zle_bool_prop_ind@12002",
+      "status": "adapted-proof-infrastructure",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zle_bool_prop.rec"
+      ],
+      "scope": "Rocq-generated non-dependent eliminator into Prop is represented by Lean's dependent recursor Zle_bool_prop.rec specialized to a motive over the index only; paired clients state the exact Rocq scheme type in both assistants. Not a literal port of generated proof terms.",
+      "evidence": [
+        "scripts/fixtures/ZauxBooleanContracts.lean",
+        "scripts/fixtures/ZauxBooleanContracts.v",
+        "scripts/test_zaux_boolean_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zle_bool_prop.rec": {
+          "type_hash": "465315585",
+          "value_hash": null,
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zle_bool_prop_sind@12002",
+      "status": "adapted-proof-infrastructure",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zle_bool_prop.rec"
+      ],
+      "scope": "Rocq-generated SProp eliminator has no Lean counterpart (Lean has no SProp; Prop is already proof-irrelevant). Mapped to Zle_bool_prop.rec into Prop; the Rocq fixture checks the exact SProp scheme type. Adapted, not ported.",
+      "evidence": [
+        "scripts/fixtures/ZauxBooleanContracts.lean",
+        "scripts/fixtures/ZauxBooleanContracts.v",
+        "scripts/test_zaux_boolean_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zle_bool_prop.rec": {
+          "type_hash": "465315585",
+          "value_hash": null,
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zle_bool_true_@12048",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zle_bool_prop.Zle_bool_true_"
+      ],
+      "scope": "Same constructor of Zle_bool_prop with premise x <= y. Rocq takes x y explicitly; Lean's inductive parameters are implicit, so the client uses @ to state the source shape.",
+      "evidence": [
+        "scripts/fixtures/ZauxBooleanContracts.lean",
+        "scripts/fixtures/ZauxBooleanContracts.v",
+        "scripts/test_zaux_boolean_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zle_bool_prop.Zle_bool_true_": {
+          "type_hash": "1746183318",
+          "value_hash": null,
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zle_bool_false_@12106",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zle_bool_prop.Zle_bool_false_"
+      ],
+      "scope": "Same constructor of Zle_bool_prop with premise y < x (strict; y <= x is a rejected mutation). Rocq takes x y explicitly; Lean's inductive parameters are implicit, so the client uses @ to state the source shape.",
+      "evidence": [
+        "scripts/fixtures/ZauxBooleanContracts.lean",
+        "scripts/fixtures/ZauxBooleanContracts.v",
+        "scripts/test_zaux_boolean_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zle_bool_prop.Zle_bool_false_": {
+          "type_hash": "4043027898",
+          "value_hash": null,
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zle_bool_spec@12171",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zle_bool_spec"
+      ],
+      "scope": "Graph of the Boolean order at Zle_bool x y (Lean decide (x <= y), Rocq notation for Z.leb); bridge-checked against Z.leb with an independent oracle.",
+      "evidence": [
+        "scripts/fixtures/ZauxBooleanContracts.lean",
+        "scripts/fixtures/ZauxBooleanContracts.v",
+        "scripts/test_zaux_boolean_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md",
+        "scripts/zaux_prelude_bridge.py"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zle_bool_spec": {
+          "type_hash": "1234961179",
+          "value_hash": "1830320108",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zle_bool_true@12429",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zle_bool_true"
+      ],
+      "scope": "Same premise x <= y and conclusion Zle_bool x y = true.",
+      "evidence": [
+        "scripts/fixtures/ZauxBooleanContracts.lean",
+        "scripts/fixtures/ZauxBooleanContracts.v",
+        "scripts/test_zaux_boolean_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zle_bool_true": {
+          "type_hash": "1323325886",
+          "value_hash": "2506533427",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zle_bool_false@12569",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zle_bool_false"
+      ],
+      "scope": "Same strict premise y < x and conclusion Zle_bool x y = false.",
+      "evidence": [
+        "scripts/fixtures/ZauxBooleanContracts.lean",
+        "scripts/fixtures/ZauxBooleanContracts.v",
+        "scripts/test_zaux_boolean_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zle_bool_false": {
+          "type_hash": "1961367011",
+          "value_hash": "3815249398",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zle_bool_opp_l@12804",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zle_bool_opp_l"
+      ],
+      "scope": "Same orientation Zle_bool (-x) y = Zle_bool (-y) x. Both assistants prove the unswapped Zle_bool x (-y) variant false at x=0,y=1; mutation rejected.",
+      "evidence": [
+        "scripts/fixtures/ZauxBooleanContracts.lean",
+        "scripts/fixtures/ZauxBooleanContracts.v",
+        "scripts/test_zaux_boolean_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zle_bool_opp_l": {
+          "type_hash": "4098439231",
+          "value_hash": "1466414762",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zle_bool_opp@13001",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zle_bool_opp"
+      ],
+      "scope": "Same statement Zle_bool (-x) (-y) = Zle_bool y x, arguments swapped as in source.",
+      "evidence": [
+        "scripts/fixtures/ZauxBooleanContracts.lean",
+        "scripts/fixtures/ZauxBooleanContracts.v",
+        "scripts/test_zaux_boolean_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zle_bool_opp": {
+          "type_hash": "936520754",
+          "value_hash": "1633013691",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zle_bool_opp_r@13156",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zle_bool_opp_r"
+      ],
+      "scope": "Same orientation Zle_bool x (-y) = Zle_bool y (-x); the Zle_bool (-x) y variant is a rejected mutation.",
+      "evidence": [
+        "scripts/fixtures/ZauxBooleanContracts.lean",
+        "scripts/fixtures/ZauxBooleanContracts.v",
+        "scripts/test_zaux_boolean_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zle_bool_opp_r": {
+          "type_hash": "2937461503",
+          "value_hash": "1275772730",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zlt_bool_prop@13361",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zlt_bool_prop"
+      ],
+      "scope": "Same Prop-valued graph Z -> Z -> bool -> Prop with parameters x y and two constructors, true branch x < y, false branch y <= x (non-strict). Paired constructor/eliminator clients; graph strictness checked by counterexample and mutation.",
+      "evidence": [
+        "scripts/fixtures/ZauxBooleanContracts.lean",
+        "scripts/fixtures/ZauxBooleanContracts.v",
+        "scripts/test_zaux_boolean_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zlt_bool_prop": {
+          "type_hash": "2445824287",
+          "value_hash": null,
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zlt_bool_prop_ind@13361",
+      "status": "adapted-proof-infrastructure",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zlt_bool_prop.rec"
+      ],
+      "scope": "Rocq-generated non-dependent eliminator into Prop is represented by Lean's dependent recursor Zlt_bool_prop.rec specialized to a motive over the index only; paired clients state the exact Rocq scheme type in both assistants. Not a literal port of generated proof terms.",
+      "evidence": [
+        "scripts/fixtures/ZauxBooleanContracts.lean",
+        "scripts/fixtures/ZauxBooleanContracts.v",
+        "scripts/test_zaux_boolean_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zlt_bool_prop.rec": {
+          "type_hash": "695462287",
+          "value_hash": null,
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zlt_bool_prop_sind@13361",
+      "status": "adapted-proof-infrastructure",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zlt_bool_prop.rec"
+      ],
+      "scope": "Rocq-generated SProp eliminator has no Lean counterpart (Lean has no SProp; Prop is already proof-irrelevant). Mapped to Zlt_bool_prop.rec into Prop; the Rocq fixture checks the exact SProp scheme type. Adapted, not ported.",
+      "evidence": [
+        "scripts/fixtures/ZauxBooleanContracts.lean",
+        "scripts/fixtures/ZauxBooleanContracts.v",
+        "scripts/test_zaux_boolean_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zlt_bool_prop.rec": {
+          "type_hash": "695462287",
+          "value_hash": null,
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zlt_bool_true_@13407",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zlt_bool_prop.Zlt_bool_true_"
+      ],
+      "scope": "Same constructor of Zlt_bool_prop with premise x < y. Rocq takes x y explicitly; Lean's inductive parameters are implicit, so the client uses @ to state the source shape.",
+      "evidence": [
+        "scripts/fixtures/ZauxBooleanContracts.lean",
+        "scripts/fixtures/ZauxBooleanContracts.v",
+        "scripts/test_zaux_boolean_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zlt_bool_prop.Zlt_bool_true_": {
+          "type_hash": "1690040659",
+          "value_hash": null,
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zlt_bool_false_@13464",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zlt_bool_prop.Zlt_bool_false_"
+      ],
+      "scope": "Same constructor of Zlt_bool_prop with premise y <= x (non-strict; y < x is a rejected mutation). Rocq takes x y explicitly; Lean's inductive parameters are implicit, so the client uses @ to state the source shape.",
+      "evidence": [
+        "scripts/fixtures/ZauxBooleanContracts.lean",
+        "scripts/fixtures/ZauxBooleanContracts.v",
+        "scripts/test_zaux_boolean_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zlt_bool_prop.Zlt_bool_false_": {
+          "type_hash": "1396231793",
+          "value_hash": null,
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zlt_bool_spec@13530",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zlt_bool_spec"
+      ],
+      "scope": "Graph of the strict Boolean order at Zlt_bool x y (Lean decide (x < y), Rocq notation for Z.ltb); bridge-checked against Z.ltb with an independent oracle.",
+      "evidence": [
+        "scripts/fixtures/ZauxBooleanContracts.lean",
+        "scripts/fixtures/ZauxBooleanContracts.v",
+        "scripts/test_zaux_boolean_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md",
+        "scripts/zaux_prelude_bridge.py"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zlt_bool_spec": {
+          "type_hash": "1366151349",
+          "value_hash": "9129717",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zlt_bool_true@13788",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zlt_bool_true"
+      ],
+      "scope": "Same premise x < y and conclusion Zlt_bool x y = true.",
+      "evidence": [
+        "scripts/fixtures/ZauxBooleanContracts.lean",
+        "scripts/fixtures/ZauxBooleanContracts.v",
+        "scripts/test_zaux_boolean_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zlt_bool_true": {
+          "type_hash": "345442749",
+          "value_hash": "2515748507",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zlt_bool_false@13927",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zlt_bool_false"
+      ],
+      "scope": "Same non-strict premise y <= x and conclusion Zlt_bool x y = false.",
+      "evidence": [
+        "scripts/fixtures/ZauxBooleanContracts.lean",
+        "scripts/fixtures/ZauxBooleanContracts.v",
+        "scripts/test_zaux_boolean_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zlt_bool_false": {
+          "type_hash": "1911596963",
+          "value_hash": "3764473762",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:negb_Zle_bool@14163",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.negb_Zle_bool"
+      ],
+      "scope": "Same complement with swapped arguments: negb (Zle_bool x y) = Zlt_bool y x (Lean (!Zle_bool x y), parenthesized). Both assistants prove the unswapped Zlt_bool x y variant false at x=0,y=1; mutation rejected.",
+      "evidence": [
+        "scripts/fixtures/ZauxBooleanContracts.lean",
+        "scripts/fixtures/ZauxBooleanContracts.v",
+        "scripts/test_zaux_boolean_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.negb_Zle_bool": {
+          "type_hash": "2931975371",
+          "value_hash": "3455340713",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:negb_Zlt_bool@14354",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.negb_Zlt_bool"
+      ],
+      "scope": "Same complement with swapped arguments: negb (Zlt_bool x y) = Zle_bool y x.",
+      "evidence": [
+        "scripts/fixtures/ZauxBooleanContracts.lean",
+        "scripts/fixtures/ZauxBooleanContracts.v",
+        "scripts/test_zaux_boolean_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.negb_Zlt_bool": {
+          "type_hash": "2405972085",
+          "value_hash": "3421079235",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zlt_bool_opp_l@14545",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zlt_bool_opp_l"
+      ],
+      "scope": "Same orientation Zlt_bool (-x) y = Zlt_bool (-y) x.",
+      "evidence": [
+        "scripts/fixtures/ZauxBooleanContracts.lean",
+        "scripts/fixtures/ZauxBooleanContracts.v",
+        "scripts/test_zaux_boolean_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zlt_bool_opp_l": {
+          "type_hash": "2328451834",
+          "value_hash": "3644207410",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zlt_bool_opp_r@14716",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zlt_bool_opp_r"
+      ],
+      "scope": "Same orientation Zlt_bool x (-y) = Zlt_bool y (-x).",
+      "evidence": [
+        "scripts/fixtures/ZauxBooleanContracts.lean",
+        "scripts/fixtures/ZauxBooleanContracts.v",
+        "scripts/test_zaux_boolean_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zlt_bool_opp_r": {
+          "type_hash": "1541245913",
+          "value_hash": "1079427279",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zlt_bool_opp@14887",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zlt_bool_opp"
+      ],
+      "scope": "Same statement Zlt_bool (-x) (-y) = Zlt_bool y x.",
+      "evidence": [
+        "scripts/fixtures/ZauxBooleanContracts.lean",
+        "scripts/fixtures/ZauxBooleanContracts.v",
+        "scripts/test_zaux_boolean_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zlt_bool_opp": {
+          "type_hash": "2691705954",
+          "value_hash": "264947876",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zcompare_prop@15090",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zcompare_prop"
+      ],
+      "scope": "Same Prop-valued graph over Z x Z indexed by comparison (Lean Ordering), three constructors in source order Lt/Eq/Gt with premises x < y, x = y, y < x. Parameters x y; paired constructor and eliminator clients.",
+      "evidence": [
+        "scripts/fixtures/ZauxBooleanContracts.lean",
+        "scripts/fixtures/ZauxBooleanContracts.v",
+        "scripts/test_zaux_boolean_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zcompare_prop": {
+          "type_hash": "702757442",
+          "value_hash": null,
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zcompare_prop_ind@15090",
+      "status": "adapted-proof-infrastructure",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zcompare_prop.rec"
+      ],
+      "scope": "Rocq-generated non-dependent eliminator into Prop is represented by Lean's dependent recursor Zcompare_prop.rec specialized to a motive over the index only; paired clients state the exact Rocq scheme type in both assistants. Not a literal port of generated proof terms.",
+      "evidence": [
+        "scripts/fixtures/ZauxBooleanContracts.lean",
+        "scripts/fixtures/ZauxBooleanContracts.v",
+        "scripts/test_zaux_boolean_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zcompare_prop.rec": {
+          "type_hash": "1368571420",
+          "value_hash": null,
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zcompare_prop_sind@15090",
+      "status": "adapted-proof-infrastructure",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zcompare_prop.rec"
+      ],
+      "scope": "Rocq-generated SProp eliminator has no Lean counterpart (Lean has no SProp; Prop is already proof-irrelevant). Mapped to Zcompare_prop.rec into Prop; the Rocq fixture checks the exact SProp scheme type. Adapted, not ported.",
+      "evidence": [
+        "scripts/fixtures/ZauxBooleanContracts.lean",
+        "scripts/fixtures/ZauxBooleanContracts.v",
+        "scripts/test_zaux_boolean_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zcompare_prop.rec": {
+          "type_hash": "1368571420",
+          "value_hash": null,
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zcompare_Lt_@15142",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zcompare_prop.Zcompare_Lt_"
+      ],
+      "scope": "Same constructor of Zcompare_prop with premise x < y. Rocq takes x y explicitly; Lean's inductive parameters are implicit, so the client uses @ to state the source shape.",
+      "evidence": [
+        "scripts/fixtures/ZauxBooleanContracts.lean",
+        "scripts/fixtures/ZauxBooleanContracts.v",
+        "scripts/test_zaux_boolean_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zcompare_prop.Zcompare_Lt_": {
+          "type_hash": "457533774",
+          "value_hash": null,
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zcompare_Eq_@15195",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zcompare_prop.Zcompare_Eq_"
+      ],
+      "scope": "Same constructor of Zcompare_prop with premise x = y. Rocq takes x y explicitly; Lean's inductive parameters are implicit, so the client uses @ to state the source shape.",
+      "evidence": [
+        "scripts/fixtures/ZauxBooleanContracts.lean",
+        "scripts/fixtures/ZauxBooleanContracts.v",
+        "scripts/test_zaux_boolean_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zcompare_prop.Zcompare_Eq_": {
+          "type_hash": "1493195475",
+          "value_hash": null,
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zcompare_Gt_@15244",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zcompare_prop.Zcompare_Gt_"
+      ],
+      "scope": "Same constructor of Zcompare_prop with premise y < x. Rocq takes x y explicitly; Lean's inductive parameters are implicit, so the client uses @ to state the source shape.",
+      "evidence": [
+        "scripts/fixtures/ZauxBooleanContracts.lean",
+        "scripts/fixtures/ZauxBooleanContracts.v",
+        "scripts/test_zaux_boolean_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zcompare_prop.Zcompare_Gt_": {
+          "type_hash": "1864878334",
+          "value_hash": null,
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zcompare_spec@15303",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zcompare_spec"
+      ],
+      "scope": "Graph of three-way comparison at Z.compare x y, translated to Lean compare on Int with Rocq comparison as Ordering. The bridge maps both results to -1/0/1 against an independent oracle.",
+      "evidence": [
+        "scripts/fixtures/ZauxBooleanContracts.lean",
+        "scripts/fixtures/ZauxBooleanContracts.v",
+        "scripts/test_zaux_boolean_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md",
+        "scripts/zaux_prelude_bridge.py"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zcompare_spec": {
+          "type_hash": "1353325706",
+          "value_hash": "1022017393",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zcompare_Lt@15712",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zcompare_Lt"
+      ],
+      "scope": "Same premise x < y and conclusion compare x y = Ordering.lt (Rocq Z.compare x y = Lt).",
+      "evidence": [
+        "scripts/fixtures/ZauxBooleanContracts.lean",
+        "scripts/fixtures/ZauxBooleanContracts.v",
+        "scripts/test_zaux_boolean_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zcompare_Lt": {
+          "type_hash": "2023084161",
+          "value_hash": "2911406294",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zcompare_Eq@15802",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zcompare_Eq"
+      ],
+      "scope": "Same premise x = y and conclusion compare x y = Ordering.eq.",
+      "evidence": [
+        "scripts/fixtures/ZauxBooleanContracts.lean",
+        "scripts/fixtures/ZauxBooleanContracts.v",
+        "scripts/test_zaux_boolean_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zcompare_Eq": {
+          "type_hash": "1077786347",
+          "value_hash": "3369004471",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zcompare_Gt@15927",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zcompare_Gt"
+      ],
+      "scope": "Same premise y < x and conclusion compare x y = Ordering.gt; the x < y variant is a rejected mutation.",
+      "evidence": [
+        "scripts/fixtures/ZauxBooleanContracts.lean",
+        "scripts/fixtures/ZauxBooleanContracts.v",
+        "scripts/test_zaux_boolean_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zcompare_Gt": {
+          "type_hash": "1790250291",
+          "value_hash": "1743785177",
+          "noncomputable": false
+        }
+      }
     }
   ]
 }

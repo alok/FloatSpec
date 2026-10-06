@@ -15,7 +15,7 @@ External Rocq imports are recorded in the JSON report, not counted as Flocq decl
 | Order | Source module | Declarations | Anchored | Name candidates | Reviewed |
 |---:|---|---:|---:|---:|---:|
 | 1 | src/Version.v | 1 | 1 | 1 | 1 |
-| 2 | src/Core/Zaux.v | 102 | 75 | 91 | 39 |
+| 2 | src/Core/Zaux.v | 102 | 75 | 91 | 84 |
 | 3 | src/Core/Raux.v | 186 | 29 | 178 | 0 |
 | 4 | src/Core/Defs.v | 14 | 11 | 14 | 0 |
 | 5 | src/Core/Round_pred.v | 83 | 78 | 78 | 83 |
@@ -57,26 +57,26 @@ the full Lean type/body with Rocq, and add an evidence-bearing review entry.
 Resolve aliases and generated proof infrastructure explicitly; do not create
 unnecessary numerical APIs to satisfy a raw name count.
 
-- `src/Core/Zaux.v:502` — `Zeq_bool_prop` (ind): `FloatSpec.Core.Zaux.Zeq_bool_prop`.
-- `src/Core/Zaux.v:502` — `Zeq_bool_prop_ind` (scheme): no exact-name candidate.
-- `src/Core/Zaux.v:502` — `Zeq_bool_prop_sind` (scheme): no exact-name candidate.
-- `src/Core/Zaux.v:503` — `Zeq_bool_true_` (constr): `FloatSpec.Core.Zaux.Zeq_bool_prop.Zeq_bool_true_`.
-- `src/Core/Zaux.v:504` — `Zeq_bool_false_` (constr): `FloatSpec.Core.Zaux.Zeq_bool_prop.Zeq_bool_false_`.
-- `src/Core/Zaux.v:506` — `Zeq_bool_spec` (prf): `FloatSpec.Core.Zaux.Zeq_bool_spec`.
-- `src/Core/Zaux.v:518` — `Zeq_bool_true` (prf): `FloatSpec.Core.Zaux.Zeq_bool_true`.
-- `src/Core/Zaux.v:525` — `Zeq_bool_false` (prf): `FloatSpec.Core.Zaux.Zeq_bool_false`.
-- `src/Core/Zaux.v:537` — `Zeq_bool_diag` (prf): `FloatSpec.Core.Zaux.Zeq_bool_diag`.
-- `src/Core/Zaux.v:544` — `Zeq_bool_opp` (prf): `FloatSpec.Core.Zaux.Zeq_bool_opp`.
-- `src/Core/Zaux.v:561` — `Zeq_bool_opp'` (prf): `FloatSpec.Core.Zaux.Zeq_bool_opp'`.
-- `src/Core/Zaux.v:574` — `Zle_bool_prop` (ind): `FloatSpec.Core.Zaux.Zle_bool_prop`.
-- `src/Core/Zaux.v:574` — `Zle_bool_prop_ind` (scheme): no exact-name candidate.
-- `src/Core/Zaux.v:574` — `Zle_bool_prop_sind` (scheme): no exact-name candidate.
-- `src/Core/Zaux.v:575` — `Zle_bool_true_` (constr): `FloatSpec.Core.Zaux.Zle_bool_prop.Zle_bool_true_`.
-- `src/Core/Zaux.v:576` — `Zle_bool_false_` (constr): `FloatSpec.Core.Zaux.Zle_bool_prop.Zle_bool_false_`.
-- `src/Core/Zaux.v:578` — `Zle_bool_spec` (prf): `FloatSpec.Core.Zaux.Zle_bool_spec`.
-- `src/Core/Zaux.v:590` — `Zle_bool_true` (prf): `FloatSpec.Core.Zaux.Zle_bool_true`.
-- `src/Core/Zaux.v:598` — `Zle_bool_false` (prf): `FloatSpec.Core.Zaux.Zle_bool_false`.
-- `src/Core/Zaux.v:610` — `Zle_bool_opp_l` (prf): `FloatSpec.Core.Zaux.Zle_bool_opp_l`.
+- `src/Core/Zaux.v:776` — `cond_Zopp_0` (prf): `FloatSpec.Core.Zaux.cond_Zopp_0`.
+- `src/Core/Zaux.v:782` — `cond_Zopp_negb` (prf): `FloatSpec.Core.Zaux.cond_Zopp_negb`.
+- `src/Core/Zaux.v:790` — `abs_cond_Zopp` (prf): `FloatSpec.Core.Zaux.abs_cond_Zopp`.
+- `src/Core/Zaux.v:799` — `cond_Zopp_Zlt_bool` (prf): `FloatSpec.Core.Zaux.cond_Zopp_Zlt_bool`.
+- `src/Core/Zaux.v:811` — `Zeq_bool_cond_Zopp` (prf): `FloatSpec.Core.Zaux.Zeq_bool_cond_Zopp`.
+- `src/Core/Zaux.v:824` — `Zfast_pow_pos` (def): `FloatSpec.Core.Zaux.Zfast_pow_pos`.
+- `src/Core/Zaux.v:831` — `Zfast_pow_pos_correct` (prf): `FloatSpec.Core.Zaux.Zfast_pow_pos_correct`.
+- `src/Core/Zaux.v:853` — `Zdiv_eucl_unique` (prf): `FloatSpec.Core.Zaux.Zdiv_eucl_unique`.
+- `src/Core/Zaux.v:862` — `Zpos_div_eucl_aux1` (def): `FloatSpec.Core.Zaux.Zpos_div_eucl_aux1`.
+- `src/Core/Zaux.v:874` — `Zpos_div_eucl_aux1_correct` (prf): `FloatSpec.Core.Zaux.Zpos_div_eucl_aux1_correct`.
+- `src/Core/Zaux.v:913` — `Zpos_div_eucl_aux` (def): `FloatSpec.Core.Zaux.Zpos_div_eucl_aux`.
+- `src/Core/Zaux.v:920` — `Zpos_div_eucl_aux_correct` (prf): `FloatSpec.Core.Zaux.Zpos_div_eucl_aux_correct`.
+- `src/Core/Zaux.v:936` — `Zfast_div_eucl` (def): `FloatSpec.Core.Zaux.Zfast_div_eucl`.
+- `src/Core/Zaux.v:965` — `Zfast_div_eucl_correct` (prf): `FloatSpec.Core.Zaux.Zfast_div_eucl_correct`.
+- `src/Core/Zaux.v:980` — `iter_nat` (def): `FloatSpec.Core.Zaux.iter_nat`.
+- `src/Core/Zaux.v:986` — `iter_nat_plus` (prf): `FloatSpec.Core.Zaux.iter_nat_plus`.
+- `src/Core/Zaux.v:997` — `iter_nat_S` (prf): `FloatSpec.Core.Zaux.iter_nat_S`.
+- `src/Core/Zaux.v:1008` — `iter_pos_nat` (prf): `FloatSpec.Core.Zaux.iter_pos_nat`.
+- `src/Core/Raux.v:29` — `Rle_0_minus` (prf): `FloatSpec.Core.Raux.Rle_0_minus`.
+- `src/Core/Raux.v:38` — `Rabs_eq_Rabs` (prf): `FloatSpec.Core.Raux.Rabs_eq_Rabs`.
 
 ## Reproduce
 

@@ -6,7 +6,9 @@ import random
 
 import flocq_bridge as bridge
 
-ARITIES = {"conditional_negation": 2, "positive_iteration": 4}
+ARITIES = {"conditional_negation": 2, "positive_iteration": 4, "comparisons": 2}
+# Output row lengths; comparisons observe [eq, le, lt] as 0/1 and compare as -1/0/1.
+WIDTHS = {"conditional_negation": 1, "positive_iteration": 1, "comparisons": 4}
 
 
 @dataclass(frozen=True)
@@ -35,6 +37,17 @@ def expressions(case):
         sign, value = case.args
         return (f"[cond_Zopp {'true' if sign else 'false'} ({value})]",
                 f"[cond_Zopp {'true' if sign else 'false'} ({value})]")
+    if case.op == "comparisons":
+        # Lean's own Zeq_bool/Zle_bool/Zlt_bool and Int `compare`, against the Rocq
+        # functions that Flocq's deprecated Stdlib notations expand to. (Rocq 9.1's
+        # deprecation hint says Z.eqb for all three; the notations are Z.leb/Z.ltb.)
+        x, y = case.args
+        def tests(names):
+            return [f"if {name} ({x}) ({y}) then 1 else 0" for name in names]
+        lean = ", ".join(f"({test} : Int)" for test in tests(("Zeq_bool", "Zle_bool", "Zlt_bool")))
+        rocq = "; ".join(tests(("Z.eqb", "Z.leb", "Z.ltb")))
+        return (f"[{lean}, match compare ({x} : Int) ({y}) with | .lt => -1 | .eq => 0 | .gt => 1]",
+                f"[{rocq}; match Z.compare ({x}) ({y}) with Lt => -1 | Eq => 0 | Gt => 1 end]")
     count, scale, offset, initial = case.args
     return (f"[iter_pos (fun x : Int => ({scale}) * x + ({offset})) {positive(count)} ({initial})]",
             f"[iter_pos (fun x : Z => ({scale}) * x + ({offset})) ({count})%positive ({initial})]")
@@ -46,11 +59,16 @@ def corpus(seed, samples):
     counts = (*range(1, 10), 15, 16, 17, 31, 32, 33, 63, 64, 65, 127, 128, 129, 257)
     cases += [Case("positive_iteration", (n, a, b, x)) for n in counts
               for a in (-2, -1, 0, 1, 2) for b in (-3, 0, 3) for x in (-5, 0, 7)]
+    edges = (-2**64, -2**63 - 1, -2**63, -1, 0, 1, 2**63 - 1, 2**63, 2**64)
+    cases += [Case("comparisons", (x, y)) for x in range(-3, 4) for y in range(-3, 4)]
+    cases += [Case("comparisons", (x, y)) for x in edges for y in edges]
     rng = random.Random(seed)
     for _ in range(samples):
         cases.append(Case("conditional_negation", (rng.randrange(2), rng.randint(-2**127, 2**127))))
         cases.append(Case("positive_iteration", (rng.randint(1, 300), rng.randint(-3, 3),
                                                   rng.randint(-10, 10), rng.randint(-100, 100))))
+        x = rng.randint(-2**127, 2**127)
+        cases.append(Case("comparisons", (x, rng.choice((x, -x, x + 1, rng.randint(-2**127, 2**127))))))
     return sorted(dict.fromkeys(cases), key=lambda c: tuple(ARITIES).index(c.op))
 
 
@@ -58,6 +76,9 @@ def expected(case):
     if case.op == "conditional_negation":
         sign, value = case.args
         return [-value if sign else value]
+    if case.op == "comparisons":
+        x, y = case.args
+        return [int(x == y), int(x <= y), int(x < y), (x > y) - (x < y)]
     count, scale, offset, initial = case.args
     # Closed geometric sum, independent of the binary-recursive implementation.
     power = scale ** count
@@ -97,7 +118,7 @@ def profile():
                 metadata['oracle_assertions'] += 1
         return mismatches
     overrides = {'OPS': tuple(ARITIES), 'ARITIES': ARITIES,
-                 'WIDTHS': {op: 1 for op in ARITIES}, 'RADIX_OPS': set(),
+                 'WIDTHS': WIDTHS, 'RADIX_OPS': set(),
                  'BATCH_LIMITS': {op: 100 for op in ARITIES}, 'Case': Case,
                  'LEAN_HEADER': LEAN_HEADER, 'COQ_HEADER': COQ_HEADER,
                  'expressions': expressions, 'corpus': corpus, 'compare': compare}
