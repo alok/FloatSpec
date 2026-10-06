@@ -16,12 +16,12 @@ External Rocq imports are recorded in the JSON report, not counted as Flocq decl
 |---:|---|---:|---:|---:|---:|
 | 1 | src/Version.v | 1 | 1 | 1 | 1 |
 | 2 | src/Core/Zaux.v | 102 | 82 | 91 | 102 |
-| 3 | src/Core/Raux.v | 186 | 43 | 178 | 27 |
+| 3 | src/Core/Raux.v | 186 | 61 | 178 | 27 |
 | 4 | src/Core/Defs.v | 14 | 11 | 14 | 0 |
 | 5 | src/Core/Round_pred.v | 83 | 78 | 78 | 83 |
 | 6 | src/Core/Digits.v | 67 | 0 | 67 | 0 |
 | 7 | src/Core/Float_prop.v | 37 | 0 | 37 | 0 |
-| 8 | src/Core/Generic_fmt.v | 145 | 34 | 140 | 0 |
+| 8 | src/Core/Generic_fmt.v | 145 | 35 | 140 | 0 |
 | 9 | src/Calc/Operations.v | 17 | 7 | 17 | 0 |
 | 10 | src/Prop/Sterbenz.v | 6 | 0 | 5 | 0 |
 | 11 | src/Core/Ulp.v | 122 | 31 | 119 | 0 |
@@ -57,7 +57,7 @@ the full Lean type/body with Rocq, and add an evidence-bearing review entry.
 Resolve aliases and generated proof infrastructure explicitly; do not create
 unnecessary numerical APIs to satisfy a raw name count.
 
-- `src/Core/Raux.v:349` — `Rcompare` (def): `BinarySingleNaN.RcompareOrdering`.
+- `src/Core/Raux.v:349` — `Rcompare` (def): `FloatSpec.Core.Raux.Rcompare`.
 - `src/Core/Raux.v:356` — `Rcompare_prop` (ind): `FloatSpec.Core.Raux.Rcompare_prop`.
 - `src/Core/Raux.v:356` — `Rcompare_prop_ind` (scheme): no exact-name candidate.
 - `src/Core/Raux.v:356` — `Rcompare_prop_sind` (scheme): no exact-name candidate.

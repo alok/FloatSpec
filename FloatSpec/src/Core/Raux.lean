@@ -257,26 +257,27 @@ end AbsGtInv
 
 section Rcompare
 
-/-- Three-way comparison for real numbers
+/-- FLoCq `Rcompare`: three-way comparison of reals, with Rocq's `comparison` as Lean's
+`Ordering`. Like the source's `total_order_T` match, it tests `x < y`, then `x = y`. -/
+@[flocq_source "src/Core/Raux.v" 349 "Rcompare"]
+noncomputable def Rcompare (x y : ℝ) : Ordering :=
+  if x < y then .lt else if x = y then .eq else .gt
 
-    Returns -1 if x < y, 0 if x = y, and 1 if x > y.
-    This provides a complete ordering comparison in one operation.
--/
-noncomputable def Rcompare (x y : ℝ) : Int :=
-  (if x < y then -1
-        else if x = y then 0
-        else 1)
+/-- {lean}`Rcompare` is Lean's `compare` on the reals, definitionally. -/
+theorem Rcompare_eq_compare (x y : ℝ) : Rcompare x y = compare x y := rfl
 
-/-- Coq {lit}`Rcompare_prop`: inductive characterization of {lean}`Rcompare` codes. -/
-inductive Rcompare_prop (x y : ℝ) : Int → Prop where
-  | Rcompare_Lt_ : x < y → Rcompare_prop x y (-1)
-  | Rcompare_Eq_ : x = y → Rcompare_prop x y 0
-  | Rcompare_Gt_ : y < x → Rcompare_prop x y 1
+/-- FLoCq `Rcompare_prop`: the graph of {lean}`Rcompare`. -/
+@[flocq_source "src/Core/Raux.v" 356 "Rcompare_prop"]
+inductive Rcompare_prop (x y : ℝ) : Ordering → Prop where
+  | Rcompare_Lt_ : x < y → Rcompare_prop x y .lt
+  | Rcompare_Eq_ : x = y → Rcompare_prop x y .eq
+  | Rcompare_Gt_ : y < x → Rcompare_prop x y .gt
 
 export Rcompare_prop (Rcompare_Lt_ Rcompare_Eq_ Rcompare_Gt_)
 
-/-- Coq-style spec: {lit}`Rcompare_prop` holds for {lean}`Rcompare`. -/
-theorem Rcompare_prop_spec (x y : ℝ) : Rcompare_prop x y (Rcompare x y) := by
+/-- FLoCq `Rcompare_spec`: {lean}`Rcompare` lands in its graph. -/
+@[flocq_source "src/Core/Raux.v" 361 "Rcompare_spec"]
+theorem Rcompare_spec (x y : ℝ) : Rcompare_prop x y (Rcompare x y) := by
   by_cases hxy : x < y
   · simpa [Rcompare, hxy] using (Rcompare_Lt_ (x := x) (y := y) hxy)
   · by_cases hxeq : x = y
@@ -285,158 +286,125 @@ theorem Rcompare_prop_spec (x y : ℝ) : Rcompare_prop x y (Rcompare x y) := by
     · have hyx : y < x := lt_of_le_of_ne (le_of_not_gt hxy) (Ne.symm hxeq)
       simpa [Rcompare, hxy, hxeq, hyx] using (Rcompare_Gt_ (x := x) (y := y) hyx)
 
-/-- Three-way comparison correctness: the code is {lit}`-1`, {lit}`0`, or {lit}`1`
-    exactly when {lit}`x < y`, {lit}`x = y`, or {lit}`y < x`. -/
-theorem Rcompare_spec (x y : ℝ) :
-    (Rcompare x y = -1 ↔ x < y) ∧
-      (Rcompare x y = 0 ↔ x = y) ∧
-      (Rcompare x y = 1 ↔ y < x) := by
-  unfold Rcompare
-  by_cases hxy : x < y
-  · have hne : x ≠ y := ne_of_lt hxy
-    have hnotyx : ¬ y < x := not_lt_of_ge (le_of_lt hxy)
-    simp [hxy, hne, hnotyx]
-  · by_cases hxeq : x = y
-    · subst hxeq
-      simp
-    · have hyx : y < x := lt_of_le_of_ne (le_of_not_gt hxy) (Ne.symm hxeq)
-      simp [hxy, hxeq, hyx]
+/-- The three outcomes of {lean}`Rcompare`, as equivalences. -/
+theorem Rcompare_iff (x y : ℝ) :
+    (Rcompare x y = .lt ↔ x < y) ∧ (Rcompare x y = .eq ↔ x = y) ∧
+      (Rcompare x y = .gt ↔ y < x) := by
+  rcases lt_trichotomy x y with h | h | h
+  · simp [Rcompare, h, ne_of_lt h, not_lt_of_ge h.le]
+  · subst h; simp [Rcompare]
+  · simp [Rcompare, h, ne_of_gt h, not_lt_of_ge h.le]
 
-/-- Coq `Rcompare_sym`: swapping the operands reverses the comparison. -/
-theorem Rcompare_sym (x y : ℝ) : Rcompare x y = -(Rcompare y x) := by
+/-- FLoCq `Rcompare_sym`: swapping the operands reverses the comparison (Rocq's `CompOpp`
+is {lean}`Ordering.swap`). -/
+@[flocq_source "src/Core/Raux.v" 481 "Rcompare_sym"]
+theorem Rcompare_sym (x y : ℝ) : Rcompare x y = (Rcompare y x).swap := by
   rcases lt_trichotomy x y with hxy | hxy | hyx
-  · have hnxy : ¬ y < x := not_lt_of_ge hxy.le
-    have hne : x ≠ y := ne_of_lt hxy
-    simp [Rcompare, hxy, hnxy, hne, hne.symm]
+  · simp [Rcompare, hxy, not_lt_of_ge hxy.le, ne_of_gt hxy, Ordering.swap]
   · subst y
-    simp [Rcompare]
-  · have hnyx : ¬ x < y := not_lt_of_ge hyx.le
-    have hne : x ≠ y := ne_of_gt hyx
-    simp [Rcompare, hyx, hnyx, hne, hne.symm]
+    simp [Rcompare, Ordering.swap]
+  · simp [Rcompare, hyx, not_lt_of_ge hyx.le, ne_of_gt hyx, Ordering.swap]
 
-/-- Coq `Rcompare_opp`: negating both operands reverses the comparison. -/
+/-- FLoCq `Rcompare_opp`: negating both operands reverses the comparison. -/
+@[flocq_source "src/Core/Raux.v" 492 "Rcompare_opp"]
 theorem Rcompare_opp (x y : ℝ) : Rcompare (-x) (-y) = Rcompare y x := by
-  rcases lt_trichotomy x y with hxy | hxy | hyx
-  · have hnxy : ¬ y < x := not_lt_of_ge hxy.le
-    have hne : x ≠ y := ne_of_lt hxy
-    simp [Rcompare, hxy, hnxy, hne, hne.symm]
-  · subst y
-    simp [Rcompare]
-  · have hnyx : ¬ x < y := not_lt_of_ge hyx.le
-    have hne : x ≠ y := ne_of_gt hyx
-    simp [Rcompare, hyx, hnyx, hne, hne.symm]
+  have hlt : -x < -y ↔ y < x := neg_lt_neg_iff
+  have heq : -x = -y ↔ y = x := by rw [neg_inj, eq_comm]
+  simp only [Rcompare, hlt, heq]
 
-/-- Coq `Rcompare_plus_r`: right translation preserves comparison. -/
+/-- FLoCq `Rcompare_plus_r`: right translation preserves comparison. -/
+@[flocq_source "src/Core/Raux.v" 502 "Rcompare_plus_r"]
 theorem Rcompare_plus_r (z x y : ℝ) :
     Rcompare (x + z) (y + z) = Rcompare x y := by
   simp [Rcompare]
 
-/-- Coq `Rcompare_plus_l`: left translation preserves comparison. -/
+/-- FLoCq `Rcompare_plus_l`: left translation preserves comparison. -/
+@[flocq_source "src/Core/Raux.v" 516 "Rcompare_plus_l"]
 theorem Rcompare_plus_l (z x y : ℝ) :
     Rcompare (z + x) (z + y) = Rcompare x y := by
   simp [Rcompare]
 
-/-- Coq `Rcompare_mult_r`: right multiplication by a positive value preserves comparison. -/
+/-- FLoCq `Rcompare_mult_r`: right multiplication by a positive value preserves comparison. -/
+@[flocq_source "src/Core/Raux.v" 525 "Rcompare_mult_r"]
 theorem Rcompare_mult_r (z x y : ℝ) (hz : 0 < z) :
     Rcompare (x * z) (y * z) = Rcompare x y := by
-  have hz0 : z ≠ 0 := ne_of_gt hz
-  have hlt : x * z < y * z ↔ x < y := by
-    constructor
-    · intro h
-      exact lt_of_mul_lt_mul_right h (le_of_lt hz)
-    · intro h
-      exact mul_lt_mul_of_pos_right h hz
-  have heq : x * z = y * z ↔ x = y := by
-    constructor
-    · intro h
-      exact mul_right_cancel₀ hz0 h
-    · intro h
-      rw [h]
+  have hlt : x * z < y * z ↔ x < y := mul_lt_mul_iff_of_pos_right hz
+  have heq : x * z = y * z ↔ x = y := mul_left_inj' (ne_of_gt hz)
   simp only [Rcompare, hlt, heq]
 
-/-- Coq `Rcompare_mult_l`: left multiplication by a positive value preserves comparison. -/
+/-- FLoCq `Rcompare_mult_l`: left multiplication by a positive value preserves comparison. -/
+@[flocq_source "src/Core/Raux.v" 540 "Rcompare_mult_l"]
 theorem Rcompare_mult_l (z x y : ℝ) (hz : 0 < z) :
     Rcompare (z * x) (z * y) = Rcompare x y := by
-  have hz0 : z ≠ 0 := ne_of_gt hz
-  have hlt : z * x < z * y ↔ x < y := by
-    constructor
-    · intro h
-      exact lt_of_mul_lt_mul_right (by simpa [mul_comm] using h) (le_of_lt hz)
-    · intro h
-      simpa [mul_comm] using mul_lt_mul_of_pos_right h hz
-  have heq : z * x = z * y ↔ x = y := by
-    constructor
-    · intro h
-      exact mul_left_cancel₀ hz0 h
-    · intro h
-      rw [h]
+  have hlt : z * x < z * y ↔ x < y := mul_lt_mul_iff_of_pos_left hz
+  have heq : z * x = z * y ↔ x = y := mul_right_inj' (ne_of_gt hz)
   simp only [Rcompare, hlt, heq]
 
 end Rcompare
 
 section RcompareMore
 
-/-- Source strict-order proposition, expressed in the legacy integer encoding
-of comparison: Lt is -1, Eq is 0, and Gt is 1. -/
+/-- FLoCq `Rcompare_Lt`. -/
 @[flocq_source "src/Core/Raux.v" 371 "Rcompare_Lt"]
-theorem Rcompare_Lt (x y : ℝ) (hxy : x < y) : Rcompare x y = -1 := by
-  simp [Rcompare, hxy]
+theorem Rcompare_Lt (x y : ℝ) (hxy : x < y) : Rcompare x y = .lt :=
+  (Rcompare_iff x y).1.mpr hxy
 
-/-- Source equality proposition in the legacy comparison encoding. -/
-@[flocq_source "src/Core/Raux.v" 411 "Rcompare_Eq"]
-theorem Rcompare_Eq (x y : ℝ) (hxy : x = y) : Rcompare x y = 0 := by
-  subst y
-  simp [Rcompare]
+/-- FLoCq `Rcompare_Lt_inv`. -/
+@[flocq_source "src/Core/Raux.v" 384 "Rcompare_Lt_inv"]
+theorem Rcompare_Lt_inv (x y : ℝ) (h : Rcompare x y = .lt) : x < y :=
+  (Rcompare_iff x y).1.mp h
 
-/-- Source reverse strict-order proposition in the legacy comparison encoding. -/
-@[flocq_source "src/Core/Raux.v" 428 "Rcompare_Gt"]
-theorem Rcompare_Gt (x y : ℝ) (hyx : y < x) : Rcompare x y = 1 := by
-  simp [Rcompare, not_lt_of_ge hyx.le, ne_of_gt hyx]
-
-/-- Source non-Lt proposition in the legacy comparison encoding. -/
+/-- FLoCq `Rcompare_not_Lt`. -/
 @[flocq_source "src/Core/Raux.v" 392 "Rcompare_not_Lt"]
-theorem Rcompare_not_Lt (x y : ℝ) (hyx : y ≤ x) : Rcompare x y ≠ -1 := by
-  simp [Rcompare, not_lt_of_ge hyx]
-  split_ifs <;> norm_num
+theorem Rcompare_not_Lt (x y : ℝ) (hyx : y ≤ x) : Rcompare x y ≠ .lt :=
+  fun h => absurd hyx (not_le.mpr (Rcompare_Lt_inv x y h))
 
-/-- Source non-Gt proposition in the legacy comparison encoding. -/
+/-- FLoCq `Rcompare_not_Lt_inv`. -/
+@[flocq_source "src/Core/Raux.v" 401 "Rcompare_not_Lt_inv"]
+theorem Rcompare_not_Lt_inv (x y : ℝ) (h : Rcompare x y ≠ .lt) : y ≤ x :=
+  not_lt.mp fun hxy => h (Rcompare_Lt x y hxy)
+
+/-- FLoCq `Rcompare_Eq`. -/
+@[flocq_source "src/Core/Raux.v" 411 "Rcompare_Eq"]
+theorem Rcompare_Eq (x y : ℝ) (hxy : x = y) : Rcompare x y = .eq :=
+  (Rcompare_iff x y).2.1.mpr hxy
+
+/-- FLoCq `Rcompare_Eq_inv`. -/
+@[flocq_source "src/Core/Raux.v" 420 "Rcompare_Eq_inv"]
+theorem Rcompare_Eq_inv (x y : ℝ) (h : Rcompare x y = .eq) : x = y :=
+  (Rcompare_iff x y).2.1.mp h
+
+/-- FLoCq `Rcompare_Gt`. -/
+@[flocq_source "src/Core/Raux.v" 428 "Rcompare_Gt"]
+theorem Rcompare_Gt (x y : ℝ) (hyx : y < x) : Rcompare x y = .gt :=
+  (Rcompare_iff x y).2.2.mpr hyx
+
+/-- FLoCq `Rcompare_Gt_inv`. -/
+@[flocq_source "src/Core/Raux.v" 441 "Rcompare_Gt_inv"]
+theorem Rcompare_Gt_inv (x y : ℝ) (h : Rcompare x y = .gt) : y < x :=
+  (Rcompare_iff x y).2.2.mp h
+
+/-- FLoCq `Rcompare_not_Gt`. -/
 @[flocq_source "src/Core/Raux.v" 449 "Rcompare_not_Gt"]
-theorem Rcompare_not_Gt (x y : ℝ) (hxy : x ≤ y) : Rcompare x y ≠ 1 := by
-  rcases lt_or_eq_of_le hxy with h | h
-  · simp [Rcompare, h]
-  · subst y; simp [Rcompare]
+theorem Rcompare_not_Gt (x y : ℝ) (hxy : x ≤ y) : Rcompare x y ≠ .gt :=
+  fun h => absurd hxy (not_le.mpr (Rcompare_Gt_inv x y h))
 
-/-- Coq {lit}`Rcompare_Lt_inv`: the Lt code {lit}`-1` implies {lit}`x < y`. -/
-theorem Rcompare_Lt_inv (x y : ℝ) (h : Rcompare x y = -1) : x < y :=
-  (Rcompare_spec x y).1.mp h
+/-- FLoCq `Rcompare_not_Gt_inv`. -/
+@[flocq_source "src/Core/Raux.v" 458 "Rcompare_not_Gt_inv"]
+theorem Rcompare_not_Gt_inv (x y : ℝ) (h : Rcompare x y ≠ .gt) : x ≤ y :=
+  not_lt.mp fun hyx => h (Rcompare_Gt x y hyx)
 
-/-- Coq {lit}`Rcompare_not_Lt_inv`: a code other than {lit}`-1` implies {lit}`y ≤ x`. -/
-theorem Rcompare_not_Lt_inv (x y : ℝ) (h : Rcompare x y ≠ -1) : y ≤ x :=
-  not_lt.mp fun hxy => h ((Rcompare_spec x y).1.mpr hxy)
-
-/-- Coq {lit}`Rcompare_Eq_inv`: the Eq code {lit}`0` implies {lit}`x = y`. -/
-theorem Rcompare_Eq_inv (x y : ℝ) (h : Rcompare x y = 0) : x = y :=
-  (Rcompare_spec x y).2.1.mp h
-
-/-- Coq {lit}`Rcompare_Gt_inv`: the Gt code {lit}`1` implies {lit}`y < x`. -/
-theorem Rcompare_Gt_inv (x y : ℝ) (h : Rcompare x y = 1) : y < x :=
-  (Rcompare_spec x y).2.2.mp h
-
-/-- Coq {lit}`Rcompare_not_Gt_inv`: a code other than {lit}`1` implies {lit}`x ≤ y`. -/
-theorem Rcompare_not_Gt_inv (x y : ℝ) (h : Rcompare x y ≠ 1) : x ≤ y :=
-  not_lt.mp fun hyx => h ((Rcompare_spec x y).2.2.mpr hyx)
-
-/-- Integer comparison as an Int code (-1/0/1), mirroring Coq's Z.compare -/
-def Zcompare_int (m n : Int) : Int :=
-  (if m < n then -1 else if m = n then 0 else 1)
-
-/-- Comparing real casts of integers agrees with the integer comparison code. -/
+/-- FLoCq `Rcompare_IZR`: comparing integer casts is `Z.compare`, Lean's `compare` on `Int`. -/
 @[flocq_source "src/Core/Raux.v" 468 "Rcompare_IZR"]
 theorem Rcompare_IZR (m n : Int) :
-    Rcompare (m : ℝ) (n : ℝ) = Zcompare_int m n := by
-  simp [Rcompare, Zcompare_int]
+    Rcompare (m : ℝ) (n : ℝ) = compare m n := by
+  rcases lt_trichotomy m n with h | h | h
+  · rw [Rcompare_Lt _ _ (by exact_mod_cast h), compare_lt_iff_lt.mpr h]
+  · rw [Rcompare_Eq _ _ (by rw [h]), compare_eq_iff_eq.mpr h]
+  · rw [Rcompare_Gt _ _ (by exact_mod_cast h), compare_gt_iff_gt.mpr h]
 
-/-- Coq theorem `Rcompare_middle`: midpoint comparison identity. -/
+/-- FLoCq `Rcompare_middle`: midpoint comparison identity. -/
+@[flocq_source "src/Core/Raux.v" 550 "Rcompare_middle"]
 theorem Rcompare_middle (x d u : ℝ) :
     Rcompare (x - d) (u - x) = Rcompare x ((d + u) / 2) := by
   unfold Rcompare
@@ -462,6 +430,7 @@ theorem Rcompare_middle (x d u : ℝ) :
 
 /-- Coq {lit}`Rcompare_half_l`: comparing {lit}`x / 2` with {lit}`y` is comparing
     {lit}`x` with {lit}`2 * y`. -/
+@[flocq_source "src/Core/Raux.v" 563 "Rcompare_half_l"]
 theorem Rcompare_half_l (x y : ℝ) : Rcompare (x / 2) y = Rcompare x (2 * y) := by
   have hlt : x / 2 < y ↔ x < 2 * y := by
     constructor <;> intro h <;> linarith
@@ -471,6 +440,7 @@ theorem Rcompare_half_l (x y : ℝ) : Rcompare (x / 2) y = Rcompare x (2 * y) :=
 
 /-- Coq {lit}`Rcompare_half_r`: comparing {lit}`x` with {lit}`y / 2` is comparing
     {lit}`2 * x` with {lit}`y`. -/
+@[flocq_source "src/Core/Raux.v" 575 "Rcompare_half_r"]
 theorem Rcompare_half_r (x y : ℝ) : Rcompare x (y / 2) = Rcompare (2 * x) y := by
   have hlt : x < y / 2 ↔ 2 * x < y := by
     constructor <;> intro h <;> linarith
@@ -479,6 +449,7 @@ theorem Rcompare_half_r (x y : ℝ) : Rcompare x (y / 2) = Rcompare (2 * x) y :=
   simp only [Rcompare, hlt, heq]
 
 /-- Coq {lit}`Rcompare_sqr`: comparing squares is comparing absolute values. -/
+@[flocq_source "src/Core/Raux.v" 587 "Rcompare_sqr"]
 theorem Rcompare_sqr (x y : ℝ) :
     Rcompare (x * x) (y * y) = Rcompare |x| |y| := by
   -- Compare using the three cases on |x| and |y|
@@ -516,16 +487,14 @@ theorem Rcompare_sqr (x y : ℝ) :
       exact (lt_irrefl _ this)
     simp [Rcompare, hnotlt, hneq, hnotlt_abs, hneq_abs]
 
-/-- Coq {lit}`Rmin_compare`: the minimum is selected by the comparison code. -/
+/-- FLoCq `Rmin_compare`: the minimum is selected by the comparison. -/
+@[flocq_source "src/Core/Raux.v" 602 "Rmin_compare"]
 theorem Rmin_compare (x y : ℝ) :
-    min x y = (if Rcompare x y = -1 then x else if Rcompare x y = 0 then x else y) := by
-  by_cases hlt : x < y
-  · simp [Rcompare, hlt, le_of_lt hlt]
-  · by_cases heq : x = y
-    · subst heq
-      simp [Rcompare]
-    · have hgt : y < x := lt_of_le_of_ne (le_of_not_gt hlt) (Ne.symm heq)
-      simp [Rcompare, hlt, heq, le_of_lt hgt]
+    min x y = match Rcompare x y with | .lt => x | .eq => x | .gt => y := by
+  rcases lt_trichotomy x y with h | h | h
+  · rw [Rcompare_Lt x y h]; exact min_eq_left h.le
+  · subst h; rw [Rcompare_Eq x x rfl]; exact min_self x
+  · rw [Rcompare_Gt x y h]; exact min_eq_right h.le
 
 end RcompareMore
 
@@ -1480,89 +1449,17 @@ theorem Rcompare_floor_ceil_middle (x : ℝ)
     {lit}`x` agrees with comparing {lit}`x` with {lit}`⌈x⌉`. -/
 theorem Rcompare_floor_ceil_middle_spec (x : ℝ) :
     Rcompare ((Zfloor x : Int) : ℝ) x = Rcompare x ((Zceil x : Int) : ℝ) := by
-  -- Reduce both sides to simple if-forms using monotonicity of floor/ceil
-  have hcodeL : (Rcompare ((Int.floor x : ℝ)) x) = (if x = (Int.floor x : ℝ) then 0 else -1) := by
-    unfold Rcompare
-    have hle : (Int.floor x : ℝ) ≤ x := Int.floor_le x
-    by_cases heq : (Int.floor x : ℝ) = x
-    · -- If equality holds, the "<" branch is impossible.
-      have hnotlt : ¬ (Int.floor x : ℝ) < x := by
-        -- Reduce to ¬ x < x
-        simpa [heq] using (lt_irrefl x : ¬ x < x)
-      simp [heq]
-    · have hlt : (Int.floor x : ℝ) < x := lt_of_le_of_ne hle heq
-      -- In the strict case, the comparison code is -1
-      have : (Rcompare ((Int.floor x : ℝ)) x) = -1 := by
-        simp [Rcompare, hlt]
-      -- And the target if-form also reduces to -1 since x ≠ ⌊x⌋
-      have : (Rcompare ((Int.floor x : ℝ)) x)
-              = (if x = (Int.floor x : ℝ) then 0 else -1) := by
-        simpa [this, ite_eq_right (by simpa [eq_comm] using heq)]
-      exact this
-  have hcodeR : (Rcompare x ((Int.ceil x : ℝ))) = (if x = (Int.ceil x : ℝ) then 0 else -1) := by
-    unfold Rcompare
-    have hle : x ≤ (Int.ceil x : ℝ) := Int.le_ceil x
-    by_cases heq : x = (Int.ceil x : ℝ)
-    · -- Equality case: code is 0
-      have hnotlt : ¬ x < (Int.ceil x : ℝ) := by
-        -- If x = ⌈x⌉, then x < ⌈x⌉ would imply x < x
-        intro hxlt
-        have : x < x := lt_of_lt_of_eq hxlt heq.symm
-        exact (lt_irrefl _) this
-      -- Evaluate the nested-ifs directly using rewrites
-      have : (if x < (Int.ceil x : ℝ) then (-1 : Int) else if x = (Int.ceil x : ℝ) then 0 else 1) = 0 := by
-        rw [ite_eq_right hnotlt, ite_eq_left heq]
-      -- Right-hand side also reduces to 0 under heq
-      simpa [ite_eq_left heq] using this
-    · -- Strict case: code is -1
-      have hlt : x < (Int.ceil x : ℝ) := lt_of_le_of_ne hle heq
-      have : (if x < (Int.ceil x : ℝ) then (-1 : Int) else if x = (Int.ceil x : ℝ) then 0 else 1) = -1 := by
-        simp [hlt]
-      simpa [heq] using this
-  -- Floor hits x iff ceil hits x; transport the cases
-  have hiff : (x = (Int.floor x : ℝ)) ↔ (x = (Int.ceil x : ℝ)) := by
-    constructor
-    · intro hfx
-      have : Int.ceil x = Int.floor x := by
-        have h1 : Int.ceil ((Int.floor x : ℝ)) = Int.floor x := Int.ceil_intCast (Int.floor x)
-        have h2 : Int.ceil x = Int.ceil ((Int.floor x : ℝ)) := congrArg Int.ceil hfx
-        exact h2.trans h1
-      exact by
-        have : (Int.ceil x : ℝ) = (Int.floor x : ℝ) := congrArg (fun n : Int => (n : ℝ)) this
-        simpa [this] using hfx
-    · intro hcx
-      have : Int.floor x = Int.ceil x := by
-        have h1 : Int.floor ((Int.ceil x : ℝ)) = Int.ceil x := Int.floor_intCast (Int.ceil x)
-        have h2 : Int.floor x = Int.floor ((Int.ceil x : ℝ)) := congrArg Int.floor hcx
-        exact h2.trans h1
-      exact by
-        have : (Int.floor x : ℝ) = (Int.ceil x : ℝ) := congrArg (fun n : Int => (n : ℝ)) this
-        simpa [this] using hcx
-  -- Conclude by rewriting both codes with the if-forms and equating conditions
-  have : (Rcompare ((Int.floor x : ℝ)) x) = (Rcompare x ((Int.ceil x : ℝ))) := by
-    by_cases hx : x = (Int.floor x : ℝ)
-    · -- Equality case: both codes evaluate to 0
-      have hx' : x = (Int.ceil x : ℝ) := (hiff.mp hx)
-      have hL0 : (Rcompare ((Int.floor x : ℝ)) x) = 0 := by
-        rw [hcodeL, ite_eq_left hx]
-      have hR0 : (Rcompare x ((Int.ceil x : ℝ))) = 0 := by
-        rw [hcodeR, ite_eq_left hx']
-      rw [hL0, hR0]
-    · -- Strict inequalities case: both codes evaluate to -1
-      have hx' : x ≠ (Int.ceil x : ℝ) := by
-        intro h; exact hx ((hiff.mpr h))
-      have hL1 : (Rcompare ((Int.floor x : ℝ)) x) = -1 := by
-        -- Using the simplified code form hcodeL and inequality of x ≠ ⌊x⌋
-        have hneq : x ≠ (Int.floor x : ℝ) := by simpa [eq_comm] using hx
-        rw [hcodeL, ite_eq_right hneq]
-      have hR1 : (Rcompare x ((Int.ceil x : ℝ))) = -1 := by
-        -- Using the simplified code form hcodeR and inequality of x ≠ ⌈x⌉
-        rw [hcodeR, ite_eq_right hx']
-      rw [hL1, hR1]
-  -- Finish by restating the goal through the floor/ceiling definitions.
-  change Rcompare ((Int.floor x : Int) : ℝ) x =
-    Rcompare x ((Int.ceil x : Int) : ℝ)
-  exact this
+  change Rcompare ((Int.floor x : Int) : ℝ) x = Rcompare x ((Int.ceil x : Int) : ℝ)
+  by_cases h : ((Int.floor x : Int) : ℝ) = x
+  · -- An integer: floor and ceiling both equal it.
+    have hc : ((Int.ceil x : Int) : ℝ) = x := by
+      rw [← h, Int.ceil_intCast]
+    rw [Rcompare_Eq _ _ h, Rcompare_Eq _ _ hc.symm]
+  · have hf : ((Int.floor x : Int) : ℝ) < x := lt_of_le_of_ne (Int.floor_le x) h
+    have hc : x < ((Int.ceil x : Int) : ℝ) := by
+      refine lt_of_le_of_ne (Int.le_ceil x) fun hx => h ?_
+      rw [hx, Int.floor_intCast]
+    rw [Rcompare_Lt _ _ hf, Rcompare_Lt _ _ hc]
 
 /-- Coq theorem {lit}`Rcompare_ceil_floor_middle`: in the non-integral case,
     comparing the distance from {lean}`x` to its ceiling with {lean}`1 / 2`
@@ -1607,78 +1504,16 @@ theorem Rcompare_ceil_floor_middle (x : ℝ)
     {lit}`⌊x⌋`. -/
 theorem Rcompare_ceil_floor_middle_spec (x : ℝ) :
     Rcompare ((Zceil x : Int) : ℝ) x = Rcompare x ((Zfloor x : Int) : ℝ) := by
-  -- Show both comparison codes coincide by splitting on whether x hits its ceil/floor.
-  -- Compute each code using monotonicity facts: x ≤ ⌈x⌉ and ⌊x⌋ ≤ x.
-  have hL : (Rcompare ((Int.ceil x : ℝ)) x) = (if x = (Int.ceil x : ℝ) then (0 : Int) else 1) := by
-    unfold Rcompare
-    have hnotlt : ¬ (Int.ceil x : ℝ) < x := not_lt.mpr (Int.le_ceil x)
-    -- The equality test is commutative; rewrite to match the statement
-    simp [hnotlt, eq_comm]
-  have hR : (Rcompare x ((Int.floor x : ℝ))) = (if x = (Int.floor x : ℝ) then (0 : Int) else 1) := by
-    unfold Rcompare
-    have hnotlt : ¬ x < (Int.floor x : ℝ) := not_lt.mpr (Int.floor_le x)
-    simp [hnotlt]
-  -- Using standard floor/ceil-on-integers facts, the equality tests are equivalent.
-  have hiff : (x = (Int.ceil x : ℝ)) ↔ (x = (Int.floor x : ℝ)) := by
-    constructor
-    · intro hcx
-      -- From x = ⌈x⌉, infer ⌊x⌋ = ⌈x⌉, hence x = ⌊x⌋ as reals.
-      have h1 : Int.floor x = Int.floor ((Int.ceil x : ℝ)) := by
-        exact congrArg Int.floor hcx
-      have h2 : Int.floor ((Int.ceil x : ℝ)) = Int.ceil x := Int.floor_intCast (Int.ceil x)
-      have hfloor_eq_ceil : Int.floor x = Int.ceil x := by
-        exact h1.trans h2
-      -- Conclude x = ⌊x⌋ by transporting hcx through hfloor_eq_ceil
-      have hcast : (Int.ceil x : ℝ) = (Int.floor x : ℝ) := by
-        exact congrArg (fun n : Int => (n : ℝ)) hfloor_eq_ceil.symm
-      exact hcx.trans hcast
-    · intro hfx
-      -- From x = ⌊x⌋, infer ⌈x⌉ = ⌊x⌋, hence x = ⌈x⌉ as reals.
-      have h1 : Int.ceil x = Int.ceil ((Int.floor x : ℝ)) := by
-        exact congrArg Int.ceil hfx
-      have h2 : Int.ceil ((Int.floor x : ℝ)) = Int.floor x := Int.ceil_intCast (Int.floor x)
-      have hceil_eq_floor : Int.ceil x = Int.floor x := by
-        exact h1.trans h2
-      -- Conclude x = ⌈x⌉ by transporting hfx through hceil_eq_floor
-      have hcast : (Int.floor x : ℝ) = (Int.ceil x : ℝ) := by
-        exact congrArg (fun n : Int => (n : ℝ)) hceil_eq_floor.symm
-      exact hfx.trans hcast
-  -- Discharge the equality by rewriting and cases.
-  -- Goal after simp: prove (Rcompare (↑⌈x⌉) x) = (Rcompare x ↑⌊x⌋).
-  -- Rewrite both sides with hL and hR, then case on x = ⌈x⌉.
-  have : (Rcompare ((Int.ceil x : ℝ)) x) = (Rcompare x ((Int.floor x : ℝ))) := by
-    by_cases hx : x = (Int.ceil x : ℝ)
-    · -- Then also x = ⌊x⌋, by hiff
-      have hx' : x = (Int.floor x : ℝ) := (hiff.mp hx)
-      -- Evaluate each code via hL/hR and the equalities
-      have hL0 : (Rcompare ((Int.ceil x : ℝ)) x) = 0 := by
-        -- Use hL to rewrite, then evaluate the if using hx
-        have : (if x = (Int.ceil x : ℝ) then (0 : Int) else 1) = 0 := ite_eq_left hx
-        exact hL ▸ this
-      have hR0 : (Rcompare x ((Int.floor x : ℝ))) = 0 := by
-        -- Use hR to rewrite, then evaluate the if using hx'
-        have : (if x = (Int.floor x : ℝ) then (0 : Int) else 1) = 0 := ite_eq_left hx'
-        exact hR ▸ this
-      rw [hL0, hR0]
-    · -- Otherwise, x < ⌈x⌉ and ⌊x⌋ < x, so both codes reduce to 1
-      -- Show each side evaluates to 1 explicitly.
-      have hneqL : (Int.ceil x : ℝ) ≠ x := by simpa [eq_comm] using hx
-      have hnotltL : ¬ (Int.ceil x : ℝ) < x := not_lt.mpr (Int.le_ceil x)
-      have hfxne : x ≠ (Int.floor x : ℝ) := by
-        -- If x = ⌊x⌋, then by hiff we would have x = ⌈x⌉, contradicting hx
-        intro hxfloor; exact hx ((hiff.mpr hxfloor))
-      have hnotltR : ¬ x < (Int.floor x : ℝ) := not_lt.mpr (Int.floor_le x)
-      have hL1 : (Rcompare ((Int.ceil x : ℝ)) x) = 1 := by
-        -- Not less and not equal ⇒ code = 1
-        simp [Rcompare, hnotltL, hneqL]
-      have hR1 : (Rcompare x ((Int.floor x : ℝ))) = 1 := by
-        -- Not less and not equal ⇒ code = 1
-        simp [Rcompare, hnotltR, hfxne]
-      rw [hL1, hR1]
-  -- Finish by restating the goal through the floor/ceiling definitions.
-  change Rcompare ((Int.ceil x : Int) : ℝ) x =
-    Rcompare x ((Int.floor x : Int) : ℝ)
-  exact this
+  change Rcompare ((Int.ceil x : Int) : ℝ) x = Rcompare x ((Int.floor x : Int) : ℝ)
+  by_cases h : ((Int.floor x : Int) : ℝ) = x
+  · have hc : ((Int.ceil x : Int) : ℝ) = x := by
+      rw [← h, Int.ceil_intCast]
+    rw [Rcompare_Eq _ _ hc, Rcompare_Eq _ _ h.symm]
+  · have hf : ((Int.floor x : Int) : ℝ) < x := lt_of_le_of_ne (Int.floor_le x) h
+    have hc : x < ((Int.ceil x : Int) : ℝ) := by
+      refine lt_of_le_of_ne (Int.le_ceil x) fun hx => h ?_
+      rw [hx, Int.floor_intCast]
+    rw [Rcompare_Gt _ _ hc, Rcompare_Gt _ _ hf]
 
 end CompareIntBounds
 

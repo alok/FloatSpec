@@ -1831,18 +1831,18 @@ theorem Zrnd_ZR_or_AW (rnd : ℝ → Int) [Valid_rnd rnd] (x : ℝ) :
 /-- Coq {lit}`Generic_fmt.v`: {lean}`Znearest`
 
     Round to nearest integer using a choice function on ties at half.
-    If {lean}``FloatSpec.Core.Raux.Rcompare (x - (FloatSpec.Core.Raux.Zfloor x : ℝ)) (1/2 : ℝ)`` is:
+    If {lean}``FloatSpec.Core.Raux.Rcompare (x - (FloatSpec.Core.Raux.Zfloor x : ℝ)) (2 : ℝ)⁻¹`` is:
     - Lt: return {lean}``FloatSpec.Core.Raux.Zfloor x``
     - Eq: return {lean}``if choice (FloatSpec.Core.Raux.Zfloor x) then FloatSpec.Core.Raux.Zceil x else FloatSpec.Core.Raux.Zfloor x``
     - Gt: return {lean}``FloatSpec.Core.Raux.Zceil x``
 -/
+@[flocq_source "src/Core/Generic_fmt.v" 1648 "Znearest"]
 noncomputable def Znearest (choice : Int → Bool) (x : ℝ) : Int :=
-  let f := (FloatSpec.Core.Raux.Zfloor x)
-  let c := (FloatSpec.Core.Raux.Zceil x)
-  match (FloatSpec.Core.Raux.Rcompare (x - (f : ℝ)) (1/2)) with
-  | (-1) => f
-  | 0    => if choice f then c else f
-  | _    => c
+  match FloatSpec.Core.Raux.Rcompare (x - (FloatSpec.Core.Raux.Zfloor x : ℝ)) (2 : ℝ)⁻¹ with
+  | .lt => FloatSpec.Core.Raux.Zfloor x
+  | .eq => if choice (FloatSpec.Core.Raux.Zfloor x) then FloatSpec.Core.Raux.Zceil x
+      else FloatSpec.Core.Raux.Zfloor x
+  | .gt => FloatSpec.Core.Raux.Zceil x
 
 /- Helper: Evaluate Znearest at an exact half offset from the floor -/
 theorem Znearest_eq_choice_of_eq_half
@@ -1852,14 +1852,22 @@ theorem Znearest_eq_choice_of_eq_half
       = (if choice ((FloatSpec.Core.Raux.Zfloor x))
          then (FloatSpec.Core.Raux.Zceil x)
          else (FloatSpec.Core.Raux.Zfloor x)) := by
-  -- When x - floor(x) = 1/2, Rcompare (x - floor(x)) (1/2) = 0
   unfold Znearest
-  set f := (FloatSpec.Core.Raux.Zfloor x) with hf
-  have hcmp : (FloatSpec.Core.Raux.Rcompare (x - (f : ℝ)) (1/2)) = 0 := by
-    unfold FloatSpec.Core.Raux.Rcompare
-    simp only [hmid]
-    norm_num
-  simp only [hcmp]
+  rw [FloatSpec.Core.Raux.Rcompare_Eq _ _ (by rw [hmid, one_div])]
+
+/-- Strictly below the midpoint, `Znearest` selects the floor branch. -/
+theorem Znearest_eq_floor_of_lt_half (choice : Int → Bool) (x : ℝ)
+    (h : x - (((FloatSpec.Core.Raux.Zfloor x : Int) : ℝ)) < (1 / 2 : ℝ)) :
+    Znearest choice x = FloatSpec.Core.Raux.Zfloor x := by
+  unfold Znearest
+  rw [FloatSpec.Core.Raux.Rcompare_Lt _ _ (by rwa [one_div] at h)]
+
+/-- Strictly above the midpoint, `Znearest` selects the ceiling branch. -/
+theorem Znearest_eq_ceil_of_half_lt (choice : Int → Bool) (x : ℝ)
+    (h : (1 / 2 : ℝ) < x - (((FloatSpec.Core.Raux.Zfloor x : Int) : ℝ))) :
+    Znearest choice x = FloatSpec.Core.Raux.Zceil x := by
+  unfold Znearest
+  rw [FloatSpec.Core.Raux.Rcompare_Gt _ _ (by rwa [one_div] at h)]
 
 /-- Expand Znearest into explicit comparisons against 1/2. -/
 lemma Znearest_eq_if (choice : Int → Bool) (x : ℝ) :
@@ -1867,58 +1875,12 @@ lemma Znearest_eq_if (choice : Int → Bool) (x : ℝ) :
       if x - (⌊x⌋ : ℝ) < 1/2 then ⌊x⌋
       else if x - (⌊x⌋ : ℝ) = 1/2 then (if choice ⌊x⌋ then ⌈x⌉ else ⌊x⌋)
       else ⌈x⌉ := by
-  unfold Znearest
-  simp only [FloatSpec.Core.Raux.Zfloor, FloatSpec.Core.Raux.Zceil, FloatSpec.Core.Raux.Rcompare]
-  norm_num
-  split_ifs <;> simp_all
-
-/-- Strictly below the midpoint, `Znearest` selects the floor branch. -/
-theorem Znearest_eq_floor_of_lt_half (choice : Int → Bool) (x : ℝ)
-    (h : x - (((FloatSpec.Core.Raux.Zfloor x : Int) : ℝ)) < (1 / 2 : ℝ)) :
-    Znearest choice x = FloatSpec.Core.Raux.Zfloor x := by
-  unfold Znearest
-  set f := FloatSpec.Core.Raux.Zfloor x with hf
-  set c := FloatSpec.Core.Raux.Zceil x with hc
-  have hcmp : FloatSpec.Core.Raux.Rcompare (x - (f : ℝ)) (1 / 2 : ℝ) = -1 := by
-    have hcmp2 : FloatSpec.Core.Raux.Rcompare (x - (f : ℝ)) (2⁻¹ : ℝ) = -1 := by
-      unfold FloatSpec.Core.Raux.Rcompare
-      have h' : x - (f : ℝ) < (1 / 2 : ℝ) := by simpa [f, hf] using h
-      have hhalf : (2⁻¹ : ℝ) = (1 / 2 : ℝ) := by norm_num
-      have hlt2 : x - (f : ℝ) < (2⁻¹ : ℝ) := by
-        rw [hhalf]
-        exact h'
-      simp [hlt2]
-    have hhalf : (2⁻¹ : ℝ) = (1 / 2 : ℝ) := by norm_num
-    rw [← hhalf]
-    exact hcmp2
-  simpa only [hcmp]
-
-/-- Strictly above the midpoint, `Znearest` selects the ceiling branch. -/
-theorem Znearest_eq_ceil_of_half_lt (choice : Int → Bool) (x : ℝ)
-    (h : (1 / 2 : ℝ) < x - (((FloatSpec.Core.Raux.Zfloor x : Int) : ℝ))) :
-    Znearest choice x = FloatSpec.Core.Raux.Zceil x := by
-  unfold Znearest
-  set f := FloatSpec.Core.Raux.Zfloor x with hf
-  set c := FloatSpec.Core.Raux.Zceil x with hc
-  have hnot_lt : ¬ x - (f : ℝ) < (1 / 2 : ℝ) :=
-    not_lt.mpr (le_of_lt (by simpa [f, hf] using h))
-  have hnot_eq : ¬ x - (f : ℝ) = (1 / 2 : ℝ) :=
-    ne_of_gt (by simpa [f, hf] using h)
-  have hcmp : FloatSpec.Core.Raux.Rcompare (x - (f : ℝ)) (1 / 2 : ℝ) = 1 := by
-    have hcmp2 : FloatSpec.Core.Raux.Rcompare (x - (f : ℝ)) (2⁻¹ : ℝ) = 1 := by
-      unfold FloatSpec.Core.Raux.Rcompare
-      have hhalf : (2⁻¹ : ℝ) = (1 / 2 : ℝ) := by norm_num
-      have hnot_lt2 : ¬ x - (f : ℝ) < (2⁻¹ : ℝ) := by
-        rw [hhalf]
-        exact hnot_lt
-      have hnot_eq2 : ¬ x - (f : ℝ) = (2⁻¹ : ℝ) := by
-        rw [hhalf]
-        exact hnot_eq
-      simp [hnot_lt2, hnot_eq2]
-    have hhalf : (2⁻¹ : ℝ) = (1 / 2 : ℝ) := by norm_num
-    rw [← hhalf]
-    exact hcmp2
-  simpa only [hcmp]
+  rcases lt_trichotomy (x - (⌊x⌋ : ℝ)) (1/2) with h | h | h
+  · simp only [h, ↓reduceIte]; exact Znearest_eq_floor_of_lt_half choice x h
+  · simp only [h, lt_self_iff_false, ↓reduceIte]
+    exact Znearest_eq_choice_of_eq_half choice x h
+  · simp only [not_lt.mpr h.le, ne_of_gt h, ↓reduceIte]
+    exact Znearest_eq_ceil_of_half_lt choice x h
 
 /- Helper: ⌈x⌉ = ⌊x⌋ + 1 when x is not an integer -/
 theorem ceil_eq_floor_add_one {x : ℝ} (hx : x ≠ (⌊x⌋ : ℝ)) : ⌈x⌉ = ⌊x⌋ + 1 := by
@@ -1940,44 +1902,12 @@ theorem Znearest_DN_or_UP (choice : Int → Bool) (x : ℝ) :
     Znearest choice x = FloatSpec.Core.Raux.Zfloor x ∨
       Znearest choice x = FloatSpec.Core.Raux.Zceil x := by
   unfold Znearest
-  set f := (FloatSpec.Core.Raux.Zfloor x) with hf
-  set c := (FloatSpec.Core.Raux.Zceil x) with hc
-  simp (config := {zeta := true}) only
-  change
-      (match (FloatSpec.Core.Raux.Rcompare (x - (f : ℝ)) (1 / 2 : ℝ)) with
-        | -1 => f
-        | 0 => if choice f = true then c else f
-        | _ => c) = f ∨
-      (match (FloatSpec.Core.Raux.Rcompare (x - (f : ℝ)) (1 / 2 : ℝ)) with
-        | -1 => f
-        | 0 => if choice f = true then c else f
-        | _ => c) = c
-  cases hcmp : (FloatSpec.Core.Raux.Rcompare (x - (f : ℝ)) (1 / 2 : ℝ)) with
-  | ofNat n =>
-      cases n with
-      | zero =>
-          by_cases hchoice : choice f = true
-          · right
-            simp [hcmp, hchoice]
-          · left
-            simp [hcmp, hchoice]
-      | succ n =>
-          right
-          have hmatch :
-              (match (Int.ofNat (n + 1)) with
-                | -1 => f
-                | 0 => if choice f = true then c else f
-                | _ => c) = c := by
-            rfl
-          simpa [hcmp] using hmatch
-  | negSucc n =>
-      cases n with
-      | zero =>
-          left
-          simp [hcmp]
-      | succ n =>
-          right
-          simp [hcmp]
+  cases FloatSpec.Core.Raux.Rcompare (x - ((FloatSpec.Core.Raux.Zfloor x : Int) : ℝ)) (2 : ℝ)⁻¹
+  · exact Or.inl rfl
+  · by_cases hchoice : choice (FloatSpec.Core.Raux.Zfloor x) = true
+    · right; simp [hchoice]
+    · left; simp [hchoice]
+  · exact Or.inr rfl
 
 /-- Coq {lit}`Generic_fmt.v`: {lean}`Znearest_ge_floor`
 
@@ -2217,23 +2147,8 @@ theorem Znearest_N_strict (choice : Int → Bool) (x : ℝ) :
     simpa [zpow_neg_one, one_div] using (zpow_neg_one (2 : ℝ))
   by_cases hlt : x - (f : ℝ) < (1/2)
   · -- In this case, Rcompare returns -1, hence Znearest = ⌊x⌋
-    have hrlt :
-        (FloatSpec.Core.Raux.Rcompare (x - (f : ℝ)) (2⁻¹)) = -1 := by
-      -- Evaluate the comparison code directly under the hypothesis in the 2⁻¹ form
-      have hxlt2 : x - (f : ℝ) < (2⁻¹) := by simpa [hhalf_id.symm] using hlt
-      unfold FloatSpec.Core.Raux.Rcompare
-      simp [Id.run, pure, hxlt2]
-    have hzn : Znearest choice x = f := by
-      -- Evaluate the match explicitly using hrlt
-      have hmatch :
-          (match (FloatSpec.Core.Raux.Rcompare (x - (f : ℝ)) (2⁻¹)) with
-            | -1 => f
-            | 0 => if choice f then c else f
-            | _ => c) = f := by
-        simp only [hrlt]
-      unfold Znearest
-      -- Replace internal lets by hf, hc and discharge by hmatch
-      simpa only [hf, hc, hhalf_id] using hmatch
+    have hzn : Znearest choice x = f :=
+      Znearest_eq_floor_of_lt_half choice x (by simpa [hf] using hlt)
     -- Reduce goal via Znearest = f and use hlt with |x - f| = x - f
     have habs_near : |x - (((Znearest choice x) : Int) : ℝ)| = |x - (f : ℝ)| := by
       simpa [hzn]
@@ -2252,29 +2167,8 @@ theorem Znearest_N_strict (choice : Int → Bool) (x : ℝ) :
       have hx_ne' : x - (f : ℝ) ≠ (2⁻¹) := by simpa [hhalf_id.symm] using hx_ne
       exact lt_of_le_of_ne hxge (Ne.symm hx_ne')
     -- In this case, Rcompare returns 1, hence Znearest = ⌈x⌉
-    have hzn : Znearest choice x = c := by
-      -- Compute the comparison code: not < and not = forces the Gt branch
-      have hnotlt : ¬ (x - (f : ℝ) < (2⁻¹)) := by
-        -- rewrite target to 1/2 to use hlt
-        simpa [hhalf_id.symm] using hlt
-      have hnoteq : ¬ (x - (f : ℝ) = (2⁻¹)) := by
-        -- rewrite target to 1/2 to use hx_ne
-        simpa [hhalf_id.symm] using hx_ne
-      have hrgt : (FloatSpec.Core.Raux.Rcompare (x - (f : ℝ)) (2⁻¹)) = 1 := by
-        unfold FloatSpec.Core.Raux.Rcompare
-        simp [Id.run, pure, hnotlt, hnoteq]
-      -- Evaluate the match explicitly using hrgt
-      have hmatch :
-          (match (FloatSpec.Core.Raux.Rcompare (x - (f : ℝ)) (2⁻¹)) with
-            | -1 => f
-            | 0 => if choice f then c else f
-            | _ => c) = c := by
-        -- With scrutinee = 1, the match selects the default branch
-        simp only [hrgt]
-      -- Now unfold Znearest and discharge by hmatch
-      unfold Znearest
-      -- Replace the internal lets by hf, hc but keep the scrutinee shape
-      simpa only [hf, hc, hhalf_id] using hmatch
+    have hzn : Znearest choice x = c :=
+      Znearest_eq_ceil_of_half_lt choice x (by rw [← hhalf_id]; simpa [hf] using hxgt)
     -- Reduce goal via Znearest = c and rewrite |x - c| = c - x
     have habs_near : |x - (((Znearest choice x) : Int) : ℝ)| = |x - (c : ℝ)| := by
       simpa [hzn]
@@ -2901,31 +2795,12 @@ theorem round_N_small_pos
     exact this
 
   -- With floor(sm) = 0 and sm < 1/2, the Znearest comparison selects the floor branch
-  -- Evaluate the comparison code explicitly
-  have hcmp_lt :
-      (FloatSpec.Core.Raux.Rcompare (sm - ((Int.floor sm : Int) : ℝ)) (1/2)) = -1 := by
-    -- Here sm - ⌊sm⌋ = sm - 0 = sm
-    have hfloor0' : ((Int.floor sm : Int) : ℝ) = 0 := by
-      simpa [Int.cast_ofNat] using congrArg (fun n : Int => (n : ℝ)) hfloor0
-    have hsm_lt_half' : sm < (1/2 : ℝ) := hsm_lt_half
-    have : (FloatSpec.Core.Raux.Rcompare sm (1/2)) = -1 := by
-      unfold FloatSpec.Core.Raux.Rcompare
-      have hhalf : (1 / 2 : ℝ) = 2⁻¹ := by norm_num
-      rw [hhalf] at hsm_lt_half' ⊢
-      simp [hsm_lt_half']
-    -- Convert the argument to (sm - ⌊sm⌋) using hfloor0'
-    simpa [hfloor0', sub_zero] using this
-
-  -- Evaluate Znearest at sm: with Lt code, it returns ⌊sm⌋ = 0
   have hZ : Znearest choice sm = (FloatSpec.Core.Raux.Zfloor sm) := by
-    -- Unfold Znearest on sm and discharge the match using hcmp_lt
-    unfold Znearest
-    -- Replace floor/ceil projections by their run-forms
-    have hlt12 : (FloatSpec.Core.Raux.Rcompare (sm - ((FloatSpec.Core.Raux.Zfloor sm) : ℝ)) (1/2)) = -1 := by
-      simpa [FloatSpec.Core.Raux.Zfloor] using hcmp_lt
-    -- Normalize to the exact literal used in the Znearest definition
-    -- Use the (1/2) version directly to match the goal
-    simp only [hlt12]
+    apply Znearest_eq_floor_of_lt_half
+    have hfloor0' : ((FloatSpec.Core.Raux.Zfloor sm : Int) : ℝ) = 0 := by
+      simpa [FloatSpec.Core.Raux.Zfloor] using congrArg (fun n : Int => (n : ℝ)) hfloor0
+    rw [hfloor0', sub_zero]
+    exact hsm_lt_half
   -- Since floor sm = 0, the rounded value is 0
   have hfloor0_run : (FloatSpec.Core.Raux.Zfloor sm) = 0 := by
     -- By definition, (Zfloor sm).run = ⌊sm⌋

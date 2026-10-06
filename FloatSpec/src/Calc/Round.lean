@@ -1326,12 +1326,8 @@ private lemma Znearest_eq_floor_of_lt_half
     (hceil : (FloatSpec.Core.Raux.Zceil x) = m + 1)
     (h : x - (m : ℝ) < (1/2 : ℝ)) :
     FloatSpec.Core.Generic_fmt.Znearest choice x = m := by
-  unfold FloatSpec.Core.Generic_fmt.Znearest
-  -- Simplify Zfloor/Zceil to Int.floor/ceil
-  simp only [FloatSpec.Core.Raux.Zfloor, FloatSpec.Core.Raux.Zceil, Id.run, pure] at hfloor hceil ⊢
-  simp only [FloatSpec.Core.Raux.Rcompare, Id.run, pure, hfloor]
-  -- Use h to evaluate the if-then-else
-  simp only [h, ite_true]
+  rw [← hfloor]
+  exact FloatSpec.Core.Generic_fmt.Znearest_eq_floor_of_lt_half choice x (by rw [hfloor]; exact h)
 
 private lemma Znearest_eq_ceil_of_half_lt
     (choice : Int → Bool) (x : ℝ) (m : Int)
@@ -1339,21 +1335,9 @@ private lemma Znearest_eq_ceil_of_half_lt
     (hceil : (FloatSpec.Core.Raux.Zceil x) = m + 1)
     (h : (2⁻¹ : ℝ) < x - (m : ℝ)) :
     FloatSpec.Core.Generic_fmt.Znearest choice x = m + 1 := by
-  unfold FloatSpec.Core.Generic_fmt.Znearest
-  -- If 2⁻¹ < x - m then x - m is neither < 1/2 nor = 1/2 (use 1/2 form for simp)
-  have hnotlt : ¬ (x - (m : ℝ) < (1/2 : ℝ)) := by
-    simp only [one_div]; exact not_lt.mpr (le_of_lt h)
-  have hne : ¬ (x - (m : ℝ) = (1/2 : ℝ)) := by
-    intro hEq
-    have hh : (2⁻¹ : ℝ) = (1/2 : ℝ) := by norm_num
-    have : (2⁻¹ : ℝ) < (2⁻¹ : ℝ) := by simp only [hh] at h; simpa [hEq] using h
-    exact lt_irrefl _ this
-  -- Simplify Zfloor/Zceil to Int.floor/ceil
-  simp only [FloatSpec.Core.Raux.Zfloor, FloatSpec.Core.Raux.Zceil, Id.run, pure] at hfloor hceil ⊢
-  simp only [FloatSpec.Core.Raux.Rcompare, Id.run, pure, hfloor]
-  -- Use hnotlt and hne to evaluate the if-then-else chain
-  simp only [hnotlt, hne, ite_false]
-  exact hceil
+  rw [← hceil]
+  exact FloatSpec.Core.Generic_fmt.Znearest_eq_ceil_of_half_lt choice x
+    (by rw [hfloor, one_div]; exact h)
 
 -- Variant using 1/2 instead of 2⁻¹ for convenience at call sites
 private lemma Znearest_eq_ceil_of_half_lt_one_half

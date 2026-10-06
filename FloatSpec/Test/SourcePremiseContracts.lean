@@ -418,30 +418,29 @@ example (prec emax : Int) (x y : BinarySingleNaN.binary_float prec emax) : Optio
   BinarySingleNaN.Bcompare x y
 example (prec emax : Int) (x y : binary_float prec emax)
     (hx : Binary.is_finite x = true) (hy : Binary.is_finite y = true) :
-    Binary.Bcompare x y = some (BinarySingleNaN.RcompareOrdering (Binary.B2R x) (Binary.B2R y)) :=
+    Binary.Bcompare x y = some (FloatSpec.Core.Raux.Rcompare (Binary.B2R x) (Binary.B2R y)) :=
   Binary.Bcompare_correct x y hx hy
 example (prec emax : Int) (x y : BinarySingleNaN.binary_float prec emax)
     (hx : BinarySingleNaN.is_finite x = true) (hy : BinarySingleNaN.is_finite y = true) :
     BinarySingleNaN.Bcompare x y =
-      some (BinarySingleNaN.RcompareOrdering (BinarySingleNaN.B2R x) (BinarySingleNaN.B2R y)) :=
+      some (FloatSpec.Core.Raux.Rcompare (BinarySingleNaN.B2R x) (BinarySingleNaN.B2R y)) :=
   BinarySingleNaN.Bcompare_correct x y hx hy
 
 -- Source theorem names must denote propositions, not numeric doc-link wrappers.
--- Raux still uses an explicitly documented integer comparison encoding.
-example (x y : ℝ) (h : x < y) : FloatSpec.Core.Raux.Rcompare x y = -1 :=
+-- Raux's comparison returns Rocq's `comparison`, Lean's `Ordering`, as in the Rocq twin.
+example (x y : ℝ) (h : x < y) : FloatSpec.Core.Raux.Rcompare x y = .lt :=
   FloatSpec.Core.Raux.Rcompare_Lt x y h
-example (x y : ℝ) (h : x = y) : FloatSpec.Core.Raux.Rcompare x y = 0 :=
+example (x y : ℝ) (h : x = y) : FloatSpec.Core.Raux.Rcompare x y = .eq :=
   FloatSpec.Core.Raux.Rcompare_Eq x y h
-example (x y : ℝ) (h : y < x) : FloatSpec.Core.Raux.Rcompare x y = 1 :=
+example (x y : ℝ) (h : y < x) : FloatSpec.Core.Raux.Rcompare x y = .gt :=
   FloatSpec.Core.Raux.Rcompare_Gt x y h
-example (x y : ℝ) (h : y ≤ x) : FloatSpec.Core.Raux.Rcompare x y ≠ -1 :=
+example (x y : ℝ) (h : y ≤ x) : FloatSpec.Core.Raux.Rcompare x y ≠ .lt :=
   FloatSpec.Core.Raux.Rcompare_not_Lt x y h
-example (x y : ℝ) (h : x ≤ y) : FloatSpec.Core.Raux.Rcompare x y ≠ 1 :=
+example (x y : ℝ) (h : x ≤ y) : FloatSpec.Core.Raux.Rcompare x y ≠ .gt :=
   FloatSpec.Core.Raux.Rcompare_not_Gt x y h
 
 example (left right : Int) :
-    FloatSpec.Core.Raux.Rcompare (left : ℝ) (right : ℝ) =
-      FloatSpec.Core.Raux.Zcompare_int left right :=
+    FloatSpec.Core.Raux.Rcompare (left : ℝ) (right : ℝ) = compare left right :=
   FloatSpec.Core.Raux.Rcompare_IZR left right
 
 namespace DivisionSourceContracts

@@ -226,11 +226,11 @@ side conditions. The theorem also covers signed zero, infinities and NaN. -/
 
 private theorem realCompare_as_lt_lt (x y : Real) :
     (if x < y then some Ordering.lt else if y < x then some Ordering.gt else some Ordering.eq) =
-      some (BinarySingleNaN.RcompareOrdering x y) := by
+      some (FloatSpec.Core.Raux.Rcompare x y) := by
   rcases lt_trichotomy x y with h | h | h
-  · simp [BinarySingleNaN.RcompareOrdering, h]
-  · subst y; simp [BinarySingleNaN.RcompareOrdering]
-  · simp [BinarySingleNaN.RcompareOrdering, h, not_lt_of_ge h.le, ne_of_gt h]
+  · simp [FloatSpec.Core.Raux.Rcompare, h]
+  · subst y; simp [FloatSpec.Core.Raux.Rcompare]
+  · simp [FloatSpec.Core.Raux.Rcompare, h, not_lt_of_ge h.le, ne_of_gt h]
 
 /-- Value and raw comparison agree on canonical inputs of the same format. -/
 theorem SFcompareC_eq_raw_of_canonical {prec emax : Int}

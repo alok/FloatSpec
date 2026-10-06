@@ -61,24 +61,13 @@ variable (choice : Int → Bool)
 
 private lemma znearest_eq_floor_of_lt_half (choice : Int → Bool) (x : ℝ)
     (h : x - ((Int.floor x : Int) : ℝ) < (1 / 2 : ℝ)) :
-    FloatSpec.Core.Generic_fmt.Znearest choice x = Int.floor x := by
-  unfold FloatSpec.Core.Generic_fmt.Znearest
-  simp only [FloatSpec.Core.Raux.Zfloor, FloatSpec.Core.Raux.Zceil,
-    FloatSpec.Core.Raux.Rcompare]
-  simp only [h, ite_true]
+    FloatSpec.Core.Generic_fmt.Znearest choice x = Int.floor x :=
+  FloatSpec.Core.Generic_fmt.Znearest_eq_floor_of_lt_half choice x h
 
 private lemma znearest_eq_ceil_of_half_lt (choice : Int → Bool) (x : ℝ)
     (h : (1 / 2 : ℝ) < x - ((Int.floor x : Int) : ℝ)) :
-    FloatSpec.Core.Generic_fmt.Znearest choice x = Int.ceil x := by
-  unfold FloatSpec.Core.Generic_fmt.Znearest
-  have hnotlt : ¬ x - ((Int.floor x : Int) : ℝ) < (1 / 2 : ℝ) :=
-    not_lt.mpr (le_of_lt h)
-  have hne : ¬ x - ((Int.floor x : Int) : ℝ) = (1 / 2 : ℝ) := by
-    intro heq
-    linarith
-  simp only [FloatSpec.Core.Raux.Zfloor, FloatSpec.Core.Raux.Zceil,
-    FloatSpec.Core.Raux.Rcompare]
-  simp only [hnotlt, hne, ite_false]
+    FloatSpec.Core.Generic_fmt.Znearest choice x = Int.ceil x :=
+  FloatSpec.Core.Generic_fmt.Znearest_eq_ceil_of_half_lt choice x h
 
 private lemma znearest_eq_ceil_of_eq_half_choice (choice : Int → Bool) (x : ℝ)
     (h : x - ((Int.floor x : Int) : ℝ) = (1 / 2 : ℝ))

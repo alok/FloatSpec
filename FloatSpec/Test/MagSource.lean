@@ -53,7 +53,7 @@ example : Bool.not (Rle_bool (0 : Real) 0) = Rlt_bool 0 0 :=
 example : Bool.not (Rlt_bool (0 : Real) 0) = Rle_bool 0 0 :=
   negb_Rle_bool 0 0
 
-example : Rcompare (0 : Real) 0 = -(Rcompare 0 0) :=
+example : Rcompare (0 : Real) 0 = (Rcompare 0 0).swap :=
   Rcompare_sym 0 0
 
 /-- Coq floor division rounds toward negative infinity for a negative divisor. -/

@@ -78,46 +78,17 @@ Theorem Rcompare_F2R : forall e m1 m2 : Z,
     apply bpow_gt_0.
   Qed.
   -/
-  theorem Rcompare_F2R (e m1 m2 : Int) (hbeta : 1 < beta) :
+  theorem Rcompare_F2R (e m1 m2 : Int) :
     let f1 := F2R (FlocqFloat.mk m1 e : FlocqFloat beta)
     let f2 := F2R (FlocqFloat.mk m2 e : FlocqFloat beta)
-    FloatSpec.Core.Raux.Rcompare f1 f2 = Int.sign (m1 - m2) := by
-    -- Compare via unfolding of Rcompare and integer order trichotomy
+    FloatSpec.Core.Raux.Rcompare f1 f2 = compare m1 m2 := by
     intro f1 f2
-    classical
-    -- Expand definitions to compare concrete reals
-    unfold FloatSpec.Core.Raux.Rcompare
-    dsimp [f1, f2, FloatSpec.Core.Defs.F2R]
-    -- Let p = β^e > 0
-    have hbpos_int : (0 : Int) < beta := lt_trans (by decide) hbeta
-    have hbpos_real : (0 : ℝ) < (beta : ℝ) := by exact_mod_cast hbpos_int
-    have hp_pos : 0 < (beta : ℝ) ^ e := by exact zpow_pos hbpos_real _
-    -- Case analysis on m1 and m2 (as integers)
-    by_cases hlt : m1 < m2
-    · -- f1 < f2 since p > 0
-      have hltR : (m1 : ℝ) * (beta : ℝ) ^ e < (m2 : ℝ) * (beta : ℝ) ^ e :=
-        mul_lt_mul_of_pos_right (by exact_mod_cast hlt) hp_pos
-      have hsign : Int.sign (m1 - m2) = -1 := Int.sign_eq_neg_one_of_neg (sub_lt_zero.mpr hlt)
-      simp [hltR, hsign]
-    · by_cases heq : m1 = m2
-      · -- Equal mantissas: equal reals
-        have heqR : (m1 : ℝ) * (beta : ℝ) ^ e = (m2 : ℝ) * (beta : ℝ) ^ e := by simpa [heq]
-        have hsign : Int.sign (m1 - m2) = 0 := by simp [heq]
-        have hltR : ¬ (m1 : ℝ) * (beta : ℝ) ^ e < (m2 : ℝ) * (beta : ℝ) ^ e := by
-          simpa [heqR, not_lt.mpr (le_of_eq heqR)]
-        simp [hltR, heqR, hsign]
-      · -- Then m2 < m1, so f2 < f1
-        have hne : m2 ≠ m1 := fun h => heq h.symm
-        have hgt : m2 < m1 := lt_of_le_of_ne (le_of_not_gt hlt) hne
-        have hgtR : (m2 : ℝ) * (beta : ℝ) ^ e < (m1 : ℝ) * (beta : ℝ) ^ e :=
-          mul_lt_mul_of_pos_right (by exact_mod_cast hgt) hp_pos
-        have hsign : Int.sign (m1 - m2) = 1 := Int.sign_eq_one_of_pos (sub_pos.mpr hgt)
-        -- Not (f1 < f2), not equal, so branch yields 1
-        have hnotlt : ¬ (m1 : ℝ) * (beta : ℝ) ^ e < (m2 : ℝ) * (beta : ℝ) ^ e :=
-          not_lt.mpr (le_of_lt hgtR)
-        have hneq : (m1 : ℝ) * (beta : ℝ) ^ e ≠ (m2 : ℝ) * (beta : ℝ) ^ e := by
-          exact ne_of_gt hgtR
-        simp [hnotlt, hneq, hgtR, hsign]
+    have hbpos_real : (0 : ℝ) < (beta : ℝ) := by
+      exact_mod_cast lt_trans (by decide) (ValidRadix.valid (beta := beta))
+    -- As in the source: cancel the positive scale, then compare the integer casts.
+    simp only [f1, f2, FloatSpec.Core.Defs.F2R]
+    rw [FloatSpec.Core.Raux.Rcompare_mult_r _ _ _ (zpow_pos hbpos_real e),
+      FloatSpec.Core.Raux.Rcompare_IZR]
 
 /-
 Coq original:

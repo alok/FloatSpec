@@ -13872,9 +13872,9 @@ theorem binary_round_correct {prec emax : Int}
 
 noncomputable def binary_normalize_sign (x : ℝ) (szero : Bool) : Bool :=
   match FloatSpec.Core.Raux.Rcompare x 0 with
-  | -1 => true
-  | 0 => szero
-  | _ => false
+  | .lt => true
+  | .eq => szero
+  | .gt => false
 
 private theorem binary_normalize_sign_eq (x : ℝ) (szero : Bool) :
     binary_normalize_sign x szero =
@@ -15273,11 +15273,6 @@ def Bcompare {prec emax : Int} (x y : BinarySingleNaNFloat prec emax) : Option O
         let c := (Ord.compare ex ey).then (Ord.compare mx my)
         if sx then c.swap else c)
 
-/-- Three-constructor real comparison, matching the source comparison type. -/
-@[flocq_source "src/Core/Raux.v" 349 "Rcompare"]
-noncomputable def RcompareOrdering (x y : Real) : Ordering :=
-  if x < y then .lt else if x = y then .eq else .gt
-
 private theorem exp_lt {prec emax : Int} (mx my : Nat) (ex ey : Int)
     (hmx : 0 < mx) (hmy : 0 < my)
     (hx : specFloat_bounded (prec := prec) (emax := emax) mx ex = true)
@@ -15316,40 +15311,40 @@ private theorem positive_compare {prec emax : Int} (mx my : Nat) (ex ey : Int)
     (hx : specFloat_bounded (prec := prec) (emax := emax) mx ex = true)
     (hy : specFloat_bounded (prec := prec) (emax := emax) my ey = true) :
     (Ord.compare ex ey).then (Ord.compare mx my) =
-      RcompareOrdering ((mx : Real) * (2 : Real) ^ ex) ((my : Real) * (2 : Real) ^ ey) := by
+      FloatSpec.Core.Raux.Rcompare ((mx : Real) * (2 : Real) ^ ex) ((my : Real) * (2 : Real) ^ ey) := by
   rcases lt_trichotomy ex ey with he | he | he
   · have hlt := exp_lt mx my ex ey hmx hmy hx hy he
     rw [Int.compare_eq_lt.mpr he]
-    simp [RcompareOrdering, hlt]
+    simp [FloatSpec.Core.Raux.Rcompare, hlt]
   · subst ey
     rw [Int.compare_eq_eq.mpr rfl]
     rcases lt_trichotomy mx my with hm | hm | hm
     · have hlt : (mx : Real) * (2 : Real) ^ ex < (my : Real) * (2 : Real) ^ ex :=
         mul_lt_mul_of_pos_right (by exact_mod_cast hm) (zpow_pos (by norm_num) ex)
       rw [Nat.compare_eq_lt.mpr hm]
-      simp [RcompareOrdering, hlt]
+      simp [FloatSpec.Core.Raux.Rcompare, hlt]
     · subst my
-      simp [RcompareOrdering]
+      simp [FloatSpec.Core.Raux.Rcompare]
     · have hlt : (my : Real) * (2 : Real) ^ ex < (mx : Real) * (2 : Real) ^ ex :=
         mul_lt_mul_of_pos_right (by exact_mod_cast hm) (zpow_pos (by norm_num) ex)
       rw [Nat.compare_eq_gt.mpr hm]
-      simp [RcompareOrdering, not_lt_of_ge hlt.le, ne_of_gt hlt]
+      simp [FloatSpec.Core.Raux.Rcompare, not_lt_of_ge hlt.le, ne_of_gt hlt]
   · have hlt := exp_lt my mx ey ex hmy hmx hy hx he
     rw [Int.compare_eq_gt.mpr he]
-    simp [RcompareOrdering, not_lt_of_ge hlt.le, ne_of_gt hlt]
+    simp [FloatSpec.Core.Raux.Rcompare, not_lt_of_ge hlt.le, ne_of_gt hlt]
 
-private theorem RcompareOrdering_neg (x y : Real) :
-    RcompareOrdering (-x) (-y) = (RcompareOrdering x y).swap := by
+private theorem Rcompare_neg_swap (x y : Real) :
+    FloatSpec.Core.Raux.Rcompare (-x) (-y) = (FloatSpec.Core.Raux.Rcompare x y).swap := by
   rcases lt_trichotomy x y with h | h | h
-  · simp [RcompareOrdering, h, not_lt_of_ge h.le, ne_of_lt h]
-  · subst y; simp [RcompareOrdering]
-  · simp [RcompareOrdering, h, not_lt_of_ge h.le, ne_of_gt h]
+  · simp [FloatSpec.Core.Raux.Rcompare, h, not_lt_of_ge h.le, ne_of_lt h]
+  · subst y; simp [FloatSpec.Core.Raux.Rcompare]
+  · simp [FloatSpec.Core.Raux.Rcompare, h, not_lt_of_ge h.le, ne_of_gt h]
 
 /-- Comparison agrees with mathematical order for finite inputs. -/
 @[flocq_source "src/IEEE754/BinarySingleNaN.v" 562 "Bcompare_correct"]
 theorem Bcompare_correct {prec emax : Int} (x y : BinarySingleNaNFloat prec emax)
     (hx : BinarySingleNaN.is_finite x = true) (hy : BinarySingleNaN.is_finite y = true) :
-    Bcompare x y = some (RcompareOrdering (BinarySingleNaN.B2R x) (BinarySingleNaN.B2R y)) := by
+    Bcompare x y = some (FloatSpec.Core.Raux.Rcompare (BinarySingleNaN.B2R x) (BinarySingleNaN.B2R y)) := by
   cases x with
   | B754_nan => simp [BinarySingleNaN.is_finite, binarySingleNaNFloatToB754, BSN_is_finite] at hx
   | B754_infinity sx => simp [BinarySingleNaN.is_finite, binarySingleNaNFloatToB754, BSN_is_finite] at hx
@@ -15357,11 +15352,11 @@ theorem Bcompare_correct {prec emax : Int} (x y : BinarySingleNaNFloat prec emax
       cases y with
       | B754_nan => simp [BinarySingleNaN.is_finite, binarySingleNaNFloatToB754, BSN_is_finite] at hy
       | B754_infinity sy => simp [BinarySingleNaN.is_finite, binarySingleNaNFloatToB754, BSN_is_finite] at hy
-      | B754_zero sy => simp [Bcompare, RcompareOrdering, BinarySingleNaN.B2R,
+      | B754_zero sy => simp [Bcompare, FloatSpec.Core.Raux.Rcompare, BinarySingleNaN.B2R,
           binarySingleNaNFloatToB754, B754_to_R]
       | B754_finite sy m e hm hb =>
           have hp : (0 : Real) < (m : Real) * (2 : Real) ^ e := by positivity
-          cases sy <;> simp [Bcompare, RcompareOrdering, BinarySingleNaN.B2R,
+          cases sy <;> simp [Bcompare, FloatSpec.Core.Raux.Rcompare, BinarySingleNaN.B2R,
             binarySingleNaNFloatToB754, B754_to_R, F2R, FloatSpec.Core.Defs.F2R,
             hp, not_lt_of_ge hp.le, ne_of_gt hm, zpow_ne_zero _ (by norm_num : (2 : Real) ≠ 0)]
   | B754_finite sx mx ex hmx hbmx =>
@@ -15370,7 +15365,7 @@ theorem Bcompare_correct {prec emax : Int} (x y : BinarySingleNaNFloat prec emax
       | B754_infinity sy => simp [BinarySingleNaN.is_finite, binarySingleNaNFloatToB754, BSN_is_finite] at hy
       | B754_zero sy =>
           have hp : (0 : Real) < (mx : Real) * (2 : Real) ^ ex := by positivity
-          cases sx <;> simp [Bcompare, RcompareOrdering, BinarySingleNaN.B2R,
+          cases sx <;> simp [Bcompare, FloatSpec.Core.Raux.Rcompare, BinarySingleNaN.B2R,
             binarySingleNaNFloatToB754, B754_to_R, F2R, FloatSpec.Core.Defs.F2R,
             hp, not_lt_of_ge hp.le, ne_of_gt hp]
       | B754_finite sy my ey hmy hbmy =>
@@ -15381,13 +15376,13 @@ theorem Bcompare_correct {prec emax : Int} (x y : BinarySingleNaNFloat prec emax
           · simpa [Bcompare, BinarySingleNaN.B2R, binarySingleNaNFloatToB754,
               B754_to_R, F2R, FloatSpec.Core.Defs.F2R] using congrArg some hpp
           · have hlt : -((my : Real) * (2 : Real) ^ ey) < (mx : Real) * (2 : Real) ^ ex := by linarith
-            simp [Bcompare, RcompareOrdering, BinarySingleNaN.B2R, binarySingleNaNFloatToB754,
+            simp [Bcompare, FloatSpec.Core.Raux.Rcompare, BinarySingleNaN.B2R, binarySingleNaNFloatToB754,
               B754_to_R, F2R, FloatSpec.Core.Defs.F2R, not_lt_of_ge hlt.le, ne_of_gt hlt]
           · have hlt : -((mx : Real) * (2 : Real) ^ ex) < (my : Real) * (2 : Real) ^ ey := by linarith
-            simp [Bcompare, RcompareOrdering, BinarySingleNaN.B2R, binarySingleNaNFloatToB754,
+            simp [Bcompare, FloatSpec.Core.Raux.Rcompare, BinarySingleNaN.B2R, binarySingleNaNFloatToB754,
               B754_to_R, F2R, FloatSpec.Core.Defs.F2R, hlt]
           · simpa [Bcompare, BinarySingleNaN.B2R, binarySingleNaNFloatToB754,
-              B754_to_R, F2R, FloatSpec.Core.Defs.F2R, RcompareOrdering_neg] using congrArg (fun c => some c.swap) hpp
+              B754_to_R, F2R, FloatSpec.Core.Defs.F2R, Rcompare_neg_swap] using congrArg (fun c => some c.swap) hpp
 
 private theorem compare_map_swap {prec emax : Int} (x y : BinarySingleNaNFloat prec emax) :
     Bcompare y x = (Bcompare x y).map Ordering.swap := by
@@ -15444,7 +15439,7 @@ private theorem value_bridge {prec emax : Int} (x : binary_float prec emax) :
 @[flocq_source "src/IEEE754/Binary.v" 776 "Bcompare_correct"]
 theorem Bcompare_correct {prec emax : Int} (x y : binary_float prec emax)
     (hx : Binary.is_finite x = true) (hy : Binary.is_finite y = true) :
-    Bcompare x y = some (BinarySingleNaN.RcompareOrdering (Binary.B2R x) (Binary.B2R y)) := by
+    Bcompare x y = some (FloatSpec.Core.Raux.Rcompare (Binary.B2R x) (Binary.B2R y)) := by
   simpa [Bcompare, value_bridge] using BinarySingleNaN.Bcompare_correct (Binary.B2BSN x) (Binary.B2BSN y)
     (by simpa [finite_bridge] using hx) (by simpa [finite_bridge] using hy)
 
@@ -15478,12 +15473,12 @@ theorem Beqb_correct {prec emax : Int}
   unfold Beqb
   rw [BinarySingleNaN.Bcompare_correct f1 f2 h1 h2]
   by_cases hlt : BinarySingleNaN.B2R f1 < BinarySingleNaN.B2R f2
-  · simp [BinarySingleNaN.RcompareOrdering, FloatSpec.Core.Raux.Req_bool,
+  · simp [FloatSpec.Core.Raux.Rcompare, FloatSpec.Core.Raux.Req_bool,
       BinarySingleNaN.B2R, hlt, ne_of_lt hlt]
   · by_cases heq : BinarySingleNaN.B2R f1 = BinarySingleNaN.B2R f2
-    · simp [BinarySingleNaN.RcompareOrdering, FloatSpec.Core.Raux.Req_bool,
+    · simp [FloatSpec.Core.Raux.Rcompare, FloatSpec.Core.Raux.Req_bool,
         BinarySingleNaN.B2R, hlt, heq]
-    · simp [BinarySingleNaN.RcompareOrdering, FloatSpec.Core.Raux.Req_bool,
+    · simp [FloatSpec.Core.Raux.Rcompare, FloatSpec.Core.Raux.Req_bool,
         BinarySingleNaN.B2R, hlt, heq]
 
 /-- Coq `BinarySingleNaN.Beqb_refl`; only NaN is non-reflexive. -/
@@ -15512,12 +15507,12 @@ theorem Bltb_correct {prec emax : Int}
   unfold Bltb
   rw [BinarySingleNaN.Bcompare_correct f1 f2 h1 h2]
   by_cases hlt : BinarySingleNaN.B2R f1 < BinarySingleNaN.B2R f2
-  · simp [BinarySingleNaN.RcompareOrdering, FloatSpec.Core.Raux.Rlt_bool,
+  · simp [FloatSpec.Core.Raux.Rcompare, FloatSpec.Core.Raux.Rlt_bool,
       BinarySingleNaN.B2R, hlt]
   · by_cases heq : BinarySingleNaN.B2R f1 = BinarySingleNaN.B2R f2
-    · simp [BinarySingleNaN.RcompareOrdering, FloatSpec.Core.Raux.Rlt_bool,
+    · simp [FloatSpec.Core.Raux.Rcompare, FloatSpec.Core.Raux.Rlt_bool,
         BinarySingleNaN.B2R, hlt, heq]
-    · simp [BinarySingleNaN.RcompareOrdering, FloatSpec.Core.Raux.Rlt_bool,
+    · simp [FloatSpec.Core.Raux.Rcompare, FloatSpec.Core.Raux.Rlt_bool,
         BinarySingleNaN.B2R, hlt, heq]
 
 /-- Coq `BinarySingleNaN.Bleb`. -/
