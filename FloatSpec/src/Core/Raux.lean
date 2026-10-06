@@ -32,6 +32,7 @@ namespace FloatSpec.Core.Raux
 section Rmissing
 
 /-- Coq {lit}`Rle_0_minus`: if {lit}`x ≤ y`, then {lit}`0 ≤ y - x`. -/
+@[flocq_source "src/Core/Raux.v" 29 "Rle_0_minus"]
 theorem Rle_0_minus (x y : ℝ) (hxy : x ≤ y) : 0 ≤ y - x :=
   sub_nonneg_of_le hxy
 
@@ -86,6 +87,7 @@ theorem Rabs_le_inv (x y : ℝ) (h : |x| ≤ y) : -y ≤ x ∧ x ≤ y :=
 
 /-- Coq {lit}`Rmult_lt_compat`: multiplying nonnegative values preserves strict
     inequalities. -/
+@[flocq_source "src/Core/Raux.v" 69 "Rmult_lt_compat"]
 theorem Rmult_lt_compat (r1 r2 r3 r4 : ℝ) (h1 : 0 ≤ r1) (h3 : 0 ≤ r3)
     (h12 : r1 < r2) (h34 : r3 < r4) : r1 * r3 < r2 * r4 := by
   by_cases hr3 : r3 = 0
@@ -96,37 +98,44 @@ theorem Rmult_lt_compat (r1 r2 r3 r4 : ℝ) (h1 : 0 ≤ r1) (h3 : 0 ≤ r3)
     exact mul_lt_mul h12 (le_of_lt h34) h3_pos (le_of_lt (h1.trans_lt h12))
 
 /-- Coq {lit}`Rmult_neq_reg_r`: if {lit}`r2 * r1 ≠ r3 * r1`, then {lit}`r2 ≠ r3`. -/
+@[flocq_source "src/Core/Raux.v" 84 "Rmult_neq_reg_r"]
 theorem Rmult_neq_reg_r (r1 r2 r3 : ℝ) (h : r2 * r1 ≠ r3 * r1) : r2 ≠ r3 := by
   intro h_eq
   exact h (by rw [h_eq])
 
 /-- Coq {lit}`Rmult_neq_compat_r`: if {lit}`r1 ≠ 0` and {lit}`r2 ≠ r3`, then
     {lit}`r2 * r1 ≠ r3 * r1`. -/
+@[flocq_source "src/Core/Raux.v" 91 "Rmult_neq_compat_r"]
 theorem Rmult_neq_compat_r (r1 r2 r3 : ℝ) (h1 : r1 ≠ 0) (h23 : r2 ≠ r3) :
     r2 * r1 ≠ r3 * r1 :=
   fun h => h23 (mul_right_cancel₀ h1 h)
 
 /-- Coq {lit}`Rmult_min_distr_r`: if {lit}`0 ≤ r`, then
     {lit}`min r1 r2 * r = min (r1 * r) (r2 * r)`. -/
+@[flocq_source "src/Core/Raux.v" 100 "Rmult_min_distr_r"]
 theorem Rmult_min_distr_r (r r1 r2 : ℝ) (h : 0 ≤ r) :
     min r1 r2 * r = min (r1 * r) (r2 * r) :=
   min_mul_of_nonneg r1 r2 h
 
 /-- Coq {lit}`Rmult_min_distr_l`: if {lit}`0 ≤ r`, then
     {lit}`r * min r1 r2 = min (r * r1) (r * r2)`. -/
+@[flocq_source "src/Core/Raux.v" 131 "Rmult_min_distr_l"]
 theorem Rmult_min_distr_l (r r1 r2 : ℝ) (h : 0 ≤ r) :
     r * min r1 r2 = min (r * r1) (r * r2) :=
   mul_min_of_nonneg r1 r2 h
 
 /-- Coq {lit}`Rmin_opp`: {lit}`min (-x) (-y) = -(max x y)`. -/
+@[flocq_source "src/Core/Raux.v" 141 "Rmin_opp"]
 theorem Rmin_opp (x y : ℝ) : min (-x) (-y) = -(max x y) :=
   min_neg_neg x y
 
 /-- Coq {lit}`Rmax_opp`: {lit}`max (-x) (-y) = -(min x y)`. -/
+@[flocq_source "src/Core/Raux.v" 151 "Rmax_opp"]
 theorem Rmax_opp (x y : ℝ) : max (-x) (-y) = -(min x y) :=
   max_neg_neg x y
 
 /-- Coq {lit}`exp_le`: the real exponential is monotone. -/
+@[flocq_source "src/Core/Raux.v" 161 "exp_le"]
 theorem exp_le (x y : ℝ) (hxy : x ≤ y) : Real.exp x ≤ Real.exp y :=
   Real.exp_le_exp.mpr hxy
 
@@ -147,6 +156,7 @@ theorem le_lt_IZR (m n p : Int) (h : (m : ℝ) ≤ (n : ℝ) ∧ (n : ℝ) < (p 
   ⟨Int.cast_le.1 h.1, Int.cast_lt.1 h.2⟩
 
 /-- Coq {lit}`neq_IZR`: unequal real casts come from unequal integers. -/
+@[flocq_source "src/Core/Raux.v" 336 "neq_IZR"]
 theorem neq_IZR (m n : Int) (hmnR : (m : ℝ) ≠ (n : ℝ)) : m ≠ n :=
   fun hmn => hmnR (by simp [hmn])
 
@@ -169,6 +179,7 @@ end Rrecip
 section Sqrt
 
 /-- Coq {lit}`sqrt_ge_0`: the real square root is nonnegative. -/
+@[flocq_source "src/Core/Raux.v" 195 "sqrt_ge_0"]
 theorem sqrt_ge_0 (x : ℝ) : 0 ≤ Real.sqrt x :=
   Real.sqrt_nonneg x
 
@@ -202,6 +213,7 @@ end Squares
 section AbsMore
 
 /-- Coq {lit}`Rabs_lt`: if {lit}`-y < x < y`, then {lit}`|x| < y`. -/
+@[flocq_source "src/Core/Raux.v" 271 "Rabs_lt"]
 theorem Rabs_lt (x y : ℝ) (h : -y < x ∧ x < y) : |x| < y := by
   exact abs_lt.mpr h
 
@@ -211,6 +223,7 @@ section AbsGt
 
 /-- Coq `Rabs_gt`: the disjunctive characterization implies the strict
 absolute-value bound. -/
+@[flocq_source "src/Core/Raux.v" 287 "Rabs_gt"]
 theorem Rabs_gt (x y : ℝ) (h : y < -x ∨ x < y) : x < |y| := by
   rcases h with h | h
   · have hxy : x < -y := by simpa using neg_lt_neg h
@@ -222,6 +235,7 @@ end AbsGt
 section AbsGtInv
 
 /-- Coq `Rabs_gt_inv`: if `x < |y|`, then `y < -x` or `x < y`. -/
+@[flocq_source "src/Core/Raux.v" 301 "Rabs_gt_inv"]
 theorem Rabs_gt_inv (x y : ℝ) (h : x < |y|) : y < -x ∨ x < y := by
   by_cases hy : 0 ≤ y
   · right

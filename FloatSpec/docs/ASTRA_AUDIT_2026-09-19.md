@@ -4374,6 +4374,23 @@ entry is `Rle_0_minus` in `Raux.v`.
 
 Receipts: `/private/tmp/floatspec-zaux-tail-20261006/`.
 
+### October 6: Raux prelude (27 sites)
+
+`Raux.v:26–344` (sections `Rmissing` and `IZR`) is reviewed: 27 contracts,
+14 newly anchored (anchors 29 → 43 in `Raux.v`, all validated against compiled
+Rocq sites). `RauxPreludeContracts.lean/.v` give paired clients and six
+premise counterexamples; 16 mutations rejected; Lean kernel replay of 33
+fixture declarations; full build 6350 jobs (3:35); drift gate 216 entries
+(203 contracts, 13 infrastructure, 2500 unreviewed). Rocq's reals print their
+standard classical axioms; that is expected for `R`.
+
+Next: `Rcompare` returns `Int` in Lean but `comparison` in Rocq, and the
+source's `Rcompare_spec`, `Rle_bool_spec`, `Rlt_bool_spec` and
+`Req_bool_spec` exist under `*_prop_spec` names. That is a port fix (179 uses
+in 17 files), not a review.
+
+Receipts: `/private/tmp/floatspec-raux-prelude-20261006/`.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In

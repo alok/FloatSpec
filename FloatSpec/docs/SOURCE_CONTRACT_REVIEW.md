@@ -304,6 +304,30 @@ merely against `Z.div_eucl`), including divisors with up to 64 trailing zero
 bits and 100-bit dividends. All 102 `Zaux.v` sites now have explicit
 dispositions.
 
+### Seventh ordered slice: Raux prelude (Rmissing and IZR)
+
+`Raux.v` begins with 27 small real-number facts (lines 26–344): sign and
+absolute-value bounds, monotonicity of `exp`, reciprocals and products,
+`Rmin`/`Rmax` under negation, square roots, and three `IZR` transfer laws. All
+27 Lean statements already matched, through the standard translations: `Rabs`
+is `|·|`, `Rmin`/`Rmax` are `min`/`max`, `x²` is `x * x`, `/x` is `x⁻¹`, and
+`IZR` is the integer cast. Both systems make `/0` and the square root of a
+negative number zero, so no hidden side condition appears. Fourteen of the 27
+lacked `@[flocq_source]` anchors and now have them.
+
+The premises are not decorative. Both assistants refute the statements with a
+premise removed: `Rabs_minus_le` without `0 ≤ y` (at `x = 0, y = −1`) or
+without `y ≤ 2x` (at `x = 0, y = 1`); `Rmult_lt_compat` without `0 ≤ r1`;
+`Rmult_neq_compat_r` without `r1 ≠ 0`; `Rmult_min_distr_r` without `0 ≤ r`;
+and `Rinv_lt` without `0 < x` (at `x = −1, y = 1`). `RauxPreludeContracts.lean/.v`
+hold the 27 clients and six counterexamples, and 16 mutations (premise
+deletions, a strictness change and a reversed implication) are rejected.
+These are theorem-only reviews; no definition is involved, so there is no bridge.
+
+The next section, `Rcompare`, is not yet faithful: Lean's `Rcompare` returns
+an integer `-1/0/1` rather than Rocq's `comparison`, and the source's
+`Rcompare_spec`/`R*_bool_spec` statements live under `*_prop_spec` names.
+
 ## Unindexed Pff negation and absolute value (earlier slice)
 
 The source facade now also exports `Fopp_correct`, `Fopp_Fopp`, `Fabs_correct`

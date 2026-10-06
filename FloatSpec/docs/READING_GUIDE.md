@@ -69,7 +69,7 @@ The important recent changes are:
   policies need zero in the format. All 78 top-level source contracts in this
   module now have paired typed clients and explicit reviews; its constructor
   and four generated eliminators are accounted for separately. There are
-  189 total review dispositions, including the three nearest-even laws below.
+  216 total review dispositions, including the three nearest-even laws below.
   This does not certify unreviewed imports or
   the other modules, nor identify Rocq and Lean proof terms.
 
@@ -82,7 +82,9 @@ The important recent changes are:
   `iter_pos` and `iter_nat` now use Flocq's own recursions, and the fast
   Euclidean division is now Flocq's sign-case algorithm rather than a call to
   floor division; the old bodies computed the same values by other routes.
-  The next entry is `Rle_0_minus`, the start of `Raux.v`.
+  The first 27 `Raux.v` facts follow, with paired counterexamples showing
+  their premises are needed. The next entry is `Rcompare`, whose Lean version
+  still returns an integer instead of Rocq's three-way `comparison`.
   "Same sign" is a nonnegative product, so zero is neutral: both assistants
   prove that transitivity through a zero middle factor fails (`1·0`, `0·(−1)`)
   and that a negative divisor breaks `0 ≤ u·quot(u, v)`. The Boolean
@@ -141,6 +143,7 @@ Current verification is deliberately separated by source snapshot:
 
 | Snapshot | Completed evidence |
 |---|---|
+| Raux prelude | Full 6,350-job macOS Lean 4.34 build. 27 `Raux.v` facts reviewed with paired clients, 14 new source anchors, six paired premise counterexamples and 16 rejected mutations. 216 explicit reviews. Theorem-only: no bridge run. |
 | Zaux algorithms, `5dc3d7b7` | Full 6,350-job macOS Lean 4.34 build. `iter_nat`, `Zpos_div_eucl_aux1`/`_aux` and `Zfast_div_eucl` ported literally with closed proofs; the last 18 Zaux sites reviewed, completing `Zaux.v`. Three paired counterexamples, 16 rejected mutations, 441 signed pairs per assistant. Fresh prelude bridge, seed 865621: 2,126 three-way cases and kernel equalities, all oracle-checked, against Rocq's own fast-division definitions. 189 explicit reviews. |
 | Zaux Boolean comparisons, `8fcd409c` | 45 more source sites (37 contracts, eight generated schemes adapted) with paired clients; five paired counterexamples; 16 rejected mutations; 529 signed/bignum pairs per assistant. Fresh Zaux prelude bridge, seed 865611: 1,485 three-way cases and kernel equalities, all independently oracle-checked, including 241 comparison pairs. 171 explicit reviews; production declarations unchanged. |
 | Zaux same-sign review, `8fcd409c` | Full 6,350-job macOS Lean 4.34 build (Codex, commit `8f4e2b52`). Four more source contracts with paired clients, two paired counterexamples and ten more premise mutations (16 rejected in all); 1,377 signed triples per assistant. Fresh 811 floor-division cases/kernel equalities, seed 865601, with 33 zero and 394 negative divisors. 126 explicit reviews; production declarations unchanged. |

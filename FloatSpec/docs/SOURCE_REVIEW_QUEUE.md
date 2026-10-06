@@ -16,7 +16,7 @@ External Rocq imports are recorded in the JSON report, not counted as Flocq decl
 |---:|---|---:|---:|---:|---:|
 | 1 | src/Version.v | 1 | 1 | 1 | 1 |
 | 2 | src/Core/Zaux.v | 102 | 82 | 91 | 102 |
-| 3 | src/Core/Raux.v | 186 | 29 | 178 | 0 |
+| 3 | src/Core/Raux.v | 186 | 43 | 178 | 27 |
 | 4 | src/Core/Defs.v | 14 | 11 | 14 | 0 |
 | 5 | src/Core/Round_pred.v | 83 | 78 | 78 | 83 |
 | 6 | src/Core/Digits.v | 67 | 0 | 67 | 0 |
@@ -57,26 +57,26 @@ the full Lean type/body with Rocq, and add an evidence-bearing review entry.
 Resolve aliases and generated proof infrastructure explicitly; do not create
 unnecessary numerical APIs to satisfy a raw name count.
 
-- `src/Core/Raux.v:29` — `Rle_0_minus` (prf): `FloatSpec.Core.Raux.Rle_0_minus`.
-- `src/Core/Raux.v:38` — `Rabs_eq_Rabs` (prf): `FloatSpec.Core.Raux.Rabs_eq_Rabs`.
-- `src/Core/Raux.v:56` — `Rabs_minus_le` (prf): `FloatSpec.Core.Raux.Rabs_minus_le`.
-- `src/Core/Raux.v:66` — `Rabs_eq_R0` (prf): `FloatSpec.Core.Raux.Rabs_eq_R0`.
-- `src/Core/Raux.v:69` — `Rmult_lt_compat` (prf): `FloatSpec.Core.Raux.Rmult_lt_compat`.
-- `src/Core/Raux.v:84` — `Rmult_neq_reg_r` (prf): `FloatSpec.Core.Raux.Rmult_neq_reg_r`.
-- `src/Core/Raux.v:91` — `Rmult_neq_compat_r` (prf): `FloatSpec.Core.Raux.Rmult_neq_compat_r`.
-- `src/Core/Raux.v:100` — `Rmult_min_distr_r` (prf): `FloatSpec.Core.Raux.Rmult_min_distr_r`.
-- `src/Core/Raux.v:131` — `Rmult_min_distr_l` (prf): `FloatSpec.Core.Raux.Rmult_min_distr_l`.
-- `src/Core/Raux.v:141` — `Rmin_opp` (prf): `FloatSpec.Core.Raux.Rmin_opp`.
-- `src/Core/Raux.v:151` — `Rmax_opp` (prf): `FloatSpec.Core.Raux.Rmax_opp`.
-- `src/Core/Raux.v:161` — `exp_le` (prf): `FloatSpec.Core.Raux.exp_le`.
-- `src/Core/Raux.v:172` — `Rinv_lt` (prf): `FloatSpec.Core.Raux.Rinv_lt`.
-- `src/Core/Raux.v:184` — `Rinv_le` (prf): `FloatSpec.Core.Raux.Rinv_le`.
-- `src/Core/Raux.v:195` — `sqrt_ge_0` (prf): `FloatSpec.Core.Raux.sqrt_ge_0`.
-- `src/Core/Raux.v:206` — `sqrt_neg` (prf): `FloatSpec.Core.Raux.sqrt_neg`.
-- `src/Core/Raux.v:221` — `Rsqr_le_abs_0_alt` (prf): `FloatSpec.Core.Raux.Rsqr_le_abs_0_alt`.
-- `src/Core/Raux.v:229` — `Rabs_le_inv` (prf): `FloatSpec.Core.Raux.Rabs_le_inv`.
-- `src/Core/Raux.v:244` — `Rabs_ge` (prf): `FloatSpec.Core.Raux.Rabs_ge`.
-- `src/Core/Raux.v:258` — `Rabs_ge_inv` (prf): `FloatSpec.Core.Raux.Rabs_ge_inv`.
+- `src/Core/Raux.v:349` — `Rcompare` (def): `BinarySingleNaN.RcompareOrdering`.
+- `src/Core/Raux.v:356` — `Rcompare_prop` (ind): `FloatSpec.Core.Raux.Rcompare_prop`.
+- `src/Core/Raux.v:356` — `Rcompare_prop_ind` (scheme): no exact-name candidate.
+- `src/Core/Raux.v:356` — `Rcompare_prop_sind` (scheme): no exact-name candidate.
+- `src/Core/Raux.v:357` — `Rcompare_Lt_` (constr): `FloatSpec.Core.Raux.Rcompare_prop.Rcompare_Lt_`.
+- `src/Core/Raux.v:358` — `Rcompare_Eq_` (constr): `FloatSpec.Core.Raux.Rcompare_prop.Rcompare_Eq_`.
+- `src/Core/Raux.v:359` — `Rcompare_Gt_` (constr): `FloatSpec.Core.Raux.Rcompare_prop.Rcompare_Gt_`.
+- `src/Core/Raux.v:361` — `Rcompare_spec` (prf): `FloatSpec.Core.Raux.Rcompare_spec`.
+- `src/Core/Raux.v:371` — `Rcompare_Lt` (prf): `FloatSpec.Core.Raux.Rcompare_Lt`.
+- `src/Core/Raux.v:384` — `Rcompare_Lt_inv` (prf): `FloatSpec.Core.Raux.Rcompare_Lt_inv`.
+- `src/Core/Raux.v:392` — `Rcompare_not_Lt` (prf): `FloatSpec.Core.Raux.Rcompare_not_Lt`.
+- `src/Core/Raux.v:401` — `Rcompare_not_Lt_inv` (prf): `FloatSpec.Core.Raux.Rcompare_not_Lt_inv`.
+- `src/Core/Raux.v:411` — `Rcompare_Eq` (prf): `FloatSpec.Core.Raux.Rcompare_Eq`.
+- `src/Core/Raux.v:420` — `Rcompare_Eq_inv` (prf): `FloatSpec.Core.Raux.Rcompare_Eq_inv`.
+- `src/Core/Raux.v:428` — `Rcompare_Gt` (prf): `FloatSpec.Core.Raux.Rcompare_Gt`.
+- `src/Core/Raux.v:441` — `Rcompare_Gt_inv` (prf): `FloatSpec.Core.Raux.Rcompare_Gt_inv`.
+- `src/Core/Raux.v:449` — `Rcompare_not_Gt` (prf): `FloatSpec.Core.Raux.Rcompare_not_Gt`.
+- `src/Core/Raux.v:458` — `Rcompare_not_Gt_inv` (prf): `FloatSpec.Core.Raux.Rcompare_not_Gt_inv`.
+- `src/Core/Raux.v:468` — `Rcompare_IZR` (prf): `FloatSpec.Core.Raux.Rcompare_IZR`.
+- `src/Core/Raux.v:481` — `Rcompare_sym` (prf): `FloatSpec.Core.Raux.Rcompare_sym`.
 
 ## Reproduce
 

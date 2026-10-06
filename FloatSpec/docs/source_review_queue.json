@@ -4406,6 +4406,573 @@
           "noncomputable": false
         }
       }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rle_0_minus@831",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rle_0_minus"
+      ],
+      "scope": "Same variables, premises and conclusion as the pinned statement; paired typed clients in both assistants. Rocq Rabs/Rmin/Rmax/x^2(Rsqr)/Rinv/exp/sqrt/IZR are Lean |.|/min/max/x*x/inv/Real.exp/Real.sqrt/Int cast (Rocq / 0 and sqrt of negatives are 0, as in Lean).",
+      "evidence": [
+        "scripts/fixtures/RauxPreludeContracts.lean",
+        "scripts/fixtures/RauxPreludeContracts.v",
+        "scripts/test_raux_prelude_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rle_0_minus": {
+          "type_hash": "3568660197",
+          "value_hash": "1351883803",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rabs_eq_Rabs@967",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rabs_eq_Rabs"
+      ],
+      "scope": "Same variables, premises and conclusion as the pinned statement; paired typed clients in both assistants. Rocq Rabs/Rmin/Rmax/x^2(Rsqr)/Rinv/exp/sqrt/IZR are Lean |.|/min/max/x*x/inv/Real.exp/Real.sqrt/Int cast (Rocq / 0 and sqrt of negatives are 0, as in Lean).",
+      "evidence": [
+        "scripts/fixtures/RauxPreludeContracts.lean",
+        "scripts/fixtures/RauxPreludeContracts.v",
+        "scripts/test_raux_prelude_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rabs_eq_Rabs": {
+          "type_hash": "2503188847",
+          "value_hash": "819394495",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rabs_minus_le@1338",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rabs_minus_le"
+      ],
+      "scope": "Same variables, premises and conclusion as the pinned statement; paired typed clients in both assistants. Rocq Rabs/Rmin/Rmax/x^2(Rsqr)/Rinv/exp/sqrt/IZR are Lean |.|/min/max/x*x/inv/Real.exp/Real.sqrt/Int cast (Rocq / 0 and sqrt of negatives are 0, as in Lean). Both premises are necessary: both assistants refute dropping 0 <= y (x=0,y=-1) and y <= 2x (x=0,y=1); mutation rejected.",
+      "evidence": [
+        "scripts/fixtures/RauxPreludeContracts.lean",
+        "scripts/fixtures/RauxPreludeContracts.v",
+        "scripts/test_raux_prelude_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rabs_minus_le": {
+          "type_hash": "1428235146",
+          "value_hash": "2753085904",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rabs_eq_R0@1485",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rabs_eq_R0"
+      ],
+      "scope": "Same variables, premises and conclusion as the pinned statement; paired typed clients in both assistants. Rocq Rabs/Rmin/Rmax/x^2(Rsqr)/Rinv/exp/sqrt/IZR are Lean |.|/min/max/x*x/inv/Real.exp/Real.sqrt/Int cast (Rocq / 0 and sqrt of negatives are 0, as in Lean).",
+      "evidence": [
+        "scripts/fixtures/RauxPreludeContracts.lean",
+        "scripts/fixtures/RauxPreludeContracts.v",
+        "scripts/test_raux_prelude_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rabs_eq_R0": {
+          "type_hash": "2251643727",
+          "value_hash": "1100101802",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rmult_lt_compat@1563",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rmult_lt_compat"
+      ],
+      "scope": "Same variables, premises and conclusion as the pinned statement; paired typed clients in both assistants. Rocq Rabs/Rmin/Rmax/x^2(Rsqr)/Rinv/exp/sqrt/IZR are Lean |.|/min/max/x*x/inv/Real.exp/Real.sqrt/Int cast (Rocq / 0 and sqrt of negatives are 0, as in Lean). The 0 <= r1 premise is necessary (both assistants refute at -2,-1,1,2); mutation rejected.",
+      "evidence": [
+        "scripts/fixtures/RauxPreludeContracts.lean",
+        "scripts/fixtures/RauxPreludeContracts.v",
+        "scripts/test_raux_prelude_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rmult_lt_compat": {
+          "type_hash": "1643525427",
+          "value_hash": "287663173",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rmult_neq_reg_r@1924",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rmult_neq_reg_r"
+      ],
+      "scope": "Same variables, premises and conclusion as the pinned statement; paired typed clients in both assistants. Rocq Rabs/Rmin/Rmax/x^2(Rsqr)/Rinv/exp/sqrt/IZR are Lean |.|/min/max/x*x/inv/Real.exp/Real.sqrt/Int cast (Rocq / 0 and sqrt of negatives are 0, as in Lean).",
+      "evidence": [
+        "scripts/fixtures/RauxPreludeContracts.lean",
+        "scripts/fixtures/RauxPreludeContracts.v",
+        "scripts/test_raux_prelude_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rmult_neq_reg_r": {
+          "type_hash": "559915954",
+          "value_hash": "4230718991",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rmult_neq_compat_r@2071",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rmult_neq_compat_r"
+      ],
+      "scope": "Same variables, premises and conclusion as the pinned statement; paired typed clients in both assistants. Rocq Rabs/Rmin/Rmax/x^2(Rsqr)/Rinv/exp/sqrt/IZR are Lean |.|/min/max/x*x/inv/Real.exp/Real.sqrt/Int cast (Rocq / 0 and sqrt of negatives are 0, as in Lean). The r1 <> 0 premise is necessary (both refute at r1=0); mutation rejected.",
+      "evidence": [
+        "scripts/fixtures/RauxPreludeContracts.lean",
+        "scripts/fixtures/RauxPreludeContracts.v",
+        "scripts/test_raux_prelude_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rmult_neq_compat_r": {
+          "type_hash": "3185786164",
+          "value_hash": "947167349",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rmult_min_distr_r@2258",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rmult_min_distr_r"
+      ],
+      "scope": "Same variables, premises and conclusion as the pinned statement; paired typed clients in both assistants. Rocq Rabs/Rmin/Rmax/x^2(Rsqr)/Rinv/exp/sqrt/IZR are Lean |.|/min/max/x*x/inv/Real.exp/Real.sqrt/Int cast (Rocq / 0 and sqrt of negatives are 0, as in Lean). The 0 <= r premise is necessary (both refute at r=-1, r1=0, r2=1); mutation rejected.",
+      "evidence": [
+        "scripts/fixtures/RauxPreludeContracts.lean",
+        "scripts/fixtures/RauxPreludeContracts.v",
+        "scripts/test_raux_prelude_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rmult_min_distr_r": {
+          "type_hash": "2399574158",
+          "value_hash": "3815995051",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rmult_min_distr_l@2886",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rmult_min_distr_l"
+      ],
+      "scope": "Same variables, premises and conclusion as the pinned statement; paired typed clients in both assistants. Rocq Rabs/Rmin/Rmax/x^2(Rsqr)/Rinv/exp/sqrt/IZR are Lean |.|/min/max/x*x/inv/Real.exp/Real.sqrt/Int cast (Rocq / 0 and sqrt of negatives are 0, as in Lean).",
+      "evidence": [
+        "scripts/fixtures/RauxPreludeContracts.lean",
+        "scripts/fixtures/RauxPreludeContracts.v",
+        "scripts/test_raux_prelude_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rmult_min_distr_l": {
+          "type_hash": "4048869180",
+          "value_hash": "2966589943",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rmin_opp@3084",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rmin_opp"
+      ],
+      "scope": "Same variables, premises and conclusion as the pinned statement; paired typed clients in both assistants. Rocq Rabs/Rmin/Rmax/x^2(Rsqr)/Rinv/exp/sqrt/IZR are Lean |.|/min/max/x*x/inv/Real.exp/Real.sqrt/Int cast (Rocq / 0 and sqrt of negatives are 0, as in Lean).",
+      "evidence": [
+        "scripts/fixtures/RauxPreludeContracts.lean",
+        "scripts/fixtures/RauxPreludeContracts.v",
+        "scripts/test_raux_prelude_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rmin_opp": {
+          "type_hash": "3006197915",
+          "value_hash": "2129586540",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rmax_opp@3319",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rmax_opp"
+      ],
+      "scope": "Same variables, premises and conclusion as the pinned statement; paired typed clients in both assistants. Rocq Rabs/Rmin/Rmax/x^2(Rsqr)/Rinv/exp/sqrt/IZR are Lean |.|/min/max/x*x/inv/Real.exp/Real.sqrt/Int cast (Rocq / 0 and sqrt of negatives are 0, as in Lean).",
+      "evidence": [
+        "scripts/fixtures/RauxPreludeContracts.lean",
+        "scripts/fixtures/RauxPreludeContracts.v",
+        "scripts/test_raux_prelude_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rmax_opp": {
+          "type_hash": "2980169411",
+          "value_hash": "3102584907",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:exp_le@3556",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.exp_le"
+      ],
+      "scope": "Same variables, premises and conclusion as the pinned statement; paired typed clients in both assistants. Rocq Rabs/Rmin/Rmax/x^2(Rsqr)/Rinv/exp/sqrt/IZR are Lean |.|/min/max/x*x/inv/Real.exp/Real.sqrt/Int cast (Rocq / 0 and sqrt of negatives are 0, as in Lean).",
+      "evidence": [
+        "scripts/fixtures/RauxPreludeContracts.lean",
+        "scripts/fixtures/RauxPreludeContracts.v",
+        "scripts/test_raux_prelude_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.exp_le": {
+          "type_hash": "4070278870",
+          "value_hash": "3084451650",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rinv_lt@3725",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rinv_lt"
+      ],
+      "scope": "Same variables, premises and conclusion as the pinned statement; paired typed clients in both assistants. Rocq Rabs/Rmin/Rmax/x^2(Rsqr)/Rinv/exp/sqrt/IZR are Lean |.|/min/max/x*x/inv/Real.exp/Real.sqrt/Int cast (Rocq / 0 and sqrt of negatives are 0, as in Lean). The 0 < x premise is necessary (both refute at x=-1, y=1); mutation rejected.",
+      "evidence": [
+        "scripts/fixtures/RauxPreludeContracts.lean",
+        "scripts/fixtures/RauxPreludeContracts.v",
+        "scripts/test_raux_prelude_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rinv_lt": {
+          "type_hash": "208994402",
+          "value_hash": "1731656959",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rinv_le@3929",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rinv_le"
+      ],
+      "scope": "Same variables, premises and conclusion as the pinned statement; paired typed clients in both assistants. Rocq Rabs/Rmin/Rmax/x^2(Rsqr)/Rinv/exp/sqrt/IZR are Lean |.|/min/max/x*x/inv/Real.exp/Real.sqrt/Int cast (Rocq / 0 and sqrt of negatives are 0, as in Lean).",
+      "evidence": [
+        "scripts/fixtures/RauxPreludeContracts.lean",
+        "scripts/fixtures/RauxPreludeContracts.v",
+        "scripts/test_raux_prelude_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rinv_le": {
+          "type_hash": "1530592474",
+          "value_hash": "4026199300",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:sqrt_ge_0@4104",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.sqrt_ge_0"
+      ],
+      "scope": "Same variables, premises and conclusion as the pinned statement; paired typed clients in both assistants. Rocq Rabs/Rmin/Rmax/x^2(Rsqr)/Rinv/exp/sqrt/IZR are Lean |.|/min/max/x*x/inv/Real.exp/Real.sqrt/Int cast (Rocq / 0 and sqrt of negatives are 0, as in Lean).",
+      "evidence": [
+        "scripts/fixtures/RauxPreludeContracts.lean",
+        "scripts/fixtures/RauxPreludeContracts.v",
+        "scripts/test_raux_prelude_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.sqrt_ge_0": {
+          "type_hash": "1068753163",
+          "value_hash": "2603970694",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:sqrt_neg@4266",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.sqrt_neg"
+      ],
+      "scope": "Same variables, premises and conclusion as the pinned statement; paired typed clients in both assistants. Rocq Rabs/Rmin/Rmax/x^2(Rsqr)/Rinv/exp/sqrt/IZR are Lean |.|/min/max/x*x/inv/Real.exp/Real.sqrt/Int cast (Rocq / 0 and sqrt of negatives are 0, as in Lean). Premise direction x <= 0 checked by mutation.",
+      "evidence": [
+        "scripts/fixtures/RauxPreludeContracts.lean",
+        "scripts/fixtures/RauxPreludeContracts.v",
+        "scripts/test_raux_prelude_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.sqrt_neg": {
+          "type_hash": "409729889",
+          "value_hash": "1169076850",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rsqr_le_abs_0_alt@4560",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rsqr_le_abs_0_alt"
+      ],
+      "scope": "Same variables, premises and conclusion as the pinned statement; paired typed clients in both assistants. Rocq Rabs/Rmin/Rmax/x^2(Rsqr)/Rinv/exp/sqrt/IZR are Lean |.|/min/max/x*x/inv/Real.exp/Real.sqrt/Int cast (Rocq / 0 and sqrt of negatives are 0, as in Lean).",
+      "evidence": [
+        "scripts/fixtures/RauxPreludeContracts.lean",
+        "scripts/fixtures/RauxPreludeContracts.v",
+        "scripts/test_raux_prelude_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rsqr_le_abs_0_alt": {
+          "type_hash": "2422044297",
+          "value_hash": "3082799455",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rabs_le_inv@4737",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rabs_le_inv"
+      ],
+      "scope": "Same variables, premises and conclusion as the pinned statement; paired typed clients in both assistants. Rocq Rabs/Rmin/Rmax/x^2(Rsqr)/Rinv/exp/sqrt/IZR are Lean |.|/min/max/x*x/inv/Real.exp/Real.sqrt/Int cast (Rocq / 0 and sqrt of negatives are 0, as in Lean).",
+      "evidence": [
+        "scripts/fixtures/RauxPreludeContracts.lean",
+        "scripts/fixtures/RauxPreludeContracts.v",
+        "scripts/test_raux_prelude_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rabs_le_inv": {
+          "type_hash": "2309309195",
+          "value_hash": "3435047873",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rabs_ge@5038",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rabs_ge"
+      ],
+      "scope": "Same variables, premises and conclusion as the pinned statement; paired typed clients in both assistants. Rocq Rabs/Rmin/Rmax/x^2(Rsqr)/Rinv/exp/sqrt/IZR are Lean |.|/min/max/x*x/inv/Real.exp/Real.sqrt/Int cast (Rocq / 0 and sqrt of negatives are 0, as in Lean).",
+      "evidence": [
+        "scripts/fixtures/RauxPreludeContracts.lean",
+        "scripts/fixtures/RauxPreludeContracts.v",
+        "scripts/test_raux_prelude_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rabs_ge": {
+          "type_hash": "2426000872",
+          "value_hash": "2668382434",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rabs_ge_inv@5316",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rabs_ge_inv"
+      ],
+      "scope": "Same variables, premises and conclusion as the pinned statement; paired typed clients in both assistants. Rocq Rabs/Rmin/Rmax/x^2(Rsqr)/Rinv/exp/sqrt/IZR are Lean |.|/min/max/x*x/inv/Real.exp/Real.sqrt/Int cast (Rocq / 0 and sqrt of negatives are 0, as in Lean).",
+      "evidence": [
+        "scripts/fixtures/RauxPreludeContracts.lean",
+        "scripts/fixtures/RauxPreludeContracts.v",
+        "scripts/test_raux_prelude_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rabs_ge_inv": {
+          "type_hash": "3588841902",
+          "value_hash": "723332821",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rabs_lt@5534",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rabs_lt"
+      ],
+      "scope": "Same variables, premises and conclusion as the pinned statement; paired typed clients in both assistants. Rocq Rabs/Rmin/Rmax/x^2(Rsqr)/Rinv/exp/sqrt/IZR are Lean |.|/min/max/x*x/inv/Real.exp/Real.sqrt/Int cast (Rocq / 0 and sqrt of negatives are 0, as in Lean). Strict bounds checked by mutation.",
+      "evidence": [
+        "scripts/fixtures/RauxPreludeContracts.lean",
+        "scripts/fixtures/RauxPreludeContracts.v",
+        "scripts/test_raux_prelude_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rabs_lt": {
+          "type_hash": "4100656746",
+          "value_hash": "2482432122",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rabs_lt_inv@5658",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rabs_lt_inv"
+      ],
+      "scope": "Same variables, premises and conclusion as the pinned statement; paired typed clients in both assistants. Rocq Rabs/Rmin/Rmax/x^2(Rsqr)/Rinv/exp/sqrt/IZR are Lean |.|/min/max/x*x/inv/Real.exp/Real.sqrt/Int cast (Rocq / 0 and sqrt of negatives are 0, as in Lean).",
+      "evidence": [
+        "scripts/fixtures/RauxPreludeContracts.lean",
+        "scripts/fixtures/RauxPreludeContracts.v",
+        "scripts/test_raux_prelude_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rabs_lt_inv": {
+          "type_hash": "1559305221",
+          "value_hash": "2949200670",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rabs_gt@5787",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rabs_gt"
+      ],
+      "scope": "Same variables, premises and conclusion as the pinned statement; paired typed clients in both assistants. Rocq Rabs/Rmin/Rmax/x^2(Rsqr)/Rinv/exp/sqrt/IZR are Lean |.|/min/max/x*x/inv/Real.exp/Real.sqrt/Int cast (Rocq / 0 and sqrt of negatives are 0, as in Lean).",
+      "evidence": [
+        "scripts/fixtures/RauxPreludeContracts.lean",
+        "scripts/fixtures/RauxPreludeContracts.v",
+        "scripts/test_raux_prelude_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rabs_gt": {
+          "type_hash": "1401910950",
+          "value_hash": "190045528",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rabs_gt_inv@6070",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rabs_gt_inv"
+      ],
+      "scope": "Same variables, premises and conclusion as the pinned statement; paired typed clients in both assistants. Rocq Rabs/Rmin/Rmax/x^2(Rsqr)/Rinv/exp/sqrt/IZR are Lean |.|/min/max/x*x/inv/Real.exp/Real.sqrt/Int cast (Rocq / 0 and sqrt of negatives are 0, as in Lean).",
+      "evidence": [
+        "scripts/fixtures/RauxPreludeContracts.lean",
+        "scripts/fixtures/RauxPreludeContracts.v",
+        "scripts/test_raux_prelude_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rabs_gt_inv": {
+          "type_hash": "274144015",
+          "value_hash": "309033366",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:IZR_le_lt@6314",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.IZR_le_lt"
+      ],
+      "scope": "Same variables, premises and conclusion as the pinned statement; paired typed clients in both assistants. Rocq Rabs/Rmin/Rmax/x^2(Rsqr)/Rinv/exp/sqrt/IZR are Lean |.|/min/max/x*x/inv/Real.exp/Real.sqrt/Int cast (Rocq / 0 and sqrt of negatives are 0, as in Lean).",
+      "evidence": [
+        "scripts/fixtures/RauxPreludeContracts.lean",
+        "scripts/fixtures/RauxPreludeContracts.v",
+        "scripts/test_raux_prelude_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.IZR_le_lt": {
+          "type_hash": "4186988396",
+          "value_hash": "2019843823",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:le_lt_IZR@6475",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.le_lt_IZR"
+      ],
+      "scope": "Same variables, premises and conclusion as the pinned statement; paired typed clients in both assistants. Rocq Rabs/Rmin/Rmax/x^2(Rsqr)/Rinv/exp/sqrt/IZR are Lean |.|/min/max/x*x/inv/Real.exp/Real.sqrt/Int cast (Rocq / 0 and sqrt of negatives are 0, as in Lean).",
+      "evidence": [
+        "scripts/fixtures/RauxPreludeContracts.lean",
+        "scripts/fixtures/RauxPreludeContracts.v",
+        "scripts/test_raux_prelude_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.le_lt_IZR": {
+          "type_hash": "35327690",
+          "value_hash": "834279091",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:neq_IZR@6636",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.neq_IZR"
+      ],
+      "scope": "Same variables, premises and conclusion as the pinned statement; paired typed clients in both assistants. Rocq Rabs/Rmin/Rmax/x^2(Rsqr)/Rinv/exp/sqrt/IZR are Lean |.|/min/max/x*x/inv/Real.exp/Real.sqrt/Int cast (Rocq / 0 and sqrt of negatives are 0, as in Lean). Direction (real inequality to integer inequality) checked by mutation.",
+      "evidence": [
+        "scripts/fixtures/RauxPreludeContracts.lean",
+        "scripts/fixtures/RauxPreludeContracts.v",
+        "scripts/test_raux_prelude_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.neq_IZR": {
+          "type_hash": "3781140322",
+          "value_hash": "405422704",
+          "noncomputable": false
+        }
+      }
     }
   ]
 }
