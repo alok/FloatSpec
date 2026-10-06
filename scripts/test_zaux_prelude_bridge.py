@@ -24,6 +24,8 @@ class PreludeTests(unittest.TestCase):
                          ('conditional_negation', (True, 1)),
                          ('comparisons', (1,)),
                          ('comparisons', (1, 2.0)),
+                         ('positive_division', (0, 3)),
+                         ('positive_division', (3, -1)),
                          ('positive_iteration', (1, 'sorry', 1, 1))]:
             with self.subTest(op=op, args=args), self.assertRaises(ValueError):
                 prelude.Case(op, args)
@@ -43,6 +45,11 @@ class PreludeTests(unittest.TestCase):
         for (x, y), row in {(3, 3): [1, 1, 0, 0], (-4, 3): [0, 1, 1, -1],
                             (3, -4): [0, 0, 0, 1]}.items():
             self.assertEqual(prelude.expected(prelude.Case('comparisons', (x, y))), row)
+        # Floor division with the divisor's sign on the remainder; (0, a) for divisor zero.
+        for (a, b), row in {(7, -3): [-3, -2], (-7, 3): [-3, 2], (-7, -3): [2, -1],
+                            (6, -3): [-2, 0], (7, 0): [0, 7], (0, 0): [0, 0]}.items():
+            self.assertEqual(prelude.expected(prelude.Case('fast_division', (a, b))), row)
+        self.assertEqual(prelude.expected(prelude.Case('positive_division', (10, 4))), [2, 2, 2, 2])
         lean, rocq = prelude.expressions(prelude.Case('comparisons', (-4, 3)))
         self.assertIn('match compare (-4 : Int) (3)', lean)
         self.assertIn('match Z.compare (-4) (3)', rocq)
@@ -66,7 +73,8 @@ class PreludeTests(unittest.TestCase):
             (prelude.Case('conditional_negation', (1, -7)),
              [('cond_Zopp true', 'cond_Zopp false')] * 2),
             (prelude.Case('comparisons', (5, 5)),
-             [('Zle_bool', 'Zlt_bool'), ('Z.leb', 'Z.ltb')])]:
+             [('Zle_bool', 'Zlt_bool'), ('Z.leb', 'Z.ltb')]),
+            (prelude.Case('fast_division', (-7, 3)), [(').2]', ').1]'), ('snd (', 'fst (')])]:
             with self.subTest(case=case), tempfile.TemporaryDirectory() as tmp, prelude.profile():
                 folder = Path(tmp)
                 rows = bridge.execute([case], reference, bridge.configured_coqc(reference), folder)

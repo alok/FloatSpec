@@ -15,7 +15,7 @@ External Rocq imports are recorded in the JSON report, not counted as Flocq decl
 | Order | Source module | Declarations | Anchored | Name candidates | Reviewed |
 |---:|---|---:|---:|---:|---:|
 | 1 | src/Version.v | 1 | 1 | 1 | 1 |
-| 2 | src/Core/Zaux.v | 102 | 75 | 91 | 84 |
+| 2 | src/Core/Zaux.v | 102 | 82 | 91 | 102 |
 | 3 | src/Core/Raux.v | 186 | 29 | 178 | 0 |
 | 4 | src/Core/Defs.v | 14 | 11 | 14 | 0 |
 | 5 | src/Core/Round_pred.v | 83 | 78 | 78 | 83 |
@@ -57,26 +57,26 @@ the full Lean type/body with Rocq, and add an evidence-bearing review entry.
 Resolve aliases and generated proof infrastructure explicitly; do not create
 unnecessary numerical APIs to satisfy a raw name count.
 
-- `src/Core/Zaux.v:776` — `cond_Zopp_0` (prf): `FloatSpec.Core.Zaux.cond_Zopp_0`.
-- `src/Core/Zaux.v:782` — `cond_Zopp_negb` (prf): `FloatSpec.Core.Zaux.cond_Zopp_negb`.
-- `src/Core/Zaux.v:790` — `abs_cond_Zopp` (prf): `FloatSpec.Core.Zaux.abs_cond_Zopp`.
-- `src/Core/Zaux.v:799` — `cond_Zopp_Zlt_bool` (prf): `FloatSpec.Core.Zaux.cond_Zopp_Zlt_bool`.
-- `src/Core/Zaux.v:811` — `Zeq_bool_cond_Zopp` (prf): `FloatSpec.Core.Zaux.Zeq_bool_cond_Zopp`.
-- `src/Core/Zaux.v:824` — `Zfast_pow_pos` (def): `FloatSpec.Core.Zaux.Zfast_pow_pos`.
-- `src/Core/Zaux.v:831` — `Zfast_pow_pos_correct` (prf): `FloatSpec.Core.Zaux.Zfast_pow_pos_correct`.
-- `src/Core/Zaux.v:853` — `Zdiv_eucl_unique` (prf): `FloatSpec.Core.Zaux.Zdiv_eucl_unique`.
-- `src/Core/Zaux.v:862` — `Zpos_div_eucl_aux1` (def): `FloatSpec.Core.Zaux.Zpos_div_eucl_aux1`.
-- `src/Core/Zaux.v:874` — `Zpos_div_eucl_aux1_correct` (prf): `FloatSpec.Core.Zaux.Zpos_div_eucl_aux1_correct`.
-- `src/Core/Zaux.v:913` — `Zpos_div_eucl_aux` (def): `FloatSpec.Core.Zaux.Zpos_div_eucl_aux`.
-- `src/Core/Zaux.v:920` — `Zpos_div_eucl_aux_correct` (prf): `FloatSpec.Core.Zaux.Zpos_div_eucl_aux_correct`.
-- `src/Core/Zaux.v:936` — `Zfast_div_eucl` (def): `FloatSpec.Core.Zaux.Zfast_div_eucl`.
-- `src/Core/Zaux.v:965` — `Zfast_div_eucl_correct` (prf): `FloatSpec.Core.Zaux.Zfast_div_eucl_correct`.
-- `src/Core/Zaux.v:980` — `iter_nat` (def): `FloatSpec.Core.Zaux.iter_nat`.
-- `src/Core/Zaux.v:986` — `iter_nat_plus` (prf): `FloatSpec.Core.Zaux.iter_nat_plus`.
-- `src/Core/Zaux.v:997` — `iter_nat_S` (prf): `FloatSpec.Core.Zaux.iter_nat_S`.
-- `src/Core/Zaux.v:1008` — `iter_pos_nat` (prf): `FloatSpec.Core.Zaux.iter_pos_nat`.
 - `src/Core/Raux.v:29` — `Rle_0_minus` (prf): `FloatSpec.Core.Raux.Rle_0_minus`.
 - `src/Core/Raux.v:38` — `Rabs_eq_Rabs` (prf): `FloatSpec.Core.Raux.Rabs_eq_Rabs`.
+- `src/Core/Raux.v:56` — `Rabs_minus_le` (prf): `FloatSpec.Core.Raux.Rabs_minus_le`.
+- `src/Core/Raux.v:66` — `Rabs_eq_R0` (prf): `FloatSpec.Core.Raux.Rabs_eq_R0`.
+- `src/Core/Raux.v:69` — `Rmult_lt_compat` (prf): `FloatSpec.Core.Raux.Rmult_lt_compat`.
+- `src/Core/Raux.v:84` — `Rmult_neq_reg_r` (prf): `FloatSpec.Core.Raux.Rmult_neq_reg_r`.
+- `src/Core/Raux.v:91` — `Rmult_neq_compat_r` (prf): `FloatSpec.Core.Raux.Rmult_neq_compat_r`.
+- `src/Core/Raux.v:100` — `Rmult_min_distr_r` (prf): `FloatSpec.Core.Raux.Rmult_min_distr_r`.
+- `src/Core/Raux.v:131` — `Rmult_min_distr_l` (prf): `FloatSpec.Core.Raux.Rmult_min_distr_l`.
+- `src/Core/Raux.v:141` — `Rmin_opp` (prf): `FloatSpec.Core.Raux.Rmin_opp`.
+- `src/Core/Raux.v:151` — `Rmax_opp` (prf): `FloatSpec.Core.Raux.Rmax_opp`.
+- `src/Core/Raux.v:161` — `exp_le` (prf): `FloatSpec.Core.Raux.exp_le`.
+- `src/Core/Raux.v:172` — `Rinv_lt` (prf): `FloatSpec.Core.Raux.Rinv_lt`.
+- `src/Core/Raux.v:184` — `Rinv_le` (prf): `FloatSpec.Core.Raux.Rinv_le`.
+- `src/Core/Raux.v:195` — `sqrt_ge_0` (prf): `FloatSpec.Core.Raux.sqrt_ge_0`.
+- `src/Core/Raux.v:206` — `sqrt_neg` (prf): `FloatSpec.Core.Raux.sqrt_neg`.
+- `src/Core/Raux.v:221` — `Rsqr_le_abs_0_alt` (prf): `FloatSpec.Core.Raux.Rsqr_le_abs_0_alt`.
+- `src/Core/Raux.v:229` — `Rabs_le_inv` (prf): `FloatSpec.Core.Raux.Rabs_le_inv`.
+- `src/Core/Raux.v:244` — `Rabs_ge` (prf): `FloatSpec.Core.Raux.Rabs_ge`.
+- `src/Core/Raux.v:258` — `Rabs_ge_inv` (prf): `FloatSpec.Core.Raux.Rabs_ge_inv`.
 
 ## Reproduce
 

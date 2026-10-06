@@ -4025,6 +4025,387 @@
           "noncomputable": false
         }
       }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:cond_Zopp_0@16073",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.cond_Zopp_0"
+      ],
+      "scope": "Same statement cond_Zopp sx 0 = 0 for every Boolean.",
+      "evidence": [
+        "scripts/fixtures/ZauxAlgorithmContracts.lean",
+        "scripts/fixtures/ZauxAlgorithmContracts.v",
+        "scripts/test_zaux_algorithm_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.cond_Zopp_0": {
+          "type_hash": "3039020749",
+          "value_hash": "1251841401",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:cond_Zopp_negb@16159",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.cond_Zopp_negb"
+      ],
+      "scope": "Same statement cond_Zopp (negb x) y = - cond_Zopp x y; dropping the negation is a rejected mutation.",
+      "evidence": [
+        "scripts/fixtures/ZauxAlgorithmContracts.lean",
+        "scripts/fixtures/ZauxAlgorithmContracts.v",
+        "scripts/test_zaux_algorithm_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.cond_Zopp_negb": {
+          "type_hash": "1426090675",
+          "value_hash": "3652330427",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:abs_cond_Zopp@16309",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.abs_cond_Zopp"
+      ],
+      "scope": "Same statement with Rocq Z.abs as Lean |.|: |cond_Zopp b m| = |m|.",
+      "evidence": [
+        "scripts/fixtures/ZauxAlgorithmContracts.lean",
+        "scripts/fixtures/ZauxAlgorithmContracts.v",
+        "scripts/test_zaux_algorithm_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.abs_cond_Zopp": {
+          "type_hash": "739584996",
+          "value_hash": "1389602314",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:cond_Zopp_Zlt_bool@16444",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.cond_Zopp_Zlt_bool"
+      ],
+      "scope": "Same statement cond_Zopp (Zlt_bool m 0) m = |m| (Zlt_bool is Z.ltb). Both assistants refute the swapped test Zlt_bool 0 m at m = 1; mutation rejected.",
+      "evidence": [
+        "scripts/fixtures/ZauxAlgorithmContracts.lean",
+        "scripts/fixtures/ZauxAlgorithmContracts.v",
+        "scripts/test_zaux_algorithm_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.cond_Zopp_Zlt_bool": {
+          "type_hash": "2984539670",
+          "value_hash": "2449217827",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zeq_bool_cond_Zopp@16656",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zeq_bool_cond_Zopp"
+      ],
+      "scope": "Same orientation Zeq_bool (cond_Zopp s m) n = Zeq_bool m (cond_Zopp s n). Both assistants refute the unnegated right side at s=true,m=1,n=-1; mutation rejected.",
+      "evidence": [
+        "scripts/fixtures/ZauxAlgorithmContracts.lean",
+        "scripts/fixtures/ZauxAlgorithmContracts.v",
+        "scripts/test_zaux_algorithm_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zeq_bool_cond_Zopp": {
+          "type_hash": "2414115707",
+          "value_hash": "175550648",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zfast_pow_pos@16863",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zfast_pow_pos"
+      ],
+      "scope": "Same structural recursion on the exponent's binary digits: xH -> v, xO -> square, xI -> v * square, with Rocq Z.square x written x ^ 2. Pinned by three rfl equations in each assistant; mutation rejected.",
+      "evidence": [
+        "scripts/fixtures/ZauxAlgorithmContracts.lean",
+        "scripts/fixtures/ZauxAlgorithmContracts.v",
+        "scripts/test_zaux_algorithm_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zfast_pow_pos": {
+          "type_hash": "1521704194",
+          "value_hash": "3867411030",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zfast_pow_pos_correct@17046",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zfast_pow_pos_correct"
+      ],
+      "scope": "Same statement Zfast_pow_pos v e = Zpower_pos v e (Rocq Z.pow_pos); checked on a 17 x 20 power grid in each assistant.",
+      "evidence": [
+        "scripts/fixtures/ZauxAlgorithmContracts.lean",
+        "scripts/fixtures/ZauxAlgorithmContracts.v",
+        "scripts/test_zaux_algorithm_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zfast_pow_pos_correct": {
+          "type_hash": "4184822890",
+          "value_hash": "1470185503",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zdiv_eucl_unique@17457",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zdiv_eucl_unique"
+      ],
+      "scope": "Same statement Z.div_eucl a b = (a / b, a mod b), with Rocq Z.div_eucl as the Lean stand-in Z_div_eucl and floor Z.div/Z.modulo as Int.fdiv/Int.fmod.",
+      "evidence": [
+        "scripts/fixtures/ZauxAlgorithmContracts.lean",
+        "scripts/fixtures/ZauxAlgorithmContracts.v",
+        "scripts/test_zaux_algorithm_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zdiv_eucl_unique": {
+          "type_hash": "218246307",
+          "value_hash": "3868938982",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zpos_div_eucl_aux1@17615",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zpos_div_eucl_aux1"
+      ],
+      "scope": "Ported literally in this slice (previously a private Nat recursion): structural recursion on the divisor (termination_by structural b, as Rocq's {struct b}), peeling shared trailing zeros and falling back to Z.pos_div_eucl at an odd divisor. Five rfl equations pin the cases; bridge-checked against Rocq's own Zpos_div_eucl_aux1.",
+      "evidence": [
+        "scripts/fixtures/ZauxAlgorithmContracts.lean",
+        "scripts/fixtures/ZauxAlgorithmContracts.v",
+        "scripts/test_zaux_algorithm_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md",
+        "scripts/zaux_prelude_bridge.py"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zpos_div_eucl_aux1": {
+          "type_hash": "3999136552",
+          "value_hash": "1428686997",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zpos_div_eucl_aux1_correct@17962",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zpos_div_eucl_aux1_correct"
+      ],
+      "scope": "Same statement Zpos_div_eucl_aux1 a b = Z.pos_div_eucl a (Zpos b); new closed proof by induction on the divisor, following the source's digit cases.",
+      "evidence": [
+        "scripts/fixtures/ZauxAlgorithmContracts.lean",
+        "scripts/fixtures/ZauxAlgorithmContracts.v",
+        "scripts/test_zaux_algorithm_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zpos_div_eucl_aux1_correct": {
+          "type_hash": "1353875612",
+          "value_hash": "1839261790",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zpos_div_eucl_aux@19332",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zpos_div_eucl_aux"
+      ],
+      "scope": "Ported literally in this slice: a match on Pos.compare a b (Lean stand-in Pos_compare) with the source's Lt/Eq/Gt branches; previously two ifs on positiveToNat. Bridge-checked against Rocq's own Zpos_div_eucl_aux.",
+      "evidence": [
+        "scripts/fixtures/ZauxAlgorithmContracts.lean",
+        "scripts/fixtures/ZauxAlgorithmContracts.v",
+        "scripts/test_zaux_algorithm_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md",
+        "scripts/zaux_prelude_bridge.py"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zpos_div_eucl_aux": {
+          "type_hash": "3999136552",
+          "value_hash": "2839277401",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zpos_div_eucl_aux_correct@19489",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zpos_div_eucl_aux_correct"
+      ],
+      "scope": "Same statement Zpos_div_eucl_aux a b = Z.pos_div_eucl a (Zpos b); closed proof by the three comparison cases.",
+      "evidence": [
+        "scripts/fixtures/ZauxAlgorithmContracts.lean",
+        "scripts/fixtures/ZauxAlgorithmContracts.v",
+        "scripts/test_zaux_algorithm_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zpos_div_eucl_aux_correct": {
+          "type_hash": "2577826604",
+          "value_hash": "2338040769",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zfast_div_eucl@20003",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zfast_div_eucl"
+      ],
+      "scope": "Ported literally in this slice (previously just Z_div_eucl, making its correctness rfl): the source's sign cases over Rocq Z constructors (Lean ZView/zview), remainder corrections, and the 1 mod 0 test for divisor zero. Bridge-checked against Rocq's own Zfast_div_eucl, including 100-bit dividends and zero divisors.",
+      "evidence": [
+        "scripts/fixtures/ZauxAlgorithmContracts.lean",
+        "scripts/fixtures/ZauxAlgorithmContracts.v",
+        "scripts/test_zaux_algorithm_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md",
+        "scripts/zaux_prelude_bridge.py"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zfast_div_eucl": {
+          "type_hash": "570233892",
+          "value_hash": "422415497",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zfast_div_eucl_correct@20794",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zfast_div_eucl_correct"
+      ],
+      "scope": "Same statement Zfast_div_eucl a b = Z.div_eucl a b, now a real closed proof over the nine sign cases rather than rfl. Both assistants show the result is the floor pair (7, -3) -> (-3, -2), not Lean's default (-2, 1).",
+      "evidence": [
+        "scripts/fixtures/ZauxAlgorithmContracts.lean",
+        "scripts/fixtures/ZauxAlgorithmContracts.v",
+        "scripts/test_zaux_algorithm_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zfast_div_eucl_correct": {
+          "type_hash": "2957038757",
+          "value_hash": "1466229075",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:iter_nat@21066",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.iter_nat"
+      ],
+      "scope": "Ported literally in this slice: S n' => iter_nat n' (f x) applies f first, as the source and Function.iterate do (the previous body applied f last and was unanchored). A implicit, f explicit as after Rocq's section closes. Pinned by an rfl equation in each assistant; mutation rejected.",
+      "evidence": [
+        "scripts/fixtures/ZauxAlgorithmContracts.lean",
+        "scripts/fixtures/ZauxAlgorithmContracts.v",
+        "scripts/test_zaux_algorithm_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.iter_nat": {
+          "type_hash": "1251401339",
+          "value_hash": "3214684106",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:iter_nat_plus@21181",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.iter_nat_plus"
+      ],
+      "scope": "Same statement iter_nat f (p + q) x = iter_nat f p (iter_nat f q x); closed proof by induction on q as in the source.",
+      "evidence": [
+        "scripts/fixtures/ZauxAlgorithmContracts.lean",
+        "scripts/fixtures/ZauxAlgorithmContracts.v",
+        "scripts/test_zaux_algorithm_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.iter_nat_plus": {
+          "type_hash": "1261464021",
+          "value_hash": "3152111046",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:iter_nat_S@21377",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.iter_nat_S"
+      ],
+      "scope": "Same statement iter_nat f (S p) x = f (iter_nat f p x); now a theorem by induction (it was rfl for the old body).",
+      "evidence": [
+        "scripts/fixtures/ZauxAlgorithmContracts.lean",
+        "scripts/fixtures/ZauxAlgorithmContracts.v",
+        "scripts/test_zaux_algorithm_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.iter_nat_S": {
+          "type_hash": "3898757036",
+          "value_hash": "207292989",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:iter_pos_nat@21523",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.iter_pos_nat"
+      ],
+      "scope": "Same statement iter_pos f p x = iter_nat f (Pos.to_nat p) x, with Pos.to_nat as positiveToNat.",
+      "evidence": [
+        "scripts/fixtures/ZauxAlgorithmContracts.lean",
+        "scripts/fixtures/ZauxAlgorithmContracts.v",
+        "scripts/test_zaux_algorithm_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.iter_pos_nat": {
+          "type_hash": "968847353",
+          "value_hash": "3465665123",
+          "noncomputable": false
+        }
+      }
     }
   ]
 }

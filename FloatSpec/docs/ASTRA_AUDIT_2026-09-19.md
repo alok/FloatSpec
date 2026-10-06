@@ -4348,6 +4348,32 @@ Found along the way: Rocq 9.1's deprecation attributes for `Zle_bool`,
 
 Receipts: `/private/tmp/floatspec-zaux-boolean-20261006/`.
 
+### October 6: the rest of Zaux, three bodies ported
+
+The final 18 `Zaux.v` sites (776–1027) are reviewed, so every `Zaux.v` site
+now has an explicit disposition (189 entries: 176 contracts, 13 infrastructure,
+2527 unreviewed). Three definitions computed the right values by a different
+route and are now literal ports in `bf9ffc1e`: `iter_nat` applies `f` first;
+`Zpos_div_eucl_aux1` recurses structurally on the divisor's digits and
+`Zpos_div_eucl_aux` matches on `Pos.compare`; `Zfast_div_eucl` is the source's
+sign-case algorithm instead of a call to floor division, so its correctness
+theorem is a closed nine-case proof rather than `rfl`. Lean stand-ins for the
+needed Rocq library pieces are marked `@[flocq_local]`. `BinarySingleNaN`'s
+`shr` proofs were adapted; one no longer needs a commutation lemma.
+
+Full macOS build 6350 jobs (3:27); drift gate passed before and after the new
+entries; exemplars 31/31; the four Zaux fixtures compile under `warningAsError`
+and replay in the kernel (83 declarations). `ZauxAlgorithmContracts.lean/.v`:
+three paired counterexamples, 441 signed pairs, 16 rejected mutations (34.2 s).
+Prelude bridge at source digest `5dc3d7b7`, seed 865621: 2126 cases, zero
+mismatches, 2126 kernel equalities and oracle checks (174.9 s), now comparing
+Lean's ported algorithms with Rocq's own `Zfast_div_eucl`,
+`Zpos_div_eucl_aux1` and `Zpos_div_eucl_aux`. Its live test also rejects a
+shared quotient-for-remainder mutation of the fast division. The next source
+entry is `Rle_0_minus` in `Raux.v`.
+
+Receipts: `/private/tmp/floatspec-zaux-tail-20261006/`.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In

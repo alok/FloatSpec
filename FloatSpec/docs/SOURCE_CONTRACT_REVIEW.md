@@ -258,6 +258,52 @@ evaluates Lean's three tests and `compare` against Rocq's `Z.eqb`/`Z.leb`/
 has 85 contiguous Zaux/Version dispositions and 171 in total; the next entry
 is `cond_Zopp_0`.
 
+### Sixth ordered slice: the rest of Zaux, with three bodies ported
+
+The last 18 sites of `Zaux.v` (776–1027) are the conditional-negation laws,
+fast power, fast Euclidean division and natural-number iteration. Unlike the
+previous slices, this one found definitions that computed the right values by
+a different route from the source, and ports them literally:
+
+| Definition | Before | Now |
+|---|---|---|
+| `Zfast_div_eucl` | `Z_div_eucl a b`, i.e. one floor division; its correctness theorem was `rfl` | The source's sign cases over `Zpos_div_eucl_aux`, including the `1 mod 0` test, with a real proof |
+| `Zpos_div_eucl_aux1` | A private `Nat` recursion on both arguments | The source's recursion on the divisor's binary digits (`termination_by structural b`, as Rocq's `{struct b}`) falling back to `Z.pos_div_eucl` at an odd divisor |
+| `Zpos_div_eucl_aux` | Two `if`s on `positiveToNat` | A match on `Pos.compare` |
+| `iter_nat` | `f (iter_nat f n' x)`: applies `f` last | `iter_nat f n' (f x)`: applies `f` first, as in the source and `Function.iterate` |
+
+Values did not change. The paired fixtures pin the recursions of `iter_nat`,
+`Zpos_div_eucl_aux1` and `Zfast_pow_pos` with `rfl` equations that the old
+bodies did not satisfy; the sign cases of `Zfast_div_eucl` were compared by
+reading and are run against Rocq's own definition. Proofs that relied on
+the old unfolding now use `iter_nat_S`. One proof in `BinarySingleNaN` lost
+its detour: `shr_limit_nat` needed `iter_nat f (k+2) x = iter_nat f (k+1) (f x)`,
+which is now true by definition.
+
+To match on Rocq's `Z0`/`Zpos`/`Zneg` and `positive` constructors, Zaux gains
+small Lean stand-ins for Rocq library pieces, each marked `@[flocq_local]`:
+`ZView`/`zview` (an integer's Rocq constructor), `Pos_of_nat` (structural
+binary conversion, so the kernel and `#reduce` can evaluate it), `Pos_compare`,
+and `Z_pos_div_eucl`. The last is only specified on positive divisors, which is
+the only place Flocq uses `Z.pos_div_eucl`.
+
+The other sites were already faithful. `Zfast_pow_pos` writes `Z.square x`
+as `x ^ 2`. The `cond_Zopp` laws keep the source's orientation; both
+assistants refute the swapped `cond_Zopp (Zlt_bool 0 m) m = |m|` and the
+unnegated `Zeq_bool (cond_Zopp s m) n = Zeq_bool m n`. Both also show that
+`Zfast_div_eucl 7 (-3) = (-3, -2)`, a floor pair, while Lean's default `/`
+and `%` give `(-2, 1)`.
+
+Evidence: `ZauxAlgorithmContracts.lean/.v` state the 18 interfaces and the
+definitional equations, prove the three counterexamples, and check the
+algorithms on 441 signed pairs and a power grid in each prover. Sixteen
+mutations are rejected. The prelude bridge adds `fast_division` and
+`positive_division` operations that run Lean's ported algorithms against
+Rocq's own `Zfast_div_eucl`, `Zpos_div_eucl_aux1` and `Zpos_div_eucl_aux` (not
+merely against `Z.div_eucl`), including divisors with up to 64 trailing zero
+bits and 100-bit dividends. All 102 `Zaux.v` sites now have explicit
+dispositions.
+
 ## Unindexed Pff negation and absolute value (earlier slice)
 
 The source facade now also exports `Fopp_correct`, `Fopp_Fopp`, `Fabs_correct`

@@ -202,6 +202,27 @@ check validates every observed pair against Python's floor division and exact
 integer reconstruction; it is not a fresh execution. No universal cross-prover
 equivalence is claimed from the finite grid.
 
+## Zaux algorithms: sign helpers, fast power, fast division, iteration (October 6)
+
+The last 18 `Zaux.v` sites include three definitions now ported literally
+(`iter_nat`, `Zpos_div_eucl_aux1`/`_aux`, `Zfast_div_eucl`). The fixtures pin
+the recursions with `rfl` equations and check the laws on 441 signed pairs;
+the prelude bridge runs the ported algorithms against Rocq's own definitions.
+
+```sh
+lake env lean -DwarningAsError=true scripts/fixtures/ZauxAlgorithmContracts.lean
+coqc -q -R "$FLOCQ_AUDIT_DIR/src" Flocq \
+  -o /tmp/ZauxAlgorithmContracts.vo scripts/fixtures/ZauxAlgorithmContracts.v
+uv run scripts/test_zaux_algorithm_contracts.py -v
+uv run scripts/zaux_prelude_bridge.py --flocq-dir "$FLOCQ_AUDIT_DIR" \
+  --seed 865621 --samples 120
+```
+
+Sixteen mutations are rejected. With source digest `5dc3d7b7`, seed 865621
+runs 2126 cases and kernel equalities, all checked by the Python oracle: 325
+`Zfast_div_eucl` pairs (zero, negative and 100-bit operands) and 316
+`Zpos_div_eucl_aux1`/`_aux` pairs (divisors with up to 64 trailing zero bits).
+
 ## Boolean comparison contracts (October 6)
 
 `Zaux.v:502–764` defines four comparison graphs and their laws. The paired

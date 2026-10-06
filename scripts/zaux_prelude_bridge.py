@@ -6,9 +6,12 @@ import random
 
 import flocq_bridge as bridge
 
-ARITIES = {"conditional_negation": 2, "positive_iteration": 4, "comparisons": 2}
-# Output row lengths; comparisons observe [eq, le, lt] as 0/1 and compare as -1/0/1.
-WIDTHS = {"conditional_negation": 1, "positive_iteration": 1, "comparisons": 4}
+ARITIES = {"conditional_negation": 2, "positive_iteration": 4, "comparisons": 2,
+           "fast_division": 2, "positive_division": 2}
+# Output row lengths; comparisons observe [eq, le, lt] as 0/1 and compare as -1/0/1;
+# fast_division is Zfast_div_eucl's pair; positive_division is aux1's pair, then aux's.
+WIDTHS = {"conditional_negation": 1, "positive_iteration": 1, "comparisons": 4,
+          "fast_division": 2, "positive_division": 4}
 
 
 @dataclass(frozen=True)
@@ -24,6 +27,8 @@ class Case:
             raise ValueError("sign must be zero or one")
         if self.op == "positive_iteration" and self.args[0] <= 0:
             raise ValueError("iteration count must be positive, never silently coerced from zero")
+        if self.op == "positive_division" and min(self.args) <= 0:
+            raise ValueError("positive division takes two positives")
 
 
 def positive(value):
@@ -48,6 +53,18 @@ def expressions(case):
         rocq = "; ".join(tests(("Z.eqb", "Z.leb", "Z.ltb")))
         return (f"[{lean}, match compare ({x} : Int) ({y}) with | .lt => -1 | .eq => 0 | .gt => 1]",
                 f"[{rocq}; match Z.compare ({x}) ({y}) with Lt => -1 | Eq => 0 | Gt => 1 end]")
+    if case.op == "fast_division":
+        a, b = case.args
+        call = f"Zfast_div_eucl ({a}) ({b})"
+        return f"[({call}).1, ({call}).2]", f"[fst ({call}); snd ({call})]"
+    if case.op == "positive_division":
+        a, b = case.args
+        lean = [f"(Zpos_div_eucl_aux1 {positive(a)} {positive(b)})",
+                f"(Zpos_div_eucl_aux {positive(a)} {positive(b)})"]
+        rocq = [f"(Zpos_div_eucl_aux1 ({a})%positive ({b})%positive)",
+                f"(Zpos_div_eucl_aux ({a})%positive ({b})%positive)"]
+        return ("[" + ", ".join(f"{c}.1, {c}.2" for c in lean) + "]",
+                "[" + "; ".join(f"fst {c}; snd {c}" for c in rocq) + "]")
     count, scale, offset, initial = case.args
     return (f"[iter_pos (fun x : Int => ({scale}) * x + ({offset})) {positive(count)} ({initial})]",
             f"[iter_pos (fun x : Z => ({scale}) * x + ({offset})) ({count})%positive ({initial})]")
@@ -62,6 +79,12 @@ def corpus(seed, samples):
     edges = (-2**64, -2**63 - 1, -2**63, -1, 0, 1, 2**63 - 1, 2**63, 2**64)
     cases += [Case("comparisons", (x, y)) for x in range(-3, 4) for y in range(-3, 4)]
     cases += [Case("comparisons", (x, y)) for x in edges for y in edges]
+    cases += [Case("fast_division", (a, b)) for a in range(-6, 7) for b in range(-6, 7)]
+    cases += [Case("fast_division", (a, b)) for a in edges for b in (-2**32 - 1, -3, 0, 3, 2**32 + 1)]
+    cases += [Case("positive_division", (a, b)) for a in range(1, 13) for b in range(1, 13)]
+    # Even divisors exercise the source's digit-peeling recursion before its odd fallback.
+    cases += [Case("positive_division", (a, 2**k * m)) for k in (1, 5, 31, 32, 63, 64)
+              for m in (1, 3) for a in (1, 2**k * m - 1, 2**k * m, 2**k * m + 1, 2**100 + 7)]
     rng = random.Random(seed)
     for _ in range(samples):
         cases.append(Case("conditional_negation", (rng.randrange(2), rng.randint(-2**127, 2**127))))
@@ -69,6 +92,10 @@ def corpus(seed, samples):
                                                   rng.randint(-10, 10), rng.randint(-100, 100))))
         x = rng.randint(-2**127, 2**127)
         cases.append(Case("comparisons", (x, rng.choice((x, -x, x + 1, rng.randint(-2**127, 2**127))))))
+        b = rng.choice((1, -1)) * rng.randint(1, 2**40) * 2**rng.randint(0, 20)
+        cases.append(Case("fast_division", (rng.randint(-2**100, 2**100), rng.choice((b, 0, -b)))))
+        cases.append(Case("positive_division", (rng.randint(1, 2**100),
+                                                 rng.randint(1, 2**30) * 2**rng.randint(0, 40))))
     return sorted(dict.fromkeys(cases), key=lambda c: tuple(ARITIES).index(c.op))
 
 
@@ -79,6 +106,13 @@ def expected(case):
     if case.op == "comparisons":
         x, y = case.args
         return [int(x == y), int(x <= y), int(x < y), (x > y) - (x < y)]
+    if case.op == "fast_division":
+        # Rocq's Z.div_eucl: floor quotient, remainder with the divisor's sign; (0, a) for b = 0.
+        a, b = case.args
+        return [0, a] if b == 0 else [a // b, a % b]
+    if case.op == "positive_division":
+        a, b = case.args
+        return [a // b, a % b] * 2
     count, scale, offset, initial = case.args
     # Closed geometric sum, independent of the binary-recursive implementation.
     power = scale ** count
