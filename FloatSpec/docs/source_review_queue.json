@@ -2992,6 +2992,90 @@
           "noncomputable": false
         }
       }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zsame_sign_trans@9579",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zsame_sign_trans"
+      ],
+      "scope": "Same argument order v u w over all integers, premise v <> 0 and both product premises retained. Both assistants prove the zero-free claim false at v=0,u=1,w=-1; paired typed clients and premise-deletion mutations in each assistant.",
+      "evidence": [
+        "scripts/fixtures/ZauxDivisionContracts.lean",
+        "scripts/fixtures/ZauxDivisionContracts.v",
+        "scripts/test_zaux_division_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zsame_sign_trans": {
+          "type_hash": "2137618830",
+          "value_hash": "3482900737",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zsame_sign_trans_weak@9765",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zsame_sign_trans_weak"
+      ],
+      "scope": "Same argument order and weak side condition v = 0 -> w = 0 (not strengthened to v <> 0). The shared v=0,u=1,w=-1 counterexample also refutes deleting this condition; paired clients and mutation controls.",
+      "evidence": [
+        "scripts/fixtures/ZauxDivisionContracts.lean",
+        "scripts/fixtures/ZauxDivisionContracts.v",
+        "scripts/test_zaux_division_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zsame_sign_trans_weak": {
+          "type_hash": "851381237",
+          "value_hash": "166729947",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zsame_sign_imp@9975",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zsame_sign_imp"
+      ],
+      "scope": "Same two sign implications, including the negated form 0 < -u -> 0 <= -v rather than a rewritten u < 0 -> v <= 0. Deleting either implication is a rejected mutation in both assistants; the 1377-triple grid checks the law.",
+      "evidence": [
+        "scripts/fixtures/ZauxDivisionContracts.lean",
+        "scripts/fixtures/ZauxDivisionContracts.v",
+        "scripts/test_zaux_division_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zsame_sign_imp": {
+          "type_hash": "301145458",
+          "value_hash": "1500670365",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Zaux.v:Zsame_sign_odiv@10318",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Zaux.Zsame_sign_odiv"
+      ],
+      "scope": "Source Z.quot translated to truncating Int.tdiv; only premise 0 <= v, so divisor zero stays permitted. Both assistants prove the premise is needed: 1 * quot(1,-1) = -1. The grid covers negative, zero and positive divisors.",
+      "evidence": [
+        "scripts/fixtures/ZauxDivisionContracts.lean",
+        "scripts/fixtures/ZauxDivisionContracts.v",
+        "scripts/test_zaux_division_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Zaux.Zsame_sign_odiv": {
+          "type_hash": "2853892655",
+          "value_hash": "1900006272",
+          "noncomputable": false
+        }
+      }
     }
   ]
 }

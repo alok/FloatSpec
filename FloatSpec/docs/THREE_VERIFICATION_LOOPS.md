@@ -191,7 +191,11 @@ uv run scripts/flocq_bridge.py --flocq-dir "$FLOCQ_AUDIT_DIR" \
 
 Export `FLOCQ_AUDIT_DIR` and use its matching Rocq compiler. The paired fixtures
 check 1377 signed triples per assistant and prove a counterexample to deleting
-the quotient-addition sign premise. Six contract mutants are rejected. Snapshot
+the quotient-addition sign premise. The same fixtures now also cover the four
+same-sign laws that follow (`Zsame_sign_trans` through `Zsame_sign_odiv`) and
+prove that their zero and nonnegative-divisor premises are needed. The
+original six mutants plus ten same-sign premise deletions (16 in all) are
+rejected. Snapshot
 `949e91ee` passes 811 three-way floor-division calls and generated kernel
 equalities, including 33 zero and 386 negative divisors. A separate saved-output
 check validates every observed pair against Python's floor division and exact

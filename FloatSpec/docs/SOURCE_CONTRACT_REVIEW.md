@@ -189,6 +189,32 @@ separate. The fresh `div_eucl` bridge checks 811 actual floor-division calls
 against Rocq and generates 811 kernel equalities; it does not execute a theorem
 as a numerical function or certify every division-mode identity universally.
 
+### Fourth ordered slice: same-sign laws
+
+The next four contracts, `Zsame_sign_trans` through `Zsame_sign_odiv`
+(pinned `Zaux.v:450–496`), state "same sign" as a nonnegative product. Zero is
+neutral for that encoding, so each side condition does real work:
+
+- `Zsame_sign_trans` keeps the source's argument order `v u w` and premise
+  `v ≠ 0`. With middle factor `v = 0`, both `0 ≤ 1·0` and `0 ≤ 0·(−1)` hold
+  while `1·(−1) < 0`. Both assistants prove that counterexample.
+- `Zsame_sign_trans_weak` keeps the weaker `v = 0 → w = 0`; it is not
+  strengthened to `v ≠ 0`. The same counterexample refutes deleting it.
+- `Zsame_sign_imp` keeps the negated form `0 < −u → 0 ≤ −v` rather than a
+  rewritten `u < 0 → v ≤ 0`. Deleting either implication is rejected.
+- `Zsame_sign_odiv` translates `Z.quot` to truncating `Int.tdiv`. Its only
+  premise is `0 ≤ v`, so a zero divisor remains permitted. A negative divisor
+  is genuinely excluded: `1 · quot(1, −1) = −1`, proved in both assistants.
+
+The existing direct Lean statements and proofs already matched; this slice
+changes no production declaration. `ZauxDivisionContracts.lean/.v` add four
+typed clients per assistant, the two counterexamples (the Lean ones list no
+axioms; Rocq reports them closed), and five premise-deletion mutations per
+language. All 16 division and same-sign mutants are rejected. The 1377 signed
+triples per assistant now also check these four laws, including zero and
+negative divisors. The queue has 40 contiguous Zaux/Version dispositions and
+126 in total; the next entry is the `Zeq_bool_prop` inductive.
+
 ## Unindexed Pff negation and absolute value (earlier slice)
 
 The source facade now also exports `Fopp_correct`, `Fopp_Fopp`, `Fabs_correct`

@@ -4297,6 +4297,29 @@ hygiene. The later `a3a84b81` run and this follow-up require their own receipts.
 One GitHub status request hit a TLS handshake timeout; that is an observation
 failure, not a failed CI job or a passing result. `Deps/flocq` is unchanged.
 
+### October 6: four same-sign laws (Codex fixtures, Claude ledger)
+
+Codex's `8f4e2b52` extended the division fixtures to `Zaux.v:450–496`
+(`Zsame_sign_trans`, `_trans_weak`, `_imp`, `_odiv`). Claude re-checked each
+Lean statement against the pinned source (argument order, the weak zero side
+condition, the negated `0 < −u → 0 ≤ −v` form, and `Z.quot` as `Int.tdiv`) and
+reran both fixtures: the Lean grid passes 1377 inputs, the two new Lean
+counterexamples list no axioms, Rocq reports the paired declarations closed, and
+all 16 contract mutants are rejected (27.1 s). Four fingerprinted entries bring
+the manifest to 126 (121 contracts, five infrastructure, 2590 unreviewed);
+the compiled drift gate passes. Regeneration also refreshed one stale
+`Calc/Operations.v` row (seven anchors, from the earlier `Fexp_Fplus` anchor).
+
+Fresh seed 865601 at `8f4e2b52` (Lean source digest `8fcd409c…`, no rebuild):
+811 floor-division calls agree across lean-meta, lean-ir and rocq-vm, with 811
+generated kernel equalities (54.98 s), including 33 zero and 394 negative
+divisors. These are theorem-only reviews; the bridge exercises the quotient
+operations they mention, not the theorems themselves. No production Lean
+declaration changed.
+
+Receipts: `/private/tmp/floatspec-zaux-sign-20261006/` (Codex build, fixture and
+mutation logs) and its `claude/div_eucl.json/report.json`.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In

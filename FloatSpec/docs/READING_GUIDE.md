@@ -69,7 +69,7 @@ The important recent changes are:
   policies need zero in the format. All 78 top-level source contracts in this
   module now have paired typed clients and explicit reviews; its constructor
   and four generated eliminators are accounted for separately. There are
-  122 total review dispositions, including the three nearest-even laws below.
+  126 total review dispositions, including the three nearest-even laws below.
   This does not certify unreviewed imports or
   the other modules, nor identify Rocq and Lean proof terms.
 
@@ -77,10 +77,13 @@ The important recent changes are:
   from the top. It uses actual module dependencies, then compiled declaration
   positions inside each source file. There are 2,716 declaration sites across
   35 modules, including aliases and generated proof infrastructure—not 2,716
-  missing APIs. Existing Lean names are only candidates. The first 36 sites
-  have explicit review dispositions, through Zaux's division/remainder laws;
+  missing APIs. Existing Lean names are only candidates. The first 40 sites
+  have explicit review dispositions, through Zaux's same-sign laws;
   `iter_pos` now uses Flocq's binary-positive recursion, with a closed proof
-  preserving its previous semantics. The next entry is `Zsame_sign_trans`.
+  preserving its previous semantics. The next entry is `Zeq_bool_prop`.
+  "Same sign" is a nonnegative product, so zero is neutral: both assistants
+  prove that transitivity through a zero middle factor fails (`1·0`, `0·(−1)`)
+  and that a negative divisor breaks `0 ≤ u·quot(u, v)`.
   Fifty-four unused check/spec wrappers have been removed from this reviewed
   slice, leaving the actual direct propositions and proofs. Negative integer
   powers return zero, not reciprocals: the tests explain why that matters.
@@ -132,6 +135,7 @@ Current verification is deliberately separated by source snapshot:
 
 | Snapshot | Completed evidence |
 |---|---|
+| Zaux same-sign review, `8f4e2b52` | Full 6,350-job macOS Lean 4.34 build (Codex). Four more source contracts with paired clients, two paired counterexamples and ten more premise mutations (16 rejected in all); 1,377 signed triples per assistant. Fresh 811 floor-division cases/kernel equalities, seed 865601, with 33 zero and 394 negative divisors. 126 explicit reviews; production declarations unchanged. |
 | Nearest-even totality/monotonicity API, `cd22873c` | Full 6,225-job macOS Lean 4.34 build; seven paired source clients, a composed monotonicity example in both assistants, and eight rejected contract mutations. Compiled trust: 13,778 declarations / 59 modules / four unchanged debts; 456 anchors and 122 explicit reviews. Numerical definitions unchanged; fresh runtime bridge receipts belong to the preceding snapshots below, not this theorem-only follow-up. |
 | Complete rounding-predicate interface, `8aa8e9e3` | Full 6,225-job macOS Lean 4.34 build; remaining 34 direct laws and all other public source contracts checked against pinned Rocq. Paired tie-uniqueness counterexamples and 20 rejected contract mutations across both fixtures. Fresh 3,260 three-way cases and kernel equalities (140 rounding decisions, 3,120 nearby-integer cases), seed 865307. Compiled trust: 13,774 declarations / 59 modules / four unchanged debts; 453 anchors. Numerical bodies unchanged; source-module interfaces reviewed, not a universal cross-system certificate. |
 | Direct rounding-predicate API, `8b16a912` | Full 6,225-job macOS Lean 4.34 build; 25 direct contracts checked against pinned Rocq; three paired counterexamples and eight rejected premise mutations. Fresh 3,539 three-way rounding cases and kernel equalities (279 rounding decisions, 3,260 nearby-integer cases), seed 865103. Compiled trust: 13,720 declarations / 59 modules / four unchanged debts; 402 anchors. This is an API repair; numerical operation bodies are unchanged. |

@@ -15,14 +15,14 @@ External Rocq imports are recorded in the JSON report, not counted as Flocq decl
 | Order | Source module | Declarations | Anchored | Name candidates | Reviewed |
 |---:|---|---:|---:|---:|---:|
 | 1 | src/Version.v | 1 | 1 | 1 | 1 |
-| 2 | src/Core/Zaux.v | 102 | 75 | 91 | 35 |
+| 2 | src/Core/Zaux.v | 102 | 75 | 91 | 39 |
 | 3 | src/Core/Raux.v | 186 | 29 | 178 | 0 |
 | 4 | src/Core/Defs.v | 14 | 11 | 14 | 0 |
 | 5 | src/Core/Round_pred.v | 83 | 78 | 78 | 83 |
 | 6 | src/Core/Digits.v | 67 | 0 | 67 | 0 |
 | 7 | src/Core/Float_prop.v | 37 | 0 | 37 | 0 |
 | 8 | src/Core/Generic_fmt.v | 145 | 34 | 140 | 0 |
-| 9 | src/Calc/Operations.v | 17 | 6 | 16 | 0 |
+| 9 | src/Calc/Operations.v | 17 | 7 | 17 | 0 |
 | 10 | src/Prop/Sterbenz.v | 6 | 0 | 5 | 0 |
 | 11 | src/Core/Ulp.v | 122 | 31 | 119 | 0 |
 | 12 | src/Core/Round_NE.v | 21 | 10 | 17 | 3 |
@@ -57,10 +57,6 @@ the full Lean type/body with Rocq, and add an evidence-bearing review entry.
 Resolve aliases and generated proof infrastructure explicitly; do not create
 unnecessary numerical APIs to satisfy a raw name count.
 
-- `src/Core/Zaux.v:450` — `Zsame_sign_trans` (prf): `FloatSpec.Core.Zaux.Zsame_sign_trans`.
-- `src/Core/Zaux.v:457` — `Zsame_sign_trans_weak` (prf): `FloatSpec.Core.Zaux.Zsame_sign_trans_weak`.
-- `src/Core/Zaux.v:464` — `Zsame_sign_imp` (prf): `FloatSpec.Core.Zaux.Zsame_sign_imp`.
-- `src/Core/Zaux.v:483` — `Zsame_sign_odiv` (prf): `FloatSpec.Core.Zaux.Zsame_sign_odiv`.
 - `src/Core/Zaux.v:502` — `Zeq_bool_prop` (ind): `FloatSpec.Core.Zaux.Zeq_bool_prop`.
 - `src/Core/Zaux.v:502` — `Zeq_bool_prop_ind` (scheme): no exact-name candidate.
 - `src/Core/Zaux.v:502` — `Zeq_bool_prop_sind` (scheme): no exact-name candidate.
@@ -77,6 +73,10 @@ unnecessary numerical APIs to satisfy a raw name count.
 - `src/Core/Zaux.v:574` — `Zle_bool_prop_sind` (scheme): no exact-name candidate.
 - `src/Core/Zaux.v:575` — `Zle_bool_true_` (constr): `FloatSpec.Core.Zaux.Zle_bool_prop.Zle_bool_true_`.
 - `src/Core/Zaux.v:576` — `Zle_bool_false_` (constr): `FloatSpec.Core.Zaux.Zle_bool_prop.Zle_bool_false_`.
+- `src/Core/Zaux.v:578` — `Zle_bool_spec` (prf): `FloatSpec.Core.Zaux.Zle_bool_spec`.
+- `src/Core/Zaux.v:590` — `Zle_bool_true` (prf): `FloatSpec.Core.Zaux.Zle_bool_true`.
+- `src/Core/Zaux.v:598` — `Zle_bool_false` (prf): `FloatSpec.Core.Zaux.Zle_bool_false`.
+- `src/Core/Zaux.v:610` — `Zle_bool_opp_l` (prf): `FloatSpec.Core.Zaux.Zle_bool_opp_l`.
 
 ## Reproduce
 
