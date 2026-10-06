@@ -23,6 +23,39 @@ example (a b : Int) (h : |a| < b) : a.tmod b = a :=
 example : ∀ a b c : Int, 0 ≤ a * b →
     (a + b).tdiv c = a.tdiv c + b.tdiv c + (a.tmod c + b.tmod c).tdiv c := ZOdiv_plus
 
+-- The next four source declarations use products to express a shared sign.
+-- Zero is neutral, so transitivity needs precisely the source's side condition.
+theorem same_sign_trans_contract : ∀ v u w : Int, v ≠ 0 →
+    0 ≤ u * v → 0 ≤ v * w → 0 ≤ u * w := Zsame_sign_trans
+theorem same_sign_trans_weak_contract : ∀ v u w : Int, (v = 0 → w = 0) →
+    0 ≤ u * v → 0 ≤ v * w → 0 ≤ u * w := Zsame_sign_trans_weak
+theorem same_sign_imp_contract : ∀ u v : Int,
+    (0 < u → 0 ≤ v) → (0 < -u → 0 ≤ -v) → 0 ≤ u * v := Zsame_sign_imp
+theorem same_sign_odiv_contract : ∀ u v : Int, 0 ≤ v →
+    0 ≤ u * u.tdiv v := Zsame_sign_odiv
+
+#print axioms same_sign_trans_contract
+#print axioms same_sign_trans_weak_contract
+#print axioms same_sign_imp_contract
+#print axioms same_sign_odiv_contract
+
+-- Both same-sign transitivity laws fail without their zero side condition:
+-- the middle factor 0 connects 1 and -1, although their product is negative.
+private theorem same_sign_trans_needs_zero_condition :
+    ¬ ∀ v u w : Int, 0 ≤ u * v → 0 ≤ v * w → 0 ≤ u * w := by
+  intro h
+  exact (by decide : ¬ 0 ≤ (1 : Int) * (-1)) (h 0 1 (-1) (by decide) (by decide))
+
+#print axioms same_sign_trans_needs_zero_condition
+
+-- A negative divisor can reverse the sign; zero remains a permitted divisor.
+private theorem same_sign_odiv_needs_nonnegative_divisor :
+    ¬ ∀ u v : Int, 0 ≤ u * u.tdiv v := by
+  intro h
+  exact (by decide : ¬ 0 ≤ (1 : Int) * (1 : Int).tdiv (-1)) (h 1 (-1))
+
+#print axioms same_sign_odiv_needs_nonnegative_divisor
+
 example : (7 : Int) / (-3) = -2 ∧ (7 : Int) % (-3) = 1 := by decide +kernel
 example : (7 : Int).fdiv (-3) = -3 ∧ (7 : Int).fmod (-3) = -2 := by decide +kernel
 example : (-7 : Int).tdiv 3 = -2 ∧ (-7 : Int).tmod 3 = -1 := by decide +kernel
@@ -57,7 +90,19 @@ private theorem quotient_addition_needs_sign_condition :
         if 0 ≤ n*a then
           unless (n+a).tdiv b == n.tdiv b + a.tdiv b + (n.tmod b + a.tmod b).tdiv b do
             throw (IO.userError "same-sign quotient addition contract")
+        if n != 0 && 0 ≤ a*n && 0 ≤ n*b then
+          unless 0 ≤ a*b do
+            throw (IO.userError "same-sign transitivity contract")
+        if (n != 0 || b == 0) && 0 ≤ a*n && 0 ≤ n*b then
+          unless 0 ≤ a*b do
+            throw (IO.userError "weak same-sign transitivity contract")
+        if (n ≤ 0 || 0 ≤ a) && (-n ≤ 0 || 0 ≤ -a) then
+          unless 0 ≤ n*a do
+            throw (IO.userError "same-sign implication contract")
+        if 0 ≤ a then
+          unless 0 ≤ n * n.tdiv a do
+            throw (IO.userError "same-sign quotient contract")
         checked := checked + 1
-  IO.println s!"PASS: {checked} signed division inputs; exact source domains and zero cases"
+  IO.println s!"PASS: {checked} signed division/sign inputs; exact source domains and zero cases"
 
 end ZauxDivisionContracts

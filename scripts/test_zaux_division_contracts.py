@@ -14,11 +14,21 @@ MUTATIONS = {
         ("∀ a b : Int, a.tmod b = a - a.tdiv b * b", "∀ a b : Int, a % b = a - a.tdiv b * b"),
         ("∀ a b c : Int, 0 ≤ a * b →", "∀ a b c : Int,"),
         ("(7 : Int) / (-3) = -2", "(7 : Int) / (-3) = -3"),
+        ("∀ v u w : Int, v ≠ 0 →", "∀ v u w : Int,"),
+        ("∀ v u w : Int, (v = 0 → w = 0) →", "∀ v u w : Int,"),
+        ("(0 < u → 0 ≤ v) → (0 < -u → 0 ≤ -v) →", "(0 < -u → 0 ≤ -v) →"),
+        ("(0 < u → 0 ≤ v) → (0 < -u → 0 ≤ -v) →", "(0 < u → 0 ≤ v) →"),
+        ("∀ u v : Int, 0 ≤ v →", "∀ u v : Int,"),
     ],
     "v": [
         ("Z.rem a b = a - Z.quot a b * b :=", "Z.modulo a b = a - Z.quot a b * b :="),
         ("forall a b c, 0 <= a*b ->", "forall a b c,"),
         ("7 / (-3) = -3", "7 / (-3) = -2"),
+        ("forall v u w, v <> 0 ->", "forall v u w,"),
+        ("forall v u w, (v = 0 -> w = 0) ->", "forall v u w,"),
+        ("(0 < u -> 0 <= v) -> (0 < -u -> 0 <= -v) ->", "(0 < -u -> 0 <= -v) ->"),
+        ("(0 < u -> 0 <= v) -> (0 < -u -> 0 <= -v) ->", "(0 < u -> 0 <= v) ->"),
+        ("forall u v, 0 <= v ->", "forall u v,"),
     ],
 }
 
