@@ -358,6 +358,33 @@ needs `0 < z` (at `z = −1`), and `Rcompare_sym` needs its swap. Sixteen
 mutations are rejected, including swapping the source's oddly named
 `negb_Rlt_bool` (which is about `negb (Rle_bool x y)`) with `negb_Rle_bool`.
 
+### Ninth ordered slice: floor, ceiling, truncation, away
+
+`Raux.v:785–1330` defines the four integer roundings of a real and 30 laws.
+Three bodies now follow the source (`c25e4360`): `Zceil x = -Zfloor (-x)`,
+and `Ztrunc`/`Zaway` choose with the Boolean test `Rlt_bool x 0`. Previously
+they used Mathlib's ceiling and a propositional `if x < 0`. `Zfloor` keeps
+Mathlib's floor: Rocq writes `up x - 1`, where `up` is the archimedean
+primitive of its axiomatized reals, and Lean's floor is the corresponding
+primitive. Each fixture pins its own system's bodies with `rfl`.
+
+Five statements were restated to the source's shape in this slice:
+`Zfloor_imp` and `Zceil_imp` cast `n ± 1` as one integer (`IZR (n + 1)`), not
+as a sum of casts; `Zceil_lb` is `IZR (Zceil x) < x + 1`, not
+`Zceil x - 1 < x`; the two `Rcompare_*_middle` laws compare with `(2:ℝ)⁻¹`, the
+source's `/2`. The values were already right; only the propositions'
+syntax changed, and two callers needed a cast step.
+
+Conventions carried over from earlier slices: `Z.abs` is the cast of `natAbs`,
+`Z.div` is `Int.fdiv` and `Z.quot` is `Int.tdiv`. The fixtures evaluate all four
+roundings at `−5/2` in both assistants (floor and away give `−3`, ceiling and
+truncation `−2`) and refute two premise deletions: `Ztrunc x = Zfloor x` fails at
+`x = −1/2`, and `Zceil x = Zfloor x + 1` fails at `x = 0`. One premise turns
+out to be unnecessary: both systems make `x/0 = 0` and integer division by
+zero zero, so `Zfloor_div` and `Ztrunc_div` also hold at `y = 0`. Both
+assistants prove that, and the faithful statements keep the premise.
+Sixteen mutations are rejected.
+
 ## Unindexed Pff negation and absolute value (earlier slice)
 
 The source facade now also exports `Fopp_correct`, `Fopp_Fopp`, `Fabs_correct`

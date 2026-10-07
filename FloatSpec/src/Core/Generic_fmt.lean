@@ -1980,7 +1980,7 @@ instance valid_rnd_N (choice : Int → Bool) :
           exact lt_of_lt_of_le hy_lt_ceilx (by
             simpa [Int.cast_add, Int.cast_one] using hceilx_le_real)
         have htrip := FloatSpec.Core.Raux.Zfloor_imp (x := y)
-          (m := FloatSpec.Core.Raux.Zfloor x) ⟨hlow, hhigh⟩
+          (m := FloatSpec.Core.Raux.Zfloor x) ⟨hlow, by exact_mod_cast hhigh⟩
         simpa [Id.run, pure] using htrip
       have hfloor_le_near_y : FloatSpec.Core.Raux.Zfloor y ≤ Znearest choice y := by
         exact Znearest_ge_floor choice y

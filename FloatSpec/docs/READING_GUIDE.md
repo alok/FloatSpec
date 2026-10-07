@@ -69,7 +69,7 @@ The important recent changes are:
   policies need zero in the format. All 78 top-level source contracts in this
   module now have paired typed clients and explicit reviews; its constructor
   and four generated eliminators are accounted for separately. There are
-  276 total review dispositions, including the three nearest-even laws below.
+  310 total review dispositions, including the three nearest-even laws below.
   This does not certify unreviewed imports or
   the other modules, nor identify Rocq and Lean proof terms.
 
@@ -86,8 +86,12 @@ The important recent changes are:
   their premises are needed. Real comparison came next and needed a port:
   `Rcompare` returned an integer code where Flocq returns a three-way
   `comparison`; it now returns Lean's `Ordering`, the Boolean tests read it as
-  the source does, and `Znearest` matches `Lt/Eq/Gt`. The next entry is
-  `Zfloor`, whose Lean body is `⌊x⌋` where Rocq writes `up x - 1`.
+  the source does, and `Znearest` matches `Lt/Eq/Gt`. Integer rounding of
+  reals followed: `Zceil`, `Ztrunc` and `Zaway` now have the source's bodies,
+  and five statements were restated to the source's exact shape. Both
+  assistants show `Zfloor_div` and `Ztrunc_div` also hold for a zero divisor,
+  so the source premise is redundant (it is kept). The next entries are
+  Raux's radix powers (`radix_pos`, `bpow`).
   "Same sign" is a nonnegative product, so zero is neutral: both assistants
   prove that transitivity through a zero middle factor fails (`1·0`, `0·(−1)`)
   and that a negative divisor breaks `0 ≤ u·quot(u, v)`. The Boolean
@@ -146,6 +150,7 @@ Current verification is deliberately separated by source snapshot:
 
 | Snapshot | Completed evidence |
 |---|---|
+| Integer rounding of reals, `9e1a34d8` | `Zceil`, `Ztrunc`, `Zaway` given the source bodies; five statements restated to the source's shape; 30 anchors. Full 6,350-job build; all 41+ Lean fixtures strict and kernel-replayed; 34 source sites reviewed with two premise counterexamples and 16 rejected mutations. CI bridge op set (seed 865661): 4,308 cases. 310 explicit reviews. |
 | Real comparison port, `3e0c4841` | `Rcompare` returns `Ordering`; Boolean tests and `Znearest` follow the source; a duplicate comparator deleted. Full 6,350-job build; all 41 Lean fixtures strict and kernel-replayed. 60 more source sites reviewed, four paired counterexamples, 16 rejected mutations. CI bridge op set plus `nearby`, `ieee_round` and `comparison` (seed 865641): 13,886 cases and kernel equalities. 276 explicit reviews. |
 | Raux prelude | Full 6,350-job macOS Lean 4.34 build. 27 `Raux.v` facts reviewed with paired clients, 14 new source anchors, six paired premise counterexamples and 16 rejected mutations. 216 explicit reviews. Theorem-only: no bridge run. |
 | Zaux algorithms, `5dc3d7b7` | Full 6,350-job macOS Lean 4.34 build. `iter_nat`, `Zpos_div_eucl_aux1`/`_aux` and `Zfast_div_eucl` ported literally with closed proofs; the last 18 Zaux sites reviewed, completing `Zaux.v`. Three paired counterexamples, 16 rejected mutations, 441 signed pairs per assistant. Fresh prelude bridge, seed 865621: 2,126 three-way cases and kernel equalities, all oracle-checked, against Rocq's own fast-division definitions. 189 explicit reviews. |

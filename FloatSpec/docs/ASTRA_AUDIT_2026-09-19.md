@@ -4418,6 +4418,30 @@ uses `⌊x⌋` and `⌈x⌉`.
 Receipts: `/private/tmp/floatspec-rcompare-20261006/`,
 `/private/tmp/floatspec-rbool-20261006/`.
 
+### October 6: integer rounding of reals (34 sites)
+
+`c25e4360` gives `Zceil`, `Ztrunc` and `Zaway` the source bodies
+(`-Zfloor (-x)`, and `Rlt_bool x 0` tests), with `*_eq_ceil`/`*_eq_ite`
+lemmas restating the old ones for 172 tactic entries and 27 unfold lines;
+`Zfloor` keeps Mathlib's floor for Rocq's `up x - 1`. The review slice then
+restates `Zfloor_imp`, `Zceil_lb`, `Zceil_imp` and the two `Rcompare_*_middle`
+laws in the source's exact form, anchors all 30 theorems, and reviews the 34
+sites with `RauxFloorContracts.lean/.v`: `rfl` body pins, `−5/2` evaluations,
+two premise counterexamples, proofs that the `y ≠ 0` premise of
+`Zfloor_div`/`Ztrunc_div` is redundant in both systems (kept for fidelity),
+and 16 rejected mutations. `RemainderContracts.lean` needed its short-prefixed
+`Raux.Zceil` simp entries switched too.
+
+Full build 6350 jobs at both commits; all Lean fixtures strict with kernel
+replay; drift gate; CI bridge op sets at seed 865651 (4309 cases, after the
+body port) and 865661 (4308 cases, source digest `9e1a34d8`). 310 manifest
+entries (289 contracts, 21 infrastructure, 2406 unreviewed); 113 of 186
+`Raux.v` sites anchored and 121 dispositioned. Next: `radix_pos` and `bpow`,
+which has two Lean candidates (`Raux.bpow`, `Raux.Source.bpow`).
+
+Receipts: `/private/tmp/floatspec-floorceil-20261006/`,
+`/private/tmp/floatspec-rfloor-20261006/`.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In

@@ -6233,6 +6233,720 @@
           "noncomputable": false
         }
       }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Zfloor@15242",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Zfloor"
+      ],
+      "scope": "Adapted body: Rocq writes up x - 1, with up the archimedean primitive of its axiomatized reals; Lean uses Mathlib's floor, which plays that role. Both fixtures pin their own body by rfl; the paired clients and the -5/2 evaluations agree.",
+      "evidence": [
+        "scripts/fixtures/RauxFloorContracts.lean",
+        "scripts/fixtures/RauxFloorContracts.v",
+        "scripts/test_raux_floor_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Zfloor": {
+          "type_hash": "3508038264",
+          "value_hash": "399641780",
+          "noncomputable": true
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Zfloor_lb@15283",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Zfloor_lb"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. IZR is the Int cast; Rocq Z.abs is the cast of natAbs, as in earlier Zaux reviews.",
+      "evidence": [
+        "scripts/fixtures/RauxFloorContracts.lean",
+        "scripts/fixtures/RauxFloorContracts.v",
+        "scripts/test_raux_floor_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Zfloor_lb": {
+          "type_hash": "2974404091",
+          "value_hash": "1351570368",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Zfloor_ub@15490",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Zfloor_ub"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. IZR is the Int cast; Rocq Z.abs is the cast of natAbs, as in earlier Zaux reviews.",
+      "evidence": [
+        "scripts/fixtures/RauxFloorContracts.lean",
+        "scripts/fixtures/RauxFloorContracts.v",
+        "scripts/test_raux_floor_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Zfloor_ub": {
+          "type_hash": "439919706",
+          "value_hash": "3743469974",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Zfloor_lub@15709",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Zfloor_lub"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. IZR is the Int cast; Rocq Z.abs is the cast of natAbs, as in earlier Zaux reviews.",
+      "evidence": [
+        "scripts/fixtures/RauxFloorContracts.lean",
+        "scripts/fixtures/RauxFloorContracts.v",
+        "scripts/test_raux_floor_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Zfloor_lub": {
+          "type_hash": "2696707841",
+          "value_hash": "1183859092",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Zfloor_imp@15933",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Zfloor_imp"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. IZR is the Int cast; Rocq Z.abs is the cast of natAbs, as in earlier Zaux reviews. Restated in this slice with the source's IZR (n + 1) (was the sum of casts); the half-open interval's strict upper bound is a rejected mutation.",
+      "evidence": [
+        "scripts/fixtures/RauxFloorContracts.lean",
+        "scripts/fixtures/RauxFloorContracts.v",
+        "scripts/test_raux_floor_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Zfloor_imp": {
+          "type_hash": "300398814",
+          "value_hash": "4277852442",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Zfloor_IZR@16180",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Zfloor_IZR"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. IZR is the Int cast; Rocq Z.abs is the cast of natAbs, as in earlier Zaux reviews.",
+      "evidence": [
+        "scripts/fixtures/RauxFloorContracts.lean",
+        "scripts/fixtures/RauxFloorContracts.v",
+        "scripts/test_raux_floor_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Zfloor_IZR": {
+          "type_hash": "2423841312",
+          "value_hash": "161646197",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Zfloor_le@16329",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Zfloor_le"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. IZR is the Int cast; Rocq Z.abs is the cast of natAbs, as in earlier Zaux reviews.",
+      "evidence": [
+        "scripts/fixtures/RauxFloorContracts.lean",
+        "scripts/fixtures/RauxFloorContracts.v",
+        "scripts/test_raux_floor_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Zfloor_le": {
+          "type_hash": "2853434731",
+          "value_hash": "1460405922",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Zceil@16505",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Zceil"
+      ],
+      "scope": "Ported in c25e4360: the source's -Zfloor (-x) (was Mathlib's ceiling); pinned by rfl in both assistants, body mutation rejected. Zceil_eq_ceil restates the ceiling.",
+      "evidence": [
+        "scripts/fixtures/RauxFloorContracts.lean",
+        "scripts/fixtures/RauxFloorContracts.v",
+        "scripts/test_raux_floor_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Zceil": {
+          "type_hash": "3508038264",
+          "value_hash": "1774086431",
+          "noncomputable": true
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Zceil_ub@16551",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Zceil_ub"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. IZR is the Int cast; Rocq Z.abs is the cast of natAbs, as in earlier Zaux reviews.",
+      "evidence": [
+        "scripts/fixtures/RauxFloorContracts.lean",
+        "scripts/fixtures/RauxFloorContracts.v",
+        "scripts/test_raux_floor_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Zceil_ub": {
+          "type_hash": "866271422",
+          "value_hash": "1648044368",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Zceil_lb@16730",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Zceil_lb"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. IZR is the Int cast; Rocq Z.abs is the cast of natAbs, as in earlier Zaux reviews. Restated in this slice as IZR (Zceil x) < x + 1, the source's form (was Zceil x - 1 < x); strictness mutation rejected.",
+      "evidence": [
+        "scripts/fixtures/RauxFloorContracts.lean",
+        "scripts/fixtures/RauxFloorContracts.v",
+        "scripts/test_raux_floor_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Zceil_lb": {
+          "type_hash": "658760890",
+          "value_hash": "3738600008",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Zceil_glb@16979",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Zceil_glb"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. IZR is the Int cast; Rocq Z.abs is the cast of natAbs, as in earlier Zaux reviews.",
+      "evidence": [
+        "scripts/fixtures/RauxFloorContracts.lean",
+        "scripts/fixtures/RauxFloorContracts.v",
+        "scripts/test_raux_floor_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Zceil_glb": {
+          "type_hash": "1294281277",
+          "value_hash": "2140931280",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Zceil_imp@17208",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Zceil_imp"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. IZR is the Int cast; Rocq Z.abs is the cast of natAbs, as in earlier Zaux reviews. Restated in this slice with the source's IZR (n - 1) (was the difference of casts).",
+      "evidence": [
+        "scripts/fixtures/RauxFloorContracts.lean",
+        "scripts/fixtures/RauxFloorContracts.v",
+        "scripts/test_raux_floor_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Zceil_imp": {
+          "type_hash": "3520463146",
+          "value_hash": "3937765524",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Zceil_IZR@17560",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Zceil_IZR"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. IZR is the Int cast; Rocq Z.abs is the cast of natAbs, as in earlier Zaux reviews.",
+      "evidence": [
+        "scripts/fixtures/RauxFloorContracts.lean",
+        "scripts/fixtures/RauxFloorContracts.v",
+        "scripts/test_raux_floor_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Zceil_IZR": {
+          "type_hash": "173550232",
+          "value_hash": "978711953",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Zceil_le@17706",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Zceil_le"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. IZR is the Int cast; Rocq Z.abs is the cast of natAbs, as in earlier Zaux reviews.",
+      "evidence": [
+        "scripts/fixtures/RauxFloorContracts.lean",
+        "scripts/fixtures/RauxFloorContracts.v",
+        "scripts/test_raux_floor_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Zceil_le": {
+          "type_hash": "3960150276",
+          "value_hash": "314173512",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Zceil_floor_neq@17874",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Zceil_floor_neq"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. IZR is the Int cast; Rocq Z.abs is the cast of natAbs, as in earlier Zaux reviews. The IZR (Zfloor x) <> x premise is necessary: both assistants refute it at x = 0; mutation rejected.",
+      "evidence": [
+        "scripts/fixtures/RauxFloorContracts.lean",
+        "scripts/fixtures/RauxFloorContracts.v",
+        "scripts/test_raux_floor_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Zceil_floor_neq": {
+          "type_hash": "3706823638",
+          "value_hash": "2137569720",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Ztrunc@18196",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Ztrunc"
+      ],
+      "scope": "Ported in c25e4360: if Rlt_bool x 0 then Zceil x else Zfloor x, as the source (was a propositional if on floor/ceiling); pinned by rfl, branch-swap mutation rejected. Ztrunc_eq_ite restates the old form.",
+      "evidence": [
+        "scripts/fixtures/RauxFloorContracts.lean",
+        "scripts/fixtures/RauxFloorContracts.v",
+        "scripts/test_raux_floor_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Ztrunc": {
+          "type_hash": "3508038264",
+          "value_hash": "2309844229",
+          "noncomputable": true
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Ztrunc_IZR@18261",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Ztrunc_IZR"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. IZR is the Int cast; Rocq Z.abs is the cast of natAbs, as in earlier Zaux reviews.",
+      "evidence": [
+        "scripts/fixtures/RauxFloorContracts.lean",
+        "scripts/fixtures/RauxFloorContracts.v",
+        "scripts/test_raux_floor_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Ztrunc_IZR": {
+          "type_hash": "502297056",
+          "value_hash": "3141610347",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Ztrunc_floor@18419",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Ztrunc_floor"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. IZR is the Int cast; Rocq Z.abs is the cast of natAbs, as in earlier Zaux reviews. The 0 <= x premise is necessary: both assistants refute it at x = -1/2; mutation rejected.",
+      "evidence": [
+        "scripts/fixtures/RauxFloorContracts.lean",
+        "scripts/fixtures/RauxFloorContracts.v",
+        "scripts/test_raux_floor_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Ztrunc_floor": {
+          "type_hash": "2883075192",
+          "value_hash": "3712666389",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Ztrunc_ceil@18638",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Ztrunc_ceil"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. IZR is the Int cast; Rocq Z.abs is the cast of natAbs, as in earlier Zaux reviews.",
+      "evidence": [
+        "scripts/fixtures/RauxFloorContracts.lean",
+        "scripts/fixtures/RauxFloorContracts.v",
+        "scripts/test_raux_floor_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Ztrunc_ceil": {
+          "type_hash": "4234519797",
+          "value_hash": "3182834600",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Ztrunc_le@18868",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Ztrunc_le"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. IZR is the Int cast; Rocq Z.abs is the cast of natAbs, as in earlier Zaux reviews.",
+      "evidence": [
+        "scripts/fixtures/RauxFloorContracts.lean",
+        "scripts/fixtures/RauxFloorContracts.v",
+        "scripts/test_raux_floor_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Ztrunc_le": {
+          "type_hash": "541733508",
+          "value_hash": "3673004015",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Ztrunc_opp@19245",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Ztrunc_opp"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. IZR is the Int cast; Rocq Z.abs is the cast of natAbs, as in earlier Zaux reviews.",
+      "evidence": [
+        "scripts/fixtures/RauxFloorContracts.lean",
+        "scripts/fixtures/RauxFloorContracts.v",
+        "scripts/test_raux_floor_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Ztrunc_opp": {
+          "type_hash": "3964435226",
+          "value_hash": "2156385000",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Ztrunc_abs@19622",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Ztrunc_abs"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. IZR is the Int cast; Rocq Z.abs is the cast of natAbs, as in earlier Zaux reviews.",
+      "evidence": [
+        "scripts/fixtures/RauxFloorContracts.lean",
+        "scripts/fixtures/RauxFloorContracts.v",
+        "scripts/test_raux_floor_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Ztrunc_abs": {
+          "type_hash": "4074281398",
+          "value_hash": "4187402058",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Ztrunc_lub@20016",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Ztrunc_lub"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. IZR is the Int cast; Rocq Z.abs is the cast of natAbs, as in earlier Zaux reviews.",
+      "evidence": [
+        "scripts/fixtures/RauxFloorContracts.lean",
+        "scripts/fixtures/RauxFloorContracts.v",
+        "scripts/test_raux_floor_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Ztrunc_lub": {
+          "type_hash": "964033481",
+          "value_hash": "2047648790",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Zaway@20221",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Zaway"
+      ],
+      "scope": "Ported in c25e4360: if Rlt_bool x 0 then Zfloor x else Zceil x, as the source; pinned by rfl. Zaway_eq_ite restates the old form.",
+      "evidence": [
+        "scripts/fixtures/RauxFloorContracts.lean",
+        "scripts/fixtures/RauxFloorContracts.v",
+        "scripts/test_raux_floor_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Zaway": {
+          "type_hash": "3508038264",
+          "value_hash": "2574995803",
+          "noncomputable": true
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Zaway_IZR@20285",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Zaway_IZR"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. IZR is the Int cast; Rocq Z.abs is the cast of natAbs, as in earlier Zaux reviews.",
+      "evidence": [
+        "scripts/fixtures/RauxFloorContracts.lean",
+        "scripts/fixtures/RauxFloorContracts.v",
+        "scripts/test_raux_floor_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Zaway_IZR": {
+          "type_hash": "3225429728",
+          "value_hash": "1814293139",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Zaway_ceil@20440",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Zaway_ceil"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. IZR is the Int cast; Rocq Z.abs is the cast of natAbs, as in earlier Zaux reviews.",
+      "evidence": [
+        "scripts/fixtures/RauxFloorContracts.lean",
+        "scripts/fixtures/RauxFloorContracts.v",
+        "scripts/test_raux_floor_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Zaway_ceil": {
+          "type_hash": "3482755634",
+          "value_hash": "215237293",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Zaway_floor@20654",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Zaway_floor"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. IZR is the Int cast; Rocq Z.abs is the cast of natAbs, as in earlier Zaux reviews.",
+      "evidence": [
+        "scripts/fixtures/RauxFloorContracts.lean",
+        "scripts/fixtures/RauxFloorContracts.v",
+        "scripts/test_raux_floor_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Zaway_floor": {
+          "type_hash": "4108898075",
+          "value_hash": "2894589446",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Zaway_le@20883",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Zaway_le"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. IZR is the Int cast; Rocq Z.abs is the cast of natAbs, as in earlier Zaux reviews.",
+      "evidence": [
+        "scripts/fixtures/RauxFloorContracts.lean",
+        "scripts/fixtures/RauxFloorContracts.v",
+        "scripts/test_raux_floor_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Zaway_le": {
+          "type_hash": "2297216865",
+          "value_hash": "886482492",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Zaway_opp@21323",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Zaway_opp"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. IZR is the Int cast; Rocq Z.abs is the cast of natAbs, as in earlier Zaux reviews.",
+      "evidence": [
+        "scripts/fixtures/RauxFloorContracts.lean",
+        "scripts/fixtures/RauxFloorContracts.v",
+        "scripts/test_raux_floor_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Zaway_opp": {
+          "type_hash": "3329458399",
+          "value_hash": "691671189",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Zaway_abs@21678",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Zaway_abs"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. IZR is the Int cast; Rocq Z.abs is the cast of natAbs, as in earlier Zaux reviews.",
+      "evidence": [
+        "scripts/fixtures/RauxFloorContracts.lean",
+        "scripts/fixtures/RauxFloorContracts.v",
+        "scripts/test_raux_floor_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Zaway_abs": {
+          "type_hash": "1220602024",
+          "value_hash": "2994606058",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rcompare_floor_ceil_middle@22192",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rcompare_floor_ceil_middle"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. IZR is the Int cast; Rocq Z.abs is the cast of natAbs, as in earlier Zaux reviews. Restated in this slice with (2:R)^-1 for the source's /2 (was 1/2).",
+      "evidence": [
+        "scripts/fixtures/RauxFloorContracts.lean",
+        "scripts/fixtures/RauxFloorContracts.v",
+        "scripts/test_raux_floor_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rcompare_floor_ceil_middle": {
+          "type_hash": "1214765838",
+          "value_hash": "454566797",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rcompare_ceil_floor_middle@23279",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rcompare_ceil_floor_middle"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. IZR is the Int cast; Rocq Z.abs is the cast of natAbs, as in earlier Zaux reviews. Restated in this slice with (2:R)^-1 for the source's /2 (was 1/2).",
+      "evidence": [
+        "scripts/fixtures/RauxFloorContracts.lean",
+        "scripts/fixtures/RauxFloorContracts.v",
+        "scripts/test_raux_floor_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rcompare_ceil_floor_middle": {
+          "type_hash": "1961714286",
+          "value_hash": "2833779275",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Zfloor_div@24401",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Zfloor_div"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. IZR is the Int cast; Rocq Z.abs is the cast of natAbs, as in earlier Zaux reviews. Z.div is floor division Int.fdiv; changing it to Int.tdiv is a rejected mutation. The y <> 0 premise is retained although both assistants prove the zero-divisor case also holds (x/0 = 0 and x div 0 = 0 in both systems).",
+      "evidence": [
+        "scripts/fixtures/RauxFloorContracts.lean",
+        "scripts/fixtures/RauxFloorContracts.v",
+        "scripts/test_raux_floor_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Zfloor_div": {
+          "type_hash": "2395903458",
+          "value_hash": "897576600",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Ztrunc_div@25652",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Ztrunc_div"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. IZR is the Int cast; Rocq Z.abs is the cast of natAbs, as in earlier Zaux reviews. Z.quot is Int.tdiv; changing it to Lean's default division is a rejected mutation. The y <> 0 premise is retained although both assistants prove the zero-divisor case also holds.",
+      "evidence": [
+        "scripts/fixtures/RauxFloorContracts.lean",
+        "scripts/fixtures/RauxFloorContracts.v",
+        "scripts/test_raux_floor_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Ztrunc_div": {
+          "type_hash": "1615601562",
+          "value_hash": "4195234343",
+          "noncomputable": false
+        }
+      }
     }
   ]
 }

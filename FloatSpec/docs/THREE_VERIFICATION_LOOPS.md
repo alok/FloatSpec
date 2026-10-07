@@ -202,6 +202,22 @@ check validates every observed pair against Python's floor division and exact
 integer reconstruction; it is not a fresh execution. No universal cross-prover
 equivalence is claimed from the finite grid.
 
+## Integer rounding of reals (October 6)
+
+`Raux.v:785–1330`: `Zfloor`, `Zceil`, `Ztrunc`, `Zaway` and their laws. Each
+fixture pins its own system's bodies with `rfl`, evaluates all four at `−5/2`,
+and proves two premise counterexamples and the zero-divisor cases.
+
+```sh
+lake env lean -DwarningAsError=true scripts/fixtures/RauxFloorContracts.lean
+coqc -q -R "$FLOCQ_AUDIT_DIR/src" Flocq \
+  -o /tmp/RauxFloorContracts.vo scripts/fixtures/RauxFloorContracts.v
+uv run scripts/test_raux_floor_contracts.py -v
+```
+
+Sixteen mutations are rejected. The definitions are noncomputable reals; the CI
+bridge op set (seed 865661) is the regression check for code built on them.
+
 ## Real comparison contracts (October 6)
 
 `Raux.v:347–783` after the `Ordering` cutover. The fixtures pin the source

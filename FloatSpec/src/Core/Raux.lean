@@ -861,6 +861,7 @@ theorem Zaway_eq_ite (x : ℝ) : Zaway x = if x < 0 then ⌊x⌋ else ⌈x⌉ :=
   by_cases h : x < 0 <;> simp [Rlt_bool_eq_decide, Zceil_eq_ceil, Zfloor, h]
 
 /-- Floor lower bound: ⌊x⌋ ≤ x -/
+@[flocq_source "src/Core/Raux.v" 790 "Zfloor_lb"]
 theorem Zfloor_lb (x : ℝ) :
     ((Zfloor x : Int) : ℝ) ≤ x := by
   unfold Zfloor
@@ -868,6 +869,7 @@ theorem Zfloor_lb (x : ℝ) :
   simpa using (Int.floor_le x)
 
 /-- Floor upper bound: x < ⌊x⌋ + 1 -/
+@[flocq_source "src/Core/Raux.v" 803 "Zfloor_ub"]
 theorem Zfloor_ub (x : ℝ) :
     x < ((Zfloor x : Int) : ℝ) + 1 := by
   unfold Zfloor
@@ -875,6 +877,7 @@ theorem Zfloor_ub (x : ℝ) :
   simpa using (Int.lt_floor_add_one x)
 
 /-- Floor greatest-lower-bound: if m ≤ x then m ≤ ⌊x⌋ -/
+@[flocq_source "src/Core/Raux.v" 816 "Zfloor_lub"]
 theorem Zfloor_lub (m : Int) (x : ℝ) (hm : (m : ℝ) ≤ x) :
     m ≤ Zfloor x := by
   unfold Zfloor
@@ -882,13 +885,14 @@ theorem Zfloor_lub (m : Int) (x : ℝ) (hm : (m : ℝ) ≤ x) :
   exact (Int.le_floor).mpr hm
 
 /-- Characterization: if m ≤ x < m+1 then ⌊x⌋ = m -/
-theorem Zfloor_imp (m : Int) (x : ℝ) (h : (m : ℝ) ≤ x ∧ x < (m : ℝ) + 1) :
+@[flocq_source "src/Core/Raux.v" 830 "Zfloor_imp"]
+theorem Zfloor_imp (m : Int) (x : ℝ) (h : (m : ℝ) ≤ x ∧ x < ((m + 1 : Int) : ℝ)) :
     Zfloor x = m := by
   unfold Zfloor
-  -- Characterization of floor by the half-open interval [m, m+1)
-  simpa using ((Int.floor_eq_iff).2 h)
+  exact Int.floor_eq_iff.2 ⟨h.1, by exact_mod_cast h.2⟩
 
 /-- Floor of an integer equals itself -/
+@[flocq_source "src/Core/Raux.v" 844 "Zfloor_IZR"]
 theorem Zfloor_IZR (m : Int) :
     Zfloor (m : ℝ) = m := by
   unfold Zfloor
@@ -896,6 +900,7 @@ theorem Zfloor_IZR (m : Int) :
   simpa using (Int.floor_intCast m)
 
 /-- Monotonicity of floor: x ≤ y ⇒ ⌊x⌋ ≤ ⌊y⌋ -/
+@[flocq_source "src/Core/Raux.v" 856 "Zfloor_le"]
 theorem Zfloor_le (x y : ℝ) (hxy : x ≤ y) :
     Zfloor x ≤ Zfloor y := by
   -- Expose the floors
@@ -910,6 +915,7 @@ end IntRound
 section IntCeil
 
 /-- Ceiling upper bound: x ≤ ⌈x⌉ -/
+@[flocq_source "src/Core/Raux.v" 868 "Zceil_ub"]
 theorem Zceil_ub (x : ℝ) :
     x ≤ ((Zceil x : Int) : ℝ) := by
   simp only [Zceil_eq_ceil]
@@ -920,14 +926,13 @@ theorem Zceil_ub (x : ℝ) :
   simpa using hx
 
 /-- Ceiling lower-neighborhood: ⌈x⌉ - 1 < x -/
+@[flocq_source "src/Core/Raux.v" 880 "Zceil_lb"]
 theorem Zceil_lb (x : ℝ) :
-    ((Zceil x : Int) : ℝ) - 1 < x := by
-  simp only [Zceil_eq_ceil]
-  -- Using the standard ceiling bound: (⌈x⌉ : ℝ) < x + 1
-  -- and rewriting a - 1 < b ↔ a < b + 1
-  simpa [sub_lt_iff_lt_add, add_comm] using (Int.ceil_lt_add_one x)
+    ((Zceil x : Int) : ℝ) < x + 1 := by
+  simpa only [Zceil_eq_ceil] using Int.ceil_lt_add_one x
 
 /-- Ceiling least-upper-bound: if x ≤ m then ⌈x⌉ ≤ m -/
+@[flocq_source "src/Core/Raux.v" 892 "Zceil_glb"]
 theorem Zceil_glb (m : Int) (x : ℝ) (hx : x ≤ (m : ℝ)) :
     Zceil x ≤ m := by
   simp only [Zceil_eq_ceil]
@@ -935,13 +940,14 @@ theorem Zceil_glb (m : Int) (x : ℝ) (hx : x ≤ (m : ℝ)) :
   exact (Int.ceil_le).mpr hx
 
 /-- Characterization: if m - 1 < x ≤ m then ⌈x⌉ = m -/
-theorem Zceil_imp (m : Int) (x : ℝ) (h : (m : ℝ) - 1 < x ∧ x ≤ (m : ℝ)) :
+@[flocq_source "src/Core/Raux.v" 906 "Zceil_imp"]
+theorem Zceil_imp (m : Int) (x : ℝ) (h : ((m - 1 : Int) : ℝ) < x ∧ x ≤ (m : ℝ)) :
     Zceil x = m := by
-  simp only [Zceil_eq_ceil]
-  -- Characterization of ceiling by the half-open interval (m-1, m]
-  simpa using ((Int.ceil_eq_iff).2 h)
+  rw [Zceil_eq_ceil]
+  exact Int.ceil_eq_iff.2 ⟨by exact_mod_cast h.1, h.2⟩
 
 /-- Ceiling of an integer equals itself -/
+@[flocq_source "src/Core/Raux.v" 925 "Zceil_IZR"]
 theorem Zceil_IZR (m : Int) :
     Zceil (m : ℝ) = m := by
   simp only [Zceil_eq_ceil]
@@ -949,6 +955,7 @@ theorem Zceil_IZR (m : Int) :
   simpa using (Int.ceil_intCast m)
 
 /-- Monotonicity of ceiling: x ≤ y ⇒ ⌈x⌉ ≤ ⌈y⌉ -/
+@[flocq_source "src/Core/Raux.v" 935 "Zceil_le"]
 theorem Zceil_le (x y : ℝ) (hxy : x ≤ y) :
     Zceil x ≤ Zceil y := by
   -- Expose the ceilings
@@ -959,6 +966,7 @@ theorem Zceil_le (x y : ℝ) (hxy : x ≤ y) :
   exact hxy.trans (Int.le_ceil y)
 
 /-- Non-integral case: if ⌊x⌋ ≠ x then ⌈x⌉ = ⌊x⌋ + 1 -/
+@[flocq_source "src/Core/Raux.v" 945 "Zceil_floor_neq"]
 theorem Zceil_floor_neq (x : ℝ) (hne : ((Zfloor x : Int) : ℝ) ≠ x) :
     Zceil x = Zfloor x + 1 := by
   -- Expose the pure ceilings/floors
@@ -992,11 +1000,13 @@ end IntCeil
 section IntTrunc
 
 /-- Truncation at integers: Ztrunc (m) = m -/
+@[flocq_source "src/Core/Raux.v" 967 "Ztrunc_IZR"]
 theorem Ztrunc_IZR (m : Int) :
     Ztrunc (m : ℝ) = m := by
   simp only [Ztrunc_eq_ite]; by_cases h : (m : ℝ) < 0 <;> simp [h]
 
 /-- For nonnegatives: Ztrunc x = ⌊x⌋ -/
+@[flocq_source "src/Core/Raux.v" 978 "Ztrunc_floor"]
 theorem Ztrunc_floor (x : ℝ) (hx : 0 ≤ x) :
     Ztrunc x = Zfloor x := by
   simp only [Ztrunc_eq_ite]
@@ -1005,6 +1015,7 @@ theorem Ztrunc_floor (x : ℝ) (hx : 0 ≤ x) :
   simp [Zfloor, hx_nlt]
 
 /-- For nonpositives: Ztrunc x = ⌈x⌉ -/
+@[flocq_source "src/Core/Raux.v" 991 "Ztrunc_ceil"]
 theorem Ztrunc_ceil (x : ℝ) (hxle : x ≤ 0) :
     Ztrunc x = Zceil x := by
   simp only [Ztrunc_eq_ite]
@@ -1017,6 +1028,7 @@ theorem Ztrunc_ceil (x : ℝ) (hxle : x ≤ 0) :
     simp [Zceil_eq_ceil, hxeq]
 
 /-- Monotonicity of truncation: x ≤ y ⇒ Ztrunc x ≤ Ztrunc y -/
+@[flocq_source "src/Core/Raux.v" 1005 "Ztrunc_le"]
 theorem Ztrunc_le (x y : ℝ) (hxy : x ≤ y) :
     Ztrunc x ≤ Ztrunc y := by
   -- Expose the definitions of Ztrunc and split on the signs of x and y
@@ -1051,6 +1063,7 @@ theorem Ztrunc_le (x y : ℝ) (hxy : x ≤ y) :
       exact (Int.floor_le x).trans hxy
 
 /-- Opposite: Ztrunc (-x) = - Ztrunc x -/
+@[flocq_source "src/Core/Raux.v" 1024 "Ztrunc_opp"]
 theorem Ztrunc_opp (x : ℝ) :
     Ztrunc (-x) = -Ztrunc x := by
   -- Expose the definitions: Ztrunc t = if t < 0 then ⌈t⌉ else ⌊t⌋
@@ -1071,6 +1084,7 @@ theorem Ztrunc_opp (x : ℝ) :
       simp
 
 /-- Absolute value: Ztrunc |x| = |Ztrunc x| -/
+@[flocq_source "src/Core/Raux.v" 1044 "Ztrunc_abs"]
 theorem Ztrunc_abs (x : ℝ) :
     Ztrunc |x| = ((Ztrunc x).natAbs : Int) := by
   -- Expose both truncations; for |x| we can simplify the sign test
@@ -1105,6 +1119,7 @@ theorem Ztrunc_abs (x : ℝ) :
     simpa [hL, hR, hAbsFloor]
 
 /-- Lower bound via absolute: if n ≤ |x| then n ≤ |Ztrunc x| -/
+@[flocq_source "src/Core/Raux.v" 1064 "Ztrunc_lub"]
 theorem Ztrunc_lub (n : Int) (x : ℝ) (h : (n : ℝ) ≤ |x|) :
     n ≤ ((Ztrunc x).natAbs : Int) := by
   simp only [Ztrunc_eq_ite]
@@ -1177,11 +1192,13 @@ end IntTrunc
 section IntAway
 
 /-- Away-from-zero at integers: Zaway (m) = m -/
+@[flocq_source "src/Core/Raux.v" 1077 "Zaway_IZR"]
 theorem Zaway_IZR (m : Int) :
     Zaway (m : ℝ) = m := by
   simp only [Zaway_eq_ite]; by_cases h : (m : ℝ) < 0 <;> simp [h]
 
 /-- For nonnegatives: Zaway x = ⌈x⌉ -/
+@[flocq_source "src/Core/Raux.v" 1088 "Zaway_ceil"]
 theorem Zaway_ceil (x : ℝ) (hx : 0 ≤ x) :
     Zaway x = Zceil x := by
   simp only [Zaway_eq_ite]
@@ -1190,6 +1207,7 @@ theorem Zaway_ceil (x : ℝ) (hx : 0 ≤ x) :
   simp [Zceil_eq_ceil, hx_nlt]
 
 /-- For nonpositives: Zaway x = ⌊x⌋ -/
+@[flocq_source "src/Core/Raux.v" 1101 "Zaway_floor"]
 theorem Zaway_floor (x : ℝ) (hxle : x ≤ 0) :
     Zaway x = Zfloor x := by
   simp only [Zaway_eq_ite]
@@ -1202,6 +1220,7 @@ theorem Zaway_floor (x : ℝ) (hxle : x ≤ 0) :
     simp [Zfloor, hxeq]
 
 /-- Monotonicity of away rounding: x ≤ y ⇒ Zaway x ≤ Zaway y -/
+@[flocq_source "src/Core/Raux.v" 1115 "Zaway_le"]
 theorem Zaway_le (x y : ℝ) (hxy : x ≤ y) :
     Zaway x ≤ Zaway y := by
   -- Expose the definitions of Zaway and split on the signs of x and y
@@ -1230,6 +1249,7 @@ theorem Zaway_le (x y : ℝ) (hxy : x ≤ y) :
       exact hxy.trans (Int.le_ceil y)
 
 /-- Opposite: Zaway (-x) = - Zaway x -/
+@[flocq_source "src/Core/Raux.v" 1137 "Zaway_opp"]
 theorem Zaway_opp (x : ℝ) :
     Zaway (-x) = -Zaway x := by
   -- Expose the definitions: Zaway t = if t < 0 then ⌊t⌋ else ⌈t⌉
@@ -1265,6 +1285,7 @@ theorem Zaway_opp (x : ℝ) :
       simp
 
 /-- Absolute value: Zaway |x| = |Zaway x| -/
+@[flocq_source "src/Core/Raux.v" 1156 "Zaway_abs"]
 theorem Zaway_abs (x : ℝ) :
     Zaway |x| = ((Zaway x).natAbs : Int) := by
   -- Expose both roundings; for |x| we can simplify the sign test
@@ -1348,6 +1369,7 @@ theorem Zfloor_div_pos_payload (x y : Int) (hypos : 0 < y) :
 
 /-- Coq `Zfloor_div`: real floor agrees with Coq's floor division on the full
 nonzero-divisor domain. Lean's corresponding integer operation is `Int.fdiv`. -/
+@[flocq_source "src/Core/Raux.v" 1242 "Zfloor_div"]
 theorem Zfloor_div (x y : Int) (hy : y ≠ 0) :
     Zfloor ((x : ℝ) / (y : ℝ)) = Int.fdiv x y := by
   by_cases hypos : 0 < y
@@ -1402,6 +1424,7 @@ theorem Ztrunc_div_nonneg_pos_payload (x y : Int) (hxy : 0 ≤ x ∧ 0 < y) :
 
 /-- Coq `Ztrunc_div`: real truncation agrees with integer truncating division
 for every nonzero divisor, including negative dividends and divisors. -/
+@[flocq_source "src/Core/Raux.v" 1300 "Ztrunc_div"]
 theorem Ztrunc_div (x y : Int) (hy : y ≠ 0) :
     Ztrunc ((x : ℝ) / (y : ℝ)) = Int.tdiv x y := by
   have positive_case (a b : Int) (ha : 0 ≤ a) (hb : 0 < b) :
@@ -1453,9 +1476,10 @@ section CompareIntBounds
 /-- Coq theorem {lit}`Rcompare_floor_ceil_middle`: in the non-integral case,
     comparing the fractional part of {lean}`x` with {lean}`1 / 2` is the same
     as comparing it with the distance from {lean}`x` to its ceiling. -/
+@[flocq_source "src/Core/Raux.v" 1182 "Rcompare_floor_ceil_middle"]
 theorem Rcompare_floor_ceil_middle (x : ℝ)
     (hne : ((Zfloor x) : ℝ) ≠ x) :
-    Rcompare (x - (Zfloor x : ℝ)) (1 / 2) =
+    Rcompare (x - (Zfloor x : ℝ)) (2 : ℝ)⁻¹ =
       Rcompare (x - (Zfloor x : ℝ)) ((Zceil x : ℝ) - x) := by
   have hceil : Zceil x = Zfloor x + 1 := by
     simp only [Zceil_eq_ceil, Zfloor]
@@ -1483,7 +1507,7 @@ theorem Rcompare_floor_ceil_middle (x : ℝ)
   have hmiddle :=
     Rcompare_middle (x := x - (Zfloor x : ℝ)) (d := 0) (u := 1)
   calc
-    Rcompare (x - (Zfloor x : ℝ)) (1 / 2)
+    Rcompare (x - (Zfloor x : ℝ)) (2 : ℝ)⁻¹
         = Rcompare (x - (Zfloor x : ℝ)) (1 - (x - (Zfloor x : ℝ))) := by
           simpa using hmiddle.symm
     _ = Rcompare (x - (Zfloor x : ℝ)) ((Zceil x : ℝ) - x) := by
@@ -1508,9 +1532,10 @@ theorem Rcompare_floor_ceil_middle_spec (x : ℝ) :
 /-- Coq theorem {lit}`Rcompare_ceil_floor_middle`: in the non-integral case,
     comparing the distance from {lean}`x` to its ceiling with {lean}`1 / 2`
     is the same as comparing it with the fractional part of {lean}`x`. -/
+@[flocq_source "src/Core/Raux.v" 1212 "Rcompare_ceil_floor_middle"]
 theorem Rcompare_ceil_floor_middle (x : ℝ)
     (hne : ((Zfloor x) : ℝ) ≠ x) :
-    Rcompare ((Zceil x : ℝ) - x) (1 / 2) =
+    Rcompare ((Zceil x : ℝ) - x) (2 : ℝ)⁻¹ =
       Rcompare ((Zceil x : ℝ) - x) (x - (Zfloor x : ℝ)) := by
   have hceil : Zceil x = Zfloor x + 1 := by
     simp only [Zceil_eq_ceil, Zfloor]
@@ -1538,7 +1563,7 @@ theorem Rcompare_ceil_floor_middle (x : ℝ)
   have hmiddle :=
     Rcompare_middle (x := (Zceil x : ℝ) - x) (d := 0) (u := 1)
   calc
-    Rcompare ((Zceil x : ℝ) - x) (1 / 2)
+    Rcompare ((Zceil x : ℝ) - x) (2 : ℝ)⁻¹
         = Rcompare ((Zceil x : ℝ) - x) (1 - ((Zceil x : ℝ) - x)) := by
           simpa using hmiddle.symm
     _ = Rcompare ((Zceil x : ℝ) - x) (x - (Zfloor x : ℝ)) := by

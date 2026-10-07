@@ -16,7 +16,7 @@ External Rocq imports are recorded in the JSON report, not counted as Flocq decl
 |---:|---|---:|---:|---:|---:|
 | 1 | src/Version.v | 1 | 1 | 1 | 1 |
 | 2 | src/Core/Zaux.v | 102 | 82 | 91 | 102 |
-| 3 | src/Core/Raux.v | 186 | 83 | 178 | 87 |
+| 3 | src/Core/Raux.v | 186 | 113 | 178 | 121 |
 | 4 | src/Core/Defs.v | 14 | 11 | 14 | 0 |
 | 5 | src/Core/Round_pred.v | 83 | 78 | 78 | 83 |
 | 6 | src/Core/Digits.v | 67 | 0 | 67 | 0 |
@@ -57,26 +57,26 @@ the full Lean type/body with Rocq, and add an evidence-bearing review entry.
 Resolve aliases and generated proof infrastructure explicitly; do not create
 unnecessary numerical APIs to satisfy a raw name count.
 
-- `src/Core/Raux.v:788` — `Zfloor` (def): `FloatSpec.Core.Raux.Zfloor`.
-- `src/Core/Raux.v:790` — `Zfloor_lb` (prf): `FloatSpec.Core.Raux.Zfloor_lb`.
-- `src/Core/Raux.v:803` — `Zfloor_ub` (prf): `FloatSpec.Core.Raux.Zfloor_ub`.
-- `src/Core/Raux.v:816` — `Zfloor_lub` (prf): `FloatSpec.Core.Raux.Zfloor_lub`.
-- `src/Core/Raux.v:830` — `Zfloor_imp` (prf): `FloatSpec.Core.Raux.Zfloor_imp`.
-- `src/Core/Raux.v:844` — `Zfloor_IZR` (prf): `FloatSpec.Core.Raux.Zfloor_IZR`.
-- `src/Core/Raux.v:856` — `Zfloor_le` (prf): `FloatSpec.Core.Raux.Zfloor_le`.
-- `src/Core/Raux.v:866` — `Zceil` (def): `FloatSpec.Core.Raux.Zceil`.
-- `src/Core/Raux.v:868` — `Zceil_ub` (prf): `FloatSpec.Core.Raux.Zceil_ub`.
-- `src/Core/Raux.v:880` — `Zceil_lb` (prf): `FloatSpec.Core.Raux.Zceil_lb`.
-- `src/Core/Raux.v:892` — `Zceil_glb` (prf): `FloatSpec.Core.Raux.Zceil_glb`.
-- `src/Core/Raux.v:906` — `Zceil_imp` (prf): `FloatSpec.Core.Raux.Zceil_imp`.
-- `src/Core/Raux.v:925` — `Zceil_IZR` (prf): `FloatSpec.Core.Raux.Zceil_IZR`.
-- `src/Core/Raux.v:935` — `Zceil_le` (prf): `FloatSpec.Core.Raux.Zceil_le`.
-- `src/Core/Raux.v:945` — `Zceil_floor_neq` (prf): `FloatSpec.Core.Raux.Zceil_floor_neq`.
-- `src/Core/Raux.v:965` — `Ztrunc` (def): `FloatSpec.Core.Raux.Ztrunc`.
-- `src/Core/Raux.v:967` — `Ztrunc_IZR` (prf): `FloatSpec.Core.Raux.Ztrunc_IZR`.
-- `src/Core/Raux.v:978` — `Ztrunc_floor` (prf): `FloatSpec.Core.Raux.Ztrunc_floor`.
-- `src/Core/Raux.v:991` — `Ztrunc_ceil` (prf): `FloatSpec.Core.Raux.Ztrunc_ceil`.
-- `src/Core/Raux.v:1005` — `Ztrunc_le` (prf): `FloatSpec.Core.Raux.Ztrunc_le`.
+- `src/Core/Raux.v:1335` — `radix_pos` (prf): `FloatSpec.Core.Raux.radix_pos`.
+- `src/Core/Raux.v:1345` — `bpow` (def): `FloatSpec.Core.Raux.Source.bpow`, `FloatSpec.Core.Raux.bpow`.
+- `src/Core/Raux.v:1352` — `IZR_Zpower_pos` (prf): `FloatSpec.Core.Raux.IZR_Zpower_pos`.
+- `src/Core/Raux.v:1368` — `bpow_powerRZ` (prf): `FloatSpec.Core.Raux.bpow_powerRZ`.
+- `src/Core/Raux.v:1378` — `bpow_ge_0` (prf): `FloatSpec.Core.Raux.bpow_ge_0`.
+- `src/Core/Raux.v:1387` — `bpow_gt_0` (prf): `FloatSpec.Core.Raux.bpow_gt_0`.
+- `src/Core/Raux.v:1396` — `bpow_plus` (prf): `FloatSpec.Core.Raux.bpow_plus`.
+- `src/Core/Raux.v:1406` — `bpow_1` (prf): `FloatSpec.Core.Raux.bpow_1`.
+- `src/Core/Raux.v:1413` — `bpow_plus_1` (prf): `FloatSpec.Core.Raux.bpow_plus_1`.
+- `src/Core/Raux.v:1422` — `bpow_opp` (prf): `FloatSpec.Core.Raux.bpow_opp`.
+- `src/Core/Raux.v:1434` — `IZR_Zpower_nat` (prf): `FloatSpec.Core.Raux.IZR_Zpower_nat`.
+- `src/Core/Raux.v:1445` — `IZR_Zpower` (prf): `FloatSpec.Core.Raux.IZR_Zpower`.
+- `src/Core/Raux.v:1456` — `bpow_lt` (prf): `FloatSpec.Core.Raux.bpow_lt`.
+- `src/Core/Raux.v:1474` — `lt_bpow` (prf): `FloatSpec.Core.Raux.lt_bpow`.
+- `src/Core/Raux.v:1490` — `bpow_le` (prf): `FloatSpec.Core.Raux.bpow_le`.
+- `src/Core/Raux.v:1502` — `le_bpow` (prf): `FloatSpec.Core.Raux.le_bpow`.
+- `src/Core/Raux.v:1514` — `bpow_inj` (prf): `FloatSpec.Core.Raux.bpow_inj`.
+- `src/Core/Raux.v:1526` — `bpow_exp` (prf): `FloatSpec.Core.Raux.bpow_exp`.
+- `src/Core/Raux.v:1563` — `sqrt_bpow` (prf): `FloatSpec.Core.Raux.sqrt_bpow`.
+- `src/Core/Raux.v:1572` — `sqrt_bpow_ge` (prf): `FloatSpec.Core.Raux.sqrt_bpow_ge`.
 
 ## Reproduce
 

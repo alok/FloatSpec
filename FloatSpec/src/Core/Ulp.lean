@@ -7858,7 +7858,7 @@ private theorem round_DN_plus_eps_pos_strict
     simpa [hsmy_eq, hrhs] using hmul
   have hfloor_smy : FloatSpec.Core.Raux.Zfloor smy = m := by
     have htrip := FloatSpec.Core.Raux.Zfloor_imp (x := smy) (m := m)
-      ⟨hsm_lower, hsm_upper⟩
+      ⟨hsm_lower, by exact_mod_cast hsm_upper⟩
     simpa [Id.run, pure] using htrip
   have hroundR_y :
       FloatSpec.Core.Generic_fmt.roundR beta fexp FloatSpec.Core.Generic_fmt.rnd_floor y = x := by
