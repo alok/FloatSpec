@@ -4815,8 +4815,8 @@ theorem Bulp'_correct
           have hdigitTrip := FloatSpec.Core.Digits.Zpos_digits2_pos 1
           have hdigitOne : FloatSpec.Core.Digits.Zdigits 2 (1 : Int) = 1 := by
             simpa [FloatSpec.Core.Digits.digits2_pos,
-              FloatSpec.Core.Digits.digits2_Pnat,
-              FloatSpec.Core.Digits.digits2_Pnat_bitlength_payload] using
+              FloatSpec.Core.Digits.digits2_nat,
+              FloatSpec.Core.Digits.digits2_nat_bitlength_payload] using
               (hdigitTrip (by norm_num : (0 : Nat) < 1)).symm
           unfold canonical_mantissa
           simp only [beq_iff_eq]
@@ -8024,10 +8024,10 @@ theorem extendedMantissa_roundToNearestEven
   rcases Int.emod_two_eq_zero_or_one mantissa with hm | hm <;> simp [hm]
 
 private theorem digits2_Pnat_eq_log2 (m : Nat) (hm : 0 < m) :
-    FloatSpec.Core.Digits.digits2_Pnat m = m.log2 := by
+    FloatSpec.Core.Digits.digits2_nat m = m.log2 := by
   apply Eq.symm
   exact (Nat.log2_eq_iff (Nat.ne_of_gt hm)).2
-    (FloatSpec.Core.Digits.digits2_Pnat_correct m hm)
+    (FloatSpec.Core.Digits.digits2_nat_correct m hm)
 
 private theorem binary64_targetExponent_eq_fexp
     (m : Nat) (e : Int) (hm : 0 < m) :
@@ -9415,7 +9415,7 @@ private theorem model64OfStandardFloat_binaryRoundAux_zero_belowMinExponent
   model64OfStandardFloat_binaryRoundAux_of_targetExponent s 0 e l (by
     simp [Format.targetExponent, Float.Model.totalExponent,
       Format.minExponent, Format.mantissaBits,
-      FloatSpec.Core.FLT.FLT_exp, FLT_exp, FloatSpec.Core.Digits.Zdigits]
+      FloatSpec.Core.FLT.FLT_exp, FLT_exp, FloatSpec.Core.Digits.Zdigits_zero]
     omega)
 
 private theorem model32OfStandardFloat_binaryRoundAux_zero_belowMinExponent
@@ -9429,7 +9429,7 @@ private theorem model32OfStandardFloat_binaryRoundAux_zero_belowMinExponent
   model32OfStandardFloat_binaryRoundAux_of_targetExponent s 0 e l (by
     simp [Format.targetExponent, Float.Model.totalExponent,
       Format.minExponent, Format.mantissaBits,
-      FloatSpec.Core.FLT.FLT_exp, FLT_exp, FloatSpec.Core.Digits.Zdigits]
+      FloatSpec.Core.FLT.FLT_exp, FLT_exp, FloatSpec.Core.Digits.Zdigits_zero]
     omega)
 
 theorem model64OfBinarySingleNaNFloat_Bdiv_RNE

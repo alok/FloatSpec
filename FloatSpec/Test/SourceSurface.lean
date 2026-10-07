@@ -72,15 +72,15 @@ example :
       binarySingleNaNFloatToB754, standardFloatToBinarySingleNaNFloat,
       B754_to_R, SF2R, F2R, FloatSpec.Core.Defs.F2R,
       FloatSpec.Core.Zaux.positiveToNat, FloatSpec.Core.Zaux.Zlt_bool,
-      FloatSpec.Core.Digits.digits2_pos, FloatSpec.Core.Digits.digits2_Pnat,
-      FloatSpec.Core.Digits.digits2_Pnat_bitlength_payload]
+      FloatSpec.Core.Digits.digits2_pos, FloatSpec.Core.Digits.digits2_nat,
+      FloatSpec.Core.Digits.digits2_nat_bitlength_payload]
   · simp only [Prod.snd]
     norm_num [Binary.Bfrexp, Binary.BfrexpSingle,
       ExperimentalSingleNaNArithmetic.Ffrexp_core_binary,
       Binary.B2BSN, binaryFloatToBinarySingleNaNFloat,
       FloatSpec.Core.Zaux.positiveToNat, FloatSpec.Core.Zaux.Zlt_bool,
-      FloatSpec.Core.Digits.digits2_pos, FloatSpec.Core.Digits.digits2_Pnat,
-      FloatSpec.Core.Digits.digits2_Pnat_bitlength_payload]
+      FloatSpec.Core.Digits.digits2_pos, FloatSpec.Core.Digits.digits2_nat,
+      FloatSpec.Core.Digits.digits2_nat_bitlength_payload]
 #check @Bulp_correct
 #check @Binary.Bsucc_correct
 #check @Binary.Bpred_correct

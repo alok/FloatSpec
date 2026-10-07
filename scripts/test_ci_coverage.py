@@ -52,6 +52,7 @@ LOCAL_CORPORA = {
     'pff_aux_bridge.py': '2,116 cases, 302 s',
     'pff_integer_bridge.py': '1,172 cases, 119 s',
     'zaux_prelude_bridge.py': '1,244 cases, 120 s',
+    'digits_bridge.py': '2,908 cases, 205 s',
     'remainder_bridge.py': '12,100 cases, 550 s',
     'model_adapter_bridge.py': '740 cases, 243 s',
 }

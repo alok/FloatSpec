@@ -1034,7 +1034,7 @@ private theorem zview_succ (k : Nat) : zview ((k + 1 : Nat) : Int) = .Zpos (Pos_
   rfl
 
 /-- Every integer is Rocq's `Z0`, `Zpos p` or `Zneg p`, and `zview` reports which. -/
-private theorem zview_cases (z : Int) :
+theorem zview_cases (z : Int) :
     (z = 0 ∧ zview z = .Z0) ∨ (∃ p, z = Zpos p ∧ zview z = .Zpos p) ∨
       (∃ p, z = -Zpos p ∧ zview z = .Zneg p) := by
   rcases z with (_ | k) | k

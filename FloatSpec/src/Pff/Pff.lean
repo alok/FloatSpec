@@ -14637,7 +14637,7 @@ theorem boundNatCorrect {beta : Int} [ValidRadix beta]
     · have hn : n = 0 := Int.ofNat_eq_zero.mp hnzero
       subst n
       simp [d, digit, pffDigit_of_one_lt radix 0 hradix, Zpower_nat,
-        FloatSpec.Core.Digits.Zdigits]
+        FloatSpec.Core.Digits.Zdigits_zero]
     · have hbounds :=
         FloatSpec.Core.Digits.Zdigits_correct_from_nonzero_payload radix (Int.ofNat n) hnzero hradix
       have hnonneg : 0 ≤ FloatSpec.Core.Digits.Zdigits radix (Int.ofNat n) :=
@@ -19958,7 +19958,7 @@ private lemma abs_lt_Fdigit_pow {beta : Int} [ValidRadix beta]
   rw [pffDigit_of_one_lt radix p.Fnum hradix]
   by_cases hp_zero : p.Fnum = 0
   · rw [hp_zero]
-    simp [Zpower_nat, FloatSpec.Core.Digits.Zdigits]
+    simp [Zpower_nat, FloatSpec.Core.Digits.Zdigits_zero]
   · have hbounds := FloatSpec.Core.Digits.Zdigits_correct_from_nonzero_payload radix p.Fnum hp_zero hradix
     have hnonneg : 0 ≤ FloatSpec.Core.Digits.Zdigits radix p.Fnum :=
       FloatSpec.Core.Digits.Zdigits_ge_0 radix p.Fnum
@@ -60728,7 +60728,7 @@ theorem digitMore
   by_cases hq : q = 0
   · subst q
     simp [digit, pffDigit_of_one_lt n 0 hn, Zpower_nat,
-      FloatSpec.Core.Digits.Zdigits]
+      FloatSpec.Core.Digits.Zdigits_zero]
   · have hbounds := FloatSpec.Core.Digits.Zdigits_correct_from_nonzero_payload n q hq hn
     have hnonneg : 0 ≤ FloatSpec.Core.Digits.Zdigits n q :=
       FloatSpec.Core.Digits.Zdigits_ge_0 n q
@@ -60841,7 +60841,7 @@ theorem digit_monotone
     digit n p ≤ digit n q := by
   by_cases hp0 : p = 0
   · subst p
-    simp [digit, pffDigit_of_one_lt n 0 hn, FloatSpec.Core.Digits.Zdigits]
+    simp [digit, pffDigit_of_one_lt n 0 hn, FloatSpec.Core.Digits.Zdigits_zero]
   · have hpq_nat : p.natAbs ≤ q.natAbs := by
       rw [Int.abs_eq_natAbs, Int.abs_eq_natAbs] at hpq
       exact_mod_cast hpq

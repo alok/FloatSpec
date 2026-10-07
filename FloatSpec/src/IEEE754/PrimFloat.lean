@@ -2571,8 +2571,8 @@ private theorem prim2SF_ofFloat_ofBits (w : UInt64) :
 /-- Flocq's positive digit count is Lean's `Nat.log2` plus one. -/
 private theorem digits2_pos_eq_log2 (m : Nat) (hm : 0 < m) :
     FloatSpec.Core.Digits.digits2_pos m = ((m.log2 + 1 : Nat) : Int) := by
-  have h := FloatSpec.Core.Digits.digits2_Pnat_correct m hm
-  have hlog : FloatSpec.Core.Digits.digits2_Pnat m = m.log2 :=
+  have h := FloatSpec.Core.Digits.digits2_nat_correct m hm
+  have hlog : FloatSpec.Core.Digits.digits2_nat m = m.log2 :=
     ((Nat.log2_eq_iff (Nat.pos_iff_ne_zero.mp hm)).mpr h).symm
   simp [FloatSpec.Core.Digits.digits2_pos, hlog]
 

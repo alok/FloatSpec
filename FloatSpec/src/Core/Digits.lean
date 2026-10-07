@@ -43,16 +43,17 @@ variable (beta : Int) (h_beta : beta > 1)
     Computes the number of bits required to represent a positive natural number.
     Uses recursive division by 2 until the number becomes 0.
 -/
-def digits2_Pnat_bitlength_payload : Nat → Nat
+def digits2_nat_bitlength_payload : Nat → Nat
   | 0 => 0
   | n + 1 =>
-    let prev := digits2_Pnat_bitlength_payload ((n + 1) / 2)
+    let prev := digits2_nat_bitlength_payload ((n + 1) / 2)
     1 + prev
 
-/-- Source `positive` recursion, represented on positive naturals: the index of
-    the highest binary digit (`1 ↦ 0`, `2/3 ↦ 1`, ...). -/
-def digits2_Pnat (n : Nat) : Nat :=
-  (digits2_Pnat_bitlength_payload n) - 1
+/-- The index of the highest binary digit of a positive natural (`1 ↦ 0`, `2/3 ↦ 1`, ...):
+{name}`digits2_Pnat` on natural values. The IEEE layer still carries mantissas as naturals
+(owner decision O1 in the cutover plan); it uses this until that carrier is replaced. -/
+def digits2_nat (n : Nat) : Nat :=
+  (digits2_nat_bitlength_payload n) - 1
 
 /-- A pure helper with the same recursion, convenient for proofs. -/
 def bits : Nat → Nat
@@ -78,15 +79,15 @@ lemma bits_succ (k : Nat) : bits (k + 1) = 1 + bits ((k + 1) / 2) := by
 
 /-- Equality of the program and the pure helper. -/
 lemma digits2_bitlength_eq_bits (n : Nat) :
-    digits2_Pnat_bitlength_payload n = bits n := by
-  refine Nat.strongRecOn n (motive := fun n => digits2_Pnat_bitlength_payload n = bits n) ?step
+    digits2_nat_bitlength_payload n = bits n := by
+  refine Nat.strongRecOn n (motive := fun n => digits2_nat_bitlength_payload n = bits n) ?step
   intro n ih
   cases' n with k
-  · simp [digits2_Pnat_bitlength_payload, bits]
-  · have ih_half : digits2_Pnat_bitlength_payload ((k + 1) / 2) = bits ((k + 1) / 2) := by
+  · simp [digits2_nat_bitlength_payload, bits]
+  · have ih_half : digits2_nat_bitlength_payload ((k + 1) / 2) = bits ((k + 1) / 2) := by
       have hlt : ((k + 1) / 2) < (k + 1) := by exact Nat.div_lt_self (Nat.succ_pos _) (by decide)
       exact ih ((k + 1) / 2) hlt
-    simp [digits2_Pnat_bitlength_payload, bits, ih_half]
+    simp [digits2_nat_bitlength_payload, bits, ih_half]
 
 /-- Main bounds for bits: for m > 0, 2^(bits m - 1) ≤ m < 2^(bits m). -/
 lemma bits_bounds (m : Nat) (hm : 0 < m) :
@@ -196,42 +197,81 @@ now split.
 Qed.
 ```
 -/
-theorem digits2_Pnat_correct_from_bitlength_payload (n : Nat) (hn : n > 0) :
-    digits2_Pnat_bitlength_payload n > 0 ∧
-      2 ^ (digits2_Pnat_bitlength_payload n - 1) ≤ n ∧
-      n < 2 ^ digits2_Pnat_bitlength_payload n := by
+theorem digits2_nat_correct_from_bitlength_payload (n : Nat) (hn : n > 0) :
+    digits2_nat_bitlength_payload n > 0 ∧
+      2 ^ (digits2_nat_bitlength_payload n - 1) ≤ n ∧
+      n < 2 ^ digits2_nat_bitlength_payload n := by
   have hb := bits_bounds n hn
   have dpos := bits_pos (n := n) hn
   -- Reduce the program to the pure helper and discharge the proposition
   simpa [digits2_bitlength_eq_bits n] using And.intro dpos (And.intro hb.1 hb.2)
 
 /-- Exact source bounds for the Coq-positive digit index. -/
-theorem digits2_Pnat_correct (n : Nat) (hn : 0 < n) :
-    let d := digits2_Pnat n
+theorem digits2_nat_correct (n : Nat) (hn : 0 < n) :
+    let d := digits2_nat n
     2 ^ d ≤ n ∧ n < 2 ^ (d + 1) := by
-  have h := digits2_Pnat_correct_from_bitlength_payload n hn
+  have h := digits2_nat_correct_from_bitlength_payload n hn
   rcases h with ⟨hpos, hlo, hhi⟩
-  have hs : 1 ≤ digits2_Pnat_bitlength_payload n :=
+  have hs : 1 ≤ digits2_nat_bitlength_payload n :=
     Nat.succ_le_iff.mpr hpos
   have hindex :
-      digits2_Pnat_bitlength_payload n = digits2_Pnat n + 1 := by
-    simp [digits2_Pnat, Nat.sub_add_cancel hs]
+      digits2_nat_bitlength_payload n = digits2_nat n + 1 := by
+    simp [digits2_nat, Nat.sub_add_cancel hs]
   constructor
-  · simpa [digits2_Pnat] using hlo
+  · simpa [digits2_nat] using hlo
   · rw [← hindex]
     exact hhi
 
-/-- Extract the k-th digit of a number n in the given radix
+/-- FLoCq `digits2_Pnat`: the number of binary digits of a positive after the leading one. -/
+@[flocq_source "src/Core/Digits.v" 33 "digits2_Pnat"]
+def digits2_Pnat : FloatSpec.Core.Zaux.Positive → Nat
+  | .xH => 0
+  | .xO p => digits2_Pnat p + 1
+  | .xI p => digits2_Pnat p + 1
 
-    Note: Lean's {name}`Int.ediv` and {name}`Int.emod` (notation / and %) use
-    Euclidean semantics. The original Flocq proofs for digits rely on
-    truncation-toward-zero for the division when bounding by powers. To match
-    that proof style (e.g., {lit}`Z.quot_small`), we use truncated division
-    {name}`Int.tdiv` here. This ensures that for |n| < beta^k with 0 ≤ k,
-    the quotient is 0, and hence the digit is 0.
--/
+/-- FLoCq `digits2_Pnat_correct`. Rocq's `Zpower_nat 2 d` is `2 ^ d`. -/
+@[flocq_source "src/Core/Digits.v" 40 "digits2_Pnat_correct"]
+theorem digits2_Pnat_correct (n : FloatSpec.Core.Zaux.Positive) :
+    let d := digits2_Pnat n
+    (2 : Int) ^ d ≤ FloatSpec.Core.Zaux.Zpos n ∧ FloatSpec.Core.Zaux.Zpos n < (2 : Int) ^ (d + 1) := by
+  induction n with
+  | xH => simp [digits2_Pnat, FloatSpec.Core.Zaux.Zpos, FloatSpec.Core.Zaux.positiveToNat]
+  | xO p ih =>
+      simp only [FloatSpec.Core.Zaux.Zpos, FloatSpec.Core.Zaux.positiveToNat, digits2_Pnat] at ih ⊢
+      push_cast
+      constructor <;> rw [pow_succ] <;> omega
+  | xI p ih =>
+      simp only [FloatSpec.Core.Zaux.Zpos, FloatSpec.Core.Zaux.positiveToNat, digits2_Pnat] at ih ⊢
+      push_cast
+      constructor <;> rw [pow_succ] <;> omega
+
+/-- The natural-carrier index agrees with the source recursion. -/
+theorem digits2_nat_positiveToNat (p : FloatSpec.Core.Zaux.Positive) :
+    digits2_nat (FloatSpec.Core.Zaux.positiveToNat p) = digits2_Pnat p := by
+  have hp := FloatSpec.Core.Zaux.positiveToNat_pos p
+  obtain ⟨a1, a2⟩ := digits2_nat_correct _ hp
+  obtain ⟨b1, b2⟩ := digits2_Pnat_correct p
+  simp only [FloatSpec.Core.Zaux.Zpos] at b1 b2
+  have b1' : 2 ^ digits2_Pnat p ≤ FloatSpec.Core.Zaux.positiveToNat p := by exact_mod_cast b1
+  have b2' : FloatSpec.Core.Zaux.positiveToNat p < 2 ^ (digits2_Pnat p + 1) := by exact_mod_cast b2
+  have h1 := (Nat.pow_lt_pow_iff_right (by norm_num : 1 < 2)).mp (lt_of_le_of_lt a1 b2')
+  have h2 := (Nat.pow_lt_pow_iff_right (by norm_num : 1 < 2)).mp (lt_of_le_of_lt b1' a2)
+  omega
+
+/-- FLoCq `Zdigit`: the digit of `n` at index `k`, `Z.rem (Z.quot n (Zpower beta k)) beta`.
+Rocq's `Z.quot`/`Z.rem` truncate toward zero, as `Int.tdiv`/`Int.tmod` do; Lean's `/` and `%`
+are Euclidean. A negative index makes `Zpower` zero, so the digit is zero. -/
+@[flocq_source "src/Core/Digits.v" 59 "Zdigit"]
 def Zdigit (n k : Int) : Int :=
-  (if k ≥ 0 then Int.tmod (Int.tdiv n (beta ^ k.natAbs)) beta else 0)
+  Int.tmod (Int.tdiv n (FloatSpec.Core.Zaux.Zpower beta k)) beta
+
+/-- The digit as a guarded natural power: zero below index zero. -/
+theorem Zdigit_eq_ite (n k : Int) :
+    Zdigit beta n k = if k ≥ 0 then Int.tmod (Int.tdiv n (beta ^ k.natAbs)) beta else 0 := by
+  unfold Zdigit FloatSpec.Core.Zaux.Zpower
+  by_cases hk : 0 ≤ k
+  · simp [hk, show k.toNat = k.natAbs by omega]
+  · simp [hk]
 
 /-- Digits with negative index are zero
 
@@ -249,7 +289,7 @@ Qed.
 -/
 theorem Zdigit_lt (n k : Int) (hk : k < 0) :
     Zdigit beta n k = 0 := by
-  unfold Zdigit
+  simp only [Zdigit_eq_ite]
   simp [show ¬(k ≥ 0) from not_le.mpr hk]
 
 /-- Digit of zero is always zero
@@ -268,7 +308,7 @@ Qed.
 -/
 theorem Zdigit_0 (k : Int) :
     Zdigit beta 0 k = 0 := by
-  unfold Zdigit
+  simp only [Zdigit_eq_ite]
   split <;> simp
 
 /-- Digit of opposite number
@@ -288,7 +328,7 @@ Qed.
 -/
 theorem Zdigit_opp (n k : Int) :
     Zdigit beta (-n) k = -Zdigit beta n k := by
-  unfold Zdigit
+  simp only [Zdigit_eq_ite]
   by_cases hk : 0 ≤ k
   · simp [hk, Int.neg_tdiv, Int.neg_tmod]
   · simp [hk]
@@ -329,7 +369,7 @@ theorem Zdigit_ge_Zpower_pos_from_same_index_payload (n e : Int)
     (h : 0 ≤ n ∧ n < beta ^ e.natAbs ∧ 0 ≤ e) :
     Zdigit beta n e = 0 := by
   obtain ⟨hn_pos, hn_bound, he_pos⟩ := h
-  unfold Zdigit
+  simp only [Zdigit_eq_ite]
   -- With k = e ≥ 0, the branch is active; truncated quotient is 0 under the bound
   simp [he_pos, Int.tdiv_eq_zero_of_lt hn_pos hn_bound]
 
@@ -393,7 +433,7 @@ theorem Zdigit_ge_Zpower_from_same_index_payload (n e : Int)
     (h : Int.natAbs n < beta ^ e.natAbs ∧ 0 ≤ e) :
     Zdigit beta n e = 0 := by
   obtain ⟨hn_bound, he_pos⟩ := h
-  unfold Zdigit
+  simp only [Zdigit_eq_ite]
   simp [he_pos]
   -- Let b = beta^e
   set b := beta ^ e.natAbs with hb
@@ -465,7 +505,7 @@ private lemma pow_pos_int {beta : Int} (hβ : 0 < beta) (k : Nat) :
 /-- Evaluate the 0-th digit using signed remainder. -/
 private lemma Zdigit_at_zero (beta n : Int) :
     Zdigit beta n 0 = Int.tmod n beta := by
-  unfold Zdigit
+  simp only [Zdigit_eq_ite]
   simp  -- `tdiv n 1 = n` and `0 ≥ 0` discharges the `if`
 
 -- For nonnegative `n` and positive divisor `d`,
@@ -475,7 +515,7 @@ private lemma Zdigit_eval_nonneg
     (beta n k : Int) (_hn : 0 ≤ n) (_hb : 0 < beta) (hk : 0 ≤ k) :
     Zdigit beta n k =
       Int.tmod (Int.tdiv n (beta ^ k.natAbs)) beta := by
-  unfold Zdigit
+  simp only [Zdigit_eq_ite]
   simp [hk]
 
 /-- For 0 ≤ n and 0 < d, truncated division gives zero iff n < d. -/
@@ -701,7 +741,7 @@ theorem Zdigit_nonzero_exists_payload (n : Int) (hn0 : n ≠ 0)
     intro hzero
     have hk_ge : 0 ≤ k := hk_nonneg
     have hzero' : Int.tmod (Int.tdiv n (beta ^ k.natAbs)) beta = 0 := by
-      simpa [Zdigit, hk_ge] using hzero
+      simpa [Zdigit_eq_ite, hk_ge] using hzero
     have hdiv : beta ∣ Int.tdiv n (beta ^ k.natAbs) := by
       exact (Int.dvd_iff_tmod_eq_zero).2 hzero'
     have hdiv_neg : beta ∣ -Int.tdiv n (beta ^ k.natAbs) := by
@@ -711,7 +751,7 @@ theorem Zdigit_nonzero_exists_payload (n : Int) (hn0 : n ≠ 0)
         Int.tmod_eq_zero_of_dvd hdiv_neg
       simpa [Int.neg_tdiv] using hzero_q
     have hz_neg : Zdigit beta (-n) k = 0 := by
-      simpa [Zdigit, hk_ge] using hzero_neg
+      simpa [Zdigit_eq_ite, hk_ge] using hzero_neg
     exact hk_ne hz_neg
 
 /-- FLoCq `Zdigit_not_0_pos`. -/
@@ -745,7 +785,7 @@ theorem Zdigit_not_0_pos (e n : Int) (he : 0 ≤ e)
     rw [Int.tdiv_eq_ediv_of_nonneg hn0]
     apply (Int.ediv_lt_iff_lt_mul (by omega : 0 < beta ^ e.natAbs)).2
     simpa [hpow1, mul_comm] using hupp
-  unfold Zdigit
+  simp only [Zdigit_eq_ite]
   simp only [he, ite_true]
   rw [Int.tmod_eq_of_lt (le_of_lt hqpos) hqlt]
   exact ne_of_gt hqpos
@@ -765,7 +805,7 @@ theorem Zdigit_not_0 (e n : Int) (he : 0 ≤ e)
     intro hz
     apply hpos
     have hd : Zdigit beta (-n) e = -Zdigit beta n e := by
-      simp [Zdigit, he, Int.neg_tdiv, Int.neg_tmod]
+      simp [Zdigit_eq_ite, he, Int.neg_tdiv, Int.neg_tmod]
     rw [hd, hz]
     simp
 /-- Digit of multiplied number
@@ -817,7 +857,7 @@ theorem Zdigit_mul_pow (n k l : Int) (hl : 0 ≤ l) (hβ : beta > 1 := h_beta) :
     Zdigit beta (n * beta ^ l.natAbs) k = Zdigit beta n (k - l) := by
   -- Unfold both digits and compare by case analysis on k and l ≤ k
   classical
-  unfold Zdigit
+  simp only [Zdigit_eq_ite]
   by_cases hk : 0 ≤ k
   · -- k ≥ 0: active branch, compare quotients
     simp [hk]
@@ -971,7 +1011,7 @@ private lemma tdiv_tdiv_of_pos {a b : Int} (ha : 0 < a) (n : Int) :
 theorem Zdigit_div_pow (n k l : Int) (hk : 0 ≤ k) (hl : 0 ≤ l)
     (hβ : beta > 1 := h_beta) :
     Zdigit beta (Int.tdiv n (beta ^ l.natAbs)) k = Zdigit beta n (k + l) := by
-  unfold Zdigit
+  simp only [Zdigit_eq_ite]
   have hkl_nonneg : 0 ≤ k + l := add_nonneg hk hl
   simp [hk, hkl_nonneg]
   have hk_as : (k.natAbs : Int) = k := Int.natAbs_of_nonneg hk
@@ -1168,7 +1208,7 @@ private lemma tdiv_tmod_pow_eq
 theorem Zdigit_mod_pow (n k l : Int) (hk_lt : k < l) (hβ : beta > 1 := h_beta) :
     Zdigit beta (Int.tmod n (beta ^ l.natAbs)) k = Zdigit beta n k := by
   by_cases hk_nonneg : 0 ≤ k
-  · unfold Zdigit
+  · simp only [Zdigit_eq_ite]
     simp [hk_nonneg]
     exact tdiv_tmod_pow_eq n k l beta hk_nonneg hk_lt hβ
   · have hk_neg : k < 0 := lt_of_not_ge hk_nonneg
@@ -1291,7 +1331,7 @@ theorem Zdigit_mod_pow_out (n k l : Int) (hlk : 0 ≤ l ∧ l ≤ k)
     (hβ : beta > 1 := h_beta) :
     Zdigit beta (Int.tmod n (beta ^ l.natAbs)) k = 0 := by
   obtain ⟨hl_nonneg, hl_le_k⟩ := hlk
-  unfold Zdigit
+  simp only [Zdigit_eq_ite]
   have hk_nonneg : 0 ≤ k := le_trans hl_nonneg hl_le_k
   simp [hk_nonneg]
   have hβpos : 0 < beta := by linarith [hβ]
@@ -1316,19 +1356,25 @@ theorem Zdigit_mod_pow_out (n k l : Int) (hlk : 0 ≤ l ∧ l ≤ k)
   rw [hdiv_zero]
   simp
 
-/-- Sum of digits representation -/
+/-- FLoCq `Zsum_digit`: the number whose first `k` digits are `f 0`, ..., `f (k - 1)`. -/
+@[flocq_source "src/Core/Digits.v" 260 "Zsum_digit"]
 def Zsum_digit (f : Int → Int) : Nat → Int
   | 0 => 0
-  | n + 1 =>
-    let prev := Zsum_digit f n
-    prev + f n * beta ^ n
+  | k + 1 => Zsum_digit f k + f k * FloatSpec.Core.Zaux.Zpower beta k
+
+theorem Zsum_digit_zero (f : Int → Int) : Zsum_digit beta f 0 = 0 := rfl
+
+/-- The recursive step with a natural power. -/
+theorem Zsum_digit_succ (f : Int → Int) (k : Nat) :
+    Zsum_digit beta f (k + 1) = Zsum_digit beta f k + f k * beta ^ k := by
+  simp [Zsum_digit, FloatSpec.Core.Zaux.Zpower]
 
 theorem ZOmod_plus_pow_digit_from_nonnegative_digit_payload
     (n k : Int) (hn : 0 ≤ n) (hk : 0 ≤ k) (hβ : beta > 1) :
     n % beta ^ (k + 1).natAbs =
       n % beta ^ k.natAbs + Zdigit beta n k * beta ^ k.natAbs := by
   -- expose the digit and rewrite `tdiv` to `/` using `hn`
-  unfold Zdigit
+  simp only [Zdigit_eq_ite]
   simp
   set b : Int := beta ^ k.natAbs with hb
   -- basic positivity
@@ -1484,7 +1530,7 @@ theorem Zsum_digit_digit_from_positive_payload
   have hn_nonneg : 0 ≤ n := le_of_lt hn
   induction k with
   | zero =>
-      simp [Zsum_digit]
+      simp [Zsum_digit_zero, Zsum_digit_succ]
   | succ k ih =>
       -- Use the modular decomposition for the (k : Int) digit.
       have hmod :
@@ -1495,7 +1541,7 @@ theorem Zsum_digit_digit_from_positive_payload
           (Int.natCast_nonneg k) hβ
       -- Unfold the sum and rewrite using the inductive hypothesis.
       have hsucc : ((k : Int) + 1).natAbs = k + 1 := by omega
-      simpa [Zsum_digit, ih, Int.natAbs_of_nonneg, hsucc] using hmod.symm
+      simpa [Zsum_digit_zero, Zsum_digit_succ, ih, Int.natAbs_of_nonneg, hsucc] using hmod.symm
 
 /-- Exact signed-remainder form of FLoCq `Zsum_digit_digit`. -/
 theorem Zsum_digit_digit (n : Int) (k : Nat) (hβ : beta > 1) :
@@ -1507,15 +1553,15 @@ theorem Zsum_digit_digit (n : Int) (k : Nat) (hβ : beta > 1) :
     · subst n
       clear hp
       induction k with
-      | zero => simp [Zsum_digit]
+      | zero => simp [Zsum_digit_zero, Zsum_digit_succ]
       | succ k ih =>
           have ih0 : Zsum_digit beta (fun i => Zdigit beta 0 i) k = 0 := by
             simpa [FloatSpec.Core.Zaux.Zpower] using ih
           have hfun : (fun i => Zdigit beta 0 i) = fun _ => 0 := by
             funext i
-            simp [Zdigit]
+            simp [Zdigit_eq_ite]
           rw [hfun] at ih0
-          simp [Zsum_digit, ih0, Zdigit]
+          simp [Zsum_digit_zero, Zsum_digit_succ, ih0, Zdigit_eq_ite]
     have hpos : 0 < n := lt_of_le_of_ne hn (Ne.symm hn0)
     have hs := Zsum_digit_digit_from_positive_payload
       (beta := beta) (h_beta := hβ) n k hpos hβ
@@ -1531,12 +1577,12 @@ theorem Zsum_digit_digit (n : Int) (k : Nat) (hβ : beta > 1) :
           -Zsum_digit beta (fun i => Zdigit beta (-n) i) k := by
       clear hp hs'
       induction k with
-      | zero => simp [Zsum_digit]
+      | zero => simp [Zsum_digit_zero, Zsum_digit_succ]
       | succ j ih =>
-          simp only [Zsum_digit]
+          simp only [Zsum_digit_zero, Zsum_digit_succ]
           rw [ih]
           have hd : Zdigit beta n (j : Int) = -Zdigit beta (-n) (j : Int) := by
-            simp [Zdigit, Int.neg_tdiv, Int.neg_tmod]
+            simp [Zdigit_eq_ite, Int.neg_tdiv, Int.neg_tmod]
           rw [hd]
           ring
     rw [hs'] at hsum_neg
@@ -1559,15 +1605,15 @@ private theorem Zsum_pair_abs_lt
     |Zsum_digit beta (fun k => Zdigit beta u k) n +
       Zsum_digit beta (fun k => Zdigit beta v k) n| < beta ^ n := by
   induction n with
-  | zero => simp [Zsum_digit]
+  | zero => simp [Zsum_digit_zero, Zsum_digit_succ]
   | succ n ih =>
       have hp : 0 < beta ^ n := pow_pos (beta_pos hβ) _
       have ih' := ih (fun k hk => hd k (Nat.lt_succ_of_lt hk))
       have hdu : |Zdigit beta u (n : Int)| < beta := by
-        simp only [Zdigit, Int.natCast_nonneg, ite_true]
+        simp only [Zdigit_eq_ite, Int.natCast_nonneg, ite_true]
         exact int_tmod_abs_lt_of_pos _ _ (beta_pos hβ)
       have hdv : |Zdigit beta v (n : Int)| < beta := by
-        simp only [Zdigit, Int.natCast_nonneg, ite_true]
+        simp only [Zdigit_eq_ite, Int.natCast_nonneg, ite_true]
         exact int_tmod_abs_lt_of_pos _ _ (beta_pos hβ)
       have hlast := hd n (Nat.lt_succ_self n)
       have hds : |Zdigit beta u (n : Int) + Zdigit beta v (n : Int)| ≤ beta - 1 := by
@@ -1578,7 +1624,7 @@ private theorem Zsum_pair_abs_lt
           |Zsum_digit beta (fun k => Zdigit beta u k) n +
             Zsum_digit beta (fun k => Zdigit beta v k) n| ≤ beta ^ n - 1 := by
         omega
-      simp only [Zsum_digit]
+      simp only [Zsum_digit_zero, Zsum_digit_succ]
       have htri :
           |Zsum_digit beta (fun k => Zdigit beta u k) n +
               Zsum_digit beta (fun k => Zdigit beta v k) n +
@@ -1686,7 +1732,7 @@ theorem Zdigit_ext_nonneg (n m : Int) (hn : 0 ≤ n) (hm : 0 ≤ m)
       have hmpos : 0 < m := lt_of_le_of_ne hm (Ne.symm hm0)
       obtain ⟨k, hk_nonneg, hk_ne⟩ := exists_nonzero_digit beta m hβ hmpos
       have hkm := hdigits k hk_nonneg
-      have hzero : Zdigit beta n k = 0 := by simp [hn0, Zdigit]
+      have hzero : Zdigit beta n k = 0 := by simp [hn0, Zdigit_eq_ite]
       have hmzero : Zdigit beta m k = 0 := by simpa [hzero] using hkm.symm
       exact hk_ne hmzero
     simpa [hn0, hm0]
@@ -1695,7 +1741,7 @@ theorem Zdigit_ext_nonneg (n m : Int) (hn : 0 ≤ n) (hm : 0 ≤ m)
       intro hm0
       obtain ⟨k, hk_nonneg, hk_ne⟩ := exists_nonzero_digit beta n hβ hnpos
       have hkm := hdigits k hk_nonneg
-      have hzero : Zdigit beta m k = 0 := by simp [hm0, Zdigit]
+      have hzero : Zdigit beta m k = 0 := by simp [hm0, Zdigit_eq_ite]
       have hnzero : Zdigit beta n k = 0 := by simpa [hzero] using hkm
       exact hk_ne hnzero
     have hmpos : 0 < m := lt_of_le_of_ne hm (Ne.symm hm0)
@@ -1707,11 +1753,11 @@ theorem Zdigit_ext_nonneg (n m : Int) (hn : 0 ≤ n) (hm : 0 ≤ m)
           Zsum_digit beta (fun i => Zdigit beta m i) k := by
       intro k
       induction k with
-      | zero => simp [Zsum_digit]
+      | zero => simp [Zsum_digit_zero, Zsum_digit_succ]
       | succ k ih =>
           have hk_nonneg : 0 ≤ (k : Int) := Int.natCast_nonneg k
           have hdig := hdigits (k : Int) hk_nonneg
-          simp [Zsum_digit, ih, hdig]
+          simp [Zsum_digit_zero, Zsum_digit_succ, ih, hdig]
 
     have hmod_eq : ∀ k : Nat, n % beta ^ k = m % beta ^ k := by
       intro k
@@ -1777,7 +1823,7 @@ theorem Zdigit_ext_nonneg (n m : Int) (hn : 0 ≤ n) (hm : 0 ≤ m)
 private lemma Zdigit_nonneg_of_nonneg (n k : Int) (hn : 0 ≤ n)
     (hβ : beta > 1 := h_beta) :
     0 ≤ Zdigit beta n k := by
-  unfold Zdigit
+  simp only [Zdigit_eq_ite]
   by_cases hk : 0 ≤ k
   · simp [hk]
     have hβpos : 0 < beta := beta_pos (beta := beta) hβ
@@ -1861,7 +1907,7 @@ theorem ZOdiv_plus_pow_digit_from_nonnegative_digit_payload
     n / beta ^ k.natAbs =
       Zdigit beta n k + (n / beta ^ (k + 1).natAbs) * beta := by
   -- open the digit at position k
-  unfold Zdigit; simp        -- exposes `d = if 0 ≤ k then … else 0`
+  simp only [Zdigit_eq_ite]; simp        -- exposes `d = if 0 ≤ k then … else 0`
 
   -- Notation: b = β^(|k|)
   set b : Int := beta ^ k.natAbs with hb
@@ -1935,11 +1981,11 @@ theorem Zdigit_plus_nonneg
 
   -- these are the two digit equalities we will return
   have dndef : Zdigit beta n k = dn := by
-    unfold Zdigit
+    simp only [Zdigit_eq_ite]
     have : 0 ≤ k := hk
     simp [this, b, dn]
   have dmdef : Zdigit beta m k = dm := by
-    unfold Zdigit
+    simp only [Zdigit_eq_ite]
     have : 0 ≤ k := hk
     simp [this, b, dm]
 
@@ -2059,7 +2105,7 @@ theorem Zdigit_plus_nonneg
   have hnm_nonneg : 0 ≤ n + m := add_nonneg hn hm
   have lhs :
       Zdigit beta (n + m) k = ((n + m) / b) % beta := by
-    unfold Zdigit
+    simp only [Zdigit_eq_ite]
     have : 0 ≤ k := hk
     have hq_nonneg : 0 ≤ (n + m) / b := Int.ediv_nonneg hnm_nonneg (le_of_lt hbpos)
     simp [this, b, Int.tdiv_eq_ediv_of_nonneg hnm_nonneg,
@@ -2103,10 +2149,10 @@ theorem Zdigit_plus_nonneg
 private lemma Zsum_digit_zero_digits (k : Nat) :
     Zsum_digit beta (fun i => Zdigit beta 0 i) k = 0 := by
   induction k with
-  | zero => simp [Zsum_digit]
+  | zero => simp [Zsum_digit_zero, Zsum_digit_succ]
   | succ k ih =>
-      have hzero : Zdigit beta 0 (k : Int) = 0 := by simp [Zdigit]
-      simp [Zsum_digit, ih, hzero]
+      have hzero : Zdigit beta 0 (k : Int) = 0 := by simp [Zdigit_eq_ite]
+      simp [Zsum_digit_zero, Zsum_digit_succ, ih, hzero]
 
 private lemma Zsum_digit_digit_nonneg
     (n : Int) (k : Nat) (hn : 0 ≤ n) (hβ : beta > 1 := h_beta) :
@@ -2121,7 +2167,7 @@ private lemma Zdigit_lt_beta_of_nonneg
     (n k : Int) (hn : 0 ≤ n) (hβ : beta > 1 := h_beta) :
     Zdigit beta n k < beta := by
   have hβpos : 0 < beta := beta_pos (beta := beta) hβ
-  unfold Zdigit
+  simp only [Zdigit_eq_ite]
   by_cases hk : 0 ≤ k
   · simp [hk]
     have hpow_nonneg : 0 ≤ beta ^ k.natAbs := le_of_lt (pow_pos hβpos _)
@@ -2141,7 +2187,7 @@ private lemma Zsum_digit_disjoint_lt_pow
   have hβpos : 0 < beta := beta_pos (beta := beta) hβ
   induction k with
   | zero =>
-      simp [Zsum_digit]
+      simp [Zsum_digit_zero, Zsum_digit_succ]
   | succ k ih =>
       let dn : Int := Zdigit beta n (k : Int)
       let dm : Int := Zdigit beta m (k : Int)
@@ -2181,7 +2227,7 @@ private lemma Zsum_digit_disjoint_lt_pow
               (Zsum_digit beta (fun i => Zdigit beta n i) k +
                 Zsum_digit beta (fun i => Zdigit beta m i) k) +
               (dn + dm) * beta ^ k := by
-                simp [Zsum_digit, dn, dm]
+                simp [Zsum_digit_zero, Zsum_digit_succ, dn, dm]
                 ring
         _ < beta ^ k + (beta - 1) * beta ^ k :=
               add_lt_add_of_lt_of_le ih hmul_le
@@ -2247,16 +2293,16 @@ private theorem Zdigit_plus_nonneg_exact
     have hsumq_nonneg : 0 ≤ (n + m) / beta ^ K :=
       Int.ediv_nonneg hnm_nonneg (le_of_lt hp_pos)
     have hn_digit : Zdigit beta n k = (n / beta ^ K) % beta := by
-      unfold Zdigit
+      simp only [Zdigit_eq_ite]
       simp [hk, K, Int.tdiv_eq_ediv_of_nonneg hn,
         Int.tmod_eq_emod_of_nonneg hnq_nonneg]
     have hm_digit : Zdigit beta m k = (m / beta ^ K) % beta := by
-      unfold Zdigit
+      simp only [Zdigit_eq_ite]
       simp [hk, K, Int.tdiv_eq_ediv_of_nonneg hm,
         Int.tmod_eq_emod_of_nonneg hmq_nonneg]
     have hsum_digit :
         Zdigit beta (n + m) k = ((n + m) / beta ^ K) % beta := by
-      unfold Zdigit
+      simp only [Zdigit_eq_ite]
       simp [hk, K, Int.tdiv_eq_ediv_of_nonneg hnm_nonneg,
         Int.tmod_eq_emod_of_nonneg hsumq_nonneg]
     have hmod_sum :
@@ -2323,10 +2369,10 @@ theorem Zdigit_plus
     Zdigit beta (u + v) k = Zdigit beta u k + Zdigit beta v k := by
   by_cases hu0 : u = 0
   · subst hu0
-    simp [Zdigit]
+    simp [Zdigit_eq_ite]
   by_cases hv0 : v = 0
   · subst hv0
-    simp [Zdigit]
+    simp [Zdigit_eq_ite]
   by_cases hu : 0 ≤ u
   · have hu_pos : 0 < u := lt_of_le_of_ne hu (Ne.symm hu0)
     have hv : 0 ≤ v := by
@@ -2383,9 +2429,20 @@ theorem Zdigit_plus
             rw [hu_digit', hv_digit']
             ring
 
-/-- Scale a number by a power of beta -/
+/-- FLoCq `Zscale`: shift `n` left by `k` digits, or right (truncating) for negative `k`. -/
+@[flocq_source "src/Core/Digits.v" 445 "Zscale"]
 def Zscale (n k : Int) : Int :=
-  (if 0 ≤ k then n * beta ^ k.natAbs else Int.tdiv n (beta ^ (-k).natAbs))
+  if FloatSpec.Core.Zaux.Zle_bool 0 k then n * FloatSpec.Core.Zaux.Zpower beta k
+  else Int.tdiv n (FloatSpec.Core.Zaux.Zpower beta (-k))
+
+/-- The shift as guarded natural powers. -/
+theorem Zscale_eq_ite (n k : Int) :
+    Zscale beta n k = if 0 ≤ k then n * beta ^ k.natAbs else Int.tdiv n (beta ^ (-k).natAbs) := by
+  unfold Zscale FloatSpec.Core.Zaux.Zpower FloatSpec.Core.Zaux.Zle_bool
+  by_cases hk : 0 ≤ k
+  · simp [hk, show k.toNat = k.natAbs by omega]
+  · have hk' : 0 ≤ -k := by omega
+    simp [hk, show k ≤ 0 by omega, show (-k).toNat = (-k).natAbs by omega]
 
 /-- Digit of scaled number
 
@@ -2411,7 +2468,7 @@ theorem Zdigit_scale
   · -- k ≥ 0: use Zdigit_mul_pow
     calc
       Zdigit beta (Zscale beta n k) k'
-          = Zdigit beta (n * beta ^ k.natAbs) k' := by simp [Zscale, hk]
+          = Zdigit beta (n * beta ^ k.natAbs) k' := by simp [Zscale_eq_ite, hk]
       _ = Zdigit beta n (k' - k) :=
           Zdigit_mul_pow (beta := beta) (n := n) (k := k') (l := k) hβ hk
   · -- k < 0: use the signed upstream quotient theorem directly.
@@ -2423,12 +2480,12 @@ theorem Zdigit_scale
       Zdigit_div_pow (beta := beta) (n := n) (k := k') (l := -k) hβ hk' hl
     calc
       Zdigit beta (Zscale beta n k) k'
-          = Zdigit beta (Int.tdiv n (beta ^ (-k).natAbs)) k' := by simp [Zscale, hk]
+          = Zdigit beta (Int.tdiv n (beta ^ (-k).natAbs)) k' := by simp [Zscale_eq_ite, hk]
       _ = Zdigit beta n (k' - k) := by simpa [sub_eq_add_neg] using h'
 
 theorem Zscale_0 (k : Int) :
     Zscale beta 0 k = 0 := by
-  unfold Zscale
+  simp only [Zscale_eq_ite]
   split <;> simp
 
 /-- Scaling has the same sign as the input, matching Flocq `Zsame_sign_scale`.
@@ -2443,7 +2500,7 @@ Theorem Zsame_sign_scale :
 theorem Zsame_sign_scale
     (n k : Int) (hβ : beta > 1 := h_beta) :
     0 ≤ n * Zscale beta n k := by
-  unfold Zscale
+  simp only [Zscale_eq_ite]
   by_cases hk : 0 ≤ k
   · -- k ≥ 0: `n * (n * beta^k)` is nonnegative.
     have hβpos : 0 < beta := lt_trans (show (0:ℤ) < 1 by decide) hβ
@@ -2483,7 +2540,7 @@ theorem Zscale_mul_pow (n k l : Int) (hl : 0 ≤ l) (hβ : beta > 1 := h_beta) :
       Zscale beta (n * beta ^ l.natAbs) k = scaled by
     obtain ⟨scaled, hscaled, hres⟩ := h
     exact hres.trans hscaled.symm
-  unfold Zscale
+  simp only [Zscale_eq_ite]
   have hβpos : 0 < beta := by
     have : (0 : Int) < 1 := by decide
     exact lt_trans this hβ
@@ -2617,16 +2674,26 @@ theorem Zscale_scale (n k l : Int) (hk : 0 ≤ k) (hβ : beta > 1 := h_beta) :
     Zscale beta (Zscale beta n k) l = Zscale beta n (k + l) := by
   calc
     Zscale beta (Zscale beta n k) l
-        = Zscale beta (n * beta ^ k.natAbs) l := by simp [Zscale, hk]
+        = Zscale beta (n * beta ^ k.natAbs) l := by simp [Zscale_eq_ite, hk]
     _ = Zscale beta n (l + k) :=
         Zscale_mul_pow (beta := beta) (n := n) (k := l) (l := k) hβ hk
     _ = Zscale beta n (k + l) := by rw [add_comm]
 
-/-- Slice digits: scale by {name}`Zscale` with exponent -k1, then take the
-remainder modulo beta^k2 when 0 ≤ k2 (otherwise 0). -/
+/-- FLoCq `Zslice`: the `k2` digits of `n` starting at index `k1`, and zero for negative `k2`. -/
+@[flocq_source "src/Core/Digits.v" 526 "Zslice"]
 def Zslice (n k1 k2 : Int) : Int :=
-  let scaled := Zscale beta n (-k1)
-  if 0 ≤ k2 then Int.tmod scaled (beta ^ k2.natAbs) else 0
+  if FloatSpec.Core.Zaux.Zle_bool 0 k2 then
+    Int.tmod (Zscale beta n (-k1)) (FloatSpec.Core.Zaux.Zpower beta k2)
+  else 0
+
+/-- The slice as a guarded natural power. -/
+theorem Zslice_eq_ite (n k1 k2 : Int) :
+    Zslice beta n k1 k2 =
+      if 0 ≤ k2 then Int.tmod (Zscale beta n (-k1)) (beta ^ k2.natAbs) else 0 := by
+  unfold Zslice FloatSpec.Core.Zaux.Zpower FloatSpec.Core.Zaux.Zle_bool
+  by_cases hk : 0 ≤ k2
+  · simp [hk, show k2.toNat = k2.natAbs by omega]
+  · simp [hk]
 
 /-- Digit of slice
 
@@ -2670,7 +2737,7 @@ theorem Zdigit_slice (n k l m : Int) (hm : 0 ≤ m)
         (h_beta := hβ) (n := n) (k := -k) (k' := m) (hβ := hβ) hm
       have hmod' :
           Zdigit beta (Zslice beta n k l) m = Zdigit beta (Zscale beta n (-k)) m := by
-        simpa [Zslice, hl, hml] using hmod
+        simpa [Zslice_eq_ite, hl, hml] using hmod
       have hscale' : Zdigit beta (Zscale beta n (-k)) m = Zdigit beta n (k + m) := by
         simpa [sub_neg_eq_add, add_comm] using hscale
       rw [ite_eq_left hml]
@@ -2678,9 +2745,9 @@ theorem Zdigit_slice (n k l m : Int) (hm : 0 ≤ m)
     · have hout := Zdigit_mod_pow_out (beta := beta)
         (h_beta := hβ) (n := Zscale beta n (-k)) (k := m) (l := l)
         (hβ := hβ) ⟨hl, le_of_not_gt hml⟩
-      simpa [Zslice, hl, hml] using hout
+      simpa [Zslice_eq_ite, hl, hml] using hout
   · have hml : ¬ m < l := by omega
-    simp [Zslice, hl, hml, Zdigit]
+    simp [Zslice_eq_ite, hl, hml, Zdigit_eq_ite]
 /-- Digit of slice outside range
 
 Coq theorem and proof:
@@ -2708,8 +2775,8 @@ theorem Zdigit_slice_out (n k l m : Int) (hlm : l ≤ m) (h_beta : beta > 1) :
         Zdigit beta (Int.tmod (Zscale beta n (-k)) (beta ^ l.natAbs)) m = 0 :=
       Zdigit_mod_pow_out (beta := beta) (n := Zscale beta n (-k)) (k := m) (l := l)
         h_beta ⟨hl, hlm⟩
-    simpa [Zslice, hl] using hmod'
-  · simp [Zslice, hl, Zdigit]
+    simpa [Zslice_eq_ite, hl] using hmod'
+  · simp [Zslice_eq_ite, hl, Zdigit_eq_ite]
 /-- Zslice of zero is always zero
 
 Coq theorem and proof:
@@ -2729,12 +2796,12 @@ Qed.
 -/
 theorem Zslice_0 (k k' : Int) :
     Zslice beta 0 k k' = 0 := by
-  unfold Zslice Zscale
+  simp only [Zslice_eq_ite, Zscale_eq_ite]
   simp
 
 private lemma Zscale_nonneg_of_nonneg (n k : Int) (hn : 0 ≤ n) (h_beta : beta > 1) :
     0 ≤ Zscale beta n k := by
-  unfold Zscale
+  simp only [Zscale_eq_ite]
   have hβpos : 0 < beta := lt_trans (show (0 : Int) < 1 by decide) h_beta
   by_cases hk : 0 ≤ k
   · exact by
@@ -2746,7 +2813,7 @@ private lemma Zscale_nonneg_of_nonneg (n k : Int) (hn : 0 ≤ n) (h_beta : beta 
 
 private lemma Zscale_nonpos_of_nonpos (n k : Int) (hn : n ≤ 0) (h_beta : beta > 1) :
     Zscale beta n k ≤ 0 := by
-  unfold Zscale
+  simp only [Zscale_eq_ite]
   have hβpos : 0 < beta := lt_trans (show (0 : Int) < 1 by decide) h_beta
   by_cases hk : 0 ≤ k
   · simp [hk]
@@ -2758,7 +2825,7 @@ private lemma Zscale_nonpos_of_nonpos (n k : Int) (hn : n ≤ 0) (h_beta : beta 
 
 private lemma Zslice_nonneg_of_nonneg (n k l : Int) (hn : 0 ≤ n) (h_beta : beta > 1) :
     0 ≤ Zslice beta n k l := by
-  unfold Zslice
+  simp only [Zslice_eq_ite]
   by_cases hl : 0 ≤ l
   · have hβpos : 0 < beta := lt_trans (show (0 : Int) < 1 by decide) h_beta
     have hpowpos : 0 < beta ^ l.natAbs := pow_pos hβpos _
@@ -2809,7 +2876,7 @@ theorem Zsame_sign_slice (n k l : Int) (hβ : beta > 1 := h_beta) :
       have hr : 0 ≤ Int.tmod (Zscale beta n (-k)) (beta ^ l.natAbs) := by
         rw [Int.tmod_eq_emod_of_nonneg hs]
         exact Int.emod_nonneg _ (ne_of_gt hbase)
-      simpa [Zslice, hl] using mul_nonneg hn hr
+      simpa [Zslice_eq_ite, hl] using mul_nonneg hn hr
     · have hn' : n ≤ 0 := le_of_lt (lt_of_not_ge hn)
       have hs : Zscale beta n (-k) ≤ 0 :=
         Zscale_nonpos_of_nonpos (beta := beta) n (-k) hn' hβ
@@ -2820,8 +2887,8 @@ theorem Zsame_sign_slice (n k l : Int) (hβ : beta > 1 := h_beta) :
       have hr : Int.tmod (Zscale beta n (-k)) (beta ^ l.natAbs) ≤ 0 := by
         rw [Int.neg_tmod] at hrneg
         omega
-      simpa [Zslice, hl] using mul_nonneg_of_nonpos_of_nonpos hn' hr
-  · simp [Zslice, hl]
+      simpa [Zslice_eq_ite, hl] using mul_nonneg_of_nonpos_of_nonpos hn' hr
+  · simp [Zslice_eq_ite, hl]
 
 /-- Composition of Zslice operations
 
@@ -2886,7 +2953,7 @@ theorem Zslice_slice (n k1 k2 k1' k2' : Int)
     · have hmin : ¬ k < min (k2 - k1') k2' := by omega
       simp [hkk2', hmin]
   · have hmin : min (k2 - k1') k2' = k2' := by omega
-    simp [Zslice, hk2', hmin]
+    simp [Zslice_eq_ite, hk2', hmin]
 /-- Zslice and multiplication by power of beta
 
 Coq theorem and proof:
@@ -2911,8 +2978,8 @@ theorem Zslice_mul_pow (n k k1 k2 : Int) (hk : 0 ≤ k) (h_beta : beta > 1) :
       Zscale beta (n * beta ^ k.natAbs) (-k1) = Zscale beta n (-k1 + k) :=
     Zscale_mul_pow (beta := beta) (n := n) (k := -k1) (l := k) h_beta hk
   by_cases hk2 : 0 ≤ k2
-  · simp [Zslice, hk2, hscale_eq, sub_eq_add_neg, add_comm, add_left_comm, add_assoc]
-  · simp [Zslice, hk2, sub_eq_add_neg, add_comm, add_left_comm, add_assoc]
+  · simp [Zslice_eq_ite, hk2, hscale_eq, sub_eq_add_neg, add_comm, add_left_comm, add_assoc]
+  · simp [Zslice_eq_ite, hk2, sub_eq_add_neg, add_comm, add_left_comm, add_assoc]
 /-- Zslice and division by power of beta
 
 Coq theorem and proof:
@@ -2946,11 +3013,11 @@ theorem Zslice_div_pow (n k k1 k2 : Int) (hk : 0 ≤ k) (hk1 : 0 ≤ k1)
       have hk1zero : k1 = 0 := by linarith [hk1, hk1']
       subst hk1zero
       by_cases hk0 : k = 0
-      · simp [Zscale, hk0]
+      · simp [Zscale_eq_ite, hk0]
       · have hkpos : 0 < k := lt_of_le_of_ne hk (Ne.symm hk0)
         have hkneg : ¬ 0 ≤ -k := by linarith [hkpos]
         have hk_not_le : ¬ k ≤ 0 := by linarith [hkpos]
-        simp [Zscale, hkneg, hk_not_le, hk0]
+        simp [Zscale_eq_ite, hkneg, hk_not_le, hk0]
     · -- k1 > 0, both scales are divisions
       have hk1pos : 0 < k1 := lt_of_le_of_ne hk1 (Ne.symm (by
         intro hk1zero
@@ -2983,11 +3050,11 @@ theorem Zslice_div_pow (n k k1 k2 : Int) (hk : 0 ≤ k) (hk1 : 0 ≤ k1)
               = beta ^ (k.natAbs + k1.natAbs) := by rw [pow_add]
           _ = beta ^ (k + k1).natAbs := by simpa [hnat]
       -- now simplify the Zscale definitions
-      simp [Zscale, hk1', hsum_neg, hk1_not_le, hsum_not_le,
+      simp [Zscale_eq_ite, hk1', hsum_neg, hk1_not_le, hsum_not_le,
         hk1_le_negk, h_ediv, hpow, add_comm, add_left_comm, add_assoc]
   by_cases hk2 : 0 ≤ k2
-  · simp [Zslice, hk2, hscale_eq, add_comm, add_left_comm, add_assoc]
-  · simp [Zslice, hk2, add_comm, add_left_comm, add_assoc]
+  · simp [Zslice_eq_ite, hk2, hscale_eq, add_comm, add_left_comm, add_assoc]
+  · simp [Zslice_eq_ite, hk2, add_comm, add_left_comm, add_assoc]
 private lemma div_mul_pow_eq_div_sub
     (n a b : Int) (beta : Int) (h_beta : beta > 1)
     (ha : 0 ≤ a) (hb : 0 ≤ b) (hab : b ≤ a)
@@ -3274,7 +3341,7 @@ private lemma int_tmod_mul_decompose (a b c : Int) (hb : 0 < b) (hc : 0 < c) :
 private lemma zscale_div_pow_nonneg
     (n k l : Int) (hbeta : beta > 1) (hl : 0 ≤ l) :
     Int.tdiv (Zscale beta n (-k)) (beta ^ l.natAbs) = Zscale beta n (-(k + l)) := by
-  unfold Zscale
+  simp only [Zscale_eq_ite]
   have hβpos : 0 < beta := lt_trans (by decide : (0 : Int) < 1) hbeta
   by_cases hl0 : l = 0
   · subst hl0
@@ -3376,10 +3443,10 @@ theorem Zslice_scale (n k k1 k2 : Int) (hk1 : 0 ≤ k1)
       Zslice beta n (k1 - k) k2 := by
   by_cases hk : 0 ≤ k
   · have h := Zslice_mul_pow (beta := beta) n k k1 k2 hk hβ
-    simpa [Zscale, hk] using h
+    simpa [Zscale_eq_ite, hk] using h
   · have hk' : 0 ≤ -k := by omega
     have h := Zslice_div_pow (beta := beta) n (-k) k1 k2 hk' hk1 hβ
-    simpa [Zscale, hk, sub_eq_add_neg] using h
+    simpa [Zscale_eq_ite, hk, sub_eq_add_neg] using h
 
 /-- Slice recomposition, matching Flocq `Core/Digits.v:Zplus_slice`.
 
@@ -3421,38 +3488,74 @@ theorem Zplus_slice (n k l1 l2 : Int) (hl1 : 0 ≤ l1) (hl2 : 0 ≤ l2)
       exact Nat.cast_injective eq_int
     simp [b, c, hnat, pow_add]
   have hslice_low : Zslice beta n k l1 = Int.tmod a b := by
-    simp [Zslice, hl1, a, b]
+    simp [Zslice_eq_ite, hl1, a, b]
   have hshift : Int.tdiv a b = Zscale beta n (-(k + l1)) := by
     simpa [a, b] using
       zscale_div_pow_nonneg
         (beta := beta) (n := n) (k := k) (l := l1) (hbeta := h_beta) hl1
   have hslice_high : Zslice beta n (k + l1) l2 = Int.tmod (Int.tdiv a b) c := by
-    simp [Zslice, hl2, c, hshift]
+    simp [Zslice_eq_ite, hl2, c, hshift]
   have hscale_high :
       Zscale beta (Zslice beta n (k + l1) l2) l1 = Int.tmod (Int.tdiv a b) c * b := by
-    simp [Zscale, hl1, hslice_high, b]
+    simp [Zscale_eq_ite, hl1, hslice_high, b]
   have hslice_join : Zslice beta n k (l1 + l2) = Int.tmod a (b * c) := by
-    simp [Zslice, hl12, a, hpow_add]
+    simp [Zslice_eq_ite, hl12, a, hpow_add]
   calc
     Zslice beta n k l1 + Zscale beta (Zslice beta n (k + l1) l2) l1
         = Int.tmod a b + Int.tmod (Int.tdiv a b) c * b := by rw [hslice_low, hscale_high]
     _ = Int.tmod a b + b * Int.tmod (Int.tdiv a b) c := by ring
     _ = Int.tmod a (b * c) := by rw [int_tmod_mul_decompose a b c hb_pos hc_pos]
     _ = Zslice beta n k (l1 + l2) := by rw [hslice_join]
-/-- Fuel-bounded digit counter helper for Zdigits.  The source helper compares
-its signed section parameter directly; `Zdigits` supplies a positive value. -/
-def Zdigits_aux (p d pow : Int) : Nat → Int
-  | 0        => d
-  | fuel+1   => if p < pow then d
-                else Zdigits_aux p (d + 1) (beta * pow) fuel
+/-- FLoCq `Zdigits_aux`: count digits of `p` from `nb`, while `pow` is `beta ^ nb` and below
+`p`, for at most `n` more steps. In Rocq `p` is a section variable. -/
+@[flocq_source "src/Core/Digits.v" 728 "Zdigits_aux"]
+def Zdigits_aux (p nb pow : Int) : Nat → Int
+  | 0 => nb
+  | n + 1 =>
+      if FloatSpec.Core.Zaux.Zlt_bool p pow then nb else Zdigits_aux p (nb + 1) (beta * pow) n
 
-/-- Number of digits of an integer. -/
+theorem Zdigits_aux_zero (p nb pow : Int) : Zdigits_aux beta p nb pow 0 = nb := rfl
+
+/-- The recursive step with a decided comparison. -/
+theorem Zdigits_aux_succ (p nb pow : Int) (n : Nat) :
+    Zdigits_aux beta p nb pow (n + 1) =
+      if p < pow then nb else Zdigits_aux beta p (nb + 1) (beta * pow) n := by
+  simp [Zdigits_aux, FloatSpec.Core.Zaux.Zlt_bool]
+
+/-- FLoCq `Zdigits`: the number of radix-`beta` digits of `n`, and zero for zero. The fuel
+is the binary length of `|n|`, as in the source. -/
+@[flocq_source "src/Core/Digits.v" 738 "Zdigits"]
 def Zdigits (n : Int) : Int :=
-  if _h : n = 0 then 0
-  else
-    -- start at d = 1 with pow = beta^1 = beta
-    let fuel := (Int.natAbs n).succ
-    Zdigits_aux beta (Int.natAbs n) 1 beta fuel
+  match FloatSpec.Core.Zaux.zview n with
+  | .Z0 => 0
+  | .Zneg p => Zdigits_aux beta (FloatSpec.Core.Zaux.Zpos p) 1 beta (digits2_Pnat p)
+  | .Zpos p => Zdigits_aux beta n 1 beta (digits2_Pnat p)
+
+theorem Zdigits_zero : Zdigits beta 0 = 0 := rfl
+
+/-- Both signs count the digits of the absolute value. -/
+theorem Zdigits_eq_abs (n : Int) :
+    Zdigits beta n =
+      if n = 0 then 0 else Zdigits_aux beta |n| 1 beta (digits2_nat n.natAbs) := by
+  rcases FloatSpec.Core.Zaux.zview_cases n with ⟨rfl, -⟩ | ⟨p, rfl, hv⟩ | ⟨p, rfl, hv⟩
+  · rfl
+  · have hp := FloatSpec.Core.Zaux.Zpos_pos p
+    simp only [Zdigits, hv, hp.ne', ↓reduceIte, abs_of_pos hp]
+    simp [FloatSpec.Core.Zaux.Zpos, digits2_nat_positiveToNat]
+  · have hp := FloatSpec.Core.Zaux.Zpos_pos p
+    simp only [Zdigits, hv, neg_ne_zero, hp.ne', ↓reduceIte, abs_neg, abs_of_pos hp]
+    simp [FloatSpec.Core.Zaux.Zpos, (FloatSpec.Core.Zaux.positiveToNat_pos p).ne',
+      digits2_nat_positiveToNat]
+
+/-- The counter never decreases. -/
+theorem Zdigits_aux_ge (p nb pow : Int) (n : Nat) : nb ≤ Zdigits_aux beta p nb pow n := by
+  induction n generalizing nb pow with
+  | zero => exact le_rfl
+  | succ n ih =>
+      rw [Zdigits_aux_succ]
+      split
+      · exact le_rfl
+      · exact le_trans (by omega) (ih (nb + 1) (beta * pow))
 
 /- Correctness of digit count bounds
 
@@ -3539,13 +3642,13 @@ private theorem Zdigits_aux_bounds
   induction fuel generalizing d pow with
   | zero =>
     -- Base case: fuel = 0, result is d
-    simp only [Zdigits_aux]
+    simp only [Zdigits_aux_zero, Zdigits_aux_succ]
     constructor
     · exact hlow
     · simpa using hhigh
   | succ fuel' ih =>
     -- Inductive case
-    simp only [Zdigits_aux]
+    simp only [Zdigits_aux_zero, Zdigits_aux_succ]
     have hd_nonneg : 0 ≤ d := le_of_lt hd_pos
     have hd_toNat : d.natAbs = d.toNat := by
       have h1 : (d.natAbs : Int) = d := Int.natAbs_of_nonneg hd_nonneg
@@ -3589,58 +3692,55 @@ private theorem Zdigits_aux_bounds
         rw [← h1]
         exact hhigh
       exact ih (d + 1) (beta * pow) hpow' hd1_pos hlow' hhigh'
+/-- Two exponents bracketing the same positive value are equal. -/
+private theorem digits_bounds_unique (m r1 r2 : Int) (hβ : beta > 1) (h1 : 1 ≤ r1) (h2 : 1 ≤ r2)
+    (hb1 : beta ^ ((r1 - 1).natAbs) ≤ m ∧ m < beta ^ r1.natAbs)
+    (hb2 : beta ^ ((r2 - 1).natAbs) ≤ m ∧ m < beta ^ r2.natAbs) : r1 = r2 := by
+  have hlt1 := (pow_lt_pow_iff_right₀ hβ).mp (lt_of_le_of_lt hb1.1 hb2.2)
+  have hlt2 := (pow_lt_pow_iff_right₀ hβ).mp (lt_of_le_of_lt hb2.1 hb1.2)
+  omega
+
+/-- The bracket of a counter started at one digit with enough fuel. -/
+private theorem Zdigits_aux_one_bounds (m : Int) (hβ : beta > 1) (hm : 0 < m) (fuel : Nat)
+    (hfuel : m < beta ^ (1 + fuel)) :
+    beta ^ ((Zdigits_aux beta m 1 beta fuel - 1).natAbs) ≤ m ∧
+      m < beta ^ (Zdigits_aux beta m 1 beta fuel).natAbs :=
+  Zdigits_aux_bounds beta m hβ 1 beta fuel (by simp) one_pos (by simp; omega) hfuel
+
+/-- The source fuel, the binary length of `|n|`, suffices for any valid radix. -/
+private theorem digits2_fuel_bound (n : Int) (hβ : beta > 1) (hn : n ≠ 0) :
+    (n.natAbs : Int) < beta ^ (1 + digits2_nat n.natAbs) := by
+  have hd := (digits2_nat_correct n.natAbs (by omega)).2
+  rw [Nat.add_comm]
+  exact lt_of_lt_of_le (by exact_mod_cast hd) (pow_le_pow_left₀ (by norm_num) hβ _)
+
+/-- With a valid radix, any fuel of at least the binary length gives the same count; in
+particular `|n| + 1` steps, the body used before the source port. -/
+theorem Zdigits_eq_fuel (n : Int) (hβ : beta > 1) :
+    Zdigits beta n =
+      if _h : n = 0 then 0 else Zdigits_aux beta (n.natAbs : Int) 1 beta n.natAbs.succ := by
+  rw [Zdigits_eq_abs]
+  by_cases hn : n = 0
+  · simp [hn]
+  simp only [hn, ↓reduceIte, ↓reduceDIte, Int.abs_eq_natAbs]
+  have hm : 0 < (n.natAbs : Int) := by omega
+  have hβ2 : (2 : Int) ≤ beta := hβ
+  have hpow (k : Nat) : (2 : Int) ^ k ≤ beta ^ k := pow_le_pow_left₀ (by norm_num) hβ2 k
+  have hfuel1 := digits2_fuel_bound beta n hβ hn
+  have hfuel2 : (n.natAbs : Int) < beta ^ (1 + n.natAbs.succ) := by
+    have h1 : (n.natAbs : Int) < 2 ^ n.natAbs := by exact_mod_cast Nat.lt_two_pow_self
+    have h2 : beta ^ n.natAbs ≤ beta ^ (1 + n.natAbs.succ) :=
+      pow_le_pow_right₀ (by omega) (by omega)
+    exact lt_of_lt_of_le h1 (le_trans (hpow _) h2)
+  exact digits_bounds_unique beta _ _ _ hβ (Zdigits_aux_ge beta _ _ _ _)
+    (Zdigits_aux_ge beta _ _ _ _) (Zdigits_aux_one_bounds beta _ hβ hm _ hfuel1)
+    (Zdigits_aux_one_bounds beta _ hβ hm _ hfuel2)
+
 /-- Final theorem: correctness of the number of digits computed by {name}`Zdigits`. -/
 theorem Zdigits_correct_from_nonzero_payload (n : Int) (hn : n ≠ 0) (hβ : beta > 1) :
     beta ^ ((Zdigits beta n - 1).natAbs) ≤ |n| ∧ |n| < beta ^ (Zdigits beta n).natAbs := by
-  simp only [Zdigits, hn, ↓reduceDIte]
-  -- Now goal is about Zdigits_aux beta n 1 beta (n.natAbs.succ)
-  have hβpos : 0 < beta := lt_trans (by norm_num : (0 : Int) < 1) hβ
-  have hβ_ge1 : 1 ≤ beta := le_of_lt hβ
-  -- Apply Zdigits_aux_bounds with d=1, pow=beta, fuel=n.natAbs.succ
-  have hpow : beta = beta ^ (1 : Int).natAbs := by simp
-  have hd_pos : 0 < (1 : Int) := by norm_num
-  have hlow : beta ^ ((1 - 1 : Int).natAbs) ≤ |n| := by
-    simp only [sub_self, Int.natAbs_zero, pow_zero]
-    -- Need 1 ≤ |n|
-    have hna : n.natAbs ≠ 0 := Int.natAbs_ne_zero.mpr hn
-    have hna_pos : 0 < n.natAbs := Nat.pos_of_ne_zero hna
-    have : (1 : Int) ≤ n.natAbs := by omega
-    rw [Int.abs_eq_natAbs]
-    exact this
-  have hhigh : |n| < beta ^ ((1 : Int).natAbs + n.natAbs.succ) := by
-    -- Need |n| < β^(1 + n.natAbs + 1) = β^(n.natAbs + 2)
-    -- We have |n| = n.natAbs and β ≥ 2, so β^(n.natAbs+1) > n.natAbs
-    simp only [Int.natAbs_one]
-    have habs : |n| = n.natAbs := Int.abs_eq_natAbs n
-    rw [habs]
-    -- Goal: n.natAbs < β^(1 + n.natAbs.succ) = β^(n.natAbs + 2)
-    have hexp : 1 + n.natAbs.succ = n.natAbs + 2 := by omega
-    rw [hexp]
-    -- Use that β^(k+1) > k for β ≥ 2, k ≥ 0
-    have hβ2 : 2 ≤ beta := hβ
-    have h2pow : ∀ k : Nat, k < (2 : Int) ^ (k + 1) := by
-      intro k
-      induction k with
-      | zero => norm_num
-      | succ k' ih =>
-        calc (k' + 1 : Int) = k' + 1 := rfl
-          _ < 2 ^ (k' + 1) + 1 := by linarith
-          _ ≤ 2 ^ (k' + 1) + 2 ^ (k' + 1) := by
-              have : (1 : Int) ≤ 2 ^ (k' + 1) := by
-                have := pow_pos (by norm_num : (0 : Int) < 2) (k' + 1)
-                linarith
-              linarith
-          _ = 2 * 2 ^ (k' + 1) := by ring
-          _ = 2 ^ (k' + 2) := by rw [pow_succ 2 (k' + 1)]; ring
-    calc (n.natAbs : Int) < 2 ^ (n.natAbs + 1) := h2pow n.natAbs
-      _ ≤ beta ^ (n.natAbs + 1) := by
-          apply pow_le_pow_left₀ (by norm_num : (0 : Int) ≤ 2) hβ2
-      _ < beta ^ (n.natAbs + 2) := by
-          apply Int.pow_lt_pow_of_lt hβ
-          omega
-  rw [Int.abs_eq_natAbs] at hlow hhigh ⊢
-  exact Zdigits_aux_bounds beta (n.natAbs : Int) hβ 1 beta n.natAbs.succ
-    hpow hd_pos hlow hhigh
+  simp only [Zdigits_eq_abs, hn, ↓reduceIte, Int.abs_eq_natAbs]
+  exact Zdigits_aux_one_bounds beta _ hβ (by omega) _ (digits2_fuel_bound beta n hβ hn)
 
 /-- Exact source characterization, including the source-defined zero case and
 source `Zpower` (which is zero at negative exponents). -/
@@ -3648,22 +3748,11 @@ theorem Zdigits_correct (n : Int) (hβ : beta > 1) :
     FloatSpec.Core.Zaux.Zpower beta (Zdigits beta n - 1) ≤ |n| ∧
       |n| < FloatSpec.Core.Zaux.Zpower beta (Zdigits beta n) := by
   by_cases hn : n = 0
-  · simp [Zdigits, hn, FloatSpec.Core.Zaux.Zpower]
+  · simp [hn, Zdigits_zero, FloatSpec.Core.Zaux.Zpower]
   · have hb := Zdigits_correct_from_nonzero_payload beta n hn hβ
     have hdpos : 0 < Zdigits beta n := by
-      unfold Zdigits
-      simp only [hn, dite_eq_right]
-      generalize (Int.natAbs n).succ = fuel
-      have haux : ∀ m d p, 0 < d → 0 < Zdigits_aux beta m d p fuel := by
-        induction fuel with
-        | zero => intro m d p hd; simpa [Zdigits_aux] using hd
-        | succ fuel ih =>
-            intro m d p hd
-            simp only [Zdigits_aux]
-            split
-            · exact hd
-            · exact ih m (d + 1) (beta * p) (by omega)
-      exact haux (n.natAbs : Int) 1 beta (by omega)
+      simp only [Zdigits_eq_abs, hn, ↓reduceIte]
+      exact lt_of_lt_of_le one_pos (Zdigits_aux_ge beta _ _ _ _)
     have hd0 : 0 ≤ Zdigits beta n := hdpos.le
     have hdm1 : 0 ≤ Zdigits beta n - 1 := by omega
     simp only [FloatSpec.Core.Zaux.Zpower, ite_eq_left hd0, ite_eq_left hdm1]
@@ -3841,7 +3930,8 @@ Qed.
 -/
 theorem Zdigits_abs (n : Int) :
     Zdigits beta (Int.natAbs n) = Zdigits beta n := by
-  simp [Zdigits, Int.natAbs_natCast, Int.natAbs_abs]
+  rw [Zdigits_eq_abs, Zdigits_eq_abs]
+  simp [Int.natAbs_abs]
 /-- Digit count of opposite
 
 Coq theorem and proof:
@@ -3858,7 +3948,8 @@ Qed.
 -/
 theorem Zdigits_opp (n : Int) :
     Zdigits beta (-n) = Zdigits beta n := by
-  simp [Zdigits]
+  rw [Zdigits_eq_abs, Zdigits_eq_abs]
+  simp
 /-- Digit count with conditional opposite
 
 Coq theorem and proof:
@@ -3894,52 +3985,14 @@ Qed.
 -/
 theorem Zdigits_ge_0 (n : Int) :
     0 ≤ Zdigits beta n := by
-  by_cases hn : n = 0
-  · simp [Zdigits, hn]
-  · unfold Zdigits
-    simp [hn]
-    have h_aux_nonneg : ∀ m d pow fuel, 0 ≤ d →
-        0 ≤ Zdigits_aux beta m d pow fuel := by
-      intro m d pow fuel hd
-      induction fuel generalizing d pow with
-      | zero =>
-          simp [Zdigits_aux, hd]
-      | succ fuel' ih =>
-          simp only [Zdigits_aux]
-          split_ifs
-          · exact hd
-          · exact ih (d + 1) (beta * pow) (by linarith)
-    rw [Int.abs_eq_natAbs]
-    simpa only [Nat.succ_eq_add_one] using
-      h_aux_nonneg (n.natAbs : Int) 1 beta n.natAbs.succ (by norm_num)
+  rw [Zdigits_eq_abs]
+  split
+  · exact le_rfl
+  · exact le_trans zero_le_one (Zdigits_aux_ge beta _ _ _ _)
 theorem Zdigits_gt_0 (n : Int) (hn : n ≠ 0) (_h_beta : beta > 1) :
     0 < Zdigits beta n := by
-  -- Unfold Zdigits to see what we're working with
-  unfold Zdigits
-  split
-  · -- Case: n = 0, contradicts our assumption
-    rename_i h_eq
-    exact absurd h_eq hn
-  · -- Case: n ≠ 0, so we use Zdigits_aux
-    -- The goal is to prove that Zdigits_aux returns > 0
-    -- We have: have fuel := n.natAbs.succ; Zdigits_aux beta n 1 beta fuel
-    simp only [Nat.succ_eq_add_one]
-    -- Zdigits_aux with d > 0 returns > 0
-    have h_aux : ∀ m d pow fuel, d > 0 →
-        (Zdigits_aux beta m d pow fuel) > 0 := by
-      intro m d pow fuel hd
-      induction fuel generalizing d pow with
-      | zero =>
-        unfold Zdigits_aux
-        simp
-        exact hd
-      | succ fuel' ih =>
-        unfold Zdigits_aux
-        simp
-        split_ifs
-        · exact hd
-        · apply ih; linarith
-    exact h_aux (n.natAbs : Int) 1 beta (n.natAbs + 1) (by norm_num : (1 : Int) > 0)
+  simp only [Zdigits_eq_abs, hn, ↓reduceIte]
+  exact lt_of_lt_of_le one_pos (Zdigits_aux_ge beta _ _ _ _)
 
 /-- Digits beyond the representation are zero
 
@@ -4107,7 +4160,7 @@ private lemma digit_nonzero_at_boundary (beta n k : Int) (h_beta : beta > 1)
   by_contra h_zero
 
   -- From the definition of Zdigit when k ≥ 0
-  unfold Zdigit at h_zero
+  simp only [Zdigit_eq_ite] at h_zero
   simp only [hk, ite_eq_left] at h_zero
 
   -- Key insight: with beta^k ≤ |n| < beta^(k+1), we have 1 ≤ |n.tdiv (beta^k)| < beta
@@ -4494,7 +4547,7 @@ theorem lt_Zdigits_from_power_payload (n m : Int)
     Zdigits beta n ≤ m := by
   rcases hpre with ⟨hm_pos, hn_lt_pow⟩
   by_cases hn : n = 0
-  · simp [Zdigits, hn]
+  · simp [Zdigits_zero, hn]
     linarith
   · have hbounds := Zdigits_correct_from_nonzero_payload beta n hn hβ
     set d := Zdigits beta n with hd
@@ -4529,18 +4582,18 @@ theorem Zdigits_le_Zpower (x e : Int)
     have hx_natAbs_zero : Int.natAbs x = 0 := by
       omega
     have hx_zero : x = 0 := Int.natAbs_eq_zero.mp hx_natAbs_zero
-    simp [Zdigits, hx_zero, he_zero.symm]
+    simp [Zdigits_zero, hx_zero, he_zero.symm]
 theorem Zdigits_slice (n k l : Int) (hl_nonneg : 0 ≤ l) (hβ : beta > 1) :
     Zdigits beta (Zslice beta n k l) ≤ l := by
   by_cases hl0 : l = 0
   · subst l
-    simp [Zslice, Zdigits]
+    simp [Zslice_eq_ite, Zdigits_zero]
   have hl_pos : 0 < l := lt_of_le_of_ne hl_nonneg (Ne.symm hl0)
   have hβpos : 0 < beta := lt_trans (show (0 : Int) < 1 by decide) hβ
   have hpowpos : 0 < beta ^ l.natAbs := pow_pos hβpos _
   set scaled := Zscale beta n (-k) with hscaled
   have hslice_eq : Zslice beta n k l = Int.tmod scaled (beta ^ l.natAbs) := by
-    simp [Zslice, hl_nonneg, scaled]
+    simp [Zslice_eq_ite, hl_nonneg, scaled]
   have hslice_lt : (Int.natAbs (Zslice beta n k l) : Int) < beta ^ l.natAbs := by
     rw [hslice_eq]
     rw [← Int.abs_eq_natAbs]
@@ -4681,7 +4734,7 @@ theorem Zdigits_le (n m : Int) (hn : 0 ≤ n) (hnm : n ≤ m)
     Zdigits beta n ≤ Zdigits beta m := by
   by_cases hn0 : n = 0
   · subst n
-    simpa [Zdigits] using Zdigits_ge_0 (beta := beta) m
+    simpa [Zdigits_zero] using Zdigits_ge_0 (beta := beta) m
   have hm : 0 ≤ m := le_trans hn hnm
   have habs : n.natAbs ≤ m.natAbs := by
     have hi : (n.natAbs : Int) ≤ (m.natAbs : Int) := by
@@ -4951,7 +5004,7 @@ private lemma Zdigits_sum_product_bound (beta : Int) (x y : Int)
   have hβ_nonneg : 0 ≤ beta := by linarith
   have hx_succ_le : x + 1 ≤ beta ^ dx.natAbs := by
     by_cases hx_zero : x = 0
-    · simp [dx, Zdigits, hx_zero]
+    · simp [dx, Zdigits_zero, hx_zero]
     · have hbounds := Zdigits_correct_from_nonzero_payload beta x hx_zero hbeta
       have hx_lt_pow : x < beta ^ dx.natAbs := by
         have h := hbounds.2
@@ -4959,7 +5012,7 @@ private lemma Zdigits_sum_product_bound (beta : Int) (x y : Int)
       omega
   have hy_succ_le : y + 1 ≤ beta ^ dy.natAbs := by
     by_cases hy_zero : y = 0
-    · simp [dy, Zdigits, hy_zero]
+    · simp [dy, Zdigits_zero, hy_zero]
     · have hbounds := Zdigits_correct_from_nonzero_payload beta y hy_zero hbeta
       have hy_lt_pow : y < beta ^ dy.natAbs := by
         have h := hbounds.2
@@ -5000,7 +5053,7 @@ theorem Zdigits_mult (x y : Int) (hβ : beta > 1 := h_beta) :
   · have hx_nonneg : 0 ≤ Zdigits beta x := Zdigits_ge_0 beta x
     have hy_nonneg : 0 ≤ Zdigits beta y := Zdigits_ge_0 beta y
     rw [hxy_zero]
-    have hzero : Zdigits beta 0 = 0 := by simp [Zdigits]
+    have hzero : Zdigits beta 0 = 0 := by simp [Zdigits_zero]
     rw [hzero]
     exact Int.add_nonneg hx_nonneg hy_nonneg
   · let ax : Int := Int.natAbs x
@@ -5101,11 +5154,11 @@ theorem Zdigits_div_Zpower (m e : Int) (hm_nonneg : 0 ≤ m)
   generalize hdm : Zdigits beta m = dm at he_le_dm ⊢
   by_cases hm_zero : m = 0
   · have hdm_zero : dm = 0 := by
-      simpa [Zdigits, hm_zero] using hdm.symm
+      simpa [Zdigits_zero, hm_zero] using hdm.symm
     have he_zero : e = 0 := by omega
     subst dm
     subst e
-    simp [Zdigits, hm_zero]
+    simp [Zdigits_zero, hm_zero]
   · have hβpos : 0 < beta := lt_trans (show (0 : Int) < 1 by decide) h_beta
     have hdm_pos : 0 < dm := by
       have h := Zdigits_gt_0 beta m hm_zero h_beta
@@ -5125,7 +5178,7 @@ theorem Zdigits_div_Zpower (m e : Int) (hm_nonneg : 0 ≤ m)
         simpa [he_eq_dm] using hupp_m
       calc
         Zdigits beta (m / beta ^ e.natAbs) = Zdigits beta 0 := by rw [hquot_zero]
-        _ = 0 := by simp [Zdigits]
+        _ = 0 := by simp [Zdigits_zero]
         _ = dm - e := by omega
     · have he_lt_dm : e < dm := lt_of_le_of_ne he_le_dm he_eq_dm
       have hdm_sub_e_pos : 0 < dm - e := by omega
@@ -5190,7 +5243,7 @@ theorem Zdigits_succ_le (x : Int) (hx : 0 ≤ x) (h_beta : beta > 1) :
       (Zdigits_le_Zpower (beta := beta) (h_beta := h_beta)
         (x := (1 : Int)) (e := (1 : Int)) (hβ := h_beta))
         ⟨by norm_num, by simpa using h_beta⟩
-    simpa [Zdigits] using hle
+    simpa [Zdigits_zero] using hle
   · have hx_pos : 0 < x := lt_of_le_of_ne hx (Ne.symm hx0)
     have hmul :=
       Zdigits_mult_Zpower (beta := beta) (n := x) (k := 1) hx0 (by norm_num)
@@ -5234,11 +5287,11 @@ Qed.
 ```
 -/
 theorem Z_of_nat_S_digits2_Pnat_from_bitlength_payload (m : Nat) (hm_pos : m > 0) :
-    Zdigits 2 (m : Int) = (digits2_Pnat_bitlength_payload m : Int) := by
+    Zdigits 2 (m : Int) = (digits2_nat_bitlength_payload m : Int) := by
   -- Let d be the (Nat) result of the binary digit counter.
-  set dNat : Nat := (digits2_Pnat_bitlength_payload m)
+  set dNat : Nat := (digits2_nat_bitlength_payload m)
   -- From correctness, we have: dNat > 0 and 2^(dNat-1) ≤ m < 2^dNat.
-  have hbits := digits2_Pnat_correct_from_bitlength_payload (n := m) hm_pos
+  have hbits := digits2_nat_correct_from_bitlength_payload (n := m) hm_pos
   -- Extract bounds and positivity.
   have dNat_pos : 0 < dNat := hbits.1
   have hlow_nat : 2 ^ (dNat - 1) ≤ m := hbits.2.1
@@ -5309,20 +5362,20 @@ theorem Z_of_nat_S_digits2_Pnat_from_bitlength_payload (m : Nat) (hm_pos : m > 0
 
 /-- Exact source bridge: the positive-bit index plus one is `Zdigits` in radix 2. -/
 theorem Z_of_nat_S_digits2_Pnat (m : Nat) (hm : 0 < m) :
-    ((digits2_Pnat m + 1 : Nat) : Int) = Zdigits 2 (m : Int) := by
+    ((digits2_nat m + 1 : Nat) : Int) = Zdigits 2 (m : Int) := by
   have hz : Zdigits 2 (m : Int) =
-      (digits2_Pnat_bitlength_payload m : Int) :=
+      (digits2_nat_bitlength_payload m : Int) :=
     Z_of_nat_S_digits2_Pnat_from_bitlength_payload m hm
-  have hcorrect := digits2_Pnat_correct_from_bitlength_payload m hm
-  have hs : 1 ≤ digits2_Pnat_bitlength_payload m :=
+  have hcorrect := digits2_nat_correct_from_bitlength_payload m hm
+  have hs : 1 ≤ digits2_nat_bitlength_payload m :=
     Nat.succ_le_iff.mpr hcorrect.1
   have hindex :
-      digits2_Pnat_bitlength_payload m = digits2_Pnat m + 1 := by
-    simp [digits2_Pnat, Nat.sub_add_cancel hs]
+      digits2_nat_bitlength_payload m = digits2_nat m + 1 := by
+    simp [digits2_nat, Nat.sub_add_cancel hs]
   rw [hz, hindex]
 
 /-- Lean carrier for Coq's positive-only `SpecFloat.digits2_pos`. -/
-def digits2_pos (m : Nat) : Int := (digits2_Pnat m + 1 : Nat)
+def digits2_pos (m : Nat) : Int := (digits2_nat m + 1 : Nat)
 
 /-- Positive digit count for binary
 
@@ -5360,12 +5413,12 @@ Qed.
 -/
 /-- Independent Lean carrier for Coq's `SpecFloat.Zdigits2`. -/
 def Zdigits2 (n : Int) : Int :=
-  if n = 0 then 0 else (digits2_Pnat n.natAbs + 1 : Nat)
+  if n = 0 then 0 else (digits2_nat n.natAbs + 1 : Nat)
 
 /-- Exact source equality between the binary counter and generic radix digits. -/
 theorem Zdigits2_Zdigits (n : Int) : Zdigits2 n = Zdigits 2 n := by
   by_cases hn : n = 0
-  · simp [Zdigits2, Zdigits, hn]
+  · simp [Zdigits2, Zdigits_zero, hn]
   · have ha : 0 < n.natAbs := Int.natAbs_pos.mpr hn
     have hpos := Z_of_nat_S_digits2_Pnat n.natAbs ha
     have habs : Zdigits 2 (n.natAbs : Int) = Zdigits 2 n :=

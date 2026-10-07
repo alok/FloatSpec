@@ -140,16 +140,16 @@ example :
     valid_binary (prec := 3) (emax := 4)
       (.F754_nan false 4) = false := by
   simp [valid_binary, FloatSpec.Core.Digits.digits2_pos,
-    FloatSpec.Core.Digits.digits2_Pnat,
-    FloatSpec.Core.Digits.digits2_Pnat_bitlength_payload,
+    FloatSpec.Core.Digits.digits2_nat,
+    FloatSpec.Core.Digits.digits2_nat_bitlength_payload,
     FloatSpec.Core.Zaux.Zlt_bool]
 
 example :
     valid_binary (prec := 3) (emax := 4)
       (.F754_nan false 3) = true := by
   simp [valid_binary, FloatSpec.Core.Digits.digits2_pos,
-    FloatSpec.Core.Digits.digits2_Pnat,
-    FloatSpec.Core.Digits.digits2_Pnat_bitlength_payload,
+    FloatSpec.Core.Digits.digits2_nat,
+    FloatSpec.Core.Digits.digits2_nat_bitlength_payload,
     FloatSpec.Core.Zaux.Zlt_bool]
 
 example : (make_bound 2 0 (-1)).dExp = 1 := by

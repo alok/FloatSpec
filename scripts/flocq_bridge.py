@@ -579,7 +579,7 @@ def small_ieee_expressions(case: Case) -> tuple[str, str]:
             f'letI : Prec_lt_emax {p} {emax} := ⟨by decide⟩; '
             f'let nan : {{ x : binary_float {p} {emax} // Binary.is_nan x = true }} := '
             '⟨.B754_nan false .xH (by norm_num [nan_pl, Zaux.Zlt_bool, '
-            'Digits.digits2_pos, Digits.digits2_Pnat, Digits.digits2_Pnat_bitlength_payload, '
+            'Digits.digits2_pos, Digits.digits2_nat, Digits.digits2_nat_bitlength_payload, '
             'Zaux.positiveToNat]), rfl⟩; ')
     coq = ''
     for name, operand in zip(('x', 'y', 'z'), operands, strict=True):

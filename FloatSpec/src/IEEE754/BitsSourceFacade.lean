@@ -198,16 +198,16 @@ private theorem positive_lt_zpower_of_nan_pl {mw : Int} (Hmw : 0 < mw)
     FloatSpec.Core.Zaux.Zpos p < Zpower 2 mw := by
   let n := FloatSpec.Core.Zaux.positiveToNat p
   have hn : 0 < n := FloatSpec.Core.Zaux.positiveToNat_pos p
-  have hdigits := FloatSpec.Core.Digits.digits2_Pnat_correct n hn
+  have hdigits := FloatSpec.Core.Digits.digits2_nat_correct n hn
   have hd : FloatSpec.Core.Digits.digits2_pos n < mw + 1 := by
     simpa [nan_pl, sourcePrec, FloatSpec.Core.Zaux.Zlt_bool, n,
       Std.Do.PostCond.noThrow, pure] using hp
-  have hdNat : FloatSpec.Core.Digits.digits2_Pnat n + 1 ≤ mw.toNat := by
+  have hdNat : FloatSpec.Core.Digits.digits2_nat n + 1 ≤ mw.toNat := by
     have hmwCast : (mw.toNat : Int) = mw := Int.toNat_of_nonneg (le_of_lt Hmw)
-    have hd' : ((FloatSpec.Core.Digits.digits2_Pnat n + 1 : Nat) : Int) ≤ mw := by
+    have hd' : ((FloatSpec.Core.Digits.digits2_nat n + 1 : Nat) : Int) ≤ mw := by
       simpa [FloatSpec.Core.Digits.digits2_pos] using (show
         FloatSpec.Core.Digits.digits2_pos n ≤ mw by omega)
-    exact_mod_cast (show ((FloatSpec.Core.Digits.digits2_Pnat n + 1 : Nat) : Int) ≤
+    exact_mod_cast (show ((FloatSpec.Core.Digits.digits2_nat n + 1 : Nat) : Int) ≤
       (mw.toNat : Int) by simpa [hmwCast] using hd')
   have hnlt : n < 2 ^ mw.toNat :=
     lt_of_lt_of_le hdigits.2 (Nat.pow_le_pow_right (by norm_num) hdNat)
@@ -245,11 +245,11 @@ private theorem positive_lt_two_pow_prec {mw : Int} (Hmw : 0 < mw)
     FloatSpec.Core.Zaux.Zpos p < Zpower 2 (mw + 1) := by
   let n := FloatSpec.Core.Zaux.positiveToNat p
   have hn : 0 < n := FloatSpec.Core.Zaux.positiveToNat_pos p
-  have hbits := FloatSpec.Core.Digits.digits2_Pnat_correct n hn
+  have hbits := FloatSpec.Core.Digits.digits2_nat_correct n hn
   have hzdigits := FloatSpec.Core.Digits.Z_of_nat_S_digits2_Pnat n hn
-  have hdNat : FloatSpec.Core.Digits.digits2_Pnat n + 1 ≤ (mw + 1).toNat := by
+  have hdNat : FloatSpec.Core.Digits.digits2_nat n + 1 ≤ (mw + 1).toNat := by
     have hmw1 : 0 ≤ mw + 1 := by omega
-    have hd' : ((FloatSpec.Core.Digits.digits2_Pnat n + 1 : Nat) : Int) ≤
+    have hd' : ((FloatSpec.Core.Digits.digits2_nat n + 1 : Nat) : Int) ≤
         ((mw + 1).toNat : Int) := by
       rw [Int.toNat_of_nonneg hmw1]
       rw [hzdigits]
@@ -394,7 +394,7 @@ private theorem split_fields_range (mw ew : Int) (Hmw : 0 < mw) (Hew : 0 < ew)
 
 private theorem digits2_pos_le_of_lt_pow_two {n k : Nat}
     (hnpos : 0 < n) (hn : n < 2 ^ k) :
-    FloatSpec.Core.Digits.digits2_Pnat n + 1 ≤ k := by
+    FloatSpec.Core.Digits.digits2_nat n + 1 ≤ k := by
   have htrip := FloatSpec.Core.Digits.Zdigits_le_Zpower
     (beta := 2) (x := (n : Int)) (e := (k : Int)) (by decide)
   have hzd : FloatSpec.Core.Digits.Zdigits 2 (n : Int) ≤ (k : Int) := by
@@ -404,7 +404,7 @@ private theorem digits2_pos_le_of_lt_pow_two {n k : Nat}
     · simp
       exact_mod_cast hn
   have heq := FloatSpec.Core.Digits.Z_of_nat_S_digits2_Pnat n hnpos
-  have hle : ((FloatSpec.Core.Digits.digits2_Pnat n + 1 : Nat) : Int) ≤
+  have hle : ((FloatSpec.Core.Digits.digits2_nat n + 1 : Nat) : Int) ≤
       (k : Int) := by
     rw [heq]
     exact hzd
@@ -414,7 +414,7 @@ private theorem nan_payload_valid_of_lt_pow {prec : Int} {k n : Nat}
     (hnpos : 0 < n) (hnlt : n < 2 ^ k) (hk : (k : Int) < prec) :
     nan_pl prec (positiveOfNat n hnpos) = true := by
   have hd := digits2_pos_le_of_lt_pow_two hnpos hnlt
-  have hd' : ((FloatSpec.Core.Digits.digits2_Pnat n + 1 : Nat) : Int) < prec :=
+  have hd' : ((FloatSpec.Core.Digits.digits2_nat n + 1 : Nat) : Int) < prec :=
     lt_of_le_of_lt (by exact_mod_cast hd) hk
   simpa [nan_pl, positiveOfNat_spec, FloatSpec.Core.Digits.digits2_pos,
     FloatSpec.Core.Zaux.Zlt_bool] using hd'
@@ -631,7 +631,7 @@ private theorem finite_subnormal_exp_eq {mw ew : Int} (Hmw : 0 < mw)
   have hzd := FloatSpec.Core.Digits.Z_of_nat_S_digits2_Pnat n hn
   have hd : FloatSpec.Core.Digits.Zdigits 2 (n : Int) ≤ mw := by
     have hmwCast : (mw.toNat : Int) = mw := Int.toNat_of_nonneg hmw
-    have hdInt : ((FloatSpec.Core.Digits.digits2_Pnat n + 1 : Nat) : Int) ≤ mw := by
+    have hdInt : ((FloatSpec.Core.Digits.digits2_nat n + 1 : Nat) : Int) ≤ mw := by
       rw [← hmwCast]
       exact_mod_cast hdNat
     rw [← hzd]

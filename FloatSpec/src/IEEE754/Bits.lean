@@ -620,11 +620,11 @@ private theorem zdigits_two_eq_of_pow_bounds {n d : Nat}
 
 private theorem digits2_pos_le_of_lt_pow_two {n k : Nat}
     (hnpos : 0 < n) (hn : n < 2 ^ k) :
-    FloatSpec.Core.Digits.digits2_Pnat n + 1 ≤ k := by
+    FloatSpec.Core.Digits.digits2_nat n + 1 ≤ k := by
   have hzd : FloatSpec.Core.Digits.Zdigits 2 (n : Int) ≤ (k : Int) :=
     zdigits_two_le_of_lt_pow hn
   have heq := FloatSpec.Core.Digits.Z_of_nat_S_digits2_Pnat n hnpos
-  have hle : ((FloatSpec.Core.Digits.digits2_Pnat n + 1 : Nat) : Int) ≤
+  have hle : ((FloatSpec.Core.Digits.digits2_nat n + 1 : Nat) : Int) ≤
       (k : Int) := by
     rw [heq]
     exact hzd
@@ -635,10 +635,10 @@ private theorem nan_payload_valid_of_lt_pow
     (hnlt : n < 2 ^ mw) (hmw_lt_prec : (mw : Int) < prec) :
     nan_pl prec (positiveOfNat n hnpos) = true := by
   have hdigits_le :
-      FloatSpec.Core.Digits.digits2_Pnat n + 1 ≤ mw :=
+      FloatSpec.Core.Digits.digits2_nat n + 1 ≤ mw :=
     digits2_pos_le_of_lt_pow_two hnpos hnlt
   have hdigits_lt :
-      ((FloatSpec.Core.Digits.digits2_Pnat n + 1 : Nat) : Int) < prec := by
+      ((FloatSpec.Core.Digits.digits2_nat n + 1 : Nat) : Int) < prec := by
     exact lt_of_le_of_lt (by exact_mod_cast hdigits_le) hmw_lt_prec
   simpa [nan_pl, positiveOfNat_spec, FloatSpec.Core.Digits.digits2_pos,
     FloatSpec.Core.Zaux.Zlt_bool] using hdigits_lt
@@ -956,8 +956,8 @@ private theorem default_nan_pl32_payload_valid :
     nan_pl 24 default_nan_pl32_payload = true := by
   norm_num [nan_pl, default_nan_pl32_payload, FloatSpec.Core.Zaux.iter_nat,
     FloatSpec.Core.Zaux.positiveToNat, FloatSpec.Core.Digits.digits2_pos,
-    FloatSpec.Core.Digits.digits2_Pnat,
-    FloatSpec.Core.Digits.digits2_Pnat_bitlength_payload,
+    FloatSpec.Core.Digits.digits2_nat,
+    FloatSpec.Core.Digits.digits2_nat_bitlength_payload,
     FloatSpec.Core.Zaux.Zlt_bool]
 
 -- Coq: `default_nan_pl32`.
@@ -975,8 +975,8 @@ private theorem default_nan_pl64_payload_valid :
     nan_pl 53 default_nan_pl64_payload = true := by
   norm_num [nan_pl, default_nan_pl64_payload, FloatSpec.Core.Zaux.iter_nat,
     FloatSpec.Core.Zaux.positiveToNat, FloatSpec.Core.Digits.digits2_pos,
-    FloatSpec.Core.Digits.digits2_Pnat,
-    FloatSpec.Core.Digits.digits2_Pnat_bitlength_payload,
+    FloatSpec.Core.Digits.digits2_nat,
+    FloatSpec.Core.Digits.digits2_nat_bitlength_payload,
     FloatSpec.Core.Zaux.Zlt_bool]
 
 -- Coq: `default_nan_pl64`.

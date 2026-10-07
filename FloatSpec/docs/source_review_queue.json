@@ -4308,7 +4308,7 @@
       "lean_names": [
         "FloatSpec.Core.Zaux.Zfast_div_eucl_correct"
       ],
-      "scope": "Same statement Zfast_div_eucl a b = Z.div_eucl a b, now a real closed proof over the nine sign cases rather than rfl. Both assistants show the result is the floor pair (7, -3) -> (-3, -2), not Lean's default (-2, 1).",
+      "scope": "Same statement Zfast_div_eucl a b = Z.div_eucl a b, now a real closed proof over the nine sign cases rather than rfl. Both assistants show the result is the floor pair (7, -3) -> (-3, -2), not Lean's default (-2, 1). Fingerprint refreshed 2026-10-07 because the proof now cites the public zview_cases (previously private), which Digits.v's Zdigits port also uses; statement unchanged, paired mutation test rerun.",
       "evidence": [
         "scripts/fixtures/ZauxAlgorithmContracts.lean",
         "scripts/fixtures/ZauxAlgorithmContracts.v",
@@ -4318,7 +4318,7 @@
       "lean_fingerprints": {
         "FloatSpec.Core.Zaux.Zfast_div_eucl_correct": {
           "type_hash": "2957038757",
-          "value_hash": "1466229075",
+          "value_hash": "708098851",
           "noncomputable": false
         }
       }

@@ -301,7 +301,7 @@ theorem cexp_inbetween_float
         (beta := beta) (x := x) (e := e) Hβ Hx_ne Hx_upp
       simpa using Htrip
     have Hdigits0 : FloatSpec.Core.Digits.Zdigits beta m = 0 := by
-      simp [Hm_zero, FloatSpec.Core.Digits.Zdigits]
+      simp [Hm_zero, FloatSpec.Core.Digits.Zdigits_zero]
     rcases He with He_left | He_right
     · have Hmag_le_fexp :
           FloatSpec.Core.Raux.mag beta x ≤

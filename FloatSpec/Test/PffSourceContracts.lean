@@ -345,9 +345,9 @@ example : boundR (beta:=2) 2 (1 : ℝ) = boundNat (beta:=2) 2 2 := by
 /-! T42 Calc/Core source-contract regressions. -/
 
 -- Coq positive digits count positions from zero.
-example : FloatSpec.Core.Digits.digits2_Pnat 1 = 0 := by
-  norm_num [FloatSpec.Core.Digits.digits2_Pnat,
-    FloatSpec.Core.Digits.digits2_Pnat_bitlength_payload]
+example : FloatSpec.Core.Digits.digits2_nat 1 = 0 := by
+  norm_num [FloatSpec.Core.Digits.digits2_nat,
+    FloatSpec.Core.Digits.digits2_nat_bitlength_payload]
 
 -- The source helper compares its signed parameter, not its absolute value.
 example : FloatSpec.Core.Digits.Zdigits_aux 2 (-1) 5 0 1 = 5 := by
