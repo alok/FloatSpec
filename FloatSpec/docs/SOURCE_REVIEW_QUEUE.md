@@ -16,7 +16,7 @@ External Rocq imports are recorded in the JSON report, not counted as Flocq decl
 |---:|---|---:|---:|---:|---:|
 | 1 | src/Version.v | 1 | 1 | 1 | 1 |
 | 2 | src/Core/Zaux.v | 102 | 82 | 91 | 102 |
-| 3 | src/Core/Raux.v | 186 | 79 | 178 | 27 |
+| 3 | src/Core/Raux.v | 186 | 79 | 178 | 87 |
 | 4 | src/Core/Defs.v | 14 | 11 | 14 | 0 |
 | 5 | src/Core/Round_pred.v | 83 | 78 | 78 | 83 |
 | 6 | src/Core/Digits.v | 67 | 0 | 67 | 0 |
@@ -57,26 +57,26 @@ the full Lean type/body with Rocq, and add an evidence-bearing review entry.
 Resolve aliases and generated proof infrastructure explicitly; do not create
 unnecessary numerical APIs to satisfy a raw name count.
 
-- `src/Core/Raux.v:349` — `Rcompare` (def): `FloatSpec.Core.Raux.Rcompare`.
-- `src/Core/Raux.v:356` — `Rcompare_prop` (ind): `FloatSpec.Core.Raux.Rcompare_prop`.
-- `src/Core/Raux.v:356` — `Rcompare_prop_ind` (scheme): no exact-name candidate.
-- `src/Core/Raux.v:356` — `Rcompare_prop_sind` (scheme): no exact-name candidate.
-- `src/Core/Raux.v:357` — `Rcompare_Lt_` (constr): `FloatSpec.Core.Raux.Rcompare_prop.Rcompare_Lt_`.
-- `src/Core/Raux.v:358` — `Rcompare_Eq_` (constr): `FloatSpec.Core.Raux.Rcompare_prop.Rcompare_Eq_`.
-- `src/Core/Raux.v:359` — `Rcompare_Gt_` (constr): `FloatSpec.Core.Raux.Rcompare_prop.Rcompare_Gt_`.
-- `src/Core/Raux.v:361` — `Rcompare_spec` (prf): `FloatSpec.Core.Raux.Rcompare_spec`.
-- `src/Core/Raux.v:371` — `Rcompare_Lt` (prf): `FloatSpec.Core.Raux.Rcompare_Lt`.
-- `src/Core/Raux.v:384` — `Rcompare_Lt_inv` (prf): `FloatSpec.Core.Raux.Rcompare_Lt_inv`.
-- `src/Core/Raux.v:392` — `Rcompare_not_Lt` (prf): `FloatSpec.Core.Raux.Rcompare_not_Lt`.
-- `src/Core/Raux.v:401` — `Rcompare_not_Lt_inv` (prf): `FloatSpec.Core.Raux.Rcompare_not_Lt_inv`.
-- `src/Core/Raux.v:411` — `Rcompare_Eq` (prf): `FloatSpec.Core.Raux.Rcompare_Eq`.
-- `src/Core/Raux.v:420` — `Rcompare_Eq_inv` (prf): `FloatSpec.Core.Raux.Rcompare_Eq_inv`.
-- `src/Core/Raux.v:428` — `Rcompare_Gt` (prf): `FloatSpec.Core.Raux.Rcompare_Gt`.
-- `src/Core/Raux.v:441` — `Rcompare_Gt_inv` (prf): `FloatSpec.Core.Raux.Rcompare_Gt_inv`.
-- `src/Core/Raux.v:449` — `Rcompare_not_Gt` (prf): `FloatSpec.Core.Raux.Rcompare_not_Gt`.
-- `src/Core/Raux.v:458` — `Rcompare_not_Gt_inv` (prf): `FloatSpec.Core.Raux.Rcompare_not_Gt_inv`.
-- `src/Core/Raux.v:468` — `Rcompare_IZR` (prf): `FloatSpec.Core.Raux.Rcompare_IZR`.
-- `src/Core/Raux.v:481` — `Rcompare_sym` (prf): `FloatSpec.Core.Raux.Rcompare_sym`.
+- `src/Core/Raux.v:788` — `Zfloor` (def): `FloatSpec.Core.Raux.Zfloor`.
+- `src/Core/Raux.v:790` — `Zfloor_lb` (prf): `FloatSpec.Core.Raux.Zfloor_lb`.
+- `src/Core/Raux.v:803` — `Zfloor_ub` (prf): `FloatSpec.Core.Raux.Zfloor_ub`.
+- `src/Core/Raux.v:816` — `Zfloor_lub` (prf): `FloatSpec.Core.Raux.Zfloor_lub`.
+- `src/Core/Raux.v:830` — `Zfloor_imp` (prf): `FloatSpec.Core.Raux.Zfloor_imp`.
+- `src/Core/Raux.v:844` — `Zfloor_IZR` (prf): `FloatSpec.Core.Raux.Zfloor_IZR`.
+- `src/Core/Raux.v:856` — `Zfloor_le` (prf): `FloatSpec.Core.Raux.Zfloor_le`.
+- `src/Core/Raux.v:866` — `Zceil` (def): `FloatSpec.Core.Raux.Zceil`.
+- `src/Core/Raux.v:868` — `Zceil_ub` (prf): `FloatSpec.Core.Raux.Zceil_ub`.
+- `src/Core/Raux.v:880` — `Zceil_lb` (prf): `FloatSpec.Core.Raux.Zceil_lb`.
+- `src/Core/Raux.v:892` — `Zceil_glb` (prf): `FloatSpec.Core.Raux.Zceil_glb`.
+- `src/Core/Raux.v:906` — `Zceil_imp` (prf): `FloatSpec.Core.Raux.Zceil_imp`.
+- `src/Core/Raux.v:925` — `Zceil_IZR` (prf): `FloatSpec.Core.Raux.Zceil_IZR`.
+- `src/Core/Raux.v:935` — `Zceil_le` (prf): `FloatSpec.Core.Raux.Zceil_le`.
+- `src/Core/Raux.v:945` — `Zceil_floor_neq` (prf): `FloatSpec.Core.Raux.Zceil_floor_neq`.
+- `src/Core/Raux.v:965` — `Ztrunc` (def): `FloatSpec.Compat.Ztrunc`, `FloatSpec.Core.Raux.Ztrunc`, `Ztrunc`.
+- `src/Core/Raux.v:967` — `Ztrunc_IZR` (prf): `FloatSpec.Core.Raux.Ztrunc_IZR`.
+- `src/Core/Raux.v:978` — `Ztrunc_floor` (prf): `FloatSpec.Core.Raux.Ztrunc_floor`.
+- `src/Core/Raux.v:991` — `Ztrunc_ceil` (prf): `FloatSpec.Core.Raux.Ztrunc_ceil`.
+- `src/Core/Raux.v:1005` — `Ztrunc_le` (prf): `FloatSpec.Core.Raux.Ztrunc_le`.
 
 ## Reproduce
 

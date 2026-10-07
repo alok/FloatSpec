@@ -328,6 +328,36 @@ The next section, `Rcompare`, is not yet faithful: Lean's `Rcompare` returns
 an integer `-1/0/1` rather than Rocq's `comparison`, and the source's
 `Rcompare_spec`/`R*_bool_spec` statements live under `*_prop_spec` names.
 
+### Eighth ordered slice: real comparison, after a port fix
+
+`Raux.v:347–783` (`Rcompare`, `Rle_bool`, `Rlt_bool`, `Req_bool`: 60 sites)
+needed porting before it could be reviewed. This follows batch 2B of the
+[conventions cutover plan](CONVENTIONS_CUTOVER_PLAN.md) and its critic's
+corrections (E3 overturned, `/2` written `(2:ℝ)⁻¹`):
+
+| Before | After |
+|---|---|
+| `Rcompare : ℝ → ℝ → Int` (`-1/0/1`) and an `Int`-indexed `Rcompare_prop` | `Rcompare : ℝ → ℝ → Ordering`, an `Ordering`-indexed graph |
+| `Rcompare_sym`: `= -(Rcompare y x)` | `= (Rcompare y x).swap`, Rocq's `CompOpp` |
+| `Rcompare_IZR` through a Lean-only `Zcompare_int`; `Rcompare_F2R` through `Int.sign` plus an extra radix premise | Both use `compare` on `Int` (Rocq's `Z.compare`); `Rcompare_F2R` takes `ValidRadix` like the rest of its file |
+| `*_spec` names held iff statements; the source statements were `*_prop_spec` | Source statements under source names; the iffs are `*_iff` |
+| `Rle_bool`/`Rlt_bool`/`Req_bool` were `decide` | The source bodies, matching on `Rcompare`; `*_eq_decide` lemmas give the old form |
+| `Znearest` matched `-1 | 0 | _` against `1/2` | Matches `.lt/.eq/.gt` against `(2:ℝ)⁻¹`, as the source's `Lt/Eq/Gt` and `/2` |
+| A second, `Ordering`-valued `RcompareOrdering` in `BinarySingleNaN`, anchored to the same source line | Deleted; its uses are `Raux.Rcompare` |
+
+No value changed: `Rcompare_eq_compare` shows the new `Rcompare` is Lean's
+`compare` on reals by `rfl`, and the `*_eq_decide` lemmas let the 102 tactic
+sites that unfolded the Boolean tests switch mechanically. Several private
+copies of the `Znearest` branch lemmas (in `Calc/Round` and `Prop/Plus_error`)
+became one-line uses of the public lemmas.
+
+`RauxCompareContracts.lean/.v` pin all four bodies with `rfl`, state the 60
+interfaces (Rocq also states the four `SProp` schemes), and prove four
+counterexamples: neither strict branch admits equal inputs, `Rcompare_mult_r`
+needs `0 < z` (at `z = −1`), and `Rcompare_sym` needs its swap. Sixteen
+mutations are rejected, including swapping the source's oddly named
+`negb_Rlt_bool` (which is about `negb (Rle_bool x y)`) with `negb_Rle_bool`.
+
 ## Unindexed Pff negation and absolute value (earlier slice)
 
 The source facade now also exports `Fopp_correct`, `Fopp_Fopp`, `Fabs_correct`

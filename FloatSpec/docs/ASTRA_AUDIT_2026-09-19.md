@@ -4391,6 +4391,33 @@ in 17 files), not a review.
 
 Receipts: `/private/tmp/floatspec-raux-prelude-20261006/`.
 
+### October 6: real comparison port and review (60 sites)
+
+Batch 2B of the conventions plan, with its critic's corrections, in three
+commits. `f5ba1092`/`391a8c34`: `Rcompare` returns `Ordering`;
+`Rcompare_prop`, `Rcompare_spec`, `Rcompare_sym` (`swap`), `Rcompare_IZR` and
+`Rcompare_F2R` (`compare` on `Int`, `ValidRadix` instead of an extra radix
+premise) follow the source; `Znearest` and `binary_normalize_sign` match
+`Ordering`, `Znearest` against `(2:ℝ)⁻¹`; `BinarySingleNaN.RcompareOrdering`
+deleted. `c9f1c622`: `Rle_bool`/`Rlt_bool`/`Req_bool` get the source bodies
+(E3 overturned), source `*_spec` statements under source names, old iffs as
+`*_iff`, and 102 tactic sites switched mechanically to `*_eq_decide`.
+Then `RauxCompareContracts.lean/.v` review all 60 sites (52 contracts, eight
+generated schemes adapted): four counterexamples, 16 rejected mutations,
+kernel replay of 53 fixture declarations.
+
+Each production commit: full build 6350 jobs, all 41 Lean fixtures under
+`warningAsError` with kernel replay, drift gate. Bridges: seed 865631 (CI op
+set, 4311 cases) at source digest `3bbc5e97` after 2B, and seed 865641 (plus
+`nearby`, `ieee_round`, `comparison`; 13886 cases) at `3e0c4841` after the
+Boolean bodies; zero mismatches. 276 manifest entries (255 contracts, 21 infrastructure, 2440
+unreviewed); 79 of 186 `Raux.v` sites anchored, 87 dispositioned. Next is
+`Zfloor`: Rocq writes `up x - 1` and `Zceil` as `- Zfloor (- x)`, while Lean
+uses `⌊x⌋` and `⌈x⌉`.
+
+Receipts: `/private/tmp/floatspec-rcompare-20261006/`,
+`/private/tmp/floatspec-rbool-20261006/`.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In

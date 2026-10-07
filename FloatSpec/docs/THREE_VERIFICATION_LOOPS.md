@@ -202,6 +202,24 @@ check validates every observed pair against Python's floor division and exact
 integer reconstruction; it is not a fresh execution. No universal cross-prover
 equivalence is claimed from the finite grid.
 
+## Real comparison contracts (October 6)
+
+`Raux.v:347–783` after the `Ordering` cutover. The fixtures pin the source
+bodies of `Rcompare` and the three Boolean tests with `rfl`, state the 60
+interfaces and prove four counterexamples.
+
+```sh
+lake env lean -DwarningAsError=true scripts/fixtures/RauxCompareContracts.lean
+coqc -q -R "$FLOCQ_AUDIT_DIR/src" Flocq \
+  -o /tmp/RauxCompareContracts.vo scripts/fixtures/RauxCompareContracts.v
+uv run scripts/test_raux_compare_contracts.py -v
+```
+
+Sixteen mutations are rejected. The definitions are noncomputable reals, so
+there is no direct bridge; at source digest `3e0c4841` the CI bridge op set plus
+`nearby`, `ieee_round` and `comparison` (seed 865641) passes 13886 cases as a
+regression check of the code that uses them.
+
 ## Zaux algorithms: sign helpers, fast power, fast division, iteration (October 6)
 
 The last 18 `Zaux.v` sites include three definitions now ported literally

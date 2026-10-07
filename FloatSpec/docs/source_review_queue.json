@@ -4973,6 +4973,1266 @@
           "noncomputable": false
         }
       }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rcompare@6829",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rcompare"
+      ],
+      "scope": "Ported in f5ba1092: returns Ordering (was an Int code -1/0/1) and tests x < y then x = y, as the source's total_order_T match; pinned by rfl. Rcompare_eq_compare: it is compare on R by rfl.",
+      "evidence": [
+        "scripts/fixtures/RauxCompareContracts.lean",
+        "scripts/fixtures/RauxCompareContracts.v",
+        "scripts/test_raux_compare_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rcompare": {
+          "type_hash": "4026631025",
+          "value_hash": "2518175015",
+          "noncomputable": true
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rcompare_prop@6967",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rcompare_prop"
+      ],
+      "scope": "Ordering-indexed graph with constructors Lt/Eq/Gt and premises x < y, x = y, y < x (was Int-indexed, so Rcompare_prop x y 5 typechecked). Paired constructor/eliminator clients.",
+      "evidence": [
+        "scripts/fixtures/RauxCompareContracts.lean",
+        "scripts/fixtures/RauxCompareContracts.v",
+        "scripts/test_raux_compare_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rcompare_prop": {
+          "type_hash": "2215205642",
+          "value_hash": null,
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rcompare_prop_ind@6967",
+      "status": "adapted-proof-infrastructure",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rcompare_prop.rec"
+      ],
+      "scope": "Rocq-generated non-dependent Prop eliminator, represented by Lean's dependent Rcompare_prop.rec specialized to a motive over the index; paired clients state the exact scheme type. Not a literal port of generated proof terms.",
+      "evidence": [
+        "scripts/fixtures/RauxCompareContracts.lean",
+        "scripts/fixtures/RauxCompareContracts.v",
+        "scripts/test_raux_compare_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rcompare_prop.rec": {
+          "type_hash": "355409799",
+          "value_hash": null,
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rcompare_prop_sind@6967",
+      "status": "adapted-proof-infrastructure",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rcompare_prop.rec"
+      ],
+      "scope": "Rocq-generated SProp eliminator; Lean has no SProp and Prop is proof-irrelevant. Mapped to Rcompare_prop.rec; the Rocq fixture checks the exact SProp type. Adapted, not ported.",
+      "evidence": [
+        "scripts/fixtures/RauxCompareContracts.lean",
+        "scripts/fixtures/RauxCompareContracts.v",
+        "scripts/test_raux_compare_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rcompare_prop.rec": {
+          "type_hash": "355409799",
+          "value_hash": null,
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rcompare_Lt_@7019",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rcompare_prop.Rcompare_Lt_"
+      ],
+      "scope": "Same constructor and premise as the source. Rocq takes x y explicitly; Lean's are implicit, so the client uses @. Rocq comparison is Lean Ordering, CompOpp is Ordering.swap, Z.compare is compare on Int.",
+      "evidence": [
+        "scripts/fixtures/RauxCompareContracts.lean",
+        "scripts/fixtures/RauxCompareContracts.v",
+        "scripts/test_raux_compare_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rcompare_prop.Rcompare_Lt_": {
+          "type_hash": "3270502887",
+          "value_hash": null,
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rcompare_Eq_@7072",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rcompare_prop.Rcompare_Eq_"
+      ],
+      "scope": "Same constructor and premise as the source. Rocq takes x y explicitly; Lean's are implicit, so the client uses @. Rocq comparison is Lean Ordering, CompOpp is Ordering.swap, Z.compare is compare on Int.",
+      "evidence": [
+        "scripts/fixtures/RauxCompareContracts.lean",
+        "scripts/fixtures/RauxCompareContracts.v",
+        "scripts/test_raux_compare_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rcompare_prop.Rcompare_Eq_": {
+          "type_hash": "390164086",
+          "value_hash": null,
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rcompare_Gt_@7121",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rcompare_prop.Rcompare_Gt_"
+      ],
+      "scope": "Same constructor and premise as the source. Rocq takes x y explicitly; Lean's are implicit, so the client uses @. Rocq comparison is Lean Ordering, CompOpp is Ordering.swap, Z.compare is compare on Int.",
+      "evidence": [
+        "scripts/fixtures/RauxCompareContracts.lean",
+        "scripts/fixtures/RauxCompareContracts.v",
+        "scripts/test_raux_compare_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rcompare_prop.Rcompare_Gt_": {
+          "type_hash": "2648583937",
+          "value_hash": null,
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rcompare_spec@7180",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rcompare_spec"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. Rocq comparison is Lean Ordering, CompOpp is Ordering.swap, Z.compare is compare on Int. Source statement now under the source name (it was Rcompare_prop_spec; the old iff is Rcompare_iff).",
+      "evidence": [
+        "scripts/fixtures/RauxCompareContracts.lean",
+        "scripts/fixtures/RauxCompareContracts.v",
+        "scripts/test_raux_compare_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rcompare_spec": {
+          "type_hash": "2861925049",
+          "value_hash": "1195259582",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rcompare_Lt@7380",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rcompare_Lt"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. Rocq comparison is Lean Ordering, CompOpp is Ordering.swap, Z.compare is compare on Int.",
+      "evidence": [
+        "scripts/fixtures/RauxCompareContracts.lean",
+        "scripts/fixtures/RauxCompareContracts.v",
+        "scripts/test_raux_compare_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rcompare_Lt": {
+          "type_hash": "3875822135",
+          "value_hash": "2444741595",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rcompare_Lt_inv@7603",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rcompare_Lt_inv"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. Rocq comparison is Lean Ordering, CompOpp is Ordering.swap, Z.compare is compare on Int. Direct form added in f5ba1092 (previously only through the iff).",
+      "evidence": [
+        "scripts/fixtures/RauxCompareContracts.lean",
+        "scripts/fixtures/RauxCompareContracts.v",
+        "scripts/test_raux_compare_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rcompare_Lt_inv": {
+          "type_hash": "1632326655",
+          "value_hash": "376167878",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rcompare_not_Lt@7726",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rcompare_not_Lt"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. Rocq comparison is Lean Ordering, CompOpp is Ordering.swap, Z.compare is compare on Int.",
+      "evidence": [
+        "scripts/fixtures/RauxCompareContracts.lean",
+        "scripts/fixtures/RauxCompareContracts.v",
+        "scripts/test_raux_compare_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rcompare_not_Lt": {
+          "type_hash": "1662829447",
+          "value_hash": "1635636593",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rcompare_not_Lt_inv@7893",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rcompare_not_Lt_inv"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. Rocq comparison is Lean Ordering, CompOpp is Ordering.swap, Z.compare is compare on Int.",
+      "evidence": [
+        "scripts/fixtures/RauxCompareContracts.lean",
+        "scripts/fixtures/RauxCompareContracts.v",
+        "scripts/test_raux_compare_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rcompare_not_Lt_inv": {
+          "type_hash": "4221368811",
+          "value_hash": "1490449654",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rcompare_Eq@8055",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rcompare_Eq"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. Rocq comparison is Lean Ordering, CompOpp is Ordering.swap, Z.compare is compare on Int.",
+      "evidence": [
+        "scripts/fixtures/RauxCompareContracts.lean",
+        "scripts/fixtures/RauxCompareContracts.v",
+        "scripts/test_raux_compare_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rcompare_Eq": {
+          "type_hash": "1360472297",
+          "value_hash": "1809180271",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rcompare_Eq_inv@8223",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rcompare_Eq_inv"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. Rocq comparison is Lean Ordering, CompOpp is Ordering.swap, Z.compare is compare on Int.",
+      "evidence": [
+        "scripts/fixtures/RauxCompareContracts.lean",
+        "scripts/fixtures/RauxCompareContracts.v",
+        "scripts/test_raux_compare_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rcompare_Eq_inv": {
+          "type_hash": "4132381558",
+          "value_hash": "960133963",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rcompare_Gt@8342",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rcompare_Gt"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. Rocq comparison is Lean Ordering, CompOpp is Ordering.swap, Z.compare is compare on Int.",
+      "evidence": [
+        "scripts/fixtures/RauxCompareContracts.lean",
+        "scripts/fixtures/RauxCompareContracts.v",
+        "scripts/test_raux_compare_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rcompare_Gt": {
+          "type_hash": "1200580891",
+          "value_hash": "198711760",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rcompare_Gt_inv@8565",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rcompare_Gt_inv"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. Rocq comparison is Lean Ordering, CompOpp is Ordering.swap, Z.compare is compare on Int.",
+      "evidence": [
+        "scripts/fixtures/RauxCompareContracts.lean",
+        "scripts/fixtures/RauxCompareContracts.v",
+        "scripts/test_raux_compare_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rcompare_Gt_inv": {
+          "type_hash": "3417082106",
+          "value_hash": "3386410556",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rcompare_not_Gt@8688",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rcompare_not_Gt"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. Rocq comparison is Lean Ordering, CompOpp is Ordering.swap, Z.compare is compare on Int.",
+      "evidence": [
+        "scripts/fixtures/RauxCompareContracts.lean",
+        "scripts/fixtures/RauxCompareContracts.v",
+        "scripts/test_raux_compare_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rcompare_not_Gt": {
+          "type_hash": "1940899515",
+          "value_hash": "3093714803",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rcompare_not_Gt_inv@8855",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rcompare_not_Gt_inv"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. Rocq comparison is Lean Ordering, CompOpp is Ordering.swap, Z.compare is compare on Int.",
+      "evidence": [
+        "scripts/fixtures/RauxCompareContracts.lean",
+        "scripts/fixtures/RauxCompareContracts.v",
+        "scripts/test_raux_compare_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rcompare_not_Gt_inv": {
+          "type_hash": "3962488228",
+          "value_hash": "1239970107",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rcompare_IZR@9017",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rcompare_IZR"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. Rocq comparison is Lean Ordering, CompOpp is Ordering.swap, Z.compare is compare on Int. States compare on Int (was a Lean-only Zcompare_int); argument swap is a rejected mutation.",
+      "evidence": [
+        "scripts/fixtures/RauxCompareContracts.lean",
+        "scripts/fixtures/RauxCompareContracts.v",
+        "scripts/test_raux_compare_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rcompare_IZR": {
+          "type_hash": "1143531380",
+          "value_hash": "3139377051",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rcompare_sym@9278",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rcompare_sym"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. Rocq comparison is Lean Ordering, CompOpp is Ordering.swap, Z.compare is compare on Int. Uses Ordering.swap (was Int negation); dropping the swap is refuted in both assistants.",
+      "evidence": [
+        "scripts/fixtures/RauxCompareContracts.lean",
+        "scripts/fixtures/RauxCompareContracts.v",
+        "scripts/test_raux_compare_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rcompare_sym": {
+          "type_hash": "838223186",
+          "value_hash": "3408560419",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rcompare_opp@9489",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rcompare_opp"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. Rocq comparison is Lean Ordering, CompOpp is Ordering.swap, Z.compare is compare on Int.",
+      "evidence": [
+        "scripts/fixtures/RauxCompareContracts.lean",
+        "scripts/fixtures/RauxCompareContracts.v",
+        "scripts/test_raux_compare_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rcompare_opp": {
+          "type_hash": "222051917",
+          "value_hash": "1307060290",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rcompare_plus_r@9693",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rcompare_plus_r"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. Rocq comparison is Lean Ordering, CompOpp is Ordering.swap, Z.compare is compare on Int.",
+      "evidence": [
+        "scripts/fixtures/RauxCompareContracts.lean",
+        "scripts/fixtures/RauxCompareContracts.v",
+        "scripts/test_raux_compare_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rcompare_plus_r": {
+          "type_hash": "560393931",
+          "value_hash": "362727013",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rcompare_plus_l@9976",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rcompare_plus_l"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. Rocq comparison is Lean Ordering, CompOpp is Ordering.swap, Z.compare is compare on Int.",
+      "evidence": [
+        "scripts/fixtures/RauxCompareContracts.lean",
+        "scripts/fixtures/RauxCompareContracts.v",
+        "scripts/test_raux_compare_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rcompare_plus_l": {
+          "type_hash": "3284622709",
+          "value_hash": "1927840491",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rcompare_mult_r@10137",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rcompare_mult_r"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. Rocq comparison is Lean Ordering, CompOpp is Ordering.swap, Z.compare is compare on Int. The 0 < z premise is necessary: both assistants refute it at z=-1,x=0,y=1.",
+      "evidence": [
+        "scripts/fixtures/RauxCompareContracts.lean",
+        "scripts/fixtures/RauxCompareContracts.v",
+        "scripts/test_raux_compare_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rcompare_mult_r": {
+          "type_hash": "1286999338",
+          "value_hash": "1906042459",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rcompare_mult_l@10438",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rcompare_mult_l"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. Rocq comparison is Lean Ordering, CompOpp is Ordering.swap, Z.compare is compare on Int.",
+      "evidence": [
+        "scripts/fixtures/RauxCompareContracts.lean",
+        "scripts/fixtures/RauxCompareContracts.v",
+        "scripts/test_raux_compare_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rcompare_mult_l": {
+          "type_hash": "3975477847",
+          "value_hash": "1454815432",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rcompare_middle@10614",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rcompare_middle"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. Rocq comparison is Lean Ordering, CompOpp is Ordering.swap, Z.compare is compare on Int.",
+      "evidence": [
+        "scripts/fixtures/RauxCompareContracts.lean",
+        "scripts/fixtures/RauxCompareContracts.v",
+        "scripts/test_raux_compare_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rcompare_middle": {
+          "type_hash": "3234026679",
+          "value_hash": "374246924",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rcompare_half_l@10971",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rcompare_half_l"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. Rocq comparison is Lean Ordering, CompOpp is Ordering.swap, Z.compare is compare on Int.",
+      "evidence": [
+        "scripts/fixtures/RauxCompareContracts.lean",
+        "scripts/fixtures/RauxCompareContracts.v",
+        "scripts/test_raux_compare_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rcompare_half_l": {
+          "type_hash": "1500246395",
+          "value_hash": "4214608711",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rcompare_half_r@11225",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rcompare_half_r"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. Rocq comparison is Lean Ordering, CompOpp is Ordering.swap, Z.compare is compare on Int.",
+      "evidence": [
+        "scripts/fixtures/RauxCompareContracts.lean",
+        "scripts/fixtures/RauxCompareContracts.v",
+        "scripts/test_raux_compare_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rcompare_half_r": {
+          "type_hash": "3638898991",
+          "value_hash": "3304157181",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rcompare_sqr@11479",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rcompare_sqr"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. Rocq comparison is Lean Ordering, CompOpp is Ordering.swap, Z.compare is compare on Int.",
+      "evidence": [
+        "scripts/fixtures/RauxCompareContracts.lean",
+        "scripts/fixtures/RauxCompareContracts.v",
+        "scripts/test_raux_compare_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rcompare_sqr": {
+          "type_hash": "1198409690",
+          "value_hash": "1657496977",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rmin_compare@11841",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rmin_compare"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. Rocq comparison is Lean Ordering, CompOpp is Ordering.swap, Z.compare is compare on Int. The source's match form (was an if-chain on Int codes).",
+      "evidence": [
+        "scripts/fixtures/RauxCompareContracts.lean",
+        "scripts/fixtures/RauxCompareContracts.v",
+        "scripts/test_raux_compare_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rmin_compare": {
+          "type_hash": "2797620072",
+          "value_hash": "2767465266",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rle_bool@12162",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rle_bool"
+      ],
+      "scope": "Ported in this slice: body matches Rcompare (Gt => false | _ => true) as the source (was decide (x <= y)); pinned by rfl in both assistants and a body mutation is rejected. Rle_bool_eq_decide gives the decide form.",
+      "evidence": [
+        "scripts/fixtures/RauxCompareContracts.lean",
+        "scripts/fixtures/RauxCompareContracts.v",
+        "scripts/test_raux_compare_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rle_bool": {
+          "type_hash": "3467778418",
+          "value_hash": "3384587892",
+          "noncomputable": true
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rle_bool_prop@12252",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rle_bool_prop"
+      ],
+      "scope": "Bool-indexed graph: true for x <= y, false for strict y < x; both assistants prove there is no false branch at equal inputs. Paired constructor/eliminator clients.",
+      "evidence": [
+        "scripts/fixtures/RauxCompareContracts.lean",
+        "scripts/fixtures/RauxCompareContracts.v",
+        "scripts/test_raux_compare_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rle_bool_prop": {
+          "type_hash": "1907219780",
+          "value_hash": null,
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rle_bool_prop_ind@12252",
+      "status": "adapted-proof-infrastructure",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rle_bool_prop.rec"
+      ],
+      "scope": "Rocq-generated non-dependent Prop eliminator, represented by Lean's dependent Rle_bool_prop.rec specialized to a motive over the index; paired clients state the exact scheme type. Not a literal port of generated proof terms.",
+      "evidence": [
+        "scripts/fixtures/RauxCompareContracts.lean",
+        "scripts/fixtures/RauxCompareContracts.v",
+        "scripts/test_raux_compare_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rle_bool_prop.rec": {
+          "type_hash": "1173114156",
+          "value_hash": null,
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rle_bool_prop_sind@12252",
+      "status": "adapted-proof-infrastructure",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rle_bool_prop.rec"
+      ],
+      "scope": "Rocq-generated SProp eliminator; Lean has no SProp and Prop is proof-irrelevant. Mapped to Rle_bool_prop.rec; the Rocq fixture checks the exact SProp type. Adapted, not ported.",
+      "evidence": [
+        "scripts/fixtures/RauxCompareContracts.lean",
+        "scripts/fixtures/RauxCompareContracts.v",
+        "scripts/test_raux_compare_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rle_bool_prop.rec": {
+          "type_hash": "1173114156",
+          "value_hash": null,
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rle_bool_true_@12298",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rle_bool_prop.Rle_bool_true_"
+      ],
+      "scope": "Same constructor and premise as the source. Rocq takes x y explicitly; Lean's are implicit, so the client uses @. Rocq comparison is Lean Ordering, CompOpp is Ordering.swap, Z.compare is compare on Int.",
+      "evidence": [
+        "scripts/fixtures/RauxCompareContracts.lean",
+        "scripts/fixtures/RauxCompareContracts.v",
+        "scripts/test_raux_compare_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rle_bool_prop.Rle_bool_true_": {
+          "type_hash": "2774801016",
+          "value_hash": null,
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rle_bool_false_@12356",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rle_bool_prop.Rle_bool_false_"
+      ],
+      "scope": "Same constructor and premise as the source. Rocq takes x y explicitly; Lean's are implicit, so the client uses @. Rocq comparison is Lean Ordering, CompOpp is Ordering.swap, Z.compare is compare on Int.",
+      "evidence": [
+        "scripts/fixtures/RauxCompareContracts.lean",
+        "scripts/fixtures/RauxCompareContracts.v",
+        "scripts/test_raux_compare_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rle_bool_prop.Rle_bool_false_": {
+          "type_hash": "2450018812",
+          "value_hash": null,
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rle_bool_spec@12421",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rle_bool_spec"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. Rocq comparison is Lean Ordering, CompOpp is Ordering.swap, Z.compare is compare on Int. Source statement now under the source name (was Rle_bool_prop_spec; the old iff is Rle_bool_iff).",
+      "evidence": [
+        "scripts/fixtures/RauxCompareContracts.lean",
+        "scripts/fixtures/RauxCompareContracts.v",
+        "scripts/test_raux_compare_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rle_bool_spec": {
+          "type_hash": "3408193688",
+          "value_hash": "209879454",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rle_bool_true@12623",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rle_bool_true"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. Rocq comparison is Lean Ordering, CompOpp is Ordering.swap, Z.compare is compare on Int.",
+      "evidence": [
+        "scripts/fixtures/RauxCompareContracts.lean",
+        "scripts/fixtures/RauxCompareContracts.v",
+        "scripts/test_raux_compare_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rle_bool_true": {
+          "type_hash": "2106045631",
+          "value_hash": "3567590127",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rle_bool_false@12828",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rle_bool_false"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. Rocq comparison is Lean Ordering, CompOpp is Ordering.swap, Z.compare is compare on Int. Strict premise y < x.",
+      "evidence": [
+        "scripts/fixtures/RauxCompareContracts.lean",
+        "scripts/fixtures/RauxCompareContracts.v",
+        "scripts/test_raux_compare_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rle_bool_false": {
+          "type_hash": "1430264002",
+          "value_hash": "3623111876",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rlt_bool@13071",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rlt_bool"
+      ],
+      "scope": "Ported in this slice: body matches Rcompare (Lt => true | _ => false) as the source (was decide); pinned by rfl. Rlt_bool_eq_decide gives the decide form.",
+      "evidence": [
+        "scripts/fixtures/RauxCompareContracts.lean",
+        "scripts/fixtures/RauxCompareContracts.v",
+        "scripts/test_raux_compare_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rlt_bool": {
+          "type_hash": "3467778418",
+          "value_hash": "1062663888",
+          "noncomputable": true
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rlt_bool_prop@13161",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rlt_bool_prop"
+      ],
+      "scope": "Bool-indexed graph: true for strict x < y, false for y <= x; both assistants prove there is no true branch at equal inputs. Paired constructor/eliminator clients.",
+      "evidence": [
+        "scripts/fixtures/RauxCompareContracts.lean",
+        "scripts/fixtures/RauxCompareContracts.v",
+        "scripts/test_raux_compare_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rlt_bool_prop": {
+          "type_hash": "1907219780",
+          "value_hash": null,
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rlt_bool_prop_ind@13161",
+      "status": "adapted-proof-infrastructure",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rlt_bool_prop.rec"
+      ],
+      "scope": "Rocq-generated non-dependent Prop eliminator, represented by Lean's dependent Rlt_bool_prop.rec specialized to a motive over the index; paired clients state the exact scheme type. Not a literal port of generated proof terms.",
+      "evidence": [
+        "scripts/fixtures/RauxCompareContracts.lean",
+        "scripts/fixtures/RauxCompareContracts.v",
+        "scripts/test_raux_compare_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rlt_bool_prop.rec": {
+          "type_hash": "4140920517",
+          "value_hash": null,
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rlt_bool_prop_sind@13161",
+      "status": "adapted-proof-infrastructure",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rlt_bool_prop.rec"
+      ],
+      "scope": "Rocq-generated SProp eliminator; Lean has no SProp and Prop is proof-irrelevant. Mapped to Rlt_bool_prop.rec; the Rocq fixture checks the exact SProp type. Adapted, not ported.",
+      "evidence": [
+        "scripts/fixtures/RauxCompareContracts.lean",
+        "scripts/fixtures/RauxCompareContracts.v",
+        "scripts/test_raux_compare_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rlt_bool_prop.rec": {
+          "type_hash": "4140920517",
+          "value_hash": null,
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rlt_bool_true_@13207",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rlt_bool_prop.Rlt_bool_true_"
+      ],
+      "scope": "Same constructor and premise as the source. Rocq takes x y explicitly; Lean's are implicit, so the client uses @. Rocq comparison is Lean Ordering, CompOpp is Ordering.swap, Z.compare is compare on Int.",
+      "evidence": [
+        "scripts/fixtures/RauxCompareContracts.lean",
+        "scripts/fixtures/RauxCompareContracts.v",
+        "scripts/test_raux_compare_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rlt_bool_prop.Rlt_bool_true_": {
+          "type_hash": "4169782546",
+          "value_hash": null,
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rlt_bool_false_@13264",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rlt_bool_prop.Rlt_bool_false_"
+      ],
+      "scope": "Same constructor and premise as the source. Rocq takes x y explicitly; Lean's are implicit, so the client uses @. Rocq comparison is Lean Ordering, CompOpp is Ordering.swap, Z.compare is compare on Int.",
+      "evidence": [
+        "scripts/fixtures/RauxCompareContracts.lean",
+        "scripts/fixtures/RauxCompareContracts.v",
+        "scripts/test_raux_compare_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rlt_bool_prop.Rlt_bool_false_": {
+          "type_hash": "3650311838",
+          "value_hash": null,
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rlt_bool_spec@13330",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rlt_bool_spec"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. Rocq comparison is Lean Ordering, CompOpp is Ordering.swap, Z.compare is compare on Int. Source statement now under the source name (was Rlt_bool_prop_spec; the old iff is Rlt_bool_iff).",
+      "evidence": [
+        "scripts/fixtures/RauxCompareContracts.lean",
+        "scripts/fixtures/RauxCompareContracts.v",
+        "scripts/test_raux_compare_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rlt_bool_spec": {
+          "type_hash": "1203600357",
+          "value_hash": "525675010",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:negb_Rlt_bool@13532",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.negb_Rlt_bool"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. Rocq comparison is Lean Ordering, CompOpp is Ordering.swap, Z.compare is compare on Int. Keeps the source's naming quirk: negb_Rlt_bool is about negb (Rle_bool x y); swapping the names is a rejected mutation.",
+      "evidence": [
+        "scripts/fixtures/RauxCompareContracts.lean",
+        "scripts/fixtures/RauxCompareContracts.v",
+        "scripts/test_raux_compare_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.negb_Rlt_bool": {
+          "type_hash": "3743486105",
+          "value_hash": "1087155588",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:negb_Rle_bool@13701",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.negb_Rle_bool"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. Rocq comparison is Lean Ordering, CompOpp is Ordering.swap, Z.compare is compare on Int. Keeps the source's naming: it is about negb (Rlt_bool x y).",
+      "evidence": [
+        "scripts/fixtures/RauxCompareContracts.lean",
+        "scripts/fixtures/RauxCompareContracts.v",
+        "scripts/test_raux_compare_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.negb_Rle_bool": {
+          "type_hash": "1878451152",
+          "value_hash": "4156549234",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rlt_bool_true@13870",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rlt_bool_true"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. Rocq comparison is Lean Ordering, CompOpp is Ordering.swap, Z.compare is compare on Int.",
+      "evidence": [
+        "scripts/fixtures/RauxCompareContracts.lean",
+        "scripts/fixtures/RauxCompareContracts.v",
+        "scripts/test_raux_compare_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rlt_bool_true": {
+          "type_hash": "4251524457",
+          "value_hash": "2551441625",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rlt_bool_false@14027",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rlt_bool_false"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. Rocq comparison is Lean Ordering, CompOpp is Ordering.swap, Z.compare is compare on Int. Non-strict premise y <= x.",
+      "evidence": [
+        "scripts/fixtures/RauxCompareContracts.lean",
+        "scripts/fixtures/RauxCompareContracts.v",
+        "scripts/test_raux_compare_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rlt_bool_false": {
+          "type_hash": "1533001278",
+          "value_hash": "1205831733",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rlt_bool_opp@14184",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rlt_bool_opp"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. Rocq comparison is Lean Ordering, CompOpp is Ordering.swap, Z.compare is compare on Int.",
+      "evidence": [
+        "scripts/fixtures/RauxCompareContracts.lean",
+        "scripts/fixtures/RauxCompareContracts.v",
+        "scripts/test_raux_compare_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rlt_bool_opp": {
+          "type_hash": "2568569595",
+          "value_hash": "1250071124",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Req_bool@14365",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Req_bool"
+      ],
+      "scope": "Ported in this slice: body matches Rcompare (Eq => true | _ => false) as the source (was decide); pinned by rfl. Req_bool_eq_decide gives the decide form.",
+      "evidence": [
+        "scripts/fixtures/RauxCompareContracts.lean",
+        "scripts/fixtures/RauxCompareContracts.v",
+        "scripts/test_raux_compare_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Req_bool": {
+          "type_hash": "3467778418",
+          "value_hash": "3741943651",
+          "noncomputable": true
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Req_bool_prop@14455",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Req_bool_prop"
+      ],
+      "scope": "Bool-indexed graph: true for x = y, false for x <> y. Paired constructor/eliminator clients.",
+      "evidence": [
+        "scripts/fixtures/RauxCompareContracts.lean",
+        "scripts/fixtures/RauxCompareContracts.v",
+        "scripts/test_raux_compare_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Req_bool_prop": {
+          "type_hash": "1907219780",
+          "value_hash": null,
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Req_bool_prop_ind@14455",
+      "status": "adapted-proof-infrastructure",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Req_bool_prop.rec"
+      ],
+      "scope": "Rocq-generated non-dependent Prop eliminator, represented by Lean's dependent Req_bool_prop.rec specialized to a motive over the index; paired clients state the exact scheme type. Not a literal port of generated proof terms.",
+      "evidence": [
+        "scripts/fixtures/RauxCompareContracts.lean",
+        "scripts/fixtures/RauxCompareContracts.v",
+        "scripts/test_raux_compare_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Req_bool_prop.rec": {
+          "type_hash": "695949504",
+          "value_hash": null,
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Req_bool_prop_sind@14455",
+      "status": "adapted-proof-infrastructure",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Req_bool_prop.rec"
+      ],
+      "scope": "Rocq-generated SProp eliminator; Lean has no SProp and Prop is proof-irrelevant. Mapped to Req_bool_prop.rec; the Rocq fixture checks the exact SProp type. Adapted, not ported.",
+      "evidence": [
+        "scripts/fixtures/RauxCompareContracts.lean",
+        "scripts/fixtures/RauxCompareContracts.v",
+        "scripts/test_raux_compare_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Req_bool_prop.rec": {
+          "type_hash": "695949504",
+          "value_hash": null,
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Req_bool_true_@14501",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Req_bool_prop.Req_bool_true_"
+      ],
+      "scope": "Same constructor and premise as the source. Rocq takes x y explicitly; Lean's are implicit, so the client uses @. Rocq comparison is Lean Ordering, CompOpp is Ordering.swap, Z.compare is compare on Int.",
+      "evidence": [
+        "scripts/fixtures/RauxCompareContracts.lean",
+        "scripts/fixtures/RauxCompareContracts.v",
+        "scripts/test_raux_compare_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Req_bool_prop.Req_bool_true_": {
+          "type_hash": "1503681407",
+          "value_hash": null,
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Req_bool_false_@14558",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Req_bool_prop.Req_bool_false_"
+      ],
+      "scope": "Same constructor and premise as the source. Rocq takes x y explicitly; Lean's are implicit, so the client uses @. Rocq comparison is Lean Ordering, CompOpp is Ordering.swap, Z.compare is compare on Int.",
+      "evidence": [
+        "scripts/fixtures/RauxCompareContracts.lean",
+        "scripts/fixtures/RauxCompareContracts.v",
+        "scripts/test_raux_compare_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Req_bool_prop.Req_bool_false_": {
+          "type_hash": "464238913",
+          "value_hash": null,
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Req_bool_spec@14624",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Req_bool_spec"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. Rocq comparison is Lean Ordering, CompOpp is Ordering.swap, Z.compare is compare on Int. Source statement now under the source name (was Req_bool_prop_spec; the old iff is Req_bool_iff).",
+      "evidence": [
+        "scripts/fixtures/RauxCompareContracts.lean",
+        "scripts/fixtures/RauxCompareContracts.v",
+        "scripts/test_raux_compare_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Req_bool_spec": {
+          "type_hash": "2913706477",
+          "value_hash": "3184881239",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Req_bool_true@14822",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Req_bool_true"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. Rocq comparison is Lean Ordering, CompOpp is Ordering.swap, Z.compare is compare on Int.",
+      "evidence": [
+        "scripts/fixtures/RauxCompareContracts.lean",
+        "scripts/fixtures/RauxCompareContracts.v",
+        "scripts/test_raux_compare_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Req_bool_true": {
+          "type_hash": "1632057547",
+          "value_hash": "2728807617",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Req_bool_false@14999",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Req_bool_false"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. Rocq comparison is Lean Ordering, CompOpp is Ordering.swap, Z.compare is compare on Int.",
+      "evidence": [
+        "scripts/fixtures/RauxCompareContracts.lean",
+        "scripts/fixtures/RauxCompareContracts.v",
+        "scripts/test_raux_compare_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Req_bool_false": {
+          "type_hash": "3820517996",
+          "value_hash": "1495472483",
+          "noncomputable": false
+        }
+      }
     }
   ]
 }
