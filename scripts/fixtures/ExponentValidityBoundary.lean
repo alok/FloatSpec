@@ -84,8 +84,8 @@ theorem zigzag_magnitude_three_quarters :
 theorem zigzag_seven_quarters_representable :
     generic_format 2 zigzag (7 / 4 : Real) := by
   norm_num [generic_format, scaled_mantissa, cexp, zigzag,
-    zigzag_magnitude_seven_quarters, FloatSpec.Core.Raux.Ztrunc,
-    FloatSpec.Core.Raux.Zfloor, FloatSpec.Core.Raux.Zceil]
+    zigzag_magnitude_seven_quarters, FloatSpec.Core.Raux.Ztrunc_eq_ite,
+    FloatSpec.Core.Raux.Zfloor, FloatSpec.Core.Raux.Zceil_eq_ceil]
 
 #print axioms zigzag_seven_quarters_representable
 
@@ -93,8 +93,8 @@ theorem zigzag_seven_quarters_representable :
 theorem zigzag_three_quarters_not_representable :
     ¬ generic_format 2 zigzag (3 / 4 : Real) := by
   norm_num [generic_format, scaled_mantissa, cexp, zigzag,
-    zigzag_magnitude_three_quarters, FloatSpec.Core.Raux.Ztrunc,
-    FloatSpec.Core.Raux.Zfloor, FloatSpec.Core.Raux.Zceil]
+    zigzag_magnitude_three_quarters, FloatSpec.Core.Raux.Ztrunc_eq_ite,
+    FloatSpec.Core.Raux.Zfloor, FloatSpec.Core.Raux.Zceil_eq_ceil]
 
 #print axioms zigzag_three_quarters_not_representable
 
@@ -106,8 +106,8 @@ theorem truncation_remainder_needs_monotone_exponents :
   have hone : generic_format 2 zigzag (1 : Real) := by
     simpa using zigzag_contains_powers 0
   have remainder := claimed (7 / 4) 1 zigzag_seven_quarters_representable hone
-  norm_num [FloatSpec.Core.Raux.Ztrunc, FloatSpec.Core.Raux.Zfloor,
-    FloatSpec.Core.Raux.Zceil] at remainder
+  norm_num [FloatSpec.Core.Raux.Ztrunc_eq_ite, FloatSpec.Core.Raux.Zfloor,
+    FloatSpec.Core.Raux.Zceil_eq_ceil] at remainder
   exact zigzag_three_quarters_not_representable remainder
 
 #print axioms truncation_remainder_needs_monotone_exponents

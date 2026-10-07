@@ -75,7 +75,7 @@ private lemma znearest_eq_ceil_of_eq_half_choice (choice : Int → Bool) (x : �
     FloatSpec.Core.Generic_fmt.Znearest choice x = Int.ceil x := by
   have hz := FloatSpec.Core.Generic_fmt.Znearest_eq_choice_of_eq_half choice x
     (by simpa [FloatSpec.Core.Raux.Zfloor] using h)
-  simpa [FloatSpec.Core.Raux.Zfloor, FloatSpec.Core.Raux.Zceil, hc] using hz
+  simpa [FloatSpec.Core.Raux.Zfloor, FloatSpec.Core.Raux.Zceil_eq_ceil, hc] using hz
 
 private lemma znearest_eq_floor_of_eq_half_choice (choice : Int → Bool) (x : ℝ)
     (h : x - ((Int.floor x : Int) : ℝ) = (1 / 2 : ℝ))
@@ -83,7 +83,7 @@ private lemma znearest_eq_floor_of_eq_half_choice (choice : Int → Bool) (x : �
     FloatSpec.Core.Generic_fmt.Znearest choice x = Int.floor x := by
   have hz := FloatSpec.Core.Generic_fmt.Znearest_eq_choice_of_eq_half choice x
     (by simpa [FloatSpec.Core.Raux.Zfloor] using h)
-  simpa [FloatSpec.Core.Raux.Zfloor, FloatSpec.Core.Raux.Zceil, hc] using hz
+  simpa [FloatSpec.Core.Raux.Zfloor, FloatSpec.Core.Raux.Zceil_eq_ceil, hc] using hz
 
 private lemma znearest_abs_sub_le_floor_gap (choice : Int → Bool) (s : ℝ) :
     |(((FloatSpec.Core.Generic_fmt.Znearest choice s : Int) : ℝ) - s)| ≤
@@ -261,7 +261,7 @@ theorem roundR_Znearest_N_pt (x : ℝ) (hβ : 1 < beta) :
           (FloatSpec.Core.Generic_fmt.scaled_mantissa beta fexp x) : Int) : ℝ) *
         (beta : ℝ) ^ (cexp beta fexp x)) = u
     rw [← hsm, ← he]
-    simp [FloatSpec.Core.Generic_fmt.rnd_ceil, FloatSpec.Core.Raux.Zceil, u, p]
+    simp [FloatSpec.Core.Generic_fmt.rnd_ceil, FloatSpec.Core.Raux.Zceil_eq_ceil, u, p]
   have hFf : F f := by
     have hfmt :=
       FloatSpec.Core.Generic_fmt.generic_format_roundR
@@ -294,7 +294,7 @@ theorem roundR_Znearest_N_pt (x : ℝ) (hβ : 1 < beta) :
           (rnd := FloatSpec.Core.Generic_fmt.rnd_ceil) (x := x) hβ
       simpa [F, hround_ceil] using hfmt
     · have hceil_ge : sm ≤ ((FloatSpec.Core.Raux.Zceil sm : Int) : ℝ) := by
-        simpa [FloatSpec.Core.Raux.Zceil] using Int.le_ceil sm
+        simpa [FloatSpec.Core.Raux.Zceil_eq_ceil] using Int.le_ceil sm
       have hmul := mul_le_mul_of_nonneg_right hceil_ge hp_nonneg
       simpa [u, hscaled] using hmul
     · intro g hgF hx_le_g
@@ -338,7 +338,7 @@ theorem roundR_Znearest_N_pt (x : ℝ) (hβ : 1 < beta) :
       have hmant' :
           |(((FloatSpec.Core.Generic_fmt.Znearest choice sm : Int) : ℝ) - sm)| ≤
             ((FloatSpec.Core.Raux.Zceil sm : Int) : ℝ) - sm := by
-        simpa [FloatSpec.Core.Raux.Zceil] using hmant
+        simpa [FloatSpec.Core.Raux.Zceil_eq_ceil] using hmant
       exact mul_le_mul_of_nonneg_right hmant' hp_nonneg
     have hf_x :
         |f - x| =

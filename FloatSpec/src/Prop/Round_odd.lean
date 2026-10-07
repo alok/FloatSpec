@@ -199,9 +199,9 @@ private lemma Zodd_opp (x : ℝ) : Zodd (-x) = -Zodd x := by
   classical
   set fx := FloatSpec.Core.Raux.Zfloor x
   have hfloor_neg : FloatSpec.Core.Raux.Zfloor (-x) = -FloatSpec.Core.Raux.Zceil x := by
-    simp [FloatSpec.Core.Raux.Zfloor, FloatSpec.Core.Raux.Zceil, Int.floor_neg]
+    simp [FloatSpec.Core.Raux.Zfloor, FloatSpec.Core.Raux.Zceil_eq_ceil, Int.floor_neg]
   have hceil_neg : FloatSpec.Core.Raux.Zceil (-x) = -FloatSpec.Core.Raux.Zfloor x := by
-    simp [FloatSpec.Core.Raux.Zfloor, FloatSpec.Core.Raux.Zceil, Int.ceil_neg]
+    simp [FloatSpec.Core.Raux.Zfloor, FloatSpec.Core.Raux.Zceil_eq_ceil, Int.ceil_neg]
   by_cases hxint : x = (fx : ℝ)
   · have hxz : Zodd x = fx := by
       simpa [fx] using Zodd_of_int_floor x (by simpa [fx] using hxint)
@@ -212,7 +212,7 @@ private lemma Zodd_opp (x : ℝ) : Zodd (-x) = -Zodd x := by
       simpa [FloatSpec.Core.Raux.Zfloor, hfloor]
     rw [Zodd_of_int_floor (-x) hneg_int, hxz, hfloor_neg]
     have hceil_eq : FloatSpec.Core.Raux.Zceil x = fx := by
-      simpa [fx, FloatSpec.Core.Raux.Zceil] using
+      simpa [fx, FloatSpec.Core.Raux.Zceil_eq_ceil] using
         congrArg Int.ceil hxint
     rw [hceil_eq]
   · have hx_nonint_floor : ¬ x = ((FloatSpec.Core.Raux.Zfloor x : Int) : ℝ) := by
@@ -309,9 +309,9 @@ lemma Zceil_plus (n : Int) (y : ℝ) :
   calc
     FloatSpec.Core.Raux.Zceil ((n : ℝ) + y)
         = Int.ceil (y + (n : ℝ)) := by
-          simp [FloatSpec.Core.Raux.Zceil, add_comm]
+          simp [FloatSpec.Core.Raux.Zceil_eq_ceil, add_comm]
     _ = FloatSpec.Core.Raux.Zceil y + n := by
-          simpa [FloatSpec.Core.Raux.Zceil] using
+          simpa [FloatSpec.Core.Raux.Zceil_eq_ceil] using
             (Int.ceil_add_intCast (R := ℝ) y n)
     _ = n + FloatSpec.Core.Raux.Zceil y := by omega
 
@@ -782,7 +782,7 @@ private lemma roundR_ceil_UP_pt_local
     set e : Int := FloatSpec.Core.Generic_fmt.cexp beta fexp x with he
     set sm : ℝ := FloatSpec.Core.Generic_fmt.scaled_mantissa beta fexp x with hsm
     have hceil_ge : sm ≤ ((FloatSpec.Core.Raux.Zceil sm : Int) : ℝ) := by
-      simpa [FloatSpec.Core.Raux.Zceil] using (Int.le_ceil sm)
+      simpa [FloatSpec.Core.Raux.Zceil_eq_ceil] using (Int.le_ceil sm)
     have hmul := mul_le_mul_of_nonneg_right hceil_ge
       (le_of_lt (zpow_pos hbposR e))
     have hscaled : sm * (beta : ℝ) ^ e = x := by
@@ -856,6 +856,7 @@ private lemma roundR_nearest_eq_DN_of_lt_mid
       FloatSpec.Core.Raux.Zceil sm ≤ n + 1 := by
     have hsm_lt : sm < (n : ℝ) + 1 := by
       simpa [n, hn, FloatSpec.Core.Raux.Zfloor] using Int.lt_floor_add_one sm
+    rw [FloatSpec.Core.Raux.Zceil_eq_ceil]
     exact Int.ceil_le.mpr (by simpa [Int.cast_add, Int.cast_one] using le_of_lt hsm_lt)
   have hgap_le :
       up - dn ≤ (beta : ℝ) ^ e := by
@@ -947,12 +948,13 @@ private lemma roundR_nearest_eq_UP_of_mid_lt
   have hmid_round : (dn + up) / 2 < x := by
     simpa [hdn_eq, hup_eq] using hmid
   have hceil_ge : sm ≤ (n : ℝ) := by
-    simpa [n, hn, FloatSpec.Core.Raux.Zceil] using Int.le_ceil sm
+    simpa [n, hn, FloatSpec.Core.Raux.Zceil_eq_ceil] using Int.le_ceil sm
   have hnonneg : 0 ≤ (n : ℝ) - sm := sub_nonneg.mpr hceil_ge
   have hceil_le_floor_add_one :
       n ≤ FloatSpec.Core.Raux.Zfloor sm + 1 := by
     have hsm_lt : sm < ((FloatSpec.Core.Raux.Zfloor sm : Int) : ℝ) + 1 := by
       simpa [FloatSpec.Core.Raux.Zfloor] using Int.lt_floor_add_one sm
+    rw [hn, FloatSpec.Core.Raux.Zceil_eq_ceil]
     exact Int.ceil_le.mpr (by simpa [Int.cast_add, Int.cast_one] using le_of_lt hsm_lt)
   have hgap_le :
       up - dn ≤ (beta : ℝ) ^ e := by

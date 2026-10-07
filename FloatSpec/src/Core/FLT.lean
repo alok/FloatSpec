@@ -252,7 +252,7 @@ theorem FLT_format_abs_spec (beta : Int) [ValidRadix beta] (x : ℝ) :
         = Int.ofNat ((FloatSpec.Core.Raux.Ztrunc x).natAbs) := by
     -- Expand truncation and split on the sign of x.
     -- On |x| we always take the floor branch since |x| ≥ 0.
-    simp [FloatSpec.Core.Raux.Ztrunc, not_lt.mpr (abs_nonneg x)]
+    simp [FloatSpec.Core.Raux.Ztrunc_eq_ite, not_lt.mpr (abs_nonneg x)]
     by_cases hxlt : x < 0
     · -- Negative case: |x| = -x and ⌊-x⌋ = -⌈x⌉; natAbs(⌈x⌉) coerces to |-⌈x⌉|.
       have hxle : x ≤ 0 := le_of_lt hxlt
@@ -297,7 +297,7 @@ theorem generic_format_FLT (beta : Int) [ValidRadix beta] (x : ℝ) :
   intro hx
   rcases hx with ⟨f, rfl, hbound, hemin⟩
   by_cases hm : f.Fnum = 0
-  · simp [F2R, hm, generic_format, scaled_mantissa, cexp, mag, Ztrunc]
+  · simp [F2R, hm, generic_format, scaled_mantissa, cexp, mag, Ztrunc_eq_ite]
   · have hmagm := FloatSpec.Core.Raux.mag_le_Zpower
       beta f.Fnum prec ValidRadix.valid hm hbound
     have hmag : mag beta (F2R f) = mag beta (f.Fnum : ℝ) + f.Fexp :=

@@ -42,7 +42,7 @@ example :
   norm_num [FloatSpec.Calc.Round.round, FloatSpec.Calc.Round.Mode.ofRnd, FloatSpec.Core.Generic_fmt.roundR,
     FloatSpec.Core.Generic_fmt.scaled_mantissa,
     FloatSpec.Core.Generic_fmt.cexp, FloatSpec.Core.FIX.FIX_exp,
-    rnd_ceil, FloatSpec.Core.Raux.Zceil]
+    rnd_ceil, FloatSpec.Core.Raux.Zceil_eq_ceil]
 
 example :
     FloatSpec.Calc.Round.round 2 (FloatSpec.Core.FIX.FIX_exp 0)
@@ -50,7 +50,7 @@ example :
   norm_num [FloatSpec.Calc.Round.round, FloatSpec.Calc.Round.Mode.ofRnd, FloatSpec.Core.Generic_fmt.roundR,
     FloatSpec.Core.Generic_fmt.scaled_mantissa,
     FloatSpec.Core.Generic_fmt.cexp, FloatSpec.Core.FIX.FIX_exp,
-    FloatSpec.Core.Raux.Ztrunc, FloatSpec.Core.Raux.Zceil]
+    FloatSpec.Core.Raux.Ztrunc_eq_ite, FloatSpec.Core.Raux.Zceil_eq_ceil]
 
 example :
     FloatSpec.Calc.Round.round 2 (FloatSpec.Core.FIX.FIX_exp 0)
@@ -58,7 +58,7 @@ example :
   norm_num [FloatSpec.Calc.Round.round, FloatSpec.Calc.Round.Mode.ofRnd, FloatSpec.Core.Generic_fmt.roundR,
     FloatSpec.Core.Generic_fmt.scaled_mantissa,
     FloatSpec.Core.Generic_fmt.cexp, FloatSpec.Core.FIX.FIX_exp,
-    FloatSpec.Core.Generic_fmt.Znearest, FloatSpec.Core.Raux.Zfloor, FloatSpec.Core.Raux.Zceil,
+    FloatSpec.Core.Generic_fmt.Znearest, FloatSpec.Core.Raux.Zfloor, FloatSpec.Core.Raux.Zceil_eq_ceil,
     FloatSpec.Core.Raux.Rcompare]
 
 example :
@@ -67,7 +67,7 @@ example :
   norm_num [FloatSpec.Calc.Round.round, FloatSpec.Calc.Round.Mode.ofRnd, FloatSpec.Core.Generic_fmt.roundR,
     FloatSpec.Core.Generic_fmt.scaled_mantissa,
     FloatSpec.Core.Generic_fmt.cexp, FloatSpec.Core.FIX.FIX_exp,
-    FloatSpec.Core.Generic_fmt.Znearest, FloatSpec.Core.Raux.Zfloor, FloatSpec.Core.Raux.Zceil,
+    FloatSpec.Core.Generic_fmt.Znearest, FloatSpec.Core.Raux.Zfloor, FloatSpec.Core.Raux.Zceil_eq_ceil,
     FloatSpec.Core.Raux.Rcompare]
 
 end FloatSpec.Test.CalcRoundSource

@@ -42,7 +42,7 @@ theorem magnitude_minus_seven : Raux.mag 2 (-7 : Real) = 3 :=
 theorem minus_seven_not_format :
     ¬ Generic_fmt.generic_format 2 (FLX.FLX_exp 2) (-7 : Real) := by
   norm_num [Generic_fmt.generic_format, Generic_fmt.scaled_mantissa, Generic_fmt.cexp,
-    FLX.FLX_exp, magnitude_minus_seven, Raux.Ztrunc, Raux.Zfloor, Raux.Zceil]
+    FLX.FLX_exp, magnitude_minus_seven, Raux.Ztrunc_eq_ite, Raux.Zfloor, Raux.Zceil_eq_ceil]
 
 #print axioms minus_seven_not_format
 
@@ -68,7 +68,7 @@ theorem ceiling_does_not_preserve_remainder_format :
     convert powers_are_representable 3 using 1
     norm_num
   have remainder := claimed 1 8 hx hy
-  norm_num [Raux.Zceil] at remainder
+  norm_num [Raux.Zceil_eq_ceil] at remainder
   exact minus_seven_not_format remainder
 
 #print axioms ceiling_does_not_preserve_remainder_format

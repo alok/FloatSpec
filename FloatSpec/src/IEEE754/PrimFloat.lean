@@ -2041,7 +2041,7 @@ private theorem roundR_pred_neg (m : Nat) (e : Int) (hm0 : 1 ≤ m)
   rw [hscaled]
   have htrunc : rnd_of_mode RoundingMode.RTZ (-((m : ℝ) - 1 / 2)) = -((m - 1 : Nat) : Int) := by
     have hneg : -((m : ℝ) - 1 / 2) < 0 := by linarith
-    simp only [rnd_of_mode, FloatSpec.Core.Raux.Ztrunc, hneg, ↓reduceIte]
+    simp only [rnd_of_mode, FloatSpec.Core.Raux.Ztrunc_eq_ite, hneg, ↓reduceIte]
     rw [Int.ceil_eq_iff]
     push_cast [Nat.cast_sub hm0]
     constructor <;> linarith

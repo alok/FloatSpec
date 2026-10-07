@@ -136,7 +136,7 @@ benefits from factoring.
 
 -- Helper lemma: Ztrunc is odd-symmetric
 private lemma Ztrunc_neg_eq (y : ℝ) : FloatSpec.Core.Raux.Ztrunc (-y) = -FloatSpec.Core.Raux.Ztrunc y := by
-  unfold FloatSpec.Core.Raux.Ztrunc
+  simp only [FloatSpec.Core.Raux.Ztrunc_eq_ite]
   by_cases hy : 0 < y
   · -- y > 0: Ztrunc(-y) uses ceil branch (since -y < 0), Ztrunc(y) uses floor branch
     have h_neg_lt : (-y) < 0 := neg_lt_zero.mpr hy
@@ -171,7 +171,7 @@ private lemma cexp_neg_eq (b emin prec : Int) [ValidRadix b] (x : ℝ) :
 private lemma Znearest_of_int (choice : Int → Bool) (m : Int) :
     FloatSpec.Core.Generic_fmt.Znearest choice (m : ℝ) = m := by
   unfold FloatSpec.Core.Generic_fmt.Znearest
-  simp only [FloatSpec.Core.Raux.Zfloor, FloatSpec.Core.Raux.Zceil,
+  simp only [FloatSpec.Core.Raux.Zfloor, FloatSpec.Core.Raux.Zceil_eq_ceil,
              FloatSpec.Core.Raux.Rcompare,
              Int.floor_intCast, Int.ceil_intCast, Int.cast_id, sub_self]
   norm_num

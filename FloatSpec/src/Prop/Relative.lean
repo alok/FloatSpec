@@ -1119,11 +1119,11 @@ private lemma Znearest_error_le_scaled (choice : Int → Bool) (N : Int) (y : �
     rw [abs_of_nonpos (sub_nonpos.mpr hfloor_le)]
     linarith
   · have hy_le_ceil : y ≤ (FloatSpec.Core.Raux.Zceil y : ℝ) := by
-      simpa [FloatSpec.Core.Raux.Zceil] using Int.le_ceil y
+      simpa [FloatSpec.Core.Raux.Zceil_eq_ceil] using Int.le_ceil y
     by_cases hy_eq_N : y = (N : ℝ)
     · have hceilN : FloatSpec.Core.Raux.Zceil y = N := by
         rw [hy_eq_N]
-        simpa [FloatSpec.Core.Raux.Zceil] using (Int.ceil_intCast (n := N))
+        simpa [FloatSpec.Core.Raux.Zceil_eq_ceil] using (Int.ceil_intCast (n := N))
       rw [hceil, hceilN, hy_eq_N]
       simp
       exact div_nonneg (le_of_lt hNposR) (le_of_lt hden_pos)

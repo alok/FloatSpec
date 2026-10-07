@@ -126,7 +126,7 @@ noncomputable abbrev ZnearestMode (choice : Int → Bool) : FloatSpec.Calc.Round
   rnd := FloatSpec.Core.Generic_fmt.Znearest choice
   rnd_zero := by
     unfold FloatSpec.Core.Generic_fmt.Znearest
-    simp [FloatSpec.Core.Raux.Zfloor, FloatSpec.Core.Raux.Zceil,
+    simp [FloatSpec.Core.Raux.Zfloor, FloatSpec.Core.Raux.Zceil_eq_ceil,
       FloatSpec.Core.Raux.Rcompare]
 
 end FloatSpec.Compat.Scaffold

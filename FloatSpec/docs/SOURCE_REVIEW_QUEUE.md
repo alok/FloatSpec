@@ -16,7 +16,7 @@ External Rocq imports are recorded in the JSON report, not counted as Flocq decl
 |---:|---|---:|---:|---:|---:|
 | 1 | src/Version.v | 1 | 1 | 1 | 1 |
 | 2 | src/Core/Zaux.v | 102 | 82 | 91 | 102 |
-| 3 | src/Core/Raux.v | 186 | 79 | 178 | 87 |
+| 3 | src/Core/Raux.v | 186 | 83 | 178 | 87 |
 | 4 | src/Core/Defs.v | 14 | 11 | 14 | 0 |
 | 5 | src/Core/Round_pred.v | 83 | 78 | 78 | 83 |
 | 6 | src/Core/Digits.v | 67 | 0 | 67 | 0 |
@@ -72,7 +72,7 @@ unnecessary numerical APIs to satisfy a raw name count.
 - `src/Core/Raux.v:925` — `Zceil_IZR` (prf): `FloatSpec.Core.Raux.Zceil_IZR`.
 - `src/Core/Raux.v:935` — `Zceil_le` (prf): `FloatSpec.Core.Raux.Zceil_le`.
 - `src/Core/Raux.v:945` — `Zceil_floor_neq` (prf): `FloatSpec.Core.Raux.Zceil_floor_neq`.
-- `src/Core/Raux.v:965` — `Ztrunc` (def): `FloatSpec.Compat.Ztrunc`, `FloatSpec.Core.Raux.Ztrunc`, `Ztrunc`.
+- `src/Core/Raux.v:965` — `Ztrunc` (def): `FloatSpec.Core.Raux.Ztrunc`.
 - `src/Core/Raux.v:967` — `Ztrunc_IZR` (prf): `FloatSpec.Core.Raux.Ztrunc_IZR`.
 - `src/Core/Raux.v:978` — `Ztrunc_floor` (prf): `FloatSpec.Core.Raux.Ztrunc_floor`.
 - `src/Core/Raux.v:991` — `Ztrunc_ceil` (prf): `FloatSpec.Core.Raux.Ztrunc_ceil`.

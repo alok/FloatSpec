@@ -149,7 +149,7 @@ theorem FLX_format_abs_spec (beta : Int) [ValidRadix beta] (x : ℝ) :
         = Int.ofNat ((FloatSpec.Core.Raux.Ztrunc x).natAbs) := by
     -- Expand truncation and split on the sign of x.
     -- On |x| we always take the floor branch since |x| ≥ 0.
-    simp [FloatSpec.Core.Raux.Ztrunc, not_lt.mpr (abs_nonneg x)]
+    simp [FloatSpec.Core.Raux.Ztrunc_eq_ite, not_lt.mpr (abs_nonneg x)]
     by_cases hxlt : x < 0
     · -- Negative case: |x| = -x and ⌊-x⌋ = -⌈x⌉; natAbs(⌈x⌉) coerces to |-⌈x⌉|.
       have hxle : x ≤ 0 := le_of_lt hxlt
@@ -248,7 +248,7 @@ theorem generic_format_FLX (beta : Int) [ValidRadix beta] (x : ℝ) :
   rcases hx with ⟨f, rfl, hbound⟩
   by_cases hm : f.Fnum = 0
   · simp [FloatSpec.Core.Defs.F2R, hm, generic_format, scaled_mantissa,
-      cexp, FloatSpec.Core.Raux.Ztrunc]
+      cexp, FloatSpec.Core.Raux.Ztrunc_eq_ite]
   have hprec : 0 < prec := by
     by_contra hn
     have hp : prec ≤ 0 := le_of_not_gt hn
@@ -319,7 +319,7 @@ theorem generic_format_FLXN (beta : Int) [ValidRadix beta] (x : ℝ) :
   rcases hx with ⟨f, hxf, hnorm⟩
   by_cases hx0 : x = 0
   · rw [hx0]
-    simp [generic_format, scaled_mantissa, FloatSpec.Core.Raux.Ztrunc]
+    simp [generic_format, scaled_mantissa, FloatSpec.Core.Raux.Ztrunc_eq_ite]
   · apply generic_format_FLX (prec := prec) beta x
     exact ⟨f, hxf, (hnorm hx0).2⟩
 

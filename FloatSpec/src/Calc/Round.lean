@@ -43,7 +43,7 @@ noncomputable def nearestEvenMode : Mode where
   rnd := FloatSpec.Core.Generic_fmt.Znearest (fun t => !(decide (2 ∣ t)))
   rnd_zero := by
     unfold FloatSpec.Core.Generic_fmt.Znearest
-    simp [FloatSpec.Core.Raux.Zfloor, FloatSpec.Core.Raux.Zceil,
+    simp [FloatSpec.Core.Raux.Zfloor, FloatSpec.Core.Raux.Zceil_eq_ceil,
       FloatSpec.Core.Raux.Rcompare]
 
 /-- Preserve a source integer-rounding function at the `Calc.Round` boundary. -/
@@ -933,7 +933,7 @@ theorem inbetween_int_UP (x : ℝ) (m : Int) (l : Location)
   cases Hl with
   | inbetween_Exact hxeq =>
       -- Exact at the lower bound: ⌈m⌉ = m and round_UP loc_Exact = false
-      simp [FloatSpec.Core.Raux.Zceil, hxeq, round_UP, cond_incr, Int.ceil_intCast]
+      simp [FloatSpec.Core.Raux.Zceil_eq_ceil, hxeq, round_UP, cond_incr, Int.ceil_intCast]
   | inbetween_Inexact _ hbounds _ =>
       -- Interior point: m < x < m+1 ⇒ ⌈x⌉ = m+1 and round_UP _ = true
       have hxlo : (m : ℝ) < x := hbounds.1
@@ -955,7 +955,7 @@ theorem inbetween_int_UP (x : ℝ) (m : Int) (l : Location)
         · -- x ≤ m+1
           simpa [Int.cast_add, Int.cast_one] using hxhi
       -- Conclude: cond_incr true m = m+1
-      simp [FloatSpec.Core.Raux.Zceil, this, round_UP, cond_incr]
+      simp [FloatSpec.Core.Raux.Zceil_eq_ceil, this, round_UP, cond_incr]
 
 theorem inbetween_float_UP (x : ℝ) (m e : Int) (l : Location)
     (He : e = cexp beta fexp x)
@@ -1062,7 +1062,7 @@ theorem inbetween_int_UP_sign (x : ℝ) (m : Int) (l : Location)
           have hx_eq : x = -((m : Int) : ℝ) := by simpa using congrArg Neg.neg this
           simpa [Int.cast_neg] using hx_eq
         have hceil : FloatSpec.Core.Raux.Zceil x = -m := by
-          simpa [FloatSpec.Core.Raux.Zceil, hx_eq'] using (Int.ceil_intCast (z := -m))
+          simpa [FloatSpec.Core.Raux.Zceil_eq_ceil, hx_eq'] using (Int.ceil_intCast (z := -m))
         simp [FloatSpec.Core.Zaux.cond_Zopp, hb, round_sign_UP, cond_incr, hceil]
     | inbetween_Inexact _ hbounds _ =>
         have hlt_hi : x < -((m : Int) : ℝ) := by
@@ -1082,7 +1082,7 @@ theorem inbetween_int_UP_sign (x : ℝ) (m : Int) (l : Location)
             exact hlt_lo
           · simpa [Int.cast_neg] using (le_of_lt hlt_hi)
         have hceil_run : FloatSpec.Core.Raux.Zceil x = -m := by
-          simpa [FloatSpec.Core.Raux.Zceil] using hceil
+          simpa [FloatSpec.Core.Raux.Zceil_eq_ceil] using hceil
         simp [FloatSpec.Core.Zaux.cond_Zopp, hb, round_sign_UP, cond_incr, hceil_run]
   · have hx0 : 0 ≤ x := le_of_not_gt hxlt
     have hb : FloatSpec.Core.Raux.Rlt_bool x 0 = false := by
@@ -1117,10 +1117,10 @@ theorem inbetween_int_ZR (x : ℝ) (m : Int) (l : Location)
         -- Compute by cases on the sign of (m : ℝ); both ceil and floor are m
         by_cases hm : x < 0
         · -- Negative branch uses ceiling
-          simp [FloatSpec.Core.Raux.Ztrunc, hxeq, hm, Int.ceil_intCast]
+          simp [FloatSpec.Core.Raux.Ztrunc_eq_ite, hxeq, hm, Int.ceil_intCast]
         · -- Nonnegative branch uses floor
           have hx0 : 0 ≤ x := le_of_not_gt hm
-          simp [FloatSpec.Core.Raux.Ztrunc, hxeq, hm, Int.floor_intCast, hx0]
+          simp [FloatSpec.Core.Raux.Ztrunc_eq_ite, hxeq, hm, Int.floor_intCast, hx0]
       -- Right-hand side simplifies to m
       simpa [this, hxeq, round_ZR, cond_incr]
   | inbetween_Inexact ord hbounds hcmp =>
@@ -1137,7 +1137,7 @@ theorem inbetween_int_ZR (x : ℝ) (m : Int) (l : Location)
         have hxlt0 : x < 0 := lt_of_lt_of_le hbounds.2 hm1_le0R
         -- Compute truncation via the negative branch
         have htrunc : (FloatSpec.Core.Raux.Ztrunc x) = Int.ceil x := by
-          simp [FloatSpec.Core.Raux.Ztrunc, hxlt0]
+          simp [FloatSpec.Core.Raux.Ztrunc_eq_ite, hxlt0]
         -- And characterize the ceiling on (m, m+1)
         have hceil : Int.ceil x = m + 1 := by
           -- Use ceil_eq_iff with z := m+1
@@ -1157,7 +1157,7 @@ theorem inbetween_int_ZR (x : ℝ) (m : Int) (l : Location)
         have hLHS : (FloatSpec.Core.Raux.Ztrunc x) = m + 1 := by
           rw [htrunc, hceil]
         -- Show goal directly: unfold and use hxlt0 to evaluate the if
-        simp only [FloatSpec.Core.Zaux.Zlt_bool, FloatSpec.Core.Raux.Ztrunc, Id.run, pure,
+        simp only [FloatSpec.Core.Zaux.Zlt_bool, FloatSpec.Core.Raux.Ztrunc_eq_ite, Id.run, pure,
                    round_ZR, cond_incr, hxlt0, ite_true, hceil, decide_eq_true_eq, hmneg]
       · -- ¬ (m < 0) ⇒ 0 ≤ m and thus 0 < x; trunc uses floor = m
         have hm0 : 0 ≤ m := le_of_not_gt hmneg
@@ -1168,7 +1168,7 @@ theorem inbetween_int_ZR (x : ℝ) (m : Int) (l : Location)
         have hx_nlt0 : ¬ x < 0 := not_lt.mpr (le_of_lt hxpos)
         -- Compute truncation via the nonnegative branch
         have htrunc : (FloatSpec.Core.Raux.Ztrunc x) = Int.floor x := by
-          simp [FloatSpec.Core.Raux.Ztrunc, hx_nlt0]
+          simp [FloatSpec.Core.Raux.Ztrunc_eq_ite, hx_nlt0]
         -- And characterize the floor on [m, m+1)
         have hfloor : Int.floor x = m := by
           apply (Int.floor_eq_iff).2
@@ -1186,7 +1186,7 @@ theorem inbetween_int_ZR (x : ℝ) (m : Int) (l : Location)
           rw [htrunc, hfloor]
         -- Show goal directly: unfold and use hx_nlt0 to evaluate the if
         have hm_nlt0 : ¬ m < 0 := not_lt.mpr hm0
-        simp only [FloatSpec.Core.Zaux.Zlt_bool, FloatSpec.Core.Raux.Ztrunc, Id.run, pure,
+        simp only [FloatSpec.Core.Zaux.Zlt_bool, FloatSpec.Core.Raux.Ztrunc_eq_ite, Id.run, pure,
                    round_ZR, cond_incr, hm_nlt0, hx_nlt0, ite_false, hfloor, decide_eq_false_iff_not]
         simp
 
@@ -1285,8 +1285,8 @@ theorem inbetween_int_ZR_sign (x : ℝ) (m : Int) (l : Location)
     have hceil' : FloatSpec.Core.Raux.Zceil x = -m := by
       cases l <;> simpa [FloatSpec.Core.Zaux.cond_Zopp, hb, round_sign_UP, cond_incr] using hceil
     have hceil_int : Int.ceil x = -m := by
-      simpa [FloatSpec.Core.Raux.Zceil] using hceil'
-    simp [FloatSpec.Core.Raux.Ztrunc, hxlt, FloatSpec.Core.Zaux.cond_Zopp, hb, hceil_int]
+      simpa [FloatSpec.Core.Raux.Zceil_eq_ceil] using hceil'
+    simp [FloatSpec.Core.Raux.Ztrunc_eq_ite, hxlt, FloatSpec.Core.Zaux.cond_Zopp, hb, hceil_int]
   · have hx0 : 0 ≤ x := le_of_not_gt hxlt
     have hb : FloatSpec.Core.Raux.Rlt_bool x 0 = false := by
       simp [FloatSpec.Core.Raux.Rlt_bool_eq_decide, hxlt]
@@ -1295,7 +1295,7 @@ theorem inbetween_int_ZR_sign (x : ℝ) (m : Int) (l : Location)
     have hfloor := inbetween_int_DN (x := x) (m := m) (l := l) Hl'
     have hfloor_int : Int.floor x = m := by
       simpa [FloatSpec.Core.Raux.Zfloor] using hfloor
-    simp [FloatSpec.Core.Raux.Ztrunc, hxlt, FloatSpec.Core.Zaux.cond_Zopp, hb, hfloor_int]
+    simp [FloatSpec.Core.Raux.Ztrunc_eq_ite, hxlt, FloatSpec.Core.Zaux.cond_Zopp, hb, hfloor_int]
 
 -- Nearest (N), Nearest Even (NE), Nearest Away (NA) rounding families.
 -- Source: https://gitlab.inria.fr/flocq/flocq/-/blob/7aab8f55bceec0cfafc3b3bc0e77e0dbb5a70c5f/src/Calc/Round.v#L415
@@ -1314,7 +1314,7 @@ private lemma Znearest_of_int
     (choice : Int → Bool) (m : Int) :
     FloatSpec.Core.Generic_fmt.Znearest choice (m : ℝ) = m := by
   unfold FloatSpec.Core.Generic_fmt.Znearest
-  simp only [FloatSpec.Core.Raux.Zfloor, FloatSpec.Core.Raux.Zceil,
+  simp only [FloatSpec.Core.Raux.Zfloor, FloatSpec.Core.Raux.Zceil_eq_ceil,
              FloatSpec.Core.Raux.Rcompare, Id.run, pure,
              Int.floor_intCast, Int.ceil_intCast, Int.cast_id, sub_self]
   -- 0 < 1/2 so the first branch (< 1/2) is taken
@@ -1383,7 +1383,7 @@ theorem inbetween_int_N (choice : Int → Bool) (x : ℝ) (m : Int) (l : Locatio
       have hfloor : (FloatSpec.Core.Raux.Zfloor x) = m := by
         simp [FloatSpec.Core.Raux.Zfloor, hxeq, Int.floor_intCast]
       have hceil : (FloatSpec.Core.Raux.Zceil x) = m := by
-        simp [FloatSpec.Core.Raux.Zceil, hxeq, Int.ceil_intCast]
+        simp [FloatSpec.Core.Raux.Zceil_eq_ceil, hxeq, Int.ceil_intCast]
       have hZ : FloatSpec.Core.Generic_fmt.Znearest choice x = m := by
         -- With x = m, directly use Znearest_of_int
         rw [hxeq]
@@ -1407,7 +1407,7 @@ theorem inbetween_int_N (choice : Int → Bool) (x : ℝ) (m : Int) (l : Locatio
             simpa [Int.cast_add, Int.cast_one] using (show (↑(m + 1 : Int) : ℝ) - 1 < x from by
               simpa [Int.cast_add, Int.cast_one] using hxlo)
           , by simpa [Int.cast_add, Int.cast_one] using hxhi⟩
-        simpa [FloatSpec.Core.Raux.Zceil] using this
+        simpa [FloatSpec.Core.Raux.Zceil_eq_ceil] using this
       -- Now distinguish the three cases encoded by ord
       cases ord with
       | lt =>

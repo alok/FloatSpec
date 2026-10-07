@@ -78,7 +78,7 @@ theorem tie_choices_differ :
     roundR 2 (fun _ => 0) (Znearest (fun _ => false)) (1 / 2 : Real) = 0 ∧
     roundR 2 (fun _ => 0) (Znearest (fun _ => true)) (1 / 2 : Real) = 1 := by
   norm_num [roundR, scaled_mantissa, cexp, Znearest,
-    FloatSpec.Core.Raux.Zfloor, FloatSpec.Core.Raux.Zceil, FloatSpec.Core.Raux.Rcompare]
+    FloatSpec.Core.Raux.Zfloor, FloatSpec.Core.Raux.Zceil_eq_ceil, FloatSpec.Core.Raux.Rcompare]
 
 #print axioms tie_choices_differ
 

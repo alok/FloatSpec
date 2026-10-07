@@ -691,7 +691,7 @@ theorem generic_format_B2R
         FloatSpec.Core.Generic_fmt.generic_format,
         FloatSpec.Core.Generic_fmt.scaled_mantissa,
         FloatSpec.Core.Generic_fmt.cexp, FloatSpec.Core.Raux.mag,
-        FloatSpec.Core.Raux.Ztrunc]
+        FloatSpec.Core.Raux.Ztrunc_eq_ite]
   | B754_finite s m e hm hb =>
       apply FloatSpec.Core.Generic_fmt.generic_format_canonical
       have htrip := canonical_canonical_mantissa_bsn (prec:=prec) (emax:=emax)
@@ -5658,8 +5658,8 @@ private theorem roundR_zero_of_mode {prec emax : Int} (mode : RoundingMode) :
       (rnd_of_mode mode) 0 = 0 := by
   cases mode <;> simp [FloatSpec.Core.Generic_fmt.roundR,
     FloatSpec.Core.Generic_fmt.scaled_mantissa, rnd_of_mode,
-    FloatSpec.Core.Raux.Zfloor, FloatSpec.Core.Raux.Zceil,
-    FloatSpec.Core.Raux.Ztrunc, FloatSpec.Core.Generic_fmt.Znearest,
+    FloatSpec.Core.Raux.Zfloor, FloatSpec.Core.Raux.Zceil_eq_ceil,
+    FloatSpec.Core.Raux.Ztrunc_eq_ite, FloatSpec.Core.Generic_fmt.Znearest,
     FloatSpec.Core.Raux.Rcompare]
 
 private theorem Rlt_bool_zero_bpow {emax : Int} :
@@ -6093,13 +6093,13 @@ theorem BtruncSingle_correct {prec emax : Int} [Prec_lt_emax prec emax]
   cases x with
   | B754_zero s =>
       simp [BtruncSingle, binarySingleNaNFloatToB754, B754_to_R,
-        FloatSpec.Core.FIX.round_FIX_IZR, FloatSpec.Core.Raux.Ztrunc]
+        FloatSpec.Core.FIX.round_FIX_IZR, FloatSpec.Core.Raux.Ztrunc_eq_ite]
   | B754_infinity s =>
       simp [BtruncSingle, binarySingleNaNFloatToB754, B754_to_R,
-        FloatSpec.Core.FIX.round_FIX_IZR, FloatSpec.Core.Raux.Ztrunc]
+        FloatSpec.Core.FIX.round_FIX_IZR, FloatSpec.Core.Raux.Ztrunc_eq_ite]
   | B754_nan =>
       simp [BtruncSingle, binarySingleNaNFloatToB754, B754_to_R,
-        FloatSpec.Core.FIX.round_FIX_IZR, FloatSpec.Core.Raux.Ztrunc]
+        FloatSpec.Core.FIX.round_FIX_IZR, FloatSpec.Core.Raux.Ztrunc_eq_ite]
   | B754_finite s m e hm hb =>
       have hv := BtruncSingle_aux_value prec emax s m e
       have hc := (Bnearbyint_correct_aux_nat (prec := prec) (emax := emax)

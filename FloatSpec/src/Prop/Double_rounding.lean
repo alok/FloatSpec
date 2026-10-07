@@ -191,7 +191,7 @@ theorem round_round_gt_mid_same_place (fexp1 fexp2 : Int → Int)
     simpa [xup, hxup, FloatSpec.Core.Generic_fmt.roundR, sm, hsm,
       n, hn, e, hcexp1]
   have hceil_ge : sm ≤ (n : ℝ) := by
-    simpa [n, hn, FloatSpec.Core.Generic_fmt.rnd_ceil, FloatSpec.Core.Raux.Zceil]
+    simpa [n, hn, FloatSpec.Core.Generic_fmt.rnd_ceil, FloatSpec.Core.Raux.Zceil_eq_ceil]
       using Int.le_ceil sm
   have hnonneg : 0 ≤ (n : ℝ) - sm := sub_nonneg.mpr hceil_ge
   have hx_le_xup : x ≤ xup := by
@@ -313,7 +313,7 @@ theorem round_round_gt_mid_further_place' (fexp1 fexp2 : Int → Int)
     simpa [xup, hxup, FloatSpec.Core.Generic_fmt.roundR, sm, hsm,
       n, hn, e1, hcexp1x]
   have hceil_ge : sm ≤ (n : ℝ) := by
-    simpa [n, hn, FloatSpec.Core.Generic_fmt.rnd_ceil, FloatSpec.Core.Raux.Zceil]
+    simpa [n, hn, FloatSpec.Core.Generic_fmt.rnd_ceil, FloatSpec.Core.Raux.Zceil_eq_ceil]
       using Int.le_ceil sm
   have hx_le_xup : x ≤ xup := by
     have hmul := mul_le_mul_of_nonneg_right hceil_ge (le_of_lt hpow1_pos)
@@ -661,7 +661,7 @@ theorem round_round_gt_mid_further_place (fexp1 fexp2 : Int → Int)
         simpa [Id.run, pure, smc, hsmc, e1, hcexp1x]
           using h
       have hceil_ge : smc ≤ (nc : ℝ) := by
-        simpa [nc, hnc, FloatSpec.Core.Generic_fmt.rnd_ceil, FloatSpec.Core.Raux.Zceil]
+        simpa [nc, hnc, FloatSpec.Core.Generic_fmt.rnd_ceil, FloatSpec.Core.Raux.Zceil_eq_ceil]
           using Int.le_ceil smc
       have hmul :=
         mul_le_mul_of_nonneg_right hceil_ge (le_of_lt hpow1_pos)
@@ -1277,7 +1277,7 @@ private theorem roundR_ceil_eq_floor_add_ulp_pos (fexp : Int → Int)
             FloatSpec.Core.Defs.FlocqFloat beta) := by
               simp [FloatSpec.Core.Defs.F2R]
     have htrunc : FloatSpec.Core.Raux.Ztrunc sm = z := by
-      simp [FloatSpec.Core.Raux.Ztrunc, hz]
+      simp [FloatSpec.Core.Raux.Ztrunc_eq_ite, hz]
     have hfmt : FloatSpec.Core.Generic_fmt.generic_format beta fexp x := by
       unfold FloatSpec.Core.Generic_fmt.generic_format
       change x = FloatSpec.Core.Defs.F2R
@@ -1293,7 +1293,7 @@ private theorem roundR_ceil_eq_floor_add_ulp_pos (fexp : Int → Int)
       FloatSpec.Core.Generic_fmt.rnd_ceil sm =
         FloatSpec.Core.Generic_fmt.rnd_floor sm + 1 := by
     simpa [FloatSpec.Core.Generic_fmt.rnd_ceil, FloatSpec.Core.Generic_fmt.rnd_floor,
-      FloatSpec.Core.Raux.Zceil, FloatSpec.Core.Raux.Zfloor]
+      FloatSpec.Core.Raux.Zceil_eq_ceil, FloatSpec.Core.Raux.Zfloor]
       using ceil_eq_floor_add_one_of_not_int sm hnot_int
   have hulp : ulp beta fexp x = (beta : ℝ) ^ e := by
     have h := (FloatSpec.Core.Ulp.ulp_neq_0 (beta := beta) (fexp := fexp)
@@ -2625,7 +2625,7 @@ theorem generic_format_eq_zero_of_scaled_mantissa_lt_one (fexp : Int → Int)
       Int.floor_lt.mpr hsm_lt_one_int
     omega
   have htrunc_zero : FloatSpec.Core.Raux.Ztrunc sm = 0 := by
-    simp [FloatSpec.Core.Raux.Ztrunc, not_lt.mpr hsm_nonneg, hfloor_eq]
+    simp [FloatSpec.Core.Raux.Ztrunc_eq_ite, not_lt.mpr hsm_nonneg, hfloor_eq]
   have hx_repr :
       x =
         ((FloatSpec.Core.Raux.Ztrunc sm : Int) : ℝ) *

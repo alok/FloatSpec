@@ -359,7 +359,7 @@ theorem FTZ_exp_correct_spec (e : Int) :
 theorem FTZ_format_0_spec (beta : Int) [ValidRadix beta] (hβ : beta > 1) :
     FloatSpec.Core.Raux.Ztrunc (0 : ℝ) = 0 := by
   -- Ztrunc 0 reduces to ⌊0⌋, which is 0.
-  simp [FloatSpec.Core.Raux.Ztrunc]
+  simp [FloatSpec.Core.Raux.Ztrunc_eq_ite]
 
 /-- Legacy arithmetic regression: `Ztrunc (-x) + Ztrunc x = 0`.
 
@@ -386,7 +386,7 @@ theorem FTZ_format_abs_spec (beta : Int) [ValidRadix beta] (x : ℝ) :
       (FloatSpec.Core.Raux.Ztrunc (abs x))
         = Int.ofNat ((FloatSpec.Core.Raux.Ztrunc x).natAbs) := by
     -- Expand truncation and split on the sign of x; |x| ≥ 0 always
-    simp [FloatSpec.Core.Raux.Ztrunc, not_lt.mpr (abs_nonneg x)]
+    simp [FloatSpec.Core.Raux.Ztrunc_eq_ite, not_lt.mpr (abs_nonneg x)]
     by_cases hxlt : x < 0
     · -- Negative case: |x| = -x and ⌊-x⌋ = -⌈x⌉; natAbs coerces to |·|
       have hxle : x ≤ 0 := le_of_lt hxlt

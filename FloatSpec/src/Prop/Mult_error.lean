@@ -37,9 +37,9 @@ private lemma valid_rnd_abs_sub_lt_one (t : ℝ) :
       FloatSpec.Core.Generic_fmt.Valid_rnd.Zrnd_le
         (rnd := rnd) t ((FloatSpec.Core.Raux.Zceil t : Int) : ℝ)
         (by
-          simpa [FloatSpec.Core.Raux.Zceil] using Int.le_ceil t)
+          simpa [FloatSpec.Core.Raux.Zceil_eq_ceil] using Int.le_ceil t)
     simpa [FloatSpec.Core.Generic_fmt.Valid_rnd.Zrnd_IZR,
-      FloatSpec.Core.Raux.Zceil] using hmono
+      FloatSpec.Core.Raux.Zceil_eq_ceil] using hmono
   have hlow : t - 1 < ((rnd t : Int) : ℝ) := by
     have hfloor_ub : t < ((FloatSpec.Core.Raux.Zfloor t : Int) : ℝ) + 1 := by
       simpa [FloatSpec.Core.Raux.Zfloor] using Int.lt_floor_add_one t
@@ -50,7 +50,7 @@ private lemma valid_rnd_abs_sub_lt_one (t : ℝ) :
     exact lt_of_lt_of_le hfloor_gt hfloor_real_le
   have hhigh : ((rnd t : Int) : ℝ) < t + 1 := by
     have hceil_lt : ((FloatSpec.Core.Raux.Zceil t : Int) : ℝ) < t + 1 := by
-      simpa [FloatSpec.Core.Raux.Zceil] using Int.ceil_lt_add_one t
+      simpa [FloatSpec.Core.Raux.Zceil_eq_ceil] using Int.ceil_lt_add_one t
     have hrnd_real_le : ((rnd t : Int) : ℝ) ≤ ((FloatSpec.Core.Raux.Zceil t : Int) : ℝ) := by
       exact_mod_cast hrnd_le_ceil
     exact lt_of_le_of_lt hrnd_real_le hceil_lt

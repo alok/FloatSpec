@@ -349,7 +349,7 @@ theorem sqrt_error_FLX_N (h_gt1 : 1 < prec) (x : ℝ)
         (FloatSpec.Core.Generic_fmt.Znearest choice) 0 = 0 := by
     have hZ0 : FloatSpec.Core.Generic_fmt.Znearest choice 0 = 0 := by
       unfold FloatSpec.Core.Generic_fmt.Znearest
-      simp [FloatSpec.Core.Raux.Zfloor, FloatSpec.Core.Raux.Zceil,
+      simp [FloatSpec.Core.Raux.Zfloor, FloatSpec.Core.Raux.Zceil_eq_ceil,
         FloatSpec.Core.Raux.Rcompare]
     simp [FloatSpec.Core.Generic_fmt.roundR,
       FloatSpec.Core.Generic_fmt.scaled_mantissa, hZ0]
@@ -1075,7 +1075,7 @@ theorem sqrt_error_N_FLX_without_prec_gt_one_payload (x : ℝ)
     have hrt0 : rt = 0 := by
       have hz : rnd 0 = 0 := by
         simp [rnd, FloatSpec.Core.Generic_fmt.Znearest, FloatSpec.Core.Raux.Zfloor,
-          FloatSpec.Core.Raux.Zceil, FloatSpec.Core.Raux.Rcompare]
+          FloatSpec.Core.Raux.Zceil_eq_ceil, FloatSpec.Core.Raux.Rcompare]
       simp [rt, t, ht0, fexp, FloatSpec.Core.Generic_fmt.roundR,
         FloatSpec.Core.Generic_fmt.scaled_mantissa, hz]
     rw [hround_eq]
@@ -1566,7 +1566,7 @@ private lemma Ztrunc_eq_zero_of_abs_lt_half (z : ℝ)
       have hright : z ≤ ((0 : Int) : ℝ) := by
         simpa using (le_of_lt hneg : z ≤ (0 : ℝ))
       exact (Int.ceil_eq_iff).2 ⟨hleft, hright⟩
-    simpa [FloatSpec.Core.Raux.Ztrunc, hneg, hceil0]
+    simpa [FloatSpec.Core.Raux.Ztrunc_eq_ite, hneg, hceil0]
   · have hnonneg : 0 ≤ z := le_of_not_gt hneg
     have hfloor0 : Int.floor z = 0 := by
       have hleft : ((0 : Int) : ℝ) ≤ z := by simpa using hnonneg
@@ -1574,7 +1574,7 @@ private lemma Ztrunc_eq_zero_of_abs_lt_half (z : ℝ)
         norm_num
         nlinarith [hbounds.right]
       exact (Int.floor_eq_iff).2 ⟨hleft, hright⟩
-    simpa [FloatSpec.Core.Raux.Ztrunc, not_lt.mpr hnonneg, hfloor0]
+    simpa [FloatSpec.Core.Raux.Ztrunc_eq_ite, not_lt.mpr hnonneg, hfloor0]
 
 private lemma Znearest_eq_zero_of_abs_lt_half (choice : Int → Bool) (z : ℝ)
   (hz : |z| < (1 / 2 : ℝ)) :

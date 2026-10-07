@@ -542,7 +542,7 @@ private theorem roundR_ceil_UP_pt
     set e : Int := cexp beta fexp x with he
     set sm : ℝ := scaled_mantissa beta fexp x with hsm
     have hceil_ge : sm ≤ ((rnd_ceil sm : Int) : ℝ) := by
-      simpa [rnd_ceil, FloatSpec.Core.Raux.Zceil] using (Int.le_ceil sm)
+      simpa [rnd_ceil, FloatSpec.Core.Raux.Zceil_eq_ceil] using (Int.le_ceil sm)
     have hmul := mul_le_mul_of_nonneg_right hceil_ge
       (le_of_lt (zpow_pos hbposR e))
     have hscaled : sm * (beta : ℝ) ^ e = x := by
@@ -936,7 +936,7 @@ theorem DN_UP_parity_generic_pos_payload :
       intro hfloor
       have htrunc : FloatSpec.Core.Raux.Ztrunc (scaled_mantissa beta fexp x) = Int.floor sm := by
         rw [← hsm]
-        simp [FloatSpec.Core.Raux.Ztrunc, not_lt.mpr (le_of_lt hsm_pos)]
+        simp [FloatSpec.Core.Raux.Ztrunc_eq_ite, not_lt.mpr (le_of_lt hsm_pos)]
       have hx_recon : x = ((Int.floor sm : Int) : ℝ) * (beta : ℝ) ^ c := by
         calc
           x = sm * (beta : ℝ) ^ c := hscaled.symm
@@ -970,7 +970,7 @@ theorem DN_UP_parity_generic_pos_payload :
     have hup_eval :
         roundR beta fexp rnd_ceil x =
           ((Int.ceil sm : Int) : ℝ) * (beta : ℝ) ^ c := by
-      simp [roundR, rnd_ceil, FloatSpec.Core.Raux.Zceil, sm, hsm, c, hc, hcexp_x]
+      simp [roundR, rnd_ceil, FloatSpec.Core.Raux.Zceil_eq_ceil, sm, hsm, c, hc, hcexp_x]
     have hround_floor_bounds :=
       roundR_bounded_large_pos (beta := beta) (fexp := fexp) (rnd := rnd_floor)
         (x := x) (ex := ex) ⟨hlow, hhigh⟩ hlarge hβ
@@ -1331,7 +1331,7 @@ theorem ZnearestE_half_even (x : ℝ)
       FloatSpec.Core.Raux.Zceil x = f + 1 := by
     have hceil_floor := FloatSpec.Core.Generic_fmt.ceil_eq_floor_add_one
       (x := x) hnot_int
-    simpa [hf, FloatSpec.Core.Raux.Zceil, FloatSpec.Core.Raux.Zfloor]
+    simpa [hf, FloatSpec.Core.Raux.Zceil_eq_ceil, FloatSpec.Core.Raux.Zfloor]
       using hceil_floor
   have hZraw :
       FloatSpec.Core.Generic_fmt.Znearest choice x =
@@ -1548,7 +1548,7 @@ theorem round_DN_canonical_even_of_floor_even
   · have hsm0 :
         FloatSpec.Core.Generic_fmt.scaled_mantissa beta fexp r = 0 := by
       simp [hr0, FloatSpec.Core.Generic_fmt.scaled_mantissa]
-    simp [r, hsm0, FloatSpec.Core.Raux.Ztrunc]
+    simp [r, hsm0, FloatSpec.Core.Raux.Ztrunc_eq_ite]
   · have hrpos : 0 < r := lt_of_le_of_ne hr_nonneg (Ne.symm hr0)
     have hcexp : FloatSpec.Core.Generic_fmt.cexp beta fexp r =
         FloatSpec.Core.Generic_fmt.cexp beta fexp x := by
@@ -2429,7 +2429,7 @@ theorem round_NE_pt (x : ℝ) :
         have hz :
             FloatSpec.Core.Generic_fmt.Znearest (fun t : Int => !(decide (2 ∣ t))) 0 = 0 := by
           norm_num [FloatSpec.Core.Generic_fmt.Znearest, FloatSpec.Core.Raux.Rcompare,
-            FloatSpec.Core.Raux.Zfloor, FloatSpec.Core.Raux.Zceil]
+            FloatSpec.Core.Raux.Zfloor, FloatSpec.Core.Raux.Zceil_eq_ceil]
         simp [hx0, FloatSpec.Core.Generic_fmt.roundR,
           FloatSpec.Core.Generic_fmt.scaled_mantissa, hz]
       rw [hround0, hx0]

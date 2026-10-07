@@ -24,7 +24,7 @@ private def getIntCastArg? (e : Expr) : Option Expr :=
     none
 
 private theorem Ztrunc_int_val (z : Int) : Ztrunc (z : ℝ) = z := by
-  unfold Ztrunc
+  simp only [Ztrunc_eq_ite]
   by_cases h : (z : ℝ) < 0
   · simp [h, Int.ceil_intCast]
   · simp [h, Int.floor_intCast]
@@ -34,12 +34,12 @@ private theorem Zfloor_int_val (z : Int) : Zfloor (z : ℝ) = z := by
   simp [Int.floor_intCast]
 
 private theorem Zceil_int_val (z : Int) : Zceil (z : ℝ) = z := by
-  unfold Zceil
+  simp only [Zceil_eq_ceil]
   simp [Int.ceil_intCast]
 
 private theorem Ztrunc_neg_val (x : ℝ) :
     Ztrunc (-x) = (-((Ztrunc x)) : Int) := by
-  unfold Ztrunc
+  simp only [Ztrunc_eq_ite]
   by_cases hx : x < 0
   · have hneg : ¬ -x < 0 := by
       have : (0 : ℝ) ≤ -x := by exact le_of_lt (neg_pos.mpr hx)

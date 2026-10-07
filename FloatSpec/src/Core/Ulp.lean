@@ -870,7 +870,7 @@ private theorem ulp0_ge_pow_cexp_round0_neg_theorem
           FloatSpec.Core.Generic_fmt.Zrnd_DN_or_UP rnd t
         have hchoices' : rnd t = Int.floor t ∨ rnd t = Int.ceil t := by
           simpa [Id.run, pure,
-            FloatSpec.Core.Raux.Zfloor, FloatSpec.Core.Raux.Zceil] using hchoices
+            FloatSpec.Core.Raux.Zfloor, FloatSpec.Core.Raux.Zceil_eq_ceil] using hchoices
         rcases hchoices' with hfloor | hceil
         · have hfloor0 : Int.floor t = 0 := hfloor.symm.trans hm0'
           have ht_nonneg : 0 ≤ t := by
@@ -1034,7 +1034,7 @@ private theorem pred_round_le_id_theorem
       simpa [hm] using h'
     have hceil_ge : t ≤ (FloatSpec.Core.Raux.Zceil t) := by
       -- From Int.le_ceil: t ≤ ⌈t⌉
-      simpa [FloatSpec.Core.Raux.Zceil] using (Int.le_ceil t)
+      simpa [FloatSpec.Core.Raux.Zceil_eq_ceil] using (Int.le_ceil t)
     have ht_le_m : t ≤ m := by simpa [hm_ceil]
       using hceil_ge
     -- Translate t ≤ m to x ≤ r by multiplying with B ≥ 0
@@ -1084,7 +1084,7 @@ private theorem pred_round_le_id_theorem
         have ht_le0 : t ≤ 0 := by
           -- t ≤ ⌈t⌉ and ⌈t⌉ = m = 0 in this branch
           have hceil : t ≤ ((FloatSpec.Core.Raux.Zceil t) : ℝ) := by
-            simpa [FloatSpec.Core.Raux.Zceil] using (Int.le_ceil t)
+            simpa [FloatSpec.Core.Raux.Zceil_eq_ceil] using (Int.le_ceil t)
           have ht_le_m : t ≤ (m : ℝ) := by simpa [hm_ceil] using hceil
           simpa [hm0] using ht_le_m
         have hneg1_lt_t : -1 < t := by
@@ -1094,7 +1094,7 @@ private theorem pred_round_le_id_theorem
           -- From ⌈t⌉ = 0 we have 0 < t + 1, hence -1 < t.
           have hceil0 : Int.ceil t = 0 := by
             have : (FloatSpec.Core.Raux.Zceil t) = 0 := by simpa [hm_ceil] using hm0
-            simpa [FloatSpec.Core.Raux.Zceil] using this
+            simpa [FloatSpec.Core.Raux.Zceil_eq_ceil] using this
           have hceil_lt : ((Int.ceil t : Int) : ℝ) < t + 1 := by
             -- standard bound on the ceiling: ⌈t⌉ - t < 1 ↔ ⌈t⌉ < t + 1
             simpa [sub_lt_iff_lt_add, add_comm] using (Int.ceil_lt_add_one t)
@@ -1339,7 +1339,7 @@ private lemma abs_Ztrunc_sub_lt_one (t : ℝ) :
       have htrip := FloatSpec.Core.Raux.Ztrunc_ceil (x := t) (le_of_lt ht)
       simpa [Id.run] using htrip
     have hle : t ≤ ((FloatSpec.Core.Raux.Zceil t) : ℝ) := by
-      simpa [FloatSpec.Core.Raux.Zceil] using (Int.le_ceil t)
+      simpa [FloatSpec.Core.Raux.Zceil_eq_ceil] using (Int.le_ceil t)
     have hlt : ((FloatSpec.Core.Raux.Zceil t) : ℝ) - 1 < t := by
       -- From Int.ceil_lt_add_one t: ⌈t⌉ < t + 1, hence ⌈t⌉ - 1 < t
       have h' : ((Int.ceil t : Int) : ℝ) < t + 1 := by simpa using Int.ceil_lt_add_one t
@@ -1347,7 +1347,7 @@ private lemma abs_Ztrunc_sub_lt_one (t : ℝ) :
         -- Rearrange the inequality by subtracting 1 on both sides
         have := sub_lt_iff_lt_add'.mpr h'
         simpa [sub_eq_add_neg, add_comm, add_left_comm, add_assoc] using this
-      simpa [FloatSpec.Core.Raux.Zceil] using this
+      simpa [FloatSpec.Core.Raux.Zceil_eq_ceil] using this
     have h0le : 0 ≤ ((FloatSpec.Core.Raux.Zceil t) : ℝ) - t := sub_nonneg.mpr hle
     have hlt1 : ((FloatSpec.Core.Raux.Zceil t) : ℝ) - t < 1 := by
       -- From ⌈t⌉ - 1 < t, subtract t on both sides and add 1
@@ -1389,7 +1389,7 @@ private lemma abs_valid_rnd_sub_lt_one
     FloatSpec.Core.Generic_fmt.Zrnd_DN_or_UP rnd t
   have hchoices' : rnd t = Int.floor t ∨ rnd t = Int.ceil t := by
     simpa [Id.run, pure,
-      FloatSpec.Core.Raux.Zfloor, FloatSpec.Core.Raux.Zceil] using hchoices
+      FloatSpec.Core.Raux.Zfloor, FloatSpec.Core.Raux.Zceil_eq_ceil] using hchoices
   rcases hchoices' with hfloor | hceil
   · have hle : ((Int.floor t : Int) : ℝ) ≤ t := Int.floor_le t
     have hlt : t < ((Int.floor t : Int) : ℝ) + 1 := Int.lt_floor_add_one t
@@ -1565,7 +1565,7 @@ private lemma round_to_generic_format
       have : mantissa = 0 := by
         have h_zero_mul : x * (beta : ℝ) ^ (-exp) = 0 := by simp [hx]
         have h_trunc_zero : (FloatSpec.Core.Raux.Ztrunc 0) = 0 := by
-          simp [FloatSpec.Core.Raux.Ztrunc, Id.run, pure]
+          simp [FloatSpec.Core.Raux.Ztrunc_eq_ite, Id.run, pure]
         unfold mantissa
         rw [h_zero_mul, h_trunc_zero]
       contradiction
@@ -1585,7 +1585,7 @@ private lemma round_to_generic_format
         by_cases hy : y < 0
         · -- y < 0: Ztrunc(y) = ceil(y) ≥ y, and since y < 0, |ceil(y)| ≤ |y|
           have h_ztrunc : (FloatSpec.Core.Raux.Ztrunc y) = Int.ceil y := by
-            simp [FloatSpec.Core.Raux.Ztrunc, Id.run, pure, hy]
+            simp [FloatSpec.Core.Raux.Ztrunc_eq_ite, Id.run, pure, hy]
           rw [h_ztrunc]
           have h_ceil_ge : y ≤ (↑(Int.ceil y) : ℝ) := Int.le_ceil y
           have h_y_neg : y ≤ 0 := le_of_lt hy
@@ -1598,7 +1598,7 @@ private lemma round_to_generic_format
         · -- y ≥ 0: Ztrunc(y) = floor(y) ≤ y, so |floor(y)| ≤ |y|
           push Not at hy
           have h_ztrunc : (FloatSpec.Core.Raux.Ztrunc y) = Int.floor y := by
-            simp [FloatSpec.Core.Raux.Ztrunc, Id.run, pure, hy]
+            simp [FloatSpec.Core.Raux.Ztrunc_eq_ite, Id.run, pure, hy]
           rw [h_ztrunc]
           have h_floor_le : (↑(Int.floor y) : ℝ) ≤ y := Int.floor_le y
           have h_floor_ge0 : 0 ≤ (↑(Int.floor y) : ℝ) := by
@@ -1951,7 +1951,7 @@ private theorem succ_round_ge_id_theorem
           simpa [Id.run] using htrip
         simpa [hm] using h'
       have hceil_ge : t ≤ ((FloatSpec.Core.Raux.Zceil t : Int) : ℝ) := by
-        simpa [FloatSpec.Core.Raux.Zceil] using Int.le_ceil t
+        simpa [FloatSpec.Core.Raux.Zceil_eq_ceil] using Int.le_ceil t
       have ht_le_m : t ≤ (m : ℝ) := by
         simpa [hm_ceil] using hceil_ge
       have hx_le_r : x ≤ r := by
@@ -3032,7 +3032,7 @@ private theorem id_m_ulp_ge_bpow_early (x : ℝ) (e : Int)
           (x * b ^ (-(fexp (FloatSpec.Core.Raux.mag beta x))))) : Int) : ℝ) *
           b ^ (fexp (FloatSpec.Core.Raux.mag beta x)) := by
       simpa [Id.run, bind, pure,
-             FloatSpec.Core.Raux.mag, FloatSpec.Core.Raux.Ztrunc, b] using this
+             FloatSpec.Core.Raux.mag, FloatSpec.Core.Raux.Ztrunc_eq_ite, b] using this
     exact hiff.mp Fx
   set m : Int :=
       (FloatSpec.Core.Raux.Ztrunc (x * b ^ (-(fexp ((FloatSpec.Core.Raux.mag beta x))))))
@@ -3747,7 +3747,7 @@ theorem id_p_ulp_le_bpow (x : ℝ) (e : Int)
           (x * b ^ (-(fexp (FloatSpec.Core.Raux.mag beta x))))) : Int) : ℝ) *
           b ^ (fexp (FloatSpec.Core.Raux.mag beta x)) := by
       simpa [Id.run, bind, pure,
-             FloatSpec.Core.Raux.mag, FloatSpec.Core.Raux.Ztrunc, b] using this
+             FloatSpec.Core.Raux.mag, FloatSpec.Core.Raux.Ztrunc_eq_ite, b] using this
     exact (hiff.mp Fx)
   -- Extract the integer mantissa m and rewrite x = (m : ℝ) * b^c
   set m : Int :=
@@ -4567,7 +4567,7 @@ private theorem generic_format_pred_aux1_theorem_early
             (fexp (FloatSpec.Core.Raux.mag beta x)) : FlocqFloat beta) := by
       simpa [Id.run, bind, pure,
         FloatSpec.Core.Defs.F2R, FloatSpec.Core.Raux.mag,
-        FloatSpec.Core.Raux.Ztrunc] using hspec
+        FloatSpec.Core.Raux.Ztrunc_eq_ite] using hspec
     have hxF := hiff.mp Fx
     simpa [FloatSpec.Core.Defs.F2R, b, he, hc, hm] using hxF
 
@@ -4589,7 +4589,7 @@ private theorem generic_format_pred_aux1_theorem_early
     have hscaled_nonneg : 0 ≤ x * b ^ (-c) := by
       exact le_of_lt (mul_pos hx (zpow_pos hbpos _))
     have hztrunc0 : FloatSpec.Core.Raux.Ztrunc (x * b ^ (-c)) = 0 := by
-      unfold FloatSpec.Core.Raux.Ztrunc
+      simp only [FloatSpec.Core.Raux.Ztrunc_eq_ite]
       rw [ite_eq_right (not_lt.mpr hscaled_nonneg)]
       simpa [b, hc] using hfloor0
     have hm_zero : m = 0 := by
@@ -4722,7 +4722,7 @@ theorem generic_format_pred_pos
                 FloatSpec.Core.Generic_fmt.cexp,
                 FloatSpec.Core.Raux.mag,
                 FloatSpec.Core.Defs.F2R,
-                FloatSpec.Core.Raux.Ztrunc,
+                FloatSpec.Core.Raux.Ztrunc_eq_ite,
                 Id.run, bind, pure]
         -- Transport along `hpred0`
         have Fpred0 :
@@ -6150,7 +6150,7 @@ theorem round_N_le_midp_from_fixed_choice_payload
             -- Goal at this point: succ = Ztrunc(succ * β^(-c)) * β^c
             -- Strategy: unfold Ztrunc to floor/ceil, show the scaled value is positive,
             -- and use hZtrunc_succ to rewrite
-            simp only [FloatSpec.Core.Raux.Ztrunc, Id.run, bind, pure] at hZtrunc_succ ⊢
+            simp only [FloatSpec.Core.Raux.Ztrunc_eq_ite, Id.run, bind, pure] at hZtrunc_succ ⊢
             -- The scaled value (succ * β^(-c)) is positive (succ > 0, β^(-c) > 0)
             have hsucc_pos_final : 0 < (succ beta fexp x) := by
               rw [hsucc_pos]
@@ -6186,7 +6186,7 @@ theorem round_N_le_midp_from_fixed_choice_payload
                   exact mul_pos hxpos hpow_pos
                 -- Ztrunc of positive value = floor, and floor of positive ≥ 0
                 rw [hm]
-                unfold FloatSpec.Core.Raux.Ztrunc
+                simp only [FloatSpec.Core.Raux.Ztrunc_eq_ite]
                 simp only [not_lt.mpr (le_of_lt hx_scaled_pos), ↓reduceIte]
                 exact Int.floor_nonneg.mpr (le_of_lt hx_scaled_pos)
               have hm1_nonneg : (0 : ℤ) ≤ m + 1 := by linarith
@@ -6257,7 +6257,7 @@ theorem round_N_le_midp_from_fixed_choice_payload
 
               -- Ztrunc of positive value = Zfloor (directly from definition)
               have hZtrunc_zero : (FloatSpec.Core.Raux.Ztrunc (x * b ^ (-(fexp e)))) = 0 := by
-                unfold FloatSpec.Core.Raux.Ztrunc
+                simp only [FloatSpec.Core.Raux.Ztrunc_eq_ite]
                 simp only [not_lt.mpr hnonneg_scaled, ite_false]
                 exact hfloor_zero
 
@@ -7663,7 +7663,7 @@ private theorem mag_plus_eps_theorem
                    ((FloatSpec.Core.Raux.Ztrunc (x * b ^ (-(fexp ((FloatSpec.Core.Raux.mag beta x)))))))
                    (fexp ((FloatSpec.Core.Raux.mag beta x))) : FlocqFloat beta)) := by
         simpa [Id.run, bind, pure, FloatSpec.Core.Defs.F2R,
-               FloatSpec.Core.Raux.mag, FloatSpec.Core.Raux.Ztrunc, b] using this
+               FloatSpec.Core.Raux.mag, FloatSpec.Core.Raux.Ztrunc_eq_ite, b] using this
       exact (hiff.mp Fx)
     set m : Int :=
         (FloatSpec.Core.Raux.Ztrunc (x * b ^ (-(fexp ((FloatSpec.Core.Raux.mag beta x))))))
@@ -9264,7 +9264,7 @@ theorem id_m_ulp_ge_bpow (x : ℝ) (e : Int)
                  ((FloatSpec.Core.Raux.Ztrunc (x * b ^ (-(fexp ((FloatSpec.Core.Raux.mag beta x)))))))
                  (fexp ((FloatSpec.Core.Raux.mag beta x))) : FlocqFloat beta)) := by
       simpa [Id.run, bind, pure, FloatSpec.Core.Defs.F2R,
-             FloatSpec.Core.Raux.mag, FloatSpec.Core.Raux.Ztrunc, b] using this
+             FloatSpec.Core.Raux.mag, FloatSpec.Core.Raux.Ztrunc_eq_ite, b] using this
     exact (hiff.mp Fx)
   -- Extract the integer mantissa m and rewrite x = (m : ℝ) * b^c
   set m : Int :=
@@ -9834,7 +9834,7 @@ theorem round_UP_DN_ulp (x : ℝ)
     exact reconstruct.symm
   have hfloor_le :
       FloatSpec.Core.Raux.Zfloor sm ≤ FloatSpec.Core.Raux.Zceil sm := by
-    simpa [FloatSpec.Core.Raux.Zfloor, FloatSpec.Core.Raux.Zceil] using
+    simpa [FloatSpec.Core.Raux.Zfloor, FloatSpec.Core.Raux.Zceil_eq_ceil] using
       Int.floor_le_ceil sm
   have hceil_le :
       FloatSpec.Core.Raux.Zceil sm ≤ FloatSpec.Core.Raux.Zfloor sm + 1 := by
@@ -9952,7 +9952,7 @@ theorem error_le_half_ulp_roundR (choice : Int → Bool)
       simp [FloatSpec.Core.Generic_fmt.roundR,
         FloatSpec.Core.Generic_fmt.scaled_mantissa,
         FloatSpec.Core.Generic_fmt.Znearest,
-        FloatSpec.Core.Raux.Zfloor, FloatSpec.Core.Raux.Zceil,
+        FloatSpec.Core.Raux.Zfloor, FloatSpec.Core.Raux.Zceil_eq_ceil,
         FloatSpec.Core.Raux.Rcompare]
     rw [hr0, hx0]
     simp [abs_zero]
@@ -10070,7 +10070,7 @@ private theorem roundR_ceil_UP_pt_for_ulp
     set e : Int := FloatSpec.Core.Generic_fmt.cexp beta fexp x with he
     set sm : ℝ := FloatSpec.Core.Generic_fmt.scaled_mantissa beta fexp x with hsm
     have hceil_ge : sm ≤ ((FloatSpec.Core.Generic_fmt.rnd_ceil sm : Int) : ℝ) := by
-      simpa [FloatSpec.Core.Generic_fmt.rnd_ceil, FloatSpec.Core.Raux.Zceil] using
+      simpa [FloatSpec.Core.Generic_fmt.rnd_ceil, FloatSpec.Core.Raux.Zceil_eq_ceil] using
         (Int.le_ceil sm)
     have hmul :=
       mul_le_mul_of_nonneg_right hceil_ge (le_of_lt (zpow_pos hbposR e))
@@ -10595,7 +10595,7 @@ theorem error_le_half_ulp_round
         simp [r, hr, hx0, FloatSpec.Core.Generic_fmt.roundR,
           FloatSpec.Core.Generic_fmt.scaled_mantissa,
           FloatSpec.Core.Generic_fmt.Znearest,
-          FloatSpec.Core.Raux.Zfloor, FloatSpec.Core.Raux.Zceil,
+          FloatSpec.Core.Raux.Zfloor, FloatSpec.Core.Raux.Zceil_eq_ceil,
           FloatSpec.Core.Raux.Rcompare]
       have hulp_nonneg : 0 ≤ ulp beta fexp x :=
         ulp_run_nonneg (beta := beta) (fexp := fexp) hβ x

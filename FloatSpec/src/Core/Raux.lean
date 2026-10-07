@@ -782,17 +782,32 @@ end AbsLtInv
 -- Integer rounding helpers (floor/ceil/trunc/away) and their properties
 section IntRound
 
-/-- Coq {lit}`Zfloor`: the integer floor of a real. -/
+/-- FLoCq `Zfloor`: the integer floor of a real. Rocq writes `up x - 1`, where `up` is the
+archimedean primitive of its axiomatized reals; Lean's floor is the corresponding primitive. -/
+@[flocq_source "src/Core/Raux.v" 788 "Zfloor"]
 noncomputable def Zfloor (x : ℝ) : Int :=
   ⌊x⌋
 
-/-- Coq {lit}`Zceil`: the integer ceiling of a real. -/
+/-- FLoCq `Zceil`: the ceiling, defined from the floor as in the source. -/
+@[flocq_source "src/Core/Raux.v" 866 "Zceil"]
 noncomputable def Zceil (x : ℝ) : Int :=
-  ⌈x⌉
+  -Zfloor (-x)
 
-/-- Truncation toward zero: ceil for negatives, floor otherwise -/
+/-- {lean}`Zceil` is Mathlib's ceiling. -/
+theorem Zceil_eq_ceil (x : ℝ) : Zceil x = ⌈x⌉ := by
+  show -⌊-x⌋ = ⌈x⌉
+  rw [Int.floor_neg, neg_neg]
+
+/-- FLoCq `Ztrunc`: truncation toward zero, choosing the ceiling for negative inputs with
+the Boolean test {lean}`Rlt_bool`, as the source does. -/
+@[flocq_source "src/Core/Raux.v" 965 "Ztrunc"]
 noncomputable def Ztrunc (x : ℝ) : Int :=
-  (if x < 0 then ⌈x⌉ else ⌊x⌋)
+  if Rlt_bool x 0 then Zceil x else Zfloor x
+
+/-- {lean}`Ztrunc` as a propositional case split on the sign. -/
+theorem Ztrunc_eq_ite (x : ℝ) : Ztrunc x = if x < 0 then ⌈x⌉ else ⌊x⌋ := by
+  show (if Rlt_bool x 0 then Zceil x else Zfloor x) = _
+  by_cases h : x < 0 <;> simp [Rlt_bool_eq_decide, Zceil_eq_ceil, Zfloor, h]
 
 /-- Truncation commutes with absolute value, as reals. -/
 theorem Ztrunc_abs_real (y : ℝ) :
@@ -811,14 +826,14 @@ theorem Ztrunc_abs_real (y : ℝ) :
         -- because -y > 0 given y < 0
         have hypos : 0 < -y := by exact neg_pos.mpr hy
         -- Now simplify Ztrunc (abs y)
-        simp [Ztrunc, this, not_lt.mpr (le_of_lt hypos)]
+        simp [Ztrunc_eq_ite, this, not_lt.mpr (le_of_lt hypos)]
       -- Cast both sides to ℝ and rewrite floor(-y)
       simpa [Int.floor_neg, Int.cast_neg] using congrArg (fun i : Int => (i : ℝ)) this
     -- Right-hand side: abs (⌈y⌉) = -⌈y⌉ because ⌈y⌉ ≤ 0
     have hR : abs ((((Ztrunc y) : Int) : ℝ)) = -(((Int.ceil y : Int) : ℝ)) := by
       -- Ztrunc y uses ceil when y < 0
       have : (((Ztrunc y) : Int) : ℝ) = ((Int.ceil y : Int) : ℝ) := by
-        simp [Ztrunc, hy]
+        simp [Ztrunc_eq_ite, hy]
       -- simplify absolute value using nonpositivity of ⌈y⌉
       rw [this, abs_of_nonpos hceil_nonposR]
     -- Conclude by comparing both canonical forms
@@ -827,16 +842,23 @@ theorem Ztrunc_abs_real (y : ℝ) :
     have hy0 : 0 ≤ y := le_of_not_gt hy
     have hfloor_nonneg : 0 ≤ (Int.floor y : Int) := (Int.le_floor).mpr (by simpa using hy0)
     have hL : ((((Ztrunc (abs y)) : Int) : ℝ)) = ((Int.floor y : Int) : ℝ) := by
-      simp [Ztrunc, abs_of_nonneg hy0, hy]
+      simp [Ztrunc_eq_ite, abs_of_nonneg hy0, hy]
     have hR : abs ((((Ztrunc y) : Int) : ℝ)) = ((Int.floor y : Int) : ℝ) := by
       have : (((Ztrunc y) : Int) : ℝ) = ((Int.floor y : Int) : ℝ) := by
-        simp [Ztrunc, hy]
+        simp [Ztrunc_eq_ite, hy]
       rw [this, abs_of_nonneg (by exact_mod_cast hfloor_nonneg)]
     exact hL.trans hR.symm
 
-/-- Away-from-zero rounding: floor for negatives, ceil otherwise -/
+/-- FLoCq `Zaway`: rounding away from zero, choosing the floor for negative inputs with the
+Boolean test {lean}`Rlt_bool`, as the source does. -/
+@[flocq_source "src/Core/Raux.v" 1075 "Zaway"]
 noncomputable def Zaway (x : ℝ) : Int :=
-  (if x < 0 then ⌊x⌋ else ⌈x⌉)
+  if Rlt_bool x 0 then Zfloor x else Zceil x
+
+/-- {lean}`Zaway` as a propositional case split on the sign. -/
+theorem Zaway_eq_ite (x : ℝ) : Zaway x = if x < 0 then ⌊x⌋ else ⌈x⌉ := by
+  show (if Rlt_bool x 0 then Zfloor x else Zceil x) = _
+  by_cases h : x < 0 <;> simp [Rlt_bool_eq_decide, Zceil_eq_ceil, Zfloor, h]
 
 /-- Floor lower bound: ⌊x⌋ ≤ x -/
 theorem Zfloor_lb (x : ℝ) :
@@ -890,7 +912,7 @@ section IntCeil
 /-- Ceiling upper bound: x ≤ ⌈x⌉ -/
 theorem Zceil_ub (x : ℝ) :
     x ≤ ((Zceil x : Int) : ℝ) := by
-  unfold Zceil
+  simp only [Zceil_eq_ceil]
   -- Standard ceiling property: x ≤ (⌈x⌉ : ℝ)
   have hx : x ≤ (Int.ceil x : ℝ) := by
     -- Cast the integer inequality to ℝ
@@ -900,7 +922,7 @@ theorem Zceil_ub (x : ℝ) :
 /-- Ceiling lower-neighborhood: ⌈x⌉ - 1 < x -/
 theorem Zceil_lb (x : ℝ) :
     ((Zceil x : Int) : ℝ) - 1 < x := by
-  unfold Zceil
+  simp only [Zceil_eq_ceil]
   -- Using the standard ceiling bound: (⌈x⌉ : ℝ) < x + 1
   -- and rewriting a - 1 < b ↔ a < b + 1
   simpa [sub_lt_iff_lt_add, add_comm] using (Int.ceil_lt_add_one x)
@@ -908,21 +930,21 @@ theorem Zceil_lb (x : ℝ) :
 /-- Ceiling least-upper-bound: if x ≤ m then ⌈x⌉ ≤ m -/
 theorem Zceil_glb (m : Int) (x : ℝ) (hx : x ≤ (m : ℝ)) :
     Zceil x ≤ m := by
-  unfold Zceil
+  simp only [Zceil_eq_ceil]
   -- Least upper bound property for ceiling: ⌈x⌉ ≤ m ↔ x ≤ m
   exact (Int.ceil_le).mpr hx
 
 /-- Characterization: if m - 1 < x ≤ m then ⌈x⌉ = m -/
 theorem Zceil_imp (m : Int) (x : ℝ) (h : (m : ℝ) - 1 < x ∧ x ≤ (m : ℝ)) :
     Zceil x = m := by
-  unfold Zceil
+  simp only [Zceil_eq_ceil]
   -- Characterization of ceiling by the half-open interval (m-1, m]
   simpa using ((Int.ceil_eq_iff).2 h)
 
 /-- Ceiling of an integer equals itself -/
 theorem Zceil_IZR (m : Int) :
     Zceil (m : ℝ) = m := by
-  unfold Zceil
+  simp only [Zceil_eq_ceil]
   -- Ceiling of an integer casts back to the same integer
   simpa using (Int.ceil_intCast m)
 
@@ -930,7 +952,7 @@ theorem Zceil_IZR (m : Int) :
 theorem Zceil_le (x y : ℝ) (hxy : x ≤ y) :
     Zceil x ≤ Zceil y := by
   -- Expose the ceilings
-  simp [Zceil]
+  simp [Zceil_eq_ceil]
   -- Use the characterization of ceiling via upper bounds:
   -- ⌈x⌉ ≤ m ↔ x ≤ m. Take m := ⌈y⌉ and show x ≤ ⌈y⌉ using x ≤ y ≤ ⌈y⌉.
   refine (Int.ceil_le).mpr ?_
@@ -940,7 +962,7 @@ theorem Zceil_le (x y : ℝ) (hxy : x ≤ y) :
 theorem Zceil_floor_neq (x : ℝ) (hne : ((Zfloor x : Int) : ℝ) ≠ x) :
     Zceil x = Zfloor x + 1 := by
   -- Expose the pure ceilings/floors
-  simp [Zceil, Zfloor] at *
+  simp [Zceil_eq_ceil, Zfloor] at *
   -- Let f := ⌊x⌋ and c := ⌈x⌉
   set f := Int.floor x
   set c := Int.ceil x
@@ -972,12 +994,12 @@ section IntTrunc
 /-- Truncation at integers: Ztrunc (m) = m -/
 theorem Ztrunc_IZR (m : Int) :
     Ztrunc (m : ℝ) = m := by
-  unfold Ztrunc; by_cases h : (m : ℝ) < 0 <;> simp [h]
+  simp only [Ztrunc_eq_ite]; by_cases h : (m : ℝ) < 0 <;> simp [h]
 
 /-- For nonnegatives: Ztrunc x = ⌊x⌋ -/
 theorem Ztrunc_floor (x : ℝ) (hx : 0 ≤ x) :
     Ztrunc x = Zfloor x := by
-  unfold Ztrunc
+  simp only [Ztrunc_eq_ite]
   -- Under 0 ≤ x, the truncation takes the floor branch
   have hx_nlt : ¬ x < 0 := not_lt.mpr hx
   simp [Zfloor, hx_nlt]
@@ -985,14 +1007,14 @@ theorem Ztrunc_floor (x : ℝ) (hx : 0 ≤ x) :
 /-- For nonpositives: Ztrunc x = ⌈x⌉ -/
 theorem Ztrunc_ceil (x : ℝ) (hxle : x ≤ 0) :
     Ztrunc x = Zceil x := by
-  unfold Ztrunc
+  simp only [Ztrunc_eq_ite]
   by_cases hlt : x < 0
   · -- Negative case: Ztrunc takes the ceiling branch
-    simp [Zceil, hlt]
+    simp [Zceil_eq_ceil, hlt]
   · -- Nonnegative case with x ≤ 0 ⇒ x = 0, so floor = ceil = 0
     have hx0 : 0 ≤ x := not_lt.mp hlt
     have hxeq : x = 0 := le_antisymm hxle hx0
-    simp [Zceil, hxeq]
+    simp [Zceil_eq_ceil, hxeq]
 
 /-- Monotonicity of truncation: x ≤ y ⇒ Ztrunc x ≤ Ztrunc y -/
 theorem Ztrunc_le (x y : ℝ) (hxy : x ≤ y) :
@@ -1001,7 +1023,7 @@ theorem Ztrunc_le (x y : ℝ) (hxy : x ≤ y) :
   by_cases hx : x < 0
   · by_cases hy : y < 0
     · -- Both negative: trunc = ceil; use monotonicity of ceiling
-      simp [Ztrunc, hx, hy]
+      simp [Ztrunc_eq_ite, hx, hy]
       -- Show: ⌈x⌉ ≤ ⌈y⌉ using x ≤ y ≤ ⌈y⌉
       refine (Int.ceil_le).mpr ?_
       exact hxy.trans (Int.le_ceil y)
@@ -1015,7 +1037,7 @@ theorem Ztrunc_le (x y : ℝ) (hxy : x ≤ y) :
       have h0_le_floor : (0 : Int) ≤ Int.floor y := (Int.le_floor).mpr hy0'
       -- Combine the bounds and rewrite the goal
       have : Int.ceil x ≤ Int.floor y := le_trans hceil_le0 h0_le_floor
-      simpa [Ztrunc, hx, hy] using this
+      simpa [Ztrunc_eq_ite, hx, hy] using this
   · by_cases hy : y < 0
     · -- 0 ≤ x and y < 0 contradict x ≤ y; derive False and conclude
       have hx0 : 0 ≤ x := le_of_not_gt hx
@@ -1023,7 +1045,7 @@ theorem Ztrunc_le (x y : ℝ) (hxy : x ≤ y) :
       have : False := (not_lt.mpr hy0) hy
       cases this
     · -- Both nonnegative: trunc = floor; use monotonicity of floor
-      simp [Ztrunc, hx, hy]
+      simp [Ztrunc_eq_ite, hx, hy]
       -- Show: ⌊x⌋ ≤ ⌊y⌋ via (⌊x⌋ : ℝ) ≤ y
       refine (Int.le_floor).mpr ?_
       exact (Int.floor_le x).trans hxy
@@ -1032,7 +1054,7 @@ theorem Ztrunc_le (x y : ℝ) (hxy : x ≤ y) :
 theorem Ztrunc_opp (x : ℝ) :
     Ztrunc (-x) = -Ztrunc x := by
   -- Expose the definitions: Ztrunc t = if t < 0 then ⌈t⌉ else ⌊t⌋
-  simp [Ztrunc]
+  simp [Ztrunc_eq_ite]
   -- Goal now: (if 0 < x then ⌈-x⌉ else ⌊-x⌋) = -(if x < 0 then ⌈x⌉ else ⌊x⌋)
   by_cases hxpos : 0 < x
   · -- Left takes the ceil branch; right takes the floor branch
@@ -1053,7 +1075,7 @@ theorem Ztrunc_abs (x : ℝ) :
     Ztrunc |x| = ((Ztrunc x).natAbs : Int) := by
   -- Expose both truncations; for |x| we can simplify the sign test
   -- since |x| ≥ 0 always.
-  simp [Ztrunc, not_lt.mpr (abs_nonneg x)]
+  simp [Ztrunc_eq_ite, not_lt.mpr (abs_nonneg x)]
   -- Goal is now: ⌊|x|⌋ = Int.natAbs (if x < 0 then ⌈x⌉ else ⌊x⌋)
   by_cases hxlt : x < 0
   · -- Negative case: |x| = -x and ⌊-x⌋ = -⌈x⌉.
@@ -1085,7 +1107,7 @@ theorem Ztrunc_abs (x : ℝ) :
 /-- Lower bound via absolute: if n ≤ |x| then n ≤ |Ztrunc x| -/
 theorem Ztrunc_lub (n : Int) (x : ℝ) (h : (n : ℝ) ≤ |x|) :
     n ≤ ((Ztrunc x).natAbs : Int) := by
-  unfold Ztrunc
+  simp only [Ztrunc_eq_ite]
   by_cases hxlt : x < 0
   · -- Negative case: z = ⌈x⌉ and |x| = -x
     -- Reduce to an inequality on ⌈x⌉
@@ -1129,7 +1151,7 @@ theorem Ztrunc_lub (n : Int) (x : ℝ) (h : (n : ℝ) ≤ |x|) :
 
 /-- Basic truncation error bound: |Ztrunc x - x| < 1 -/
 theorem abs_Ztrunc_sub_lt_one (x : ℝ) : abs (((Ztrunc x) : ℝ) - x) < 1 := by
-  unfold Ztrunc
+  simp only [Ztrunc_eq_ite]
   by_cases h : x < 0
   · -- Negative case: Ztrunc x = ⌈x⌉
     simp [h]
@@ -1157,20 +1179,20 @@ section IntAway
 /-- Away-from-zero at integers: Zaway (m) = m -/
 theorem Zaway_IZR (m : Int) :
     Zaway (m : ℝ) = m := by
-  unfold Zaway; by_cases h : (m : ℝ) < 0 <;> simp [h]
+  simp only [Zaway_eq_ite]; by_cases h : (m : ℝ) < 0 <;> simp [h]
 
 /-- For nonnegatives: Zaway x = ⌈x⌉ -/
 theorem Zaway_ceil (x : ℝ) (hx : 0 ≤ x) :
     Zaway x = Zceil x := by
-  unfold Zaway
+  simp only [Zaway_eq_ite]
   -- Under 0 ≤ x, we have ¬ x < 0, so Zaway takes the ceil branch
   have hx_nlt : ¬ x < 0 := not_lt.mpr hx
-  simp [Zceil, hx_nlt]
+  simp [Zceil_eq_ceil, hx_nlt]
 
 /-- For nonpositives: Zaway x = ⌊x⌋ -/
 theorem Zaway_floor (x : ℝ) (hxle : x ≤ 0) :
     Zaway x = Zfloor x := by
-  unfold Zaway
+  simp only [Zaway_eq_ite]
   by_cases hlt : x < 0
   · -- Negative case: Zaway takes the floor branch
     simp [Zfloor, hlt]
@@ -1186,12 +1208,12 @@ theorem Zaway_le (x y : ℝ) (hxy : x ≤ y) :
   by_cases hx : x < 0
   · by_cases hy : y < 0
     · -- Both negative: away = floor; use monotonicity of floor
-      simp [Zaway, hx, hy]
+      simp [Zaway_eq_ite, hx, hy]
       refine (Int.le_floor).mpr ?_
       exact (Int.floor_le x).trans hxy
     · -- x < 0, 0 ≤ y: need ⌊x⌋ ≤ ⌈y⌉
       have hy0 : 0 ≤ y := le_of_not_gt hy
-      simp [Zaway, hx, hy]
+      simp [Zaway_eq_ite, hx, hy]
       -- Show: (⌊x⌋ : ℝ) ≤ (⌈y⌉ : ℝ), then cast back to Int inequality
       have hR : ((Int.floor x : ℝ) ≤ (Int.ceil y : ℝ)) := by
         exact (Int.floor_le x) |>.trans (hxy.trans (Int.le_ceil y))
@@ -1203,7 +1225,7 @@ theorem Zaway_le (x y : ℝ) (hxy : x ≤ y) :
       have : False := (not_lt.mpr hy0) hy
       cases this
     · -- Both nonnegative: away = ceil; use monotonicity of ceiling
-      simp [Zaway, hx, hy]
+      simp [Zaway_eq_ite, hx, hy]
       refine (Int.ceil_le).mpr ?_
       exact hxy.trans (Int.le_ceil y)
 
@@ -1212,7 +1234,7 @@ theorem Zaway_opp (x : ℝ) :
     Zaway (-x) = -Zaway x := by
   -- Expose the definitions: Zaway t = if t < 0 then ⌊t⌋ else ⌈t⌉
   -- Target becomes a pure equality of integers
-  simp [Zaway]
+  simp [Zaway_eq_ite]
   -- Goal: (if 0 < x then ⌊-x⌋ else ⌈-x⌉) = - (if x < 0 then ⌊x⌋ else ⌈x⌉)
   by_cases hxpos : 0 < x
   · -- Then (-x) < 0 and x < 0 is false
@@ -1247,7 +1269,7 @@ theorem Zaway_abs (x : ℝ) :
     Zaway |x| = ((Zaway x).natAbs : Int) := by
   -- Expose both roundings; for |x| we can simplify the sign test
   -- since |x| ≥ 0 always.
-  simp [Zaway, not_lt.mpr (abs_nonneg x)]
+  simp [Zaway_eq_ite, not_lt.mpr (abs_nonneg x)]
   -- Goal is now: ⌈|x|⌉ = Int.natAbs (if x < 0 then ⌊x⌋ else ⌈x⌉)
   by_cases hxlt : x < 0
   · -- Negative case: |x| = -x and ⌈-x⌉ = -⌊x⌋.
@@ -1346,7 +1368,7 @@ theorem Ztrunc_div_nonneg_pos_payload (x y : Int) (hxy : 0 ≤ x ∧ 0 < y) :
     Ztrunc ((x : ℝ) / (y : ℝ)) = Int.tdiv x y := by
   have hx_nonneg : 0 ≤ x := hxy.left
   have hy_pos : 0 < y := hxy.right
-  unfold Ztrunc
+  simp only [Ztrunc_eq_ite]
   -- x ≥ 0: Ztrunc takes the floor branch; use floor characterization and tdiv=ediv
   have hxR_nonneg : (0 : ℝ) ≤ (x : ℝ) := by exact_mod_cast hx_nonneg
   have hyR_pos : (0 : ℝ) < (y : ℝ) := by exact_mod_cast hy_pos
@@ -1436,7 +1458,7 @@ theorem Rcompare_floor_ceil_middle (x : ℝ)
     Rcompare (x - (Zfloor x : ℝ)) (1 / 2) =
       Rcompare (x - (Zfloor x : ℝ)) ((Zceil x : ℝ) - x) := by
   have hceil : Zceil x = Zfloor x + 1 := by
-    unfold Zceil Zfloor
+    simp only [Zceil_eq_ceil, Zfloor]
     set f := Int.floor x
     set c := Int.ceil x
     have hne_f : (f : ℝ) ≠ x := by simpa [Zfloor, f] using hne
@@ -1491,7 +1513,7 @@ theorem Rcompare_ceil_floor_middle (x : ℝ)
     Rcompare ((Zceil x : ℝ) - x) (1 / 2) =
       Rcompare ((Zceil x : ℝ) - x) (x - (Zfloor x : ℝ)) := by
   have hceil : Zceil x = Zfloor x + 1 := by
-    unfold Zceil Zfloor
+    simp only [Zceil_eq_ceil, Zfloor]
     set f := Int.floor x
     set c := Int.ceil x
     have hne_f : (f : ℝ) ≠ x := by simpa [Zfloor, f] using hne

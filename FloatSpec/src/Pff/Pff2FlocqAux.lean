@@ -180,8 +180,8 @@ private lemma FLT_exp_ge_mag_sub_p (emin p k : Int) :
 
 /-- Helper: Ztrunc 0 = 0 -/
 private lemma Ztrunc_zero : Ztrunc 0 = 0 := by
-  unfold Ztrunc FloatSpec.Core.Raux.Ztrunc
-  simp only [lt_irrefl, ↓reduceIte, Int.floor_zero]
+  unfold Ztrunc
+  simp only [FloatSpec.Core.Raux.Ztrunc_eq_ite, lt_irrefl, ↓reduceIte, Int.floor_zero]
 
 /-- Helper: For a number in generic_format for FLT, the absolute value of the mantissa
     (Ztrunc of scaled_mantissa) is bounded by beta^p.
@@ -218,10 +218,10 @@ private lemma FLT_mantissa_bound (beta emin p : Int) [ValidRadix beta] (x : ℝ)
       -- generic_format says x = F2R (FlocqFloat.mk (Ztrunc sm) ex), where F2R f = f.Fnum * β^f.Fexp
       unfold generic_format FloatSpec.Core.Generic_fmt.generic_format at hfmt'
       simp only [FloatSpec.Core.Generic_fmt.cexp, FloatSpec.Core.Generic_fmt.scaled_mantissa,
-                 Ztrunc, FloatSpec.Core.Raux.Ztrunc] at hfmt'
+                 Ztrunc, FloatSpec.Core.Raux.Ztrunc_eq_ite] at hfmt'
       simpa [mx, sm, ex, fexp, FloatSpec.Core.Generic_fmt.cexp,
         FloatSpec.Core.Generic_fmt.scaled_mantissa, Ztrunc,
-        FloatSpec.Core.Raux.Ztrunc] using hfmt'
+        FloatSpec.Core.Raux.Ztrunc_eq_ite] using hfmt'
     -- Therefore |x| = |mx| * beta^ex (since beta^ex > 0)
     have h_pow_pos : (0 : ℝ) < (beta : ℝ) ^ ex := zpow_pos hbposR ex
     have h_abs_x : |x| = |(mx : ℝ)| * (beta : ℝ) ^ ex := by
