@@ -7367,6 +7367,621 @@
           "noncomputable": false
         }
       }
+    },
+    {
+      "source_id": "src/Core/Raux.v:mag_prop@32224",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.mag_prop",
+        "FloatSpec.Core.Raux.mag_prop.mk"
+      ],
+      "scope": "Same record: an exponent and, for nonzero x, bpow (e-1) <= |x| < bpow e. Rocq's second field is anonymous; Lean names it mag_spec. Paired clients read both fields. The Raux.Source facade and mag_with_spec, which give the dependent mag a second Lean meaning, are left for batch 6A with owner decision O3.",
+      "evidence": [
+        "scripts/fixtures/RauxMagContracts.lean",
+        "scripts/fixtures/RauxMagContracts.v",
+        "scripts/test_raux_mag_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.mag_prop": {
+          "type_hash": "1763695617",
+          "value_hash": null,
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Raux.mag_prop.mk": {
+          "type_hash": "359314949",
+          "value_hash": null,
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:mag_val@32242",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.mag_prop.mag_val"
+      ],
+      "scope": "Same projection to the exponent (Rocq declares it a coercion; Lean's mag returns the integer, plan E7). The top-level abbrev mag_val mirrors the Rocq name.",
+      "evidence": [
+        "scripts/fixtures/RauxMagContracts.lean",
+        "scripts/fixtures/RauxMagContracts.v",
+        "scripts/test_raux_mag_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.mag_prop.mag_val": {
+          "type_hash": "191307915",
+          "value_hash": "606637700",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:mag@32342",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.mag"
+      ],
+      "scope": "Ported in this slice: the body is the source's witness Zfloor (ln |x| / ln r) + 1 with no separate zero case (both systems define ln 0 = 0); mag_eq_ite restates the old form for 75 tactic entries and 14 unfold lines. Returns the integer, not the dependent record (plan E7). Rocq closes mag with Qed, so only Lean evaluates it; Lean's fixture shows mag beta 0 = 1 and pins the body by rfl.",
+      "evidence": [
+        "scripts/fixtures/RauxMagContracts.lean",
+        "scripts/fixtures/RauxMagContracts.v",
+        "scripts/test_raux_mag_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.mag": {
+          "type_hash": "1944381621",
+          "value_hash": "2426766599",
+          "noncomputable": true
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:bpow_lt_bpow@33191",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.bpow_lt_bpow"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. Radix as Int with the invariant 1 < beta as a premise (plan E5); mag as the integer the source coerces mag_prop to (plan E7). Restated in this slice about bpow, as the source (it was stated about the zpow (beta:R)^e).",
+      "evidence": [
+        "scripts/fixtures/RauxMagContracts.lean",
+        "scripts/fixtures/RauxMagContracts.v",
+        "scripts/test_raux_mag_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.bpow_lt_bpow": {
+          "type_hash": "3155307926",
+          "value_hash": "357291348",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:bpow_unique@33372",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.bpow_unique"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. Radix as Int with the invariant 1 < beta as a premise (plan E5); mag as the integer the source coerces mag_prop to (plan E7). Restated in this slice about bpow, as the source (it was stated about the zpow (beta:R)^e).",
+      "evidence": [
+        "scripts/fixtures/RauxMagContracts.lean",
+        "scripts/fixtures/RauxMagContracts.v",
+        "scripts/test_raux_mag_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.bpow_unique": {
+          "type_hash": "922283704",
+          "value_hash": "2081189311",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:mag_unique@33635",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.mag_unique"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. Radix as Int with the invariant 1 < beta as a premise (plan E5); mag as the integer the source coerces mag_prop to (plan E7). Restated in this slice about bpow, as the source (it was stated about the zpow (beta:R)^e). Takes the source's single conjunction bpow (e-1) <= |x| < bpow e (it had two separate premises); 27 call sites updated; strictness mutation rejected.",
+      "evidence": [
+        "scripts/fixtures/RauxMagContracts.lean",
+        "scripts/fixtures/RauxMagContracts.v",
+        "scripts/test_raux_mag_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.mag_unique": {
+          "type_hash": "411998700",
+          "value_hash": "1248246338",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:mag_opp@33968",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.mag_opp"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. Radix as Int with the invariant 1 < beta as a premise (plan E5); mag as the integer the source coerces mag_prop to (plan E7).",
+      "evidence": [
+        "scripts/fixtures/RauxMagContracts.lean",
+        "scripts/fixtures/RauxMagContracts.v",
+        "scripts/test_raux_mag_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.mag_opp": {
+          "type_hash": "2808990316",
+          "value_hash": "2638593280",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:mag_abs@34202",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.mag_abs"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. Radix as Int with the invariant 1 < beta as a premise (plan E5); mag as the integer the source coerces mag_prop to (plan E7).",
+      "evidence": [
+        "scripts/fixtures/RauxMagContracts.lean",
+        "scripts/fixtures/RauxMagContracts.v",
+        "scripts/test_raux_mag_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.mag_abs": {
+          "type_hash": "725321843",
+          "value_hash": "1261790160",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:mag_unique_pos@34357",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.mag_unique_pos"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. Radix as Int with the invariant 1 < beta as a premise (plan E5); mag as the integer the source coerces mag_prop to (plan E7). Restated in this slice about bpow, as the source (it was stated about the zpow (beta:R)^e).",
+      "evidence": [
+        "scripts/fixtures/RauxMagContracts.lean",
+        "scripts/fixtures/RauxMagContracts.v",
+        "scripts/test_raux_mag_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.mag_unique_pos": {
+          "type_hash": "2321911854",
+          "value_hash": "667995181",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:mag_le_abs@34636",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.mag_le_abs"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. Radix as Int with the invariant 1 < beta as a premise (plan E5); mag as the integer the source coerces mag_prop to (plan E7).",
+      "evidence": [
+        "scripts/fixtures/RauxMagContracts.lean",
+        "scripts/fixtures/RauxMagContracts.v",
+        "scripts/test_raux_mag_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.mag_le_abs": {
+          "type_hash": "1940793408",
+          "value_hash": "824778623",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:mag_le@35092",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.mag_le"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. Radix as Int with the invariant 1 < beta as a premise (plan E5); mag as the integer the source coerces mag_prop to (plan E7). The 0 < x premise is necessary: both assistants refute it at x = -10, y = 1, base 10; mutation rejected.",
+      "evidence": [
+        "scripts/fixtures/RauxMagContracts.lean",
+        "scripts/fixtures/RauxMagContracts.v",
+        "scripts/test_raux_mag_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.mag_le": {
+          "type_hash": "36696932",
+          "value_hash": "1799294751",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:lt_mag@35348",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.lt_mag"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. Radix as Int with the invariant 1 < beta as a premise (plan E5); mag as the integer the source coerces mag_prop to (plan E7). The 0 < y premise is necessary: both assistants refute it at x = 1, y = -10, base 10.",
+      "evidence": [
+        "scripts/fixtures/RauxMagContracts.lean",
+        "scripts/fixtures/RauxMagContracts.v",
+        "scripts/test_raux_mag_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.lt_mag": {
+          "type_hash": "2255742715",
+          "value_hash": "1489904033",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:mag_bpow@35942",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.mag_bpow"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. Radix as Int with the invariant 1 < beta as a premise (plan E5); mag as the integer the source coerces mag_prop to (plan E7). Restated in this slice about bpow, as the source (it was stated about the zpow (beta:R)^e).",
+      "evidence": [
+        "scripts/fixtures/RauxMagContracts.lean",
+        "scripts/fixtures/RauxMagContracts.v",
+        "scripts/test_raux_mag_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.mag_bpow": {
+          "type_hash": "2533905813",
+          "value_hash": "3206013895",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:mag_mult_bpow@36188",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.mag_mult_bpow"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. Radix as Int with the invariant 1 < beta as a premise (plan E5); mag as the integer the source coerces mag_prop to (plan E7). Restated in this slice about bpow, as the source (it was stated about the zpow (beta:R)^e). The x <> 0 premise is retained; deleting it is a rejected mutation.",
+      "evidence": [
+        "scripts/fixtures/RauxMagContracts.lean",
+        "scripts/fixtures/RauxMagContracts.v",
+        "scripts/test_raux_mag_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.mag_mult_bpow": {
+          "type_hash": "4038542471",
+          "value_hash": "1989897126",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:mag_le_bpow@36653",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.mag_le_bpow"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. Radix as Int with the invariant 1 < beta as a premise (plan E5); mag as the integer the source coerces mag_prop to (plan E7). Restated in this slice about bpow, as the source (it was stated about the zpow (beta:R)^e).",
+      "evidence": [
+        "scripts/fixtures/RauxMagContracts.lean",
+        "scripts/fixtures/RauxMagContracts.v",
+        "scripts/test_raux_mag_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.mag_le_bpow": {
+          "type_hash": "925357349",
+          "value_hash": "1903107058",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:mag_gt_bpow@36893",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.mag_gt_bpow"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. Radix as Int with the invariant 1 < beta as a premise (plan E5); mag as the integer the source coerces mag_prop to (plan E7). Restated in this slice about bpow, as the source (it was stated about the zpow (beta:R)^e).",
+      "evidence": [
+        "scripts/fixtures/RauxMagContracts.lean",
+        "scripts/fixtures/RauxMagContracts.v",
+        "scripts/test_raux_mag_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.mag_gt_bpow": {
+          "type_hash": "3266778799",
+          "value_hash": "1092099319",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:mag_ge_bpow@37180",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.mag_ge_bpow"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. Radix as Int with the invariant 1 < beta as a premise (plan E5); mag as the integer the source coerces mag_prop to (plan E7). Restated in this slice about bpow, as the source (it was stated about the zpow (beta:R)^e).",
+      "evidence": [
+        "scripts/fixtures/RauxMagContracts.lean",
+        "scripts/fixtures/RauxMagContracts.v",
+        "scripts/test_raux_mag_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.mag_ge_bpow": {
+          "type_hash": "3880487791",
+          "value_hash": "1396311171",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:bpow_mag_gt@37544",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.bpow_mag_gt"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. Radix as Int with the invariant 1 < beta as a premise (plan E5); mag as the integer the source coerces mag_prop to (plan E7). Restated in this slice about bpow, as the source (it was stated about the zpow (beta:R)^e).",
+      "evidence": [
+        "scripts/fixtures/RauxMagContracts.lean",
+        "scripts/fixtures/RauxMagContracts.v",
+        "scripts/test_raux_mag_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.bpow_mag_gt": {
+          "type_hash": "2926292831",
+          "value_hash": "2146806870",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:bpow_mag_le@37755",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.bpow_mag_le"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. Radix as Int with the invariant 1 < beta as a premise (plan E5); mag as the integer the source coerces mag_prop to (plan E7). Restated in this slice about bpow, as the source (it was stated about the zpow (beta:R)^e). The x <> 0 premise is retained; deleting it is a rejected mutation.",
+      "evidence": [
+        "scripts/fixtures/RauxMagContracts.lean",
+        "scripts/fixtures/RauxMagContracts.v",
+        "scripts/test_raux_mag_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.bpow_mag_le": {
+          "type_hash": "1171293154",
+          "value_hash": "2789983469",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:mag_le_Zpower@37916",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.mag_le_Zpower"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. Radix as Int with the invariant 1 < beta as a premise (plan E5); mag as the integer the source coerces mag_prop to (plan E7).",
+      "evidence": [
+        "scripts/fixtures/RauxMagContracts.lean",
+        "scripts/fixtures/RauxMagContracts.v",
+        "scripts/test_raux_mag_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.mag_le_Zpower": {
+          "type_hash": "275112144",
+          "value_hash": "1854859290",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:mag_gt_Zpower@38253",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.mag_gt_Zpower"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. Radix as Int with the invariant 1 < beta as a premise (plan E5); mag as the integer the source coerces mag_prop to (plan E7).",
+      "evidence": [
+        "scripts/fixtures/RauxMagContracts.lean",
+        "scripts/fixtures/RauxMagContracts.v",
+        "scripts/test_raux_mag_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.mag_gt_Zpower": {
+          "type_hash": "2124057940",
+          "value_hash": "2613955862",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:mag_mult@38606",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.mag_mult"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. Radix as Int with the invariant 1 < beta as a premise (plan E5); mag as the integer the source coerces mag_prop to (plan E7). Conjuncts now in the source's order lower <= mag (x*y) <= upper (they were reversed); order mutation rejected.",
+      "evidence": [
+        "scripts/fixtures/RauxMagContracts.lean",
+        "scripts/fixtures/RauxMagContracts.v",
+        "scripts/test_raux_mag_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.mag_mult": {
+          "type_hash": "3098814032",
+          "value_hash": "797716093",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:mag_plus@39527",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.mag_plus"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. Radix as Int with the invariant 1 < beta as a premise (plan E5); mag as the integer the source coerces mag_prop to (plan E7).",
+      "evidence": [
+        "scripts/fixtures/RauxMagContracts.lean",
+        "scripts/fixtures/RauxMagContracts.v",
+        "scripts/test_raux_mag_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.mag_plus": {
+          "type_hash": "4278275490",
+          "value_hash": "1889066976",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:mag_minus@40792",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.mag_minus"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. Radix as Int with the invariant 1 < beta as a premise (plan E5); mag as the integer the source coerces mag_prop to (plan E7).",
+      "evidence": [
+        "scripts/fixtures/RauxMagContracts.lean",
+        "scripts/fixtures/RauxMagContracts.v",
+        "scripts/test_raux_mag_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.mag_minus": {
+          "type_hash": "1867698279",
+          "value_hash": "1253380806",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:mag_minus_lb@41135",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.mag_minus_lb"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. Radix as Int with the invariant 1 < beta as a premise (plan E5); mag as the integer the source coerces mag_prop to (plan E7).",
+      "evidence": [
+        "scripts/fixtures/RauxMagContracts.lean",
+        "scripts/fixtures/RauxMagContracts.v",
+        "scripts/test_raux_mag_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.mag_minus_lb": {
+          "type_hash": "3196731959",
+          "value_hash": "3333632577",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:mag_plus_ge@42493",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.mag_plus_ge"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. Radix as Int with the invariant 1 < beta as a premise (plan E5); mag as the integer the source coerces mag_prop to (plan E7).",
+      "evidence": [
+        "scripts/fixtures/RauxMagContracts.lean",
+        "scripts/fixtures/RauxMagContracts.v",
+        "scripts/test_raux_mag_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.mag_plus_ge": {
+          "type_hash": "2214316525",
+          "value_hash": "44733908",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:mag_div@43070",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.mag_div"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. Radix as Int with the invariant 1 < beta as a premise (plan E5); mag as the integer the source coerces mag_prop to (plan E7).",
+      "evidence": [
+        "scripts/fixtures/RauxMagContracts.lean",
+        "scripts/fixtures/RauxMagContracts.v",
+        "scripts/test_raux_mag_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.mag_div": {
+          "type_hash": "3742612710",
+          "value_hash": "370942629",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:mag_sqrt@44427",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.mag_sqrt"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. Radix as Int with the invariant 1 < beta as a premise (plan E5); mag as the integer the source coerces mag_prop to (plan E7). Rocq Z.div2 is Lean / 2 (floor for this positive divisor); dropping the +1 is a rejected mutation.",
+      "evidence": [
+        "scripts/fixtures/RauxMagContracts.lean",
+        "scripts/fixtures/RauxMagContracts.v",
+        "scripts/test_raux_mag_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.mag_sqrt": {
+          "type_hash": "2063716211",
+          "value_hash": "3265686651",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:mag_1@45254",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.mag_1"
+      ],
+      "scope": "Same variables, premises and conclusion as the source; paired typed clients in both assistants. Radix as Int with the invariant 1 < beta as a premise (plan E5); mag as the integer the source coerces mag_prop to (plan E7).",
+      "evidence": [
+        "scripts/fixtures/RauxMagContracts.lean",
+        "scripts/fixtures/RauxMagContracts.v",
+        "scripts/test_raux_mag_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.mag_1": {
+          "type_hash": "4154464129",
+          "value_hash": "2872638352",
+          "noncomputable": false
+        }
+      }
     }
   ]
 }

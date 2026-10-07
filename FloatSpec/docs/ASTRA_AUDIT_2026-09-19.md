@@ -4462,6 +4462,28 @@ candidates include the `Raux.Source` facade and a `Float_prop.mag` alias.
 
 Receipts: `/private/tmp/floatspec-rpow-20261006/`.
 
+### October 6: magnitude (29 sites)
+
+`0131aca5`: `bpow` becomes reducible (Rocq's definition is transparent), so
+the eleven `mag` laws stated about `beta ^ e` could move to `bpow` with four
+call-site edits; `mag` takes the source witness `Zfloor (ln |x| / ln r) + 1`
+(the old zero case was redundant) with `mag_eq_ite` for 75 tactic entries
+and 14 unfold lines; `mag_unique` takes the source's conjunction (27 call
+sites, paired by a script that splits each application's top-level
+arguments); `mag_mult`'s conjuncts follow the source. The review commit adds
+`RauxMagContracts.lean/.v`: rfl body pin (Lean only; Rocq's `mag` is `Qed`
+opaque), concrete magnitudes and two positivity counterexamples in both
+assistants, 16 rejected mutations, kernel replay of 28 fixture declarations.
+`mag_with_spec` and the `Raux.Source` facade stay until batch 6A and owner
+decision O3.
+
+Full build 6350 jobs; all Lean fixtures strict with kernel replay; CI bridge
+op set at seed 865681 (4311 cases, source digest `f85b1434`); drift gate 359
+entries (338 contracts, 21 infrastructure, 2357 unreviewed). `Raux.v`: 161
+of 186 sites anchored, 170 dispositioned. Next: `eqb_sym`.
+
+Receipts: `/private/tmp/floatspec-rmag-20261006/`.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In

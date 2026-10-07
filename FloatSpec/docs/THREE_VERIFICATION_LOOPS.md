@@ -202,6 +202,21 @@ check validates every observed pair against Python's floor division and exact
 integer reconstruction; it is not a fresh execution. No universal cross-prover
 equivalence is claimed from the finite grid.
 
+## Magnitude (October 6)
+
+`Raux.v:1583–2153`: `mag_prop`, `mag` and 26 laws.
+
+```sh
+lake env lean -DwarningAsError=true scripts/fixtures/RauxMagContracts.lean
+coqc -q -R "$FLOCQ_AUDIT_DIR/src" Flocq \
+  -o /tmp/RauxMagContracts.vo scripts/fixtures/RauxMagContracts.v
+uv run scripts/test_raux_mag_contracts.py -v
+```
+
+Sixteen mutations are rejected. Both assistants compute two magnitudes and
+refute two positivity deletions; Lean alone pins the body, which Rocq hides
+behind `Qed`.
+
 ## Radix powers (October 6)
 
 `Raux.v:1331–1582`: `bpow` and 19 laws, now stated about `bpow` itself.

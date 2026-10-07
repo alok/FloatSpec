@@ -411,6 +411,39 @@ and `bpow 10 2 = 100`, and reject 16 mutations (dropped radix premise,
 non-strict for strict, negation for inverse, sum for product, swapped square
 roots and exponential forms).
 
+### Eleventh ordered slice: magnitude
+
+`Raux.v:1583–2153` defines the record `mag_prop`, the function `mag` and 26
+laws. Four repairs came first:
+
+- `bpow` is now reducible, like Rocq's transparent definition. With that,
+  arithmetic tactics see `bpow beta e` as `beta ^ e`, so the eleven `mag`
+  laws that had been stated about `beta ^ e` could be stated about `bpow`
+  with four call sites needing attention.
+- `mag`'s body is the source's witness, `Zfloor (ln |x| / ln r) + 1`. Lean
+  added an `if x = 0 then 1` case; it was redundant, since `ln 0 = 0` in both
+  systems. `mag_eq_ite` restates the old form for 75 tactic entries.
+- `mag_unique` takes the source's single conjunction
+  `bpow (e − 1) ≤ |x| < bpow e` instead of two premises; a script paired the
+  arguments at 27 call sites.
+- `mag_mult`'s conjuncts are in the source's order (lower bound first); two
+  callers take `.symm`.
+
+Two representation choices remain, both recorded in the cutover plan:
+`mag` returns the integer that Rocq's dependent `mag_prop x` record coerces to
+(exemption E7), and the radix is an `Int` with a `1 < beta` premise (E5).
+`mag_with_spec` and the `Raux.Source` facade still provide the dependent form
+under a second name; the plan's critic deletes them in batch 6A together with
+owner decision O3.
+
+Rocq defines `mag` in proof mode and closes it with `Qed`, so its value is
+opaque there: Lean can show `mag β 0 = 1`, Rocq cannot evaluate it at all.
+The paired counterexamples therefore use nonzero inputs. Base 10, `mag (−10) =
+2 > 1 = mag 1`, so `mag_le` needs `0 < x` and `lt_mag` needs `0 < y`; both
+assistants prove both. Both also compute `mag 10 1000 = 4` and
+`mag 2 (7/4) = 1`. `RauxMagContracts.lean/.v` state all 29 interfaces and
+reject 16 mutations.
+
 ## Unindexed Pff negation and absolute value (earlier slice)
 
 The source facade now also exports `Fopp_correct`, `Fopp_Fopp`, `Fabs_correct`
