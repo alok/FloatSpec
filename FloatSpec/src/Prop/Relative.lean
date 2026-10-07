@@ -709,7 +709,7 @@ theorem relative_error_N_round (h_pos : 0 < p) (x : ℝ)
         omega
       have hpow_le_exp : (beta : ℝ) ^ e ≤ (beta : ℝ) ^ (ex - p) := by
         have h := FloatSpec.Core.Raux.bpow_le beta e (ex - p) hβ he_le_exp
-        simpa [
+        simpa [FloatSpec.Core.Raux.bpow, 
           Id.run, pure] using h
       have hprod_eq :
           (beta : ℝ) ^ (-p + 1) * (beta : ℝ) ^ (ex - 1) =
@@ -1571,7 +1571,7 @@ theorem relative_error_FLT_F2R_emin (rnd : ℝ → Int) [FloatSpec.Core.Generic_
       have hpow :=
         (FloatSpec.Core.Raux.bpow_le (beta := beta) (e1 := emin + prec - 1)
           (e2 := emin + prec) hβ (by omega))
-      simpa [
+      simpa [FloatSpec.Core.Raux.bpow, 
         Id.run, pure] using hpow
     have hle : |x| ≤ (beta : ℝ) ^ (emin + prec) :=
       le_trans (le_of_lt hxsmall) hthreshold
@@ -1691,7 +1691,7 @@ theorem relative_error_N_FLT_F2R_emin (m : Int) (hβ : 1 < beta) :
       have hpow :=
         (FloatSpec.Core.Raux.bpow_le (beta := beta) (e1 := emin + prec - 1)
           (e2 := emin + prec) hβ (by omega))
-      simpa [
+      simpa [FloatSpec.Core.Raux.bpow, 
         Id.run, pure] using hpow
     have hle : |x| ≤ (beta : ℝ) ^ (emin + prec) := by
       exact le_trans (le_of_lt hxsmall) hthreshold
@@ -1790,7 +1790,7 @@ theorem relative_error_N_FLT_round_F2R_emin (m : Int) (hβ : 1 < beta) :
       have hpow :=
         (FloatSpec.Core.Raux.bpow_le (beta := beta) (e1 := emin + prec - 1)
           (e2 := emin + prec) hβ (by omega))
-      simpa [
+      simpa [FloatSpec.Core.Raux.bpow, 
         Id.run, pure] using hpow
     have hle : |x| ≤ (beta : ℝ) ^ (emin + prec) := by
       exact le_trans (le_of_lt hxsmall) hthreshold
@@ -1940,7 +1940,7 @@ theorem relative_error_N_FLT'_ex (x : ℝ) (hβ : 1 < beta) :
           (beta : ℝ) ^ (emin + prec - 1) ≤ (beta : ℝ) ^ (emin + prec) := by
         have h := FloatSpec.Core.Raux.bpow_le (beta := beta)
           (e1 := emin + prec - 1) (e2 := emin + prec) hβ (by omega)
-        simpa [
+        simpa [FloatSpec.Core.Raux.bpow, 
           Id.run, pure] using h
       have hxabs_small : |x| < (beta : ℝ) ^ (emin + prec) :=
         lt_of_lt_of_le hsmall hpow_step

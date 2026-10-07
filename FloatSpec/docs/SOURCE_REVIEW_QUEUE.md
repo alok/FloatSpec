@@ -16,7 +16,7 @@ External Rocq imports are recorded in the JSON report, not counted as Flocq decl
 |---:|---|---:|---:|---:|---:|
 | 1 | src/Version.v | 1 | 1 | 1 | 1 |
 | 2 | src/Core/Zaux.v | 102 | 82 | 91 | 102 |
-| 3 | src/Core/Raux.v | 186 | 113 | 178 | 121 |
+| 3 | src/Core/Raux.v | 186 | 133 | 178 | 121 |
 | 4 | src/Core/Defs.v | 14 | 11 | 14 | 0 |
 | 5 | src/Core/Round_pred.v | 83 | 78 | 78 | 83 |
 | 6 | src/Core/Digits.v | 67 | 0 | 67 | 0 |
@@ -58,7 +58,7 @@ Resolve aliases and generated proof infrastructure explicitly; do not create
 unnecessary numerical APIs to satisfy a raw name count.
 
 - `src/Core/Raux.v:1335` — `radix_pos` (prf): `FloatSpec.Core.Raux.radix_pos`.
-- `src/Core/Raux.v:1345` — `bpow` (def): `FloatSpec.Core.Raux.Source.bpow`, `FloatSpec.Core.Raux.bpow`.
+- `src/Core/Raux.v:1345` — `bpow` (def): `FloatSpec.Core.Raux.bpow`.
 - `src/Core/Raux.v:1352` — `IZR_Zpower_pos` (prf): `FloatSpec.Core.Raux.IZR_Zpower_pos`.
 - `src/Core/Raux.v:1368` — `bpow_powerRZ` (prf): `FloatSpec.Core.Raux.bpow_powerRZ`.
 - `src/Core/Raux.v:1378` — `bpow_ge_0` (prf): `FloatSpec.Core.Raux.bpow_ge_0`.

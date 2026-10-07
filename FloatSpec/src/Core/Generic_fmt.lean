@@ -1461,7 +1461,7 @@ theorem abs_lt_bpow_prec
   have hpow_mono := FloatSpec.Core.Raux.bpow_le (beta := beta) (e1 := M) (e2 := prec + c)
     hβ hM_le_prec_add_c
   have h_bpow_le : (beta : ℝ) ^ M ≤ (beta : ℝ) ^ (prec + c) := by
-    simpa [Id.run, pure]
+    simpa [Id.run, pure, FloatSpec.Core.Raux.bpow]
       using hpow_mono
   -- Chain the inequalities
   exact lt_of_lt_of_le h_abs_lt h_bpow_le
@@ -5321,7 +5321,7 @@ private theorem lt_of_mag_lt_pos
     have hmono := FloatSpec.Core.Raux.bpow_le (beta := beta) (e1 := ex) (e2 := ey - 1)
       hβ hex_le
     -- Read back the inequality
-    simpa [Id.run, pure]
+    simpa [Id.run, pure, FloatSpec.Core.Raux.bpow]
       using hmono
   -- Chain inequalities: |x| < β^ex ≤ β^(ey - 1) ≤ |y|
   -- Key: strict upper bound on |x|, weak lower bound on |y|
@@ -6071,7 +6071,7 @@ theorem mag_roundR_ge
       have hpow_le : (beta : ℝ) ^ (mag beta z) ≤ (beta : ℝ) ^ (ex - 1) := by
         have htrip := FloatSpec.Core.Raux.bpow_le (beta := beta)
           (e1 := mag beta z) (e2 := ex - 1) hβ hmag_le
-        simpa [Id.run, pure]
+        simpa [Id.run, pure, FloatSpec.Core.Raux.bpow]
           using htrip
       exact (not_lt_of_ge hlow_z) (lt_of_lt_of_le hz_upper hpow_le)
     have hlow_ry :
@@ -6093,7 +6093,7 @@ theorem mag_roundR_ge
               le_trans (sub_le_self ex (by decide : (0 : Int) ≤ 1)) hsmall
             have htrip := FloatSpec.Core.Raux.bpow_le (beta := beta)
               (e1 := ex - 1) (e2 := fexp ex) hβ hle
-            simpa [Id.run, pure]
+            simpa [Id.run, pure, FloatSpec.Core.Raux.bpow]
               using htrip
           simpa [hpow_abs] using hpow_le
       · have hlarge : fexp ex < ex := lt_of_not_ge hsmall

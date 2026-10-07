@@ -4253,7 +4253,7 @@ theorem ErrFMA_correct_simpl_of_y_eq_zero (beta emin prec : Int) [ValidRadix bet
                 (emin + 2 * prec - 1) (emin + 4 * prec - 3) hβ hexp_le
               change (beta : ℝ) ^ (emin + 2 * prec - 1) ≤
                 (beta : ℝ) ^ (emin + 4 * prec - 3)
-              simpa [pure] using h
+              simpa [FloatSpec.Core.Raux.bpow, pure] using h
             exact le_trans hbpow_le hbound)
     have hopp := FloatSpec.Core.Generic_fmt.generic_format_opp
       (beta := beta) (fexp := FLT_exp emin prec)
@@ -5131,7 +5131,7 @@ theorem ErrFmaAppr_correct
       have hp' : FloatSpec.Core.Raux.bpow beta (emin + prec - 1) ≤
           FloatSpec.Core.Raux.bpow beta (emin + prec) := by
         change (beta : ℝ) ^ (emin + prec - 1) ≤ (beta : ℝ) ^ (emin + prec)
-        simpa [pure] using hp
+        simpa [FloatSpec.Core.Raux.bpow, pure] using hp
       exact le_trans
         hp'
         (by simpa [rnd, u1] using hm)

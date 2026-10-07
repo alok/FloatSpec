@@ -1593,6 +1593,7 @@ end CompareIntBounds
 section PowBasics
 
 /-- Coq {lit}`radix_pos`: the radix is positive as a real number. -/
+@[flocq_source "src/Core/Raux.v" 1335 "radix_pos"]
 theorem radix_pos (beta : Int) (hβ : 1 < beta) :
     0 < (beta : ℝ) := by
   -- From 1 < beta in ℤ, we get (1 : ℝ) < (beta : ℝ) by monotone casting,
@@ -1601,23 +1602,30 @@ theorem radix_pos (beta : Int) (hβ : 1 < beta) :
   have h01 : (0 : ℝ) < (1 : ℝ) := by exact zero_lt_one
   exact lt_trans h01 h1β
 
-/-- Realization of bpow using real integer powers. -/
+/-- FLoCq `bpow`: the radix raised to an integer exponent. Rocq matches the exponent's
+`Z0`/`Zpos`/`Zneg` cases and proves `bpow_powerRZ` that this is `powerRZ`; Lean's `zpow` on ℝ
+is that power, so the body is `beta ^ e` directly. The radix is an `Int` here (cutover
+plan E5); the lemmas take its invariant `1 < beta`. -/
+@[flocq_source "src/Core/Raux.v" 1345 "bpow"]
 noncomputable def bpow (beta e : Int) : ℝ :=
   ((beta : ℝ) ^ e)
 
 /-- Coq `IZR_Zpower_pos`: casting a positive integer power agrees with the
 corresponding real integer power. -/
+@[flocq_source "src/Core/Raux.v" 1352 "IZR_Zpower_pos"]
 theorem IZR_Zpower_pos (n : Int) (m : FloatSpec.Core.Zaux.Positive) :
     ((FloatSpec.Core.Zaux.Zpower_pos n m : Int) : ℝ) =
-      (n : ℝ) ^ (Int.ofNat (FloatSpec.Core.Zaux.positiveToNat m)) := by
-  simp [FloatSpec.Core.Zaux.Zpower_pos, zpow_natCast]
+      (n : ℝ) ^ (FloatSpec.Core.Zaux.Zpos m) := by
+  simp [FloatSpec.Core.Zaux.Zpower_pos, FloatSpec.Core.Zaux.Zpos, zpow_natCast]
 
 /-- Coq {lit}`bpow_powerRZ`: {lean}`bpow` is the real integer power of the radix. -/
+@[flocq_source "src/Core/Raux.v" 1368 "bpow_powerRZ"]
 theorem bpow_powerRZ (beta e : Int) (_hβ : 1 < beta) :
     bpow beta e = (beta : ℝ) ^ e :=
   rfl
 
 /-- Nonnegativity of bpow -/
+@[flocq_source "src/Core/Raux.v" 1378 "bpow_ge_0"]
 theorem bpow_ge_0 (beta e : Int) (hβ : 1 < beta) :
     0 ≤ bpow beta e := by
   unfold bpow
@@ -1628,6 +1636,7 @@ theorem bpow_ge_0 (beta e : Int) (hβ : 1 < beta) :
   exact le_of_lt (zpow_pos hbpos e)
 
 /-- Positivity of bpow -/
+@[flocq_source "src/Core/Raux.v" 1387 "bpow_gt_0"]
 theorem bpow_gt_0 (beta e : Int) (hβ : 1 < beta) :
     0 < bpow beta e := by
   unfold bpow
@@ -1638,8 +1647,10 @@ theorem bpow_gt_0 (beta e : Int) (hβ : 1 < beta) :
   exact zpow_pos hbpos e
 
 /-- Addition law for bpow exponents -/
+@[flocq_source "src/Core/Raux.v" 1396 "bpow_plus"]
 theorem bpow_plus (beta e1 e2 : Int) (hβ : 1 < beta) :
-    (beta : ℝ) ^ (e1 + e2) = (beta : ℝ) ^ e1 * (beta : ℝ) ^ e2 := by
+    bpow beta (e1 + e2) = bpow beta e1 * bpow beta e2 := by
+  unfold bpow
   -- Goal: (beta : ℝ) ^ (e1 + e2) = (beta : ℝ) ^ e1 * (beta : ℝ) ^ e2
   -- This is `zpow_add₀` for a nonzero base
   have h1β : (1 : ℝ) < (beta : ℝ) := by exact_mod_cast hβ
@@ -1648,14 +1659,18 @@ theorem bpow_plus (beta e1 e2 : Int) (hβ : 1 < beta) :
   simpa using (zpow_add₀ hbne e1 e2)
 
 /-- Value of bpow at 1 -/
+@[flocq_source "src/Core/Raux.v" 1406 "bpow_1"]
 theorem bpow_1 (beta : Int) (_hβ : 1 < beta) :
-    (beta : ℝ) ^ (1 : Int) = (beta : ℝ) := by
+    bpow beta 1 = (beta : ℝ) := by
+  unfold bpow
   -- Use zpow at 1
   simp [zpow_one]
 
 /-- Coq {lit}`bpow_plus_1`: {lit}`bpow (e + 1) = beta * bpow e`. -/
+@[flocq_source "src/Core/Raux.v" 1413 "bpow_plus_1"]
 theorem bpow_plus_1 (beta e : Int) (hβ : 1 < beta) :
-    (beta : ℝ) ^ (e + 1) = (beta : ℝ) * (beta : ℝ) ^ e := by
+    bpow beta (e + 1) = (beta : ℝ) * bpow beta e := by
+  unfold bpow
   -- zpow addition specialized to 1; use zpow_add₀ for nonzero base
   have h1β : (1 : ℝ) < (beta : ℝ) := by exact_mod_cast hβ
   have hbpos : (0 : ℝ) < (beta : ℝ) := lt_trans zero_lt_one h1β
@@ -1663,18 +1678,21 @@ theorem bpow_plus_1 (beta e : Int) (hβ : 1 < beta) :
   -- Rearrange to match the target `(beta : ℝ) * (beta : ℝ) ^ e`
   simpa [zpow_one, mul_comm] using (zpow_add₀ hbne e (1 : Int))
 
-/-- Opposite exponent law: bpow (-e) = 1 / bpow e -/
+/-- Opposite exponent law: bpow (-e) = / bpow e -/
+@[flocq_source "src/Core/Raux.v" 1422 "bpow_opp"]
 theorem bpow_opp (beta e : Int) (_hβ : 1 < beta) :
-    (beta : ℝ) ^ (-e) = 1 / (beta : ℝ) ^ e := by
-  -- Use zpow_neg
-  simp [zpow_neg, one_div]
+    bpow beta (-e) = (bpow beta e)⁻¹ := by
+  unfold bpow
+  exact zpow_neg _ e
 
 /-- Strict monotonicity of bpow in the exponent
 
     If {lean}`1 < beta` and {lean}`e1 < e2`, then {lean}`(beta : ℝ) ^ e1 < (beta : ℝ) ^ e2`.
 -/
+@[flocq_source "src/Core/Raux.v" 1456 "bpow_lt"]
 theorem bpow_lt (beta e1 e2 : Int) (hβ : 1 < beta) (hlt : e1 < e2) :
-    (beta : ℝ) ^ e1 < (beta : ℝ) ^ e2 := by
+    bpow beta e1 < bpow beta e2 := by
+  unfold bpow
   -- Transport base inequality to ℝ and apply strict monotonicity of zpow in the exponent
   have hβR : (1 : ℝ) < (beta : ℝ) := by exact_mod_cast hβ
   exact (zpow_lt_zpow_right₀ hβR hlt)
@@ -1683,9 +1701,11 @@ theorem bpow_lt (beta e1 e2 : Int) (hβ : 1 < beta) (hlt : e1 < e2) :
 
     If {lean}`1 < beta` and {lean}`(beta : ℝ) ^ e1 < (beta : ℝ) ^ e2`, then {lean}`e1 < e2`.
 -/
+@[flocq_source "src/Core/Raux.v" 1474 "lt_bpow"]
 theorem lt_bpow (beta e1 e2 : Int)
-    (hβ : 1 < beta) (hbpowlt : (beta : ℝ) ^ e1 < (beta : ℝ) ^ e2) :
+    (hβ : 1 < beta) (hbpowlt : bpow beta e1 < bpow beta e2) :
     e1 < e2 := by
+  unfold bpow at hbpowlt
   -- Use strict monotonicity of zpow in the exponent for bases > 1
   -- to transport the inequality back to the exponents.
   have hβR : (1 : ℝ) < (beta : ℝ) := by exact_mod_cast hβ
@@ -1693,17 +1713,21 @@ theorem lt_bpow (beta e1 e2 : Int)
   exact ((zpow_right_strictMono₀ hβR).lt_iff_lt).1 hbpowlt
 
 /-- Monotonicity (≤) of bpow in the exponent -/
+@[flocq_source "src/Core/Raux.v" 1490 "bpow_le"]
 theorem bpow_le (beta e1 e2 : Int) (hβ : 1 < beta) (hle : e1 ≤ e2) :
-    (beta : ℝ) ^ e1 ≤ (beta : ℝ) ^ e2 := by
+    bpow beta e1 ≤ bpow beta e2 := by
+  unfold bpow
   -- Transport base inequality to ℝ
   have hβR : (1 : ℝ) < (beta : ℝ) := by exact_mod_cast hβ
   -- Strict monotonicity in the exponent for bases > 1 yields monotonicity (≤)
   exact ((zpow_right_strictMono₀ hβR).monotone hle)
 
 /-- Converse (≤) direction via bpow values -/
+@[flocq_source "src/Core/Raux.v" 1502 "le_bpow"]
 theorem le_bpow (beta e1 e2 : Int)
-    (hβ : 1 < beta) (hle_pow : (beta : ℝ) ^ e1 ≤ (beta : ℝ) ^ e2) :
+    (hβ : 1 < beta) (hle_pow : bpow beta e1 ≤ bpow beta e2) :
     e1 ≤ e2 := by
+  unfold bpow at hle_pow
   -- Transport 1 < beta to ℝ
   have hβR : (1 : ℝ) < (beta : ℝ) := by exact_mod_cast hβ
   -- Prove by contradiction: assume ¬ e1 ≤ e2, i.e. e2 < e1
@@ -1717,16 +1741,20 @@ theorem le_bpow (beta e1 e2 : Int)
   exact (lt_irrefl _ this)
 
 /-- Injectivity of bpow on the exponent -/
+@[flocq_source "src/Core/Raux.v" 1514 "bpow_inj"]
 theorem bpow_inj (beta e1 e2 : Int)
-    (hβ : 1 < beta) (heq : (beta : ℝ) ^ e1 = (beta : ℝ) ^ e2) :
+    (hβ : 1 < beta) (heq : bpow beta e1 = bpow beta e2) :
     e1 = e2 := by
+  unfold bpow at heq
   have hβR : (1 : ℝ) < (beta : ℝ) := by exact_mod_cast hβ
   -- Strict monotonicity in the exponent implies injectivity
   exact (zpow_right_strictMono₀ hβR).injective heq
 
 /-- Exponential form of bpow via Real.exp and Real.log -/
+@[flocq_source "src/Core/Raux.v" 1526 "bpow_exp"]
 theorem bpow_exp (beta e : Int) (hβ : 1 < beta) :
-    (beta : ℝ) ^ e = Real.exp ((e : ℝ) * Real.log (beta : ℝ)) := by
+    bpow beta e = Real.exp ((e : ℝ) * Real.log (beta : ℝ)) := by
+  unfold bpow
   -- From 1 < beta (as an integer), we get positivity on ℝ
   have hbposℤ : (0 : Int) < beta := lt_trans (by decide) hβ
   have hbposR : (0 : ℝ) < (beta : ℝ) := by exact_mod_cast hbposℤ
@@ -1802,8 +1830,10 @@ theorem bpow_unique (beta : Int) (x : ℝ) (e1 e2 : Int)
     (by simpa [hxabs] using h1) (by simpa [hxabs] using h2)
 
 /-- Square-root law for even exponents: {lean}`Real.sqrt ((beta : ℝ) ^ (2 * e)) = (beta : ℝ) ^ e` -/
+@[flocq_source "src/Core/Raux.v" 1563 "sqrt_bpow"]
 theorem sqrt_bpow (beta e : Int) (hβ : 1 < beta) :
-    Real.sqrt ((beta : ℝ) ^ (2 * e)) = (beta : ℝ) ^ e := by
+    Real.sqrt (bpow beta (2 * e)) = bpow beta e := by
+  unfold bpow
   -- From 1 < beta we get (beta : ℝ) > 0 hence nonzero
   have hbposℤ : (0 : Int) < beta := lt_trans (by decide) hβ
   have hbposR : (0 : ℝ) < (beta : ℝ) := by exact_mod_cast hbposℤ
@@ -1821,8 +1851,10 @@ theorem sqrt_bpow (beta e : Int) (hβ : 1 < beta) :
   simpa [this, abs_of_nonneg hnonneg]
 
 /-- Lower bound: bpow (e/2) ≤ sqrt (bpow e) -/
+@[flocq_source "src/Core/Raux.v" 1572 "sqrt_bpow_ge"]
 theorem sqrt_bpow_ge (beta e : Int) (hβ : 1 < beta) :
-    (beta : ℝ) ^ (e / 2) ≤ Real.sqrt ((beta : ℝ) ^ e) := by
+    bpow beta (e / 2) ≤ Real.sqrt (bpow beta e) := by
+  unfold bpow
   -- Goal: (beta : ℝ)^(e/2) ≤ √((beta : ℝ)^e)
   -- From 1 < beta we get (beta : ℝ) > 0 hence nonzero
   have hbposℤ : (0 : Int) < beta := lt_trans (by decide) hβ
@@ -1873,11 +1905,13 @@ theorem sqrt_bpow_ge (beta e : Int) (hβ : 1 < beta) :
   exact hx2_le
 
 /-- Coq `IZR_Zpower_nat`: integer natural powers cast to source `bpow`. -/
+@[flocq_source "src/Core/Raux.v" 1434 "IZR_Zpower_nat"]
 theorem IZR_Zpower_nat (r : FloatSpec.Core.Zaux.Radix) (e : Nat) :
     ((r.val ^ e : Int) : ℝ) = bpow r.val (Int.ofNat e) := by
   simp [bpow, zpow_natCast]
 
 /-- Coq `IZR_Zpower`: nonnegative integer powers cast to source `bpow`. -/
+@[flocq_source "src/Core/Raux.v" 1445 "IZR_Zpower"]
 theorem IZR_Zpower (r : FloatSpec.Core.Zaux.Radix) (e : Int) (he : 0 ≤ e) :
     ((FloatSpec.Core.Zaux.Zpower r.val e : Int) : ℝ) = bpow r.val e := by
   have he_cast : (e.toNat : Int) = e := Int.toNat_of_nonneg he
