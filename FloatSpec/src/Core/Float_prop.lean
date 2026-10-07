@@ -56,12 +56,8 @@ private lemma natAbs_eq_toNat_of_nonneg {z : Int} (hz : 0 ≤ z) :
 
 --
 
-/-- Compatibility name for FLoCq's unique magnitude operation.
-
-    Earlier versions accidentally introduced a second, ceiling-based
-    magnitude here.  FLoCq uses the floor-plus-one witness implemented by
-    `Core.Raux.mag`, including its observable value at zero. -/
-noncomputable abbrev mag := FloatSpec.Core.Raux.mag
+-- Flocq's single magnitude function is `Core.Raux.mag`; this file uses it unqualified.
+open FloatSpec.Core.Raux (mag)
 
 
 -- Comparison theorems

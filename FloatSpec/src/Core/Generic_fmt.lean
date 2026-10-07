@@ -39,27 +39,6 @@ open FloatSpec.Core.Raux
 namespace FloatSpec.Core.Generic_fmt
 
 
-/-- Downward rounding predicate (pointwise), re-exported from
-    {lean}`FloatSpec.Core.Defs.Rnd_DN_pt`. -/
-abbrev Rnd_DN_pt := FloatSpec.Core.Defs.Rnd_DN_pt
-/-- Upward rounding predicate (pointwise), re-exported from
-    {lean}`FloatSpec.Core.Defs.Rnd_UP_pt`. -/
-abbrev Rnd_UP_pt := FloatSpec.Core.Defs.Rnd_UP_pt
-/-- Round-to-nearest predicate (pointwise), re-exported from
-    {lean}`FloatSpec.Core.Defs.Rnd_N_pt`. -/
-abbrev Rnd_N_pt  := FloatSpec.Core.Defs.Rnd_N_pt
-/-- Round-to-nearest, ties to max magnitude (pointwise), re-exported from
-    {lean}`FloatSpec.Core.Defs.Rnd_NG_pt`. -/
-abbrev Rnd_NG_pt := FloatSpec.Core.Defs.Rnd_NG_pt
-/-- Round-to-nearest, ties away from zero (pointwise), re-exported from
-    {lean}`FloatSpec.Core.Defs.Rnd_NA_pt`. -/
-abbrev Rnd_NA_pt := FloatSpec.Core.Defs.Rnd_NA_pt
-/-- Round-to-nearest, ties toward zero (pointwise), re-exported from
-    {lean}`FloatSpec.Core.Defs.Rnd_N0_pt`. -/
-abbrev Rnd_N0_pt := FloatSpec.Core.Defs.Rnd_N0_pt
-/-- Round-to-zero predicate (pointwise), re-exported from
-    {lean}`FloatSpec.Core.Defs.Rnd_ZR_pt`. -/
-abbrev Rnd_ZR_pt := FloatSpec.Core.Defs.Rnd_ZR_pt
 
 section ExponentFunction
 

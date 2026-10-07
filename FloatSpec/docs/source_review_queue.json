@@ -7,7 +7,7 @@
       "lean_names": [
         "FloatSpec.Core.RoundNE.Rnd_NE_pt_total"
       ],
-      "scope": "Same universal totality proposition for the nearest-even relation under Valid_exp and Exists_NE; ValidRadix carries the source radix invariant. No extra Monotone_exp or redundant explicit radix premise. Closed legacy proof exposed directly, paired typed clients and format/parity mutation controls.",
+      "scope": "Same universal totality proposition for the nearest-even relation under Valid_exp and Exists_NE; ValidRadix carries the source radix invariant. No extra Monotone_exp or redundant explicit radix premise. Closed legacy proof exposed directly, paired typed clients and format/parity mutation controls. Fingerprint refreshed 2026-10-07 after the identity aliases Round_pred/Generic_fmt.Rnd_*_pt were removed (plan M2): the statement now names Defs.Rnd_*_pt directly; the paired clients compile unchanged and the mutation tests were rerun.",
       "evidence": [
         "scripts/fixtures/RoundNEPointContracts.lean",
         "scripts/fixtures/RoundNEPointContracts.v",
@@ -17,7 +17,7 @@
       "lean_fingerprints": {
         "FloatSpec.Core.RoundNE.Rnd_NE_pt_total": {
           "type_hash": "2919088964",
-          "value_hash": "2630724595",
+          "value_hash": "908864494",
           "noncomputable": false
         }
       }
@@ -70,7 +70,7 @@
       "lean_names": [
         "FloatSpec.Core.Round_pred.Rnd_DN"
       ],
-      "scope": "Same pointwise lifting of the corresponding source rounding predicate, with identical arbitrary-format/function domains. Paired definitional-shape clients; no numerical algorithm or additional premise.",
+      "scope": "Same pointwise lifting of the corresponding source rounding predicate, with identical arbitrary-format/function domains. Paired definitional-shape clients; no numerical algorithm or additional premise. Fingerprint refreshed 2026-10-07 after the identity aliases Round_pred/Generic_fmt.Rnd_*_pt were removed (plan M2): the statement now names Defs.Rnd_*_pt directly; the paired clients compile unchanged and the mutation tests were rerun.",
       "evidence": [
         "scripts/fixtures/RoundPredTieContracts.lean",
         "scripts/fixtures/RoundPredTieContracts.v",
@@ -80,7 +80,7 @@
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_DN": {
           "type_hash": "1021788542",
-          "value_hash": "3465451271",
+          "value_hash": "645871812",
           "noncomputable": false
         }
       }
@@ -91,7 +91,7 @@
       "lean_names": [
         "FloatSpec.Core.Round_pred.Rnd_UP"
       ],
-      "scope": "Same pointwise lifting of the corresponding source rounding predicate, with identical arbitrary-format/function domains. Paired definitional-shape clients; no numerical algorithm or additional premise.",
+      "scope": "Same pointwise lifting of the corresponding source rounding predicate, with identical arbitrary-format/function domains. Paired definitional-shape clients; no numerical algorithm or additional premise. Fingerprint refreshed 2026-10-07 after the identity aliases Round_pred/Generic_fmt.Rnd_*_pt were removed (plan M2): the statement now names Defs.Rnd_*_pt directly; the paired clients compile unchanged and the mutation tests were rerun.",
       "evidence": [
         "scripts/fixtures/RoundPredTieContracts.lean",
         "scripts/fixtures/RoundPredTieContracts.v",
@@ -101,7 +101,7 @@
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_UP": {
           "type_hash": "1021788542",
-          "value_hash": "796813196",
+          "value_hash": "1857320051",
           "noncomputable": false
         }
       }
@@ -133,7 +133,7 @@
       "lean_names": [
         "FloatSpec.Core.Round_pred.Rnd_N"
       ],
-      "scope": "Same pointwise lifting of the corresponding source rounding predicate, with identical arbitrary-format/function domains. Paired definitional-shape clients; no numerical algorithm or additional premise.",
+      "scope": "Same pointwise lifting of the corresponding source rounding predicate, with identical arbitrary-format/function domains. Paired definitional-shape clients; no numerical algorithm or additional premise. Fingerprint refreshed 2026-10-07 after the identity aliases Round_pred/Generic_fmt.Rnd_*_pt were removed (plan M2): the statement now names Defs.Rnd_*_pt directly; the paired clients compile unchanged and the mutation tests were rerun.",
       "evidence": [
         "scripts/fixtures/RoundPredTieContracts.lean",
         "scripts/fixtures/RoundPredTieContracts.v",
@@ -143,7 +143,7 @@
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_N": {
           "type_hash": "1021788542",
-          "value_hash": "3735375328",
+          "value_hash": "1417676590",
           "noncomputable": false
         }
       }
@@ -154,7 +154,7 @@
       "lean_names": [
         "FloatSpec.Core.Round_pred.Rnd_NG"
       ],
-      "scope": "Same pointwise lifting of the corresponding source rounding predicate, with identical arbitrary-format/function domains. Paired definitional-shape clients; no numerical algorithm or additional premise.",
+      "scope": "Same pointwise lifting of the corresponding source rounding predicate, with identical arbitrary-format/function domains. Paired definitional-shape clients; no numerical algorithm or additional premise. Fingerprint refreshed 2026-10-07 after the identity aliases Round_pred/Generic_fmt.Rnd_*_pt were removed (plan M2): the statement now names Defs.Rnd_*_pt directly; the paired clients compile unchanged and the mutation tests were rerun.",
       "evidence": [
         "scripts/fixtures/RoundPredTieContracts.lean",
         "scripts/fixtures/RoundPredTieContracts.v",
@@ -164,7 +164,7 @@
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_NG": {
           "type_hash": "2146892049",
-          "value_hash": "4001903030",
+          "value_hash": "204298728",
           "noncomputable": false
         }
       }
@@ -175,7 +175,7 @@
       "lean_names": [
         "FloatSpec.Core.Round_pred.Rnd_NA"
       ],
-      "scope": "Same pointwise lifting of the corresponding source rounding predicate, with identical arbitrary-format/function domains. Paired definitional-shape clients; no numerical algorithm or additional premise.",
+      "scope": "Same pointwise lifting of the corresponding source rounding predicate, with identical arbitrary-format/function domains. Paired definitional-shape clients; no numerical algorithm or additional premise. Fingerprint refreshed 2026-10-07 after the identity aliases Round_pred/Generic_fmt.Rnd_*_pt were removed (plan M2): the statement now names Defs.Rnd_*_pt directly; the paired clients compile unchanged and the mutation tests were rerun.",
       "evidence": [
         "scripts/fixtures/RoundPredTieContracts.lean",
         "scripts/fixtures/RoundPredTieContracts.v",
@@ -185,7 +185,7 @@
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_NA": {
           "type_hash": "1021788542",
-          "value_hash": "2513266576",
+          "value_hash": "3113463577",
           "noncomputable": false
         }
       }
@@ -196,7 +196,7 @@
       "lean_names": [
         "FloatSpec.Core.Round_pred.Rnd_N0"
       ],
-      "scope": "Same pointwise lifting of the corresponding source rounding predicate, with identical arbitrary-format/function domains. Paired definitional-shape clients; no numerical algorithm or additional premise.",
+      "scope": "Same pointwise lifting of the corresponding source rounding predicate, with identical arbitrary-format/function domains. Paired definitional-shape clients; no numerical algorithm or additional premise. Fingerprint refreshed 2026-10-07 after the identity aliases Round_pred/Generic_fmt.Rnd_*_pt were removed (plan M2): the statement now names Defs.Rnd_*_pt directly; the paired clients compile unchanged and the mutation tests were rerun.",
       "evidence": [
         "scripts/fixtures/RoundPredTieContracts.lean",
         "scripts/fixtures/RoundPredTieContracts.v",
@@ -206,7 +206,7 @@
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_N0": {
           "type_hash": "1021788542",
-          "value_hash": "609822476",
+          "value_hash": "2606229459",
           "noncomputable": false
         }
       }
@@ -259,7 +259,7 @@
       "lean_names": [
         "FloatSpec.Core.Round_pred.Rnd_N_pt_0"
       ],
-      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations.",
+      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations. Fingerprint refreshed 2026-10-07 after the identity aliases Round_pred/Generic_fmt.Rnd_*_pt were removed (plan M2): the statement now names Defs.Rnd_*_pt directly; the paired clients compile unchanged and the mutation tests were rerun.",
       "evidence": [
         "scripts/fixtures/RoundPredTieContracts.lean",
         "scripts/fixtures/RoundPredTieContracts.v",
@@ -268,7 +268,7 @@
       ],
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_N_pt_0": {
-          "type_hash": "2821356836",
+          "type_hash": "3297799017",
           "value_hash": "2351411635",
           "noncomputable": false
         }
@@ -280,7 +280,7 @@
       "lean_names": [
         "FloatSpec.Core.Round_pred.Rnd_N_pt_ge_0"
       ],
-      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations.",
+      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations. Fingerprint refreshed 2026-10-07 after the identity aliases Round_pred/Generic_fmt.Rnd_*_pt were removed (plan M2): the statement now names Defs.Rnd_*_pt directly; the paired clients compile unchanged and the mutation tests were rerun.",
       "evidence": [
         "scripts/fixtures/RoundPredTieContracts.lean",
         "scripts/fixtures/RoundPredTieContracts.v",
@@ -289,8 +289,8 @@
       ],
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_N_pt_ge_0": {
-          "type_hash": "1874941508",
-          "value_hash": "4032499713",
+          "type_hash": "1863755286",
+          "value_hash": "934359947",
           "noncomputable": false
         }
       }
@@ -301,7 +301,7 @@
       "lean_names": [
         "FloatSpec.Core.Round_pred.Rnd_N_pt_le_0"
       ],
-      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations.",
+      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations. Fingerprint refreshed 2026-10-07 after the identity aliases Round_pred/Generic_fmt.Rnd_*_pt were removed (plan M2): the statement now names Defs.Rnd_*_pt directly; the paired clients compile unchanged and the mutation tests were rerun.",
       "evidence": [
         "scripts/fixtures/RoundPredTieContracts.lean",
         "scripts/fixtures/RoundPredTieContracts.v",
@@ -310,8 +310,8 @@
       ],
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_N_pt_le_0": {
-          "type_hash": "1465334945",
-          "value_hash": "2685963487",
+          "type_hash": "3222814455",
+          "value_hash": "3286762332",
           "noncomputable": false
         }
       }
@@ -322,7 +322,7 @@
       "lean_names": [
         "FloatSpec.Core.Round_pred.Rnd_N_pt_abs"
       ],
-      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations.",
+      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations. Fingerprint refreshed 2026-10-07 after the identity aliases Round_pred/Generic_fmt.Rnd_*_pt were removed (plan M2): the statement now names Defs.Rnd_*_pt directly; the paired clients compile unchanged and the mutation tests were rerun.",
       "evidence": [
         "scripts/fixtures/RoundPredTieContracts.lean",
         "scripts/fixtures/RoundPredTieContracts.v",
@@ -331,8 +331,8 @@
       ],
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_N_pt_abs": {
-          "type_hash": "4152876850",
-          "value_hash": "3151592711",
+          "type_hash": "2461291145",
+          "value_hash": "2526405246",
           "noncomputable": false
         }
       }
@@ -343,7 +343,7 @@
       "lean_names": [
         "FloatSpec.Core.Round_pred.Rnd_N_pt_DN_UP"
       ],
-      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations.",
+      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations. Fingerprint refreshed 2026-10-07 after the identity aliases Round_pred/Generic_fmt.Rnd_*_pt were removed (plan M2): the statement now names Defs.Rnd_*_pt directly; the paired clients compile unchanged and the mutation tests were rerun.",
       "evidence": [
         "scripts/fixtures/RoundPredTieContracts.lean",
         "scripts/fixtures/RoundPredTieContracts.v",
@@ -352,8 +352,8 @@
       ],
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_N_pt_DN_UP": {
-          "type_hash": "3196688007",
-          "value_hash": "3779392963",
+          "type_hash": "4068232776",
+          "value_hash": "1165222362",
           "noncomputable": false
         }
       }
@@ -364,7 +364,7 @@
       "lean_names": [
         "FloatSpec.Core.Round_pred.Rnd_N_pt_DN"
       ],
-      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations.",
+      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations. Fingerprint refreshed 2026-10-07 after the identity aliases Round_pred/Generic_fmt.Rnd_*_pt were removed (plan M2): the statement now names Defs.Rnd_*_pt directly; the paired clients compile unchanged and the mutation tests were rerun.",
       "evidence": [
         "scripts/fixtures/RoundPredTieContracts.lean",
         "scripts/fixtures/RoundPredTieContracts.v",
@@ -373,8 +373,8 @@
       ],
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_N_pt_DN": {
-          "type_hash": "4245544349",
-          "value_hash": "1502158277",
+          "type_hash": "3043069954",
+          "value_hash": "796576482",
           "noncomputable": false
         }
       }
@@ -385,7 +385,7 @@
       "lean_names": [
         "FloatSpec.Core.Round_pred.Rnd_N_pt_UP"
       ],
-      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations.",
+      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations. Fingerprint refreshed 2026-10-07 after the identity aliases Round_pred/Generic_fmt.Rnd_*_pt were removed (plan M2): the statement now names Defs.Rnd_*_pt directly; the paired clients compile unchanged and the mutation tests were rerun.",
       "evidence": [
         "scripts/fixtures/RoundPredTieContracts.lean",
         "scripts/fixtures/RoundPredTieContracts.v",
@@ -394,8 +394,8 @@
       ],
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_N_pt_UP": {
-          "type_hash": "3432433165",
-          "value_hash": "678127125",
+          "type_hash": "2835737507",
+          "value_hash": "2647195743",
           "noncomputable": false
         }
       }
@@ -406,7 +406,7 @@
       "lean_names": [
         "FloatSpec.Core.Round_pred.Rnd_NG_pt_unique_prop"
       ],
-      "scope": "Same Type-valued family domain and full directed/nearest/tie hypotheses. Lean Sort u generalizes the Rocq Type family; paired shape clients check Type-valued predicates, with Prop specialization tested by the actual generic rounding laws.",
+      "scope": "Same Type-valued family domain and full directed/nearest/tie hypotheses. Lean Sort u generalizes the Rocq Type family; paired shape clients check Type-valued predicates, with Prop specialization tested by the actual generic rounding laws. Fingerprint refreshed 2026-10-07 after the identity aliases Round_pred/Generic_fmt.Rnd_*_pt were removed (plan M2): the statement now names Defs.Rnd_*_pt directly; the paired clients compile unchanged and the mutation tests were rerun.",
       "evidence": [
         "scripts/fixtures/RoundPredTieContracts.lean",
         "scripts/fixtures/RoundPredTieContracts.v",
@@ -416,7 +416,7 @@
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_NG_pt_unique_prop": {
           "type_hash": "3820589304",
-          "value_hash": "4100233208",
+          "value_hash": "1969436117",
           "noncomputable": false
         }
       }
@@ -427,7 +427,7 @@
       "lean_names": [
         "FloatSpec.Core.Round_pred.Rnd_NG_pt_unique"
       ],
-      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations.",
+      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations. Fingerprint refreshed 2026-10-07 after the identity aliases Round_pred/Generic_fmt.Rnd_*_pt were removed (plan M2): the statement now names Defs.Rnd_*_pt directly; the paired clients compile unchanged and the mutation tests were rerun.",
       "evidence": [
         "scripts/fixtures/RoundPredTieContracts.lean",
         "scripts/fixtures/RoundPredTieContracts.v",
@@ -436,8 +436,8 @@
       ],
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_NG_pt_unique": {
-          "type_hash": "2897881679",
-          "value_hash": "4008667926",
+          "type_hash": "4078074316",
+          "value_hash": "2290466274",
           "noncomputable": false
         }
       }
@@ -448,7 +448,7 @@
       "lean_names": [
         "FloatSpec.Core.Round_pred.Rnd_NG_pt_monotone"
       ],
-      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations.",
+      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations. Fingerprint refreshed 2026-10-07 after the identity aliases Round_pred/Generic_fmt.Rnd_*_pt were removed (plan M2): the statement now names Defs.Rnd_*_pt directly; the paired clients compile unchanged and the mutation tests were rerun.",
       "evidence": [
         "scripts/fixtures/RoundPredTieContracts.lean",
         "scripts/fixtures/RoundPredTieContracts.v",
@@ -457,8 +457,8 @@
       ],
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_NG_pt_monotone": {
-          "type_hash": "1617817797",
-          "value_hash": "1319688960",
+          "type_hash": "815980683",
+          "value_hash": "3488025689",
           "noncomputable": false
         }
       }
@@ -469,7 +469,7 @@
       "lean_names": [
         "FloatSpec.Core.Round_pred.Rnd_NG_pt_refl"
       ],
-      "scope": "No policy premise required at representable inputs: the unique-nearest alternative suffices even when P is always False. Paired exact clients and a concrete always-false-policy example.",
+      "scope": "No policy premise required at representable inputs: the unique-nearest alternative suffices even when P is always False. Paired exact clients and a concrete always-false-policy example. Fingerprint refreshed 2026-10-07 after the identity aliases Round_pred/Generic_fmt.Rnd_*_pt were removed (plan M2): the statement now names Defs.Rnd_*_pt directly; the paired clients compile unchanged and the mutation tests were rerun.",
       "evidence": [
         "scripts/fixtures/RoundPredTieContracts.lean",
         "scripts/fixtures/RoundPredTieContracts.v",
@@ -478,7 +478,7 @@
       ],
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_NG_pt_refl": {
-          "type_hash": "141887985",
+          "type_hash": "2370185879",
           "value_hash": "39902246",
           "noncomputable": false
         }
@@ -490,7 +490,7 @@
       "lean_names": [
         "FloatSpec.Core.Round_pred.Rnd_NG_pt_opp_inv"
       ],
-      "scope": "Both format and policy negation closure retained, with the actual P in premise and conclusion. Repaired from the source-named Hoare return to the direct proposition; old spec remains compatible.",
+      "scope": "Both format and policy negation closure retained, with the actual P in premise and conclusion. Repaired from the source-named Hoare return to the direct proposition; old spec remains compatible. Fingerprint refreshed 2026-10-07 after the identity aliases Round_pred/Generic_fmt.Rnd_*_pt were removed (plan M2): the statement now names Defs.Rnd_*_pt directly; the paired clients compile unchanged and the mutation tests were rerun.",
       "evidence": [
         "scripts/fixtures/RoundPredTieContracts.lean",
         "scripts/fixtures/RoundPredTieContracts.v",
@@ -499,8 +499,8 @@
       ],
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_NG_pt_opp_inv": {
-          "type_hash": "2381238653",
-          "value_hash": "1362421599",
+          "type_hash": "1036276444",
+          "value_hash": "1885623883",
           "noncomputable": false
         }
       }
@@ -532,7 +532,7 @@
       "lean_names": [
         "FloatSpec.Core.Round_pred.Rnd_NA_NG_pt"
       ],
-      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations.",
+      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations. Fingerprint refreshed 2026-10-07 after the identity aliases Round_pred/Generic_fmt.Rnd_*_pt were removed (plan M2): the statement now names Defs.Rnd_*_pt directly; the paired clients compile unchanged and the mutation tests were rerun.",
       "evidence": [
         "scripts/fixtures/RoundPredTieContracts.lean",
         "scripts/fixtures/RoundPredTieContracts.v",
@@ -541,8 +541,8 @@
       ],
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_NA_NG_pt": {
-          "type_hash": "1313149894",
-          "value_hash": "624336244",
+          "type_hash": "3201742844",
+          "value_hash": "952696044",
           "noncomputable": false
         }
       }
@@ -553,7 +553,7 @@
       "lean_names": [
         "FloatSpec.Core.Round_pred.Rnd_NA_pt_unique_prop"
       ],
-      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations.",
+      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations. Fingerprint refreshed 2026-10-07 after the identity aliases Round_pred/Generic_fmt.Rnd_*_pt were removed (plan M2): the statement now names Defs.Rnd_*_pt directly; the paired clients compile unchanged and the mutation tests were rerun.",
       "evidence": [
         "scripts/fixtures/RoundPredTieContracts.lean",
         "scripts/fixtures/RoundPredTieContracts.v",
@@ -563,7 +563,7 @@
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_NA_pt_unique_prop": {
           "type_hash": "3523269823",
-          "value_hash": "2846199218",
+          "value_hash": "879355725",
           "noncomputable": false
         }
       }
@@ -574,7 +574,7 @@
       "lean_names": [
         "FloatSpec.Core.Round_pred.Rnd_NA_pt_unique"
       ],
-      "scope": "Retains F 0; paired certified counterexamples on {-1,1} refute uniqueness without zero, even for the named ties-away rule.",
+      "scope": "Retains F 0; paired certified counterexamples on {-1,1} refute uniqueness without zero, even for the named ties-away rule. Fingerprint refreshed 2026-10-07 after the identity aliases Round_pred/Generic_fmt.Rnd_*_pt were removed (plan M2): the statement now names Defs.Rnd_*_pt directly; the paired clients compile unchanged and the mutation tests were rerun.",
       "evidence": [
         "scripts/fixtures/RoundPredTieContracts.lean",
         "scripts/fixtures/RoundPredTieContracts.v",
@@ -583,8 +583,8 @@
       ],
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_NA_pt_unique": {
-          "type_hash": "409947136",
-          "value_hash": "3590395438",
+          "type_hash": "565070075",
+          "value_hash": "4009721035",
           "noncomputable": false
         }
       }
@@ -595,7 +595,7 @@
       "lean_names": [
         "FloatSpec.Core.Round_pred.Rnd_NA_pt_N"
       ],
-      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations.",
+      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations. Fingerprint refreshed 2026-10-07 after the identity aliases Round_pred/Generic_fmt.Rnd_*_pt were removed (plan M2): the statement now names Defs.Rnd_*_pt directly; the paired clients compile unchanged and the mutation tests were rerun.",
       "evidence": [
         "scripts/fixtures/RoundPredTieContracts.lean",
         "scripts/fixtures/RoundPredTieContracts.v",
@@ -604,8 +604,8 @@
       ],
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_NA_pt_N": {
-          "type_hash": "2883257050",
-          "value_hash": "170972826",
+          "type_hash": "3219661344",
+          "value_hash": "2769083083",
           "noncomputable": false
         }
       }
@@ -637,7 +637,7 @@
       "lean_names": [
         "FloatSpec.Core.Round_pred.Rnd_NA_pt_monotone"
       ],
-      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations.",
+      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations. Fingerprint refreshed 2026-10-07 after the identity aliases Round_pred/Generic_fmt.Rnd_*_pt were removed (plan M2): the statement now names Defs.Rnd_*_pt directly; the paired clients compile unchanged and the mutation tests were rerun.",
       "evidence": [
         "scripts/fixtures/RoundPredTieContracts.lean",
         "scripts/fixtures/RoundPredTieContracts.v",
@@ -646,8 +646,8 @@
       ],
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_NA_pt_monotone": {
-          "type_hash": "3916451976",
-          "value_hash": "672063238",
+          "type_hash": "4023703405",
+          "value_hash": "3741776330",
           "noncomputable": false
         }
       }
@@ -658,7 +658,7 @@
       "lean_names": [
         "FloatSpec.Core.Round_pred.Rnd_NA_pt_refl"
       ],
-      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations.",
+      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations. Fingerprint refreshed 2026-10-07 after the identity aliases Round_pred/Generic_fmt.Rnd_*_pt were removed (plan M2): the statement now names Defs.Rnd_*_pt directly; the paired clients compile unchanged and the mutation tests were rerun.",
       "evidence": [
         "scripts/fixtures/RoundPredTieContracts.lean",
         "scripts/fixtures/RoundPredTieContracts.v",
@@ -667,7 +667,7 @@
       ],
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_NA_pt_refl": {
-          "type_hash": "505246364",
+          "type_hash": "2975988509",
           "value_hash": "261069760",
           "noncomputable": false
         }
@@ -679,7 +679,7 @@
       "lean_names": [
         "FloatSpec.Core.Round_pred.Rnd_NA_pt_idempotent"
       ],
-      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations.",
+      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations. Fingerprint refreshed 2026-10-07 after the identity aliases Round_pred/Generic_fmt.Rnd_*_pt were removed (plan M2): the statement now names Defs.Rnd_*_pt directly; the paired clients compile unchanged and the mutation tests were rerun.",
       "evidence": [
         "scripts/fixtures/RoundPredTieContracts.lean",
         "scripts/fixtures/RoundPredTieContracts.v",
@@ -688,8 +688,8 @@
       ],
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_NA_pt_idempotent": {
-          "type_hash": "3391396349",
-          "value_hash": "2953213024",
+          "type_hash": "4242237842",
+          "value_hash": "4048858225",
           "noncomputable": false
         }
       }
@@ -700,7 +700,7 @@
       "lean_names": [
         "FloatSpec.Core.Round_pred.Rnd_N0_NG_pt"
       ],
-      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations.",
+      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations. Fingerprint refreshed 2026-10-07 after the identity aliases Round_pred/Generic_fmt.Rnd_*_pt were removed (plan M2): the statement now names Defs.Rnd_*_pt directly; the paired clients compile unchanged and the mutation tests were rerun.",
       "evidence": [
         "scripts/fixtures/RoundPredTieContracts.lean",
         "scripts/fixtures/RoundPredTieContracts.v",
@@ -709,8 +709,8 @@
       ],
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_N0_NG_pt": {
-          "type_hash": "3402619903",
-          "value_hash": "1787875516",
+          "type_hash": "2716315067",
+          "value_hash": "4160064575",
           "noncomputable": false
         }
       }
@@ -721,7 +721,7 @@
       "lean_names": [
         "FloatSpec.Core.Round_pred.Rnd_N0_pt_unique_prop"
       ],
-      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations.",
+      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations. Fingerprint refreshed 2026-10-07 after the identity aliases Round_pred/Generic_fmt.Rnd_*_pt were removed (plan M2): the statement now names Defs.Rnd_*_pt directly; the paired clients compile unchanged and the mutation tests were rerun.",
       "evidence": [
         "scripts/fixtures/RoundPredTieContracts.lean",
         "scripts/fixtures/RoundPredTieContracts.v",
@@ -731,7 +731,7 @@
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_N0_pt_unique_prop": {
           "type_hash": "1572400916",
-          "value_hash": "157435227",
+          "value_hash": "3522263918",
           "noncomputable": false
         }
       }
@@ -742,7 +742,7 @@
       "lean_names": [
         "FloatSpec.Core.Round_pred.Rnd_N0_pt_unique"
       ],
-      "scope": "Retains F 0; paired certified counterexamples on {-1,1} refute uniqueness without zero, even for the named ties-toward-zero rule.",
+      "scope": "Retains F 0; paired certified counterexamples on {-1,1} refute uniqueness without zero, even for the named ties-toward-zero rule. Fingerprint refreshed 2026-10-07 after the identity aliases Round_pred/Generic_fmt.Rnd_*_pt were removed (plan M2): the statement now names Defs.Rnd_*_pt directly; the paired clients compile unchanged and the mutation tests were rerun.",
       "evidence": [
         "scripts/fixtures/RoundPredTieContracts.lean",
         "scripts/fixtures/RoundPredTieContracts.v",
@@ -751,8 +751,8 @@
       ],
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_N0_pt_unique": {
-          "type_hash": "569280810",
-          "value_hash": "1034246876",
+          "type_hash": "1752070629",
+          "value_hash": "1304958245",
           "noncomputable": false
         }
       }
@@ -763,7 +763,7 @@
       "lean_names": [
         "FloatSpec.Core.Round_pred.Rnd_N0_pt_N"
       ],
-      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations.",
+      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations. Fingerprint refreshed 2026-10-07 after the identity aliases Round_pred/Generic_fmt.Rnd_*_pt were removed (plan M2): the statement now names Defs.Rnd_*_pt directly; the paired clients compile unchanged and the mutation tests were rerun.",
       "evidence": [
         "scripts/fixtures/RoundPredTieContracts.lean",
         "scripts/fixtures/RoundPredTieContracts.v",
@@ -772,8 +772,8 @@
       ],
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_N0_pt_N": {
-          "type_hash": "342954005",
-          "value_hash": "2605858329",
+          "type_hash": "1753616533",
+          "value_hash": "1768117020",
           "noncomputable": false
         }
       }
@@ -805,7 +805,7 @@
       "lean_names": [
         "FloatSpec.Core.Round_pred.Rnd_N0_pt_monotone"
       ],
-      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations.",
+      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations. Fingerprint refreshed 2026-10-07 after the identity aliases Round_pred/Generic_fmt.Rnd_*_pt were removed (plan M2): the statement now names Defs.Rnd_*_pt directly; the paired clients compile unchanged and the mutation tests were rerun.",
       "evidence": [
         "scripts/fixtures/RoundPredTieContracts.lean",
         "scripts/fixtures/RoundPredTieContracts.v",
@@ -814,8 +814,8 @@
       ],
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_N0_pt_monotone": {
-          "type_hash": "3112866588",
-          "value_hash": "2633339440",
+          "type_hash": "1240807922",
+          "value_hash": "538390846",
           "noncomputable": false
         }
       }
@@ -826,7 +826,7 @@
       "lean_names": [
         "FloatSpec.Core.Round_pred.Rnd_N0_pt_refl"
       ],
-      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations.",
+      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations. Fingerprint refreshed 2026-10-07 after the identity aliases Round_pred/Generic_fmt.Rnd_*_pt were removed (plan M2): the statement now names Defs.Rnd_*_pt directly; the paired clients compile unchanged and the mutation tests were rerun.",
       "evidence": [
         "scripts/fixtures/RoundPredTieContracts.lean",
         "scripts/fixtures/RoundPredTieContracts.v",
@@ -835,7 +835,7 @@
       ],
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_N0_pt_refl": {
-          "type_hash": "1881115560",
+          "type_hash": "2605686275",
           "value_hash": "1961450948",
           "noncomputable": false
         }
@@ -847,7 +847,7 @@
       "lean_names": [
         "FloatSpec.Core.Round_pred.Rnd_N0_pt_idempotent"
       ],
-      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations.",
+      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations. Fingerprint refreshed 2026-10-07 after the identity aliases Round_pred/Generic_fmt.Rnd_*_pt were removed (plan M2): the statement now names Defs.Rnd_*_pt directly; the paired clients compile unchanged and the mutation tests were rerun.",
       "evidence": [
         "scripts/fixtures/RoundPredTieContracts.lean",
         "scripts/fixtures/RoundPredTieContracts.v",
@@ -856,8 +856,8 @@
       ],
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_N0_pt_idempotent": {
-          "type_hash": "1615957980",
-          "value_hash": "1048081416",
+          "type_hash": "2425214361",
+          "value_hash": "1955929955",
           "noncomputable": false
         }
       }
@@ -952,7 +952,7 @@
       "lean_names": [
         "FloatSpec.Core.Round_pred.Rnd_DN_pt_equiv_format"
       ],
-      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations.",
+      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations. Fingerprint refreshed 2026-10-07 after the identity aliases Round_pred/Generic_fmt.Rnd_*_pt were removed (plan M2): the statement now names Defs.Rnd_*_pt directly; the paired clients compile unchanged and the mutation tests were rerun.",
       "evidence": [
         "scripts/fixtures/RoundPredTieContracts.lean",
         "scripts/fixtures/RoundPredTieContracts.v",
@@ -961,8 +961,8 @@
       ],
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_DN_pt_equiv_format": {
-          "type_hash": "1983794384",
-          "value_hash": "2672306179",
+          "type_hash": "3757272376",
+          "value_hash": "3768319454",
           "noncomputable": false
         }
       }
@@ -973,7 +973,7 @@
       "lean_names": [
         "FloatSpec.Core.Round_pred.Rnd_UP_pt_equiv_format"
       ],
-      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations.",
+      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations. Fingerprint refreshed 2026-10-07 after the identity aliases Round_pred/Generic_fmt.Rnd_*_pt were removed (plan M2): the statement now names Defs.Rnd_*_pt directly; the paired clients compile unchanged and the mutation tests were rerun.",
       "evidence": [
         "scripts/fixtures/RoundPredTieContracts.lean",
         "scripts/fixtures/RoundPredTieContracts.v",
@@ -982,8 +982,8 @@
       ],
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_UP_pt_equiv_format": {
-          "type_hash": "3621153434",
-          "value_hash": "1697667197",
+          "type_hash": "1230963617",
+          "value_hash": "2847000217",
           "noncomputable": false
         }
       }
@@ -995,7 +995,7 @@
         "FloatSpec.Core.Round_pred.satisfies_any",
         "FloatSpec.Core.Round_pred.satisfies_any.intro"
       ],
-      "scope": "Same Prop-valued single-constructor package: zero membership, negation closure and total downward rounding. Rocq sort and large-elimination type checked live; paired constructor/dependent-eliminator clients check fields and elimination.",
+      "scope": "Same Prop-valued single-constructor package: zero membership, negation closure and total downward rounding. Rocq sort and large-elimination type checked live; paired constructor/dependent-eliminator clients check fields and elimination. Fingerprint refreshed 2026-10-07 after the identity aliases Round_pred/Generic_fmt.Rnd_*_pt were removed (plan M2): the statement now names Defs.Rnd_*_pt directly; the paired clients compile unchanged and the mutation tests were rerun.",
       "evidence": [
         "scripts/fixtures/RoundPredTieContracts.lean",
         "scripts/fixtures/RoundPredTieContracts.v",
@@ -1009,7 +1009,7 @@
           "noncomputable": false
         },
         "FloatSpec.Core.Round_pred.satisfies_any.intro": {
-          "type_hash": "862836091",
+          "type_hash": "3453927777",
           "value_hash": null,
           "noncomputable": false
         }
@@ -1021,7 +1021,7 @@
       "lean_names": [
         "FloatSpec.Core.Round_pred.satisfies_any.rec"
       ],
-      "scope": "Rocq-generated elimination scheme is represented by Lean's generic dependent recursor, not by a synthetic same-named declaration. Paired dependent Type-valued eliminator clients check the single-constructor proof fields; Lean Sort u includes the Prop/Set/Type specializations. Not a literal port of generated proof terms.",
+      "scope": "Rocq-generated elimination scheme is represented by Lean's generic dependent recursor, not by a synthetic same-named declaration. Paired dependent Type-valued eliminator clients check the single-constructor proof fields; Lean Sort u includes the Prop/Set/Type specializations. Not a literal port of generated proof terms. Fingerprint refreshed 2026-10-07 after the identity aliases Round_pred/Generic_fmt.Rnd_*_pt were removed (plan M2): the statement now names Defs.Rnd_*_pt directly; the paired clients compile unchanged and the mutation tests were rerun.",
       "evidence": [
         "scripts/fixtures/RoundPredTieContracts.lean",
         "scripts/fixtures/RoundPredTieContracts.v",
@@ -1030,7 +1030,7 @@
       ],
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.satisfies_any.rec": {
-          "type_hash": "246108877",
+          "type_hash": "4145153603",
           "value_hash": null,
           "noncomputable": false
         }
@@ -1042,7 +1042,7 @@
       "lean_names": [
         "FloatSpec.Core.Round_pred.satisfies_any.rec"
       ],
-      "scope": "Rocq-generated elimination scheme is represented by Lean's generic dependent recursor, not by a synthetic same-named declaration. Paired dependent Type-valued eliminator clients check the single-constructor proof fields; Lean Sort u includes the Prop/Set/Type specializations. Not a literal port of generated proof terms.",
+      "scope": "Rocq-generated elimination scheme is represented by Lean's generic dependent recursor, not by a synthetic same-named declaration. Paired dependent Type-valued eliminator clients check the single-constructor proof fields; Lean Sort u includes the Prop/Set/Type specializations. Not a literal port of generated proof terms. Fingerprint refreshed 2026-10-07 after the identity aliases Round_pred/Generic_fmt.Rnd_*_pt were removed (plan M2): the statement now names Defs.Rnd_*_pt directly; the paired clients compile unchanged and the mutation tests were rerun.",
       "evidence": [
         "scripts/fixtures/RoundPredTieContracts.lean",
         "scripts/fixtures/RoundPredTieContracts.v",
@@ -1051,7 +1051,7 @@
       ],
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.satisfies_any.rec": {
-          "type_hash": "246108877",
+          "type_hash": "4145153603",
           "value_hash": null,
           "noncomputable": false
         }
@@ -1063,7 +1063,7 @@
       "lean_names": [
         "FloatSpec.Core.Round_pred.satisfies_any.rec"
       ],
-      "scope": "Rocq-generated elimination scheme is represented by Lean's generic dependent recursor, not by a synthetic same-named declaration. Paired dependent Type-valued eliminator clients check the single-constructor proof fields; Lean Sort u includes the Prop/Set/Type specializations. Not a literal port of generated proof terms.",
+      "scope": "Rocq-generated elimination scheme is represented by Lean's generic dependent recursor, not by a synthetic same-named declaration. Paired dependent Type-valued eliminator clients check the single-constructor proof fields; Lean Sort u includes the Prop/Set/Type specializations. Not a literal port of generated proof terms. Fingerprint refreshed 2026-10-07 after the identity aliases Round_pred/Generic_fmt.Rnd_*_pt were removed (plan M2): the statement now names Defs.Rnd_*_pt directly; the paired clients compile unchanged and the mutation tests were rerun.",
       "evidence": [
         "scripts/fixtures/RoundPredTieContracts.lean",
         "scripts/fixtures/RoundPredTieContracts.v",
@@ -1072,7 +1072,7 @@
       ],
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.satisfies_any.rec": {
-          "type_hash": "246108877",
+          "type_hash": "4145153603",
           "value_hash": null,
           "noncomputable": false
         }
@@ -1084,7 +1084,7 @@
       "lean_names": [
         "FloatSpec.Core.Round_pred.satisfies_any.rec"
       ],
-      "scope": "Rocq-generated elimination scheme is represented by Lean's generic dependent recursor, not by a synthetic same-named declaration. Paired dependent Type-valued eliminator clients check the single-constructor proof fields; Lean Sort u includes the Prop/Set/Type specializations. Not a literal port of generated proof terms.",
+      "scope": "Rocq-generated elimination scheme is represented by Lean's generic dependent recursor, not by a synthetic same-named declaration. Paired dependent Type-valued eliminator clients check the single-constructor proof fields; Lean Sort u includes the Prop/Set/Type specializations. Not a literal port of generated proof terms. Fingerprint refreshed 2026-10-07 after the identity aliases Round_pred/Generic_fmt.Rnd_*_pt were removed (plan M2): the statement now names Defs.Rnd_*_pt directly; the paired clients compile unchanged and the mutation tests were rerun.",
       "evidence": [
         "scripts/fixtures/RoundPredTieContracts.lean",
         "scripts/fixtures/RoundPredTieContracts.v",
@@ -1093,7 +1093,7 @@
       ],
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.satisfies_any.rec": {
-          "type_hash": "246108877",
+          "type_hash": "4145153603",
           "value_hash": null,
           "noncomputable": false
         }
@@ -1105,7 +1105,7 @@
       "lean_names": [
         "FloatSpec.Core.Round_pred.satisfies_any.intro"
       ],
-      "scope": "Source constructor maps to Lean satisfies_any.intro with the same three proof fields; Lean infers F implicitly. Paired exact constructor clients and dependent elimination check this representation adaptation.",
+      "scope": "Source constructor maps to Lean satisfies_any.intro with the same three proof fields; Lean infers F implicitly. Paired exact constructor clients and dependent elimination check this representation adaptation. Fingerprint refreshed 2026-10-07 after the identity aliases Round_pred/Generic_fmt.Rnd_*_pt were removed (plan M2): the statement now names Defs.Rnd_*_pt directly; the paired clients compile unchanged and the mutation tests were rerun.",
       "evidence": [
         "scripts/fixtures/RoundPredTieContracts.lean",
         "scripts/fixtures/RoundPredTieContracts.v",
@@ -1114,7 +1114,7 @@
       ],
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.satisfies_any.intro": {
-          "type_hash": "862836091",
+          "type_hash": "3453927777",
           "value_hash": null,
           "noncomputable": false
         }
@@ -1126,7 +1126,7 @@
       "lean_names": [
         "FloatSpec.Core.Round_pred.satisfies_any_eq"
       ],
-      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations.",
+      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations. Fingerprint refreshed 2026-10-07 after the identity aliases Round_pred/Generic_fmt.Rnd_*_pt were removed (plan M2): the statement now names Defs.Rnd_*_pt directly; the paired clients compile unchanged and the mutation tests were rerun.",
       "evidence": [
         "scripts/fixtures/RoundPredTieContracts.lean",
         "scripts/fixtures/RoundPredTieContracts.v",
@@ -1136,7 +1136,7 @@
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.satisfies_any_eq": {
           "type_hash": "1878244938",
-          "value_hash": "1766684885",
+          "value_hash": "2915887204",
           "noncomputable": false
         }
       }
@@ -1147,7 +1147,7 @@
       "lean_names": [
         "FloatSpec.Core.Round_pred.satisfies_any_imp_DN"
       ],
-      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations.",
+      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations. Fingerprint refreshed 2026-10-07 after the identity aliases Round_pred/Generic_fmt.Rnd_*_pt were removed (plan M2): the statement now names Defs.Rnd_*_pt directly; the paired clients compile unchanged and the mutation tests were rerun.",
       "evidence": [
         "scripts/fixtures/RoundPredTieContracts.lean",
         "scripts/fixtures/RoundPredTieContracts.v",
@@ -1156,8 +1156,8 @@
       ],
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.satisfies_any_imp_DN": {
-          "type_hash": "1059345650",
-          "value_hash": "3185364418",
+          "type_hash": "1009714715",
+          "value_hash": "2902450126",
           "noncomputable": false
         }
       }
@@ -1168,7 +1168,7 @@
       "lean_names": [
         "FloatSpec.Core.Round_pred.satisfies_any_imp_UP"
       ],
-      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations.",
+      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations. Fingerprint refreshed 2026-10-07 after the identity aliases Round_pred/Generic_fmt.Rnd_*_pt were removed (plan M2): the statement now names Defs.Rnd_*_pt directly; the paired clients compile unchanged and the mutation tests were rerun.",
       "evidence": [
         "scripts/fixtures/RoundPredTieContracts.lean",
         "scripts/fixtures/RoundPredTieContracts.v",
@@ -1177,8 +1177,8 @@
       ],
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.satisfies_any_imp_UP": {
-          "type_hash": "976735910",
-          "value_hash": "4208461555",
+          "type_hash": "227494238",
+          "value_hash": "4207994378",
           "noncomputable": false
         }
       }
@@ -1189,7 +1189,7 @@
       "lean_names": [
         "FloatSpec.Core.Round_pred.satisfies_any_imp_ZR"
       ],
-      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations.",
+      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations. Fingerprint refreshed 2026-10-07 after the identity aliases Round_pred/Generic_fmt.Rnd_*_pt were removed (plan M2): the statement now names Defs.Rnd_*_pt directly; the paired clients compile unchanged and the mutation tests were rerun.",
       "evidence": [
         "scripts/fixtures/RoundPredTieContracts.lean",
         "scripts/fixtures/RoundPredTieContracts.v",
@@ -1198,8 +1198,8 @@
       ],
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.satisfies_any_imp_ZR": {
-          "type_hash": "195195140",
-          "value_hash": "198691717",
+          "type_hash": "3582812231",
+          "value_hash": "3093246342",
           "noncomputable": false
         }
       }
@@ -1210,7 +1210,7 @@
       "lean_names": [
         "FloatSpec.Core.Round_pred.NG_existence_prop"
       ],
-      "scope": "Same nonrepresentability and downward/upward endpoint premises, concluding P x u or P x d in the source order. Paired definitional-shape clients.",
+      "scope": "Same nonrepresentability and downward/upward endpoint premises, concluding P x u or P x d in the source order. Paired definitional-shape clients. Fingerprint refreshed 2026-10-07 after the identity aliases Round_pred/Generic_fmt.Rnd_*_pt were removed (plan M2): the statement now names Defs.Rnd_*_pt directly; the paired clients compile unchanged and the mutation tests were rerun.",
       "evidence": [
         "scripts/fixtures/RoundPredTieContracts.lean",
         "scripts/fixtures/RoundPredTieContracts.v",
@@ -1220,7 +1220,7 @@
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.NG_existence_prop": {
           "type_hash": "2847269120",
-          "value_hash": "1081006057",
+          "value_hash": "3958088523",
           "noncomputable": false
         }
       }
@@ -1231,7 +1231,7 @@
       "lean_names": [
         "FloatSpec.Core.Round_pred.satisfies_any_imp_NG"
       ],
-      "scope": "Same format and endpoint-policy existence hypotheses; conclusion is totality only, not monotonicity. Paired exact clients and a mutation reject strengthening it silently to round_pred.",
+      "scope": "Same format and endpoint-policy existence hypotheses; conclusion is totality only, not monotonicity. Paired exact clients and a mutation reject strengthening it silently to round_pred. Fingerprint refreshed 2026-10-07 after the identity aliases Round_pred/Generic_fmt.Rnd_*_pt were removed (plan M2): the statement now names Defs.Rnd_*_pt directly; the paired clients compile unchanged and the mutation tests were rerun.",
       "evidence": [
         "scripts/fixtures/RoundPredTieContracts.lean",
         "scripts/fixtures/RoundPredTieContracts.v",
@@ -1240,8 +1240,8 @@
       ],
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.satisfies_any_imp_NG": {
-          "type_hash": "2685258716",
-          "value_hash": "3621801237",
+          "type_hash": "1599449928",
+          "value_hash": "1439820695",
           "noncomputable": false
         }
       }
@@ -1252,7 +1252,7 @@
       "lean_names": [
         "FloatSpec.Core.Round_pred.satisfies_any_imp_NA"
       ],
-      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations.",
+      "scope": "Full hypotheses and conclusion manually compared with pinned Rocq and checked by paired exact-typed clients. Ordinary proposition with a closed Lean proof; source premises and tie policy retained. This does not audit transitive imported declarations. Fingerprint refreshed 2026-10-07 after the identity aliases Round_pred/Generic_fmt.Rnd_*_pt were removed (plan M2): the statement now names Defs.Rnd_*_pt directly; the paired clients compile unchanged and the mutation tests were rerun.",
       "evidence": [
         "scripts/fixtures/RoundPredTieContracts.lean",
         "scripts/fixtures/RoundPredTieContracts.v",
@@ -1261,8 +1261,8 @@
       ],
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.satisfies_any_imp_NA": {
-          "type_hash": "4082841849",
-          "value_hash": "735505290",
+          "type_hash": "3008084342",
+          "value_hash": "3361228869",
           "noncomputable": false
         }
       }
@@ -1273,7 +1273,7 @@
       "lean_names": [
         "FloatSpec.Core.Round_pred.satisfies_any_imp_N0"
       ],
-      "scope": "Retains both the source's explicit F 0 and satisfies_any premises, even though the latter already carries zero membership.",
+      "scope": "Retains both the source's explicit F 0 and satisfies_any premises, even though the latter already carries zero membership. Fingerprint refreshed 2026-10-07 after the identity aliases Round_pred/Generic_fmt.Rnd_*_pt were removed (plan M2): the statement now names Defs.Rnd_*_pt directly; the paired clients compile unchanged and the mutation tests were rerun.",
       "evidence": [
         "scripts/fixtures/RoundPredTieContracts.lean",
         "scripts/fixtures/RoundPredTieContracts.v",
@@ -1282,8 +1282,8 @@
       ],
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.satisfies_any_imp_N0": {
-          "type_hash": "1440828472",
-          "value_hash": "3329919226",
+          "type_hash": "2707649498",
+          "value_hash": "1499838851",
           "noncomputable": false
         }
       }
@@ -1315,7 +1315,7 @@
       "lean_names": [
         "FloatSpec.Core.Round_pred.Rnd_DN_pt_monotone"
       ],
-      "scope": "Same arbitrary real-valued format/relation, hypotheses and conclusion as pinned Flocq. Ordinary proposition with closed Lean proof; paired exact-typed clients check the source interface. Some explicit binders are reordered.",
+      "scope": "Same arbitrary real-valued format/relation, hypotheses and conclusion as pinned Flocq. Ordinary proposition with closed Lean proof; paired exact-typed clients check the source interface. Some explicit binders are reordered. Fingerprint refreshed 2026-10-07 after the identity aliases Round_pred/Generic_fmt.Rnd_*_pt were removed (plan M2): the statement now names Defs.Rnd_*_pt directly; the paired clients compile unchanged and the mutation tests were rerun.",
       "evidence": [
         "scripts/fixtures/RoundPredSourceContracts.lean",
         "scripts/fixtures/RoundPredSourceContracts.v",
@@ -1324,8 +1324,8 @@
       ],
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_DN_pt_monotone": {
-          "type_hash": "184515996",
-          "value_hash": "3007141144",
+          "type_hash": "254264022",
+          "value_hash": "3293854625",
           "noncomputable": false
         }
       }
@@ -1336,7 +1336,7 @@
       "lean_names": [
         "FloatSpec.Core.Round_pred.Rnd_DN_pt_unique"
       ],
-      "scope": "Same arbitrary real-valued format/relation, hypotheses and conclusion as pinned Flocq. Ordinary proposition with closed Lean proof; paired exact-typed clients check the source interface. Some explicit binders are reordered.",
+      "scope": "Same arbitrary real-valued format/relation, hypotheses and conclusion as pinned Flocq. Ordinary proposition with closed Lean proof; paired exact-typed clients check the source interface. Some explicit binders are reordered. Fingerprint refreshed 2026-10-07 after the identity aliases Round_pred/Generic_fmt.Rnd_*_pt were removed (plan M2): the statement now names Defs.Rnd_*_pt directly; the paired clients compile unchanged and the mutation tests were rerun.",
       "evidence": [
         "scripts/fixtures/RoundPredSourceContracts.lean",
         "scripts/fixtures/RoundPredSourceContracts.v",
@@ -1345,8 +1345,8 @@
       ],
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_DN_pt_unique": {
-          "type_hash": "1283720354",
-          "value_hash": "552768581",
+          "type_hash": "905172623",
+          "value_hash": "2846804346",
           "noncomputable": false
         }
       }
@@ -1378,7 +1378,7 @@
       "lean_names": [
         "FloatSpec.Core.Round_pred.Rnd_UP_pt_monotone"
       ],
-      "scope": "Same arbitrary real-valued format/relation, hypotheses and conclusion as pinned Flocq. Ordinary proposition with closed Lean proof; paired exact-typed clients check the source interface. Some explicit binders are reordered.",
+      "scope": "Same arbitrary real-valued format/relation, hypotheses and conclusion as pinned Flocq. Ordinary proposition with closed Lean proof; paired exact-typed clients check the source interface. Some explicit binders are reordered. Fingerprint refreshed 2026-10-07 after the identity aliases Round_pred/Generic_fmt.Rnd_*_pt were removed (plan M2): the statement now names Defs.Rnd_*_pt directly; the paired clients compile unchanged and the mutation tests were rerun.",
       "evidence": [
         "scripts/fixtures/RoundPredSourceContracts.lean",
         "scripts/fixtures/RoundPredSourceContracts.v",
@@ -1387,8 +1387,8 @@
       ],
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_UP_pt_monotone": {
-          "type_hash": "3657947601",
-          "value_hash": "2002972730",
+          "type_hash": "4071434433",
+          "value_hash": "4210239669",
           "noncomputable": false
         }
       }
@@ -1399,7 +1399,7 @@
       "lean_names": [
         "FloatSpec.Core.Round_pred.Rnd_UP_pt_unique"
       ],
-      "scope": "Same arbitrary real-valued format/relation, hypotheses and conclusion as pinned Flocq. Ordinary proposition with closed Lean proof; paired exact-typed clients check the source interface. Some explicit binders are reordered.",
+      "scope": "Same arbitrary real-valued format/relation, hypotheses and conclusion as pinned Flocq. Ordinary proposition with closed Lean proof; paired exact-typed clients check the source interface. Some explicit binders are reordered. Fingerprint refreshed 2026-10-07 after the identity aliases Round_pred/Generic_fmt.Rnd_*_pt were removed (plan M2): the statement now names Defs.Rnd_*_pt directly; the paired clients compile unchanged and the mutation tests were rerun.",
       "evidence": [
         "scripts/fixtures/RoundPredSourceContracts.lean",
         "scripts/fixtures/RoundPredSourceContracts.v",
@@ -1408,8 +1408,8 @@
       ],
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_UP_pt_unique": {
-          "type_hash": "3802243021",
-          "value_hash": "2312113709",
+          "type_hash": "2157303749",
+          "value_hash": "3834312999",
           "noncomputable": false
         }
       }
@@ -1441,7 +1441,7 @@
       "lean_names": [
         "FloatSpec.Core.Round_pred.Rnd_UP_pt_opp"
       ],
-      "scope": "Same arbitrary real-valued format/relation, hypotheses and conclusion as pinned Flocq. Ordinary proposition with closed Lean proof; paired exact-typed clients check the source interface. Some explicit binders are reordered.",
+      "scope": "Same arbitrary real-valued format/relation, hypotheses and conclusion as pinned Flocq. Ordinary proposition with closed Lean proof; paired exact-typed clients check the source interface. Some explicit binders are reordered. Fingerprint refreshed 2026-10-07 after the identity aliases Round_pred/Generic_fmt.Rnd_*_pt were removed (plan M2): the statement now names Defs.Rnd_*_pt directly; the paired clients compile unchanged and the mutation tests were rerun.",
       "evidence": [
         "scripts/fixtures/RoundPredSourceContracts.lean",
         "scripts/fixtures/RoundPredSourceContracts.v",
@@ -1450,8 +1450,8 @@
       ],
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_UP_pt_opp": {
-          "type_hash": "3777806607",
-          "value_hash": "3115917986",
+          "type_hash": "724635763",
+          "value_hash": "3157186527",
           "noncomputable": false
         }
       }
@@ -1462,7 +1462,7 @@
       "lean_names": [
         "FloatSpec.Core.Round_pred.Rnd_DN_pt_opp"
       ],
-      "scope": "Same arbitrary real-valued format/relation, hypotheses and conclusion as pinned Flocq. Ordinary proposition with closed Lean proof; paired exact-typed clients check the source interface. Some explicit binders are reordered.",
+      "scope": "Same arbitrary real-valued format/relation, hypotheses and conclusion as pinned Flocq. Ordinary proposition with closed Lean proof; paired exact-typed clients check the source interface. Some explicit binders are reordered. Fingerprint refreshed 2026-10-07 after the identity aliases Round_pred/Generic_fmt.Rnd_*_pt were removed (plan M2): the statement now names Defs.Rnd_*_pt directly; the paired clients compile unchanged and the mutation tests were rerun.",
       "evidence": [
         "scripts/fixtures/RoundPredSourceContracts.lean",
         "scripts/fixtures/RoundPredSourceContracts.v",
@@ -1471,8 +1471,8 @@
       ],
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_DN_pt_opp": {
-          "type_hash": "4275149065",
-          "value_hash": "2439522721",
+          "type_hash": "1608197638",
+          "value_hash": "1101002261",
           "noncomputable": false
         }
       }
@@ -1504,7 +1504,7 @@
       "lean_names": [
         "FloatSpec.Core.Round_pred.Rnd_DN_UP_pt_split"
       ],
-      "scope": "Same arbitrary real-valued format/relation, hypotheses and conclusion as pinned Flocq. Ordinary proposition with closed Lean proof; paired exact-typed clients check the source interface. Some explicit binders are reordered.",
+      "scope": "Same arbitrary real-valued format/relation, hypotheses and conclusion as pinned Flocq. Ordinary proposition with closed Lean proof; paired exact-typed clients check the source interface. Some explicit binders are reordered. Fingerprint refreshed 2026-10-07 after the identity aliases Round_pred/Generic_fmt.Rnd_*_pt were removed (plan M2): the statement now names Defs.Rnd_*_pt directly; the paired clients compile unchanged and the mutation tests were rerun.",
       "evidence": [
         "scripts/fixtures/RoundPredSourceContracts.lean",
         "scripts/fixtures/RoundPredSourceContracts.v",
@@ -1513,8 +1513,8 @@
       ],
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_DN_UP_pt_split": {
-          "type_hash": "557540195",
-          "value_hash": "3586630460",
+          "type_hash": "102704739",
+          "value_hash": "3004417322",
           "noncomputable": false
         }
       }
@@ -1525,7 +1525,7 @@
       "lean_names": [
         "FloatSpec.Core.Round_pred.Rnd_DN_pt_refl"
       ],
-      "scope": "Same arbitrary real-valued format/relation, hypotheses and conclusion as pinned Flocq. Ordinary proposition with closed Lean proof; paired exact-typed clients check the source interface. Some explicit binders are reordered.",
+      "scope": "Same arbitrary real-valued format/relation, hypotheses and conclusion as pinned Flocq. Ordinary proposition with closed Lean proof; paired exact-typed clients check the source interface. Some explicit binders are reordered. Fingerprint refreshed 2026-10-07 after the identity aliases Round_pred/Generic_fmt.Rnd_*_pt were removed (plan M2): the statement now names Defs.Rnd_*_pt directly; the paired clients compile unchanged and the mutation tests were rerun.",
       "evidence": [
         "scripts/fixtures/RoundPredSourceContracts.lean",
         "scripts/fixtures/RoundPredSourceContracts.v",
@@ -1534,7 +1534,7 @@
       ],
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_DN_pt_refl": {
-          "type_hash": "4080963676",
+          "type_hash": "347933057",
           "value_hash": "47535516",
           "noncomputable": false
         }
@@ -1546,7 +1546,7 @@
       "lean_names": [
         "FloatSpec.Core.Round_pred.Rnd_DN_pt_idempotent"
       ],
-      "scope": "Same arbitrary real-valued format/relation, hypotheses and conclusion as pinned Flocq. Ordinary proposition with closed Lean proof; paired exact-typed clients check the source interface. Some explicit binders are reordered.",
+      "scope": "Same arbitrary real-valued format/relation, hypotheses and conclusion as pinned Flocq. Ordinary proposition with closed Lean proof; paired exact-typed clients check the source interface. Some explicit binders are reordered. Fingerprint refreshed 2026-10-07 after the identity aliases Round_pred/Generic_fmt.Rnd_*_pt were removed (plan M2): the statement now names Defs.Rnd_*_pt directly; the paired clients compile unchanged and the mutation tests were rerun.",
       "evidence": [
         "scripts/fixtures/RoundPredSourceContracts.lean",
         "scripts/fixtures/RoundPredSourceContracts.v",
@@ -1555,8 +1555,8 @@
       ],
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_DN_pt_idempotent": {
-          "type_hash": "1291625302",
-          "value_hash": "3580204970",
+          "type_hash": "561515967",
+          "value_hash": "3598779915",
           "noncomputable": false
         }
       }
@@ -1567,7 +1567,7 @@
       "lean_names": [
         "FloatSpec.Core.Round_pred.Rnd_UP_pt_refl"
       ],
-      "scope": "Same arbitrary real-valued format/relation, hypotheses and conclusion as pinned Flocq. Ordinary proposition with closed Lean proof; paired exact-typed clients check the source interface. Some explicit binders are reordered.",
+      "scope": "Same arbitrary real-valued format/relation, hypotheses and conclusion as pinned Flocq. Ordinary proposition with closed Lean proof; paired exact-typed clients check the source interface. Some explicit binders are reordered. Fingerprint refreshed 2026-10-07 after the identity aliases Round_pred/Generic_fmt.Rnd_*_pt were removed (plan M2): the statement now names Defs.Rnd_*_pt directly; the paired clients compile unchanged and the mutation tests were rerun.",
       "evidence": [
         "scripts/fixtures/RoundPredSourceContracts.lean",
         "scripts/fixtures/RoundPredSourceContracts.v",
@@ -1576,7 +1576,7 @@
       ],
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_UP_pt_refl": {
-          "type_hash": "597811389",
+          "type_hash": "257654298",
           "value_hash": "3223309378",
           "noncomputable": false
         }
@@ -1588,7 +1588,7 @@
       "lean_names": [
         "FloatSpec.Core.Round_pred.Rnd_UP_pt_idempotent"
       ],
-      "scope": "Same arbitrary real-valued format/relation, hypotheses and conclusion as pinned Flocq. Ordinary proposition with closed Lean proof; paired exact-typed clients check the source interface. Some explicit binders are reordered.",
+      "scope": "Same arbitrary real-valued format/relation, hypotheses and conclusion as pinned Flocq. Ordinary proposition with closed Lean proof; paired exact-typed clients check the source interface. Some explicit binders are reordered. Fingerprint refreshed 2026-10-07 after the identity aliases Round_pred/Generic_fmt.Rnd_*_pt were removed (plan M2): the statement now names Defs.Rnd_*_pt directly; the paired clients compile unchanged and the mutation tests were rerun.",
       "evidence": [
         "scripts/fixtures/RoundPredSourceContracts.lean",
         "scripts/fixtures/RoundPredSourceContracts.v",
@@ -1597,8 +1597,8 @@
       ],
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_UP_pt_idempotent": {
-          "type_hash": "4084716742",
-          "value_hash": "1115825533",
+          "type_hash": "553071220",
+          "value_hash": "2803200660",
           "noncomputable": false
         }
       }
@@ -1609,7 +1609,7 @@
       "lean_names": [
         "FloatSpec.Core.Round_pred.Only_DN_or_UP"
       ],
-      "scope": "Same representability and endpoint-bound conjunction. The source-named Lean theorem now returns the endpoint disjunction directly, not a Boolean/Hoare triple.",
+      "scope": "Same representability and endpoint-bound conjunction. The source-named Lean theorem now returns the endpoint disjunction directly, not a Boolean/Hoare triple. Fingerprint refreshed 2026-10-07 after the identity aliases Round_pred/Generic_fmt.Rnd_*_pt were removed (plan M2): the statement now names Defs.Rnd_*_pt directly; the paired clients compile unchanged and the mutation tests were rerun.",
       "evidence": [
         "scripts/fixtures/RoundPredSourceContracts.lean",
         "scripts/fixtures/RoundPredSourceContracts.v",
@@ -1618,8 +1618,8 @@
       ],
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Only_DN_or_UP": {
-          "type_hash": "1608038434",
-          "value_hash": "1249030497",
+          "type_hash": "3472284939",
+          "value_hash": "126965959",
           "noncomputable": false
         }
       }
@@ -1651,7 +1651,7 @@
       "lean_names": [
         "FloatSpec.Core.Round_pred.Rnd_ZR_pt_monotone"
       ],
-      "scope": "Same required F 0 premise. Paired closed two-point-format counterexamples refute the premise-free variant.",
+      "scope": "Same required F 0 premise. Paired closed two-point-format counterexamples refute the premise-free variant. Fingerprint refreshed 2026-10-07 after the identity aliases Round_pred/Generic_fmt.Rnd_*_pt were removed (plan M2): the statement now names Defs.Rnd_*_pt directly; the paired clients compile unchanged and the mutation tests were rerun.",
       "evidence": [
         "scripts/fixtures/RoundPredSourceContracts.lean",
         "scripts/fixtures/RoundPredSourceContracts.v",
@@ -1660,8 +1660,8 @@
       ],
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_ZR_pt_monotone": {
-          "type_hash": "3784382195",
-          "value_hash": "1612669175",
+          "type_hash": "457972309",
+          "value_hash": "4053591324",
           "noncomputable": false
         }
       }
@@ -1672,7 +1672,7 @@
       "lean_names": [
         "FloatSpec.Core.Round_pred.Rnd_N_pt_DN_or_UP"
       ],
-      "scope": "Same arbitrary real-valued format/relation, hypotheses and conclusion as pinned Flocq. Ordinary proposition with closed Lean proof; paired exact-typed clients check the source interface. Some explicit binders are reordered.",
+      "scope": "Same arbitrary real-valued format/relation, hypotheses and conclusion as pinned Flocq. Ordinary proposition with closed Lean proof; paired exact-typed clients check the source interface. Some explicit binders are reordered. Fingerprint refreshed 2026-10-07 after the identity aliases Round_pred/Generic_fmt.Rnd_*_pt were removed (plan M2): the statement now names Defs.Rnd_*_pt directly; the paired clients compile unchanged and the mutation tests were rerun.",
       "evidence": [
         "scripts/fixtures/RoundPredSourceContracts.lean",
         "scripts/fixtures/RoundPredSourceContracts.v",
@@ -1681,8 +1681,8 @@
       ],
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_N_pt_DN_or_UP": {
-          "type_hash": "4109915066",
-          "value_hash": "1762736536",
+          "type_hash": "1052740132",
+          "value_hash": "311974427",
           "noncomputable": false
         }
       }
@@ -1693,7 +1693,7 @@
       "lean_names": [
         "FloatSpec.Core.Round_pred.Rnd_N_pt_DN_or_UP_eq"
       ],
-      "scope": "Same arbitrary real-valued format/relation, hypotheses and conclusion as pinned Flocq. Ordinary proposition with closed Lean proof; paired exact-typed clients check the source interface. Some explicit binders are reordered.",
+      "scope": "Same arbitrary real-valued format/relation, hypotheses and conclusion as pinned Flocq. Ordinary proposition with closed Lean proof; paired exact-typed clients check the source interface. Some explicit binders are reordered. Fingerprint refreshed 2026-10-07 after the identity aliases Round_pred/Generic_fmt.Rnd_*_pt were removed (plan M2): the statement now names Defs.Rnd_*_pt directly; the paired clients compile unchanged and the mutation tests were rerun.",
       "evidence": [
         "scripts/fixtures/RoundPredSourceContracts.lean",
         "scripts/fixtures/RoundPredSourceContracts.v",
@@ -1702,8 +1702,8 @@
       ],
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_N_pt_DN_or_UP_eq": {
-          "type_hash": "3072858429",
-          "value_hash": "2550986450",
+          "type_hash": "711079951",
+          "value_hash": "1196457360",
           "noncomputable": false
         }
       }
@@ -1714,7 +1714,7 @@
       "lean_names": [
         "FloatSpec.Core.Round_pred.Rnd_N_pt_opp_inv"
       ],
-      "scope": "Same arbitrary real-valued format/relation, hypotheses and conclusion as pinned Flocq. Ordinary proposition with closed Lean proof; paired exact-typed clients check the source interface. Some explicit binders are reordered.",
+      "scope": "Same arbitrary real-valued format/relation, hypotheses and conclusion as pinned Flocq. Ordinary proposition with closed Lean proof; paired exact-typed clients check the source interface. Some explicit binders are reordered. Fingerprint refreshed 2026-10-07 after the identity aliases Round_pred/Generic_fmt.Rnd_*_pt were removed (plan M2): the statement now names Defs.Rnd_*_pt directly; the paired clients compile unchanged and the mutation tests were rerun.",
       "evidence": [
         "scripts/fixtures/RoundPredSourceContracts.lean",
         "scripts/fixtures/RoundPredSourceContracts.v",
@@ -1723,8 +1723,8 @@
       ],
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_N_pt_opp_inv": {
-          "type_hash": "3400056284",
-          "value_hash": "4018185035",
+          "type_hash": "3383054756",
+          "value_hash": "198017624",
           "noncomputable": false
         }
       }
@@ -1735,7 +1735,7 @@
       "lean_names": [
         "FloatSpec.Core.Round_pred.Rnd_N_pt_monotone"
       ],
-      "scope": "Same strict x < y premise; not monotonicity for x <= y. Paired midpoint counterexamples refute the nonstrict variant.",
+      "scope": "Same strict x < y premise; not monotonicity for x <= y. Paired midpoint counterexamples refute the nonstrict variant. Fingerprint refreshed 2026-10-07 after the identity aliases Round_pred/Generic_fmt.Rnd_*_pt were removed (plan M2): the statement now names Defs.Rnd_*_pt directly; the paired clients compile unchanged and the mutation tests were rerun.",
       "evidence": [
         "scripts/fixtures/RoundPredSourceContracts.lean",
         "scripts/fixtures/RoundPredSourceContracts.v",
@@ -1744,8 +1744,8 @@
       ],
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_N_pt_monotone": {
-          "type_hash": "3383686272",
-          "value_hash": "4058031716",
+          "type_hash": "3959790301",
+          "value_hash": "409716813",
           "noncomputable": false
         }
       }
@@ -1756,7 +1756,7 @@
       "lean_names": [
         "FloatSpec.Core.Round_pred.Rnd_N_pt_unique"
       ],
-      "scope": "Same downward/upward endpoints and unequal-distance premise, with two nearest witnesses. Paired midpoint counterexample refutes unconditional uniqueness.",
+      "scope": "Same downward/upward endpoints and unequal-distance premise, with two nearest witnesses. Paired midpoint counterexample refutes unconditional uniqueness. Fingerprint refreshed 2026-10-07 after the identity aliases Round_pred/Generic_fmt.Rnd_*_pt were removed (plan M2): the statement now names Defs.Rnd_*_pt directly; the paired clients compile unchanged and the mutation tests were rerun.",
       "evidence": [
         "scripts/fixtures/RoundPredSourceContracts.lean",
         "scripts/fixtures/RoundPredSourceContracts.v",
@@ -1765,8 +1765,8 @@
       ],
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_N_pt_unique": {
-          "type_hash": "4172921520",
-          "value_hash": "3415781426",
+          "type_hash": "1974743922",
+          "value_hash": "2883244110",
           "noncomputable": false
         }
       }
@@ -1777,7 +1777,7 @@
       "lean_names": [
         "FloatSpec.Core.Round_pred.Rnd_N_pt_refl"
       ],
-      "scope": "Same arbitrary real-valued format/relation, hypotheses and conclusion as pinned Flocq. Ordinary proposition with closed Lean proof; paired exact-typed clients check the source interface. Some explicit binders are reordered.",
+      "scope": "Same arbitrary real-valued format/relation, hypotheses and conclusion as pinned Flocq. Ordinary proposition with closed Lean proof; paired exact-typed clients check the source interface. Some explicit binders are reordered. Fingerprint refreshed 2026-10-07 after the identity aliases Round_pred/Generic_fmt.Rnd_*_pt were removed (plan M2): the statement now names Defs.Rnd_*_pt directly; the paired clients compile unchanged and the mutation tests were rerun.",
       "evidence": [
         "scripts/fixtures/RoundPredSourceContracts.lean",
         "scripts/fixtures/RoundPredSourceContracts.v",
@@ -1786,7 +1786,7 @@
       ],
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_N_pt_refl": {
-          "type_hash": "971246217",
+          "type_hash": "2941765655",
           "value_hash": "4275593999",
           "noncomputable": false
         }
@@ -1798,7 +1798,7 @@
       "lean_names": [
         "FloatSpec.Core.Round_pred.Rnd_N_pt_idempotent"
       ],
-      "scope": "Same arbitrary real-valued format/relation, hypotheses and conclusion as pinned Flocq. Ordinary proposition with closed Lean proof; paired exact-typed clients check the source interface. Some explicit binders are reordered.",
+      "scope": "Same arbitrary real-valued format/relation, hypotheses and conclusion as pinned Flocq. Ordinary proposition with closed Lean proof; paired exact-typed clients check the source interface. Some explicit binders are reordered. Fingerprint refreshed 2026-10-07 after the identity aliases Round_pred/Generic_fmt.Rnd_*_pt were removed (plan M2): the statement now names Defs.Rnd_*_pt directly; the paired clients compile unchanged and the mutation tests were rerun.",
       "evidence": [
         "scripts/fixtures/RoundPredSourceContracts.lean",
         "scripts/fixtures/RoundPredSourceContracts.v",
@@ -1807,8 +1807,8 @@
       ],
       "lean_fingerprints": {
         "FloatSpec.Core.Round_pred.Rnd_N_pt_idempotent": {
-          "type_hash": "130797381",
-          "value_hash": "3218399377",
+          "type_hash": "944149222",
+          "value_hash": "3804358806",
           "noncomputable": false
         }
       }

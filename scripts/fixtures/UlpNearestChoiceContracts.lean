@@ -4,6 +4,7 @@ import FloatSpec.src.Calc.Round
 namespace FloatSpec.Test.UlpNearestChoiceContracts
 
 open FloatSpec.Core.Generic_fmt
+open FloatSpec.Core.Defs (Rnd_DN_pt Rnd_UP_pt Rnd_N_pt Rnd_NG_pt)
 open FloatSpec.Core.Ulp Std.Do
 
 variable (beta : Int) [ValidRadix beta] (fexp : Int → Int) [Valid_exp fexp]

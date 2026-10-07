@@ -2242,8 +2242,8 @@ theorem round_N_eq_DN (choice : Int → Bool) (x : ℝ)
 /-- Below the midpoint, the supplied nearest policy selects the downward neighbor. -/
 @[flocq_source "src/Core/Ulp.v" 2583 "round_N_eq_DN_pt"]
 theorem round_N_eq_DN_pt (choice : Int → Bool) (x d u : ℝ)
-    (Hd : FloatSpec.Core.Round_pred.Rnd_DN_pt (generic_format beta fexp) x d)
-    (Hu : FloatSpec.Core.Round_pred.Rnd_UP_pt (generic_format beta fexp) x u)
+    (Hd : FloatSpec.Core.Defs.Rnd_DN_pt (generic_format beta fexp) x d)
+    (Hu : FloatSpec.Core.Defs.Rnd_UP_pt (generic_format beta fexp) x u)
     (h : x < (d + u) / 2) :
     roundR beta fexp (Znearest choice) x = d := by
   have down := roundR_DN_pt beta fexp x ValidRadix.valid
@@ -2277,8 +2277,8 @@ Lemma {lit}`round_N_eq_UP_pt`: {lit}`forall choice x d u, Rnd_DN_pt F x d -> Rnd
 -/
 @[flocq_source "src/Core/Ulp.v" 2618 "round_N_eq_UP_pt"]
 theorem round_N_eq_UP_pt (choice : Int → Bool) (x d u : ℝ)
-    (Hd : FloatSpec.Core.Round_pred.Rnd_DN_pt (generic_format beta fexp) x d)
-    (Hu : FloatSpec.Core.Round_pred.Rnd_UP_pt (generic_format beta fexp) x u)
+    (Hd : FloatSpec.Core.Defs.Rnd_DN_pt (generic_format beta fexp) x d)
+    (Hu : FloatSpec.Core.Defs.Rnd_UP_pt (generic_format beta fexp) x u)
     (h : (d + u) / 2 < x) :
     roundR beta fexp (Znearest choice) x = u := by
   have down := roundR_DN_pt beta fexp x ValidRadix.valid
@@ -5642,12 +5642,12 @@ theorem ulp_DN (x : ℝ) (hx : 0 ≤ x) :
   have hβ : 1 < beta := ValidRadix.valid
   let F : ℝ → Prop := fun y =>
     FloatSpec.Core.Generic_fmt.generic_format beta fexp y
-  have hconcrete : FloatSpec.Core.Round_pred.Rnd_DN_pt F x
+  have hconcrete : FloatSpec.Core.Defs.Rnd_DN_pt F x
       (FloatSpec.Core.Generic_fmt.roundR beta fexp
         FloatSpec.Core.Generic_fmt.rnd_floor x) := by
     simpa [F] using FloatSpec.Core.Generic_fmt.roundR_DN_pt
       (beta := beta) (fexp := fexp) x hβ
-  have hchosen : FloatSpec.Core.Round_pred.Rnd_DN_pt F x
+  have hchosen : FloatSpec.Core.Defs.Rnd_DN_pt F x
       (Classical.choose
         (FloatSpec.Core.Generic_fmt.round_DN_exists beta fexp x hβ)) := by
     simpa [F] using
@@ -7023,7 +7023,7 @@ theorem round_N_le_midp
   have hus : u ≤ s := by
     simpa [s] using succ_run_ge_self (beta := beta) (fexp := fexp)
       ValidRadix.valid u
-  have hrv : FloatSpec.Core.Round_pred.Rnd_N_pt F v rv := by
+  have hrv : FloatSpec.Core.Defs.Rnd_N_pt F v rv := by
     simpa [F, rv, FloatSpec.Core.Generic_fmt.round_to_generic] using
       FloatSpec.Core.Generic_fmt.round_N_pt (beta := beta) (fexp := fexp)
         choice v ValidRadix.valid
@@ -7035,7 +7035,7 @@ theorem round_N_le_midp
     linarith
   by_cases husEq : u = s
   · have hm : m = u := by simp [m, husEq]
-    have hmu : FloatSpec.Core.Round_pred.Rnd_N_pt F m u := by
+    have hmu : FloatSpec.Core.Defs.Rnd_N_pt F m u := by
       rw [hm]
       refine ⟨by simpa [F] using Fu, ?_⟩
       intro g _
@@ -7050,7 +7050,7 @@ theorem round_N_le_midp
       have hs := generic_format_succ (beta := beta) (fexp := fexp) u Fu
         ValidRadix.valid
       simpa [F, s, pure, Id.run] using hs
-    have hDN : FloatSpec.Core.Round_pred.Rnd_DN_pt F m u := by
+    have hDN : FloatSpec.Core.Defs.Rnd_DN_pt F m u := by
       refine ⟨by simpa [F] using Fu, hum, ?_⟩
       intro g Fg hgm
       by_contra hgu
@@ -7058,13 +7058,13 @@ theorem round_N_le_midp
       have hsg := succ_le_lt_theorem (beta := beta) (fexp := fexp)
         u g Fu (by simpa [F] using Fg) hug ValidRadix.valid
       exact (not_le_of_gt hmsLt) (le_trans hsg hgm)
-    have hUP : FloatSpec.Core.Round_pred.Rnd_UP_pt F m s := by
+    have hUP : FloatSpec.Core.Defs.Rnd_UP_pt F m s := by
       refine ⟨Fs, hms, ?_⟩
       intro g Fg hmg
       have hug : u < g := lt_of_lt_of_le humLt hmg
       exact succ_le_lt_theorem (beta := beta) (fexp := fexp)
         u g Fu (by simpa [F] using Fg) hug ValidRadix.valid
-    have hNu : FloatSpec.Core.Round_pred.Rnd_N_pt F m u := by
+    have hNu : FloatSpec.Core.Defs.Rnd_N_pt F m u := by
       exact FloatSpec.Core.Round_pred.Rnd_N_pt_DN F m u s hDN hUP
         (by dsimp [m]; linarith)
     have hmono := FloatSpec.Core.Round_pred.Rnd_N_pt_monotone
@@ -10011,8 +10011,8 @@ theorem error_le_half_ulp (choice : Int → Bool) (x : ℝ) :
 
 private theorem Rnd_DN_pt_unique_pure_for_roundR
     (F : ℝ → Prop) (x f₁ f₂ : ℝ)
-    (h₁ : FloatSpec.Core.Round_pred.Rnd_DN_pt F x f₁)
-    (h₂ : FloatSpec.Core.Round_pred.Rnd_DN_pt F x f₂) : f₁ = f₂ := by
+    (h₁ : FloatSpec.Core.Defs.Rnd_DN_pt F x f₁)
+    (h₂ : FloatSpec.Core.Defs.Rnd_DN_pt F x f₂) : f₁ = f₂ := by
   rcases h₁ with ⟨F₁, h₁le, h₁max⟩
   rcases h₂ with ⟨F₂, h₂le, h₂max⟩
   exact le_antisymm (h₂max f₁ F₁ h₁le) (h₁max f₂ F₂ h₂le)
@@ -10021,7 +10021,7 @@ private theorem roundR_floor_DN_pt_for_ulp
     (beta : Int) [ValidRadix beta] (fexp : Int → Int)
     [FloatSpec.Core.Generic_fmt.Valid_exp fexp]
     (x : ℝ) (hβ : 1 < beta) :
-    FloatSpec.Core.Round_pred.Rnd_DN_pt
+    FloatSpec.Core.Defs.Rnd_DN_pt
       (fun y => FloatSpec.Core.Generic_fmt.generic_format beta fexp y) x
       (FloatSpec.Core.Generic_fmt.roundR beta fexp FloatSpec.Core.Generic_fmt.rnd_floor x) := by
   classical
@@ -10057,7 +10057,7 @@ private theorem roundR_ceil_UP_pt_for_ulp
     (beta : Int) [ValidRadix beta] (fexp : Int → Int)
     [FloatSpec.Core.Generic_fmt.Valid_exp fexp]
     (x : ℝ) (hβ : 1 < beta) :
-    FloatSpec.Core.Round_pred.Rnd_UP_pt
+    FloatSpec.Core.Defs.Rnd_UP_pt
       (fun y => FloatSpec.Core.Generic_fmt.generic_format beta fexp y) x
       (FloatSpec.Core.Generic_fmt.roundR beta fexp FloatSpec.Core.Generic_fmt.rnd_ceil x) := by
   classical
@@ -10098,10 +10098,10 @@ private theorem roundR_floor_eq_DN_choose_for_ulp
           (beta := beta) (fexp := fexp) (x := x) (hβ := hβ)) := by
   classical
   let F : ℝ → Prop := fun y => FloatSpec.Core.Generic_fmt.generic_format beta fexp y
-  have hround : FloatSpec.Core.Round_pred.Rnd_DN_pt F x
+  have hround : FloatSpec.Core.Defs.Rnd_DN_pt F x
       (FloatSpec.Core.Generic_fmt.roundR beta fexp FloatSpec.Core.Generic_fmt.rnd_floor x) := by
     simpa [F] using roundR_floor_DN_pt_for_ulp (beta := beta) (fexp := fexp) x hβ
-  have hchoose : FloatSpec.Core.Round_pred.Rnd_DN_pt F x
+  have hchoose : FloatSpec.Core.Defs.Rnd_DN_pt F x
       (Classical.choose
         (FloatSpec.Core.Generic_fmt.round_DN_exists
           (beta := beta) (fexp := fexp) (x := x) (hβ := hβ))) := by
@@ -10121,10 +10121,10 @@ private theorem roundR_ceil_eq_UP_choose_for_ulp
           (beta := beta) (fexp := fexp) (x := x) (hβ := hβ)) := by
   classical
   let F : ℝ → Prop := fun y => FloatSpec.Core.Generic_fmt.generic_format beta fexp y
-  have hround : FloatSpec.Core.Round_pred.Rnd_UP_pt F x
+  have hround : FloatSpec.Core.Defs.Rnd_UP_pt F x
       (FloatSpec.Core.Generic_fmt.roundR beta fexp FloatSpec.Core.Generic_fmt.rnd_ceil x) := by
     simpa [F] using roundR_ceil_UP_pt_for_ulp (beta := beta) (fexp := fexp) x hβ
-  have hchoose : FloatSpec.Core.Round_pred.Rnd_UP_pt F x
+  have hchoose : FloatSpec.Core.Defs.Rnd_UP_pt F x
       (Classical.choose
         (FloatSpec.Core.Generic_fmt.round_UP_exists
           (beta := beta) (fexp := fexp) (x := x) (hβ := hβ))) := by

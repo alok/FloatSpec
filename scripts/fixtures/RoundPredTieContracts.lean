@@ -1,7 +1,8 @@
 import FloatSpec.src.Core.Round_pred
 
 namespace RoundPredTieContracts
-open FloatSpec.Core.Defs (round_pred round_pred_total round_pred_monotone)
+open FloatSpec.Core.Defs (round_pred round_pred_total round_pred_monotone Rnd_DN_pt Rnd_UP_pt
+  Rnd_ZR_pt Rnd_N_pt Rnd_NG_pt Rnd_NA_pt Rnd_N0_pt)
 open FloatSpec.Core.Round_pred
 
 -- Pointwise liftings have no extra premises or different tie policies.

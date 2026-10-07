@@ -67,7 +67,7 @@ def NE_prop (beta : Int) [ValidRadix beta] (fexp : Int → Int) (x : ℝ) (f : �
     This is the IEEE 754 default rounding mode.
 -/
 def Rnd_NE_pt : ℝ → ℝ → Prop :=
-  FloatSpec.Core.Round_pred.Rnd_NG_pt (fun x => FloatSpec.Core.Generic_fmt.generic_format beta fexp x) (NE_prop beta fexp)
+  FloatSpec.Core.Defs.Rnd_NG_pt (fun x => FloatSpec.Core.Generic_fmt.generic_format beta fexp x) (NE_prop beta fexp)
 
 /-- Down-up parity property for positive numbers
 
@@ -90,8 +90,8 @@ def DN_UP_parity_pos_payload : Prop :=
   ∀ x xd xu,
   0 < x →
   ¬FloatSpec.Core.Generic_fmt.generic_format beta fexp x →
-  FloatSpec.Core.Round_pred.Rnd_DN_pt (fun y => FloatSpec.Core.Generic_fmt.generic_format beta fexp y) x xd →
-  FloatSpec.Core.Round_pred.Rnd_UP_pt (fun y => FloatSpec.Core.Generic_fmt.generic_format beta fexp y) x xu →
+  FloatSpec.Core.Defs.Rnd_DN_pt (fun y => FloatSpec.Core.Generic_fmt.generic_format beta fexp y) x xd →
+  FloatSpec.Core.Defs.Rnd_UP_pt (fun y => FloatSpec.Core.Generic_fmt.generic_format beta fexp y) x xu →
   ∃ gd gu : FlocqFloat beta,
     xd = (F2R gd) ∧ xu = (F2R gu) ∧
     canonical beta fexp gd ∧ canonical beta fexp gu ∧
@@ -165,8 +165,8 @@ variable [Exists_NE beta fexp]
 def DN_UP_parity_payload : Prop :=
   ∀ x xd xu,
   ¬FloatSpec.Core.Generic_fmt.generic_format beta fexp x →
-  FloatSpec.Core.Round_pred.Rnd_DN_pt (fun y => FloatSpec.Core.Generic_fmt.generic_format beta fexp y) x xd →
-  FloatSpec.Core.Round_pred.Rnd_UP_pt (fun y => FloatSpec.Core.Generic_fmt.generic_format beta fexp y) x xu →
+  FloatSpec.Core.Defs.Rnd_DN_pt (fun y => FloatSpec.Core.Generic_fmt.generic_format beta fexp y) x xd →
+  FloatSpec.Core.Defs.Rnd_UP_pt (fun y => FloatSpec.Core.Generic_fmt.generic_format beta fexp y) x xu →
   ∃ gd gu : FlocqFloat beta,
     xd = (F2R gd) ∧ xu = (F2R gu) ∧
     canonical beta fexp gd ∧ canonical beta fexp gu ∧
@@ -369,8 +369,8 @@ private theorem monotone_exp_to_ulp_not_FTZ
 
 /-- Pure uniqueness for down-rounding points. -/
 private theorem Rnd_DN_pt_unique_pure (F : ℝ → Prop) (x f₁ f₂ : ℝ)
-    (h₁ : FloatSpec.Core.Round_pred.Rnd_DN_pt F x f₁)
-    (h₂ : FloatSpec.Core.Round_pred.Rnd_DN_pt F x f₂) : f₁ = f₂ := by
+    (h₁ : FloatSpec.Core.Defs.Rnd_DN_pt F x f₁)
+    (h₂ : FloatSpec.Core.Defs.Rnd_DN_pt F x f₂) : f₁ = f₂ := by
   rcases h₁ with ⟨F₁, h₁le, h₁max⟩
   rcases h₂ with ⟨F₂, h₂le, h₂max⟩
   exact le_antisymm (h₂max f₁ F₁ h₁le) (h₁max f₂ F₂ h₂le)
@@ -495,7 +495,7 @@ private theorem roundR_floor_DN_pt
     (beta : Int) [ValidRadix beta] (fexp : Int → Int)
     [Valid_exp fexp]
     (x : ℝ) (hβ : 1 < beta) :
-    FloatSpec.Core.Round_pred.Rnd_DN_pt
+    FloatSpec.Core.Defs.Rnd_DN_pt
       (fun y => generic_format beta fexp y) x
       (roundR beta fexp rnd_floor x) := by
   classical
@@ -530,7 +530,7 @@ private theorem roundR_ceil_UP_pt
     (beta : Int) [ValidRadix beta] (fexp : Int → Int)
     [Valid_exp fexp]
     (x : ℝ) (hβ : 1 < beta) :
-    FloatSpec.Core.Round_pred.Rnd_UP_pt
+    FloatSpec.Core.Defs.Rnd_UP_pt
       (fun y => generic_format beta fexp y) x
       (roundR beta fexp rnd_ceil x) := by
   classical
@@ -569,21 +569,21 @@ private theorem DN_UP_gap_of_not_format
     [Valid_exp fexp] [FloatSpec.Core.Generic_fmt.Monotone_exp fexp]
     (x xd xu : ℝ) (hβ : 1 < beta)
     (hnotFmt : ¬ generic_format beta fexp x)
-    (hDN : FloatSpec.Core.Round_pred.Rnd_DN_pt
+    (hDN : FloatSpec.Core.Defs.Rnd_DN_pt
       (fun y => generic_format beta fexp y) x xd)
-    (hUP : FloatSpec.Core.Round_pred.Rnd_UP_pt
+    (hUP : FloatSpec.Core.Defs.Rnd_UP_pt
       (fun y => generic_format beta fexp y) x xu) :
     xu = xd + FloatSpec.Core.Ulp.ulp beta fexp x := by
   classical
   let F : ℝ → Prop := fun y => generic_format beta fexp y
   have hDN_chosen :
-      FloatSpec.Core.Round_pred.Rnd_DN_pt F x
+      FloatSpec.Core.Defs.Rnd_DN_pt F x
         (round_DN_to_format beta fexp x hβ) := by
     have h := (Classical.choose_spec
       (round_DN_exists (beta := beta) (fexp := fexp) (x := x) (hβ := hβ))).2
     simpa [F, round_DN_to_format] using h
   have hUP_chosen :
-      FloatSpec.Core.Round_pred.Rnd_UP_pt F x
+      FloatSpec.Core.Defs.Rnd_UP_pt F x
         (round_UP_to_format beta fexp x hβ) := by
     have h := (Classical.choose_spec
       (round_UP_exists (beta := beta) (fexp := fexp) (x := x) (hβ := hβ))).2
@@ -844,7 +844,7 @@ theorem DN_UP_parity_generic_pos_payload :
     simpa [abs_of_nonneg hx_nonneg, hex,
       Id.run, pure] using htrip
   by_cases hsmall : ex ≤ fexp ex
-  · have hDN_floor : FloatSpec.Core.Round_pred.Rnd_DN_pt F x
+  · have hDN_floor : FloatSpec.Core.Defs.Rnd_DN_pt F x
         (roundR beta fexp rnd_floor x) := by
       simpa [F] using roundR_floor_DN_pt (beta := beta) (fexp := fexp) x hβ
     have hxd_floor : xd = roundR beta fexp rnd_floor x :=
@@ -859,7 +859,7 @@ theorem DN_UP_parity_generic_pos_payload :
       calc
         F2R gd = xd := hxd_eq.symm
         _ = 0 := hxd_zero
-    have hUP_ceil : FloatSpec.Core.Round_pred.Rnd_UP_pt F x
+    have hUP_ceil : FloatSpec.Core.Defs.Rnd_UP_pt F x
         (roundR beta fexp rnd_ceil x) := by
       simpa [F] using roundR_ceil_UP_pt (beta := beta) (fexp := fexp) x hβ
     have hxu_ceil : xu = roundR beta fexp rnd_ceil x :=
@@ -951,10 +951,10 @@ theorem DN_UP_parity_generic_pos_payload :
       exact hnotFmt hfmt
     have hceil_succ : Int.ceil sm = Int.floor sm + 1 :=
       ceil_eq_floor_add_one hsm_ne_floor
-    have hDN_floor : FloatSpec.Core.Round_pred.Rnd_DN_pt F x
+    have hDN_floor : FloatSpec.Core.Defs.Rnd_DN_pt F x
         (roundR beta fexp rnd_floor x) := by
       simpa [F] using roundR_floor_DN_pt (beta := beta) (fexp := fexp) x hβ
-    have hUP_ceil : FloatSpec.Core.Round_pred.Rnd_UP_pt F x
+    have hUP_ceil : FloatSpec.Core.Defs.Rnd_UP_pt F x
         (roundR beta fexp rnd_ceil x) := by
       simpa [F] using roundR_ceil_UP_pt (beta := beta) (fexp := fexp) x hβ
     have hxd_floor : xd = roundR beta fexp rnd_floor x :=
@@ -1245,9 +1245,9 @@ mantissas have different residues mod 2, so one residue is zero. -/
 theorem DN_UP_NE_prop
     (hβ : 1 < beta) (x xd xu : ℝ)
     (hnotFmt : ¬FloatSpec.Core.Generic_fmt.generic_format beta fexp x)
-    (hDN : FloatSpec.Core.Round_pred.Rnd_DN_pt
+    (hDN : FloatSpec.Core.Defs.Rnd_DN_pt
       (fun y => FloatSpec.Core.Generic_fmt.generic_format beta fexp y) x xd)
-    (hUP : FloatSpec.Core.Round_pred.Rnd_UP_pt
+    (hUP : FloatSpec.Core.Defs.Rnd_UP_pt
       (fun y => FloatSpec.Core.Generic_fmt.generic_format beta fexp y) x xu) :
     NE_prop beta fexp x xd ∨ NE_prop beta fexp x xu := by
   classical
@@ -1750,11 +1750,11 @@ theorem round_NE_pt_pos_exact
                   (Int.emod_eq_zero_of_dvd
                     (a := 2) (b := FloatSpec.Core.Raux.Zfloor sm) hdiv))
           simp [choice, hndiv]
-        have hDN : FloatSpec.Core.Round_pred.Rnd_DN_pt F x d := by
+        have hDN : FloatSpec.Core.Defs.Rnd_DN_pt F x d := by
           simpa [F, d] using
             FloatSpec.Core.Generic_fmt.round_DN_pt
               (beta := beta) (fexp := fexp) (x := x) hβ
-        have hUP : FloatSpec.Core.Round_pred.Rnd_UP_pt F x u := by
+        have hUP : FloatSpec.Core.Defs.Rnd_UP_pt F x u := by
           simpa [F, u] using
             FloatSpec.Core.Generic_fmt.round_UP_pt
               (beta := beta) (fexp := fexp) (x := x) hβ

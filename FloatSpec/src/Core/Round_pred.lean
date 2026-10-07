@@ -29,15 +29,6 @@ namespace FloatSpec.Core.Round_pred
 
 -- variable {beta : Int}
 
--- Re-export pointwise rounding predicates under this namespace for downstream files.
-abbrev Rnd_DN_pt := FloatSpec.Core.Defs.Rnd_DN_pt
-abbrev Rnd_UP_pt := FloatSpec.Core.Defs.Rnd_UP_pt
-abbrev Rnd_N_pt  := FloatSpec.Core.Defs.Rnd_N_pt
-abbrev Rnd_NG_pt := FloatSpec.Core.Defs.Rnd_NG_pt
-abbrev Rnd_NA_pt := FloatSpec.Core.Defs.Rnd_NA_pt
-abbrev Rnd_N0_pt := FloatSpec.Core.Defs.Rnd_N0_pt
-abbrev Rnd_ZR_pt := FloatSpec.Core.Defs.Rnd_ZR_pt
-
 section RoundingFunctionProperties
 
 /-- Rounding down property for functions
