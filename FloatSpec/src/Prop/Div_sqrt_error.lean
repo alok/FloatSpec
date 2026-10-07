@@ -1215,7 +1215,7 @@ theorem sqrt_error_N_FLX_without_prec_gt_one_payload (x : ℝ)
                     rw [zpow_add₀ hbne (1 : Int) e]
                     simp
           have htrip := FloatSpec.Core.Raux.mag_unique
-            (beta := beta) (x := t) (e := e + 1) hβ hlow hupp
+            (beta := beta) (x := t) (e := e + 1) hβ ⟨hlow, hupp⟩
           simpa [Id.run, pure] using htrip
         have hcexp_t : FloatSpec.Core.Generic_fmt.cexp beta fexp t = e + 1 - prec := by
           simp [FloatSpec.Core.Generic_fmt.cexp, fexp, FLX_exp,

@@ -363,8 +363,7 @@ theorem abs_B2R_le_emax_minus_prec {prec emax : Int}
           FloatSpec.Core.Raux.bpow 2 emax := by
         simpa [FloatSpec.Core.Raux.bpow] using
           htrip
-      simp [B2R, binarySingleNaNFloatToB754, B754_to_R]
-      exact hpow
+      simpa [B2R, binarySingleNaNFloatToB754, B754_to_R] using hpow
   | B754_finite s m e hm hb =>
       let mp := binaryPositiveOfNat m hm
       have hrange := range_bounded_of_specFloat_bounded m e hm hb
@@ -1117,8 +1116,7 @@ theorem Bfrexp_correct {prec emax : Int}
         have hmag0 : FloatSpec.Core.Raux.mag 2 (SF2R 2 core.1) = 0 := by
           exact (FloatSpec.Core.Raux.mag_unique 2 (SF2R 2 core.1) 0
             (by norm_num)
-            (by norm_num; exact hnorm.1)
-            (by norm_num; exact hnorm.2))
+            ⟨by norm_num; exact hnorm.1, by norm_num; exact hnorm.2⟩)
         have hmagMul := FloatSpec.Core.Raux.mag_mult_bpow
           2 (SF2R 2 core.1) core.2 (by norm_num) hz
         have hmagEq : FloatSpec.Core.Raux.mag 2

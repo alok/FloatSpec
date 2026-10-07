@@ -587,7 +587,7 @@ theorem zero_precision_reverse_inclusion_counterexample :
   norm_num [FloatSpec.Core.Generic_fmt.generic_format,
     FloatSpec.Core.Generic_fmt.scaled_mantissa, FloatSpec.Core.Generic_fmt.cexp,
     FloatSpec.Core.FLT.FLT_exp, FloatSpec.Core.FIX.FIX_exp,
-    FloatSpec.Core.Raux.mag, FloatSpec.Core.Raux.Ztrunc_eq_ite, FloatSpec.Core.Defs.F2R]
+    FloatSpec.Core.Raux.mag_eq_ite, FloatSpec.Core.Raux.Ztrunc_eq_ite, FloatSpec.Core.Defs.F2R]
 
 end FLTUnrestrictedSourceContracts
 

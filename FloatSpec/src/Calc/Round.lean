@@ -563,7 +563,7 @@ theorem inbetween_float_round_sign
       -- From Core: scaled_mantissa_abs and related defs yield this identity
       -- after unfolding `e0`.
       simp [FloatSpec.Core.Generic_fmt.scaled_mantissa, FloatSpec.Core.Generic_fmt.cexp,
-            he0, FloatSpec.Core.Raux.mag]
+            he0, FloatSpec.Core.Raux.mag_eq_ite]
     simpa [hsm, b] using this
   have hsign_eq : (FloatSpec.Core.Raux.Rlt_bool sm 0)
                     = (FloatSpec.Core.Raux.Rlt_bool x 0) := by

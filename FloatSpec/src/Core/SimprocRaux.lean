@@ -58,10 +58,10 @@ private theorem Ztrunc_neg_val (x : ℝ) :
       simp [hx0]
 
 private theorem mag_neg_eq (beta : Int) (x : ℝ) : mag beta (-x) = mag beta x := by
-  simp [mag, abs_neg]
+  simp [mag_eq_ite, abs_neg]
 
 private theorem mag_abs_eq (beta : Int) (x : ℝ) : mag beta (abs x) = mag beta x := by
-  simp [mag, abs_abs]
+  simp [mag_eq_ite, abs_abs]
 
 @[simp] theorem mag_bpow_run (beta e : Int) (hβ : 1 < beta) :
     (mag beta ((beta : ℝ) ^ e)) = e + 1 :=

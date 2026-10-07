@@ -16,7 +16,7 @@ External Rocq imports are recorded in the JSON report, not counted as Flocq decl
 |---:|---|---:|---:|---:|---:|
 | 1 | src/Version.v | 1 | 1 | 1 | 1 |
 | 2 | src/Core/Zaux.v | 102 | 82 | 91 | 102 |
-| 3 | src/Core/Raux.v | 186 | 133 | 178 | 141 |
+| 3 | src/Core/Raux.v | 186 | 161 | 178 | 141 |
 | 4 | src/Core/Defs.v | 14 | 11 | 14 | 0 |
 | 5 | src/Core/Round_pred.v | 83 | 78 | 78 | 83 |
 | 6 | src/Core/Digits.v | 67 | 0 | 67 | 0 |
@@ -57,9 +57,9 @@ the full Lean type/body with Rocq, and add an evidence-bearing review entry.
 Resolve aliases and generated proof infrastructure explicitly; do not create
 unnecessary numerical APIs to satisfy a raw name count.
 
-- `src/Core/Raux.v:1583` — `mag_prop` (rec): `FloatSpec.Core.Raux.Source.mag_prop`, `FloatSpec.Core.Raux.mag_prop`.
+- `src/Core/Raux.v:1583` — `mag_prop` (rec): `FloatSpec.Core.Raux.mag_prop`.
 - `src/Core/Raux.v:1584` — `mag_val` (proj): `FloatSpec.Core.Raux.Source.mag_val`, `FloatSpec.Core.Raux.mag_prop.mag_val`, `FloatSpec.Core.Raux.mag_val`.
-- `src/Core/Raux.v:1588` — `mag` (def): `FloatSpec.Core.Float_prop.mag`, `FloatSpec.Core.Raux.Source.mag`, `FloatSpec.Core.Raux.mag` (+1 ambiguous candidates).
+- `src/Core/Raux.v:1588` — `mag` (def): `FloatSpec.Core.Raux.mag`.
 - `src/Core/Raux.v:1633` — `bpow_lt_bpow` (prf): `FloatSpec.Core.Raux.bpow_lt_bpow`.
 - `src/Core/Raux.v:1644` — `bpow_unique` (prf): `FloatSpec.Core.Raux.bpow_unique`.
 - `src/Core/Raux.v:1657` — `mag_unique` (prf): `FloatSpec.Core.Raux.mag_unique`.

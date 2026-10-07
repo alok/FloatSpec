@@ -163,7 +163,7 @@ private lemma Ztrunc_neg_eq (y : ℝ) : FloatSpec.Core.Raux.Ztrunc (-y) = -Float
 private lemma cexp_neg_eq (b emin prec : Int) [ValidRadix b] (x : ℝ) :
     FloatSpec.Core.Generic_fmt.cexp b (FLT_exp emin prec) (-x)
     = FloatSpec.Core.Generic_fmt.cexp b (FLT_exp emin prec) x := by
-  simp only [FloatSpec.Core.Generic_fmt.cexp, FloatSpec.Core.Raux.mag, abs_neg]
+  simp only [FloatSpec.Core.Generic_fmt.cexp, FloatSpec.Core.Raux.mag_eq_ite, abs_neg]
   -- The if condition uses -x = 0 iff x = 0
   congr 1
   simp only [neg_eq_zero]

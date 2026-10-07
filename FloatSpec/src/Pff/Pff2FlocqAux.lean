@@ -543,7 +543,7 @@ theorem pff_format_is_format (beta : Int) [ValidRadix beta]
     -- mag uses floor + 1 definition
     have hmag_prod : FloatSpec.Core.Raux.mag beta ((m : ℝ) * (beta : ℝ) ^ f.Fexp) =
                      FloatSpec.Core.Raux.mag beta (m : ℝ) + f.Fexp := by
-      unfold FloatSpec.Core.Raux.mag
+      simp only [FloatSpec.Core.Raux.mag_eq_ite]
       simp only [hprod_ne, hm_real_ne, ite_false, habs_prod, hlog_prod, hdiv_eq]
       -- ⌊L + e⌋ + 1 = (⌊L⌋ + 1) + e where L = log|m|/log β
       rw [Int.floor_add_intCast]
@@ -674,7 +674,7 @@ private theorem flocq_bounded_FLT_cexp_le (beta : Int) [ValidRadix beta] (b : Fb
         FloatSpec.Core.Raux.mag beta
             ((f.Fnum : ℝ) * (beta : ℝ) ^ f.Fexp) =
           FloatSpec.Core.Raux.mag beta (f.Fnum : ℝ) + f.Fexp := by
-      unfold FloatSpec.Core.Raux.mag
+      simp only [FloatSpec.Core.Raux.mag_eq_ite]
       simp only [hprod_ne, hm_real_ne, ite_false, habs_prod, hlog_prod, hdiv_eq]
       rw [Int.floor_add_intCast]
       ring

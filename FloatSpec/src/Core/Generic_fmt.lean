@@ -339,7 +339,7 @@ theorem zpow_nonneg_toNat (a : ℝ) (k : Int) (hk : 0 ≤ k) :
 theorem generic_format_0 (beta : Int) [ValidRadix beta] (fexp : Int → Int) :
     generic_format beta fexp 0 := by
   unfold generic_format scaled_mantissa cexp
-  simp [FloatSpec.Core.Raux.mag, FloatSpec.Core.Raux.Ztrunc_eq_ite]
+  simp [FloatSpec.Core.Raux.mag_eq_ite, FloatSpec.Core.Raux.Ztrunc_eq_ite]
 
 /-
 Coq (Generic_fmt.v):
@@ -446,7 +446,7 @@ theorem generic_format_bpow_inv
 theorem cexp_opp (beta : Int) [ValidRadix beta] (fexp : Int → Int) (x : ℝ) :
     cexp beta fexp (-x) = cexp beta fexp x := by
   -- mag depends only on |x|, so mag(-x) = mag(x)
-  simp [cexp, FloatSpec.Core.Raux.mag, abs_neg]
+  simp [cexp, FloatSpec.Core.Raux.mag_eq_ite, abs_neg]
 
 /-- Specification: Canonical exponent of absolute value
 
@@ -457,7 +457,7 @@ theorem cexp_abs (beta : Int) [ValidRadix beta] (fexp : Int → Int) (x : ℝ) :
     cexp beta fexp |x| = cexp beta fexp x := by
   unfold cexp
   -- mag depends only on |x|, so mag(|x|) = mag(x)
-  simp [FloatSpec.Core.Raux.mag, abs_abs]
+  simp [FloatSpec.Core.Raux.mag_eq_ite, abs_abs]
 
 /-- Specification: Generic format implies canonical representation
 
@@ -712,7 +712,7 @@ theorem canonical_opp (beta : Int) [ValidRadix beta]
   -- mag(-x) = mag(x)
   have hmag : (mag beta (-(F2R (FlocqFloat.mk m e : FlocqFloat beta)))) =
               (mag beta (F2R (FlocqFloat.mk m e : FlocqFloat beta))) := by
-    unfold mag
+    simp only [FloatSpec.Core.Raux.mag_eq_ite]
     simp [abs_neg]
   rw [hmag]
   exact h
@@ -834,10 +834,10 @@ theorem scaled_mantissa_opp (beta : Int) [ValidRadix beta] (fexp : Int → Int) 
   -- Handle cases on x = 0
   by_cases hx : x = 0
   · -- Both sides are 0 when x = 0
-    simp [hx, FloatSpec.Core.Raux.mag]
+    simp [hx, FloatSpec.Core.Raux.mag_eq_ite]
   · -- Use definitional equality of mag under negation: abs (-x) = abs x
     have hneg0 : -x ≠ 0 := by simpa [hx]
-    simp [FloatSpec.Core.Raux.mag, hx, hneg0, abs_neg, neg_mul]
+    simp [FloatSpec.Core.Raux.mag_eq_ite, hx, hneg0, abs_neg, neg_mul]
 
 /-- Specification: Scaled mantissa for canonical floats
 
@@ -1025,7 +1025,7 @@ theorem scaled_mantissa_lt_1
     have hx_ne : x ≠ 0 := by simpa using hx0
     have htrip := FloatSpec.Core.Raux.mag_le_bpow (beta := beta) (x := x) (e := ex) hβ hx_ne hxlt
     have hrun : (mag beta x) ≤ ex := by
-      simpa [Id.run, pure, FloatSpec.Core.Raux.mag]
+      simpa [Id.run, pure, FloatSpec.Core.Raux.mag_eq_ite]
         using htrip
     simpa [hm] using hrun
   -- Use the "small" regime constancy of fexp to replace fexp m with fexp ex
@@ -1350,7 +1350,7 @@ theorem mag_generic_gt
   set M : Int := (mag beta x)
   -- Reduce the computation of cexp
   unfold cexp
-  simp [FloatSpec.Core.Raux.mag]
+  simp [FloatSpec.Core.Raux.mag_eq_ite]
   -- We now show `fexp M ≤ M`
   -- From generic_format, expand the reconstruction equality at x
   have hbposℤ : (0 : Int) < beta := lt_trans Int.zero_lt_one hβ
@@ -1430,7 +1430,7 @@ theorem mag_generic_gt
     simpa [Id.run, pure]
       using hmono
   -- This matches the simplified goal (unfolding the definition of mag on runs)
-  simpa [M, FloatSpec.Core.Raux.mag]
+  simpa [M, FloatSpec.Core.Raux.mag_eq_ite]
 
 /-- Coq ({lit}`Generic_fmt.v`): {lit}`abs_lt_bpow_prec`. Lean port uses a non-strict bound. -/
 theorem abs_lt_bpow_prec
@@ -3434,12 +3434,12 @@ theorem round_N_opp
   -- Canonical exponent is invariant under negation (by definition of mag)
   have hE : en = ex := by
     -- Both sides reduce to `fexp ((mag beta x).run)`
-    simp [hen, hex, cexp, FloatSpec.Core.Raux.mag, abs_neg]
+    simp [hen, hex, cexp, FloatSpec.Core.Raux.mag_eq_ite, abs_neg]
 
   -- Scaled mantissa flips sign under negation
   have hSM : smn = -smx := by
     -- After unfolding and using hE, both use the same exponent
-    simp [hsmn, hsmx, scaled_mantissa, cexp, FloatSpec.Core.Raux.mag, abs_neg, neg_mul]
+    simp [hsmn, hsmx, scaled_mantissa, cexp, FloatSpec.Core.Raux.mag_eq_ite, abs_neg, neg_mul]
 
   -- Reduce the Znearest relation using the previously proved structural lemma
   have hZ : Znearest choice (-smx)
@@ -3705,7 +3705,7 @@ theorem generic_inclusion_lt_ge (e1 e2 : Int) :
     have h := FloatSpec.Core.Raux.mag_le_bpow (beta := beta) (x := x) (e := e2)
       hβ hx_ne hxB.right
     have hrun : (mag beta x) ≤ e2 := by
-      simpa [Id.run, pure, FloatSpec.Core.Raux.mag]
+      simpa [Id.run, pure, FloatSpec.Core.Raux.mag_eq_ite]
         using h
     simpa [hM] using hrun
   -- Lower bound gives e1 < M via mag_ge_bpow at e = e1 + 1
@@ -3713,7 +3713,7 @@ theorem generic_inclusion_lt_ge (e1 e2 : Int) :
     have htrip := FloatSpec.Core.Raux.mag_ge_bpow (beta := beta) (x := x) (e := e1 + 1)
       hβ (by simpa using hxB.left)
     have hrun : (e1 + 1) ≤ (mag beta x) := by
-      simpa [FloatSpec.Core.Raux.mag] using htrip
+      simpa [FloatSpec.Core.Raux.mag_eq_ite] using htrip
     -- (e1 + 1) ≤ M ↔ e1 < M
     exact (Int.add_one_le_iff).1 (by simpa [hM] using hrun)
   -- Assemble the pointwise exponent comparison required by generic_inclusion_mag
@@ -3742,7 +3742,7 @@ theorem generic_inclusion (e : Int) :
   · -- Strict case: mag x = e, then apply inclusion-by-magnitude.
     have hmag_run : (mag beta x) = e := by
       have h := FloatSpec.Core.Raux.mag_unique (beta := beta) (x := x) (e := e)
-        hβ hx.left hlt
+        hβ ⟨hx.left, hlt⟩
       simpa [Id.run, pure] using h
     have hpoint : x ≠ 0 → fexp2 ((mag beta x)) ≤ fexp1 ((mag beta x)) := by
       intro _; simpa [hmag_run] using hle_e
@@ -3857,7 +3857,7 @@ theorem generic_inclusion_le (e2 : Int) :
           have h := FloatSpec.Core.Raux.mag_le_bpow (beta := beta) (x := x) (e := e2)
             hβ hx_ne hx_lt
           have hrun : (mag beta x) ≤ e2 := by
-            simpa [Id.run, pure, FloatSpec.Core.Raux.mag]
+            simpa [Id.run, pure, FloatSpec.Core.Raux.mag_eq_ite]
               using h
           simpa using hrun
         exact hle_all _ hmag_le
@@ -4003,7 +4003,7 @@ theorem generic_format_roundR
             have hr_lt_abs : |r| < (beta : ℝ) ^ ex := by
               simpa [abs_of_pos hr_pos] using hr_lt
             have htrip := FloatSpec.Core.Raux.mag_unique (beta := beta) (x := r) (e := ex)
-              hβ hr_low_abs hr_lt_abs
+              hβ ⟨hr_low_abs, hr_lt_abs⟩
             simpa [Id.run, pure] using htrip
           have hfmt_float :
               generic_format beta fexp
@@ -4127,7 +4127,7 @@ theorem round_DN_exists
             have hr_lt_abs : |r| < (beta : ℝ) ^ ex := by
               simpa [abs_of_pos hr_pos] using hr_lt
             have htrip := FloatSpec.Core.Raux.mag_unique (beta := beta) (x := r) (e := ex)
-              hβ hr_low_abs hr_lt_abs
+              hβ ⟨hr_low_abs, hr_lt_abs⟩
             simpa [Id.run, pure] using htrip
           have hfmt_float :
               generic_format beta fexp
@@ -5217,7 +5217,7 @@ private theorem lt_of_mag_lt_pos
   -- Upper bound on |x|: |x| ≤ β^ex (from ex = ⌈Lx⌉)
   set Lx : ℝ := Real.log (abs x) / Real.log (beta : ℝ) with hLx
   have hmagx_run : (FloatSpec.Core.Raux.mag beta x) = Int.floor Lx + 1 := by
-    simp only [FloatSpec.Core.Raux.mag, hx0, ↓reduceIte, Id.run, pure, Lx, hLx]
+    simp only [FloatSpec.Core.Raux.mag_eq_ite, hx0, ↓reduceIte, Id.run, pure, Lx, hLx]
   have hLx_le_ex : Lx ≤ (ex : ℝ) := by
     -- Since mag = floor(Lx) + 1, we have Lx ≤ floor(Lx) + 1 = ex
     have h1 : Lx < (Int.floor Lx : ℝ) + 1 := Int.lt_floor_add_one Lx
@@ -5267,7 +5267,7 @@ private theorem lt_of_mag_lt_pos
   -- Lower bound on |y|: β^(ey - 1) ≤ |y| (weak bound from floor+1 semantics)
   set Ly : ℝ := Real.log (abs y) / Real.log (beta : ℝ) with hLy
   have hmagy_run : (FloatSpec.Core.Raux.mag beta y) = Int.floor Ly + 1 := by
-    simp only [FloatSpec.Core.Raux.mag, hy0, ↓reduceIte, Id.run, pure, Ly, hLy]
+    simp only [FloatSpec.Core.Raux.mag_eq_ite, hy0, ↓reduceIte, Id.run, pure, Ly, hLy]
   have h_em1_le_Ly : (ey - 1 : ℝ) ≤ Ly := by
     -- ey = floor(Ly) + 1, so ey - 1 = floor(Ly) ≤ Ly
     have h1 : ey - 1 = Int.floor Ly := by
@@ -5389,7 +5389,7 @@ theorem cexp_ge_bpow_ax
   have hfloor : e ≤ Int.floor L + 1 := by
     omega
   have hrun : e ≤ FloatSpec.Core.Raux.mag beta x := by
-    simpa [FloatSpec.Core.Raux.mag, hx_ne, L] using hfloor
+    simpa [FloatSpec.Core.Raux.mag_eq_ite, hx_ne, L] using hfloor
   -- Monotonicity of `fexp` lifts the inequality through `fexp`
   have hmono := Monotone_exp.mono (fexp := fexp) hrun
   -- Unfold `cexp` to expose `fexp (mag x)`
@@ -5452,7 +5452,7 @@ theorem cexp_fexp (beta : Int) [ValidRadix beta] (fexp : Int → Int) (x : ℝ) 
   -- Unfold mag and set L = log(|x|)/log(beta)
   -- Prepare an explicit form for mag (uses floor+1 semantics)
   have hmageq : (mag beta x) = Int.floor (Real.log (abs x) / Real.log (beta : ℝ)) + 1 := by
-    simp only [FloatSpec.Core.Raux.mag, hx0, ↓reduceIte, Id.run, pure]
+    simp only [FloatSpec.Core.Raux.mag_eq_ite, hx0, ↓reduceIte, Id.run, pure]
   set L : ℝ := Real.log (abs x) / Real.log (beta : ℝ) with hLdef
   -- log β > 0 since 1 < β
   have hb_gt1R : (1 : ℝ) < (beta : ℝ) := by exact_mod_cast hβ
@@ -5716,7 +5716,7 @@ theorem round_ZR_pt_check
         unfold FloatSpec.Core.Generic_fmt.generic_format
         simp [FloatSpec.Core.Generic_fmt.scaled_mantissa,
               FloatSpec.Core.Generic_fmt.cexp,
-              FloatSpec.Core.Raux.mag,
+              FloatSpec.Core.Raux.mag_eq_ite,
               FloatSpec.Core.Defs.F2R,
               FloatSpec.Core.Raux.Ztrunc_eq_ite,
               Id.run, bind, pure]
@@ -6233,8 +6233,7 @@ theorem generic_round_generic
             have hmag : mag beta r = ex := by
               have h := FloatSpec.Core.Raux.mag_unique
                 (beta := beta) (x := r) (e := ex) hβ
-                (by simpa [abs_of_pos hrpos] using hrBounds.1)
-                (by simpa [abs_of_pos hrpos] using hrUpper)
+                ⟨by simpa [abs_of_pos hrpos] using hrBounds.1, by simpa [abs_of_pos hrpos] using hrUpper⟩
               simpa [Id.run, pure] using h
             let rf : FlocqFloat beta :=
               ⟨rnd' (scaled_mantissa beta fexp2 t), fexp2 ex⟩
@@ -7469,10 +7468,10 @@ theorem lt_cexp
   have hcexp_abs_x : (cexp beta fexp (abs x)) = (cexp beta fexp x) := by
     unfold cexp
     -- `mag` only depends on `|·|` by definition
-    simp [FloatSpec.Core.Raux.mag, abs_abs, abs_eq_zero]
+    simp [FloatSpec.Core.Raux.mag_eq_ite, abs_abs, abs_eq_zero]
   have hcexp_abs_y : (cexp beta fexp (abs y)) = (cexp beta fexp y) := by
     unfold cexp
-    simp [FloatSpec.Core.Raux.mag, abs_abs, abs_eq_zero]
+    simp [FloatSpec.Core.Raux.mag_eq_ite, abs_abs, abs_eq_zero]
   -- Rewrite the strict inequality for canonical exponents through these equalities
   have hlt_abs : (cexp beta fexp (abs x)) < (cexp beta fexp (abs y)) := by
     simp only [hcexp_abs_x, hcexp_abs_y]; exact hlt
@@ -7780,7 +7779,7 @@ theorem mag_round_ZR
   have hupp_r : abs r < (beta : ℝ) ^ ex :=
     lt_of_le_of_lt (by simpa [habs_eq] using hround_le_abs) hxupp
   have hmag := FloatSpec.Core.Raux.mag_unique
-    (beta := beta) (x := r) (e := ex) hβ hlow_r hupp_r
+    (beta := beta) (x := r) (e := ex) hβ ⟨hlow_r, hupp_r⟩
   simpa [r, hr, ex, hex, Id.run, pure]
     using hmag
 
@@ -7911,7 +7910,7 @@ theorem mag_round
         have hm := FloatSpec.Core.Raux.mag_unique
           (beta := beta)
           (x := round_to_generic beta fexp Zaway x) (e := ex)
-          ValidRadix.valid hb.left hupp
+          ValidRadix.valid ⟨hb.left, hupp⟩
         have hm' :
             mag beta (round_to_generic beta fexp Zaway x) = ex := by
           simpa [Id.run, pure] using hm

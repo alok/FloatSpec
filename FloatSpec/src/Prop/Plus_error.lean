@@ -827,7 +827,8 @@ lemma mag_minus1 (z : ℝ) (hβ : 1 < beta) (h_nonzero : z ≠ 0) :
   have hfloor_L :
       Int.floor L = Int.floor (Real.log |z| / Real.log (beta : ℝ)) := by
     simp [L]
-  unfold _root_.mag FloatSpec.Core.Raux.mag
+  unfold _root_.mag
+  simp only [FloatSpec.Core.Raux.mag_eq_ite]
   simp only [h_nonzero, hdiv_ne, ite_false]
   rw [hscaled, hfloor_sub, hfloor_L]
   omega

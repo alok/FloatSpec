@@ -545,12 +545,12 @@ private theorem succ_le_plus_ulp_theorem
     have hx_ne' : -x ≠ 0 := by simpa using (neg_ne_zero.mpr hx_ne)
     -- |x| invariants under negation that we will use
     have hmag_eq : (FloatSpec.Core.Raux.mag beta (-x)) = (FloatSpec.Core.Raux.mag beta x) := by
-      unfold FloatSpec.Core.Raux.mag
+      simp only [FloatSpec.Core.Raux.mag_eq_ite]
       simp [hx_ne, hx_ne', abs_neg]
     have hulp_neg_eq : (ulp beta fexp (-x)) = (ulp beta fexp x) := by
       -- Compute ulp on both sides directly at nonzero inputs and compare mags
       unfold ulp
-      simp [hx_ne, hx_ne', FloatSpec.Core.Generic_fmt.cexp, FloatSpec.Core.Raux.mag, hmag_eq]
+      simp [hx_ne, hx_ne', FloatSpec.Core.Generic_fmt.cexp, FloatSpec.Core.Raux.mag_eq_ite, hmag_eq]
     -- Evaluate succ on the negative branch
     have hsucc_run : (succ beta fexp x) = - (pred_pos beta fexp (-x)) := by
       simp [succ, hx]
@@ -603,7 +603,7 @@ private theorem succ_le_plus_ulp_theorem
       -- Compute ulp (-x) at exponent fexp m and transport to ulp x
       have h_ulp_neg : (ulp beta fexp (-x)) = (beta : ℝ) ^ (fexp m) := by
         -- In the nonzero branch, ulp y = β^(cexp y) and cexp y = fexp (mag y)
-        simp [ulp, hx_ne', FloatSpec.Core.Generic_fmt.cexp, FloatSpec.Core.Raux.mag, hm]
+        simp [ulp, hx_ne', FloatSpec.Core.Generic_fmt.cexp, FloatSpec.Core.Raux.mag_eq_ite, hm]
       have hle_to_ulp_neg : (beta : ℝ) ^ (fexp (m - 1)) ≤ (ulp beta fexp (-x)) := by
         calc
           (beta : ℝ) ^ (fexp (m - 1)) ≤ (beta : ℝ) ^ (fexp m) := hpow_le
@@ -705,7 +705,7 @@ private theorem round_neq_0_negligible_exp_theorem
     set L : ℝ := Real.log (abs x) / Real.log (beta : ℝ)
     have hmageq : ex0 = Int.floor L + 1 := by
       have : (FloatSpec.Core.Raux.mag beta x) = Int.floor L + 1 := by
-        unfold FloatSpec.Core.Raux.mag
+        simp only [FloatSpec.Core.Raux.mag_eq_ite]
         simp [hx, L]
       simpa [hex0] using this
     have hmageqR : (ex0 : ℝ) = (⌊L⌋ : ℝ) + 1 := by
@@ -3032,7 +3032,7 @@ private theorem id_m_ulp_ge_bpow_early (x : ℝ) (e : Int)
           (x * b ^ (-(fexp (FloatSpec.Core.Raux.mag beta x))))) : Int) : ℝ) *
           b ^ (fexp (FloatSpec.Core.Raux.mag beta x)) := by
       simpa [Id.run, bind, pure,
-             FloatSpec.Core.Raux.mag, FloatSpec.Core.Raux.Ztrunc_eq_ite, b] using this
+             FloatSpec.Core.Raux.mag_eq_ite, FloatSpec.Core.Raux.Ztrunc_eq_ite, b] using this
     exact hiff.mp Fx
   set m : Int :=
       (FloatSpec.Core.Raux.Ztrunc (x * b ^ (-(fexp ((FloatSpec.Core.Raux.mag beta x))))))
@@ -3524,7 +3524,7 @@ theorem ulp_opp (x : ℝ) :
     -- `cexp` is insensitive to sign since `mag` uses `|x|`
     have hcexp : (FloatSpec.Core.Generic_fmt.cexp (beta := beta) (fexp := fexp) (-x))
                   = (FloatSpec.Core.Generic_fmt.cexp (beta := beta) (fexp := fexp) x) := by
-      simp [FloatSpec.Core.Generic_fmt.cexp, FloatSpec.Core.Raux.mag, abs_neg]
+      simp [FloatSpec.Core.Generic_fmt.cexp, FloatSpec.Core.Raux.mag_eq_ite, abs_neg]
     simp [ulp, hx, hneg, hcexp]
 
 omit [Valid_exp fexp] in
@@ -3747,7 +3747,7 @@ theorem id_p_ulp_le_bpow (x : ℝ) (e : Int)
           (x * b ^ (-(fexp (FloatSpec.Core.Raux.mag beta x))))) : Int) : ℝ) *
           b ^ (fexp (FloatSpec.Core.Raux.mag beta x)) := by
       simpa [Id.run, bind, pure,
-             FloatSpec.Core.Raux.mag, FloatSpec.Core.Raux.Ztrunc_eq_ite, b] using this
+             FloatSpec.Core.Raux.mag_eq_ite, FloatSpec.Core.Raux.Ztrunc_eq_ite, b] using this
     exact (hiff.mp Fx)
   -- Extract the integer mantissa m and rewrite x = (m : ℝ) * b^c
   set m : Int :=
@@ -4099,7 +4099,7 @@ theorem generic_format_ulp
         (e := fexp ((FloatSpec.Core.Raux.mag beta x)))
         (Exp_not_FTZ.exp_not_FTZ (fexp := fexp) ((FloatSpec.Core.Raux.mag beta x))))
     simpa [hx, Id.run, bind, pure, ulp,
-            FloatSpec.Core.Generic_fmt.cexp, FloatSpec.Core.Raux.mag]
+            FloatSpec.Core.Generic_fmt.cexp, FloatSpec.Core.Raux.mag_eq_ite]
       using htrip
 
 /-- Coq (Ulp.v):
@@ -4566,7 +4566,7 @@ private theorem generic_format_pred_aux1_theorem_early
               (x * (beta : ℝ) ^ (-(fexp (FloatSpec.Core.Raux.mag beta x)))))
             (fexp (FloatSpec.Core.Raux.mag beta x)) : FlocqFloat beta) := by
       simpa [Id.run, bind, pure,
-        FloatSpec.Core.Defs.F2R, FloatSpec.Core.Raux.mag,
+        FloatSpec.Core.Defs.F2R, FloatSpec.Core.Raux.mag_eq_ite,
         FloatSpec.Core.Raux.Ztrunc_eq_ite] using hspec
     have hxF := hiff.mp Fx
     simpa [FloatSpec.Core.Defs.F2R, b, he, hc, hm] using hxF
@@ -4720,7 +4720,7 @@ theorem generic_format_pred_pos
           -- `mag` at 0 returns 0 by definition in Raux.lean
           simp [FloatSpec.Core.Generic_fmt.scaled_mantissa,
                 FloatSpec.Core.Generic_fmt.cexp,
-                FloatSpec.Core.Raux.mag,
+                FloatSpec.Core.Raux.mag_eq_ite,
                 FloatSpec.Core.Defs.F2R,
                 FloatSpec.Core.Raux.Ztrunc_eq_ite,
                 Id.run, bind, pure]
@@ -5387,7 +5387,7 @@ private theorem ulp_DN_round_bridge_pos
     --     -- Extract equalities from the Hoare-style specs by simp
     --     have hcexp_run : (FloatSpec.Core.Generic_fmt.cexp (beta := beta) (fexp := fexp) r).run
     --           = fexp ((FloatSpec.Core.Raux.mag beta r).run) := by
-    --       simpa [FloatSpec.Core.Generic_fmt.cexp, FloatSpec.Core.Raux.mag]
+    --       simpa [FloatSpec.Core.Generic_fmt.cexp, FloatSpec.Core.Raux.mag_eq_ite]
     --         using hcexp_spec (show beta > 1 by simpa using hβ)
     --     have hmag_run : (FloatSpec.Core.Raux.mag beta r).run
     --           = (FloatSpec.Core.Raux.mag beta x).run := by
@@ -6062,10 +6062,10 @@ theorem round_N_le_midp_from_fixed_choice_payload
             -- cexp(succ) = fexp(mag(succ)) = fexp(e) = c
             have hcexp_succ : (FloatSpec.Core.Generic_fmt.cexp beta fexp ((succ beta fexp x))) = c := by
               -- cexp y = fexp (mag y), so cexp(succ) = fexp(mag(succ)) = fexp(e) = c
-              simp only [FloatSpec.Core.Generic_fmt.cexp, FloatSpec.Core.Raux.mag, Id.run, bind, pure]
+              simp only [FloatSpec.Core.Generic_fmt.cexp, FloatSpec.Core.Raux.mag_eq_ite, Id.run, bind, pure]
               -- Goal: fexp (Int.ceil (Real.log (succ...) / Real.log beta)) = c
               -- hmag_succ_eq after simp: Int.ceil ... = e
-              simp only [FloatSpec.Core.Raux.mag, Id.run, bind, pure] at hmag_succ_eq
+              simp only [FloatSpec.Core.Raux.mag_eq_ite, Id.run, bind, pure] at hmag_succ_eq
               -- Now hmag_succ_eq : Int.ceil ... = e
               rw [hmag_succ_eq, hc_def]
             -- succ in format via F2R structure (succ = (m+1) * β^c)
@@ -6097,7 +6097,7 @@ theorem round_N_le_midp_from_fixed_choice_payload
               simp only [ulp, hx_ne, ↓reduceIte, FloatSpec.Core.Generic_fmt.cexp, Id.run, bind, pure]
               -- Need: β^(fexp(mag(x))) = β^c, which follows from mag(x) = e and c = fexp(e)
               have hmag_x_eq : (FloatSpec.Core.Raux.mag beta x) = e := he
-              simp only [FloatSpec.Core.Raux.mag, Id.run, bind, pure] at hmag_x_eq ⊢
+              simp only [FloatSpec.Core.Raux.mag_eq_ite, Id.run, bind, pure] at hmag_x_eq ⊢
               simp only [hmag_x_eq, hc_def, b]
 
             -- succ = x + ulp(x) = m * β^c + β^c = (m + 1) * β^c
@@ -6138,9 +6138,9 @@ theorem round_N_le_midp_from_fixed_choice_payload
             -- Use hiff.mpr to prove F(succ) from the equation
             apply hiff.mpr
             -- Need: succ = F2R(⟨Ztrunc(succ * β^(-cexp(succ))), cexp(succ)⟩).run
-            simp only [FloatSpec.Core.Defs.F2R, FloatSpec.Core.Raux.mag, Id.run, bind, pure]
+            simp only [FloatSpec.Core.Defs.F2R, FloatSpec.Core.Raux.mag_eq_ite, Id.run, bind, pure]
             -- After simp, goal has fexp (Int.ceil ...) = fexp(e) = c
-            simp only [FloatSpec.Core.Raux.mag, Id.run, bind, pure] at hmag_succ_eq
+            simp only [FloatSpec.Core.Raux.mag_eq_ite, Id.run, bind, pure] at hmag_succ_eq
             -- hmag_succ_eq : Int.ceil ... = e, and we have fexp applied to this
             simp only [hmag_succ_eq, hc_def]
             -- Goal: succ = Ztrunc(succ * β^(-c)) * β^c
@@ -6265,7 +6265,7 @@ theorem round_N_le_midp_from_fixed_choice_payload
               have hFx_spec := FloatSpec.Core.Generic_fmt.generic_format_spec (beta := beta)
                 (fexp := fexp) (x := x)
               have hx_eq := hFx_spec.mp Fx
-              simp only [FloatSpec.Core.Raux.mag, Id.run, bind, pure] at hx_eq he
+              simp only [FloatSpec.Core.Raux.mag_eq_ite, Id.run, bind, pure] at hx_eq he
               -- hx_eq shows x = Ztrunc(...) * β^(fexp(mag(x))) where mag(x) = e (since he: e = mag(x).run)
               rw [← he] at hx_eq
               -- Now x = Ztrunc(x * β^(-fexp(e))) * β^(fexp(e))
@@ -7592,7 +7592,7 @@ private theorem mag_plus_eps_theorem
     -- L := log|x| / log β and ex = ⌊L⌋ + 1
     set L : ℝ := Real.log (abs x) / Real.log (beta : ℝ)
     have hmag_run : (FloatSpec.Core.Raux.mag beta x) = Int.floor L + 1 := by
-      simp [FloatSpec.Core.Raux.mag, hx_ne, L]
+      simp [FloatSpec.Core.Raux.mag_eq_ite, hx_ne, L]
     have ex_eq : ex = Int.floor L + 1 := by simpa [hex] using hmag_run
     -- log β > 0
     have hβR : (1 : ℝ) < (beta : ℝ) := by exact_mod_cast hβ
@@ -7663,7 +7663,7 @@ private theorem mag_plus_eps_theorem
                    ((FloatSpec.Core.Raux.Ztrunc (x * b ^ (-(fexp ((FloatSpec.Core.Raux.mag beta x)))))))
                    (fexp ((FloatSpec.Core.Raux.mag beta x))) : FlocqFloat beta)) := by
         simpa [Id.run, bind, pure, FloatSpec.Core.Defs.F2R,
-               FloatSpec.Core.Raux.mag, FloatSpec.Core.Raux.Ztrunc_eq_ite, b] using this
+               FloatSpec.Core.Raux.mag_eq_ite, FloatSpec.Core.Raux.Ztrunc_eq_ite, b] using this
       exact (hiff.mp Fx)
     set m : Int :=
         (FloatSpec.Core.Raux.Ztrunc (x * b ^ (-(fexp ((FloatSpec.Core.Raux.mag beta x))))))
@@ -8946,7 +8946,7 @@ theorem ulp_le_id (x : ℝ) (hx : 0 < x)
              FloatSpec.Core.Generic_fmt.generic_format,
              FloatSpec.Core.Generic_fmt.scaled_mantissa,
              FloatSpec.Core.Generic_fmt.cexp,
-             FloatSpec.Core.Raux.mag]
+             FloatSpec.Core.Raux.mag_eq_ite]
         using hgf
     -- Extract the integer mantissa from the equivalence and rewrite x.
     have hx_eq : x = (((FloatSpec.Core.Raux.Ztrunc
@@ -9264,7 +9264,7 @@ theorem id_m_ulp_ge_bpow (x : ℝ) (e : Int)
                  ((FloatSpec.Core.Raux.Ztrunc (x * b ^ (-(fexp ((FloatSpec.Core.Raux.mag beta x)))))))
                  (fexp ((FloatSpec.Core.Raux.mag beta x))) : FlocqFloat beta)) := by
       simpa [Id.run, bind, pure, FloatSpec.Core.Defs.F2R,
-             FloatSpec.Core.Raux.mag, FloatSpec.Core.Raux.Ztrunc_eq_ite, b] using this
+             FloatSpec.Core.Raux.mag_eq_ite, FloatSpec.Core.Raux.Ztrunc_eq_ite, b] using this
     exact (hiff.mp Fx)
   -- Extract the integer mantissa m and rewrite x = (m : ℝ) * b^c
   set m : Int :=
@@ -10496,7 +10496,7 @@ theorem ulp_round
         _ = -FloatSpec.Core.Generic_fmt.round_to_generic beta fexp rnd x := by rw [hmode]
     have hmagOpp : FloatSpec.Core.Raux.mag beta (-x) =
         FloatSpec.Core.Raux.mag beta x := by
-      simp [FloatSpec.Core.Raux.mag]
+      simp [FloatSpec.Core.Raux.mag_eq_ite]
     rcases ulp_round_pos (beta := beta) (fexp := fexp)
         (rnd := FloatSpec.Core.Generic_fmt.Zrnd_opp rnd) (-x) hpos with heq | hhit
     · left

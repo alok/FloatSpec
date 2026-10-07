@@ -1604,10 +1604,11 @@ theorem radix_pos (beta : Int) (hβ : 1 < beta) :
 
 /-- FLoCq `bpow`: the radix raised to an integer exponent. Rocq matches the exponent's
 `Z0`/`Zpos`/`Zneg` cases and proves `bpow_powerRZ` that this is `powerRZ`; Lean's `zpow` on ℝ
-is that power, so the body is `beta ^ e` directly. The radix is an `Int` here (cutover
-plan E5); the lemmas take its invariant `1 < beta`. -/
+is that power, so the body is `beta ^ e` directly, and it is reducible, as Rocq's transparent
+definition is, so arithmetic tactics see the power. The radix is an `Int` here (cutover plan
+E5); the lemmas take its invariant `1 < beta`. -/
 @[flocq_source "src/Core/Raux.v" 1345 "bpow"]
-noncomputable def bpow (beta e : Int) : ℝ :=
+noncomputable abbrev bpow (beta e : Int) : ℝ :=
   ((beta : ℝ) ^ e)
 
 /-- Coq `IZR_Zpower_pos`: casting a positive integer power agrees with the
@@ -1771,8 +1772,9 @@ theorem bpow_exp (beta e : Int) (hβ : 1 < beta) :
     _ = Real.exp ((e : ℝ) * Real.log (beta : ℝ)) := by simpa [hlog_zpow]
 
 /-- From bpow (e1 - 1) < bpow e2, deduce e1 ≤ e2 -/
+@[flocq_source "src/Core/Raux.v" 1633 "bpow_lt_bpow"]
 theorem bpow_lt_bpow (beta e1 e2 : Int)
-    (hβ : 1 < beta) (hpowlt : (beta : ℝ) ^ (e1 - 1) < (beta : ℝ) ^ e2) :
+    (hβ : 1 < beta) (hpowlt : bpow beta (e1 - 1) < bpow beta e2) :
     e1 ≤ e2 := by
   -- From the strict inequality on powers, get a strict inequality on exponents
   have hβR : (1 : ℝ) < (beta : ℝ) := by exact_mod_cast hβ
@@ -1817,10 +1819,11 @@ theorem bpow_unique_from_abs_payload (beta : Int) (x : ℝ) (e1 e2 : Int)
 /-- Coq `bpow_unique`: a real lying in both source half-open power bins has a
 unique exponent.  Unlike the reusable absolute-value payload, the source
 contract is stated directly about `x`. -/
+@[flocq_source "src/Core/Raux.v" 1644 "bpow_unique"]
 theorem bpow_unique (beta : Int) (x : ℝ) (e1 e2 : Int)
     (hβ : 1 < beta)
-    (h1 : (beta : ℝ) ^ (e1 - 1) ≤ x ∧ x < (beta : ℝ) ^ e1)
-    (h2 : (beta : ℝ) ^ (e2 - 1) ≤ x ∧ x < (beta : ℝ) ^ e2) :
+    (h1 : bpow beta (e1 - 1) ≤ x ∧ x < bpow beta e1)
+    (h2 : bpow beta (e2 - 1) ≤ x ∧ x < bpow beta e2) :
     e1 = e2 := by
   have hβR : (1 : ℝ) < (beta : ℝ) := by exact_mod_cast hβ
   have hbpos : (0 : ℝ) < (beta : ℝ) := zero_lt_one.trans hβR
@@ -2071,6 +2074,7 @@ end LPO
 section Mag
 
 /-- Coq {lit}`mag_prop`: witness record for a magnitude exponent. -/
+@[flocq_source "src/Core/Raux.v" 1583 "mag_prop"]
 structure mag_prop (beta : Int) (x : ℝ) : Type where
   /-- The exponent witnessing the magnitude bound. -/
   mag_val : Int
@@ -2096,21 +2100,27 @@ abbrev Build_mag_prop {beta : Int} {x : ℝ} (e : Int)
     The previous ceiling-based definition gave `mag(β^e) = e`, which created
     boundary cases where {lit}`|x| = β^(mag x)` that don't exist in Coq.
 -/
+@[flocq_source "src/Core/Raux.v" 1588 "mag"]
 noncomputable def mag (beta : Int) (x : ℝ) : Int :=
-  -- Use floor + 1 to match Coq's strict upper bound semantics.
-  -- Coq's concrete witness is `Zfloor (ln |x| / ln beta) + 1`; since
-  -- Coq's `ln 0` reduces to zero, its observable value at zero is one.
-  if x = 0 then 1 else ⌊Real.log (abs x) / Real.log (beta : ℝ)⌋ + 1
+  -- The source's witness, `Zfloor (ln |x| / ln r) + 1`. Both systems define `ln 0 = 0`,
+  -- so the magnitude of zero is one without a separate case.
+  Zfloor (Real.log |x| / Real.log (beta : ℝ)) + 1
+
+/-- {lean}`mag` with the zero case separated. -/
+theorem mag_eq_ite (beta : Int) (x : ℝ) :
+    mag beta x = if x = 0 then 1 else ⌊Real.log (abs x) / Real.log (beta : ℝ)⌋ + 1 := by
+  by_cases h : x = 0 <;> simp [mag, Zfloor, h]
 
 /-- Uniqueness of magnitude from bpow bounds.
     With Coq semantics: β^(e-1) ≤ |x| < β^e implies mag(x) = e.
     Note: non-strict lower bound, strict upper bound. -/
+@[flocq_source "src/Core/Raux.v" 1657 "mag_unique"]
 theorem mag_unique (beta : Int) (x : ℝ) (e : Int)
     (hβ : 1 < beta)
-    (hlow : (beta : ℝ) ^ (e - 1) ≤ |x|)
-    (hupp : |x| < (beta : ℝ) ^ e) :
+    (h : bpow beta (e - 1) ≤ |x| ∧ |x| < bpow beta e) :
     mag beta x = e := by
-  unfold mag
+  obtain ⟨hlow, hupp⟩ := h
+  simp only [mag_eq_ite]
   -- From 1 < beta (as ℤ), get positivity on ℝ
   have hbposℤ : (0 : Int) < beta := lt_trans (by decide) hβ
   have hbposR : (0 : ℝ) < (beta : ℝ) := by exact_mod_cast hbposℤ
@@ -2171,14 +2181,16 @@ theorem mag_unique (beta : Int) (x : ℝ) (e : Int)
   exact hfloor_add1_eq
 
 /-- Opposite preserves magnitude: mag (-x) = mag x -/
+@[flocq_source "src/Core/Raux.v" 1673 "mag_opp"]
 theorem mag_opp (beta : Int) (x : ℝ) (_hβ : 1 < beta) :
     mag beta (-x) = mag beta x := by
-  simp [mag]
+  simp [mag_eq_ite]
 
 /-- Absolute value preserves magnitude: mag |x| = mag x -/
+@[flocq_source "src/Core/Raux.v" 1687 "mag_abs"]
 theorem mag_abs (beta : Int) (x : ℝ) (_hβ : 1 < beta) :
     mag beta |x| = mag beta x := by
-  simp [mag]
+  simp [mag_eq_ite]
 
 /-- Uniqueness under positivity: for {given -show}`β`, {given -show}`x : ℝ`, {given -show}`e : ℤ`, if {lean}`0 < x` and `β^(e-1) ≤ x < β^e`, then {lean}`mag β x = e`.
 
@@ -2198,13 +2210,14 @@ theorem mag_unique_pos_from_positive_payload (beta : Int) (x : ℝ) (e : Int)
   have hupp' : |x| < (beta : ℝ) ^ e := by
     simpa [hxabs] using hupp
   -- Apply the previously proven uniqueness lemma
-  exact mag_unique beta x e hβ hlow' hupp'
+  exact mag_unique beta x e hβ ⟨hlow', hupp'⟩
 
 /-- Coq `mag_unique_pos`: the source interval itself implies positivity; it is
 not an additional public premise. -/
+@[flocq_source "src/Core/Raux.v" 1698 "mag_unique_pos"]
 theorem mag_unique_pos (beta : Int) (x : ℝ) (e : Int)
     (hβ : 1 < beta)
-    (h : (beta : ℝ) ^ (e - 1) ≤ x ∧ x < (beta : ℝ) ^ e) :
+    (h : bpow beta (e - 1) ≤ x ∧ x < bpow beta e) :
     mag beta x = e := by
   have hβR : (1 : ℝ) < (beta : ℝ) := by exact_mod_cast hβ
   have hbpos : (0 : ℝ) < (beta : ℝ) := zero_lt_one.trans hβR
@@ -2213,12 +2226,13 @@ theorem mag_unique_pos (beta : Int) (x : ℝ) (e : Int)
 
 /-- Coq {lit}`mag_le_bpow`: if {lit}`x ≠ 0` and {lit}`|x| < bpow e`, then
     {lit}`mag x ≤ e`. -/
+@[flocq_source "src/Core/Raux.v" 1808 "mag_le_bpow"]
 theorem mag_le_bpow (beta : Int) (x : ℝ) (e : Int)
     (hβ : 1 < beta)
     (hx_ne : x ≠ 0)
-    (hx_lt : |x| < (beta : ℝ) ^ e) :
+    (hx_lt : |x| < bpow beta e) :
     mag beta x ≤ e := by
-  unfold mag
+  simp only [mag_eq_ite]
   -- Base > 1 on ℝ and hence positive
   have hβR : (1 : ℝ) < (beta : ℝ) := by exact_mod_cast hβ
   have hbposR : (0 : ℝ) < (beta : ℝ) := lt_trans zero_lt_one hβR
@@ -2249,7 +2263,7 @@ theorem mag_le_bpow (beta : Int) (x : ℝ) (e : Int)
   have hfloor_lt : Int.floor L < e := Int.floor_lt.mpr hL_lt
   have hfloor_add1_le : Int.floor L + 1 ≤ e := Int.lt_iff_add_one_le.mp hfloor_lt
   -- Under x ≠ 0, mag returns ⌊L⌋ + 1, so it suffices to use hfloor_add1_le
-  simpa [mag, hLdef, hx_ne] using hfloor_add1_le
+  simpa [mag_eq_ite, hLdef, hx_ne] using hfloor_add1_le
 
 /-- Coq {lit}`mag_le_abs`: if x ≠ 0 and |x| ≤ |y| then mag x ≤ mag y
 
@@ -2257,6 +2271,7 @@ theorem mag_le_bpow (beta : Int) (x : ℝ) (e : Int)
     (for 1 < beta and 0 < |y| < 1, we have mag 0 = 1 > mag y). We therefore
     assume x ≠ 0; this also forces y ≠ 0 under |x| ≤ |y|.
 -/
+@[flocq_source "src/Core/Raux.v" 1713 "mag_le_abs"]
 theorem mag_le_abs (beta : Int) (x y : ℝ)
     (hβ : 1 < beta)
     (hx_ne : x ≠ 0)
@@ -2270,7 +2285,7 @@ theorem mag_le_abs (beta : Int) (x y : ℝ)
   have hy_ne : y ≠ 0 := by exact (abs_pos.mp hy_pos)
   -- Reduce to an inequality between floors
   -- using the nonzero facts to discharge the conditionals.
-  simp [mag, hx_ne, hy_ne]
+  simp [mag_eq_ite, hx_ne, hy_ne]
   -- Normalize the goal to use |x| and |y| explicitly
    -- logβ > 0, so dividing preserves ≤
   have hlogβ_pos : 0 < Real.log (beta : ℝ) := by
@@ -2314,10 +2329,11 @@ theorem mag_le_abs (beta : Int) (x y : ℝ)
 
   -- Unfold mag on both sides.
   -- This makes the goal defeq to `⌊Lx⌋ + 1 ≤ ⌊Ly⌋ + 1`.
-  simpa [mag, hx_ne, hy_ne, hLx, hLy]
+  simpa [mag_eq_ite, hx_ne, hy_ne, hLx, hLy]
     using hfloor_add1
 
 /-- Coq `mag_le`: positive-order monotonicity of magnitude. -/
+@[flocq_source "src/Core/Raux.v" 1734 "mag_le"]
 theorem mag_le (beta : Int) (x y : ℝ)
     (hβ : 1 < beta) (hx : 0 < x) (hxy : x ≤ y) :
     mag beta x ≤ mag beta y := by
@@ -2343,8 +2359,9 @@ theorem lt_mag_from_bpow_payload (beta : Int) (x : ℝ) (e : Int)
 /-- Magnitude of bpow e is e + 1 (Coq semantics).
     With floor+1 definition: mag(β^e) = ⌊log(β^e)/log β⌋ + 1 = ⌊e⌋ + 1 = e + 1.
     This matches Coq: β^e ≤ β^e < β^(e+1), so mag(β^e) = e + 1. -/
+@[flocq_source "src/Core/Raux.v" 1771 "mag_bpow"]
 theorem mag_bpow (beta e : Int) (hβ : 1 < beta) :
-    mag beta ((beta : ℝ) ^ e) = e + 1 := by
+    mag beta (bpow beta e) = e + 1 := by
   -- Compute `mag` on the specific input `(β : ℝ)^e`.
   have hβR : (1 : ℝ) < (beta : ℝ) := by exact_mod_cast hβ
   have hbposR : (0 : ℝ) < (beta : ℝ) := lt_trans zero_lt_one hβR
@@ -2367,13 +2384,14 @@ theorem mag_bpow (beta e : Int) (hβ : 1 < beta) :
   -- `⌊(e : ℝ)⌋ + 1 = e + 1` for any integer `e`.
   have hfloor_eq : Int.floor (e : ℝ) = e := Int.floor_intCast e
   -- With floor+1 definition, mag(β^e) = ⌊e⌋ + 1 = e + 1
-  simp only [mag, hx_ne, ite_false,
+  simp only [mag_eq_ite, hx_ne, ite_false,
          abs_of_nonneg (le_of_lt hx_pos), hlog_pow, hquot, hfloor_eq]
 
 /-- Coq `Raux.mag_gt_bpow`: if `bpow e ≤ |x|`, then `e < mag x`. -/
+@[flocq_source "src/Core/Raux.v" 1821 "mag_gt_bpow"]
 theorem mag_gt_bpow (beta : Int) (x : ℝ) (e : Int)
     (hβ : 1 < beta)
-    (hle : (beta : ℝ) ^ e ≤ |x|) :
+    (hle : bpow beta e ≤ |x|) :
     e < mag beta x := by
   have hβR : (1 : ℝ) < (beta : ℝ) := by exact_mod_cast hβ
   have hbpos : (0 : ℝ) < (beta : ℝ) := lt_trans zero_lt_one hβR
@@ -2396,15 +2414,16 @@ theorem mag_gt_bpow (beta : Int) (x : ℝ) (e : Int)
     simpa [L] using this
   have he_le_floor : e ≤ Int.floor L := Int.le_floor.mpr he_le_L
   have hfinal : e < Int.floor L + 1 := by omega
-  simpa [mag, hx_ne, L] using hfinal
+  simpa [mag_eq_ite, hx_ne, L] using hfinal
 
 /-- Coq `Raux.mag_ge_bpow`: the non-strict shifted lower bound. -/
+@[flocq_source "src/Core/Raux.v" 1837 "mag_ge_bpow"]
 theorem mag_ge_bpow (beta : Int) (x : ℝ) (e : Int)
     (hβ : 1 < beta)
-    (hle : (beta : ℝ) ^ (e - 1) ≤ |x|) :
+    (hle : bpow beta (e - 1) ≤ |x|) :
     e ≤ mag beta x := by
   by_cases hxe : |x| < (beta : ℝ) ^ e
-  · exact le_of_eq (mag_unique beta x e hβ hle hxe).symm
+  · exact le_of_eq (mag_unique beta x e hβ ⟨hle, hxe⟩).symm
   · exact le_of_lt (mag_gt_bpow beta x e hβ (le_of_not_gt hxe))
 
 /-- If mag x < e then |x| < bpow e -/
@@ -2425,7 +2444,7 @@ theorem bpow_mag_gt_from_strict_mag_payload (beta : Int) (x : ℝ) (e : Int)
     -- L := log|x| / logβ and mag = ⌊L⌋ + 1 (Coq semantics)
     set L : ℝ := Real.log (abs x) / Real.log (beta : ℝ) with hL
     have hmag_run : (mag beta x) = Int.floor L + 1 := by
-      simp [mag, hx0, hL]
+      simp [mag_eq_ite, hx0, hL]
     have hfloor_add1_lt : Int.floor L + 1 < e := hmag_run ▸ hlt
 
     -- From ⌊L⌋ + 1 < e get L < e (since L < ⌊L⌋ + 1 by floor property)
@@ -2493,7 +2512,7 @@ theorem bpow_mag_le_from_exp_payload (beta : Int) (x : ℝ) (e : Int)
   set L : ℝ := Real.log (abs x) / Real.log (beta : ℝ)
   -- Evaluate `(mag beta x)` under `x ≠ 0` (Coq semantics: floor+1)
   have hmag_run : (mag beta x) = Int.floor L + 1 := by
-    simp [mag, hx_ne, L]
+    simp [mag_eq_ite, hx_ne, L]
   -- log β > 0
   have hlogβ_pos : 0 < Real.log (beta : ℝ) := by
     have : 0 < Real.log (beta : ℝ) ↔ 1 < (beta : ℝ) :=
@@ -2555,7 +2574,7 @@ private theorem bpow_mag_gt_of_ne_zero (beta : Int) (x : ℝ)
   -- Abbreviation L := log |x| / log β
   set L : ℝ := Real.log (abs x) / Real.log (beta : ℝ)
   -- Evaluate `(mag beta x)` under `x ≠ 0` (Coq semantics: floor+1)
-  have hmag_run : (mag beta x) = Int.floor L + 1 := by simp [mag, hx_ne, L]
+  have hmag_run : (mag beta x) = Int.floor L + 1 := by simp [mag_eq_ite, hx_ne, L]
   -- log β > 0
   have hlogβ_pos : 0 < Real.log (beta : ℝ) := by
     have : 0 < Real.log (beta : ℝ) ↔ 1 < (beta : ℝ) :=
@@ -2597,21 +2616,24 @@ private theorem bpow_mag_gt_of_ne_zero (beta : Int) (x : ℝ)
   exact habs_lt
 
 /-- Coq `bpow_mag_gt`: the strict upper magnitude bound, including `x = 0`. -/
+@[flocq_source "src/Core/Raux.v" 1854 "bpow_mag_gt"]
 theorem bpow_mag_gt (beta : Int) (x : ℝ) (hβ : 1 < beta) :
-    |x| < (beta : ℝ) ^ (mag beta x) := by
+    |x| < bpow beta (mag beta x) := by
   by_cases hx : x = 0
   · have hbpos : (0 : ℝ) < (beta : ℝ) := by
       exact_mod_cast (lt_trans (by decide : (0 : Int) < 1) hβ)
-    simpa [hx, mag] using hbpos
+    simpa [hx, mag_eq_ite] using hbpos
   · exact bpow_mag_gt_of_ne_zero beta x hβ hx
 
 /-- Coq `bpow_mag_le`: the lower magnitude bound for nonzero values. -/
+@[flocq_source "src/Core/Raux.v" 1866 "bpow_mag_le"]
 theorem bpow_mag_le (beta : Int) (x : ℝ) (hβ : 1 < beta) (hx : x ≠ 0) :
-    (beta : ℝ) ^ (mag beta x - 1) ≤ |x| :=
+    bpow beta (mag beta x - 1) ≤ |x| :=
   bpow_mag_le_from_exp_payload beta x (mag beta x) hβ hx le_rfl
 
 /-- Coq `lt_mag`: strict magnitude separation implies strict value separation
 when the larger value is positive. -/
+@[flocq_source "src/Core/Raux.v" 1749 "lt_mag"]
 theorem lt_mag (beta : Int) (x y : ℝ)
     (hβ : 1 < beta) (hy : 0 < y) (hmag : mag beta x < mag beta y) :
     x < y := by
@@ -2649,9 +2671,10 @@ noncomputable def mag_with_spec (r : FloatSpec.Core.Zaux.Radix)
 
 /-- Coq `Raux.mag_mult_bpow`: multiplying by a radix power shifts the
     magnitude by the same exponent. -/
+@[flocq_source "src/Core/Raux.v" 1786 "mag_mult_bpow"]
 theorem mag_mult_bpow (beta : Int) (x : ℝ) (e : Int) (hβ : 1 < beta)
     (hx : x ≠ 0) :
-    mag beta (x * (beta : ℝ) ^ e) = mag beta x + e := by
+    mag beta (x * bpow beta e) = mag beta x + e := by
   have hβR : (1 : ℝ) < (beta : ℝ) := by exact_mod_cast hβ
   have hbpos : (0 : ℝ) < (beta : ℝ) := lt_trans zero_lt_one hβR
   have hbne : (beta : ℝ) ≠ 0 := ne_of_gt hbpos
@@ -2683,10 +2706,11 @@ theorem mag_mult_bpow (beta : Int) (x : ℝ) (e : Int) (hβ : 1 < beta)
         (beta : ℝ) ^ (mag beta x + e) := by
     rw [habs, hpow_high]
     exact mul_lt_mul_of_pos_right hupp_x' hpow_pos
-  exact mag_unique beta (x * (beta : ℝ) ^ e) (mag beta x + e) hβ hlow hupp
+  exact mag_unique beta (x * (beta : ℝ) ^ e) (mag beta x + e) hβ ⟨hlow, hupp⟩
 
 /-- Coq `Raux.mag_le_Zpower`, with the source integer domain and nonzero
     precondition preserved exactly. -/
+@[flocq_source "src/Core/Raux.v" 1876 "mag_le_Zpower"]
 theorem mag_le_Zpower (beta : Int) (m e : Int)
     (hβ : 1 < beta)
     (hm : m ≠ 0)
@@ -2711,6 +2735,7 @@ theorem mag_le_Zpower (beta : Int) (m e : Int)
 
 /-- Coq `Raux.mag_gt_Zpower`, preserving its integer power premise and strict
     postcondition. -/
+@[flocq_source "src/Core/Raux.v" 1895 "mag_gt_Zpower"]
 theorem mag_gt_Zpower (beta : Int) (m e : Int)
     (hβ : 1 < beta)
     (hm : m ≠ 0)
@@ -2739,12 +2764,13 @@ theorem mag_gt_Zpower (beta : Int) (m e : Int)
     exact lt_trans he_neg hmag_pos
 
 /-- Magnitude of a product versus sum of magnitudes -/
+@[flocq_source "src/Core/Raux.v" 1915 "mag_mult"]
 theorem mag_mult (beta : Int) (x y : ℝ)
     (hβ : 1 < beta)
     (hx_ne : x ≠ 0)
     (hy_ne : y ≠ 0) :
-    mag beta (x * y) ≤ mag beta x + mag beta y ∧
-      mag beta x + mag beta y - 1 ≤ mag beta (x * y) := by
+    mag beta x + mag beta y - 1 ≤ mag beta (x * y) ∧
+      mag beta (x * y) ≤ mag beta x + mag beta y := by
   -- Unpack hypotheses and basic positivity facts
   have hβR : (1 : ℝ) < (beta : ℝ) := by exact_mod_cast hβ
   have hbpos : 0 < (beta : ℝ) := lt_trans zero_lt_one hβR
@@ -2752,7 +2778,7 @@ theorem mag_mult (beta : Int) (x y : ℝ)
   have hx_pos : 0 < |x| := abs_pos.mpr hx_ne
   have hy_pos : 0 < |y| := abs_pos.mpr hy_ne
   -- Unfold `mag` using the nonzero facts
-  simp [mag, hxy_ne, hx_ne, hy_ne]
+  simp [mag_eq_ite, hxy_ne, hx_ne, hy_ne]
   -- Shorthands for logarithmic magnitudes
   set Lx : ℝ := Real.log (abs x) / Real.log (beta : ℝ) with hLx
   set Ly : ℝ := Real.log (abs y) / Real.log (beta : ℝ) with hLy
@@ -2782,13 +2808,14 @@ theorem mag_mult (beta : Int) (x y : ℝ)
         (Int.floor Lx + Int.floor Ly ≤ Int.floor (Lx + Ly)) := by
     exact ⟨by linarith [Int.le_floor_add_floor Lx Ly], Int.le_floor_add Lx Ly⟩
   simpa [hlog_mul_abs, hLx', hLy', add_assoc, add_left_comm, add_comm]
-    using h_goal
+    using And.symm h_goal
 
 /-- Magnitude of a sum under positivity and ordering
 
     Coq (Flocq) version: if 0 < y ≤ x then
       mag x ≤ mag (x + y) ≤ mag x + 1.
 -/
+@[flocq_source "src/Core/Raux.v" 1944 "mag_plus"]
 theorem mag_plus (beta : Int) (x y : ℝ)
     (hβ : 1 < beta)
     (hy_pos : 0 < y)
@@ -2812,7 +2839,7 @@ theorem mag_plus (beta : Int) (x y : ℝ)
   have hx_ne : x ≠ 0 := ne_of_gt hx_pos
   have hy_ne : y ≠ 0 := ne_of_gt hy_pos
   have hxy_ne : x + y ≠ 0 := ne_of_gt hxy_pos
-  simp [mag, hx_ne, hy_ne, hxy_ne]
+  simp [mag_eq_ite, hx_ne, hy_ne, hxy_ne]
 
   -- Shorthands for logarithmic magnitudes
   set Lx : ℝ := Real.log x / Real.log (beta : ℝ) with hLx
@@ -2913,6 +2940,7 @@ theorem mag_plus (beta : Int) (x y : ℝ)
 
     Coq (Flocq) version: if 0 < y < x then mag (x − y) ≤ mag x.
 -/
+@[flocq_source "src/Core/Raux.v" 1986 "mag_minus"]
 theorem mag_minus (beta : Int) (x y : ℝ)
     (hβ : 1 < beta)
     (hy_pos : 0 < y)
@@ -2925,7 +2953,7 @@ theorem mag_minus (beta : Int) (x y : ℝ)
   have hx_ne : x ≠ 0 := ne_of_gt hx_pos
   have hy_ne : y ≠ 0 := ne_of_gt hy_pos
   have hxy_ne : x - y ≠ 0 := ne_of_gt hxy_pos
-  simp [mag, hx_ne, hy_ne, hxy_ne]
+  simp [mag_eq_ite, hx_ne, hy_ne, hxy_ne]
   -- Compare via logarithms
   set Lx : ℝ := Real.log x / Real.log (beta : ℝ) with hLx
   set Lxy : ℝ := Real.log (x - y) / Real.log (beta : ℝ) with hLxy
@@ -2969,6 +2997,7 @@ theorem mag_minus (beta : Int) (x y : ℝ)
 
     If 0 < x, 0 < y and mag y ≤ mag x − 2, then mag x − 1 ≤ mag (x − y).
 -/
+@[flocq_source "src/Core/Raux.v" 2001 "mag_minus_lb"]
 theorem mag_minus_lb (beta : Int) (x y : ℝ)
     (hβ : 1 < beta)
     (hx_pos : 0 < x)
@@ -2991,7 +3020,7 @@ theorem mag_minus_lb (beta : Int) (x y : ℝ)
   set Ly : ℝ := Real.log y / Real.log (beta : ℝ) with hLy
   -- From hmy_le: ⌊Ly⌋ + 1 ≤ (⌊Lx⌋ + 1) - 2, i.e., ⌊Ly⌋ ≤ ⌊Lx⌋ - 2
   have hfloor_le : Int.floor Ly ≤ Int.floor Lx - 2 := by
-    simp only [mag, hx_ne, hy_ne, abs_of_pos hx_pos, abs_of_pos hy_pos, ite_false,
+    simp only [mag_eq_ite, hx_ne, hy_ne, abs_of_pos hx_pos, abs_of_pos hy_pos, ite_false,
       hLx, hLy] at hmy_le
     linarith
   -- Use floor bounds instead of ceiling bounds (avoids issues when Lx is an integer)
@@ -3045,7 +3074,7 @@ theorem mag_minus_lb (beta : Int) (x y : ℝ)
     exact le_trans hy_le_pow_ceil hmono
 
   -- Reduce the goal to an inequality on floors.
-  simp [mag, hLx, hLy, abs_of_pos hx_pos, abs_of_pos hy_pos]
+  simp [mag_eq_ite, hLx, hLy, abs_of_pos hx_pos, abs_of_pos hy_pos]
   -- After establishing positivity of x - y, compare the logarithmic floors
   -- using Lx - 1 ≤ Lxy. Ceiling bounds below are intermediate estimates only.
   set Lxy : ℝ := Real.log (x - y) / Real.log (beta : ℝ) with hLxy
@@ -3174,7 +3203,7 @@ theorem mag_minus_lb (beta : Int) (x y : ℝ)
   have hxy_ne : x - y ≠ 0 := ne_of_gt hxy_pos
 
   -- Now reduce the goal to an inequality on floors.
-  simp [mag, hx_ne, hy_ne, hxy_ne, hLx, hLy, abs_of_pos hx_pos, abs_of_pos hy_pos]
+  simp [mag_eq_ite, hx_ne, hy_ne, hxy_ne, hLx, hLy, abs_of_pos hx_pos, abs_of_pos hy_pos]
 
   -- Translate to Lx - 1 ≤ Lxy
   have hLx_sub_le : Lx - 1 ≤ Lxy := by
@@ -3222,6 +3251,7 @@ theorem mag_minus_lb (beta : Int) (x y : ℝ)
     Coq (Flocq) version: if x ≠ 0 and mag y ≤ mag x − 2, then
     mag x − 1 ≤ mag (x + y).
 -/
+@[flocq_source "src/Core/Raux.v" 2040 "mag_plus_ge"]
 theorem mag_plus_ge (beta : Int) (x y : ℝ)
     (hβ : 1 < beta)
     (hx_ne : x ≠ 0)
@@ -3237,7 +3267,7 @@ theorem mag_plus_ge (beta : Int) (x y : ℝ)
   -- Case split on y = 0
   by_cases hy_zero : y = 0
   · -- If y = 0, then x + y = x and result is trivial
-    simp only [hy_zero, add_zero, mag, hx_ne, ite_false]
+    simp only [hy_zero, add_zero, mag_eq_ite, hx_ne, ite_false]
     show (Int.floor (Real.log |x| / Real.log ↑beta) + 1 - 1 ≤
         Int.floor (Real.log |x| / Real.log ↑beta) + 1)
     grind
@@ -3252,9 +3282,9 @@ theorem mag_plus_ge (beta : Int) (x y : ℝ)
 
   -- mag x = mx, mag y = my
   have hmag_x_eq : (mag beta x) = mx := by
-    simp only [mag, hx_ne, ite_false, hmx_def]
+    simp only [mag_eq_ite, hx_ne, ite_false, hmx_def]
   have hmag_y_eq : (mag beta y) = my := by
-    simp only [mag, hy_zero, ite_false, hmy_def]
+    simp only [mag_eq_ite, hy_zero, ite_false, hmy_def]
 
   -- From hypothesis: my ≤ mx - 2
   have hmy_le' : my ≤ mx - 2 := by
@@ -3378,10 +3408,11 @@ theorem mag_plus_ge (beta : Int) (x y : ℝ)
     grind
 
   -- Prove the WP goal
-  simp only [mag, hxy_ne, ite_false, hx_ne, hmxy_def, hmx_def]
+  simp only [mag_eq_ite, hxy_ne, ite_false, hx_ne, hmxy_def, hmx_def]
   exact hmxy_ge
 
 /-- Bounds on magnitude under division -/
+@[flocq_source "src/Core/Raux.v" 2067 "mag_div"]
 theorem mag_div (beta : Int) (x y : ℝ)
     (hβ : 1 < beta)
     (hx_ne : x ≠ 0)
@@ -3399,7 +3430,7 @@ theorem mag_div (beta : Int) (x y : ℝ)
   have hy_abs_pos : 0 < |y| := abs_pos.mpr hy_ne
 
   -- Reduce to floor expressions
-  simp [mag, hx_ne, hy_ne, hxy_ne]
+  simp [mag_eq_ite, hx_ne, hy_ne, hxy_ne]
 
   -- Set up the log expressions
   set Lx := Real.log |x| / Real.log (beta : ℝ) with hLx
@@ -3467,7 +3498,7 @@ theorem mag_sqrt_from_log_payload (beta : Int) (x : ℝ)
   have hx_ne : x ≠ 0 := ne_of_gt hx_pos
   have hx_nonneg : 0 ≤ x := le_of_lt hx_pos
   -- Reduce the monad
-  simp only [mag]
+  simp only [mag_eq_ite]
   simp only [hsqrt_ne, hx_ne, ite_false]
   -- The key: log(sqrt x) = (1/2) * log x
   have hlog_sqrt : Real.log (Real.sqrt x) = Real.log x / 2 := Real.log_sqrt hx_nonneg
@@ -3480,6 +3511,7 @@ theorem mag_sqrt_from_log_payload (beta : Int) (x : ℝ)
 
 /-- Coq `mag_sqrt`: magnitude of a positive square root is the floor-half of
 `mag x + 1` (Lean `/ 2` is the same floor division used by Coq `Z.div2`). -/
+@[flocq_source "src/Core/Raux.v" 2116 "mag_sqrt"]
 theorem mag_sqrt (beta : Int) (x : ℝ) (hβ : 1 < beta) (hx : 0 < x) :
     mag beta (Real.sqrt x) = (mag beta x + 1) / 2 := by
   set L : ℝ := Real.log x / Real.log (beta : ℝ)
@@ -3508,7 +3540,7 @@ theorem mag_sqrt (beta : Int) (x : ℝ) (hβ : 1 < beta) (hx : 0 < x) :
   have hsqrt : mag beta (Real.sqrt x) = q + 1 := by
     simpa [L, q] using mag_sqrt_from_log_payload beta x hβ hx
   have hmagx : mag beta x = n + 1 := by
-    simp [mag, ne_of_gt hx, abs_of_pos hx, L, n]
+    simp [mag_eq_ite, ne_of_gt hx, abs_of_pos hx, L, n]
   calc
     mag beta (Real.sqrt x) = q + 1 := hsqrt
     _ = (n + 2) / 2 := by omega
@@ -3521,11 +3553,12 @@ theorem mag_sqrt (beta : Int) (x : ℝ) (hβ : 1 < beta) (hx : 0 < x) :
     With floor+1 semantics: mag(1) = ⌊0⌋ + 1 = 1
     This corresponds to 1 being in the interval from β^0 to β^1 (including left, excluding right).
 -/
+@[flocq_source "src/Core/Raux.v" 2146 "mag_1"]
 theorem mag_1 (beta : Int) (_hβ : 1 < beta) :
     mag beta (1 : ℝ) = 1 := by
   -- Direct computation from the definition of `mag`:
   -- |1| = 1 and log 1 = 0, hence floor(0 / log β) + 1 = 0 + 1 = 1.
-  simp [mag, abs_one, Real.log_one]
+  simp [mag_eq_ite, abs_one, Real.log_one]
 
 end Mag
 

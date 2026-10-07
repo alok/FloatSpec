@@ -2860,7 +2860,7 @@ theorem mag_round_odd_from_explicit_payload
         simpa [huniq] using hgg_even
       exact False.elim (hg_odd ((Zeven_abs g.Fnum).mp hg_abs_even))
   have hmag_r := FloatSpec.Core.Raux.mag_unique
-    (beta := beta) (x := r) (e := e) hβ hlow_r hupper_r
+    (beta := beta) (x := r) (e := e) hβ ⟨hlow_r, hupper_r⟩
   simpa [Id.run, pure, e, r]
     using hmag_r
 

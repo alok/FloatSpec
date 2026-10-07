@@ -9,7 +9,7 @@ private def binaryRadix : FloatSpec.Core.Zaux.Radix :=
 
 /-- Coq's observable magnitude projection at one is preserved. -/
 example : (mag_with_spec binaryRadix (1 : Real)).mag_val = 1 := by
-  norm_num [mag_with_spec, mag, binaryRadix]
+  norm_num [mag_with_spec, mag_eq_ite, binaryRadix]
 
 /-- The source-facing result carries the dependent bounds rather than merely
 returning the integer projection. -/

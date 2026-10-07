@@ -34,7 +34,7 @@ variable [Generic_fmt.Valid_exp fexp] [Generic_fmt.Monotone_exp fexp]
 
 /-- Seven lies in the binade from four inclusive to eight exclusive. -/
 theorem magnitude_minus_seven : Raux.mag 2 (-7 : Real) = 3 :=
-  Raux.mag_unique 2 (-7) 3 (by decide) (by norm_num) (by norm_num)
+  Raux.mag_unique 2 (-7) 3 (by decide) ⟨by norm_num, by norm_num⟩
 
 #print axioms magnitude_minus_seven
 

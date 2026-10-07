@@ -1890,7 +1890,8 @@ private theorem binary_round_eq_of_roundR (mode : RoundingMode) (s : Bool) (M : 
   simp only [hround] at hpay
   have hcond : FloatSpec.Core.Raux.Rlt_bool |SF2R 2 t|
       (FloatSpec.Core.Raux.bpow 2 primEmax) = true := by
-    simp [FloatSpec.Core.Raux.Rlt_bool_eq_decide, hlt]
+    rw [FloatSpec.Core.Raux.Rlt_bool_eq_decide]
+    exact decide_eq_true hlt
   rw [hcond] at hpay
   simp only [↓reduceIte] at hpay
   obtain ⟨hv, hf, hs⟩ := hpay
@@ -1910,15 +1911,15 @@ private theorem binary_round_eq_overflow (mode : RoundingMode) (s : Bool) (M : N
   simp only [hround] at hpay
   have hcond : FloatSpec.Core.Raux.Rlt_bool |X|
       (FloatSpec.Core.Raux.bpow 2 primEmax) = false := by
-    simp [FloatSpec.Core.Raux.Rlt_bool_eq_decide, hge]
+    rw [FloatSpec.Core.Raux.Rlt_bool_eq_decide]
+    exact decide_eq_false hge
   rw [hcond] at hpay
   simpa using hpay
 
 private theorem primMag_eq (x : ℝ) (k : Int) (h1 : (2 : ℝ) ^ (k - 1) ≤ |x|)
     (h2 : |x| < (2 : ℝ) ^ k) :
     FloatSpec.Core.Raux.mag 2 x = k := by
-  exact FloatSpec.Core.Raux.mag_unique 2 x k (by norm_num) (by exact_mod_cast h1)
-    (by exact_mod_cast h2)
+  exact FloatSpec.Core.Raux.mag_unique 2 x k (by norm_num) ⟨by exact_mod_cast h1, by exact_mod_cast h2⟩
 
 private theorem primMag_le (x : ℝ) (k : Int) (hx : x ≠ 0) (h2 : |x| < (2 : ℝ) ^ k) :
     FloatSpec.Core.Raux.mag 2 x ≤ k := by

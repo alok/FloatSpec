@@ -1757,7 +1757,7 @@ theorem mag_sqrt_disj (x : ℝ) (hβ : 1 < beta) :
       FloatSpec.Core.Raux.mag beta x =
         Int.floor (Real.log x / Real.log (beta : ℝ)) + 1 := by
     have hx_ne : x ≠ 0 := ne_of_gt hx_pos
-    simp [FloatSpec.Core.Raux.mag, hx_ne, abs_of_pos hx_pos]
+    simp [FloatSpec.Core.Raux.mag_eq_ite, hx_ne, abs_of_pos hx_pos]
   set n : Int := Int.floor (Real.log x / Real.log (beta : ℝ)) with hn
   set m : Int := Int.floor ((Real.log x / Real.log (beta : ℝ)) / 2) with hm
   have hmagx_n :
@@ -1809,7 +1809,7 @@ theorem mag_mult_disj (x y : ℝ) (hβ : 1 < beta)
           FloatSpec.Core.Raux.mag beta x + FloatSpec.Core.Raux.mag beta y ∧
         FloatSpec.Core.Raux.mag beta x + FloatSpec.Core.Raux.mag beta y - 1 ≤
           FloatSpec.Core.Raux.mag beta (x * y) := by
-    simpa [Id.run, pure] using htrip
+    simpa [Id.run, pure] using htrip.symm
   omega
 
 /-- Coq: `mag_minus_disj`.
@@ -1973,7 +1973,7 @@ theorem mag_minus_separated (fexp : Int → Int)
     simpa [hxy_abs] using lt_trans hxy_lt_x hx_upper
   have hmag := FloatSpec.Core.Raux.mag_unique
     (beta := beta) (x := x - y) (e := FloatSpec.Core.Raux.mag beta x)
-    hβ hlow hupp
+    hβ ⟨hlow, hupp⟩
   simpa [Id.run, pure] using hmag
 
 /-- Coq: `round_round_mult_hyp`. -/
@@ -2039,7 +2039,7 @@ theorem round_round_mult_aux (fexp1 fexp2 : Int → Int)
   have hmag :
       FloatSpec.Core.Raux.mag beta (x * y) ≤ ex + ey ∧
         ex + ey - 1 ≤ FloatSpec.Core.Raux.mag beta (x * y) := by
-    simpa [ex, ey] using hmag_raw
+    simpa [ex, ey] using hmag_raw.symm
   have hmag_cases :
       FloatSpec.Core.Raux.mag beta (x * y) = ex + ey ∨
         FloatSpec.Core.Raux.mag beta (x * y) = ex + ey - 1 := by

@@ -1204,12 +1204,12 @@ theorem canonical_canonical_mantissa_compat (sx : Bool) (mx : Nat) (ex : Int)
     · -- sx = true: use mag(-x) = mag(x)
       simp only [↓reduceIte]
       -- mag 2 (-mx) = mag 2 mx
-      unfold FloatSpec.Core.Raux.mag
+      simp only [FloatSpec.Core.Raux.mag_eq_ite]
       -- Explicitly prove -↑↑mx ≠ 0 so simp can eliminate the if-condition
       have hmx_neg_ne : -((mx : Int) : ℝ) ≠ 0 := neg_ne_zero.mpr hmx_real_ne
       simp only [hmx_neg_ne, ↓reduceIte, abs_neg]
       -- Now both sides simplify to the same thing
-      unfold FloatSpec.Core.Raux.mag at hmag_eq
+      simp only [FloatSpec.Core.Raux.mag_eq_ite] at hmag_eq
       simp only [hmx_real_ne, ↓reduceIte] at hmag_eq
       exact hmag_eq
   -- Now build the full magnitude equation

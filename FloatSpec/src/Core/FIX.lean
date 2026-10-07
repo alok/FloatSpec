@@ -171,7 +171,7 @@ private lemma ulp_FIX_run_eq (beta : Int) [ValidRadix beta] (emin : Int) (x : �
     · have impossible : emin < emin := by simpa [FIX_exp] using hlt emin
       exact False.elim (lt_irrefl emin impossible)
     · simp [FloatSpec.Core.Ulp.ulp, hn, FIX_exp]
-  · simp [FloatSpec.Core.Ulp.ulp, FloatSpec.Core.Generic_fmt.cexp, FloatSpec.Core.Raux.mag,
+  · simp [FloatSpec.Core.Ulp.ulp, FloatSpec.Core.Generic_fmt.cexp, FloatSpec.Core.Raux.mag_eq_ite,
           FIX_exp, hx]
 
 theorem ulp_FIX (beta : Int) [ValidRadix beta] (x : ℝ) :
@@ -198,7 +198,7 @@ theorem round_FIX_IZR
         FloatSpec.Core.Generic_fmt.roundR,
         FloatSpec.Core.Generic_fmt.scaled_mantissa,
         FloatSpec.Core.Generic_fmt.cexp,
-        FloatSpec.Core.Raux.mag,
+        FloatSpec.Core.Raux.mag_eq_ite,
         FIX_exp]
 
 end FloatSpec.Core.FIX

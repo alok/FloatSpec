@@ -445,7 +445,7 @@ private theorem roundR_format_int
             have hr_lt_abs : |r| < (beta : ℝ) ^ ex := by
               simpa [abs_of_pos hr_pos] using hr_lt
             have htrip := FloatSpec.Core.Raux.mag_unique
-              (beta := beta) (x := r) (e := ex) hβ hr_low_abs hr_lt_abs
+              (beta := beta) (x := r) (e := ex) hβ ⟨hr_low_abs, hr_lt_abs⟩
             simpa [Id.run, pure] using htrip
           have hfmt_float :
               generic_format beta fexp
@@ -997,7 +997,7 @@ theorem DN_UP_parity_generic_pos_payload :
           rw [abs_of_pos hgd_pos]
           exact hhigh_gd
         have htrip := FloatSpec.Core.Raux.mag_unique
-          (beta := beta) (x := F2R gd) (e := ex) hβ hlow_abs hhigh_abs
+          (beta := beta) (x := F2R gd) (e := ex) hβ ⟨hlow_abs, hhigh_abs⟩
         simpa [Id.run, pure] using htrip
       have hgd_exp : gd.Fexp = c := by
         unfold canonical at hcan_d
@@ -1018,7 +1018,7 @@ theorem DN_UP_parity_generic_pos_payload :
           rw [abs_of_pos hgu_pos]
           exact hhigh_gu
         have htrip := FloatSpec.Core.Raux.mag_unique
-          (beta := beta) (x := F2R gu) (e := ex) hβ hlow_abs hhigh_abs
+          (beta := beta) (x := F2R gu) (e := ex) hβ ⟨hlow_abs, hhigh_abs⟩
         simpa [Id.run, pure] using htrip
       have hgu_exp : gu.Fexp = c := by
         unfold canonical at hcan_u
@@ -1074,7 +1074,7 @@ theorem DN_UP_parity_generic_pos_payload :
           rw [abs_of_pos hgd_pos]
           exact hhigh_gd
         have htrip := FloatSpec.Core.Raux.mag_unique
-          (beta := beta) (x := F2R gd) (e := ex) hβ hlow_abs hhigh_abs
+          (beta := beta) (x := F2R gd) (e := ex) hβ ⟨hlow_abs, hhigh_abs⟩
         simpa [Id.run, pure] using htrip
       have hgd_exp : gd.Fexp = c := by
         unfold canonical at hcan_d

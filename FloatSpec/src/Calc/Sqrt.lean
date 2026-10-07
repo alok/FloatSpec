@@ -146,7 +146,7 @@ private lemma mag_sqrt_eq_div2 (x : ℝ) (hx_pos : 0 < x) (hβ : 1 < beta) :
     FloatSpec.Core.Raux.mag beta (Real.sqrt x) =
       (FloatSpec.Core.Raux.mag beta x + 1) / 2 := by
   -- Unfold the floor+1 based mag definition
-  unfold FloatSpec.Core.Raux.mag
+  simp only [FloatSpec.Core.Raux.mag_eq_ite]
   -- Establish non-zeroness for both x and sqrt(x)
   have hx_ne : x ≠ 0 := ne_of_gt hx_pos
   have hsqrt_ne : Real.sqrt x ≠ 0 := Real.sqrt_ne_zero'.mpr hx_pos
@@ -231,7 +231,7 @@ lemma mag_mult_bpow_eq (x : ℝ) (e : Int) (hx : x ≠ 0) (hβ : 1 < beta) :
     FloatSpec.Core.Raux.mag beta (x * (beta : ℝ) ^ e) =
     FloatSpec.Core.Raux.mag beta x + e := by
   -- Unfold mag for both sides
-  unfold FloatSpec.Core.Raux.mag
+  simp only [FloatSpec.Core.Raux.mag_eq_ite]
   -- Set up positivity for beta
   have hβR : (1 : ℝ) < (beta : ℝ) := by exact_mod_cast hβ
   have hbpos : (0 : ℝ) < (beta : ℝ) := lt_trans zero_lt_one hβR

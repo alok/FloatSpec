@@ -389,7 +389,7 @@ theorem Bnormfr_mantissa_correct {prec emax : Int}
           (SF2R 2 (binarySingleNaNFloatToStandardFloat
             (prec:=prec) (emax:=emax)
             (BinarySingleNaNFloat.B754_finite s m e hm_pos hbounded)))
-          0 (by norm_num : (1 : Int) < 2) hlow hupp
+          0 (by norm_num : (1 : Int) < 2) ⟨hlow, hupp⟩
         simpa using htrip
       have hsigned_ne :
           (if s then -(m : Int) else (m : Int)) ≠ 0 := by
@@ -540,12 +540,12 @@ theorem canonical_canonical_mantissa_bsn
     · -- sx = true: use mag(-x) = mag(x)
       simp only [↓reduceIte]
       -- mag 2 (-mx) = mag 2 mx
-      unfold FloatSpec.Core.Raux.mag
+      simp only [FloatSpec.Core.Raux.mag_eq_ite]
       -- Explicitly prove -↑↑mx ≠ 0 so simp can eliminate the if-condition
       have hmx_neg_ne : -((mx : Int) : ℝ) ≠ 0 := neg_ne_zero.mpr hmx_real_ne
       simp only [hmx_neg_ne, ↓reduceIte, abs_neg]
       -- Now both sides simplify to the same thing
-      unfold FloatSpec.Core.Raux.mag at hmag_eq
+      simp only [FloatSpec.Core.Raux.mag_eq_ite] at hmag_eq
       simp only [hmx_real_ne, ↓reduceIte] at hmag_eq
       exact hmag_eq
   -- Now build the full magnitude equation
@@ -690,7 +690,7 @@ theorem generic_format_B2R
       simp [binarySingleNaNFloatToB754, B754_to_R,
         FloatSpec.Core.Generic_fmt.generic_format,
         FloatSpec.Core.Generic_fmt.scaled_mantissa,
-        FloatSpec.Core.Generic_fmt.cexp, FloatSpec.Core.Raux.mag,
+        FloatSpec.Core.Generic_fmt.cexp, FloatSpec.Core.Raux.mag_eq_ite,
         FloatSpec.Core.Raux.Ztrunc_eq_ite]
   | B754_finite s m e hm hb =>
       apply FloatSpec.Core.Generic_fmt.generic_format_canonical
@@ -6655,7 +6655,7 @@ theorem Bfrexp_correct {prec emax : Int}
           norm_num
           exact hnorm.2
         exact (FloatSpec.Core.Raux.mag_unique
-          2 (SF2R 2 core.1) 0 (by norm_num) hlow hupp)
+          2 (SF2R 2 core.1) 0 (by norm_num) ⟨hlow, hupp⟩)
       have hdecomp :
           SF2R 2 (StandardFloat.S754_finite s mn ex) =
             SF2R 2 core.1 * FloatSpec.Core.Raux.bpow 2 core.2 := by
@@ -12279,7 +12279,7 @@ private theorem value_boundary_of_mantissa_boundary {prec : Int}
     (beta:=2) (e:=prec + ex - 1) (by norm_num : (1 : Int) < 2)
   have hmag : FloatSpec.Core.Raux.mag 2 xr = prec + ex := by
     rw [hxrPower]
-    simpa using hmagTrip
+    simpa [FloatSpec.Core.Raux.bpow] using hmagTrip
   change xr = (2 : ℝ) ^ (FloatSpec.Core.Raux.mag 2 xr - 1)
   rw [hmag, hxrPower]
 

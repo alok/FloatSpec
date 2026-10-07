@@ -713,7 +713,7 @@ theorem ulp_FLX_ge (beta : Int) [ValidRadix beta] (x : ℝ) :
         -- L := log |x| / log β; mag x = ⌊L⌋ + 1 when x ≠ 0
         set L : ℝ := Real.log (abs x) / Real.log (beta : ℝ)
         have hmageq_run : (FloatSpec.Core.Raux.mag beta x) = Int.floor L + 1 := by
-          unfold FloatSpec.Core.Raux.mag
+          simp only [FloatSpec.Core.Raux.mag_eq_ite]
           simp only [Id.run, pure, hxne, ite_false, L]
         have hmageq : m = Int.floor L + 1 := by simpa [hm] using hmageq_run
         -- log β > 0 when 1 < β
@@ -841,12 +841,12 @@ theorem ulp_FLX_exact_shift (beta : Int) [ValidRadix beta] [Prec_gt_0 prec] (x :
         (FloatSpec.Core.Generic_fmt.cexp (beta := beta) (fexp := FLX_exp prec) x)
           = FLX_exp prec M := by
       unfold FloatSpec.Core.Generic_fmt.cexp
-      simp [FloatSpec.Core.Raux.mag, hM]
+      simp [FloatSpec.Core.Raux.mag_eq_ite, hM]
     have hcexp_y :
         (FloatSpec.Core.Generic_fmt.cexp (beta := beta) (fexp := FLX_exp prec) (x * (beta : ℝ) ^ e))
           = FLX_exp prec N := by
       unfold FloatSpec.Core.Generic_fmt.cexp
-      simp [FloatSpec.Core.Raux.mag, hN]
+      simp [FloatSpec.Core.Raux.mag_eq_ite, hN]
     have hulp_x :
         (FloatSpec.Core.Ulp.ulp beta (FLX_exp prec) x)
           = (beta : ℝ) ^ (FLX_exp prec M) := by
@@ -868,7 +868,7 @@ theorem ulp_FLX_exact_shift (beta : Int) [ValidRadix beta] [Prec_gt_0 prec] (x :
       set L : ℝ := Real.log (abs x) / Real.log (beta : ℝ)
       have hM_run : M = Int.floor L + 1 := by
         -- Discharge the conditional in `mag` using x ≠ 0
-        simp only [FloatSpec.Core.Raux.mag, hM, hx_ne, ite_false, Id.run, pure, L]
+        simp only [FloatSpec.Core.Raux.mag_eq_ite, hM, hx_ne, ite_false, Id.run, pure, L]
       -- Compute mag at the scaled input
       have hbpow_pos : 0 < (beta : ℝ) ^ e := zpow_pos hbposR _
       have hxabs_pos : 0 < |x| := abs_pos.mpr hx_ne
@@ -913,7 +913,7 @@ theorem ulp_FLX_exact_shift (beta : Int) [ValidRadix beta] [Prec_gt_0 prec] (x :
           simpa using congrArg Int.floor hdiv
         have : (FloatSpec.Core.Raux.mag beta (x * (beta : ℝ) ^ e))
                 = Int.floor (L + (e : ℝ)) + 1 := by
-          simp only [FloatSpec.Core.Raux.mag, hy_ne', ite_false, Id.run, pure]
+          simp only [FloatSpec.Core.Raux.mag_eq_ite, hy_ne', ite_false, Id.run, pure]
           rw [hfloor_div]
         simpa [hN] using this
       -- Floor(L + e) + 1 = (Floor(L) + 1) + e for integer e
@@ -1149,7 +1149,7 @@ private theorem pred_FLX_exact_shift_pos_aux (beta : Int) [ValidRadix beta] [Pre
   have hN_eq : N = M + e := by
     set L : ℝ := Real.log (abs x) / Real.log (beta : ℝ)
     have hM_run : M = Int.floor L + 1 := by
-      simp only [FloatSpec.Core.Raux.mag, hM, hx_ne, ite_false, Id.run, pure, L]
+      simp only [FloatSpec.Core.Raux.mag_eq_ite, hM, hx_ne, ite_false, Id.run, pure, L]
     have hxabs_pos : 0 < |x| := abs_pos.mpr hx_ne
     have hbpow_abs_pos : 0 < |(beta : ℝ) ^ e| := abs_pos.mpr hpow_ne
     have hlog_prod :
@@ -1190,7 +1190,7 @@ private theorem pred_FLX_exact_shift_pos_aux (beta : Int) [ValidRadix beta] [Pre
             = Int.floor (L + (e : ℝ)) := by
         simpa using congrArg Int.floor hdiv
       have : FloatSpec.Core.Raux.mag beta y = Int.floor (L + (e : ℝ)) + 1 := by
-        simp only [FloatSpec.Core.Raux.mag, hy_ne, ite_false, Id.run, pure]
+        simp only [FloatSpec.Core.Raux.mag_eq_ite, hy_ne, ite_false, Id.run, pure]
         rw [hfloor_div]
       simpa [hN] using this
     have hfloor_add : Int.floor (L + (e : ℝ)) = Int.floor L + e :=
