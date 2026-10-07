@@ -8318,6 +8318,306 @@
           "noncomputable": true
         }
       }
+    },
+    {
+      "source_id": "src/Core/Defs.v:float@874",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Defs.FlocqFloat",
+        "FloatSpec.Core.Defs.FlocqFloat.mk"
+      ],
+      "scope": "Same two-field record (mantissa, exponent) indexed by the radix. Rocq's constructor Float is Lean's mk (plan E9: a Float constructor would shadow Lean's Float); the radix is an Int with a ValidRadix instance (E5). Pff.Source.float and the root Pff float are separate Pff carriers, not this record.",
+      "evidence": [
+        "scripts/fixtures/DefsContracts.lean",
+        "scripts/fixtures/DefsContracts.v",
+        "scripts/test_defs_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Defs.FlocqFloat": {
+          "type_hash": "2217023549",
+          "value_hash": null,
+          "noncomputable": false
+        },
+        "FloatSpec.Core.Defs.FlocqFloat.mk": {
+          "type_hash": "2322811967",
+          "value_hash": null,
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Defs.v:Fnum@906",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Defs.FlocqFloat.Fnum"
+      ],
+      "scope": "Same projection; field clients in both assistants.",
+      "evidence": [
+        "scripts/fixtures/DefsContracts.lean",
+        "scripts/fixtures/DefsContracts.v",
+        "scripts/test_defs_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Defs.FlocqFloat.Fnum": {
+          "type_hash": "3488941391",
+          "value_hash": "2196678018",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Defs.v:Fexp@917",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Defs.FlocqFloat.Fexp"
+      ],
+      "scope": "Same projection; field clients in both assistants.",
+      "evidence": [
+        "scripts/fixtures/DefsContracts.lean",
+        "scripts/fixtures/DefsContracts.v",
+        "scripts/test_defs_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Defs.FlocqFloat.Fexp": {
+          "type_hash": "3488941391",
+          "value_hash": "3898051340",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Defs.v:F2R@1012",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Defs.F2R"
+      ],
+      "scope": "Same body IZR (Fnum f) * bpow beta (Fexp f): Lean's body is the cast times beta ^ Fexp, which is bpow by rfl now that bpow is reducible; pinned by rfl in both assistants, and both evaluate 3 * 2^-1 and -7 * 10^2. A negated-exponent mutation is rejected. The root Compat F2R alias is scheduled for batch 6B.",
+      "evidence": [
+        "scripts/fixtures/DefsContracts.lean",
+        "scripts/fixtures/DefsContracts.v",
+        "scripts/test_defs_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Defs.F2R": {
+          "type_hash": "882689446",
+          "value_hash": "829188235",
+          "noncomputable": true
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Defs.v:round_pred_total@1128",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Defs.round_pred_total"
+      ],
+      "scope": "Same body, pinned by rfl in both assistants.",
+      "evidence": [
+        "scripts/fixtures/DefsContracts.lean",
+        "scripts/fixtures/DefsContracts.v",
+        "scripts/test_defs_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Defs.round_pred_total": {
+          "type_hash": "2351489910",
+          "value_hash": "685318474",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Defs.v:round_pred_monotone@1210",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Defs.round_pred_monotone"
+      ],
+      "scope": "Same body, pinned by rfl; reversing the output order is a rejected mutation.",
+      "evidence": [
+        "scripts/fixtures/DefsContracts.lean",
+        "scripts/fixtures/DefsContracts.v",
+        "scripts/test_defs_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Defs.round_pred_monotone": {
+          "type_hash": "2351489910",
+          "value_hash": "276422551",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Defs.v:round_pred@1328",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Defs.round_pred"
+      ],
+      "scope": "Same conjunction, pinned by rfl; a disjunction is a rejected mutation.",
+      "evidence": [
+        "scripts/fixtures/DefsContracts.lean",
+        "scripts/fixtures/DefsContracts.v",
+        "scripts/test_defs_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Defs.round_pred": {
+          "type_hash": "2351489910",
+          "value_hash": "2347183658",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Defs.v:Rnd_DN_pt@1562",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Defs.Rnd_DN_pt"
+      ],
+      "scope": "Same body, pinned by rfl in both assistants; reversing the maximality comparison is a rejected mutation. Its Round_pred and Generic_fmt identity aliases were removed in this slice (plan M2).",
+      "evidence": [
+        "scripts/fixtures/DefsContracts.lean",
+        "scripts/fixtures/DefsContracts.v",
+        "scripts/test_defs_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Defs.Rnd_DN_pt": {
+          "type_hash": "406539749",
+          "value_hash": "575129000",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Defs.v:Rnd_UP_pt@1730",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Defs.Rnd_UP_pt"
+      ],
+      "scope": "Same body, pinned by rfl; Round_pred/Generic_fmt aliases removed (plan M2).",
+      "evidence": [
+        "scripts/fixtures/DefsContracts.lean",
+        "scripts/fixtures/DefsContracts.v",
+        "scripts/test_defs_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Defs.Rnd_UP_pt": {
+          "type_hash": "406539749",
+          "value_hash": "1825771731",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Defs.v:Rnd_ZR_pt@1898",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Defs.Rnd_ZR_pt"
+      ],
+      "scope": "Same body, pinned by rfl; swapping the DN/UP branches is a rejected mutation. Aliases removed (plan M2).",
+      "evidence": [
+        "scripts/fixtures/DefsContracts.lean",
+        "scripts/fixtures/DefsContracts.v",
+        "scripts/test_defs_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Defs.Rnd_ZR_pt": {
+          "type_hash": "406539749",
+          "value_hash": "2009819127",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Defs.v:Rnd_N_pt@2069",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Defs.Rnd_N_pt"
+      ],
+      "scope": "Same body with Rabs as |.|, pinned by rfl; a strict distance comparison is a rejected mutation. Aliases removed (plan M2).",
+      "evidence": [
+        "scripts/fixtures/DefsContracts.lean",
+        "scripts/fixtures/DefsContracts.v",
+        "scripts/test_defs_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Defs.Rnd_N_pt": {
+          "type_hash": "406539749",
+          "value_hash": "2239891163",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Defs.v:Rnd_NG_pt@2185",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Defs.Rnd_NG_pt"
+      ],
+      "scope": "Same body, pinned by rfl; a conjunction in place of the disjunction is a rejected mutation. Aliases removed (plan M2).",
+      "evidence": [
+        "scripts/fixtures/DefsContracts.lean",
+        "scripts/fixtures/DefsContracts.v",
+        "scripts/test_defs_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Defs.Rnd_NG_pt": {
+          "type_hash": "2654504131",
+          "value_hash": "1916264303",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Defs.v:Rnd_NA_pt@2334",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Defs.Rnd_NA_pt"
+      ],
+      "scope": "Same body, pinned by rfl; reversing the tie comparison is a rejected mutation. Aliases removed (plan M2).",
+      "evidence": [
+        "scripts/fixtures/DefsContracts.lean",
+        "scripts/fixtures/DefsContracts.v",
+        "scripts/test_defs_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Defs.Rnd_NA_pt": {
+          "type_hash": "406539749",
+          "value_hash": "2226004609",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Defs.v:Rnd_N0_pt@2464",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Defs.Rnd_N0_pt"
+      ],
+      "scope": "Same body, pinned by rfl. Aliases removed (plan M2).",
+      "evidence": [
+        "scripts/fixtures/DefsContracts.lean",
+        "scripts/fixtures/DefsContracts.v",
+        "scripts/test_defs_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Defs.Rnd_N0_pt": {
+          "type_hash": "406539749",
+          "value_hash": "664906221",
+          "noncomputable": false
+        }
+      }
     }
   ]
 }

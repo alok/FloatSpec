@@ -202,6 +202,18 @@ check validates every observed pair against Python's floor division and exact
 integer reconstruction; it is not a fresh execution. No universal cross-prover
 equivalence is claimed from the finite grid.
 
+## Defs (October 7)
+
+```sh
+lake env lean -DwarningAsError=true scripts/fixtures/DefsContracts.lean
+coqc -q -R "$FLOCQ_AUDIT_DIR/src" Flocq \
+  -o /tmp/DefsContracts.vo scripts/fixtures/DefsContracts.v
+uv run scripts/test_defs_contracts.py -v
+```
+
+Every `Defs.v` body is pinned with `rfl` in both assistants; 16 mutations are
+rejected.
+
 ## Conditional negation and the end of Raux (October 6)
 
 ```sh

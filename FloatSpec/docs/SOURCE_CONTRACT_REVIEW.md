@@ -465,6 +465,25 @@ evidence.
 With this slice every one of the 186 `Raux.v` sites has an explicit
 disposition, as do all of `Version.v` and `Zaux.v`.
 
+### Thirteenth ordered slice: Defs
+
+`Defs.v` has 14 sites: the `float` record and its two fields, `F2R`, the
+three rounding-predicate properties and the seven pointwise rounding
+relations. All were already faithful. `DefsContracts.lean/.v` pin every body
+with `rfl` in both assistants and evaluate `F2R` at `3 · 2⁻¹` and `−7 · 10²`.
+Sixteen mutations are rejected (a negated exponent, a disjunction for a
+conjunction, a reversed comparison, swapped `ZR` branches, a strict distance,
+a reversed tie rule). Two recorded translations: Rocq's constructor `Float` is
+Lean's `mk` (plan E9) and the radix is an `Int` with `ValidRadix` (E5).
+`F2R`'s Lean body is the cast times `beta ^ Fexp`; since `bpow` became
+reducible, that is the source's `IZR (Fnum f) * bpow beta (Fexp f)` by `rfl`.
+
+The slice also removes 15 identity aliases the plan lists as shims (item M2):
+`Round_pred` and `Generic_fmt` each re-exported the seven `Rnd_*_pt` relations,
+and `Float_prop` re-exported `mag`. Rocq has one name for each; Lean now does
+too, with `open` where a file used the short name. Forty qualified references
+were retargeted.
+
 ## Unindexed Pff negation and absolute value (earlier slice)
 
 The source facade now also exports `Fopp_correct`, `Fopp_Fopp`, `Fabs_correct`

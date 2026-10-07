@@ -4502,6 +4502,29 @@ namespace besides `FlocqFloat`.
 
 Receipts: `/private/tmp/floatspec-rcond-20261006/`.
 
+### October 7: Defs, and removing identity aliases (14 sites)
+
+`01236790` removes the plan's M2 aliases: the seven `Rnd_*_pt` re-exports in
+`Round_pred` and in `Generic_fmt`, and `Float_prop.mag`. Files open the
+originals instead; 40 qualified references were retargeted and three fixtures
+gained an `open`. The compiled drift gate then flagged 69 reviewed entries
+(57 type and 56 value hashes moved, all through the removed aliases). The
+`Round_pred`, `Round_NE` and both Ulp choice suites passed unchanged, so the
+fingerprints were refreshed, each with a dated scope note. That is the gate
+doing its job: an alias edit cannot silently change reviewed statements.
+
+`DefsContracts.lean/.v` then review all 14 `Defs.v` sites: every body pinned
+by `rfl` in both assistants, `F2R` evaluated at two points, 16 rejected
+mutations. Its checks are named theorems, so the kernel replay covers 15
+declarations; with anonymous `example`s it had covered one.
+
+Full build 6350 jobs; all Lean fixtures strict with kernel replay; drift
+gate 389 entries (368 contracts, 21 infrastructure, 2327 unreviewed).
+`Defs.v` and the earlier-reviewed `Round_pred.v` are complete; `Digits.v` is
+next.
+
+Receipts: `/private/tmp/floatspec-defs-20261007/`.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In
