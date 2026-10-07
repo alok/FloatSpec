@@ -1890,7 +1890,7 @@ private theorem binary_round_eq_of_roundR (mode : RoundingMode) (s : Bool) (M : 
   simp only [hround] at hpay
   have hcond : FloatSpec.Core.Raux.Rlt_bool |SF2R 2 t|
       (FloatSpec.Core.Raux.bpow 2 primEmax) = true := by
-    simp [FloatSpec.Core.Raux.Rlt_bool, hlt]
+    simp [FloatSpec.Core.Raux.Rlt_bool_eq_decide, hlt]
   rw [hcond] at hpay
   simp only [↓reduceIte] at hpay
   obtain ⟨hv, hf, hs⟩ := hpay
@@ -1910,7 +1910,7 @@ private theorem binary_round_eq_overflow (mode : RoundingMode) (s : Bool) (M : N
   simp only [hround] at hpay
   have hcond : FloatSpec.Core.Raux.Rlt_bool |X|
       (FloatSpec.Core.Raux.bpow 2 primEmax) = false := by
-    simp [FloatSpec.Core.Raux.Rlt_bool, hge]
+    simp [FloatSpec.Core.Raux.Rlt_bool_eq_decide, hge]
   rw [hcond] at hpay
   simpa using hpay
 

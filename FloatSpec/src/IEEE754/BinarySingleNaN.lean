@@ -1861,7 +1861,7 @@ theorem Bnearbyint_correct_aux_nat {prec emax : Int}
       have hmx_int_pos : (0 : Int) < (mx : Int) := by exact_mod_cast hmx_pos
       cases sx <;>
         simp [SF2R, F2R, FloatSpec.Core.Defs.F2R,
-          FloatSpec.Core.Raux.Rlt_bool] <;> positivity
+          FloatSpec.Core.Raux.Rlt_bool_eq_decide] <;> positivity
     let r := FloatSpec.Calc.Round.truncate_triple
       (beta := 2) (fexp := FloatSpec.Core.FIX.FIX_exp 0)
       ((mx : Int), ex, FloatSpec.Calc.Bracket.Location.loc_Exact)
@@ -2106,7 +2106,7 @@ private theorem binary_fit_aux_semantics
         FloatSpec.Core.Raux.Rlt_bool
           |SF2R 2 (StandardFloat.S754_finite sx mx ex)|
           (FloatSpec.Core.Raux.bpow 2 emax) = true := by
-      simp [FloatSpec.Core.Raux.Rlt_bool, hlt]
+      simp [FloatSpec.Core.Raux.Rlt_bool_eq_decide, hlt]
     simp only [binary_fit_aux, hex_le, ↓reduceIte]
     rw [hlt_bool]
     simp [SF2R, is_finite_SF, sign_SF]
@@ -2137,7 +2137,7 @@ private theorem binary_fit_aux_semantics
         FloatSpec.Core.Raux.Rlt_bool
           |SF2R 2 (StandardFloat.S754_finite sx mx ex)|
           (FloatSpec.Core.Raux.bpow 2 emax) = false := by
-      simp [FloatSpec.Core.Raux.Rlt_bool, hnot_lt]
+      simp [FloatSpec.Core.Raux.Rlt_bool_eq_decide, hnot_lt]
     simp only [binary_fit_aux, hex_le, ↓reduceIte]
     rw [hlt_bool]
     simp
@@ -3047,7 +3047,7 @@ private theorem binary_round_aux_correct_proof
         (by norm_num : (1 : Int) < 2)
       have hbpow_pos : 0 < FloatSpec.Core.Raux.bpow 2 emax := by
         simpa using hbpow_trip
-      simp [FloatSpec.Core.Raux.Rlt_bool, hrounded_zero, hbpow_pos]
+      simp [FloatSpec.Core.Raux.Rlt_bool_eq_decide, hrounded_zero, hbpow_pos]
     constructor
     · simp [binary_round_aux, bsn_shr_fexp, hmx_nonneg, fexp, sx, r1, m1, e1, l1, m1',
         hm1'_zero, hsecond_zero, hsecond_zero_raw, loc_of_shr_record_of_loc,
@@ -3363,7 +3363,7 @@ theorem sign_plus_overflow {prec emax : Int}
       · have hz_nonneg : 0 ≤ z := by
           dsimp [z, SF2R, F2R, FloatSpec.Core.Defs.F2R]
           positivity
-        simp [FloatSpec.Core.Raux.Rlt_bool, hz_nonneg]
+        simp [FloatSpec.Core.Raux.Rlt_bool_eq_decide, hz_nonneg]
       · have hz_nonpos : z ≤ 0 := by
           dsimp [z, SF2R, F2R, FloatSpec.Core.Defs.F2R]
           have hx_nonneg : 0 ≤ (((mx : Int) : ℝ) * ((2 : Int) : ℝ) ^ ex) := by positivity
@@ -3384,7 +3384,7 @@ theorem sign_plus_overflow {prec emax : Int}
           rw [hround0, abs_zero] at Hover
           linarith
         have hz_neg : z < 0 := lt_of_le_of_ne hz_nonpos hz_ne
-        simp [FloatSpec.Core.Raux.Rlt_bool, hz_neg]
+        simp [FloatSpec.Core.Raux.Rlt_bool_eq_decide, hz_neg]
     · exact hs
   · exfalso
     have hx_le := unsigned_le_maxFiniteR (prec:=prec) (emax:=emax) mx ex Hx
@@ -3923,7 +3923,7 @@ theorem Bdiv_correct_aux {prec emax : Int}
       FloatSpec.Core.Raux.Rlt_bool quotient 0 = Bool.xor sx sy := by
     rw [hquotient_repr]
     cases sx <;> cases sy <;>
-      simp [Bool.xor, FloatSpec.Core.Raux.Rlt_bool, hunsignedQuotient_pos,
+      simp [Bool.xor, FloatSpec.Core.Raux.Rlt_bool_eq_decide, hunsignedQuotient_pos,
         not_lt.mpr (le_of_lt hunsignedQuotient_pos)]
   have hx_ne : x ≠ 0 := by
     rw [hx_repr]
@@ -4016,7 +4016,7 @@ theorem Bmult_correct_aux {prec emax : Int}
       FloatSpec.Core.Raux.Rlt_bool (x * y) 0 = Bool.xor sx sy := by
     cases sx <;> cases sy <;>
       simp [x, y, SF2R, F2R, FloatSpec.Core.Defs.F2R, Bool.xor,
-        FloatSpec.Core.Raux.Rlt_bool] <;> positivity
+        FloatSpec.Core.Raux.Rlt_bool_eq_decide] <;> positivity
   have hcanon_x :
       canonical_mantissa (prec:=prec) (emax:=emax) mx ex = true :=
     canonical_mantissa_of_specFloat_bounded (prec:=prec) (emax:=emax) Hx
@@ -4145,10 +4145,10 @@ theorem binary_round_correct {prec emax : Int}
     cases sx
     · have hx_nonneg : 0 ≤ x := by
         simpa [x, SF2R, F2R, FloatSpec.Core.Defs.F2R] using le_of_lt hunsigned_pos
-      simpa [FloatSpec.Core.Raux.Rlt_bool] using not_lt.mpr hx_nonneg
+      simpa [FloatSpec.Core.Raux.Rlt_bool_eq_decide] using not_lt.mpr hx_nonneg
     · have hx_neg : x < 0 := by
         simpa [x, SF2R, F2R, FloatSpec.Core.Defs.F2R] using neg_neg_of_pos hunsigned_pos
-      simp [FloatSpec.Core.Raux.Rlt_bool, hx_neg]
+      simp [FloatSpec.Core.Raux.Rlt_bool_eq_decide, hx_neg]
   have haligned_pos : 0 < aligned.1 := by
     by_contra hnot
     have hzero : aligned.1 = 0 := Nat.eq_zero_of_not_pos hnot
@@ -4237,7 +4237,7 @@ theorem Bulp_correct
             (FloatSpec.Core.Raux.bpow 2 emax) = true := by
         have hpow_nonneg : 0 ≤ (2 : ℝ) ^ ex :=
           le_of_lt (zpow_pos (by norm_num) ex)
-        simp [FloatSpec.Core.Raux.Rlt_bool, hround_eq,
+        simp [FloatSpec.Core.Raux.Rlt_bool_eq_decide, hround_eq,
           abs_of_nonneg hpow_nonneg, hbpow_lt]
       have hround := binary_round_correct (prec:=prec) (emax:=emax)
         RoundingMode.RTZ false 1 ex (by norm_num : 0 < (1 : Nat))
@@ -4492,7 +4492,7 @@ theorem binary_round_one_payload
           (FloatSpec.Core.Raux.bpow 2 emax) = true := by
     have hnonneg : 0 ≤ FloatSpec.Core.Raux.bpow 2 e := by
       exact le_of_lt (zpow_pos (by norm_num : (0 : ℝ) < 2) e)
-    simp [FloatSpec.Core.Raux.Rlt_bool, hroundEq, abs_of_nonneg hnonneg, hlt]
+    simp [FloatSpec.Core.Raux.Rlt_bool_eq_decide, hroundEq, abs_of_nonneg hnonneg, hlt]
   have hvalid :
       validBinarySingleNaNStandardFloat (prec:=prec) (emax:=emax) z = true := by
     simpa [z] using hround.1
@@ -5667,7 +5667,7 @@ private theorem Rlt_bool_zero_bpow {emax : Int} :
       (FloatSpec.Core.Raux.bpow 2 emax) = true := by
   have hbpow_pos : 0 < FloatSpec.Core.Raux.bpow 2 emax := by
     exact zpow_pos (by norm_num : (0 : ℝ) < 2) emax
-  simp [FloatSpec.Core.Raux.Rlt_bool, hbpow_pos]
+  simp [FloatSpec.Core.Raux.Rlt_bool_eq_decide, hbpow_pos]
 
 private theorem bmult_correct_nan_result {prec emax : Int}
     (mult_nan : BmultNaNHandler prec emax)
@@ -5801,7 +5801,7 @@ def Bsqrt {prec emax : Int}
         have haux := binary_round_aux_correct (prec:=prec) (emax:=emax)
           mode (Real.sqrt input) mzn result.2.1 result.2.2 hmzn_pos hbetween hexp
         have hsqrt_sign : FloatSpec.Core.Raux.Rlt_bool (Real.sqrt input) 0 = false := by
-          simp [FloatSpec.Core.Raux.Rlt_bool, Real.sqrt_nonneg]
+          simp [FloatSpec.Core.Raux.Rlt_bool_eq_decide, Real.sqrt_nonneg]
         simpa [z, hsqrt_sign] using haux.1
       have hnotnan : is_nan_SF z = false := by
         have hmzn_nonneg : (0 : Int) ≤ (mzn : Int) := by exact_mod_cast Nat.zero_le mzn
@@ -6350,7 +6350,7 @@ theorem BoneSingle_value_finite_sign {prec emax : Int}
         (SF2R 2 (StandardFloat.S754_finite false 1 0))|
       (FloatSpec.Core.Raux.bpow 2 emax) = true := by
     simp [SF2R, F2R, FloatSpec.Core.Defs.F2R, hround,
-      FloatSpec.Core.Raux.Rlt_bool, one_lt_bpow_emax (prec:=prec) (emax:=emax)]
+      FloatSpec.Core.Raux.Rlt_bool_eq_decide, one_lt_bpow_emax (prec:=prec) (emax:=emax)]
   have hb := hc.2
   rw [ite_eq_left hlt] at hb
   have hn : is_nan_SF z = false := by
@@ -6507,15 +6507,15 @@ theorem Bldexp_correct {prec emax : Int}
   | B754_zero s =>
       simp [Bldexp, BldexpSingle, lift, B2BSN, is_nan, B2R, is_finite,
         Bsign, binaryFloatToBinarySingleNaNFloat, hround0,
-        FloatSpec.Core.Raux.Rlt_bool, hbpow_pos, BSN2B', is_nan_BSN, B2FF]
+        FloatSpec.Core.Raux.Rlt_bool_eq_decide, hbpow_pos, BSN2B', is_nan_BSN, B2FF]
   | B754_infinity s =>
       simp [Bldexp, BldexpSingle, lift, B2BSN, is_nan, B2R, is_finite,
         Bsign, binaryFloatToBinarySingleNaNFloat, hround0,
-        FloatSpec.Core.Raux.Rlt_bool, hbpow_pos, BSN2B', is_nan_BSN, B2FF]
+        FloatSpec.Core.Raux.Rlt_bool_eq_decide, hbpow_pos, BSN2B', is_nan_BSN, B2FF]
   | B754_nan s payload hpayload =>
       simp [Bldexp, BldexpSingle, lift, B2BSN, is_nan, B2R, is_finite,
         Bsign, binaryFloatToBinarySingleNaNFloat, hround0,
-        FloatSpec.Core.Raux.Rlt_bool, hbpow_pos, BSN2B', is_nan_BSN, B2FF]
+        FloatSpec.Core.Raux.Rlt_bool_eq_decide, hbpow_pos, BSN2B', is_nan_BSN, B2FF]
   | B754_finite s m e hbounded =>
       let mn := FloatSpec.Core.Zaux.positiveToNat m
       have hm : 0 < mn := positiveToNat_pos_bsn m
@@ -7323,10 +7323,10 @@ theorem normalize_correct {prec emax : Int}
               FloatSpec.Core.Defs.FlocqFloat 2))|
         (FloatSpec.Core.Raux.bpow 2 emax) = true := by
       simp [F2R, FloatSpec.Core.Defs.F2R, Binary.roundR_zero_of_mode,
-        FloatSpec.Core.Raux.Rlt_bool, hb]
+        FloatSpec.Core.Raux.Rlt_bool_eq_decide, hb]
     have hzlt : FloatSpec.Core.Raux.Rlt_bool 0
         (FloatSpec.Core.Raux.bpow 2 emax) = true := by
-      simp [FloatSpec.Core.Raux.Rlt_bool, hb]
+      simp [FloatSpec.Core.Raux.Rlt_bool_eq_decide, hb]
     simp [normalize, F2R, FloatSpec.Core.Defs.F2R,
       Binary.roundR_zero_of_mode, B2R, is_finite, Bsign, hlt, hzlt]
   · by_cases hmpos : 0 < m
@@ -7377,7 +7377,7 @@ theorem normalize_correct {prec emax : Int}
               (FLT_exp (3 - emax - prec) prec) (rnd_of_mode mode)
                 ((m : ℝ) * (2 : ℝ) ^ e)| <
               FloatSpec.Core.Raux.bpow 2 emax := by
-          simpa [FloatSpec.Core.Raux.Rlt_bool, F2R,
+          simpa [FloatSpec.Core.Raux.Rlt_bool_eq_decide, F2R,
             FloatSpec.Core.Defs.F2R] using hlt
         simp only [F2R, FloatSpec.Core.Defs.F2R] at hlt
         rw [ite_eq_left hlt]
@@ -7393,13 +7393,13 @@ theorem normalize_correct {prec emax : Int}
           simpa [F2R, FloatSpec.Core.Defs.F2R] using hinput_pos
         simpa [normalize, hm0, hmpos, mn, z, hB2R, hfinite, hsign,
           hinput, hltProp, hpowNe, ne_of_gt hinput_pos, hinputPosRaw,
-          FloatSpec.Core.Raux.Rlt_bool, not_lt.mpr (le_of_lt hinputPosRaw)] using hbranch
+          FloatSpec.Core.Raux.Rlt_bool_eq_decide, not_lt.mpr (le_of_lt hinputPosRaw)] using hbranch
       · have hnotltProp :
             ¬ |FloatSpec.Core.Generic_fmt.roundR 2
               (FLT_exp (3 - emax - prec) prec) (rnd_of_mode mode)
                 ((m : ℝ) * (2 : ℝ) ^ e)| <
               FloatSpec.Core.Raux.bpow 2 emax := by
-          simpa [FloatSpec.Core.Raux.Rlt_bool, F2R,
+          simpa [FloatSpec.Core.Raux.Rlt_bool_eq_decide, F2R,
             FloatSpec.Core.Defs.F2R] using hlt
         simp only [F2R, FloatSpec.Core.Defs.F2R] at hlt
         rw [ite_eq_right hlt]
@@ -7423,7 +7423,7 @@ theorem normalize_correct {prec emax : Int}
               (FloatSpec.Core.Raux.Rlt_bool
                 (F2R (FloatSpec.Core.Defs.FlocqFloat.mk m e :
                   FloatSpec.Core.Defs.FlocqFloat 2)) 0) := by
-            simp [binary_overflow, FloatSpec.Core.Raux.Rlt_bool, F2R,
+            simp [binary_overflow, FloatSpec.Core.Raux.Rlt_bool_eq_decide, F2R,
               FloatSpec.Core.Defs.F2R, not_lt.mpr (le_of_lt hinputPosRaw)]
     · have hmneg : m < 0 := lt_of_le_of_ne (le_of_not_gt hmpos) hm0
       let mn := m.natAbs
@@ -7473,7 +7473,7 @@ theorem normalize_correct {prec emax : Int}
               (FLT_exp (3 - emax - prec) prec) (rnd_of_mode mode)
                 ((m : ℝ) * (2 : ℝ) ^ e)| <
               FloatSpec.Core.Raux.bpow 2 emax := by
-          simpa [FloatSpec.Core.Raux.Rlt_bool, F2R,
+          simpa [FloatSpec.Core.Raux.Rlt_bool_eq_decide, F2R,
             FloatSpec.Core.Defs.F2R] using hlt
         simp only [F2R, FloatSpec.Core.Defs.F2R] at hlt
         rw [ite_eq_left hlt]
@@ -7489,13 +7489,13 @@ theorem normalize_correct {prec emax : Int}
           simpa [F2R, FloatSpec.Core.Defs.F2R] using hinput_neg
         simpa [normalize, hm0, hmpos, mn, z, hB2R, hfinite, hsign,
           hinput, hltProp, hpowNe, ne_of_lt hinput_neg, hinputNegRaw,
-          FloatSpec.Core.Raux.Rlt_bool, decide_eq_true_eq.mpr hinputNegRaw] using hbranch
+          FloatSpec.Core.Raux.Rlt_bool_eq_decide, decide_eq_true_eq.mpr hinputNegRaw] using hbranch
       · have hnotltProp :
             ¬ |FloatSpec.Core.Generic_fmt.roundR 2
               (FLT_exp (3 - emax - prec) prec) (rnd_of_mode mode)
                 ((m : ℝ) * (2 : ℝ) ^ e)| <
               FloatSpec.Core.Raux.bpow 2 emax := by
-          simpa [FloatSpec.Core.Raux.Rlt_bool, F2R,
+          simpa [FloatSpec.Core.Raux.Rlt_bool_eq_decide, F2R,
             FloatSpec.Core.Defs.F2R] using hlt
         simp only [F2R, FloatSpec.Core.Defs.F2R] at hlt
         rw [ite_eq_right hlt]
@@ -7519,7 +7519,7 @@ theorem normalize_correct {prec emax : Int}
               (FloatSpec.Core.Raux.Rlt_bool
                 (F2R (FloatSpec.Core.Defs.FlocqFloat.mk m e :
                   FloatSpec.Core.Defs.FlocqFloat 2)) 0) := by
-            simp [binary_overflow, FloatSpec.Core.Raux.Rlt_bool, F2R,
+            simp [binary_overflow, FloatSpec.Core.Raux.Rlt_bool_eq_decide, F2R,
               FloatSpec.Core.Defs.F2R, hinputNegRaw]
 
 -- Coq `Binary.v:Bfma` is `BSN2B (fma_nan x y z) (BinarySingleNaN.Bfma m
@@ -7911,7 +7911,7 @@ def Bsqrt {prec emax : Int}
         have haux := binary_round_aux_correct (prec:=prec) (emax:=emax)
           mode (Real.sqrt input) mzn result.2.1 result.2.2 hmzn_pos hbetween hexp
         have hsqrt_sign : FloatSpec.Core.Raux.Rlt_bool (Real.sqrt input) 0 = false := by
-          simp [FloatSpec.Core.Raux.Rlt_bool, Real.sqrt_nonneg]
+          simp [FloatSpec.Core.Raux.Rlt_bool_eq_decide, Real.sqrt_nonneg]
         simpa [z, hsqrt_sign] using haux.1
       standardFloatToBinarySingleNaNFloat z hvalid
 
@@ -10372,7 +10372,7 @@ private theorem Bfma_returned_finite_correct {prec emax : Int}
             Binary.B2R (prec:=prec) (emax:=emax)
               (binary_float.B754_finite (prec:=prec) (emax:=emax) s m e hbounded))|
       (FloatSpec.Core.Raux.bpow 2 emax) = true := by
-    simp [hres, hround, FloatSpec.Core.Raux.Rlt_bool, hlt]
+    simp [hres, hround, FloatSpec.Core.Raux.Rlt_bool_eq_decide, hlt]
   rw [ite_eq_left hcond, hout]
   refine ⟨?_, rfl, ?_⟩
   · simpa [hres] using hround.symm
@@ -10471,7 +10471,7 @@ theorem Bplus_correct_from_exp_instances {prec emax : Int}
                     (binary_float.B754_finite (prec:=prec) (emax:=emax)
                       sy my ey Hy))|
                 (FloatSpec.Core.Raux.bpow 2 emax) = true := by
-            simp [hround, FloatSpec.Core.Raux.Rlt_bool, hlt]
+            simp [hround, FloatSpec.Core.Raux.Rlt_bool_eq_decide, hlt]
           have hcond' :
               FloatSpec.Core.Raux.Rlt_bool
                 |FloatSpec.Core.Generic_fmt.roundR 2
@@ -10537,7 +10537,7 @@ theorem Bplus_correct_from_exp_instances {prec emax : Int}
                     (binary_float.B754_finite (prec:=prec) (emax:=emax)
                       sx mx ex Hx) + 0)|
                 (FloatSpec.Core.Raux.bpow 2 emax) = true := by
-            simp [hround, FloatSpec.Core.Raux.Rlt_bool, hlt]
+            simp [hround, FloatSpec.Core.Raux.Rlt_bool_eq_decide, hlt]
           have hcond' :
               FloatSpec.Core.Raux.Rlt_bool
                 |FloatSpec.Core.Generic_fmt.roundR 2
@@ -10816,7 +10816,7 @@ theorem Bplus_correct_from_exp_instances {prec emax : Int}
                             (binary_float.B754_finite (prec:=prec) (emax:=emax)
                               sy my ey Hy))| < FloatSpec.Core.Raux.bpow 2 emax := by
                   intro hreal
-                  exact hlt (by simp [FloatSpec.Core.Raux.Rlt_bool, hreal])
+                  exact hlt (by simp [FloatSpec.Core.Raux.Rlt_bool_eq_decide, hreal])
                 have hoverBound : FloatSpec.Core.Raux.bpow 2 emax ≤
                     |FloatSpec.Core.Generic_fmt.round_to_generic 2
                       (FLT_exp (3 - emax - prec) prec) (rnd_of_mode mode)
@@ -10850,7 +10850,7 @@ theorem Bplus_correct_from_exp_instances {prec emax : Int}
                           simpa [mxn, myn, Binary.B2R, SF2R,
                             FloatSpec.Core.Zaux.cond_Zopp] using hsign.1
                     _ = false := by
-                          simp [FloatSpec.Core.Raux.Rlt_bool,
+                          simp [FloatSpec.Core.Raux.Rlt_bool_eq_decide,
                             not_lt_of_ge (le_of_lt hsumPos)]
                 constructor
                 · calc
@@ -11025,7 +11025,7 @@ theorem Bplus_correct_from_exp_instances {prec emax : Int}
                             (binary_float.B754_finite (prec:=prec) (emax:=emax)
                               sy my ey Hy))| < FloatSpec.Core.Raux.bpow 2 emax := by
                   intro hreal
-                  exact hlt (by simp [FloatSpec.Core.Raux.Rlt_bool, hreal])
+                  exact hlt (by simp [FloatSpec.Core.Raux.Rlt_bool_eq_decide, hreal])
                 have hoverBound : FloatSpec.Core.Raux.bpow 2 emax ≤
                     |FloatSpec.Core.Generic_fmt.round_to_generic 2
                       (FLT_exp (3 - emax - prec) prec) (rnd_of_mode mode)
@@ -11059,7 +11059,7 @@ theorem Bplus_correct_from_exp_instances {prec emax : Int}
                           simpa [mxn, myn, Binary.B2R, SF2R,
                             FloatSpec.Core.Zaux.cond_Zopp] using hsign.1
                     _ = true := by
-                          simp [FloatSpec.Core.Raux.Rlt_bool, hsumNeg]
+                          simp [FloatSpec.Core.Raux.Rlt_bool_eq_decide, hsumNeg]
                 constructor
                 · calc
                     Binary.B2FF (prec:=prec) (emax:=emax)
@@ -11412,7 +11412,7 @@ theorem Bsqrt_correct {prec emax : Int}
           hmzn_pos hbetween hexp
         have hsqrt_sign :
             FloatSpec.Core.Raux.Rlt_bool (Real.sqrt input) 0 = false := by
-          simp [FloatSpec.Core.Raux.Rlt_bool, Real.sqrt_nonneg]
+          simp [FloatSpec.Core.Raux.Rlt_bool_eq_decide, Real.sqrt_nonneg]
         have hvalid :
             validBinarySingleNaNStandardFloat (prec:=prec) (emax:=emax) z = true := by
           simpa [z, hsqrt_sign] using haux.1
@@ -11429,7 +11429,7 @@ theorem Bsqrt_correct {prec emax : Int}
               (FLT_exp (3 - emax - prec) prec) (rnd_of_mode mode)
                 (Real.sqrt input)|
             (FloatSpec.Core.Raux.bpow 2 emax) = true := by
-          simp [FloatSpec.Core.Raux.Rlt_bool]
+          simp [FloatSpec.Core.Raux.Rlt_bool_eq_decide]
           simpa [input, mxn, Binary.B2R] using hlt
         have hbranch : SF2R 2 z =
               FloatSpec.Core.Generic_fmt.roundR 2
@@ -11773,7 +11773,7 @@ theorem sign_plus_overflow {prec emax : Int}
       · have hz : 0 ≤ z := by
           dsimp [z, mxn, myn, SF2R, F2R, FloatSpec.Core.Defs.F2R]
           positivity
-        simp [FloatSpec.Core.Raux.Rlt_bool, hz]
+        simp [FloatSpec.Core.Raux.Rlt_bool_eq_decide, hz]
       · have hz : z < 0 := by
           dsimp [z, mxn, myn, SF2R, F2R, FloatSpec.Core.Defs.F2R]
           have hxpos : 0 < (((mxn : Int) : Real) * (2 : Real) ^ ex) := by
@@ -11782,7 +11782,7 @@ theorem sign_plus_overflow {prec emax : Int}
             positivity
           norm_num only [Int.cast_neg]
           linarith
-        simp [FloatSpec.Core.Raux.Rlt_bool, hz]
+        simp [FloatSpec.Core.Raux.Rlt_bool_eq_decide, hz]
     · exact hs
   · exfalso
     apply (not_lt_of_ge Hover)
@@ -12192,7 +12192,7 @@ private theorem Bpred_positive_correct {prec emax : Int}
         (SF2R 2 (StandardFloat.S754_finite true mn (ex - 1)))|
       (FloatSpec.Core.Raux.bpow 2 emax) = true := by
     rw [hinput, hrtzNeg]
-    simp [FloatSpec.Core.Raux.Rlt_bool, abs_of_nonneg hpredNonneg,
+    simp [FloatSpec.Core.Raux.Rlt_bool_eq_decide, abs_of_nonneg hpredNonneg,
       lt_of_le_of_lt hpredLe hxrLt]
   let z := binary_round (prec:=prec) (emax:=emax)
     RoundingMode.RTZ true mn (ex - 1)
@@ -12555,7 +12555,7 @@ private theorem Bpred_pos'_positive_correct {prec emax : Int}
           B754_to_R (B754.B754_finite true my ey))|
       (FloatSpec.Core.Raux.bpow 2 emax) = true := by
     rw [hsum, hroundPred]
-    simp [FloatSpec.Core.Raux.Rlt_bool, abs_of_nonneg hpredNonneg, hpredLt]
+    simp [FloatSpec.Core.Raux.Rlt_bool_eq_decide, abs_of_nonneg hpredNonneg, hpredLt]
   have hplus := Bplus_finite_nonnegative_correct (prec:=prec) (emax:=emax)
     mx my ex ey hmx hmy hsumNonneg hlt
   have hr : Bpred_pos' (prec:=prec) (emax:=emax) x =
@@ -13130,7 +13130,7 @@ theorem Bsucc_correct {prec emax : Int}
         have h := htrip
         simpa [FloatSpec.Core.Raux.bpow, Id.run] using h
       simp [binarySingleNaNFloatToB754, B754_to_R, hsucc, hulp,
-        FloatSpec.Core.Raux.Rlt_bool, hpowLt, Bsucc, B2SF_BSN,
+        FloatSpec.Core.Raux.Rlt_bool_eq_decide, hpowLt, Bsucc, B2SF_BSN,
         BSN_is_finite, BSN_is_finite_strict, BSN_sign,
         FloatSpec.Core.Raux.bpow, F2R, FloatSpec.Core.Defs.F2R, heminLt]
   | B754_finite s mx ex hmx hbounded =>
@@ -13307,7 +13307,7 @@ theorem Bsucc_correct {prec emax : Int}
               simpa using h
           have hlt : FloatSpec.Core.Raux.Rlt_bool successor
               (FloatSpec.Core.Raux.bpow 2 emax) = true := by
-            simp [FloatSpec.Core.Raux.Rlt_bool, lt_of_le_of_lt hsuccNonpos hbpowPos]
+            simp [FloatSpec.Core.Raux.Rlt_bool_eq_decide, lt_of_le_of_lt hsuccNonpos hbpowPos]
           change if FloatSpec.Core.Raux.Rlt_bool successor
               (FloatSpec.Core.Raux.bpow 2 emax) then
             B754_to_R (Bsucc (prec:=prec) (emax:=emax) neg) = successor ∧
@@ -13381,7 +13381,7 @@ theorem Bpred_correct {prec emax : Int}
       (-FloatSpec.Core.Raux.bpow 2 emax) predecessor =
       FloatSpec.Core.Raux.Rlt_bool successor
         (FloatSpec.Core.Raux.bpow 2 emax) := by
-    simp [hpredEq, FloatSpec.Core.Raux.Rlt_bool]
+    simp [hpredEq, FloatSpec.Core.Raux.Rlt_bool_eq_decide]
   have hpredRaw : Bpred (prec:=prec) (emax:=emax) raw =
       Bopp_bsn (Bsucc (prec:=prec) (emax:=emax) oraw) := by
     simp [Bpred, horaw]
@@ -13949,7 +13949,7 @@ theorem binary_normalize_correct {prec emax : Int}
       exfalso
       apply hlt
       simp [input, F2R, FloatSpec.Core.Defs.F2R, hzeroRound,
-        FloatSpec.Core.Raux.Rlt_bool, hb]
+        FloatSpec.Core.Raux.Rlt_bool_eq_decide, hb]
     · by_cases hmp : 0 < m
       · let mn := m.toNat
         have hmn : 0 < mn := by
@@ -13988,7 +13988,7 @@ theorem binary_normalize_correct {prec emax : Int}
             (f:=FloatSpec.Core.Defs.FlocqFloat.mk m e) (by norm_num) hmp
         have hvalueRaw : 0 < (m : ℝ) * (2 : ℝ) ^ e := by
           simpa [F2R, FloatSpec.Core.Defs.F2R] using hvalue
-        simp [binary_overflow_exact, FloatSpec.Core.Raux.Rlt_bool,
+        simp [binary_overflow_exact, FloatSpec.Core.Raux.Rlt_bool_eq_decide,
           not_lt.mpr (le_of_lt hvalueRaw)]
       · have hmneg : m < 0 := lt_of_le_of_ne (le_of_not_gt hmp) hm0
         let mn := m.natAbs
@@ -14027,7 +14027,7 @@ theorem binary_normalize_correct {prec emax : Int}
             (f:=FloatSpec.Core.Defs.FlocqFloat.mk m e) (by norm_num) hmneg
         have hvalueRaw : (m : ℝ) * (2 : ℝ) ^ e < 0 := by
           simpa [F2R, FloatSpec.Core.Defs.F2R] using hvalue
-        simp [binary_overflow_exact, FloatSpec.Core.Raux.Rlt_bool,
+        simp [binary_overflow_exact, FloatSpec.Core.Raux.Rlt_bool_eq_decide,
           hvalueRaw]
 
 -- Coq `Binary.v:Bsucc_correct`, transported from the exact SingleNaN theorem
@@ -14487,7 +14487,7 @@ theorem Bplus_correct {prec emax : Int}
                    B2R (BinarySingleNaNFloat.B754_finite sy my ey hmy Hy))|
               (FloatSpec.Core.Raux.bpow 2 emax) = true := by
             rw [hzR, zero_add, hround]
-            simp [FloatSpec.Core.Raux.Rlt_bool, habs]
+            simp [FloatSpec.Core.Raux.Rlt_bool_eq_decide, habs]
           rw [ite_eq_left hcond]
           refine ⟨?_, rfl, ?_⟩
           · rw [show Bplus mode (BinarySingleNaNFloat.B754_zero sx)
@@ -14523,7 +14523,7 @@ theorem Bplus_correct {prec emax : Int}
                     (prec:=prec) (emax:=emax) sy))|
               (FloatSpec.Core.Raux.bpow 2 emax) = true := by
             rw [hzR, add_zero, hround]
-            simp [FloatSpec.Core.Raux.Rlt_bool, habs]
+            simp [FloatSpec.Core.Raux.Rlt_bool_eq_decide, habs]
           rw [ite_eq_left hcond]
           refine ⟨?_, rfl, ?_⟩
           · rw [show Bplus mode
@@ -14628,7 +14628,7 @@ theorem Bplus_correct {prec emax : Int}
                      B2R (BinarySingleNaNFloat.B754_finite sy my ey hmy Hy))| <
                   FloatSpec.Core.Raux.bpow 2 emax := by
               intro hr
-              exact hlt (by simp [FloatSpec.Core.Raux.Rlt_bool, hr])
+              exact hlt (by simp [FloatSpec.Core.Raux.Rlt_bool_eq_decide, hr])
             have hover : FloatSpec.Core.Raux.bpow 2 emax ≤
                 |FloatSpec.Core.Generic_fmt.round_to_generic 2
                   (FLT_exp (3 - emax - prec) prec) (rnd_of_mode mode)
@@ -14756,7 +14756,7 @@ private theorem Bfma_returned_finite_correct {prec emax : Int}
           (B2R x * B2R y + B2R z)|
       (FloatSpec.Core.Raux.bpow 2 emax) = true := by
     rw [hres, hround]
-    simp [FloatSpec.Core.Raux.Rlt_bool, habs]
+    simp [FloatSpec.Core.Raux.Rlt_bool_eq_decide, habs]
   rw [ite_eq_left hcond, hout]
   refine ⟨?_, rfl, ?_⟩
   · rw [hres]
@@ -15115,7 +15115,7 @@ theorem Bsqrt_correct_aux {prec emax : Int}
     hmzn_pos hbetween hexp
   have hsqrt_sign :
       FloatSpec.Core.Raux.Rlt_bool (Real.sqrt input) 0 = false := by
-    simp [FloatSpec.Core.Raux.Rlt_bool, Real.sqrt_nonneg]
+    simp [FloatSpec.Core.Raux.Rlt_bool_eq_decide, Real.sqrt_nonneg]
   have hvalid : validBinarySingleNaNStandardFloat
       (prec:=prec) (emax:=emax) z = true := by
     simpa [z, hmzn_cast, hsqrt_sign] using haux.1
@@ -15126,7 +15126,7 @@ theorem Bsqrt_correct_aux {prec emax : Int}
         (FLT_exp (3 - emax - prec) prec) (rnd_of_mode mode)
           (Real.sqrt input)|
       (FloatSpec.Core.Raux.bpow 2 emax) = true := by
-    simp [FloatSpec.Core.Raux.Rlt_bool]
+    simp [FloatSpec.Core.Raux.Rlt_bool_eq_decide]
     simpa [input, mxn, Binary.B2R] using hlt
   have hbranch : SF2R 2 z =
         FloatSpec.Core.Generic_fmt.roundR 2
@@ -15194,7 +15194,7 @@ theorem Bsqrt_correct {prec emax : Int}
           hmzn_pos hbetween hexp
         have hsqrt_sign :
             FloatSpec.Core.Raux.Rlt_bool (Real.sqrt input) 0 = false := by
-          simp [FloatSpec.Core.Raux.Rlt_bool, Real.sqrt_nonneg]
+          simp [FloatSpec.Core.Raux.Rlt_bool_eq_decide, Real.sqrt_nonneg]
         have hvalid : validBinarySingleNaNStandardFloat
             (prec:=prec) (emax:=emax) z = true := by
           simpa [z, hsqrt_sign] using haux.1
@@ -15209,7 +15209,7 @@ theorem Bsqrt_correct {prec emax : Int}
               (FLT_exp (3 - emax - prec) prec) (rnd_of_mode mode)
                 (Real.sqrt input)|
             (FloatSpec.Core.Raux.bpow 2 emax) = true := by
-          simp [FloatSpec.Core.Raux.Rlt_bool]
+          simp [FloatSpec.Core.Raux.Rlt_bool_eq_decide]
           simpa [input, mxp, binaryPositiveOfNat_spec, Binary.B2R] using hlt
         have hbranch : SF2R 2 z =
               FloatSpec.Core.Generic_fmt.roundR 2
@@ -15473,12 +15473,12 @@ theorem Beqb_correct {prec emax : Int}
   unfold Beqb
   rw [BinarySingleNaN.Bcompare_correct f1 f2 h1 h2]
   by_cases hlt : BinarySingleNaN.B2R f1 < BinarySingleNaN.B2R f2
-  · simp [FloatSpec.Core.Raux.Rcompare, FloatSpec.Core.Raux.Req_bool,
+  · simp [FloatSpec.Core.Raux.Rcompare, FloatSpec.Core.Raux.Req_bool_eq_decide,
       BinarySingleNaN.B2R, hlt, ne_of_lt hlt]
   · by_cases heq : BinarySingleNaN.B2R f1 = BinarySingleNaN.B2R f2
-    · simp [FloatSpec.Core.Raux.Rcompare, FloatSpec.Core.Raux.Req_bool,
+    · simp [FloatSpec.Core.Raux.Rcompare, FloatSpec.Core.Raux.Req_bool_eq_decide,
         BinarySingleNaN.B2R, hlt, heq]
-    · simp [FloatSpec.Core.Raux.Rcompare, FloatSpec.Core.Raux.Req_bool,
+    · simp [FloatSpec.Core.Raux.Rcompare, FloatSpec.Core.Raux.Req_bool_eq_decide,
         BinarySingleNaN.B2R, hlt, heq]
 
 /-- Coq `BinarySingleNaN.Beqb_refl`; only NaN is non-reflexive. -/
@@ -15486,7 +15486,7 @@ theorem Beqb_refl {prec emax : Int} (f : BinarySingleNaNFloat prec emax) :
     Beqb f f = !(BSN_is_nan (binarySingleNaNFloatToB754 f)) := by
   cases f <;>
     simp [Beqb, BinarySingleNaN.Bcompare, BSN_is_nan, B754_to_R, binarySingleNaNFloatToB754,
-      binarySingleNaNFloatToStandardFloat, FloatSpec.Core.Raux.Req_bool]
+      binarySingleNaNFloatToStandardFloat, FloatSpec.Core.Raux.Req_bool_eq_decide]
 
 /-- Coq `BinarySingleNaN.Bltb`, on the proof-carrying single-NaN carrier. -/
 @[flocq_source "src/IEEE754/BinarySingleNaN.v" 652 "Bltb"]
@@ -15507,12 +15507,12 @@ theorem Bltb_correct {prec emax : Int}
   unfold Bltb
   rw [BinarySingleNaN.Bcompare_correct f1 f2 h1 h2]
   by_cases hlt : BinarySingleNaN.B2R f1 < BinarySingleNaN.B2R f2
-  · simp [FloatSpec.Core.Raux.Rcompare, FloatSpec.Core.Raux.Rlt_bool,
+  · simp [FloatSpec.Core.Raux.Rcompare, FloatSpec.Core.Raux.Rlt_bool_eq_decide,
       BinarySingleNaN.B2R, hlt]
   · by_cases heq : BinarySingleNaN.B2R f1 = BinarySingleNaN.B2R f2
-    · simp [FloatSpec.Core.Raux.Rcompare, FloatSpec.Core.Raux.Rlt_bool,
+    · simp [FloatSpec.Core.Raux.Rcompare, FloatSpec.Core.Raux.Rlt_bool_eq_decide,
         BinarySingleNaN.B2R, hlt, heq]
-    · simp [FloatSpec.Core.Raux.Rcompare, FloatSpec.Core.Raux.Rlt_bool,
+    · simp [FloatSpec.Core.Raux.Rcompare, FloatSpec.Core.Raux.Rlt_bool_eq_decide,
         BinarySingleNaN.B2R, hlt, heq]
 
 /-- Coq `BinarySingleNaN.Bleb`. -/
@@ -15537,8 +15537,8 @@ theorem Bleb_correct {prec emax : Int}
     | none => rfl
     | some ord => cases ord <;> rfl
   rw [compare_bool, Bltb_correct f1 f2 h1 h2, Beqb_correct f1 f2 h1 h2]
-  simp [FloatSpec.Core.Raux.Rlt_bool, FloatSpec.Core.Raux.Req_bool,
-    FloatSpec.Core.Raux.Rle_bool, le_iff_lt_or_eq]
+  simp [FloatSpec.Core.Raux.Rlt_bool_eq_decide, FloatSpec.Core.Raux.Req_bool_eq_decide,
+    FloatSpec.Core.Raux.Rle_bool_eq_decide, le_iff_lt_or_eq]
 
 namespace BinarySingleNaN
 

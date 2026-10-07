@@ -572,7 +572,7 @@ theorem inbetween_float_round_sign
     · have : sm < 0 := by
         have := mul_lt_mul_of_pos_right hx hcpos
         simpa [hsm_def, mul_zero] using this
-      unfold FloatSpec.Core.Raux.Rlt_bool at *
+      simp only [FloatSpec.Core.Raux.Rlt_bool_eq_decide] at *
       simp [hx, this]
     · have hx' : 0 ≤ x := le_of_not_gt hx
       have : ¬ sm < 0 := by
@@ -580,7 +580,7 @@ theorem inbetween_float_round_sign
           have := mul_nonneg hx' (le_of_lt hcpos)
           simpa [hsm_def] using this
         exact not_lt.mpr hxsm
-      unfold FloatSpec.Core.Raux.Rlt_bool at *
+      simp only [FloatSpec.Core.Raux.Rlt_bool_eq_decide] at *
       simp [hx, this]
   -- Replace sign(sm) by sign(x) in hr0
   have hr :
@@ -737,7 +737,7 @@ theorem inbetween_int_DN_sign (x : ℝ) (m : Int) (l : Location)
           have hx_eq : x = -((m : Int) : ℝ) := by simpa using congrArg Neg.neg this
           simpa [Int.cast_neg] using hx_eq
         have hb : FloatSpec.Core.Raux.Rlt_bool x 0 = true := by
-          simp [FloatSpec.Core.Raux.Rlt_bool, hxlt]
+          simp [FloatSpec.Core.Raux.Rlt_bool_eq_decide, hxlt]
         -- Compute both sides explicitly and compare
         have hL : (FloatSpec.Core.Raux.Zfloor x) = -m := by
           -- Floor of an integer cast
@@ -765,7 +765,7 @@ theorem inbetween_int_DN_sign (x : ℝ) (m : Int) (l : Location)
           · -- x < ((-(m+1) : Int) : ℝ) + 1 = -m
             simpa [Int.cast_add, Int.cast_one, Int.cast_neg] using hlt_hi
         have hb : FloatSpec.Core.Raux.Rlt_bool x 0 = true := by
-          simp [FloatSpec.Core.Raux.Rlt_bool, hxlt]
+          simp [FloatSpec.Core.Raux.Rlt_bool_eq_decide, hxlt]
         have hL : (FloatSpec.Core.Raux.Zfloor x) = -(m + 1) := by
           simpa [FloatSpec.Core.Raux.Zfloor] using hfloor
         -- Conclude by simplifying the RHS to `-(m+1)` and rewriting by `hL`.
@@ -776,7 +776,7 @@ theorem inbetween_int_DN_sign (x : ℝ) (m : Int) (l : Location)
     have Hl' : inbetween_int m x l := by
       simpa [inbetween_int, abs_of_nonneg hx0] using Hl
     have hb : FloatSpec.Core.Raux.Rlt_bool x 0 = false := by
-      simp [FloatSpec.Core.Raux.Rlt_bool, hxlt]
+      simp [FloatSpec.Core.Raux.Rlt_bool_eq_decide, hxlt]
     have hL : (FloatSpec.Core.Raux.Zfloor x) = m := by
       simpa [FloatSpec.Core.Raux.Zfloor] using (inbetween_int_DN (x := x) (m := m) (l := l) Hl')
     -- Case on l to fully reduce the RHS boolean
@@ -890,14 +890,14 @@ theorem inbetween_float_DN_sign (x : ℝ) (m e : Int) (l : Location)
     · have : sm < 0 := by
         have := mul_lt_mul_of_pos_right hxlt hcpos
         simpa [hsm_def, mul_zero] using this
-      simp [FloatSpec.Core.Raux.Rlt_bool, hxlt, this]
+      simp [FloatSpec.Core.Raux.Rlt_bool_eq_decide, hxlt, this]
     · have hx0 : 0 ≤ x := le_of_not_gt hxlt
       have : ¬ sm < 0 := by
         have hxsm : 0 ≤ sm := by
           have := mul_nonneg hx0 (le_of_lt hcpos)
           simpa [hsm_def] using this
         exact not_lt.mpr hxsm
-      simp [FloatSpec.Core.Raux.Rlt_bool, hxlt, this]
+      simp [FloatSpec.Core.Raux.Rlt_bool_eq_decide, hxlt, this]
   -- Assemble the result: evaluate roundR via Zfloor sm and rewrite with the integer lemma
   have hr' :
       (FloatSpec.Core.Generic_fmt.roundR beta fexp (fun y => (FloatSpec.Core.Raux.Zfloor y)) x)
@@ -1053,7 +1053,7 @@ theorem inbetween_int_UP_sign (x : ℝ) (m : Int) (l : Location)
   classical
   by_cases hxlt : x < 0
   · have hb : FloatSpec.Core.Raux.Rlt_bool x 0 = true := by
-      simp [FloatSpec.Core.Raux.Rlt_bool, hxlt]
+      simp [FloatSpec.Core.Raux.Rlt_bool_eq_decide, hxlt]
     unfold inbetween_int at Hl
     cases Hl with
     | inbetween_Exact hxeq =>
@@ -1086,7 +1086,7 @@ theorem inbetween_int_UP_sign (x : ℝ) (m : Int) (l : Location)
         simp [FloatSpec.Core.Zaux.cond_Zopp, hb, round_sign_UP, cond_incr, hceil_run]
   · have hx0 : 0 ≤ x := le_of_not_gt hxlt
     have hb : FloatSpec.Core.Raux.Rlt_bool x 0 = false := by
-      simp [FloatSpec.Core.Raux.Rlt_bool, hxlt]
+      simp [FloatSpec.Core.Raux.Rlt_bool_eq_decide, hxlt]
     have Hl' : inbetween_int m x l := by
       simpa [inbetween_int, abs_of_nonneg hx0] using Hl
     have hceil := inbetween_int_UP (x := x) (m := m) (l := l) Hl'
@@ -1280,7 +1280,7 @@ theorem inbetween_int_ZR_sign (x : ℝ) (m : Int) (l : Location)
   classical
   by_cases hxlt : x < 0
   · have hb : FloatSpec.Core.Raux.Rlt_bool x 0 = true := by
-      simp [FloatSpec.Core.Raux.Rlt_bool, hxlt]
+      simp [FloatSpec.Core.Raux.Rlt_bool_eq_decide, hxlt]
     have hceil := inbetween_int_UP_sign (x := x) (m := m) (l := l) Hl
     have hceil' : FloatSpec.Core.Raux.Zceil x = -m := by
       cases l <;> simpa [FloatSpec.Core.Zaux.cond_Zopp, hb, round_sign_UP, cond_incr] using hceil
@@ -1289,7 +1289,7 @@ theorem inbetween_int_ZR_sign (x : ℝ) (m : Int) (l : Location)
     simp [FloatSpec.Core.Raux.Ztrunc, hxlt, FloatSpec.Core.Zaux.cond_Zopp, hb, hceil_int]
   · have hx0 : 0 ≤ x := le_of_not_gt hxlt
     have hb : FloatSpec.Core.Raux.Rlt_bool x 0 = false := by
-      simp [FloatSpec.Core.Raux.Rlt_bool, hxlt]
+      simp [FloatSpec.Core.Raux.Rlt_bool_eq_decide, hxlt]
     have Hl' : inbetween_int m x l := by
       simpa [inbetween_int, abs_of_nonneg hx0] using Hl
     have hfloor := inbetween_int_DN (x := x) (m := m) (l := l) Hl'
@@ -1518,7 +1518,7 @@ theorem inbetween_int_N_sign (choice : Int → Bool) (x : ℝ) (m : Int) (l : Lo
   by_cases hxlt : x < 0
   · -- Negative case: use Znearest_opp and reduce to |-x|
     have hb : (FloatSpec.Core.Raux.Rlt_bool x 0) = true := by
-      simp [FloatSpec.Core.Raux.Rlt_bool, hxlt]
+      simp [FloatSpec.Core.Raux.Rlt_bool_eq_decide, hxlt]
     -- Instantiate the sign-transformed choice (match Znearest_opp's shape)
     let choice' : Int → Bool := fun t => ! choice (-1 + -t)
     -- From |x| bracketing and x < 0, we have inbetween on -x
@@ -1552,21 +1552,21 @@ theorem inbetween_int_N_sign (choice : Int → Bool) (x : ℝ) (m : Int) (l : Lo
     -- Rewrite the goal's RHS using cond_Zopp and hb = true
     -- The goal has nested if-expressions on (Rlt_bool x 0 = true); simplify both
     have hb_eq : FloatSpec.Core.Raux.Rlt_bool x 0 = true := by
-      simp only [FloatSpec.Core.Raux.Rlt_bool, Id.run, decide_eq_true_eq] at hb ⊢
+      simp only [FloatSpec.Core.Raux.Rlt_bool_eq_decide, Id.run, decide_eq_true_eq] at hb ⊢
       exact hb
     simp only [FloatSpec.Core.Zaux.cond_Zopp, hb_eq, Id.run, ite_true, Bool.true_eq]
     exact hcalc
   · -- Nonnegative case: reduce |x| = x and cond_Zopp false is identity
     have hx0 : 0 ≤ x := le_of_not_gt hxlt
     have hb : (FloatSpec.Core.Raux.Rlt_bool x 0) = false := by
-      simp [FloatSpec.Core.Raux.Rlt_bool, hxlt]
+      simp [FloatSpec.Core.Raux.Rlt_bool_eq_decide, hxlt]
     have Hl_pos : inbetween_int m x l := by
       simpa [inbetween_int, abs_of_nonneg hx0] using Hl
     have hN := inbetween_int_N (choice := choice) (x := x) (m := m) (l := l) Hl_pos
     -- Simplify the RHS boolean and conclude
     -- With hb = false, cond_Zopp false t = t
     have hb_eq : FloatSpec.Core.Raux.Rlt_bool x 0 = false := by
-      simp only [FloatSpec.Core.Raux.Rlt_bool, Id.run, decide_eq_false_iff_not] at hb ⊢
+      simp only [FloatSpec.Core.Raux.Rlt_bool_eq_decide, Id.run, decide_eq_false_iff_not] at hb ⊢
       exact hb
     simp only [FloatSpec.Core.Zaux.cond_Zopp, hb_eq, Id.run, ite_false, Bool.false_eq]
     exact hN
@@ -2008,7 +2008,7 @@ theorem inbetween_int_NA_sign (x : ℝ) (m : Int) (l : Location)
   by_cases hxlt : x < 0
   · -- Negative case: parameter reduces to true via !(decide (0 ≤ -(m+1)))
     have hb : (FloatSpec.Core.Raux.Rlt_bool x 0) = true := by
-      simp [FloatSpec.Core.Raux.Rlt_bool, hxlt]
+      simp [FloatSpec.Core.Raux.Rlt_bool_eq_decide, hxlt]
     -- From 0 < (m+1 : ℝ), deduce ¬(m+1 ≤ 0) on integers
     have hnot_le0 : ¬ (m + 1 ≤ 0) := by
       intro hle
@@ -2036,7 +2036,7 @@ theorem inbetween_int_NA_sign (x : ℝ) (m : Int) (l : Location)
       · -- Hence decide (0 ≤ -(m+1)) = false and the boolean is true
         -- Need to show Rlt_bool x 0 = true for the if-then-else to simplify
         have hb_eq : FloatSpec.Core.Raux.Rlt_bool x 0 = true := by
-          simp only [FloatSpec.Core.Raux.Rlt_bool, Id.run, decide_eq_true_eq] at hb ⊢
+          simp only [FloatSpec.Core.Raux.Rlt_bool_eq_decide, Id.run, decide_eq_true_eq] at hb ⊢
           exact hb
         simp only [hb_eq, Id.run, pure, ite_true, FloatSpec.Core.Generic_fmt.ZnearestA, h', Bool.not_false, decide_eq_true_eq]
         rfl
@@ -2047,7 +2047,7 @@ theorem inbetween_int_NA_sign (x : ℝ) (m : Int) (l : Location)
     simpa [hb] using (hgen.trans this)
   · -- Nonnegative case: parameter reduces to true via decide (0 ≤ m)
     have hb : (FloatSpec.Core.Raux.Rlt_bool x 0) = false := by
-      simp [FloatSpec.Core.Raux.Rlt_bool, hxlt]
+      simp [FloatSpec.Core.Raux.Rlt_bool_eq_decide, hxlt]
     -- Show 0 ≤ m: if m < 0 then m+1 ≤ 0 contradicts hpos_m1
     have hm_nonneg : 0 ≤ m := by
       have hnot : ¬ m < 0 := by
@@ -2063,7 +2063,7 @@ theorem inbetween_int_NA_sign (x : ℝ) (m : Int) (l : Location)
             else FloatSpec.Core.Generic_fmt.ZnearestA m) = true := by
       -- Need to show Rlt_bool x 0 = false for the if-then-else to simplify to else branch
       have hb_eq : FloatSpec.Core.Raux.Rlt_bool x 0 = false := by
-        simp only [FloatSpec.Core.Raux.Rlt_bool, Id.run, decide_eq_false_iff_not, not_lt] at hb ⊢
+        simp only [FloatSpec.Core.Raux.Rlt_bool_eq_decide, Id.run, decide_eq_false_iff_not, not_lt] at hb ⊢
         exact hb
       -- Evaluate the else branch with 0 ≤ m
       -- Use hb_eq to show Rlt_bool x 0 = true reduces to false = true, then the if evaluates to else
@@ -2958,7 +2958,7 @@ theorem round_sign_any_correct
             (beta := beta) (fexp := fexp) (rnd := rnd) (x := x) Hβ Hfmt
         by_cases hxlt : x < 0
         · have hb : FloatSpec.Core.Raux.Rlt_bool x 0 = true := by
-            simp [FloatSpec.Core.Raux.Rlt_bool, hxlt]
+            simp [FloatSpec.Core.Raux.Rlt_bool_eq_decide, hxlt]
           have hx_eq_neg :
               x = -FloatSpec.Core.Defs.F2R
                 (FloatSpec.Core.Defs.FlocqFloat.mk m e :
@@ -2984,7 +2984,7 @@ theorem round_sign_any_correct
             apply FloatSpec.Calc.Bracket.inbetween.inbetween_Exact
             simp [abs_of_pos hm_pos_real]
           have hb_neg_m : FloatSpec.Core.Raux.Rlt_bool (-(m : ℝ)) 0 = true := by
-            simp [FloatSpec.Core.Raux.Rlt_bool, hm_pos_real]
+            simp [FloatSpec.Core.Raux.Rlt_bool_eq_decide, hm_pos_real]
           have hc := Hc (-(m : ℝ)) m Location.loc_Exact Hin_exact
           have hc_s :
               rnd (-(m : ℝ)) =
@@ -3027,7 +3027,7 @@ theorem round_sign_any_correct
                 simp [hb, hcond]
         · have hx_nonneg : 0 ≤ x := le_of_not_gt hxlt
           have hb : FloatSpec.Core.Raux.Rlt_bool x 0 = false := by
-            simp [FloatSpec.Core.Raux.Rlt_bool, hxlt]
+            simp [FloatSpec.Core.Raux.Rlt_bool_eq_decide, hxlt]
           have hx_eq :
               x = FloatSpec.Core.Defs.F2R
                 (FloatSpec.Core.Defs.FlocqFloat.mk m e :
@@ -3048,7 +3048,7 @@ theorem round_sign_any_correct
             apply FloatSpec.Calc.Bracket.inbetween.inbetween_Exact
             simp [abs_of_nonneg hm_nonneg_real]
           have hb_m : FloatSpec.Core.Raux.Rlt_bool (m : ℝ) 0 = false := by
-            simp [FloatSpec.Core.Raux.Rlt_bool, not_lt.mpr hm_nonneg_real]
+            simp [FloatSpec.Core.Raux.Rlt_bool_eq_decide, not_lt.mpr hm_nonneg_real]
           have hc := Hc (m : ℝ) m Location.loc_Exact Hin_exact
           have hc_s :
               rnd (m : ℝ) =

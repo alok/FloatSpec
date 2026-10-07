@@ -89,7 +89,7 @@ instance valid_rnd_FTZ (rnd : ℝ → Int) [Valid_rnd rnd] : Valid_rnd (Zrnd_FTZ
     unfold Zrnd_FTZ
     by_cases hx : 1 ≤ |x|
     · by_cases hy : 1 ≤ |y|
-      · simp [FloatSpec.Core.Raux.Rle_bool, hx, hy]
+      · simp [FloatSpec.Core.Raux.Rle_bool_eq_decide, hx, hy]
         exact Valid_rnd.Zrnd_le (rnd := rnd) x y hxy
       · have hx_nonpos : x ≤ 0 := by
           by_contra hx_pos
@@ -101,7 +101,7 @@ instance valid_rnd_FTZ (rnd : ℝ → Int) [Valid_rnd rnd] : Valid_rnd (Zrnd_FTZ
             have hy_nonneg : 0 ≤ y := le_trans (by positivity) h1y
             simpa [abs_of_nonneg hy_nonneg] using h1y
           exact hy h1abs_y
-        simp [FloatSpec.Core.Raux.Rle_bool, hx, hy]
+        simp [FloatSpec.Core.Raux.Rle_bool_eq_decide, hx, hy]
         have hle : rnd x ≤ rnd 0 :=
           Valid_rnd.Zrnd_le (rnd := rnd) x 0 hx_nonpos
         have hzero : rnd 0 = 0 := by
@@ -121,17 +121,17 @@ instance valid_rnd_FTZ (rnd : ℝ → Int) [Valid_rnd rnd] : Valid_rnd (Zrnd_FTZ
             have h1 : 1 ≤ -x := by linarith
             simpa [abs_of_nonpos hx_nonpos] using h1
           exact hx h1abs_x
-        simp [FloatSpec.Core.Raux.Rle_bool, hx, hy]
+        simp [FloatSpec.Core.Raux.Rle_bool_eq_decide, hx, hy]
         have hle : rnd 0 ≤ rnd y :=
           Valid_rnd.Zrnd_le (rnd := rnd) 0 y hy_nonneg
         have hzero : rnd 0 = 0 := by
           simpa using (Valid_rnd.Zrnd_IZR (rnd := rnd) (0 : Int))
         simpa [hzero] using hle
-      · simp [FloatSpec.Core.Raux.Rle_bool, hx, hy]
+      · simp [FloatSpec.Core.Raux.Rle_bool_eq_decide, hx, hy]
   · intro n
     unfold Zrnd_FTZ
     by_cases h : 1 ≤ |(n : ℝ)|
-    · simp [FloatSpec.Core.Raux.Rle_bool, h, Valid_rnd.Zrnd_IZR (rnd := rnd) n]
+    · simp [FloatSpec.Core.Raux.Rle_bool_eq_decide, h, Valid_rnd.Zrnd_IZR (rnd := rnd) n]
     · have hlt : |(n : ℝ)| < 1 := lt_of_not_ge h
       have h_abs_natAbs : (Int.natAbs n : ℝ) = |(n : ℝ)| := by
         simpa [Nat.cast_natAbs, Int.cast_abs]
@@ -144,7 +144,7 @@ instance valid_rnd_FTZ (rnd : ℝ → Int) [Valid_rnd rnd] : Valid_rnd (Zrnd_FTZ
           exact_mod_cast (Nat.succ_le_of_lt hpos)
         exact (not_lt_of_ge hge1) hnat_lt1
       have hn : n = 0 := Int.natAbs_eq_zero.mp hnat_zero
-      simp [FloatSpec.Core.Raux.Rle_bool, h, hn, Valid_rnd.Zrnd_IZR (rnd := rnd) 0]
+      simp [FloatSpec.Core.Raux.Rle_bool_eq_decide, h, hn, Valid_rnd.Zrnd_IZR (rnd := rnd) 0]
 
 /-- `Valid_exp` instance for the FTZ exponent function. -/
 instance FTZ_exp_valid :
@@ -647,7 +647,7 @@ theorem round_FTZ_FLX (beta : Int) [ValidRadix beta]
   rw [hexp]
   have hscaledBool : FloatSpec.Core.Raux.Rle_bool 1
       |x * (beta : ℝ) ^ (-FloatSpec.Core.FLX.FLX_exp prec M)| = true := by
-    simpa [FloatSpec.Core.Raux.Rle_bool, FloatSpec.Core.FLX.FLX_exp,
+    simpa [FloatSpec.Core.Raux.Rle_bool_eq_decide, FloatSpec.Core.FLX.FLX_exp,
       sub_eq_add_neg, add_comm, add_left_comm, add_assoc] using hscaledLower
   simp only [Zrnd_FTZ, hscaledBool, Bool.true_eq, ite_true]
   simpa [FloatSpec.Core.Generic_fmt.scaled_mantissa,
@@ -696,7 +696,7 @@ theorem round_FTZ_small (beta : Int) [ValidRadix beta]
     simpa [hsm] using (abs_lt.mp hsm_lt1)
   have hmode : Zrnd_FTZ rnd sm = 0 := by
     have hnot : ¬ 1 ≤ |sm| := not_le.mpr (by simpa [hsm] using hsm_lt1)
-    simp [Zrnd_FTZ, FloatSpec.Core.Raux.Rle_bool, hnot]
+    simp [Zrnd_FTZ, FloatSpec.Core.Raux.Rle_bool_eq_decide, hnot]
   have hround :
       round_to_generic (beta := beta) (fexp := FTZ_exp prec emin)
         (mode := Zrnd_FTZ rnd) x = 0 := by

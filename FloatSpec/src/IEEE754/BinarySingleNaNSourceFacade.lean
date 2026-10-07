@@ -754,15 +754,15 @@ theorem Bldexp_correct {prec emax : Int}
   | B754_zero s =>
       simp [Bldexp, Binary.BldexpSingle, B2R, B2SF, Bsign, is_finite,
         binarySingleNaNFloatToB754, binarySingleNaNFloatToStandardFloat,
-        B754_to_R, hround0, FloatSpec.Core.Raux.Rlt_bool, hbpow]
+        B754_to_R, hround0, FloatSpec.Core.Raux.Rlt_bool_eq_decide, hbpow]
   | B754_infinity s =>
       simp [Bldexp, Binary.BldexpSingle, B2R, B2SF, Bsign, is_finite,
         binarySingleNaNFloatToB754, binarySingleNaNFloatToStandardFloat,
-        B754_to_R, hround0, FloatSpec.Core.Raux.Rlt_bool, hbpow]
+        B754_to_R, hround0, FloatSpec.Core.Raux.Rlt_bool_eq_decide, hbpow]
   | B754_nan =>
       simp [Bldexp, Binary.BldexpSingle, B2R, B2SF, Bsign, is_finite,
         binarySingleNaNFloatToB754, binarySingleNaNFloatToStandardFloat,
-        B754_to_R, hround0, FloatSpec.Core.Raux.Rlt_bool, hbpow]
+        B754_to_R, hround0, FloatSpec.Core.Raux.Rlt_bool_eq_decide, hbpow]
   | B754_finite s m e hm hb =>
       let z := _root_.binary_round (prec:=prec) (emax:=emax) mode s m (e + k)
       have hc := _root_.binary_round_correct (prec:=prec) (emax:=emax)
@@ -987,7 +987,7 @@ private theorem Bldexp_Bone_spec {prec emax : Int}
     have hpowpos : 0 < FloatSpec.Core.Raux.bpow 2 k := by
       exact zpow_pos (by norm_num : (0 : ℝ) < 2) k
     rw [abs_of_pos hpowpos]
-    simp [FloatSpec.Core.Raux.Rlt_bool, hlt]
+    simp [FloatSpec.Core.Raux.Rlt_bool_eq_decide, hlt]
   have hc := Bldexp_correct (prec:=prec) (emax:=emax)
     RoundingMode.RNE (Bone (prec:=prec) (emax:=emax)) k
   rw [ite_eq_left hcond] at hc

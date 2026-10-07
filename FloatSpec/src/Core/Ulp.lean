@@ -8120,7 +8120,7 @@ theorem round_UP_pred_plus_eps
   simp [Id.run, bind, pure,
         FloatSpec.Core.Generic_fmt.round_UP_to_format]
   -- Logical equivalence between the boolean and the real inequality
-  have hspec := FloatSpec.Core.Raux.Rle_bool_spec (x) 0
+  have hspec := FloatSpec.Core.Raux.Rle_bool_iff (x) 0
   have hiff_true : (FloatSpec.Core.Raux.Rle_bool x 0 = true ↔ x ≤ 0) := by
     simpa [Id.run, pure] using hspec
   by_cases hxle0 : x ≤ 0
@@ -8281,7 +8281,7 @@ theorem round_DN_minus_eps
   simp [Id.run, bind, pure,
         FloatSpec.Core.Generic_fmt.round_DN_to_format]
   -- Logical equivalence for `Rle_bool x 0`
-  have hspec := FloatSpec.Core.Raux.Rle_bool_spec (x) 0
+  have hspec := FloatSpec.Core.Raux.Rle_bool_iff (x) 0
   have hiff_true : (FloatSpec.Core.Raux.Rle_bool x 0 = true ↔ x ≤ 0) := by
     simpa [Id.run, pure] using hspec
   by_cases hxle0 : x ≤ 0
@@ -8371,7 +8371,7 @@ theorem round_DN_plus_eps
     (x := x + eps) (d := x) Fx
   constructor
   · exact le_add_of_nonneg_right heps.1
-  · have hspec := FloatSpec.Core.Raux.Rle_bool_spec 0 x
+  · have hspec := FloatSpec.Core.Raux.Rle_bool_iff 0 x
     have hiff_true : (FloatSpec.Core.Raux.Rle_bool 0 x = true ↔ 0 ≤ x) := by
       simpa [Id.run, pure] using hspec
     by_cases hx0 : 0 ≤ x

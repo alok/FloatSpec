@@ -500,134 +500,156 @@ end RcompareMore
 
 section BooleanComparisons
 
-/-- Boolean less-or-equal test for real numbers
-
-    Tests whether x ≤ y, returning a boolean result.
-    This provides a decidable ordering test.
--/
+/-- FLoCq `Rle_bool`: the Boolean order test, read off {lean}`Rcompare`. -/
+@[flocq_source "src/Core/Raux.v" 620 "Rle_bool"]
 noncomputable def Rle_bool (x y : ℝ) : Bool :=
-  (decide (x ≤ y))
+  match Rcompare x y with
+  | .gt => false
+  | _ => true
 
-/-- Coq {lit}`Rle_bool_prop`: inductive characterization of {lean}`Rle_bool`. -/
+/-- {lean}`Rle_bool` decides `x ≤ y`. -/
+theorem Rle_bool_eq_decide (x y : ℝ) : Rle_bool x y = decide (x ≤ y) := by
+  rcases lt_trichotomy x y with h | h | h
+  · simp [Rle_bool, Rcompare_Lt x y h, h.le]
+  · subst h; simp [Rle_bool, Rcompare_Eq x x rfl]
+  · simp [Rle_bool, Rcompare_Gt x y h, not_le.mpr h]
+
+/-- FLoCq `Rle_bool_prop`: the graph of {lean}`Rle_bool`. -/
+@[flocq_source "src/Core/Raux.v" 626 "Rle_bool_prop"]
 inductive Rle_bool_prop (x y : ℝ) : Bool → Prop where
   | Rle_bool_true_ : x ≤ y → Rle_bool_prop x y true
   | Rle_bool_false_ : y < x → Rle_bool_prop x y false
 
 export Rle_bool_prop (Rle_bool_true_ Rle_bool_false_)
 
-/-- Coq-style spec: {lit}`Rle_bool_prop` holds for {lean}`Rle_bool`. -/
-theorem Rle_bool_prop_spec (x y : ℝ) : Rle_bool_prop x y (Rle_bool x y) := by
+/-- FLoCq `Rle_bool_spec`: {lean}`Rle_bool` lands in its graph. -/
+@[flocq_source "src/Core/Raux.v" 630 "Rle_bool_spec"]
+theorem Rle_bool_spec (x y : ℝ) : Rle_bool_prop x y (Rle_bool x y) := by
   by_cases hxy : x ≤ y
-  · have h : Rle_bool_prop x y true := Rle_bool_true_ hxy
-    simpa [Rle_bool, hxy] using h
-  · have hyx : y < x := lt_of_not_ge hxy
-    have h : Rle_bool_prop x y false := Rle_bool_false_ hyx
-    simpa [Rle_bool, hxy] using h
+  · simpa [Rle_bool_eq_decide, hxy] using Rle_bool_true_ hxy
+  · simpa [Rle_bool_eq_decide, hxy] using Rle_bool_false_ (lt_of_not_ge hxy)
 
-/-- The boolean less-or-equal test returns {lean}`true` exactly when {lit}`x ≤ y`. -/
-theorem Rle_bool_spec (x y : ℝ) : Rle_bool x y = true ↔ x ≤ y := by
-  simp [Rle_bool]
+/-- The Boolean order test returns {lean}`true` exactly when `x ≤ y`. -/
+theorem Rle_bool_iff (x y : ℝ) : Rle_bool x y = true ↔ x ≤ y := by
+  simp [Rle_bool_eq_decide]
 
-/-- Coq {lit}`Rle_bool_true`: if {lit}`x ≤ y`, then {lean}`Rle_bool x y = true`. -/
+/-- FLoCq `Rle_bool_true`. -/
+@[flocq_source "src/Core/Raux.v" 642 "Rle_bool_true"]
 theorem Rle_bool_true (x y : ℝ) (hxy : x ≤ y) : Rle_bool x y = true := by
-  simpa [Rle_bool] using hxy
+  simpa [Rle_bool_eq_decide] using hxy
 
-/-- Coq {lit}`Rle_bool_false`: if {lit}`y < x`, then {lean}`Rle_bool x y = false`. -/
+/-- FLoCq `Rle_bool_false`. -/
+@[flocq_source "src/Core/Raux.v" 653 "Rle_bool_false"]
 theorem Rle_bool_false (x y : ℝ) (hyx : y < x) : Rle_bool x y = false := by
-  simpa [Rle_bool] using hyx
+  simpa [Rle_bool_eq_decide] using hyx
 
-/-- Boolean strict less-than test for real numbers
-
-    Tests whether x < y, returning a boolean result.
-    This provides a decidable strict ordering test.
--/
+/-- FLoCq `Rlt_bool`: the Boolean strict-order test, read off {lean}`Rcompare`. -/
+@[flocq_source "src/Core/Raux.v" 668 "Rlt_bool"]
 noncomputable def Rlt_bool (x y : ℝ) : Bool :=
-  (x < y)
+  match Rcompare x y with
+  | .lt => true
+  | _ => false
 
-/-- Coq {lit}`Rlt_bool_prop`: inductive characterization of {lean}`Rlt_bool`. -/
+/-- {lean}`Rlt_bool` decides `x < y`. -/
+theorem Rlt_bool_eq_decide (x y : ℝ) : Rlt_bool x y = decide (x < y) := by
+  rcases lt_trichotomy x y with h | h | h
+  · simp [Rlt_bool, Rcompare_Lt x y h, h]
+  · subst h; simp [Rlt_bool, Rcompare_Eq x x rfl]
+  · simp [Rlt_bool, Rcompare_Gt x y h, not_lt.mpr h.le]
+
+/-- FLoCq `Rlt_bool_prop`: the graph of {lean}`Rlt_bool`. -/
+@[flocq_source "src/Core/Raux.v" 674 "Rlt_bool_prop"]
 inductive Rlt_bool_prop (x y : ℝ) : Bool → Prop where
   | Rlt_bool_true_ : x < y → Rlt_bool_prop x y true
   | Rlt_bool_false_ : y ≤ x → Rlt_bool_prop x y false
 
 export Rlt_bool_prop (Rlt_bool_true_ Rlt_bool_false_)
 
-/-- Coq-style spec: {lit}`Rlt_bool_prop` holds for {lean}`Rlt_bool`. -/
-theorem Rlt_bool_prop_spec (x y : ℝ) : Rlt_bool_prop x y (Rlt_bool x y) := by
+/-- FLoCq `Rlt_bool_spec`: {lean}`Rlt_bool` lands in its graph. -/
+@[flocq_source "src/Core/Raux.v" 678 "Rlt_bool_spec"]
+theorem Rlt_bool_spec (x y : ℝ) : Rlt_bool_prop x y (Rlt_bool x y) := by
   by_cases hxy : x < y
-  · have h : Rlt_bool_prop x y true := Rlt_bool_true_ hxy
-    simpa [Rlt_bool, hxy] using h
-  · have hyx : y ≤ x := le_of_not_gt hxy
-    have h : Rlt_bool_prop x y false := Rlt_bool_false_ hyx
-    simpa [Rlt_bool, hxy] using h
+  · simpa [Rlt_bool_eq_decide, hxy] using Rlt_bool_true_ hxy
+  · simpa [Rlt_bool_eq_decide, hxy] using Rlt_bool_false_ (le_of_not_gt hxy)
 
-/-- The boolean strict test returns {lean}`true` exactly when {lit}`x < y`. -/
-theorem Rlt_bool_spec (x y : ℝ) : Rlt_bool x y = true ↔ x < y := by
-  simp [Rlt_bool]
+/-- The Boolean strict test returns {lean}`true` exactly when `x < y`. -/
+theorem Rlt_bool_iff (x y : ℝ) : Rlt_bool x y = true ↔ x < y := by
+  simp [Rlt_bool_eq_decide]
 
-/-- Coq {lit}`Rlt_bool_true`: if {lit}`x < y`, then {lean}`Rlt_bool x y = true`. -/
-theorem Rlt_bool_true (x y : ℝ) (hlt : x < y) : Rlt_bool x y = true := by
-  simpa [Rlt_bool] using hlt
-
-/-- Coq {lit}`Rlt_bool_false`: if {lit}`y ≤ x`, then {lean}`Rlt_bool x y = false`. -/
-theorem Rlt_bool_false (x y : ℝ) (hyx : y ≤ x) : Rlt_bool x y = false := by
-  simpa [Rlt_bool] using hyx
-
-/-- Coq {lit}`Rlt_bool_opp`: negating both operands swaps the strict test. -/
-theorem Rlt_bool_opp (x y : ℝ) : Rlt_bool (-x) (-y) = Rlt_bool y x := by
-  simp [Rlt_bool]
-
-/-- Coq `negb_Rlt_bool`: negating `x ≤ y` is the test for `y < x`. -/
+/-- FLoCq `negb_Rlt_bool`: the complement of `x ≤ y` is `y < x`. (In the source this name
+belongs to the lemma about {lean}`Rle_bool`.) -/
+@[flocq_source "src/Core/Raux.v" 690 "negb_Rlt_bool"]
 theorem negb_Rlt_bool (x y : ℝ) :
     Bool.not (Rle_bool x y) = Rlt_bool y x := by
-  by_cases hxy : x ≤ y
-  · have hyx : ¬ y < x := not_lt_of_ge hxy
-    simp [Rle_bool, Rlt_bool, hxy, hyx]
-  · have hyx : y < x := lt_of_not_ge hxy
-    simp [Rle_bool, Rlt_bool, hxy, hyx]
+  by_cases h : x ≤ y
+  · simp [Rle_bool_eq_decide, Rlt_bool_eq_decide, h, not_lt.mpr h]
+  · simp [Rle_bool_eq_decide, Rlt_bool_eq_decide, h, lt_of_not_ge h]
 
-/-- Coq `negb_Rle_bool`: negating `x < y` is the test for `y ≤ x`. -/
+/-- FLoCq `negb_Rle_bool`: the complement of `x < y` is `y ≤ x`. -/
+@[flocq_source "src/Core/Raux.v" 700 "negb_Rle_bool"]
 theorem negb_Rle_bool (x y : ℝ) :
     Bool.not (Rlt_bool x y) = Rle_bool y x := by
-  by_cases hxy : x < y
-  · have hyx : ¬ y ≤ x := not_le_of_gt hxy
-    simp [Rle_bool, Rlt_bool, hxy, hyx]
-  · have hyx : y ≤ x := le_of_not_gt hxy
-    simp [Rle_bool, Rlt_bool, hxy, hyx]
+  by_cases h : x < y
+  · simp [Rle_bool_eq_decide, Rlt_bool_eq_decide, h, not_le.mpr h]
+  · simp [Rle_bool_eq_decide, Rlt_bool_eq_decide, h, le_of_not_gt h]
 
-/-- Boolean equality test for real numbers
+/-- FLoCq `Rlt_bool_true`. -/
+@[flocq_source "src/Core/Raux.v" 710 "Rlt_bool_true"]
+theorem Rlt_bool_true (x y : ℝ) (hlt : x < y) : Rlt_bool x y = true := by
+  simpa [Rlt_bool_eq_decide] using hlt
 
-    Tests whether two real numbers are equal, returning a boolean.
-    This provides a decidable equality test.
--/
+/-- FLoCq `Rlt_bool_false`. -/
+@[flocq_source "src/Core/Raux.v" 719 "Rlt_bool_false"]
+theorem Rlt_bool_false (x y : ℝ) (hyx : y ≤ x) : Rlt_bool x y = false := by
+  simpa [Rlt_bool_eq_decide] using hyx
+
+/-- FLoCq `Rlt_bool_opp`: negating both operands swaps the strict test. -/
+@[flocq_source "src/Core/Raux.v" 728 "Rlt_bool_opp"]
+theorem Rlt_bool_opp (x y : ℝ) : Rlt_bool (-x) (-y) = Rlt_bool y x := by
+  simp [Rlt_bool_eq_decide]
+
+/-- FLoCq `Req_bool`: the Boolean equality test, read off {lean}`Rcompare`. -/
+@[flocq_source "src/Core/Raux.v" 740 "Req_bool"]
 noncomputable def Req_bool (x y : ℝ) : Bool :=
-  (x = y)
+  match Rcompare x y with
+  | .eq => true
+  | _ => false
 
-/-- Coq {lit}`Req_bool_prop`: inductive characterization of {lean}`Req_bool`. -/
+/-- {lean}`Req_bool` decides `x = y`. -/
+theorem Req_bool_eq_decide (x y : ℝ) : Req_bool x y = decide (x = y) := by
+  rcases lt_trichotomy x y with h | h | h
+  · simp [Req_bool, Rcompare_Lt x y h, ne_of_lt h]
+  · subst h; simp [Req_bool, Rcompare_Eq x x rfl]
+  · simp [Req_bool, Rcompare_Gt x y h, ne_of_gt h]
+
+/-- FLoCq `Req_bool_prop`: the graph of {lean}`Req_bool`. -/
+@[flocq_source "src/Core/Raux.v" 746 "Req_bool_prop"]
 inductive Req_bool_prop (x y : ℝ) : Bool → Prop where
   | Req_bool_true_ : x = y → Req_bool_prop x y true
   | Req_bool_false_ : x ≠ y → Req_bool_prop x y false
 
 export Req_bool_prop (Req_bool_true_ Req_bool_false_)
 
-/-- Coq-style spec: {lit}`Req_bool_prop` holds for {lean}`Req_bool`. -/
-theorem Req_bool_prop_spec (x y : ℝ) : Req_bool_prop x y (Req_bool x y) := by
+/-- FLoCq `Req_bool_spec`: {lean}`Req_bool` lands in its graph. -/
+@[flocq_source "src/Core/Raux.v" 750 "Req_bool_spec"]
+theorem Req_bool_spec (x y : ℝ) : Req_bool_prop x y (Req_bool x y) := by
   by_cases hxy : x = y
-  · have h : Req_bool_prop x y true := Req_bool_true_ hxy
-    simpa [Req_bool, hxy] using h
-  · have h : Req_bool_prop x y false := Req_bool_false_ hxy
-    simpa [Req_bool, hxy] using h
+  · simpa [Req_bool_eq_decide, hxy] using Req_bool_true_ hxy
+  · simpa [Req_bool_eq_decide, hxy] using Req_bool_false_ hxy
 
-/-- The boolean equality test returns {lean}`true` exactly when {lit}`x = y`. -/
-theorem Req_bool_spec (x y : ℝ) : Req_bool x y = true ↔ x = y := by
-  simp [Req_bool]
+/-- The Boolean equality test returns {lean}`true` exactly when `x = y`. -/
+theorem Req_bool_iff (x y : ℝ) : Req_bool x y = true ↔ x = y := by
+  simp [Req_bool_eq_decide]
 
-/-- Coq {lit}`Req_bool_true`: if {lit}`x = y`, then {lean}`Req_bool x y = true`. -/
+/-- FLoCq `Req_bool_true`. -/
+@[flocq_source "src/Core/Raux.v" 761 "Req_bool_true"]
 theorem Req_bool_true (x y : ℝ) (hxy : x = y) : Req_bool x y = true := by
-  simpa [Req_bool] using hxy
+  simpa [Req_bool_eq_decide] using hxy
 
-/-- Coq {lit}`Req_bool_false`: if {lit}`x ≠ y`, then {lean}`Req_bool x y = false`. -/
+/-- FLoCq `Req_bool_false`. -/
+@[flocq_source "src/Core/Raux.v" 772 "Req_bool_false"]
 theorem Req_bool_false (x y : ℝ) (hxy : x ≠ y) : Req_bool x y = false := by
-  simpa [Req_bool] using hxy
+  simpa [Req_bool_eq_decide] using hxy
 
 end BooleanComparisons
 
@@ -712,14 +734,14 @@ section CondRltBool
 theorem cond_Ropp_Rlt_bool (m : ℝ) :
     cond_Ropp (Rlt_bool m 0) m = |m| := by
   by_cases hm : m < 0
-  · simp [cond_Ropp, Rlt_bool, hm, abs_of_neg hm]
+  · simp [cond_Ropp, Rlt_bool_eq_decide, hm, abs_of_neg hm]
   · have hm_nonneg : 0 ≤ m := le_of_not_gt hm
-    simp [cond_Ropp, Rlt_bool, hm, abs_of_nonneg hm_nonneg]
+    simp [cond_Ropp, Rlt_bool_eq_decide, hm, abs_of_nonneg hm_nonneg]
 
 /-- Strict comparison after conditionally negating both operands. -/
 theorem cond_Ropp_Rlt_bool_spec (b : Bool) (x y : ℝ) :
     Rlt_bool (cond_Ropp b x) (cond_Ropp b y) = true ↔ (if b then y < x else x < y) := by
-  cases b <;> simp [Rlt_bool, cond_Ropp]
+  cases b <;> simp [Rlt_bool_eq_decide, cond_Ropp]
 
 /-- Coq {lit}`Rlt_bool_cond_Ropp`: a positive magnitude has sign flag {lean}`sx`
     after conditional negation by {lean}`sx`. -/
@@ -727,14 +749,14 @@ theorem Rlt_bool_cond_Ropp (x : ℝ) (sx : Bool) (hx : 0 < x) :
     Rlt_bool (cond_Ropp sx x) 0 = sx := by
   cases sx
   · have hnot : ¬ x < 0 := by linarith
-    simp [Rlt_bool, cond_Ropp, hnot]
+    simp [Rlt_bool_eq_decide, cond_Ropp, hnot]
   · have hneg : -x < 0 := by linarith
-    simp [Rlt_bool, cond_Ropp, hneg]
+    simp [Rlt_bool_eq_decide, cond_Ropp, hneg]
 
 /-- Strict comparison against a conditionally negated right operand. -/
 theorem Rlt_bool_cond_Ropp_spec (b : Bool) (x y : ℝ) :
     Rlt_bool x (cond_Ropp b y) = true ↔ (if b then x < -y else x < y) := by
-  cases b <;> simp [Rlt_bool, cond_Ropp]
+  cases b <;> simp [Rlt_bool_eq_decide, cond_Ropp]
 
 end CondRltBool
 

@@ -61,7 +61,7 @@ theorem half_mul_two_zpow (e : ℤ) : (1 / 2 : ℝ) * ((2 : ℤ) : ℝ) ^ e = (2
 /-- `Rlt_bool a (bpow 2 e)` from the plain inequality. -/
 theorem rlt_bool_bpow_of_lt {a : ℝ} {e : ℤ} (h : a < (2 : ℝ) ^ e) :
     FloatSpec.Core.Raux.Rlt_bool a (FloatSpec.Core.Raux.bpow 2 e) = true := by
-  simpa [FloatSpec.Core.Raux.Rlt_bool, FloatSpec.Core.Raux.bpow] using h
+  simpa [FloatSpec.Core.Raux.Rlt_bool_eq_decide, FloatSpec.Core.Raux.bpow] using h
 
 /-! ## binary64: `Float` -/
 
