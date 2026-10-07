@@ -5,10 +5,10 @@ open FloatSpec.Core.Raux
 
 -- Raux.v:785-1330. Rocq's `Zfloor x` is `up x - 1` for its archimedean primitive `up`; Lean's
 -- floor plays that role. The other three bodies are the source's.
-example (x : ℝ) : Zfloor x = ⌊x⌋ := rfl
-example (x : ℝ) : Zceil x = -Zfloor (-x) := rfl
-example (x : ℝ) : Ztrunc x = if Rlt_bool x 0 then Zceil x else Zfloor x := rfl
-example (x : ℝ) : Zaway x = if Rlt_bool x 0 then Zfloor x else Zceil x := rfl
+theorem raux_floor_contracts_check_1 (x : ℝ) : Zfloor x = ⌊x⌋ := rfl
+theorem raux_floor_contracts_check_2 (x : ℝ) : Zceil x = -Zfloor (-x) := rfl
+theorem raux_floor_contracts_check_3 (x : ℝ) : Ztrunc x = if Rlt_bool x 0 then Zceil x else Zfloor x := rfl
+theorem raux_floor_contracts_check_4 (x : ℝ) : Zaway x = if Rlt_bool x 0 then Zfloor x else Zceil x := rfl
 
 -- `IZR` is the integer cast; `Z.abs` is the cast of `natAbs`; `Z.div`/`Z.quot` are
 -- `Int.fdiv`/`Int.tdiv`; `/2` is `(2 : ℝ)⁻¹`.
@@ -55,7 +55,7 @@ theorem trunc_div : ∀ x y : Int, y ≠ 0 → Ztrunc ((x : ℝ) / (y : ℝ)) = 
 #print axioms floor_div
 
 -- Negative halves: floor and away go down, ceiling and truncation go up.
-example : Zfloor (-5/2) = -3 ∧ Zceil (-5/2) = -2 ∧ Ztrunc (-5/2) = -2 ∧ Zaway (-5/2) = -3 := by
+theorem raux_floor_contracts_check_5 : Zfloor (-5/2) = -3 ∧ Zceil (-5/2) = -2 ∧ Ztrunc (-5/2) = -2 ∧ Zaway (-5/2) = -3 := by
   have hf : Zfloor (-5/2) = -3 := Zfloor_imp (-3) _ (by norm_num)
   have hc : Zceil (-5/2) = -2 := Zceil_imp (-2) _ (by norm_num)
   exact ⟨hf, hc, (Ztrunc_ceil _ (by norm_num)).trans hc, (Zaway_floor _ (by norm_num)).trans hf⟩
@@ -74,9 +74,9 @@ private theorem ceil_floor_neq_needs_premise : ¬ ∀ x : ℝ, Zceil x = Zfloor 
   exact absurd this (by decide)
 
 -- Both systems divide by zero to zero, so the source's `y ≠ 0` premise is not needed.
-example (x : Int) : Zfloor ((x : ℝ) / ((0 : Int) : ℝ)) = Int.fdiv x 0 := by
+theorem raux_floor_contracts_check_6 (x : Int) : Zfloor ((x : ℝ) / ((0 : Int) : ℝ)) = Int.fdiv x 0 := by
   simp [Zfloor]
-example (x : Int) : Ztrunc ((x : ℝ) / ((0 : Int) : ℝ)) = Int.tdiv x 0 := by
+theorem raux_floor_contracts_check_7 (x : Int) : Ztrunc ((x : ℝ) / ((0 : Int) : ℝ)) = Int.tdiv x 0 := by
   simp [Ztrunc_eq_ite]
 
 #print axioms trunc_floor_needs_nonneg

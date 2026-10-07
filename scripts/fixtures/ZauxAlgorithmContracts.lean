@@ -13,22 +13,22 @@ theorem cond_eq : ∀ (s : Bool) (m n : Int),
 
 -- Fast power (Zaux.v:824-849): the body squares along the exponent's binary digits.
 -- Rocq's `Z.square x` is `x * x`; Lean writes `x ^ 2`.
-example (v : Int) : Zfast_pow_pos v .xH = v := rfl
-example (v : Int) (e : Positive) : Zfast_pow_pos v (.xO e) = Zfast_pow_pos v e ^ 2 := rfl
-example (v : Int) (e : Positive) : Zfast_pow_pos v (.xI e) = v * Zfast_pow_pos v e ^ 2 := rfl
+theorem zaux_algorithm_contracts_check_1 (v : Int) : Zfast_pow_pos v .xH = v := rfl
+theorem zaux_algorithm_contracts_check_2 (v : Int) (e : Positive) : Zfast_pow_pos v (.xO e) = Zfast_pow_pos v e ^ 2 := rfl
+theorem zaux_algorithm_contracts_check_3 (v : Int) (e : Positive) : Zfast_pow_pos v (.xI e) = v * Zfast_pow_pos v e ^ 2 := rfl
 theorem fast_pow : ∀ (v : Int) (e : Positive), Zfast_pow_pos v e = Zpower_pos v e :=
   Zfast_pow_pos_correct
 
 -- Faster division (Zaux.v:851-976). `Z.div_eucl` is the floor pair `Z_div_eucl`.
 theorem div_eucl_unique : ∀ a b : Int, Z_div_eucl a b = (a.fdiv b, a.fmod b) := Zdiv_eucl_unique
 -- `Zpos_div_eucl_aux1` recurses on the divisor's digits exactly as the source does.
-example (a : Positive) : Zpos_div_eucl_aux1 a .xH = (Zpos a, 0) := rfl
-example (a b : Positive) :
+theorem zaux_algorithm_contracts_check_4 (a : Positive) : Zpos_div_eucl_aux1 a .xH = (Zpos a, 0) := rfl
+theorem zaux_algorithm_contracts_check_5 (a b : Positive) :
     Zpos_div_eucl_aux1 a (.xI b) = Z_pos_div_eucl a (Zpos (.xI b)) := rfl
-example (b : Positive) : Zpos_div_eucl_aux1 .xH (.xO b) = (0, Zpos .xH) := rfl
-example (a b : Positive) :
+theorem zaux_algorithm_contracts_check_6 (b : Positive) : Zpos_div_eucl_aux1 .xH (.xO b) = (0, Zpos .xH) := rfl
+theorem zaux_algorithm_contracts_check_7 (a b : Positive) :
     Zpos_div_eucl_aux1 (.xO a) (.xO b) = (let (q, r) := Zpos_div_eucl_aux1 a b; (q, 2 * r)) := rfl
-example (a b : Positive) :
+theorem zaux_algorithm_contracts_check_8 (a b : Positive) :
     Zpos_div_eucl_aux1 (.xI a) (.xO b) =
       (let (q, r) := Zpos_div_eucl_aux1 a b; (q, 2 * r + 1)) := rfl
 theorem aux1_correct : ∀ a b : Positive,
@@ -38,11 +38,11 @@ theorem aux_correct : ∀ a b : Positive,
 theorem fast_div : ∀ a b : Int, Zfast_div_eucl a b = Z_div_eucl a b := Zfast_div_eucl_correct
 
 -- The zero-divisor branch tests `1 mod 0`; both systems define it as 1, so `(0, a)`.
-example : Int.fmod 1 0 = 1 ∧ Zfast_div_eucl 7 0 = (0, 7) ∧ Zfast_div_eucl (-7) 0 = (0, -7) := by
+theorem zaux_algorithm_contracts_check_9 : Int.fmod 1 0 = 1 ∧ Zfast_div_eucl 7 0 = (0, 7) ∧ Zfast_div_eucl (-7) 0 = (0, -7) := by
   decide +kernel
 
 -- Iteration (Zaux.v:978-1027). Flocq's `iter_nat` applies `f` first.
-example {A : Type} (f : A → A) (n : Nat) (x : A) : iter_nat f (n + 1) x = iter_nat f n (f x) := rfl
+theorem zaux_algorithm_contracts_check_10 {A : Type} (f : A → A) (n : Nat) (x : A) : iter_nat f (n + 1) x = iter_nat f n (f x) := rfl
 theorem iter_plus : ∀ {A : Type} (f : A → A) (p q : Nat) (x : A),
     iter_nat f (p + q) x = iter_nat f p (iter_nat f q x) := @iter_nat_plus
 theorem iter_S : ∀ {A : Type} (f : A → A) (p : Nat) (x : A),

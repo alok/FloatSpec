@@ -103,7 +103,7 @@ private theorem eq_opp_needs_negation : ¬ ∀ x y : Int, Zeq_bool (-x) y = Zeq_
 #print axioms negb_le_needs_swap
 #print axioms eq_opp_needs_negation
 
-example : compare (-3 : Int) 2 = .lt ∧ compare (2 : Int) 2 = .eq ∧ compare (2 : Int) (-3) = .gt := by
+theorem zaux_boolean_contracts_check_1 : compare (-3 : Int) 2 = .lt ∧ compare (2 : Int) 2 = .eq ∧ compare (2 : Int) (-3) = .gt := by
   decide +kernel
 
 -- Every law on small signed values and machine-word boundaries, including bignums.

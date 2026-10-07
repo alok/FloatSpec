@@ -31,7 +31,7 @@ private def expected : List StandardFloat :=
    .S754_finite true 5 (-2), .S754_zero true, .S754_nan, .S754_finite false 4 (-2),
    .S754_zero false, .S754_zero true, .S754_zero true]
 
-example : rows = expected := by decide +kernel
+theorem raw_i_e_e_e_rounding_check_1 : rows = expected := by decide +kernel
 
 private def check : IO Unit := do
   unless decide (rows = expected) do throw (IO.userError "raw IEEE rounding boundary mismatch")

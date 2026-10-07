@@ -7,13 +7,13 @@ integer propositions and Boolean proof infrastructure. Paired with Rocq. -/
 namespace ZauxPreludeContracts
 open FloatSpec.Core.Zaux
 
-example : Flocq_version.Flocq_version = 40202 := rfl
-example : ∀ x y : Int, -y ≤ -x → x ≤ y := Zopp_le_cancel
-example : ∀ x y : Int, y < x → x ≠ y := Zgt_not_eq
-example (P : Bool → Sort u) (h : P true) : eqbool_dep P h true = (fun h' => h = h') := rfl
-example (P : Bool → Sort u) (h : P true) : eqbool_dep P h false = (fun _ => False) := rfl
-example : ∀ (b : Bool) (h₁ h₂ : b = true), h₁ = h₂ := eqbool_irrelevance
-example (b : Bool) (x : Int) : cond_Zopp b x = if b then -x else x := rfl
+theorem zaux_prelude_contracts_check_1 : Flocq_version.Flocq_version = 40202 := rfl
+theorem zaux_prelude_contracts_check_2 : ∀ x y : Int, -y ≤ -x → x ≤ y := Zopp_le_cancel
+theorem zaux_prelude_contracts_check_3 : ∀ x y : Int, y < x → x ≠ y := Zgt_not_eq
+theorem zaux_prelude_contracts_check_4 (P : Bool → Sort u) (h : P true) : eqbool_dep P h true = (fun h' => h = h') := rfl
+theorem zaux_prelude_contracts_check_5 (P : Bool → Sort u) (h : P true) : eqbool_dep P h false = (fun _ => False) := rfl
+theorem zaux_prelude_contracts_check_6 : ∀ (b : Bool) (h₁ h₂ : b = true), h₁ = h₂ := eqbool_irrelevance
+theorem zaux_prelude_contracts_check_7 (b : Bool) (x : Int) : cond_Zopp b x = if b then -x else x := rfl
 
 -- The exact binary-recursive body imported by Flocq from Corelib.SpecFloat.
 private def sourceIter {A : Type} (f : A → A) : Positive → A → A
@@ -23,7 +23,7 @@ private def sourceIter {A : Type} (f : A → A) : Positive → A → A
 
 -- Flocq's `iter_nat` applies `f` first, so this unfolding holds definitionally;
 -- `iter_nat_S` is the theorem that moves `f` outside.
-example {A : Type} (f : A → A) (n : Nat) (x : A) :
+theorem zaux_prelude_contracts_check_8 {A : Type} (f : A → A) (n : Nat) (x : A) :
     iter_nat f (n + 1) x = iter_nat f n (f x) := rfl
 
 private theorem iter_nat_apply {A : Type} (f : A → A) (n : Nat) (x : A) :
@@ -42,7 +42,7 @@ private theorem sourceIter_eq_iter_nat {A : Type} (f : A → A) (p : Positive) (
 
 #print axioms sourceIter_eq_iter_nat
 
-example {A : Type} (f : A → A) (p : Positive) (x : A) :
+theorem zaux_prelude_contracts_check_9 {A : Type} (f : A → A) (p : Positive) (x : A) :
     sourceIter f p x = iter_pos f p x :=
   (sourceIter_eq_iter_nat f p x).trans (iter_pos_nat f p x).symm
 
@@ -56,7 +56,7 @@ private def positives : List Positive :=
 private def observe : List Int :=
   positives.map (fun p => iter_pos (fun x : Int => 2 * x + 3) p (-2))
 
-example : observe = [-1, 1, 5, 13, 29, 61, 125, 253] := by decide +kernel
+theorem zaux_prelude_contracts_check_10 : observe = [-1, 1, 5, 13, 29, 61, 125, 253] := by decide +kernel
 
 #eval do
   unless observe == [-1, 1, 5, 13, 29, 61, 125, 253] do

@@ -41,7 +41,7 @@ private def cases : List (RoundingMode × Int) :=
   [.RNE, .RTZ, .RTN, .RTP, .RNA].flatMap fun mode =>
     (List.range 1025).map fun n => (mode, (n : Int) - 512)
 
-example : cases.all (fun (mode, n) => check mode n) = true := by decide +kernel
+theorem integer_rounding_check_1 : cases.all (fun (mode, n) => check mode n) = true := by decide +kernel
 
 #eval do
   for (mode, n) in cases do

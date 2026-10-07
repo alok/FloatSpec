@@ -6,7 +6,7 @@ open FloatSpec.Core.Raux
 -- Raux.v:1331-1582. The radix is an `Int` with its invariant `1 < beta` as a premise
 -- (cutover plan E5) where Rocq bundles `2 <= r` in the `radix` record. Rocq's `powerRZ` is
 -- Lean's `zpow`, so `bpow` is that power by definition, as `bpow_powerRZ` states in Rocq.
-example (beta e : Int) : bpow beta e = (beta : ℝ) ^ e := rfl
+theorem raux_pow_contracts_check_1 (beta e : Int) : bpow beta e = (beta : ℝ) ^ e := rfl
 
 theorem radix_positive : ∀ beta : Int, 1 < beta → 0 < (beta : ℝ) := radix_pos
 theorem izr_zpower_pos : ∀ (n : Int) (m : FloatSpec.Core.Zaux.Positive),
@@ -46,7 +46,7 @@ theorem bpow_sqrt_ge : ∀ beta e : Int, 1 < beta → bpow beta (e / 2) ≤ Real
 #print axioms bpow_exponential
 
 -- Concrete values: negative exponents are reciprocals, not truncations.
-example : bpow 2 (-3) = 8⁻¹ ∧ bpow 10 2 = 100 := by norm_num [bpow]
+theorem raux_pow_contracts_check_2 : bpow 2 (-3) = 8⁻¹ ∧ bpow 10 2 = 100 := by norm_num [bpow]
 
 -- Unbundled, the radix invariant is needed: at radix 0, 0⁰ = 1 exceeds 0¹ = 0.
 private theorem bpow_le_needs_radix :

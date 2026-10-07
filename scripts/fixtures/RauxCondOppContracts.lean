@@ -8,7 +8,7 @@ theorem eqb_symm : ∀ a b : Bool, (a == b) = (b == a) := eqb_sym
 theorem eqb_neg : ∀ a b : Bool, a = !b → (a == b) = false := eqb_false
 theorem eqb_same : ∀ a b : Bool, a = b → (a == b) = true := eqb_true
 
-example (b : Bool) (m : ℝ) : cond_Ropp b m = if b then -m else m := rfl
+theorem raux_cond_opp_contracts_check_1 (b : Bool) (m : ℝ) : cond_Ropp b m = if b then -m else m := rfl
 
 theorem izr_cond_Zopp : ∀ (b : Bool) (m : Int),
     ((FloatSpec.Core.Zaux.cond_Zopp b m : Int) : ℝ) = cond_Ropp b (m : ℝ) := IZR_cond_Zopp

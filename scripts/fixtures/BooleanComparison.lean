@@ -29,7 +29,7 @@ private def expected : List (List Bool) :=
    [false, true, true], [false, true, true], [false, true, true],
    [false, false, false], [false, false, false]]
 
-example : table = expected := by decide +kernel
+theorem boolean_comparison_check_1 : table = expected := by decide +kernel
 
 private def check : IO Unit := do
   unless table == expected do

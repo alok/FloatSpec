@@ -45,7 +45,7 @@ theorem raw_boundary_regressions :
 
 /-- The raw and proof-carrying total converters agree for every input,
 including invalid finite representations and exceptional values. -/
-example (prec emax : Int) (x : StandardFloat) :
+theorem single_na_n_validity_check_1 (prec emax : Int) (x : StandardFloat) :
     _root_.SF2B' (prec := prec) (emax := emax) x =
       SF2BSpec' (prec := prec) (emax := emax) x := by
   cases x with
@@ -69,20 +69,20 @@ theorem fit_requires_canonical_input :
   decide +kernel
 
 /-- This is the proof-carrying source theorem, not the raw-carrier legacy claim. -/
-example (x : BinarySingleNaN.binary_float 3 4) :
+theorem single_na_n_validity_check_2 (x : BinarySingleNaN.binary_float 3 4) :
     validBinarySingleNaNStandardFloat (prec := 3) (emax := 4)
       (BinarySingleNaN.B2SF x) = true :=
   BinarySingleNaN.valid_binary_B2SF x
 
 /-- The root source export must establish the same strong predicate. -/
-example (x : BinarySingleNaNFloat prec emax) :
+theorem single_na_n_validity_check_3 (x : BinarySingleNaNFloat prec emax) :
     validBinarySingleNaNStandardFloat (prec := prec) (emax := emax)
       (binarySingleNaNFloatToStandardFloat x) = true :=
   _root_.valid_binary_B2SF x
 
 /-- Consuming the validity conjunct rules out a regression to the old
 always-true compatibility predicate. -/
-example (prec emax : Int) [Prec_gt_0 prec] [Prec_lt_emax prec emax]
+theorem single_na_n_validity_check_4 (prec emax : Int) [Prec_gt_0 prec] [Prec_lt_emax prec emax]
     (mode : RoundingMode) (sign : Bool) (m : Nat) (e : Int) (hpos : 0 < m)
     (hcanon : canonical_mantissa (prec := prec) (emax := emax) m e = true) :
     validBinarySingleNaNStandardFloat (prec := prec) (emax := emax)

@@ -19,10 +19,10 @@ private def expected : List StandardFloat :=
    .S754_finite false 7 0, .S754_finite false 1 1, .S754_finite true 1 (-1),
    .S754_finite true 7 1]
 
-example : rows = expected := by decide +kernel
-example : rawOverflowMantissa (-1) = 1 ∧ rawOverflowMantissa 0 = 1 ∧
+theorem raw_overflow_check_1 : rows = expected := by decide +kernel
+theorem raw_overflow_check_2 : rawOverflowMantissa (-1) = 1 ∧ rawOverflowMantissa 0 = 1 ∧
     rawOverflowMantissa 3 = 7 := by decide +kernel
-example (prec : Int) : 0 < rawOverflowMantissa prec := rawOverflowMantissa_pos prec
+theorem raw_overflow_check_3 (prec : Int) : 0 < rawOverflowMantissa prec := rawOverflowMantissa_pos prec
 
 private def check : IO Unit := do
   unless decide (rows = expected) do throw (IO.userError "raw overflow fallback mismatch")

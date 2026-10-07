@@ -7,13 +7,13 @@ open FloatSpec.Core.Raux
 -- `mag beta x` is that integer (cutover plan E7) and the record keeps the source fields. The
 -- body is the source's witness. Rocq closes `mag` with `Qed`, so only Lean can evaluate it,
 -- for instance at zero.
-example (beta : Int) (x : ℝ) :
+theorem raux_mag_contracts_check_1 (beta : Int) (x : ℝ) :
     mag beta x = Zfloor (Real.log |x| / Real.log (beta : ℝ)) + 1 := rfl
-example (beta : Int) : mag beta 0 = 1 := by simp [mag, Zfloor]
+theorem raux_mag_contracts_check_2 (beta : Int) : mag beta 0 = 1 := by simp [mag, Zfloor]
 
 -- The record: an exponent and, for nonzero inputs, its two-sided power bound.
-example (beta : Int) (x : ℝ) (m : mag_prop beta x) : Int := m.mag_val
-example (beta : Int) (x : ℝ) (m : mag_prop beta x) (hx : x ≠ 0) :
+def raux_mag_contracts_check_3 (beta : Int) (x : ℝ) (m : mag_prop beta x) : Int := m.mag_val
+theorem raux_mag_contracts_check_4 (beta : Int) (x : ℝ) (m : mag_prop beta x) (hx : x ≠ 0) :
     bpow beta (m.mag_val - 1) ≤ |x| ∧ |x| < bpow beta m.mag_val := m.mag_spec hx
 
 theorem lt_bpow_bpow : ∀ beta e1 e2 : Int, 1 < beta → bpow beta (e1 - 1) < bpow beta e2 → e1 ≤ e2 :=
@@ -71,7 +71,7 @@ theorem one : ∀ beta : Int, 1 < beta → mag beta 1 = 1 := mag_1
 #print axioms sqrt
 
 -- Concrete magnitudes: 1000 has four decimal digits, 7/4 lies in [1, 2).
-example : mag 10 1000 = 4 ∧ mag 2 (7/4) = 1 := by
+theorem raux_mag_contracts_check_5 : mag 10 1000 = 4 ∧ mag 2 (7/4) = 1 := by
   constructor
   · exact mag_unique 10 1000 4 (by norm_num) ⟨by norm_num [bpow], by norm_num [bpow]⟩
   · exact mag_unique 2 (7/4) 1 (by norm_num) ⟨by norm_num [bpow], by norm_num [bpow]⟩

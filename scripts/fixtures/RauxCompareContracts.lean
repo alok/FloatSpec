@@ -8,10 +8,10 @@ open FloatSpec.Core.Raux
 
 -- The bodies are the source's: `Rcompare` tests `x < y` then `x = y`, and each Boolean test
 -- reads one comparison outcome.
-example (x y : ℝ) : Rcompare x y = if x < y then .lt else if x = y then .eq else .gt := rfl
-example (x y : ℝ) : Rle_bool x y = match Rcompare x y with | .gt => false | _ => true := rfl
-example (x y : ℝ) : Rlt_bool x y = match Rcompare x y with | .lt => true | _ => false := rfl
-example (x y : ℝ) : Req_bool x y = match Rcompare x y with | .eq => true | _ => false := rfl
+theorem raux_compare_contracts_check_1 (x y : ℝ) : Rcompare x y = if x < y then .lt else if x = y then .eq else .gt := rfl
+theorem raux_compare_contracts_check_2 (x y : ℝ) : Rle_bool x y = match Rcompare x y with | .gt => false | _ => true := rfl
+theorem raux_compare_contracts_check_3 (x y : ℝ) : Rlt_bool x y = match Rcompare x y with | .lt => true | _ => false := rfl
+theorem raux_compare_contracts_check_4 (x y : ℝ) : Req_bool x y = match Rcompare x y with | .eq => true | _ => false := rfl
 
 -- Graphs. Rocq's constructors take `x y` explicitly; Lean's are implicit, hence `@`.
 theorem cmp_lt_ctor : ∀ x y : ℝ, x < y → Rcompare_prop x y .lt := @Rcompare_Lt_

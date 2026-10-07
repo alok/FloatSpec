@@ -48,8 +48,8 @@ private def expected : List (List StandardFloat) :=
 private def directRows := [.RNE, .RTZ, .RTN, .RTP, .RNA].map directRow
 private def sourceRows := [.mode_NE, .mode_ZR, .mode_DN, .mode_UP, .mode_NA].map sourceRow
 
-example : directRows = expected := by decide +kernel
-example : sourceRows = expected := by decide +kernel
+theorem single_na_n_arithmetic_check_1 : directRows = expected := by decide +kernel
+theorem single_na_n_arithmetic_check_2 : sourceRows = expected := by decide +kernel
 
 private def check : IO Unit := do
   unless decide (directRows = expected ∧ sourceRows = expected) do

@@ -83,11 +83,15 @@ class LiveTests(unittest.TestCase):
         rocq = (root / "scripts/fixtures/IntegerRounding.v").read_text()
         lean = lean.replace("let y := BinarySingleNaN.Bnearbyint mode x",
                             "let y := BinarySingleNaN.Bnearbyint .RNA x")
-        grid = "example : cases.all (fun (mode, n) => check mode n) = true := by decide +kernel"
+        grid = ("theorem integer_rounding_check_1 : cases.all (fun (mode, n) => check mode n) = true "
+                ":= by decide +kernel")
+        # A missed replacement would leave the whole false grid for the kernel to refute.
+        self.assertEqual(lean.count(grid), 1)
         # A single retained counterexample bounds the diagnostic cost of the
         # intentionally false kernel statement; the positive test checks all.
         kernel = lean.split("#eval do")[0].replace(grid,
-            "example : check .RNE (-500) = true := by decide +kernel") + "end IntegerRounding\n"
+            "theorem integer_rounding_check_1 : check .RNE (-500) = true := by decide +kernel") + \
+            "end IntegerRounding\n"
         runtime = lean.replace(grid, "")
         rocq = rocq.replace("let y := @Bnearbyint 24 128 precision_below_max mode x",
                             "let y := @Bnearbyint 24 128 precision_below_max mode_NA x")

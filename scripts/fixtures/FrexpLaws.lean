@@ -48,7 +48,7 @@ private def checks : List (Bool × Bool) :=
           let e := emin - 1 + (offset : Int)
           (finiteMember (pm + 1) emax (m + 1) e, checkCase pm emax s (m + 1) e)
 
-example : checks.length = 6772 ∧ (checks.filter Prod.fst).length = 2086 ∧
+theorem frexp_laws_check_1 : checks.length = 6772 ∧ (checks.filter Prod.fst).length = 2086 ∧
     checks.all Prod.snd = true := by
   decide +kernel
 

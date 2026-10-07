@@ -47,20 +47,20 @@ private def checkPair (mode : RoundingMode)
 
 private def modes : List RoundingMode := [.RNE, .RTZ, .RTN, .RTP, .RNA]
 
-example : inputs.length = 55 ∧ pairs.length = 1077 ∧ modes.length = 5 := by
+theorem multiplication_error_grid_check_1 : inputs.length = 55 ∧ pairs.length = 1077 ∧ modes.length = 5 := by
   decide +kernel
 
-example : (inputs.all fun (u, x) =>
+theorem multiplication_error_grid_check_2 : (inputs.all fun (u, x) =>
     units (binarySingleNaNFloatToStandardFloat x) == some (16 * u)) = true := by
   decide +kernel
 
-example : (modes.all fun mode => pairs.all fun (x, y) => checkPair mode x y) = true := by
+theorem multiplication_error_grid_check_3 : (modes.all fun mode => pairs.all fun (x, y) => checkPair mode x y) = true := by
   decide +kernel
 
 private def tiny : BinarySingleNaN.binary_float 3 4 :=
   BinarySingleNaN.SF2B' (.S754_finite false 1 (-4))
 
-example : units (binarySingleNaNFloatToStandardFloat tiny) = some 16 ∧
+theorem multiplication_error_grid_check_4 : units (binarySingleNaNFloatToStandardFloat tiny) = some 16 ∧
     units (binarySingleNaNFloatToStandardFloat (BinarySingleNaN.Bmult .RNE tiny tiny)) = some 0 ∧
     (-1 : Int) % 16 ≠ 0 ∧ checkPair .RNE (1, tiny) (1, tiny) = false := by decide +kernel
 

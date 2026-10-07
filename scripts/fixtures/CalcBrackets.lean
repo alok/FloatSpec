@@ -48,18 +48,18 @@ private def sqrtChecks : List Bool :=
       ([-3, -2, -1, 0, 1, 2, 3].filter fun target => 2 * target ≤ exponent).map fun target =>
         sqrtLaw beta (mantissa + 1) exponent target
 
-example : divisionLaw 2 1 0 3 0 0 = true := by decide +kernel
-example : divisionChecks.length = 8640 ∧ divisionChecks.all id = true := by decide +kernel
-example : sqrtLaw 2 2 0 0 = true := by decide +kernel
-example : sqrtChecks.length = 2496 ∧ sqrtChecks.all id = true := by decide +kernel
+theorem calc_brackets_check_1 : divisionLaw 2 1 0 3 0 0 = true := by decide +kernel
+theorem calc_brackets_check_2 : divisionChecks.length = 8640 ∧ divisionChecks.all id = true := by decide +kernel
+theorem calc_brackets_check_3 : sqrtLaw 2 2 0 0 = true := by decide +kernel
+theorem calc_brackets_check_4 : sqrtChecks.length = 2496 ∧ sqrtChecks.all id = true := by decide +kernel
 
 -- The exponent precondition cannot be discarded. Scaling by a negative
 -- integer power here zeroes the raw radicand; the returned zero is not sqrt(9).
-example : FloatSpec.Calc.Sqrt.Fsqrt_core 2 9 0 1 = (0, .loc_Exact) ∧
+theorem calc_brackets_check_5 : FloatSpec.Calc.Sqrt.Fsqrt_core 2 9 0 1 = (0, .loc_Exact) ∧
     sqrtLaw 2 9 0 1 = false := by decide +kernel
 
 -- The same quotient at two output scales illustrates both division branches.
-example : FloatSpec.Calc.Div.Fdiv_core 2 7 0 3 0 (-1) = (4, .loc_Inexact .gt) ∧
+theorem calc_brackets_check_6 : FloatSpec.Calc.Div.Fdiv_core 2 7 0 3 0 (-1) = (4, .loc_Inexact .gt) ∧
     FloatSpec.Calc.Div.Fdiv_core 2 7 0 3 0 1 = (1, .loc_Inexact .lt) := by decide +kernel
 
 #eval do

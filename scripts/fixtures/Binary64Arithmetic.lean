@@ -25,7 +25,7 @@ private def rows : List Int :=
 private def expected : List Int :=
   [0x4008000000000000, 0x7FF0000000000000, 0x7FF0000000000000, 0x7FEFFFFFFFFFFFFF]
 
-example : rows = expected := by decide +kernel
+theorem binary64_arithmetic_check_1 : rows = expected := by decide +kernel
 
 /-! `Binary.Bfma_szero` reads signs through `B2BSN`, which forgets a NaN's sign:
 with a negative NaN, `+0` and `-0`, the product sign counts as positive, so it
@@ -35,8 +35,8 @@ private def negNaN : binary64 := b64_of_bits 0xFFF8000000000000
 private def posZero : binary64 := b64_of_bits 0x0000000000000000
 private def negZero : binary64 := b64_of_bits 0x8000000000000000
 
-example : Binary.Bsign negNaN = true := by decide +kernel
-example : Binary.Bfma_szero .RNE negNaN posZero negZero = false := by decide +kernel
+theorem binary64_arithmetic_check_2 : Binary.Bsign negNaN = true := by decide +kernel
+theorem binary64_arithmetic_check_3 : Binary.Bfma_szero .RNE negNaN posZero negZero = false := by decide +kernel
 
 private def check : IO Unit := do
   unless decide (rows = expected) do throw (IO.userError "binary64 arithmetic mismatch")

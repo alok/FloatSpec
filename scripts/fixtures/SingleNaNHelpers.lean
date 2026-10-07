@@ -77,10 +77,10 @@ private def premiseWitnesses : Bool :=
     decide (observe (BinarySingleNaN.Bpred_pos' negativeOne) ≠
       observe (BinarySingleNaN.Bpred negativeOne))
 
-example : rows = expected ∧ fractions = expectedFractions ∧ shifts = [0, 0] := by
+theorem single_na_n_helpers_check_1 : rows = expected ∧ fractions = expectedFractions ∧ shifts = [0, 0] := by
   decide +kernel
 
-example : premiseWitnesses = true := by decide +kernel
+theorem single_na_n_helpers_check_2 : premiseWitnesses = true := by decide +kernel
 
 #eval do
   unless decide (rows = expected ∧ fractions = expectedFractions ∧ shifts = [0, 0]) &&

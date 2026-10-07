@@ -4525,6 +4525,25 @@ next.
 
 Receipts: `/private/tmp/floatspec-defs-20261007/`.
 
+### October 7: named fixture checks for the kernel replay
+
+The handoff noted that anonymous `example`s are not kept in oleans, so the
+kernel replay never sees them. About 230 fixture `example`s in 23 Lean
+fixtures are now named theorems (two data-valued ones are `def`s);
+`GuidedDemo` keeps its examples. The replay over all fixture oleans now
+re-checks 925 declarations instead of 693.
+
+The full required live suite (36 modules, 338 tests, zero skips, 1848 s)
+then found one regression from the renaming itself: a mutation test in
+`test_ieee_integer_bridge.py` built its mutant by replacing the text
+`example : cases.all ...`. The replacement silently stopped matching, so the
+kernel had to refute the whole false grid and hit the 120 s timeout. The test
+now targets the named theorem and asserts its anchor text occurs exactly
+once, so such drift fails immediately; it passes in 6 s, and its module
+(8 tests) passes. The other 337 tests had passed.
+
+Receipts: `/private/tmp/floatspec-namedchecks-20261007/`.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In

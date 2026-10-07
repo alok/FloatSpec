@@ -6,43 +6,43 @@ open FloatSpec.Core.Defs (round_pred_monotone Rnd_DN_pt Rnd_UP_pt Rnd_ZR_pt Rnd_
 open FloatSpec.Core.Round_pred
 
 -- Paired exact-typed clients: ordinary propositions, not Boolean-check contracts.
-example : ∀ P, round_pred_monotone P → ∀ x f g, P x f → P x g → f = g := round_unique
-example : ∀ F, round_pred_monotone (Rnd_DN_pt F) := Rnd_DN_pt_monotone
-example : ∀ F x f g, Rnd_DN_pt F x f → Rnd_DN_pt F x g → f = g := Rnd_DN_pt_unique
-example : ∀ F r s, Rnd_DN F r → Rnd_DN F s → ∀ x, r x = s x := Rnd_DN_unique
-example : ∀ F, round_pred_monotone (Rnd_UP_pt F) := Rnd_UP_pt_monotone
-example : ∀ F x f g, Rnd_UP_pt F x f → Rnd_UP_pt F x g → f = g := Rnd_UP_pt_unique
-example : ∀ F r s, Rnd_UP F r → Rnd_UP F s → ∀ x, r x = s x := Rnd_UP_unique
-example : ∀ F, (∀ x, F x → F (-x)) → ∀ x f,
+theorem round_pred_source_contracts_check_1 : ∀ P, round_pred_monotone P → ∀ x f g, P x f → P x g → f = g := round_unique
+theorem round_pred_source_contracts_check_2 : ∀ F, round_pred_monotone (Rnd_DN_pt F) := Rnd_DN_pt_monotone
+theorem round_pred_source_contracts_check_3 : ∀ F x f g, Rnd_DN_pt F x f → Rnd_DN_pt F x g → f = g := Rnd_DN_pt_unique
+theorem round_pred_source_contracts_check_4 : ∀ F r s, Rnd_DN F r → Rnd_DN F s → ∀ x, r x = s x := Rnd_DN_unique
+theorem round_pred_source_contracts_check_5 : ∀ F, round_pred_monotone (Rnd_UP_pt F) := Rnd_UP_pt_monotone
+theorem round_pred_source_contracts_check_6 : ∀ F x f g, Rnd_UP_pt F x f → Rnd_UP_pt F x g → f = g := Rnd_UP_pt_unique
+theorem round_pred_source_contracts_check_7 : ∀ F r s, Rnd_UP F r → Rnd_UP F s → ∀ x, r x = s x := Rnd_UP_unique
+theorem round_pred_source_contracts_check_8 : ∀ F, (∀ x, F x → F (-x)) → ∀ x f,
     Rnd_DN_pt F x f → Rnd_UP_pt F (-x) (-f) := Rnd_UP_pt_opp
-example : ∀ F, (∀ x, F x → F (-x)) → ∀ x f,
+theorem round_pred_source_contracts_check_9 : ∀ F, (∀ x, F x → F (-x)) → ∀ x f,
     Rnd_UP_pt F x f → Rnd_DN_pt F (-x) (-f) := Rnd_DN_pt_opp
-example : ∀ F, (∀ x, F x → F (-x)) → ∀ r s,
+theorem round_pred_source_contracts_check_10 : ∀ F, (∀ x, F x → F (-x)) → ∀ r s,
     Rnd_DN F r → Rnd_UP F s → ∀ x, r (-x) = -s x := Rnd_DN_opp
-example (F : Real → Prop) (x d u : Real) (hd : Rnd_DN_pt F x d)
+theorem round_pred_source_contracts_check_11 (F : Real → Prop) (x d u : Real) (hd : Rnd_DN_pt F x d)
     (hu : Rnd_UP_pt F x u) : ∀ f, F f → f ≤ d ∨ u ≤ f :=
   fun f hf ↦ Rnd_DN_UP_pt_split F x d u f hd hu hf
-example : ∀ F x, F x → Rnd_DN_pt F x x := Rnd_DN_pt_refl
-example : ∀ F x f, Rnd_DN_pt F x f → F x → f = x := Rnd_DN_pt_idempotent
-example : ∀ F x, F x → Rnd_UP_pt F x x := Rnd_UP_pt_refl
-example : ∀ F x f, Rnd_UP_pt F x f → F x → f = x := Rnd_UP_pt_idempotent
-example : ∀ F x d u f, Rnd_DN_pt F x d → Rnd_UP_pt F x u → F f →
+theorem round_pred_source_contracts_check_12 : ∀ F x, F x → Rnd_DN_pt F x x := Rnd_DN_pt_refl
+theorem round_pred_source_contracts_check_13 : ∀ F x f, Rnd_DN_pt F x f → F x → f = x := Rnd_DN_pt_idempotent
+theorem round_pred_source_contracts_check_14 : ∀ F x, F x → Rnd_UP_pt F x x := Rnd_UP_pt_refl
+theorem round_pred_source_contracts_check_15 : ∀ F x f, Rnd_UP_pt F x f → F x → f = x := Rnd_UP_pt_idempotent
+theorem round_pred_source_contracts_check_16 : ∀ F x d u f, Rnd_DN_pt F x d → Rnd_UP_pt F x u → F f →
     d ≤ f ∧ f ≤ u → f = d ∨ f = u := Only_DN_or_UP
-example : ∀ F r, Rnd_ZR F r → ∀ x, |r x| ≤ |x| := Rnd_ZR_abs
-example : ∀ F, F 0 → round_pred_monotone (Rnd_ZR_pt F) := Rnd_ZR_pt_monotone
-example : ∀ F x f, Rnd_N_pt F x f → Rnd_DN_pt F x f ∨ Rnd_UP_pt F x f :=
+theorem round_pred_source_contracts_check_17 : ∀ F r, Rnd_ZR F r → ∀ x, |r x| ≤ |x| := Rnd_ZR_abs
+theorem round_pred_source_contracts_check_18 : ∀ F, F 0 → round_pred_monotone (Rnd_ZR_pt F) := Rnd_ZR_pt_monotone
+theorem round_pred_source_contracts_check_19 : ∀ F x f, Rnd_N_pt F x f → Rnd_DN_pt F x f ∨ Rnd_UP_pt F x f :=
   Rnd_N_pt_DN_or_UP
-example : ∀ F x d u f, Rnd_DN_pt F x d → Rnd_UP_pt F x u → Rnd_N_pt F x f →
+theorem round_pred_source_contracts_check_20 : ∀ F x d u f, Rnd_DN_pt F x d → Rnd_UP_pt F x u → Rnd_N_pt F x f →
     f = d ∨ f = u := Rnd_N_pt_DN_or_UP_eq
-example (F : Real → Prop) (hF : ∀ x, F x → F (-x)) :
+theorem round_pred_source_contracts_check_21 (F : Real → Prop) (hF : ∀ x, F x → F (-x)) :
     ∀ x f, Rnd_N_pt F (-x) (-f) → Rnd_N_pt F x f :=
   fun x f h ↦ Rnd_N_pt_opp_inv F x f hF h
-example : ∀ F x y f g, Rnd_N_pt F x f → Rnd_N_pt F y g → x < y → f ≤ g :=
+theorem round_pred_source_contracts_check_22 : ∀ F x y f g, Rnd_N_pt F x f → Rnd_N_pt F y g → x < y → f ≤ g :=
   Rnd_N_pt_monotone
-example : ∀ F x d u f g, Rnd_DN_pt F x d → Rnd_UP_pt F x u → x - d ≠ u - x →
+theorem round_pred_source_contracts_check_23 : ∀ F x d u f g, Rnd_DN_pt F x d → Rnd_UP_pt F x u → x - d ≠ u - x →
     Rnd_N_pt F x f → Rnd_N_pt F x g → f = g := Rnd_N_pt_unique
-example : ∀ F x, F x → Rnd_N_pt F x x := Rnd_N_pt_refl
-example : ∀ F x f, Rnd_N_pt F x f → F x → f = x := Rnd_N_pt_idempotent
+theorem round_pred_source_contracts_check_24 : ∀ F x, F x → Rnd_N_pt F x x := Rnd_N_pt_refl
+theorem round_pred_source_contracts_check_25 : ∀ F x f, Rnd_N_pt F x f → F x → f = x := Rnd_N_pt_idempotent
 
 -- The finite format deliberately lacks zero. Neither endpoint is a unique
 -- nearest value at zero, and truncation jumps backwards across zero.

@@ -5,22 +5,22 @@ open FloatSpec.Core.Zaux
 
 -- Rocq floor division/modulo agrees with Lean's Euclidean operations on the
 -- nonnegative divisor domain of these two source contracts, not universally.
-example : ∀ n a b : Int, 0 < a → 0 ≤ b → n % (a * b) % b = n % b := Zmod_mod_mult
-example : ∀ n a b : Int, 0 ≤ a → 0 ≤ b →
+theorem zaux_division_contracts_check_1 : ∀ n a b : Int, 0 < a → 0 ≤ b → n % (a * b) % b = n % b := Zmod_mod_mult
+theorem zaux_division_contracts_check_2 : ∀ n a b : Int, 0 ≤ a → 0 ≤ b →
     (n % (a * b)) / a = (n / a) % b := Zdiv_mod_mult
-example (a b : Int) (h : 0 ≤ b) : a.fdiv b = a / b := Int.fdiv_eq_ediv_of_nonneg a h
-example (a b : Int) (h : 0 ≤ b) : a.fmod b = a % b := Int.fmod_eq_emod_of_nonneg a h
+theorem zaux_division_contracts_check_3 (a b : Int) (h : 0 ≤ b) : a.fdiv b = a / b := Int.fdiv_eq_ediv_of_nonneg a h
+theorem zaux_division_contracts_check_4 (a b : Int) (h : 0 ≤ b) : a.fmod b = a % b := Int.fmod_eq_emod_of_nonneg a h
 
 -- The source Z.quot / Z.rem are truncating division and remainder, including
 -- negative and zero divisors. No nonzero-divisor premise is added here.
-example : ∀ a b : Int, a.tmod b = a - a.tdiv b * b := ZOmod_eq
-example : ∀ n a b : Int, (n.tmod (a * b)).tmod b = n.tmod b := ZOmod_mod_mult
-example : ∀ n a b : Int, (n.tmod (a * b)).tdiv a = (n.tdiv a).tmod b := ZOdiv_mod_mult
-example (a b : Int) (h : |a| < b) : a.tdiv b = 0 :=
+theorem zaux_division_contracts_check_5 : ∀ a b : Int, a.tmod b = a - a.tdiv b * b := ZOmod_eq
+theorem zaux_division_contracts_check_6 : ∀ n a b : Int, (n.tmod (a * b)).tmod b = n.tmod b := ZOmod_mod_mult
+theorem zaux_division_contracts_check_7 : ∀ n a b : Int, (n.tmod (a * b)).tdiv a = (n.tdiv a).tmod b := ZOdiv_mod_mult
+theorem zaux_division_contracts_check_8 (a b : Int) (h : |a| < b) : a.tdiv b = 0 :=
   ZOdiv_small_abs a b (by simpa using h)
-example (a b : Int) (h : |a| < b) : a.tmod b = a :=
+theorem zaux_division_contracts_check_9 (a b : Int) (h : |a| < b) : a.tmod b = a :=
   ZOmod_small_abs a b (by simpa using h)
-example : ∀ a b c : Int, 0 ≤ a * b →
+theorem zaux_division_contracts_check_10 : ∀ a b c : Int, 0 ≤ a * b →
     (a + b).tdiv c = a.tdiv c + b.tdiv c + (a.tmod c + b.tmod c).tdiv c := ZOdiv_plus
 
 -- The next four source declarations use products to express a shared sign.
@@ -56,10 +56,10 @@ private theorem same_sign_odiv_needs_nonnegative_divisor :
 
 #print axioms same_sign_odiv_needs_nonnegative_divisor
 
-example : (7 : Int) / (-3) = -2 ∧ (7 : Int) % (-3) = 1 := by decide +kernel
-example : (7 : Int).fdiv (-3) = -3 ∧ (7 : Int).fmod (-3) = -2 := by decide +kernel
-example : (-7 : Int).tdiv 3 = -2 ∧ (-7 : Int).tmod 3 = -1 := by decide +kernel
-example (a : Int) : a.tdiv 0 = 0 ∧ a.tmod 0 = a := by simp
+theorem zaux_division_contracts_check_11 : (7 : Int) / (-3) = -2 ∧ (7 : Int) % (-3) = 1 := by decide +kernel
+theorem zaux_division_contracts_check_12 : (7 : Int).fdiv (-3) = -3 ∧ (7 : Int).fmod (-3) = -2 := by decide +kernel
+theorem zaux_division_contracts_check_13 : (-7 : Int).tdiv 3 = -2 ∧ (-7 : Int).tmod 3 = -1 := by decide +kernel
+theorem zaux_division_contracts_check_14 (a : Int) : a.tdiv 0 = 0 ∧ a.tmod 0 = a := by simp
 
 -- With opposite signs (-2 and 1), truncating quotient addition can fail.
 private theorem quotient_addition_needs_sign_condition :
