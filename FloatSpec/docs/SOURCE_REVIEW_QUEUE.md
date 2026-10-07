@@ -16,7 +16,7 @@ External Rocq imports are recorded in the JSON report, not counted as Flocq decl
 |---:|---|---:|---:|---:|---:|
 | 1 | src/Version.v | 1 | 1 | 1 | 1 |
 | 2 | src/Core/Zaux.v | 102 | 82 | 91 | 102 |
-| 3 | src/Core/Raux.v | 186 | 161 | 178 | 170 |
+| 3 | src/Core/Raux.v | 186 | 168 | 178 | 186 |
 | 4 | src/Core/Defs.v | 14 | 11 | 14 | 0 |
 | 5 | src/Core/Round_pred.v | 83 | 78 | 78 | 83 |
 | 6 | src/Core/Digits.v | 67 | 0 | 67 | 0 |
@@ -57,26 +57,26 @@ the full Lean type/body with Rocq, and add an evidence-bearing review entry.
 Resolve aliases and generated proof infrastructure explicitly; do not create
 unnecessary numerical APIs to satisfy a raw name count.
 
-- `src/Core/Raux.v:2157` — `eqb_sym` (prf): `FloatSpec.Core.Raux.eqb_sym`.
-- `src/Core/Raux.v:2163` — `eqb_false` (prf): `FloatSpec.Core.Raux.eqb_false`.
-- `src/Core/Raux.v:2169` — `eqb_true` (prf): `FloatSpec.Core.Raux.eqb_true`.
-- `src/Core/Raux.v:2179` — `cond_Ropp` (def): `FloatSpec.Core.Raux.cond_Ropp`.
-- `src/Core/Raux.v:2181` — `IZR_cond_Zopp` (prf): `FloatSpec.Core.Raux.IZR_cond_Zopp`.
-- `src/Core/Raux.v:2190` — `abs_cond_Ropp` (prf): `FloatSpec.Core.Raux.abs_cond_Ropp`.
-- `src/Core/Raux.v:2199` — `cond_Ropp_Rlt_bool` (prf): `FloatSpec.Core.Raux.cond_Ropp_Rlt_bool`.
-- `src/Core/Raux.v:2210` — `Rlt_bool_cond_Ropp` (prf): `FloatSpec.Core.Raux.Rlt_bool_cond_Ropp`.
-- `src/Core/Raux.v:2219` — `cond_Ropp_involutive` (prf): `FloatSpec.Core.Raux.cond_Ropp_involutive`.
-- `src/Core/Raux.v:2228` — `cond_Ropp_inj` (prf): `FloatSpec.Core.Raux.cond_Ropp_inj`.
-- `src/Core/Raux.v:2237` — `cond_Ropp_mult_l` (prf): `FloatSpec.Core.Raux.cond_Ropp_mult_l`.
-- `src/Core/Raux.v:2247` — `cond_Ropp_mult_r` (prf): `FloatSpec.Core.Raux.cond_Ropp_mult_r`.
-- `src/Core/Raux.v:2257` — `cond_Ropp_plus` (prf): `FloatSpec.Core.Raux.cond_Ropp_plus`.
-- `src/Core/Raux.v:2271` — `LPO_min` (prf): `FloatSpec.Core.Raux.LPO_min`.
-- `src/Core/Raux.v:2384` — `LPO` (prf): `FloatSpec.Core.Raux.LPO`.
-- `src/Core/Raux.v:2396` — `LPO_Z` (prf): `FloatSpec.Core.Raux.LPO_Z`.
 - `src/Core/Defs.v:29` — `float` (rec): `FloatSpec.Pff.Source.float`, `float`.
 - `src/Core/Defs.v:29` — `Fnum` (proj): `FloatSpec.Core.Defs.FlocqFloat.Fnum`, `FloatSpec.Pff.Source.float.Fnum`.
 - `src/Core/Defs.v:29` — `Fexp` (proj): `FloatSpec.Core.Defs.FlocqFloat.Fexp`, `FloatSpec.Pff.Source.float.Fexp`.
 - `src/Core/Defs.v:36` — `F2R` (def): `FloatSpec.Core.Defs.F2R`.
+- `src/Core/Defs.v:40` — `round_pred_total` (def): `FloatSpec.Core.Defs.round_pred_total`.
+- `src/Core/Defs.v:43` — `round_pred_monotone` (def): `FloatSpec.Core.Defs.round_pred_monotone`.
+- `src/Core/Defs.v:46` — `round_pred` (def): `FloatSpec.Core.Defs.round_pred`.
+- `src/Core/Defs.v:59` — `Rnd_DN_pt` (def): `FloatSpec.Core.Defs.Rnd_DN_pt`.
+- `src/Core/Defs.v:64` — `Rnd_UP_pt` (def): `FloatSpec.Core.Defs.Rnd_UP_pt`.
+- `src/Core/Defs.v:69` — `Rnd_ZR_pt` (def): `FloatSpec.Core.Defs.Rnd_ZR_pt`.
+- `src/Core/Defs.v:74` — `Rnd_N_pt` (def): `FloatSpec.Core.Defs.Rnd_N_pt`.
+- `src/Core/Defs.v:78` — `Rnd_NG_pt` (def): `FloatSpec.Core.Defs.Rnd_NG_pt`.
+- `src/Core/Defs.v:82` — `Rnd_NA_pt` (def): `FloatSpec.Core.Defs.Rnd_NA_pt`.
+- `src/Core/Defs.v:86` — `Rnd_N0_pt` (def): `FloatSpec.Core.Defs.Rnd_N0_pt`.
+- `src/Core/Digits.v:25` — `digits2_pos` (abbrev): `FloatSpec.Core.Digits.digits2_pos`.
+- `src/Core/Digits.v:26` — `Zdigits2` (abbrev): `FloatSpec.Core.Digits.Zdigits2`.
+- `src/Core/Digits.v:33` — `digits2_Pnat` (def): `FloatSpec.Core.Digits.digits2_Pnat`.
+- `src/Core/Digits.v:40` — `digits2_Pnat_correct` (prf): `FloatSpec.Core.Digits.digits2_Pnat_correct`.
+- `src/Core/Digits.v:59` — `Zdigit` (def): `FloatSpec.Core.Digits.Zdigit`.
+- `src/Core/Digits.v:61` — `Zdigit_lt` (prf): `FloatSpec.Core.Digits.Zdigit_lt`.
 
 ## Reproduce
 

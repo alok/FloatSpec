@@ -69,7 +69,7 @@ The important recent changes are:
   policies need zero in the format. All 78 top-level source contracts in this
   module now have paired typed clients and explicit reviews; its constructor
   and four generated eliminators are accounted for separately. There are
-  359 total review dispositions, including the three nearest-even laws below.
+  375 total review dispositions, including the three nearest-even laws below.
   This does not certify unreviewed imports or
   the other modules, nor identify Rocq and Lean proof terms.
 
@@ -95,8 +95,9 @@ The important recent changes are:
   `bpow` and now state the source's propositions. Magnitude followed: `mag`
   now has the source's witness as its body, eleven more laws state the source
   propositions about `bpow`, and both assistants compute `mag 10 1000 = 4`.
-  Rocq's `mag` is opaque (`Qed`), so only Lean can evaluate it at zero. The
-  next entries are Raux's Boolean helpers and `cond_Ropp`.
+  Rocq's `mag` is opaque (`Qed`), so only Lean can evaluate it at zero.
+  With conditional negation and the LPO lemmas, all of `Raux.v` (186 sites)
+  is now dispositioned. The next module in dependency order is `Defs.v`.
   "Same sign" is a nonnegative product, so zero is neutral: both assistants
   prove that transitivity through a zero middle factor fails (`1·0`, `0·(−1)`)
   and that a negative divisor breaks `0 ≤ u·quot(u, v)`. The Boolean
@@ -155,6 +156,7 @@ Current verification is deliberately separated by source snapshot:
 
 | Snapshot | Completed evidence |
 |---|---|
+| End of Raux | Last 16 `Raux.v` sites reviewed (13 with new paired fixtures and 16 rejected mutations, three LPO results on their existing paired controls); seven anchors. Full 6,350-job build; all Lean fixtures strict and kernel-replayed. Attribute-only production change, so no new bridge run. 375 explicit reviews; `Version.v`, `Zaux.v` and `Raux.v` complete. |
 | Magnitude, `f85b1434` | `bpow` reducible; `mag` takes the source witness; eleven laws restated about `bpow`; `mag_unique` takes one conjunction (27 call sites); 29 sites reviewed with two paired positivity counterexamples and 16 rejected mutations. Full 6,350-job build; all Lean fixtures strict and kernel-replayed; CI bridge op set (seed 865681): 4,311 cases. 359 explicit reviews. |
 | Radix powers, `d067a38b` | Twelve `bpow` laws restated about `bpow` (they were about `beta ^ e`); 20 anchors. Full 6,350-job build; all Lean fixtures strict and kernel-replayed; 20 source sites reviewed, radix-invariant counterpart in each assistant, 16 rejected mutations. CI bridge op set (seed 865671): 4,311 cases. 330 explicit reviews. |
 | Integer rounding of reals, `9e1a34d8` | `Zceil`, `Ztrunc`, `Zaway` given the source bodies; five statements restated to the source's shape; 30 anchors. Full 6,350-job build; all 41+ Lean fixtures strict and kernel-replayed; 34 source sites reviewed with two premise counterexamples and 16 rejected mutations. CI bridge op set (seed 865661): 4,308 cases. 310 explicit reviews. |

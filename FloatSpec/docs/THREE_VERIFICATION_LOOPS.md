@@ -202,6 +202,19 @@ check validates every observed pair against Python's floor division and exact
 integer reconstruction; it is not a fresh execution. No universal cross-prover
 equivalence is claimed from the finite grid.
 
+## Conditional negation and the end of Raux (October 6)
+
+```sh
+lake env lean -DwarningAsError=true scripts/fixtures/RauxCondOppContracts.lean
+coqc -q -R "$FLOCQ_AUDIT_DIR/src" Flocq \
+  -o /tmp/RauxCondOppContracts.vo scripts/fixtures/RauxCondOppContracts.v
+uv run scripts/test_raux_cond_opp_contracts.py -v
+uv run scripts/test_lpo_contracts.py -v
+```
+
+Sixteen mutations are rejected; the LPO results reuse their existing paired
+clients and controls.
+
 ## Magnitude (October 6)
 
 `Raux.v:1583–2153`: `mag_prop`, `mag` and 26 laws.

@@ -7982,6 +7982,342 @@
           "noncomputable": false
         }
       }
+    },
+    {
+      "source_id": "src/Core/Raux.v:eqb_sym@45489",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.eqb_sym"
+      ],
+      "scope": "Same statement; Rocq Bool.eqb is == on Bool.",
+      "evidence": [
+        "scripts/fixtures/RauxCondOppContracts.lean",
+        "scripts/fixtures/RauxCondOppContracts.v",
+        "scripts/test_raux_cond_opp_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.eqb_sym": {
+          "type_hash": "3048042204",
+          "value_hash": "2363919278",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:eqb_false@45583",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.eqb_false"
+      ],
+      "scope": "Same premise x = negb y (the plan critic's note of a different premise is outdated); weakening it to x = y is a rejected mutation.",
+      "evidence": [
+        "scripts/fixtures/RauxCondOppContracts.lean",
+        "scripts/fixtures/RauxCondOppContracts.v",
+        "scripts/test_raux_cond_opp_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.eqb_false": {
+          "type_hash": "2984703159",
+          "value_hash": "2429930947",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:eqb_true@45686",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.eqb_true"
+      ],
+      "scope": "Same premise x = y and conclusion.",
+      "evidence": [
+        "scripts/fixtures/RauxCondOppContracts.lean",
+        "scripts/fixtures/RauxCondOppContracts.v",
+        "scripts/test_raux_cond_opp_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.eqb_true": {
+          "type_hash": "223798466",
+          "value_hash": "305932846",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:cond_Ropp@45816",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.cond_Ropp"
+      ],
+      "scope": "Same body if b then -m else m; pinned by rfl in both assistants, branch-swap mutation rejected.",
+      "evidence": [
+        "scripts/fixtures/RauxCondOppContracts.lean",
+        "scripts/fixtures/RauxCondOppContracts.v",
+        "scripts/test_raux_cond_opp_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.cond_Ropp": {
+          "type_hash": "220008515",
+          "value_hash": "124490713",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:IZR_cond_Zopp@45876",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.IZR_cond_Zopp"
+      ],
+      "scope": "Same statement with IZR as the Int cast; negating the flag is a rejected mutation.",
+      "evidence": [
+        "scripts/fixtures/RauxCondOppContracts.lean",
+        "scripts/fixtures/RauxCondOppContracts.v",
+        "scripts/test_raux_cond_opp_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.IZR_cond_Zopp": {
+          "type_hash": "2570756281",
+          "value_hash": "17816709",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:abs_cond_Ropp@46019",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.abs_cond_Ropp"
+      ],
+      "scope": "Same statement with Rabs as |.|.",
+      "evidence": [
+        "scripts/fixtures/RauxCondOppContracts.lean",
+        "scripts/fixtures/RauxCondOppContracts.v",
+        "scripts/test_raux_cond_opp_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.abs_cond_Ropp": {
+          "type_hash": "80407684",
+          "value_hash": "2897838761",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:cond_Ropp_Rlt_bool@46152",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.cond_Ropp_Rlt_bool"
+      ],
+      "scope": "Same statement; the swapped test Rlt_bool 0 m is a rejected mutation.",
+      "evidence": [
+        "scripts/fixtures/RauxCondOppContracts.lean",
+        "scripts/fixtures/RauxCondOppContracts.v",
+        "scripts/test_raux_cond_opp_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.cond_Ropp_Rlt_bool": {
+          "type_hash": "1115711523",
+          "value_hash": "1471759627",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:Rlt_bool_cond_Ropp@46345",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.Rlt_bool_cond_Ropp"
+      ],
+      "scope": "Same strict premise 0 < x: both assistants refute the claim at x = 0 (the strict test reads false whatever the flag); weakening to 0 <= x is a rejected mutation.",
+      "evidence": [
+        "scripts/fixtures/RauxCondOppContracts.lean",
+        "scripts/fixtures/RauxCondOppContracts.v",
+        "scripts/test_raux_cond_opp_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.Rlt_bool_cond_Ropp": {
+          "type_hash": "1623147542",
+          "value_hash": "1886483267",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:cond_Ropp_involutive@46584",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.cond_Ropp_involutive"
+      ],
+      "scope": "Same statement.",
+      "evidence": [
+        "scripts/fixtures/RauxCondOppContracts.lean",
+        "scripts/fixtures/RauxCondOppContracts.v",
+        "scripts/test_raux_cond_opp_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.cond_Ropp_involutive": {
+          "type_hash": "2383572161",
+          "value_hash": "1868111613",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:cond_Ropp_inj@46732",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.cond_Ropp_inj"
+      ],
+      "scope": "Same statement with one fixed flag; using different flags is a rejected mutation.",
+      "evidence": [
+        "scripts/fixtures/RauxCondOppContracts.lean",
+        "scripts/fixtures/RauxCondOppContracts.v",
+        "scripts/test_raux_cond_opp_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.cond_Ropp_inj": {
+          "type_hash": "3724465657",
+          "value_hash": "4234156004",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:cond_Ropp_mult_l@46913",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.cond_Ropp_mult_l"
+      ],
+      "scope": "Same statement; negating both factors is a rejected mutation.",
+      "evidence": [
+        "scripts/fixtures/RauxCondOppContracts.lean",
+        "scripts/fixtures/RauxCondOppContracts.v",
+        "scripts/test_raux_cond_opp_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.cond_Ropp_mult_l": {
+          "type_hash": "1325786744",
+          "value_hash": "1330929877",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:cond_Ropp_mult_r@47097",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.cond_Ropp_mult_r"
+      ],
+      "scope": "Same statement.",
+      "evidence": [
+        "scripts/fixtures/RauxCondOppContracts.lean",
+        "scripts/fixtures/RauxCondOppContracts.v",
+        "scripts/test_raux_cond_opp_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.cond_Ropp_mult_r": {
+          "type_hash": "2663557779",
+          "value_hash": "297386312",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:cond_Ropp_plus@47281",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.cond_Ropp_plus"
+      ],
+      "scope": "Same statement; negating only one summand is a rejected mutation.",
+      "evidence": [
+        "scripts/fixtures/RauxCondOppContracts.lean",
+        "scripts/fixtures/RauxCondOppContracts.v",
+        "scripts/test_raux_cond_opp_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.cond_Ropp_plus": {
+          "type_hash": "3194048457",
+          "value_hash": "388855075",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:LPO_min@47502",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.LPO_min"
+      ],
+      "scope": "Same proof-carrying result: Rocq's {n | P n /\\ forall i < n, ~ P i} + {forall n, ~ P n} is Lean's PSum of a subtype and a proposition, from decidability of each P n. Existing paired source clients show a property-only result does not fit (Lean and Rocq controls).",
+      "evidence": [
+        "FloatSpec/Test/LpoSourceContracts.lean",
+        "scripts/fixtures/LpoSourceContracts.v",
+        "scripts/test_lpo_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.LPO_min": {
+          "type_hash": "3194317851",
+          "value_hash": "3683872366",
+          "noncomputable": true
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:LPO@50288",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.LPO"
+      ],
+      "scope": "Same proof-carrying sum {n | P n} + {forall n, ~ P n} as PSum; existing paired clients and erased-witness controls.",
+      "evidence": [
+        "FloatSpec/Test/LpoSourceContracts.lean",
+        "scripts/fixtures/LpoSourceContracts.v",
+        "scripts/test_lpo_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.LPO": {
+          "type_hash": "2266273617",
+          "value_hash": "3695895309",
+          "noncomputable": true
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:LPO_Z@50495",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.LPO_Z"
+      ],
+      "scope": "Same proof-carrying sum over Z (Lean Int); existing paired clients and erased-witness controls.",
+      "evidence": [
+        "FloatSpec/Test/LpoSourceContracts.lean",
+        "scripts/fixtures/LpoSourceContracts.v",
+        "scripts/test_lpo_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.LPO_Z": {
+          "type_hash": "1909799473",
+          "value_hash": "1537073453",
+          "noncomputable": true
+        }
+      }
     }
   ]
 }

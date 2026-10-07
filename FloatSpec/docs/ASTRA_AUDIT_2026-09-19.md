@@ -4484,6 +4484,24 @@ of 186 sites anchored, 170 dispositioned. Next: `eqb_sym`.
 
 Receipts: `/private/tmp/floatspec-rmag-20261006/`.
 
+### October 6: the rest of Raux (16 sites)
+
+The Boolean-equality laws, `cond_Ropp` with nine laws, and `LPO_min`/`LPO`/
+`LPO_Z` are reviewed; all were already faithful, and seven gained anchors.
+`RauxCondOppContracts.lean/.v`: `rfl` body pin, 13 paired clients, a paired
+counterexample for the strict premise of `Rlt_bool_cond_Ropp`, 16 rejected
+mutations, kernel replay of 14 declarations. The LPO entries cite the
+existing `LpoSourceContracts` clients and `test_lpo_contracts.py`, rerun here.
+Full build 6350 jobs; all Lean fixtures strict with kernel replay; drift
+gate 375 entries (354 contracts, 21 infrastructure, 2341 unreviewed). Only
+attributes changed in production code, so no bridge was rerun.
+
+`Version.v`, `Zaux.v` and `Raux.v` now have every site dispositioned. Next is
+`Defs.v`, whose `float` record has candidates in `Pff.Source` and the root
+namespace besides `FlocqFloat`.
+
+Receipts: `/private/tmp/floatspec-rcond-20261006/`.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In

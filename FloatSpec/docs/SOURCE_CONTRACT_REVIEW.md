@@ -444,6 +444,27 @@ assistants prove both. Both also compute `mag 10 1000 = 4` and
 `mag 2 (7/4) = 1`. `RauxMagContracts.lean/.v` state all 29 interfaces and
 reject 16 mutations.
 
+### Twelfth ordered slice: the rest of Raux
+
+The last 16 sites of `Raux.v` are three Boolean-equality laws, conditional
+negation of reals (`cond_Ropp` and nine laws), and the three limited-principle
+lemmas `LPO_min`, `LPO` and `LPO_Z`. The first thirteen were already
+faithful. Rocq's `Bool.eqb` is `==` on `Bool`, and `eqb_false` already has the
+source's premise `x = negb y`; the plan critic's note to the contrary predates
+that repair. Seven of them gained anchors. `RauxCondOppContracts.lean/.v` pin
+`cond_Ropp`'s body, state the 13 interfaces, show in both assistants that
+`Rlt_bool_cond_Ropp` needs its strict `0 < x` (at zero the strict sign test
+reads false for either flag), and reject 16 mutations.
+
+The three LPO results already had paired source clients in
+`LpoSourceContracts`. Rocq's `{n | P n} + {∀ n, ¬ P n}` is Lean's `PSum` of a
+subtype and a proposition, and those tests show that a property-only result
+cannot stand in for the proof-carrying one. They are reviewed on that
+evidence.
+
+With this slice every one of the 186 `Raux.v` sites has an explicit
+disposition, as do all of `Version.v` and `Zaux.v`.
+
 ## Unindexed Pff negation and absolute value (earlier slice)
 
 The source facade now also exports `Fopp_correct`, `Fopp_Fopp`, `Fabs_correct`

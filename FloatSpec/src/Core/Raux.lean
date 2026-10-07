@@ -656,6 +656,7 @@ end BooleanComparisons
 section BooleanOperations
 
 /-- Coq {lit}`eqb_sym`: boolean equality is symmetric. -/
+@[flocq_source "src/Core/Raux.v" 2157 "eqb_sym"]
 theorem eqb_sym (a b : Bool) : (a == b) = (b == a) :=
   Bool.beq_comm
 
@@ -681,6 +682,7 @@ section ConditionalOpposite
     This is used for conditional negation in floating-point
     sign handling.
 -/
+@[flocq_source "src/Core/Raux.v" 2179 "cond_Ropp"]
 def cond_Ropp (b : Bool) (m : ℝ) : ℝ :=
   if b then -m else m
 
@@ -690,10 +692,12 @@ theorem cond_Ropp_spec (b : Bool) (m : ℝ) :
   rfl
 
 /-- Coq {lit}`cond_Ropp_involutive`: conditional negation is involutive. -/
+@[flocq_source "src/Core/Raux.v" 2219 "cond_Ropp_involutive"]
 theorem cond_Ropp_involutive (b : Bool) (m : ℝ) : cond_Ropp b (cond_Ropp b m) = m := by
   cases b <;> simp [cond_Ropp]
 
 /-- Coq {lit}`cond_Ropp_inj`: conditional negation by a fixed flag is injective. -/
+@[flocq_source "src/Core/Raux.v" 2228 "cond_Ropp_inj"]
 theorem cond_Ropp_inj (b : Bool) (m1 m2 : ℝ)
     (h : cond_Ropp b m1 = cond_Ropp b m2) : m1 = m2 := by
   cases b <;> simpa [cond_Ropp] using h
@@ -731,6 +735,7 @@ section CondRltBool
 
 /-- Coq {lit}`cond_Ropp_Rlt_bool`: applying the sign from {lean}`Rlt_bool m 0`
     turns {lean}`m` into its absolute value. -/
+@[flocq_source "src/Core/Raux.v" 2199 "cond_Ropp_Rlt_bool"]
 theorem cond_Ropp_Rlt_bool (m : ℝ) :
     cond_Ropp (Rlt_bool m 0) m = |m| := by
   by_cases hm : m < 0
@@ -745,6 +750,7 @@ theorem cond_Ropp_Rlt_bool_spec (b : Bool) (x y : ℝ) :
 
 /-- Coq {lit}`Rlt_bool_cond_Ropp`: a positive magnitude has sign flag {lean}`sx`
     after conditional negation by {lean}`sx`. -/
+@[flocq_source "src/Core/Raux.v" 2210 "Rlt_bool_cond_Ropp"]
 theorem Rlt_bool_cond_Ropp (x : ℝ) (sx : Bool) (hx : 0 < x) :
     Rlt_bool (cond_Ropp sx x) 0 = sx := by
   cases sx
@@ -763,6 +769,7 @@ end CondRltBool
 section IZRCond
 
 /-- Coq `IZR_cond_Zopp`: conditional integer negation commutes with casting. -/
+@[flocq_source "src/Core/Raux.v" 2181 "IZR_cond_Zopp"]
 theorem IZR_cond_Zopp (b : Bool) (m : Int) :
     ((FloatSpec.Core.Zaux.cond_Zopp b m : Int) : ℝ) = cond_Ropp b (m : ℝ) := by
   cases b <;> simp [FloatSpec.Core.Zaux.cond_Zopp, cond_Ropp]
