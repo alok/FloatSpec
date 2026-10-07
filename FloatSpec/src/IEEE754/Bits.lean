@@ -623,7 +623,7 @@ private theorem digits2_pos_le_of_lt_pow_two {n k : Nat}
     FloatSpec.Core.Digits.digits2_nat n + 1 ≤ k := by
   have hzd : FloatSpec.Core.Digits.Zdigits 2 (n : Int) ≤ (k : Int) :=
     zdigits_two_le_of_lt_pow hn
-  have heq := FloatSpec.Core.Digits.Z_of_nat_S_digits2_Pnat n hnpos
+  have heq := FloatSpec.Core.Digits.digits2_nat_succ_eq_Zdigits n hnpos
   have hle : ((FloatSpec.Core.Digits.digits2_nat n + 1 : Nat) : Int) ≤
       (k : Int) := by
     rw [heq]

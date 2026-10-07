@@ -1140,17 +1140,12 @@ theorem range_bounded_of_specFloat_bounded {prec emax : Int}
     exact_mod_cast (Nat.pos_iff_ne_zero.mp hm_pos)
   have hdigits_pos : 0 < FloatSpec.Core.Digits.Zdigits 2 (m : Int) := by
     exact FloatSpec.Core.Digits.Zdigits_gt_0 (beta := 2) (n := (m : Int)) hm_int_ne
-      (by norm_num : (2 : Int) > 1)
   have hprec_nonneg : 0 ≤ prec := le_trans (le_of_lt hdigits_pos) hdigits_le_prec
   have hpow_bound :
       (m : Int) < (2 : Int) ^ prec.toNat := by
     have hpow := FloatSpec.Core.Digits.Zpower_gt_Zdigits
-      (beta := 2) (h_beta := by norm_num) (e := prec) (x := (m : Int)) hdigits_le_prec
-    have hprec_abs : prec.natAbs = prec.toNat := by
-      have h1 : (prec.natAbs : Int) = prec := Int.natAbs_of_nonneg hprec_nonneg
-      have h2 : (prec.toNat : Int) = prec := Int.toNat_of_nonneg hprec_nonneg
-      omega
-    simpa [hprec_abs] using hpow
+      (beta := 2) (hβ := by norm_num) (e := prec) (x := (m : Int)) hdigits_le_prec
+    simpa [FloatSpec.Core.Zaux.Zpower, hprec_nonneg] using hpow
   have hm_lt : m < (2 : Nat) ^ prec.toNat := by
     have hcast : (2 : Int) ^ prec.toNat = ↑((2 : Nat) ^ prec.toNat) := by
       simp
@@ -1935,7 +1930,7 @@ theorem bounded_canonical_lt_emax {prec emax : Int}
         ring
 
       -- Zdigits ≥ 1 for mx > 0, so prec ≥ 1 > 0
-      have hprec_pos := FloatSpec.Core.Digits.Zdigits_gt_0 2 (mx : Int) hmx_int_ne h2gt1
+      have hprec_pos := FloatSpec.Core.Digits.Zdigits_gt_0 2 (mx : Int) hmx_int_ne
       rw [hzdig_prec] at hprec_pos
       have hprec_nonneg : 0 ≤ prec := le_of_lt hprec_pos
 
@@ -1980,7 +1975,7 @@ theorem bounded_canonical_lt_emax {prec emax : Int}
         omega
 
       -- Zdigits ≥ 1 for mx > 0
-      have hzdig_pos := FloatSpec.Core.Digits.Zdigits_gt_0 2 (mx : Int) hmx_int_ne h2gt1
+      have hzdig_pos := FloatSpec.Core.Digits.Zdigits_gt_0 2 (mx : Int) hmx_int_ne
 
       have hprec_pos' : 0 < prec := lt_trans hzdig_pos hzdig_lt_prec
       have hprec_nonneg : 0 ≤ prec := le_of_lt hprec_pos'

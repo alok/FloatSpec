@@ -431,7 +431,7 @@ theorem Bnormfr_mantissa_correct {prec emax : Int}
         have hm_int_ne : (m : Int) ≠ 0 := by
           exact_mod_cast (Nat.pos_iff_ne_zero.mp hm_pos)
         exact FloatSpec.Core.Digits.Zdigits_gt_0
-          (beta := 2) (n := (m : Int)) hm_int_ne (by norm_num : (2 : Int) > 1)
+          (beta := 2) (n := (m : Int)) hm_int_ne
       have hprec_pos : 0 < prec := by
         have hleft :
             FloatSpec.Core.Digits.Zdigits 2 (m : Int) + e - prec ≤ e := by
@@ -1588,7 +1588,7 @@ private theorem SFnearbyint_shr_record_eq
       have hdigits_pos : 0 < FloatSpec.Core.Digits.Zdigits 2 (mx : Int) := by
         have hmx_ne : (mx : Int) ≠ 0 := by exact_mod_cast (Nat.ne_of_gt hmx_pos)
         exact FloatSpec.Core.Digits.Zdigits_gt_0
-          (beta:=2) (n:=(mx : Int)) hmx_ne (by norm_num)
+          (beta:=2) (n:=(mx : Int)) hmx_ne
       have hprec_nonneg : 0 ≤ prec := by omega
       have hshift_nonneg : 0 ≤ -ex - 1 := by omega
       have hnat_le : prec.toNat ≤ (-ex - 1).toNat := by
@@ -1621,7 +1621,7 @@ private theorem validBinarySingleNaNStandardFloat_shl_align_fexp_zero
     have hm_ne : (m : Int) ≠ 0 := by exact_mod_cast (Nat.ne_of_gt hm_pos)
     have hdigits_pos : 0 < FloatSpec.Core.Digits.Zdigits 2 (m : Int) := by
       exact FloatSpec.Core.Digits.Zdigits_gt_0
-        (beta:=2) (n:=(m : Int)) hm_ne (by norm_num)
+        (beta:=2) (n:=(m : Int)) hm_ne
     omega
   have hemin_nonpos : 3 - emax - prec ≤ 0 := by
     have hprec_lt := (inferInstance : Prec_lt_emax prec emax).prec_lt_emax
@@ -1649,8 +1649,9 @@ private theorem validBinarySingleNaNStandardFloat_shl_align_fexp_zero
     have hprod' :
         FloatSpec.Core.Digits.Zdigits 2
             ((m : Int) * (2 : Int) ^ (0 - target).natAbs) =
-          FloatSpec.Core.Digits.Zdigits 2 (m : Int) + (0 - target) :=
-      FloatSpec.Core.Digits.Zdigits_mult_Zpower
+          FloatSpec.Core.Digits.Zdigits 2 (m : Int) + (0 - target) := by
+      rw [← FloatSpec.Core.Zaux.Zpower_Zpower_nat 2 _ hshift_nonneg]
+      exact FloatSpec.Core.Digits.Zdigits_mult_Zpower
         (beta := 2) (n := (m : Int)) (k := 0 - target) hm_ne_int hshift_nonneg
         (by norm_num)
     have hcast :
@@ -1744,7 +1745,7 @@ private theorem SFnearbyint_binary_aux_digits_le_prec
   have hdigits_input_pos : 0 < FloatSpec.Core.Digits.Zdigits 2 (mx : Int) := by
     have hmx_ne : (mx : Int) ≠ 0 := by exact_mod_cast (Nat.ne_of_gt hmx_pos)
     exact FloatSpec.Core.Digits.Zdigits_gt_0
-      (beta:=2) (n:=(mx : Int)) hmx_ne (by norm_num)
+      (beta:=2) (n:=(mx : Int)) hmx_ne
   have hprec_nonneg : 0 ≤ prec := by omega
   have hprec_nat_pos : 0 < prec.toNat := by
     have hcast : (prec.toNat : Int) = prec :=
@@ -1766,10 +1767,9 @@ private theorem SFnearbyint_binary_aux_digits_le_prec
     apply Nat.cast_injective (R := Int)
     rw [Int.natAbs_of_nonneg hprec_nonneg, Int.toNat_of_nonneg hprec_nonneg]
   apply FloatSpec.Core.Digits.Zdigits_le_Zpower
-    (beta := 2) (x := (rounded.toNat : Int)) (e := prec) (h_beta := by norm_num)
-  constructor
-  · exact hprec_nonneg
-  · simpa [hrounded_cast, hprec_abs, abs_of_pos hrounded_pos] using hrounded_lt
+    (beta := 2) (x := (rounded.toNat : Int)) (e := prec) (hβ := by norm_num)
+  simpa [hrounded_cast, abs_of_pos hrounded_pos, FloatSpec.Core.Zaux.Zpower, hprec_nonneg]
+    using hrounded_lt
 
 theorem Bnearbyint_correct_aux_nat {prec emax : Int}
     [Prec_lt_emax prec emax]
@@ -2048,17 +2048,12 @@ private theorem binary_fit_aux_bounded_of_canonical_le
     exact_mod_cast (Nat.pos_iff_ne_zero.mp hmx_pos)
   have hdigits_pos : 0 < FloatSpec.Core.Digits.Zdigits 2 (mx : Int) := by
     exact FloatSpec.Core.Digits.Zdigits_gt_0 (beta := 2) (n := (mx : Int)) hmx_ne
-      (by norm_num : (2 : Int) > 1)
   have hprec_nonneg : 0 ≤ prec := le_trans (le_of_lt hdigits_pos) hdigits_le_prec
   have hpow_bound :
       (mx : Int) < (2 : Int) ^ prec.toNat := by
     have hpow := FloatSpec.Core.Digits.Zpower_gt_Zdigits
-      (beta := 2) (h_beta := by norm_num) (e := prec) (x := (mx : Int)) hdigits_le_prec
-    have hprec_abs : prec.natAbs = prec.toNat := by
-      have h1 : (prec.natAbs : Int) = prec := Int.natAbs_of_nonneg hprec_nonneg
-      have h2 : (prec.toNat : Int) = prec := Int.toNat_of_nonneg hprec_nonneg
-      omega
-    simpa [hprec_abs] using hpow
+      (beta := 2) (hβ := by norm_num) (e := prec) (x := (mx : Int)) hdigits_le_prec
+    simpa [FloatSpec.Core.Zaux.Zpower, hprec_nonneg] using hpow
   have hmx_lt : mx < (2 : Nat) ^ prec.toNat := by
     have hcast : (2 : Int) ^ prec.toNat = ↑((2 : Nat) ^ prec.toNat) := by
       simp
@@ -2825,7 +2820,7 @@ theorem Bmax_float_proof :
       exact_mod_cast hpow_pred_le
     have hdigits_eq :
         FloatSpec.Core.Digits.Zdigits 2 (((2 : Nat) ^ prec.toNat - 1 : Nat) : Int) = prec :=
-      FloatSpec.Core.Digits.Zdigits_unique_from_nonzero_payload (beta := 2) (h_beta := by norm_num)
+      FloatSpec.Core.Digits.Zdigits_unique_from_nonzero_payload (beta := 2) 
         (n := (((2 : Nat) ^ prec.toNat - 1 : Nat) : Int)) (e := prec)
         ⟨hm_nonzero, by simpa using hm_lower, by simpa [hprec_natAbs] using hm_upper⟩
         (hβ := by norm_num)
@@ -4036,7 +4031,7 @@ theorem Bmult_correct_aux {prec emax : Int}
         FloatSpec.Core.Digits.Zdigits 2 (mx : Int) +
           FloatSpec.Core.Digits.Zdigits 2 (my : Int) := by
     exact FloatSpec.Core.Digits.Zdigits_mult
-      (beta := 2) (h_beta := by norm_num) (x := (mx : Int)) (y := (my : Int))
+      (beta := 2) (x := (mx : Int)) (y := (my : Int))
       (hβ := by norm_num)
   have hdigits_mult_ge :
       FloatSpec.Core.Digits.Zdigits 2 (mx : Int) +
@@ -4045,14 +4040,14 @@ theorem Bmult_correct_aux {prec emax : Int}
     have hmx_ne : (mx : Int) ≠ 0 := ne_of_gt hmx_int_pos
     have hmy_ne : (my : Int) ≠ 0 := ne_of_gt hmy_int_pos
     exact FloatSpec.Core.Digits.Zdigits_mult_ge
-      (beta := 2) (h_beta := by norm_num) (x := (mx : Int)) (y := (my : Int))
+      (beta := 2) (x := (mx : Int)) (y := (my : Int))
       hmx_ne hmy_ne (hβ := by norm_num)
   have hdigits_x_pos : 0 < FloatSpec.Core.Digits.Zdigits 2 (mx : Int) := by
     exact FloatSpec.Core.Digits.Zdigits_gt_0
-      (beta := 2) (n := (mx : Int)) (ne_of_gt hmx_int_pos) (by norm_num : (2 : Int) > 1)
+      (beta := 2) (n := (mx : Int)) (ne_of_gt hmx_int_pos)
   have hdigits_y_pos : 0 < FloatSpec.Core.Digits.Zdigits 2 (my : Int) := by
     exact FloatSpec.Core.Digits.Zdigits_gt_0
-      (beta := 2) (n := (my : Int)) (ne_of_gt hmy_int_pos) (by norm_num : (2 : Int) > 1)
+      (beta := 2) (n := (my : Int)) (ne_of_gt hmy_int_pos)
   have hEx :
       ex + ey ≤
         FLT_exp (3 - emax - prec) prec
@@ -4702,8 +4697,9 @@ theorem Bfrexp_correct_aux
           have hshift' :
               FloatSpec.Core.Digits.Zdigits 2
                   ((mx : Int) * (2 : Int) ^ d.natAbs) =
-                FloatSpec.Core.Digits.Zdigits 2 (mx : Int) + d :=
-            FloatSpec.Core.Digits.Zdigits_mult_Zpower
+                FloatSpec.Core.Digits.Zdigits 2 (mx : Int) + d := by
+            rw [← FloatSpec.Core.Zaux.Zpower_Zpower_nat 2 _ hdNonneg]
+            exact FloatSpec.Core.Digits.Zdigits_mult_Zpower
               (beta:=2) (n:=(mx : Int)) (k:=d) hmxIntNe hdNonneg (by norm_num)
           rw [← hpowNatAbs, hshift', hdigit]
           simp [d]
@@ -5707,7 +5703,7 @@ private theorem bmult_correct_nan_result {prec emax : Int}
 private theorem zdigits_one :
     FloatSpec.Core.Digits.Zdigits 2 (1 : Int) = 1 := by
   exact FloatSpec.Core.Digits.Zdigits_unique_from_nonzero_payload (beta := 2)
-    (h_beta := by norm_num) (n := (1 : Int)) (e := (1 : Int))
+    (n := (1 : Int)) (e := (1 : Int))
     ⟨by norm_num, by norm_num, by norm_num⟩ (hβ := by norm_num)
 
 theorem specFloat_bounded_one_emin {prec emax : Int}
@@ -8034,7 +8030,7 @@ private theorem binary64_targetExponent_eq_fexp
     Format.binary64.targetExponent (Float.Model.totalExponent m e) =
       FLT_exp (3 - 1024 - 53) 53
         (FloatSpec.Core.Digits.Zdigits 2 m + e) := by
-  rw [← FloatSpec.Core.Digits.Z_of_nat_S_digits2_Pnat m hm]
+  rw [← FloatSpec.Core.Digits.digits2_nat_succ_eq_Zdigits m hm]
   simp [Format.targetExponent, Format.minExponent, Format.mantissaBits,
     Float.Model.totalExponent, FloatSpec.Core.FLT.FLT_exp, FLT_exp,
     digits2_Pnat_eq_log2 m hm]
@@ -8044,7 +8040,7 @@ private theorem binary32_targetExponent_eq_fexp
     Format.binary32.targetExponent (Float.Model.totalExponent m e) =
       FLT_exp (3 - 128 - 24) 24
         (FloatSpec.Core.Digits.Zdigits 2 m + e) := by
-  rw [← FloatSpec.Core.Digits.Z_of_nat_S_digits2_Pnat m hm]
+  rw [← FloatSpec.Core.Digits.digits2_nat_succ_eq_Zdigits m hm]
   simp [Format.targetExponent, Format.minExponent, Format.mantissaBits,
     Float.Model.totalExponent, FloatSpec.Core.FLT.FLT_exp, FLT_exp,
     digits2_Pnat_eq_log2 m hm]
@@ -8058,7 +8054,7 @@ private theorem binary64_sqrtExponent_eq_fexp
         (FLT_exp (3 - 1024 - 53) 53
           ((FloatSpec.Core.Digits.Zdigits 2 (m : Int) + e + 1) / 2))
         (e / 2) := by
-  rw [← FloatSpec.Core.Digits.Z_of_nat_S_digits2_Pnat m hm]
+  rw [← FloatSpec.Core.Digits.digits2_nat_succ_eq_Zdigits m hm]
   simp [Format.targetExponent, Format.minExponent, Format.mantissaBits,
     Float.Model.totalExponent, FloatSpec.Core.FLT.FLT_exp, FLT_exp,
     digits2_Pnat_eq_log2 m hm, min_comm, Int.div_def]
@@ -8072,7 +8068,7 @@ private theorem binary32_sqrtExponent_eq_fexp
         (FLT_exp (3 - 128 - 24) 24
           ((FloatSpec.Core.Digits.Zdigits 2 (m : Int) + e + 1) / 2))
         (e / 2) := by
-  rw [← FloatSpec.Core.Digits.Z_of_nat_S_digits2_Pnat m hm]
+  rw [← FloatSpec.Core.Digits.digits2_nat_succ_eq_Zdigits m hm]
   simp [Format.targetExponent, Format.minExponent, Format.mantissaBits,
     Float.Model.totalExponent, FloatSpec.Core.FLT.FLT_exp, FLT_exp,
     digits2_Pnat_eq_log2 m hm, min_comm, Int.div_def]
@@ -8250,8 +8246,8 @@ private theorem binary64_divExponent_eq_fexp
         (min (FLT_exp (3 - 1024 - 53) 53 e')
           (FLT_exp (3 - 1024 - 53) 53 (e' + 1)))
         (e₁ - e₂) := by
-  rw [← FloatSpec.Core.Digits.Z_of_nat_S_digits2_Pnat m₁ hm₁,
-    ← FloatSpec.Core.Digits.Z_of_nat_S_digits2_Pnat m₂ hm₂]
+  rw [← FloatSpec.Core.Digits.digits2_nat_succ_eq_Zdigits m₁ hm₁,
+    ← FloatSpec.Core.Digits.digits2_nat_succ_eq_Zdigits m₂ hm₂]
   simp [Format.targetExponent, Format.minExponent, Format.mantissaBits,
     Float.Model.totalExponent, FloatSpec.Core.FLT.FLT_exp, FLT_exp,
     digits2_Pnat_eq_log2 m₁ hm₁, digits2_Pnat_eq_log2 m₂ hm₂,
@@ -8271,8 +8267,8 @@ private theorem binary32_divExponent_eq_fexp
         (min (FLT_exp (3 - 128 - 24) 24 e')
           (FLT_exp (3 - 128 - 24) 24 (e' + 1)))
         (e₁ - e₂) := by
-  rw [← FloatSpec.Core.Digits.Z_of_nat_S_digits2_Pnat m₁ hm₁,
-    ← FloatSpec.Core.Digits.Z_of_nat_S_digits2_Pnat m₂ hm₂]
+  rw [← FloatSpec.Core.Digits.digits2_nat_succ_eq_Zdigits m₁ hm₁,
+    ← FloatSpec.Core.Digits.digits2_nat_succ_eq_Zdigits m₂ hm₂]
   simp [Format.targetExponent, Format.minExponent, Format.mantissaBits,
     Float.Model.totalExponent, FloatSpec.Core.FLT.FLT_exp, FLT_exp,
     digits2_Pnat_eq_log2 m₁ hm₁, digits2_Pnat_eq_log2 m₂ hm₂,

@@ -13280,7 +13280,7 @@ theorem digitPredVNumiSPrecision
         rw [hprec_natAbs, hpred_natAbs]
         exact hpow_high
     have hunique := FloatSpec.Core.Digits.Zdigits_unique_from_nonzero_payload
-      (beta := radix) (h_beta := hradix) (n := Int.pred b.vNum) (e := (precision : Int))
+      (beta := radix) (n := Int.pred b.vNum) (e := (precision : Int))
       (hβ := hradix) hpre
     exact hunique
   rw [hzdigits]
@@ -13335,8 +13335,9 @@ theorem pGivesDigit {beta : Int} [ValidRadix beta]
         exact_mod_cast Nat.zero_le precision)] using hnum_lt
     exact
       (FloatSpec.Core.Digits.Zdigits_le_Zpower
-        (beta := radix) (h_beta := hradix)
-        (x := p.Fnum) (e := (precision : Int)) (hβ := hradix)) hpre
+        (beta := radix) 
+        (x := p.Fnum) (e := (precision : Int)) (hβ := hradix))
+        (by rw [FloatSpec.Core.Zaux.Zpower_Zpower_nat _ _ hpre.1, Int.abs_eq_natAbs]; exact hpre.2)
   exact Int.toNat_le.mpr hdigits_int
 
 /-- Coq: `digitGivesBoundedNum` — digit bound implies vNum bound. -/
@@ -13363,10 +13364,9 @@ theorem digitGivesBoundedNum {beta : Int} [ValidRadix beta]
     simpa [Int.toNat_of_nonneg hdigits_nonneg] using hdigit_int
   have hnum_lt :
       (p.Fnum.natAbs : Int) < radix ^ ((precision : Int).natAbs) := by
-    exact
-      FloatSpec.Core.Digits.Zpower_gt_Zdigits
-        (beta := radix) (h_beta := hradix)
-        (e := (precision : Int)) (x := p.Fnum) hdigits_bound (hβ := hradix)
+    have h := FloatSpec.Core.Digits.Zpower_gt_Zdigits
+      (beta := radix) (e := (precision : Int)) (x := p.Fnum) hdigits_bound (hβ := hradix)
+    rwa [FloatSpec.Core.Zaux.Zpower_Zpower_nat _ _ (by exact_mod_cast Nat.zero_le precision), Int.abs_eq_natAbs] at h
   rw [hvNum]
   simpa [Zpower_nat, Int.natAbs_of_nonneg
     (show 0 ≤ (precision : Int) by exact_mod_cast Nat.zero_le precision)] using hnum_lt
@@ -13421,7 +13421,7 @@ theorem FnormalPrecision_internal {beta : Int} [ValidRadix beta]
       have hdigits_gt :
           (precision : Int) - 1 < FloatSpec.Core.Digits.Zdigits radix p.Fnum :=
         (FloatSpec.Core.Digits.Zdigits_gt_Zpower_from_natAbs_payload
-          (beta := radix) (h_beta := hradix)
+          (beta := radix) 
           (e := (precision : Int) - 1) (x := p.Fnum) (hβ := hradix))
           hpow_pred_le_natAbs
       omega
@@ -13937,8 +13937,9 @@ theorem FsubnormalDigit {beta : Int} [ValidRadix beta]
       simpa using hm_abs_lt
     exact
       (FloatSpec.Core.Digits.Zdigits_le_Zpower
-        (beta := radix) (h_beta := hradix)
-        (x := p.Fnum) (e := ((precision - 1 : Nat) : Int)) (hβ := hradix)) hpre
+        (beta := radix) 
+        (x := p.Fnum) (e := ((precision - 1 : Nat) : Int)) (hβ := hradix))
+        (by rw [FloatSpec.Core.Zaux.Zpower_Zpower_nat _ _ hpre.1, Int.abs_eq_natAbs]; exact hpre.2)
   have hdigits_nonneg :
       0 ≤ FloatSpec.Core.Digits.Zdigits radix p.Fnum := by
     exact
@@ -14231,7 +14232,7 @@ theorem FnormalLtPos {beta : Int} [ValidRadix beta]
             FloatSpec.Core.Digits.Zdigits radix q.Fnum := by
         exact
           FloatSpec.Core.Digits.Zdigits_le_Zdigits
-            (beta := radix) (h_beta := hradix)
+            (beta := radix) 
             (n := (Fshift (beta:=beta) radix n p).Fnum) (m := q.Fnum)
             (by omega) hshift_abs_lt_q_abs (hβ := hradix)
       have hfdigit_le :
@@ -14263,7 +14264,7 @@ theorem FnormalLtPos {beta : Int} [ValidRadix beta]
         have hres' :
             FloatSpec.Core.Digits.Zdigits radix (p.Fnum * radix ^ n) =
               FloatSpec.Core.Digits.Zdigits radix p.Fnum + (n : Int) := by
-          simpa [hpow_arg] using hres
+          simpa [hpow_arg, FloatSpec.Core.Zaux.Zpower] using hres
         rw [hres']
         rw [Int.toNat_add hdn_nonneg hn_nonneg]
         simp
@@ -14312,10 +14313,9 @@ theorem vNumPrecision
     simpa [Int.toNat_of_nonneg hdigits_nonneg] using hdigit_int
   have hnum_lt :
       (n.natAbs : Int) < radix ^ ((precision : Int).natAbs) := by
-    exact
-      FloatSpec.Core.Digits.Zpower_gt_Zdigits
-        (beta := radix) (h_beta := hradix)
-        (e := (precision : Int)) (x := n) hdigits_bound (hβ := hradix)
+    have h := FloatSpec.Core.Digits.Zpower_gt_Zdigits
+      (beta := radix) (e := (precision : Int)) (x := n) hdigits_bound (hβ := hradix)
+    rwa [FloatSpec.Core.Zaux.Zpower_Zpower_nat _ _ (by exact_mod_cast Nat.zero_le precision), Int.abs_eq_natAbs] at h
   rw [hvNum]
   simpa [Zpower_nat, Int.natAbs_of_nonneg
     (show 0 ≤ (precision : Int) by exact_mod_cast Nat.zero_le precision)] using hnum_lt
@@ -18791,7 +18791,7 @@ theorem FshiftFdigit {beta : Int} [ValidRadix beta]
   have hres' :
       FloatSpec.Core.Digits.Zdigits radix (x.Fnum * radix ^ n) =
         FloatSpec.Core.Digits.Zdigits radix x.Fnum + (n : Int) := by
-    simpa [hpow_arg] using hres
+    simpa [hpow_arg, FloatSpec.Core.Zaux.Zpower] using hres
   rw [hres']
   rw [Int.toNat_add hdn_nonneg hn_nonneg]
   simp
@@ -19911,7 +19911,7 @@ private lemma Fdigit_pos_of_nonzero {beta : Int} [ValidRadix beta]
   unfold Fdigit
   rw [pffDigit_of_one_lt radix p.Fnum hradix]
   have hgt : 0 < FloatSpec.Core.Digits.Zdigits radix p.Fnum :=
-    FloatSpec.Core.Digits.Zdigits_gt_0 radix p.Fnum hp_nonzero hradix
+    FloatSpec.Core.Digits.Zdigits_gt_0 radix p.Fnum hp_nonzero
   have hnonneg : 0 ≤ FloatSpec.Core.Digits.Zdigits radix p.Fnum := le_of_lt hgt
   have htoNat :
       ((FloatSpec.Core.Digits.Zdigits radix p.Fnum).toNat : Int) =
@@ -19932,7 +19932,7 @@ private lemma Fdigit_less_abs {beta : Int} [ValidRadix beta]
   have hbounds := FloatSpec.Core.Digits.Zdigits_correct_from_nonzero_payload radix p.Fnum hp_nonzero hradix
   let d := FloatSpec.Core.Digits.Zdigits radix p.Fnum
   have hgt : 0 < d := by
-    simpa [d] using FloatSpec.Core.Digits.Zdigits_gt_0 radix p.Fnum hp_nonzero hradix
+    simpa [d] using FloatSpec.Core.Digits.Zdigits_gt_0 radix p.Fnum hp_nonzero
   have hpred_cast : ((Nat.pred d.toNat : Nat) : Int) = d - 1 := by
     have hdto : (d.toNat : Int) = d := Int.toNat_of_nonneg (le_of_lt hgt)
     cases hd : d.toNat with
@@ -60683,7 +60683,7 @@ theorem digitLess (n : Int) (q : Int)
   have hbounds := FloatSpec.Core.Digits.Zdigits_correct_from_nonzero_payload n q hq hn
   let d := FloatSpec.Core.Digits.Zdigits n q
   have hgt : 0 < d := by
-    simpa [d] using FloatSpec.Core.Digits.Zdigits_gt_0 n q hq hn
+    simpa [d] using FloatSpec.Core.Digits.Zdigits_gt_0 n q hq
   have hpred_cast : ((Nat.pred d.toNat : Nat) : Int) = d - 1 := by
     have hdto : (d.toNat : Int) = d := Int.toNat_of_nonneg (le_of_lt hgt)
     cases hd : d.toNat with
@@ -60826,7 +60826,7 @@ theorem digitInv
         simpa [Zpower_nat] using hupp
     have hzd :=
       (FloatSpec.Core.Digits.Zdigits_unique_from_nonzero_payload
-        (beta := n) (h_beta := hn) (n := q) (e := (r : Int)) (hβ := hn)) hpre
+        (beta := n) (n := q) (e := (r : Int)) (hβ := hn)) hpre
     unfold digit
     rw [pffDigit_of_one_lt n q hn]
     rw [hzd]
@@ -60849,7 +60849,7 @@ theorem digit_monotone
       ⟨hp0, hpq_nat⟩
     have hle_int :=
       (FloatSpec.Core.Digits.Zdigits_le_from_abs_payload
-        (beta := n) (h_beta := hn) (n := p) (m := q) (hβ := hn)) hpre
+        (beta := n) (n := p) (m := q) (hβ := hn)) hpre
     have hp_nonneg : 0 ≤ FloatSpec.Core.Digits.Zdigits n p :=
       FloatSpec.Core.Digits.Zdigits_ge_0 n p
     have hq_nonneg : 0 ≤ FloatSpec.Core.Digits.Zdigits n q :=
@@ -60873,7 +60873,7 @@ theorem digitNotZero
   unfold digit
   rw [pffDigit_of_one_lt n q hn]
   have hgt : 0 < FloatSpec.Core.Digits.Zdigits n q :=
-    FloatSpec.Core.Digits.Zdigits_gt_0 n q hq hn
+    FloatSpec.Core.Digits.Zdigits_gt_0 n q hq
   have hnonneg : 0 ≤ FloatSpec.Core.Digits.Zdigits n q := le_of_lt hgt
   have htoNat :
       ((FloatSpec.Core.Digits.Zdigits n q).toNat : Int) =
@@ -61343,8 +61343,8 @@ theorem digitAdd
       (beta := n) (n := q) (k := (r : Int)) hq hr_nonneg (h_beta := hn)
   have hdq_nonneg : 0 ≤ FloatSpec.Core.Digits.Zdigits n q :=
     FloatSpec.Core.Digits.Zdigits_ge_0 n q
-  have hpow_arg : q * n ^ (r : Int).natAbs = q * Zpower_nat n r := by
-    simp [Zpower_nat]
+  have hpow_arg : q * FloatSpec.Core.Zaux.Zpower n r = q * Zpower_nat n r := by
+    simp [Zpower_nat, FloatSpec.Core.Zaux.Zpower]
   rw [hpow_arg] at hres
   have hres' :
       FloatSpec.Core.Digits.Zdigits n (q * Zpower_nat n r) =

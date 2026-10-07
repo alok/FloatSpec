@@ -211,7 +211,7 @@ theorem cexp_inbetween_float
     have Hd_pos : 0 < d := by
       simpa [d, hd] using
         (FloatSpec.Core.Digits.Zdigits_gt_0
-          (beta := beta) m Hm_ne (by simpa using Hβ))
+          (beta := beta) m Hm_ne)
     have Hd_nonneg : 0 ≤ d := le_of_lt Hd_pos
     have Hdm1_nonneg : 0 ≤ d - 1 := by omega
     have Hlow_int : FloatSpec.Core.Zaux.Zpower beta (d - 1) ≤ |m| := by
@@ -2229,12 +2229,11 @@ theorem generic_format_truncate
       have hk_le_digits : k ≤ FloatSpec.Core.Digits.Zdigits beta m := by
         by_contra hnot
         have hdigits_lt : FloatSpec.Core.Digits.Zdigits beta m < k := lt_of_not_ge hnot
-        have hsmall : (Int.natAbs m : Int) < beta ^ k.natAbs := by
-          exact FloatSpec.Core.Digits.Zpower_gt_Zdigits
-            (beta := beta) (h_beta := hβ_digits) (e := k) (x := m)
-            (le_of_lt hdigits_lt) (hβ := hβ_digits)
         have hm_lt : m < beta ^ k.natAbs := by
-          simpa [Int.natAbs_of_nonneg hm_nonneg] using hsmall
+          have h := FloatSpec.Core.Digits.Zpower_gt_Zdigits (beta := beta) (e := k) (x := m)
+            (le_of_lt hdigits_lt) hβ_digits
+          rwa [FloatSpec.Core.Zaux.Zpower_Zpower_nat beta k hk_nonneg,
+            abs_of_nonneg hm_nonneg] at h
         have hq_zero : q = 0 := by
           rw [hq]
           exact Int.ediv_eq_zero_of_lt hm_nonneg hm_lt
@@ -2242,7 +2241,8 @@ theorem generic_format_truncate
       have hq_digits' :
           FloatSpec.Core.Digits.Zdigits beta q =
             FloatSpec.Core.Digits.Zdigits beta m - k := by
-        simpa [q, hq] using FloatSpec.Core.Digits.Zdigits_div_Zpower
+        simpa [q, hq, FloatSpec.Core.Zaux.Zpower_Zpower_nat beta k hk_nonneg] using
+          FloatSpec.Core.Digits.Zdigits_div_Zpower
           (beta := beta) (m := m) (e := k) hm_nonneg ⟨hk_nonneg, hk_le_digits⟩
           (h_beta := hβ_digits)
       have hmagF := FloatSpec.Core.Float_prop.Raux_mag_F2R_Zdigits

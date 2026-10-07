@@ -8618,6 +8618,1341 @@
           "noncomputable": false
         }
       }
+    },
+    {
+      "source_id": "src/Core/Digits.v:digits2_Pnat@1038",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Digits.digits2_Pnat"
+      ],
+      "scope": "Same structural recursion on positive, now on Zaux.Positive (O1's default carrier): xH to 0, xO and xI to S. Ported this slice from a halving recursion on Nat, whose well-founded definition blocked decide. Pinned per constructor by rfl in both assistants; the digits bridge compares it with Rocq up to 2^100. digits2_nat, the IEEE layer's natural twin, is tied to it by digits2_nat_positiveToNat.",
+      "evidence": [
+        "scripts/fixtures/DigitsDigitContracts.lean",
+        "scripts/fixtures/DigitsDigitContracts.v",
+        "scripts/test_digits_digit_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md",
+        "scripts/digits_bridge.py",
+        "scripts/test_digits_bridge.py"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Digits.digits2_Pnat": {
+          "type_hash": "705539621",
+          "value_hash": "2609888666",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Digits.v:digits2_Pnat_correct@1180",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Digits.digits2_Pnat_correct"
+      ],
+      "scope": "Same bracket 2^d <= Zpos n < 2^(S d), with Zpower_nat 2 as an Int power; now stated on Positive. Dropping the upper bound's successor is a rejected mutation on both sides.",
+      "evidence": [
+        "scripts/fixtures/DigitsDigitContracts.lean",
+        "scripts/fixtures/DigitsDigitContracts.v",
+        "scripts/test_digits_digit_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Digits.digits2_Pnat_correct": {
+          "type_hash": "4194556510",
+          "value_hash": "4037833152",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Digits.v:Zdigit@1578",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Digits.Zdigit"
+      ],
+      "scope": "Same body Z.rem (Z.quot n (Zpower beta k)) beta, with Int.tmod/Int.tdiv and the port's Zpower; ported this slice from a guarded beta ^ k.natAbs (old form kept as Zdigit_eq_ite). rfl client in both assistants; bridge-compared on signed values and negative indices.",
+      "evidence": [
+        "scripts/fixtures/DigitsDigitContracts.lean",
+        "scripts/fixtures/DigitsDigitContracts.v",
+        "scripts/test_digits_digit_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md",
+        "scripts/digits_bridge.py",
+        "scripts/test_digits_bridge.py"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Digits.Zdigit": {
+          "type_hash": "4231746848",
+          "value_hash": "840715163",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Digits.v:Zdigit_lt@1640",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Digits.Zdigit_lt"
+      ],
+      "scope": "Same statement, with no radix premise in either assistant.",
+      "evidence": [
+        "scripts/fixtures/DigitsDigitContracts.lean",
+        "scripts/fixtures/DigitsDigitContracts.v",
+        "scripts/test_digits_digit_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Digits.Zdigit_lt": {
+          "type_hash": "1206344555",
+          "value_hash": "4273848441",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Digits.v:Zdigit_0@1764",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Digits.Zdigit_0"
+      ],
+      "scope": "Same statement, with no radix premise in either assistant.",
+      "evidence": [
+        "scripts/fixtures/DigitsDigitContracts.lean",
+        "scripts/fixtures/DigitsDigitContracts.v",
+        "scripts/test_digits_digit_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Digits.Zdigit_0": {
+          "type_hash": "1676157244",
+          "value_hash": "1910862321",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Digits.v:Zdigit_opp@1885",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Digits.Zdigit_opp"
+      ],
+      "scope": "Same statement, with no radix premise in either assistant. Dropping the negation is a rejected mutation.",
+      "evidence": [
+        "scripts/fixtures/DigitsDigitContracts.lean",
+        "scripts/fixtures/DigitsDigitContracts.v",
+        "scripts/test_digits_digit_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Digits.Zdigit_opp": {
+          "type_hash": "3551223968",
+          "value_hash": "1693006756",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Digits.v:Zdigit_ge_Zpower_pos@2037",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Digits.Zdigit_ge_Zpower_pos"
+      ],
+      "scope": "Same statement. The radix invariant 1 < beta is the last premise (E5); the old section variable no longer duplicates it.",
+      "evidence": [
+        "scripts/fixtures/DigitsDigitContracts.lean",
+        "scripts/fixtures/DigitsDigitContracts.v",
+        "scripts/test_digits_digit_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Digits.Zdigit_ge_Zpower_pos": {
+          "type_hash": "292564072",
+          "value_hash": "4170647258",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Digits.v:Zdigit_ge_Zpower@2662",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Digits.Zdigit_ge_Zpower"
+      ],
+      "scope": "Same statement with |n|. The radix invariant 1 < beta is the last premise (E5); the old section variable no longer duplicates it.",
+      "evidence": [
+        "scripts/fixtures/DigitsDigitContracts.lean",
+        "scripts/fixtures/DigitsDigitContracts.v",
+        "scripts/test_digits_digit_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Digits.Zdigit_ge_Zpower": {
+          "type_hash": "3333736482",
+          "value_hash": "4149075736",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Digits.v:Zdigit_not_0_pos@3000",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Digits.Zdigit_not_0_pos"
+      ],
+      "scope": "Same statement. The radix invariant 1 < beta is the last premise (E5); the old section variable no longer duplicates it.",
+      "evidence": [
+        "scripts/fixtures/DigitsDigitContracts.lean",
+        "scripts/fixtures/DigitsDigitContracts.v",
+        "scripts/test_digits_digit_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Digits.Zdigit_not_0_pos": {
+          "type_hash": "893223545",
+          "value_hash": "1513661528",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Digits.v:Zdigit_not_0@3630",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Digits.Zdigit_not_0"
+      ],
+      "scope": "Same statement with |n|. The radix invariant 1 < beta is the last premise (E5); the old section variable no longer duplicates it.",
+      "evidence": [
+        "scripts/fixtures/DigitsDigitContracts.lean",
+        "scripts/fixtures/DigitsDigitContracts.v",
+        "scripts/test_digits_digit_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Digits.Zdigit_not_0": {
+          "type_hash": "429451221",
+          "value_hash": "4198154235",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Digits.v:Zdigit_mul_pow@4016",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Digits.Zdigit_mul_pow"
+      ],
+      "scope": "Same statement. Restated this slice with the port's Zpower in place of beta ^ k.natAbs. The radix invariant 1 < beta is the last premise (E5); the old section variable no longer duplicates it. A sign-flipped index is a rejected mutation.",
+      "evidence": [
+        "scripts/fixtures/DigitsDigitContracts.lean",
+        "scripts/fixtures/DigitsDigitContracts.v",
+        "scripts/test_digits_digit_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Digits.Zdigit_mul_pow": {
+          "type_hash": "3002819956",
+          "value_hash": "977773027",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Digits.v:Zdigit_div_pow@5061",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Digits.Zdigit_div_pow"
+      ],
+      "scope": "Same statement with Int.tdiv. Restated this slice with the port's Zpower in place of beta ^ k.natAbs. The radix invariant 1 < beta is the last premise (E5); the old section variable no longer duplicates it.",
+      "evidence": [
+        "scripts/fixtures/DigitsDigitContracts.lean",
+        "scripts/fixtures/DigitsDigitContracts.v",
+        "scripts/test_digits_digit_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Digits.Zdigit_div_pow": {
+          "type_hash": "3220935712",
+          "value_hash": "1173282200",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Digits.v:Zdigit_mod_pow@5308",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Digits.Zdigit_mod_pow"
+      ],
+      "scope": "Same statement with Int.tmod. Restated this slice with the port's Zpower in place of beta ^ k.natAbs. That includes the negative exponents Rocq allows (Zpower is 0 and Z.rem n 0 = n), now proved directly. The radix invariant 1 < beta is the last premise (E5); the old section variable no longer duplicates it. Weakening k < k' is a rejected mutation.",
+      "evidence": [
+        "scripts/fixtures/DigitsDigitContracts.lean",
+        "scripts/fixtures/DigitsDigitContracts.v",
+        "scripts/test_digits_digit_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Digits.Zdigit_mod_pow": {
+          "type_hash": "3948204982",
+          "value_hash": "1003079047",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Digits.v:Zdigit_mod_pow_out@5810",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Digits.Zdigit_mod_pow_out"
+      ],
+      "scope": "Same statement. Restated this slice with the port's Zpower in place of beta ^ k.natAbs. The radix invariant 1 < beta is the last premise (E5); the old section variable no longer duplicates it. Both assistants show 0 <= k' is needed (at k' = -1 the remainder is the dividend).",
+      "evidence": [
+        "scripts/fixtures/DigitsDigitContracts.lean",
+        "scripts/fixtures/DigitsDigitContracts.v",
+        "scripts/test_digits_digit_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Digits.Zdigit_mod_pow_out": {
+          "type_hash": "89707469",
+          "value_hash": "2705174632",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Digits.v:Zsum_digit@6189",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Digits.Zsum_digit"
+      ],
+      "scope": "Same recursion f k * Zpower beta k; ported this slice from beta ^ k (Zsum_digit_succ keeps that form). rfl clients for both equations in both assistants.",
+      "evidence": [
+        "scripts/fixtures/DigitsDigitContracts.lean",
+        "scripts/fixtures/DigitsDigitContracts.v",
+        "scripts/test_digits_digit_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md",
+        "scripts/digits_bridge.py",
+        "scripts/test_digits_bridge.py"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Digits.Zsum_digit": {
+          "type_hash": "1482798761",
+          "value_hash": "1346128904",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Digits.v:Zsum_digit_digit@6324",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Digits.Zsum_digit_digit"
+      ],
+      "scope": "Same statement with Int.tmod and Zpower. The radix invariant 1 < beta is the last premise (E5); the old section variable no longer duplicates it. A quotient for the remainder is a rejected mutation.",
+      "evidence": [
+        "scripts/fixtures/DigitsDigitContracts.lean",
+        "scripts/fixtures/DigitsDigitContracts.v",
+        "scripts/test_digits_digit_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Digits.Zsum_digit_digit": {
+          "type_hash": "1593457250",
+          "value_hash": "3617858059",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Digits.v:Zdigit_ext@6855",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Digits.Zdigit_ext"
+      ],
+      "scope": "Same statement. The radix invariant 1 < beta is the last premise (E5); the old section variable no longer duplicates it.",
+      "evidence": [
+        "scripts/fixtures/DigitsDigitContracts.lean",
+        "scripts/fixtures/DigitsDigitContracts.v",
+        "scripts/test_digits_digit_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Digits.Zdigit_ext": {
+          "type_hash": "2443113695",
+          "value_hash": "3594958078",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Digits.v:ZOmod_plus_pow_digit@7711",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Digits.ZOmod_plus_pow_digit"
+      ],
+      "scope": "Same statement with Int.tmod and Zpower. The radix invariant 1 < beta is the last premise (E5); the old section variable no longer duplicates it.",
+      "evidence": [
+        "scripts/fixtures/DigitsDigitContracts.lean",
+        "scripts/fixtures/DigitsDigitContracts.v",
+        "scripts/test_digits_digit_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Digits.ZOmod_plus_pow_digit": {
+          "type_hash": "1038211960",
+          "value_hash": "3851563222",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Digits.v:ZOdiv_plus_pow_digit@9698",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Digits.ZOdiv_plus_pow_digit"
+      ],
+      "scope": "Same statement with Int.tdiv and Zpower. The radix invariant 1 < beta is the last premise (E5); the old section variable no longer duplicates it.",
+      "evidence": [
+        "scripts/fixtures/DigitsDigitContracts.lean",
+        "scripts/fixtures/DigitsDigitContracts.v",
+        "scripts/test_digits_digit_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Digits.ZOdiv_plus_pow_digit": {
+          "type_hash": "4177591608",
+          "value_hash": "3354201862",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Digits.v:Zdigit_plus@10352",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Digits.Zdigit_plus"
+      ],
+      "scope": "Same statement, with the radix premise after the quantified index. The radix invariant 1 < beta is the last premise (E5); the old section variable no longer duplicates it.",
+      "evidence": [
+        "scripts/fixtures/DigitsDigitContracts.lean",
+        "scripts/fixtures/DigitsDigitContracts.v",
+        "scripts/test_digits_digit_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Digits.Zdigit_plus": {
+          "type_hash": "659832734",
+          "value_hash": "2928017844",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Digits.v:Zscale@11245",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Digits.Zscale"
+      ],
+      "scope": "Same body: Zle_bool 0 k selects n * Zpower beta k or Z.quot n (Zpower beta (-k)). Ported this slice from guarded natural powers (old form kept as Zscale_eq_ite). rfl client in both assistants; bridge-compared.",
+      "evidence": [
+        "scripts/fixtures/DigitsDigitContracts.lean",
+        "scripts/fixtures/DigitsDigitContracts.v",
+        "scripts/test_digits_digit_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md",
+        "scripts/digits_bridge.py",
+        "scripts/test_digits_bridge.py"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Digits.Zscale": {
+          "type_hash": "4231746848",
+          "value_hash": "2945075273",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Digits.v:Zdigit_scale@11347",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Digits.Zdigit_scale"
+      ],
+      "scope": "Same statement. The radix invariant 1 < beta is the last premise (E5); the old section variable no longer duplicates it. A sign-flipped index is a rejected mutation.",
+      "evidence": [
+        "scripts/fixtures/DigitsDigitContracts.lean",
+        "scripts/fixtures/DigitsDigitContracts.v",
+        "scripts/test_digits_digit_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Digits.Zdigit_scale": {
+          "type_hash": "2391149029",
+          "value_hash": "1099439597",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Digits.v:Zscale_0@11596",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Digits.Zscale_0"
+      ],
+      "scope": "Same statement, with no radix premise in either assistant.",
+      "evidence": [
+        "scripts/fixtures/DigitsDigitContracts.lean",
+        "scripts/fixtures/DigitsDigitContracts.v",
+        "scripts/test_digits_digit_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Digits.Zscale_0": {
+          "type_hash": "568816179",
+          "value_hash": "3733964292",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Digits.v:Zsame_sign_scale@11733",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Digits.Zsame_sign_scale"
+      ],
+      "scope": "Same statement. The radix invariant 1 < beta is the last premise (E5); the old section variable no longer duplicates it.",
+      "evidence": [
+        "scripts/fixtures/DigitsDigitContracts.lean",
+        "scripts/fixtures/DigitsDigitContracts.v",
+        "scripts/test_digits_digit_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Digits.Zsame_sign_scale": {
+          "type_hash": "2199778796",
+          "value_hash": "687679670",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Digits.v:Zscale_mul_pow@12022",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Digits.Zscale_mul_pow"
+      ],
+      "scope": "Same statement Zscale (n * Zpower beta k) k' = Zscale n (k + k'). Restated this slice: the old form had the roles swapped and a natural power, and survives as a private helper. The radix invariant 1 < beta is the last premise (E5); the old section variable no longer duplicates it.",
+      "evidence": [
+        "scripts/fixtures/DigitsDigitContracts.lean",
+        "scripts/fixtures/DigitsDigitContracts.v",
+        "scripts/test_digits_digit_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Digits.Zscale_mul_pow": {
+          "type_hash": "3103806303",
+          "value_hash": "2309262563",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Digits.v:Zscale_scale@12723",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Digits.Zscale_scale"
+      ],
+      "scope": "Same statement. The radix invariant 1 < beta is the last premise (E5); the old section variable no longer duplicates it.",
+      "evidence": [
+        "scripts/fixtures/DigitsDigitContracts.lean",
+        "scripts/fixtures/DigitsDigitContracts.v",
+        "scripts/test_digits_digit_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Digits.Zscale_scale": {
+          "type_hash": "3056910693",
+          "value_hash": "2456165105",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Digits.v:Zslice@12969",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Digits.Zslice"
+      ],
+      "scope": "Same body: Zle_bool 0 k2 selects Z.rem (Zscale n (-k1)) (Zpower beta k2), else 0. Ported this slice (old form kept as Zslice_eq_ite). rfl client in both assistants; bridge-compared.",
+      "evidence": [
+        "scripts/fixtures/DigitsDigitContracts.lean",
+        "scripts/fixtures/DigitsDigitContracts.v",
+        "scripts/test_digits_digit_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md",
+        "scripts/digits_bridge.py",
+        "scripts/test_digits_bridge.py"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Digits.Zslice": {
+          "type_hash": "3165767344",
+          "value_hash": "2284278949",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Digits.v:Zdigit_slice@13069",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Digits.Zdigit_slice"
+      ],
+      "scope": "Same statement 0 <= k < k2 -> Zdigit (Zslice n k1 k2) k = Zdigit n (k1 + k). Restated this slice from an if-then-else form, now the private helper Zdigit_slice_ite. Both assistants show index k2 is outside the slice; dropping k1 from the index is a rejected mutation. The radix invariant 1 < beta is the last premise (E5); the old section variable no longer duplicates it.",
+      "evidence": [
+        "scripts/fixtures/DigitsDigitContracts.lean",
+        "scripts/fixtures/DigitsDigitContracts.v",
+        "scripts/test_digits_digit_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Digits.Zdigit_slice": {
+          "type_hash": "1157364345",
+          "value_hash": "1917942720",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Digits.v:Zdigit_slice_out@13384",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Digits.Zdigit_slice_out"
+      ],
+      "scope": "Same statement. The radix invariant 1 < beta is the last premise (E5); the old section variable no longer duplicates it.",
+      "evidence": [
+        "scripts/fixtures/DigitsDigitContracts.lean",
+        "scripts/fixtures/DigitsDigitContracts.v",
+        "scripts/test_digits_digit_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Digits.Zdigit_slice_out": {
+          "type_hash": "2865876021",
+          "value_hash": "4151259347",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Digits.v:Zslice_0@13615",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Digits.Zslice_0"
+      ],
+      "scope": "Same statement, with no radix premise in either assistant.",
+      "evidence": [
+        "scripts/fixtures/DigitsDigitContracts.lean",
+        "scripts/fixtures/DigitsDigitContracts.v",
+        "scripts/test_digits_digit_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Digits.Zslice_0": {
+          "type_hash": "2914463349",
+          "value_hash": "3586273860",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Digits.v:Zsame_sign_slice@13779",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Digits.Zsame_sign_slice"
+      ],
+      "scope": "Same statement. The radix invariant 1 < beta is the last premise (E5); the old section variable no longer duplicates it.",
+      "evidence": [
+        "scripts/fixtures/DigitsDigitContracts.lean",
+        "scripts/fixtures/DigitsDigitContracts.v",
+        "scripts/test_digits_digit_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Digits.Zsame_sign_slice": {
+          "type_hash": "3578821870",
+          "value_hash": "3921163496",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Digits.v:Zslice_slice@14083",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Digits.Zslice_slice"
+      ],
+      "scope": "Same statement with Z.min as min; the conjunction premise 0 <= k1' <= k2 replaces two separate premises (restated this slice). max for min is a rejected mutation. The radix invariant 1 < beta is the last premise (E5); the old section variable no longer duplicates it.",
+      "evidence": [
+        "scripts/fixtures/DigitsDigitContracts.lean",
+        "scripts/fixtures/DigitsDigitContracts.v",
+        "scripts/test_digits_digit_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Digits.Zslice_slice": {
+          "type_hash": "4155823136",
+          "value_hash": "1440434142",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Digits.v:Zslice_mul_pow@14798",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Digits.Zslice_mul_pow"
+      ],
+      "scope": "Same statement. Restated this slice with the port's Zpower in place of beta ^ k.natAbs. The radix invariant 1 < beta is the last premise (E5); the old section variable no longer duplicates it.",
+      "evidence": [
+        "scripts/fixtures/DigitsDigitContracts.lean",
+        "scripts/fixtures/DigitsDigitContracts.v",
+        "scripts/test_digits_digit_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Digits.Zslice_mul_pow": {
+          "type_hash": "3255317586",
+          "value_hash": "3874186281",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Digits.v:Zslice_div_pow@15111",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Digits.Zslice_div_pow"
+      ],
+      "scope": "Same statement with Int.tdiv. Restated this slice with the port's Zpower in place of beta ^ k.natAbs. The radix invariant 1 < beta is the last premise (E5); the old section variable no longer duplicates it.",
+      "evidence": [
+        "scripts/fixtures/DigitsDigitContracts.lean",
+        "scripts/fixtures/DigitsDigitContracts.v",
+        "scripts/test_digits_digit_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Digits.Zslice_div_pow": {
+          "type_hash": "382639176",
+          "value_hash": "743163193",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Digits.v:Zslice_scale@15740",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Digits.Zslice_scale"
+      ],
+      "scope": "Same statement. The radix invariant 1 < beta is the last premise (E5); the old section variable no longer duplicates it.",
+      "evidence": [
+        "scripts/fixtures/DigitsDigitContracts.lean",
+        "scripts/fixtures/DigitsDigitContracts.v",
+        "scripts/test_digits_digit_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Digits.Zslice_scale": {
+          "type_hash": "1620046237",
+          "value_hash": "1755507489",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Digits.v:Zslice_div_pow_scale@16000",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Digits.Zslice_div_pow_scale"
+      ],
+      "scope": "Same statement with Int.tdiv. Restated this slice with the port's Zpower in place of beta ^ k.natAbs. The radix invariant 1 < beta is the last premise (E5); the old section variable no longer duplicates it.",
+      "evidence": [
+        "scripts/fixtures/DigitsDigitContracts.lean",
+        "scripts/fixtures/DigitsDigitContracts.v",
+        "scripts/test_digits_digit_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Digits.Zslice_div_pow_scale": {
+          "type_hash": "3501900373",
+          "value_hash": "2734707300",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Digits.v:Zplus_slice@16656",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Digits.Zplus_slice"
+      ],
+      "scope": "Same statement. The radix invariant 1 < beta is the last premise (E5); the old section variable no longer duplicates it.",
+      "evidence": [
+        "scripts/fixtures/DigitsDigitContracts.lean",
+        "scripts/fixtures/DigitsDigitContracts.v",
+        "scripts/test_digits_digit_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Digits.Zplus_slice": {
+          "type_hash": "343908401",
+          "value_hash": "1116151020",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Digits.v:Zdigits_aux@17850",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Digits.Zdigits_aux"
+      ],
+      "scope": "Same recursion: Zlt_bool p pow returns nb, otherwise recurse with nb + 1 and beta * pow. The section variable p is passed first. Ported this slice from a decided if; rfl clients for both equations in both assistants.",
+      "evidence": [
+        "scripts/fixtures/DigitsCountContracts.lean",
+        "scripts/fixtures/DigitsCountContracts.v",
+        "scripts/test_digits_count_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Digits.Zdigits_aux": {
+          "type_hash": "3895625150",
+          "value_hash": "2995104327",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Digits.v:Zdigits@18089",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Digits.Zdigits"
+      ],
+      "scope": "Same match on Z0/Zpos/Zneg, read through zview, with the source fuel digits2_Pnat p. Ported this slice from |n| + 1 fuel; Zdigits_eq_fuel proves the old body equal under 1 < beta (at radix 1 the fuels differ). rfl client in both assistants; evaluated by decide up to 2^64; bridge-compared on signed values and exact powers.",
+      "evidence": [
+        "scripts/fixtures/DigitsCountContracts.lean",
+        "scripts/fixtures/DigitsCountContracts.v",
+        "scripts/test_digits_count_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md",
+        "scripts/digits_bridge.py",
+        "scripts/test_digits_bridge.py"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Digits.Zdigits": {
+          "type_hash": "2368803762",
+          "value_hash": "2673541729",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Digits.v:Zdigits_correct@18257",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Digits.Zdigits_correct"
+      ],
+      "scope": "Same statement with Zpower and |n|. The radix invariant 1 < beta is the last premise (E5); the old section variable no longer duplicates it. Lean alone shows it fails at radix 1, which Rocq's radix record cannot express. Shrinking the upper exponent is a rejected mutation.",
+      "evidence": [
+        "scripts/fixtures/DigitsCountContracts.lean",
+        "scripts/fixtures/DigitsCountContracts.v",
+        "scripts/test_digits_count_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Digits.Zdigits_correct": {
+          "type_hash": "3804566401",
+          "value_hash": "3008991340",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Digits.v:Zdigits_unique@19792",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Digits.Zdigits_unique"
+      ],
+      "scope": "Same statement. The radix invariant 1 < beta is the last premise (E5); the old section variable no longer duplicates it.",
+      "evidence": [
+        "scripts/fixtures/DigitsCountContracts.lean",
+        "scripts/fixtures/DigitsCountContracts.v",
+        "scripts/test_digits_count_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Digits.Zdigits_unique": {
+          "type_hash": "105266925",
+          "value_hash": "1712878816",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Digits.v:Zdigits_abs@20128",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Digits.Zdigits_abs"
+      ],
+      "scope": "Same statement on |n|, restated this slice from the natAbs cast. Same statement, with no radix premise in either assistant.",
+      "evidence": [
+        "scripts/fixtures/DigitsCountContracts.lean",
+        "scripts/fixtures/DigitsCountContracts.v",
+        "scripts/test_digits_count_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Digits.Zdigits_abs": {
+          "type_hash": "131081988",
+          "value_hash": "2119265288",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Digits.v:Zdigits_opp@20225",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Digits.Zdigits_opp"
+      ],
+      "scope": "Same statement, with no radix premise in either assistant.",
+      "evidence": [
+        "scripts/fixtures/DigitsCountContracts.lean",
+        "scripts/fixtures/DigitsCountContracts.v",
+        "scripts/test_digits_count_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Digits.Zdigits_opp": {
+          "type_hash": "2620441231",
+          "value_hash": "2868083002",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Digits.v:Zdigits_cond_Zopp@20322",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Digits.Zdigits_cond_Zopp"
+      ],
+      "scope": "Same statement on Zaux.cond_Zopp, restated this slice from an inline if. Same statement, with no radix premise in either assistant.",
+      "evidence": [
+        "scripts/fixtures/DigitsCountContracts.lean",
+        "scripts/fixtures/DigitsCountContracts.v",
+        "scripts/test_digits_count_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Digits.Zdigits_cond_Zopp": {
+          "type_hash": "1103162498",
+          "value_hash": "3977058280",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Digits.v:Zdigits_gt_0@20437",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Digits.Zdigits_gt_0"
+      ],
+      "scope": "Same statement; this slice removed an unused radix premise. Dropping n <> 0 is a rejected mutation.",
+      "evidence": [
+        "scripts/fixtures/DigitsCountContracts.lean",
+        "scripts/fixtures/DigitsCountContracts.v",
+        "scripts/test_digits_count_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Digits.Zdigits_gt_0": {
+          "type_hash": "2229258315",
+          "value_hash": "623686647",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Digits.v:Zdigits_ge_0@20850",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Digits.Zdigits_ge_0"
+      ],
+      "scope": "Same statement, with no radix premise in either assistant.",
+      "evidence": [
+        "scripts/fixtures/DigitsCountContracts.lean",
+        "scripts/fixtures/DigitsCountContracts.v",
+        "scripts/test_digits_count_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Digits.Zdigits_ge_0": {
+          "type_hash": "2518565973",
+          "value_hash": "3325210655",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Digits.v:Zdigit_out@21020",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Digits.Zdigit_out"
+      ],
+      "scope": "Same statement. The radix invariant 1 < beta is the last premise (E5); the old section variable no longer duplicates it.",
+      "evidence": [
+        "scripts/fixtures/DigitsCountContracts.lean",
+        "scripts/fixtures/DigitsCountContracts.v",
+        "scripts/test_digits_count_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Digits.Zdigit_out": {
+          "type_hash": "2899886873",
+          "value_hash": "137944138",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Digits.v:Zdigit_digits@21186",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Digits.Zdigit_digits"
+      ],
+      "scope": "Same statement. The radix invariant 1 < beta is the last premise (E5); the old section variable no longer duplicates it.",
+      "evidence": [
+        "scripts/fixtures/DigitsCountContracts.lean",
+        "scripts/fixtures/DigitsCountContracts.v",
+        "scripts/test_digits_count_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Digits.Zdigit_digits": {
+          "type_hash": "3613131424",
+          "value_hash": "2208816677",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Digits.v:Zdigits_slice@21420",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Digits.Zdigits_slice"
+      ],
+      "scope": "Same statement. The radix invariant 1 < beta is the last premise (E5); the old section variable no longer duplicates it.",
+      "evidence": [
+        "scripts/fixtures/DigitsCountContracts.lean",
+        "scripts/fixtures/DigitsCountContracts.v",
+        "scripts/test_digits_count_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Digits.Zdigits_slice": {
+          "type_hash": "1699967943",
+          "value_hash": "581410802",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Digits.v:Zdigits_mult_Zpower@21858",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Digits.Zdigits_mult_Zpower"
+      ],
+      "scope": "Same statement. Restated this slice with the port's Zpower in place of beta ^ k.natAbs. It also no longer rebinds beta. The radix invariant 1 < beta is the last premise (E5); the old section variable no longer duplicates it.",
+      "evidence": [
+        "scripts/fixtures/DigitsCountContracts.lean",
+        "scripts/fixtures/DigitsCountContracts.v",
+        "scripts/test_digits_count_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Digits.Zdigits_mult_Zpower": {
+          "type_hash": "2367062431",
+          "value_hash": "2208002498",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Digits.v:Zdigits_Zpower@22484",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Digits.Zdigits_Zpower"
+      ],
+      "scope": "Same statement. Restated this slice with the port's Zpower in place of beta ^ k.natAbs. The radix invariant 1 < beta is the last premise (E5); the old section variable no longer duplicates it.",
+      "evidence": [
+        "scripts/fixtures/DigitsCountContracts.lean",
+        "scripts/fixtures/DigitsCountContracts.v",
+        "scripts/test_digits_count_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Digits.Zdigits_Zpower": {
+          "type_hash": "3089004349",
+          "value_hash": "4143516064",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Digits.v:Zdigits_le@22700",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Digits.Zdigits_le"
+      ],
+      "scope": "Same statement. The radix invariant 1 < beta is the last premise (E5); the old section variable no longer duplicates it. Both assistants show 0 <= x is needed (-1000 has more digits than 1).",
+      "evidence": [
+        "scripts/fixtures/DigitsCountContracts.lean",
+        "scripts/fixtures/DigitsCountContracts.v",
+        "scripts/test_digits_count_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Digits.Zdigits_le": {
+          "type_hash": "2610258189",
+          "value_hash": "3972815772",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Digits.v:lt_Zdigits@22931",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Digits.lt_Zdigits"
+      ],
+      "scope": "Same statement. The radix invariant 1 < beta is the last premise (E5); the old section variable no longer duplicates it.",
+      "evidence": [
+        "scripts/fixtures/DigitsCountContracts.lean",
+        "scripts/fixtures/DigitsCountContracts.v",
+        "scripts/test_digits_count_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Digits.lt_Zdigits": {
+          "type_hash": "2622017707",
+          "value_hash": "1201555957",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Digits.v:Zpower_le_Zdigits@23123",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Digits.Zpower_le_Zdigits"
+      ],
+      "scope": "Same statement. The radix invariant 1 < beta is the last premise (E5); the old section variable no longer duplicates it.",
+      "evidence": [
+        "scripts/fixtures/DigitsCountContracts.lean",
+        "scripts/fixtures/DigitsCountContracts.v",
+        "scripts/test_digits_count_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Digits.Zpower_le_Zdigits": {
+          "type_hash": "669386345",
+          "value_hash": "1846532057",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Digits.v:Zdigits_le_Zpower@23358",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Digits.Zdigits_le_Zpower"
+      ],
+      "scope": "Same statement |x| < Zpower beta e -> Zdigits x <= e, binder order e x. Restated this slice from a 0 <= e plus natAbs-power premise in order x e (private helper). The radix invariant 1 < beta is the last premise (E5); the old section variable no longer duplicates it.",
+      "evidence": [
+        "scripts/fixtures/DigitsCountContracts.lean",
+        "scripts/fixtures/DigitsCountContracts.v",
+        "scripts/test_digits_count_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Digits.Zdigits_le_Zpower": {
+          "type_hash": "1955954110",
+          "value_hash": "2591611845",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Digits.v:Zpower_gt_Zdigits@23521",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Digits.Zpower_gt_Zdigits"
+      ],
+      "scope": "Same statement |x| < Zpower beta e. Restated this slice from a natAbs/natural-power conclusion (private helper). The radix invariant 1 < beta is the last premise (E5); the old section variable no longer duplicates it.",
+      "evidence": [
+        "scripts/fixtures/DigitsCountContracts.lean",
+        "scripts/fixtures/DigitsCountContracts.v",
+        "scripts/test_digits_count_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Digits.Zpower_gt_Zdigits": {
+          "type_hash": "2284768201",
+          "value_hash": "3332325361",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Digits.v:Zdigits_gt_Zpower@23745",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Digits.Zdigits_gt_Zpower"
+      ],
+      "scope": "Same statement. The radix invariant 1 < beta is the last premise (E5); the old section variable no longer duplicates it.",
+      "evidence": [
+        "scripts/fixtures/DigitsCountContracts.lean",
+        "scripts/fixtures/DigitsCountContracts.v",
+        "scripts/test_digits_count_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Digits.Zdigits_gt_Zpower": {
+          "type_hash": "3914879916",
+          "value_hash": "2193377297",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Digits.v:Zdigits_mult_strong@24074",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Digits.Zdigits_mult_strong"
+      ],
+      "scope": "Same statement. The radix invariant 1 < beta is the last premise (E5); the old section variable no longer duplicates it.",
+      "evidence": [
+        "scripts/fixtures/DigitsCountContracts.lean",
+        "scripts/fixtures/DigitsCountContracts.v",
+        "scripts/test_digits_count_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Digits.Zdigits_mult_strong": {
+          "type_hash": "3734486543",
+          "value_hash": "857960114",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Digits.v:Zdigits_mult@24740",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Digits.Zdigits_mult"
+      ],
+      "scope": "Same statement. The radix invariant 1 < beta is the last premise (E5); the old section variable no longer duplicates it.",
+      "evidence": [
+        "scripts/fixtures/DigitsCountContracts.lean",
+        "scripts/fixtures/DigitsCountContracts.v",
+        "scripts/test_digits_count_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Digits.Zdigits_mult": {
+          "type_hash": "1188396232",
+          "value_hash": "2942819483",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Digits.v:Zdigits_mult_ge@25144",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Digits.Zdigits_mult_ge"
+      ],
+      "scope": "Same statement. The radix invariant 1 < beta is the last premise (E5); the old section variable no longer duplicates it. Dropping the -1 is a rejected mutation.",
+      "evidence": [
+        "scripts/fixtures/DigitsCountContracts.lean",
+        "scripts/fixtures/DigitsCountContracts.v",
+        "scripts/test_digits_count_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Digits.Zdigits_mult_ge": {
+          "type_hash": "1598961845",
+          "value_hash": "1263766878",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Digits.v:Zdigits_div_Zpower@25639",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Digits.Zdigits_div_Zpower"
+      ],
+      "scope": "Same statement; Rocq's floor / and Lean's Euclidean / agree on the positive divisor. Restated this slice with the port's Zpower in place of beta ^ k.natAbs. The radix invariant 1 < beta is the last premise (E5); the old section variable no longer duplicates it.",
+      "evidence": [
+        "scripts/fixtures/DigitsCountContracts.lean",
+        "scripts/fixtures/DigitsCountContracts.v",
+        "scripts/test_digits_count_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Digits.Zdigits_div_Zpower": {
+          "type_hash": "1959790359",
+          "value_hash": "3672865138",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Digits.v:Zdigits_succ_le@26745",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Digits.Zdigits_succ_le"
+      ],
+      "scope": "Same statement. The radix invariant 1 < beta is the last premise (E5); the old section variable no longer duplicates it.",
+      "evidence": [
+        "scripts/fixtures/DigitsCountContracts.lean",
+        "scripts/fixtures/DigitsCountContracts.v",
+        "scripts/test_digits_count_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Digits.Zdigits_succ_le": {
+          "type_hash": "794943721",
+          "value_hash": "3199642834",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Digits.v:Z_of_nat_S_digits2_Pnat@27212",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Digits.Z_of_nat_S_digits2_Pnat"
+      ],
+      "scope": "Same statement on positive, restated this slice from a natural carrier with a positivity premise. That carrier form, digits2_nat_succ_eq_Zdigits, serves the IEEE layer. Dropping the successor is a rejected mutation.",
+      "evidence": [
+        "scripts/fixtures/DigitsCountContracts.lean",
+        "scripts/fixtures/DigitsCountContracts.v",
+        "scripts/test_digits_count_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Digits.Z_of_nat_S_digits2_Pnat": {
+          "type_hash": "3916674477",
+          "value_hash": "1423234881",
+          "noncomputable": false
+        }
+      }
     }
   ]
 }

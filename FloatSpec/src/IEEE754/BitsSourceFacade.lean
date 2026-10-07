@@ -246,7 +246,7 @@ private theorem positive_lt_two_pow_prec {mw : Int} (Hmw : 0 < mw)
   let n := FloatSpec.Core.Zaux.positiveToNat p
   have hn : 0 < n := FloatSpec.Core.Zaux.positiveToNat_pos p
   have hbits := FloatSpec.Core.Digits.digits2_nat_correct n hn
-  have hzdigits := FloatSpec.Core.Digits.Z_of_nat_S_digits2_Pnat n hn
+  have hzdigits := FloatSpec.Core.Digits.digits2_nat_succ_eq_Zdigits n hn
   have hdNat : FloatSpec.Core.Digits.digits2_nat n + 1 ≤ (mw + 1).toNat := by
     have hmw1 : 0 ≤ mw + 1 := by omega
     have hd' : ((FloatSpec.Core.Digits.digits2_nat n + 1 : Nat) : Int) ≤
@@ -395,15 +395,10 @@ private theorem split_fields_range (mw ew : Int) (Hmw : 0 < mw) (Hew : 0 < ew)
 private theorem digits2_pos_le_of_lt_pow_two {n k : Nat}
     (hnpos : 0 < n) (hn : n < 2 ^ k) :
     FloatSpec.Core.Digits.digits2_nat n + 1 ≤ k := by
-  have htrip := FloatSpec.Core.Digits.Zdigits_le_Zpower
-    (beta := 2) (x := (n : Int)) (e := (k : Int)) (by decide)
-  have hzd : FloatSpec.Core.Digits.Zdigits 2 (n : Int) ≤ (k : Int) := by
-    apply htrip
-    constructor
-    · exact Int.natCast_nonneg k
-    · simp
-      exact_mod_cast hn
-  have heq := FloatSpec.Core.Digits.Z_of_nat_S_digits2_Pnat n hnpos
+  have hzd : FloatSpec.Core.Digits.Zdigits 2 (n : Int) ≤ (k : Int) :=
+    FloatSpec.Core.Digits.Zdigits_le_Zpower (beta := 2) (e := (k : Int)) (x := (n : Int))
+      (by simp [FloatSpec.Core.Zaux.Zpower]; exact_mod_cast hn) (by decide)
+  have heq := FloatSpec.Core.Digits.digits2_nat_succ_eq_Zdigits n hnpos
   have hle : ((FloatSpec.Core.Digits.digits2_nat n + 1 : Nat) : Int) ≤
       (k : Int) := by
     rw [heq]
@@ -427,14 +422,9 @@ private theorem spec_bounded_subnormal {prec emax : Int} {k n : Nat}
   simp only [Bool.and_eq_true, decide_eq_true_eq, beq_iff_eq]
   constructor
   · unfold FLT_exp FloatSpec.Core.FLT.FLT_exp
-    have hd : FloatSpec.Core.Digits.Zdigits 2 (n : Int) ≤ (k : Int) := by
-      have htrip := FloatSpec.Core.Digits.Zdigits_le_Zpower
-        (beta:=2) (x:=(n:Int)) (e:=(k:Int)) (by decide)
-      apply htrip
-      constructor
-      · exact Int.natCast_nonneg k
-      · simp
-        exact_mod_cast hnlt
+    have hd : FloatSpec.Core.Digits.Zdigits 2 (n : Int) ≤ (k : Int) :=
+      FloatSpec.Core.Digits.Zdigits_le_Zpower (beta := 2) (e := (k : Int)) (x := (n : Int))
+        (by simp [FloatSpec.Core.Zaux.Zpower]; exact_mod_cast hnlt) (by decide)
     apply le_antisymm
     · exact le_max_right _ _
     · apply max_le
@@ -453,7 +443,7 @@ private theorem spec_bounded_normal {prec emax : Int} {k n : Nat} {e : Int}
   · unfold FLT_exp FloatSpec.Core.FLT.FLT_exp
     have hzd : FloatSpec.Core.Digits.Zdigits 2 (n : Int) = prec := by
       have htrip := FloatSpec.Core.Digits.Zdigits_unique_from_nonzero_payload
-        (beta:=2) (n:=(n:Int)) (e:=prec) (by decide)
+        (beta:=2) (n:=(n:Int)) (e:=prec) (hβ := by decide)
       apply htrip
       constructor
       · have : 0 < (2 : Nat) ^ k := pow_pos (by norm_num) k
@@ -628,7 +618,7 @@ private theorem finite_subnormal_exp_eq {mw ew : Int} (Hmw : 0 < mw)
     change (n : Int) < ((2 ^ mw.toNat : Nat) : Int) at hsmall
     exact_mod_cast hsmall
   have hdNat := digits2_pos_le_of_lt_pow_two hn hnlt
-  have hzd := FloatSpec.Core.Digits.Z_of_nat_S_digits2_Pnat n hn
+  have hzd := FloatSpec.Core.Digits.digits2_nat_succ_eq_Zdigits n hn
   have hd : FloatSpec.Core.Digits.Zdigits 2 (n : Int) ≤ mw := by
     have hmwCast : (mw.toNat : Int) = mw := Int.toNat_of_nonneg hmw
     have hdInt : ((FloatSpec.Core.Digits.digits2_nat n + 1 : Nat) : Int) ≤ mw := by

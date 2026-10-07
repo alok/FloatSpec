@@ -194,7 +194,7 @@ lemma mag_eq_Zdigits (m : Int) (hm_pos : 0 < m) (hβ : 1 < beta) :
   have hβ_real_pos : (0 : ℝ) < (beta : ℝ) := Int.cast_pos.mpr hβ_pos
   -- Get d > 0 from Zdigits_gt_0
   have hd_pos : 0 < d := by
-    exact Zdigits_gt_0 beta m (ne_of_gt hm_pos) hβ
+    exact Zdigits_gt_0 beta m (ne_of_gt hm_pos)
   -- For d > 0, d.natAbs = d and (d-1).natAbs = d - 1
   have hd_nonneg : 0 ≤ d := le_of_lt hd_pos
   have hd_sub_nonneg : 0 ≤ d - 1 := by linarith

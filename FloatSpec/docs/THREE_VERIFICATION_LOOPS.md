@@ -202,6 +202,26 @@ check validates every observed pair against Python's floor division and exact
 integer reconstruction; it is not a fresh execution. No universal cross-prover
 equivalence is claimed from the finite grid.
 
+## Digits (October 7)
+
+```sh
+for f in DigitsDigitContracts DigitsCountContracts; do
+  lake env lean -DwarningAsError=true "scripts/fixtures/$f.lean"
+  coqc -q -R "$FLOCQ_AUDIT_DIR/src" Flocq -o "/tmp/$f.vo" "scripts/fixtures/$f.v"
+done
+uv run scripts/test_digits_digit_contracts.py -v
+uv run scripts/test_digits_count_contracts.py -v
+uv run scripts/digits_bridge.py --flocq-dir "$FLOCQ_AUDIT_DIR" --seed 865701 --samples 40
+uv run scripts/test_digits_bridge.py -v
+```
+
+Both fixtures pin the six `Digits.v` bodies with `rfl` in both assistants, and
+32 mutations are rejected. The bridge runs `Zdigit`, `Zscale`, `Zslice`,
+`Zsum_digit`, `Zdigits` and `digits2_Pnat` through Lean (elaborated and
+compiled) and Rocq. It checks every row against an independent
+truncating-division oracle: 2,908 cases, including signed inputs, negative
+indices and exact powers up to `16^64`.
+
 ## Defs (October 7)
 
 ```sh

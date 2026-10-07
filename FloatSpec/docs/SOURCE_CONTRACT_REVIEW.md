@@ -484,6 +484,63 @@ and `Float_prop` re-exported `mag`. Rocq has one name for each; Lean now does
 too, with `open` where a file used the short name. Forty qualified references
 were retargeted.
 
+### Fourteenth ordered slice: Digits
+
+`Digits.v` has 67 sites. This slice reviews 63 of them. The four it leaves
+open are the SpecFloat notations `digits2_pos` and `Zdigits2`, and the two
+lemmas stated in terms of them, `Zpos_digits2_pos` and `Zdigits2_Zdigits`.
+Lean still types `digits2_pos` on naturals, and owner decision O1 settles its
+carrier.
+
+The slice ports six bodies:
+- `Zdigit`, `Zscale`, `Zslice` and `Zsum_digit` compute with the port's own
+  `Zpower` and `Zle_bool`, where they previously used a guarded
+  `beta ^ k.natAbs`.
+- `Zdigits_aux` tests with `Zlt_bool`.
+- `Zdigits` matches Rocq's `Z0`/`Zpos`/`Zneg` through `zview` and runs on the
+  source fuel `digits2_Pnat p`, where it previously used `|n| + 1`.
+
+`digits2_Pnat` itself becomes the source's structural recursion on `Positive`,
+O1's default carrier. The IEEE layer still carries mantissas as naturals and
+keeps a natural twin, `digits2_nat`. `digits2_nat_positiveToNat` proves the two
+agree. The structural fuel also keeps `Zdigits` evaluable by `decide`; the
+earlier halving recursion on `Nat` was well-founded and did not reduce.
+
+Each old body survives as a lemma (`Zdigit_eq_ite` and its siblings). Under
+`1 < beta`, `Zdigits_eq_fuel` proves the old fuel gives the same count; at
+radix 1 the two counts differ.
+
+The slice also restates these statements in source form:
+- Eleven power laws are stated with `Zpower` instead of `beta ^ k.natAbs`.
+  This includes `Zdigit_mod_pow`, whose negative exponent the source allows
+  (`Z.rem n 0 = n`).
+- `Zscale_mul_pow` now adds the exponents in Rocq's order.
+- `Zdigit_slice` is the source's `0 <= k < k2` law. The earlier
+  if-then-else form remains as a private helper.
+- `Zslice_slice` takes one conjunction premise.
+- `Zdigits_abs` uses `|n|` and `Zdigits_cond_Zopp` uses `cond_Zopp`.
+- `Zdigits_le_Zpower` and `Zpower_gt_Zdigits` use `|x|` against `Zpower`, in
+  binder order `e x`.
+- `Z_of_nat_S_digits2_Pnat` is stated on `Positive`. The IEEE layer uses its
+  natural-carrier corollary, `digits2_nat_succ_eq_Zdigits`.
+
+The section variable `h_beta` was removed. It had made 38 lemmas take the radix
+invariant twice, once directly and once through an optional `hβ` defaulting to
+it. One premise `1 < beta` remains where a lemma needs it (E5).
+`Zdigits_gt_0` had an unused radix premise; that premise is gone.
+
+Evidence:
+- `DigitsDigitContracts.lean/.v` and `DigitsCountContracts.lean/.v` pin all six
+  bodies with `rfl` in both assistants, state the 59 laws, and evaluate signed
+  digits, slices and counts up to `2^64`.
+- The fixtures show that `Zdigit_mod_pow_out` needs `0 <= k'`, that
+  `Zdigit_slice` excludes index `k2`, and that `Zdigits_le` needs `0 <= x`.
+  Lean alone shows that `Zdigits_correct` fails at radix 1, which Rocq's
+  `radix` record cannot express.
+- The paired mutation tests reject 32 mutations.
+- `scripts/digits_bridge.py` runs the six functions against pinned Rocq and an
+  independent truncating-division oracle: 2,908 cases at seed 865701.
+
 ## Unindexed Pff negation and absolute value (earlier slice)
 
 The source facade now also exports `Fopp_correct`, `Fopp_Fopp`, `Fabs_correct`

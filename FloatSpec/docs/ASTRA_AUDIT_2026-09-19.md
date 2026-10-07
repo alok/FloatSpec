@@ -4544,6 +4544,49 @@ once, so such drift fails immediately; it passes in 6 s, and its module
 
 Receipts: `/private/tmp/floatspec-namedchecks-20261007/`.
 
+### October 7: Digits (63 of 67 sites)
+
+`0a4144fc` ports the Digits bodies:
+- `Zdigit`, `Zscale`, `Zslice` and `Zsum_digit` use `Zpower` and `Zle_bool`
+  as Rocq does.
+- `Zdigits_aux` uses `Zlt_bool`.
+- `Zdigits` matches `Z0`/`Zpos`/`Zneg` through `zview` and runs on the source
+  fuel `digits2_Pnat p`, replacing `|n| + 1`.
+- `digits2_Pnat` is now structural on `Positive`.
+
+The fuel change surfaced a real constraint. The natural-number `digits2_Pnat`
+recursed by halving, which is well-founded recursion, so `decide` could not
+evaluate it. `decide` proofs in the IEEE decoder and in PrimFloat then failed;
+with the source's structural recursion they pass. The natural twin
+`digits2_nat` stays for the IEEE layer, whose mantissas are still naturals
+(O1). Old bodies are kept as `*_eq_*` lemmas. Under `1 < beta`,
+`Zdigits_eq_fuel` proves both fuels give one count; at radix 1 they differ.
+
+The statement pass:
+- restates 18 laws in source shape (see the contract review);
+- removes the section variable that gave 38 lemmas a duplicated radix
+  premise;
+- drops `Zdigits_gt_0`'s unused radix premise;
+- states `Z_of_nat_S_digits2_Pnat` on `Positive`.
+
+Call sites in Float_prop, Calc, IEEE754 and Pff were updated. The
+drift gate flagged only `Zfast_div_eucl_correct`, whose proof now cites the
+public `zview_cases`; its fingerprint was refreshed after its mutation test
+passed.
+
+Evidence:
+- Two paired fixtures with 32 rejected mutations.
+- A new digits bridge: 2,908 three-way cases plus live mutations on both
+  sides.
+- CI bridge op set: 4,307 cases at seed 865691.
+- Full 6,350-job build, all Lean fixtures strict with kernel replay, and a
+  drift gate of 452 entries.
+
+The open four (`digits2_pos`, `Zdigits2`, `Zpos_digits2_pos`,
+`Zdigits2_Zdigits`) wait on the O1 carrier.
+
+Receipts: `/private/tmp/floatspec-digits-20261007/`.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In

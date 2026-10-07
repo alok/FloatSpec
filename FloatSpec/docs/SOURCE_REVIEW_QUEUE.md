@@ -19,7 +19,7 @@ External Rocq imports are recorded in the JSON report, not counted as Flocq decl
 | 3 | src/Core/Raux.v | 186 | 168 | 178 | 186 |
 | 4 | src/Core/Defs.v | 14 | 11 | 14 | 14 |
 | 5 | src/Core/Round_pred.v | 83 | 78 | 78 | 83 |
-| 6 | src/Core/Digits.v | 67 | 8 | 67 | 0 |
+| 6 | src/Core/Digits.v | 67 | 63 | 67 | 63 |
 | 7 | src/Core/Float_prop.v | 37 | 0 | 37 | 0 |
 | 8 | src/Core/Generic_fmt.v | 145 | 35 | 140 | 0 |
 | 9 | src/Calc/Operations.v | 17 | 7 | 17 | 0 |
@@ -59,24 +59,24 @@ unnecessary numerical APIs to satisfy a raw name count.
 
 - `src/Core/Digits.v:25` — `digits2_pos` (abbrev): `FloatSpec.Core.Digits.digits2_pos`.
 - `src/Core/Digits.v:26` — `Zdigits2` (abbrev): `FloatSpec.Core.Digits.Zdigits2`.
-- `src/Core/Digits.v:33` — `digits2_Pnat` (def): `FloatSpec.Core.Digits.digits2_Pnat`.
-- `src/Core/Digits.v:40` — `digits2_Pnat_correct` (prf): `FloatSpec.Core.Digits.digits2_Pnat_correct`.
-- `src/Core/Digits.v:59` — `Zdigit` (def): `FloatSpec.Core.Digits.Zdigit`.
-- `src/Core/Digits.v:61` — `Zdigit_lt` (prf): `FloatSpec.Core.Digits.Zdigit_lt`.
-- `src/Core/Digits.v:70` — `Zdigit_0` (prf): `FloatSpec.Core.Digits.Zdigit_0`.
-- `src/Core/Digits.v:79` — `Zdigit_opp` (prf): `FloatSpec.Core.Digits.Zdigit_opp`.
-- `src/Core/Digits.v:89` — `Zdigit_ge_Zpower_pos` (prf): `FloatSpec.Core.Digits.Zdigit_ge_Zpower_pos`.
-- `src/Core/Digits.v:116` — `Zdigit_ge_Zpower` (prf): `FloatSpec.Core.Digits.Zdigit_ge_Zpower`.
-- `src/Core/Digits.v:133` — `Zdigit_not_0_pos` (prf): `FloatSpec.Core.Digits.Zdigit_not_0_pos`.
-- `src/Core/Digits.v:159` — `Zdigit_not_0` (prf): `FloatSpec.Core.Digits.Zdigit_not_0`.
-- `src/Core/Digits.v:174` — `Zdigit_mul_pow` (prf): `FloatSpec.Core.Digits.Zdigit_mul_pow`.
-- `src/Core/Digits.v:214` — `Zdigit_div_pow` (prf): `FloatSpec.Core.Digits.Zdigit_div_pow`.
-- `src/Core/Digits.v:225` — `Zdigit_mod_pow` (prf): `FloatSpec.Core.Digits.Zdigit_mod_pow`.
-- `src/Core/Digits.v:244` — `Zdigit_mod_pow_out` (prf): `FloatSpec.Core.Digits.Zdigit_mod_pow_out`.
-- `src/Core/Digits.v:260` — `Zsum_digit` (def): `FloatSpec.Core.Digits.Zsum_digit`.
-- `src/Core/Digits.v:266` — `Zsum_digit_digit` (prf): `FloatSpec.Core.Digits.Zsum_digit_digit`.
-- `src/Core/Digits.v:291` — `Zdigit_ext` (prf): `FloatSpec.Core.Digits.Zdigit_ext`.
-- `src/Core/Digits.v:322` — `ZOmod_plus_pow_digit` (prf): `FloatSpec.Core.Digits.ZOmod_plus_pow_digit`.
+- `src/Core/Digits.v:1153` — `Zpos_digits2_pos` (prf): `FloatSpec.Core.Digits.Zpos_digits2_pos`.
+- `src/Core/Digits.v:1165` — `Zdigits2_Zdigits` (prf): `FloatSpec.Core.Digits.Zdigits2_Zdigits`.
+- `src/Core/Float_prop.v:29` — `bpow` (abbrev): `FloatSpec.Core.Raux.Source.bpow`, `FloatSpec.Core.Raux.bpow`.
+- `src/Core/Float_prop.v:31` — `Rcompare_F2R` (prf): `FloatSpec.Core.Float_prop.Rcompare_F2R`.
+- `src/Core/Float_prop.v:43` — `le_F2R` (prf): `FloatSpec.Core.Float_prop.le_F2R`.
+- `src/Core/Float_prop.v:55` — `F2R_le` (prf): `FloatSpec.Core.Float_prop.F2R_le`.
+- `src/Core/Float_prop.v:67` — `lt_F2R` (prf): `FloatSpec.Core.Float_prop.lt_F2R`.
+- `src/Core/Float_prop.v:79` — `F2R_lt` (prf): `FloatSpec.Core.Float_prop.F2R_lt`.
+- `src/Core/Float_prop.v:91` — `F2R_eq` (prf): `FloatSpec.Core.Float_prop.F2R_eq`.
+- `src/Core/Float_prop.v:100` — `eq_F2R` (prf): `FloatSpec.Core.Float_prop.eq_F2R`.
+- `src/Core/Float_prop.v:112` — `F2R_Zabs` (prf): `FloatSpec.Core.Float_prop.F2R_Zabs`.
+- `src/Core/Float_prop.v:127` — `F2R_Zopp` (prf): `FloatSpec.Core.Float_prop.F2R_Zopp`.
+- `src/Core/Float_prop.v:137` — `F2R_cond_Zopp` (prf): `FloatSpec.Core.Float_prop.F2R_cond_Zopp`.
+- `src/Core/Float_prop.v:147` — `F2R_0` (prf): `FloatSpec.Core.Float_prop.F2R_0`.
+- `src/Core/Float_prop.v:156` — `eq_0_F2R` (prf): `FloatSpec.Core.Float_prop.eq_0_F2R`.
+- `src/Core/Float_prop.v:166` — `ge_0_F2R` (prf): `FloatSpec.Core.Float_prop.ge_0_F2R`.
+- `src/Core/Float_prop.v:176` — `le_0_F2R` (prf): `FloatSpec.Core.Float_prop.le_0_F2R`.
+- `src/Core/Float_prop.v:186` — `gt_0_F2R` (prf): `FloatSpec.Core.Float_prop.gt_0_F2R`.
 
 ## Reproduce
 
