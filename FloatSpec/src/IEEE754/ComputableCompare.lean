@@ -50,9 +50,9 @@ variable {beta : Int} [ValidRadix beta]
 private theorem val_align (n e e' : Int) (he : e' ≤ e) :
     FloatSpec.Core.Defs.F2R (FlocqFloat.mk n e : FlocqFloat beta)
       = FloatSpec.Core.Defs.F2R
-          (FlocqFloat.mk (n * beta ^ (e - e').natAbs) e' : FlocqFloat beta) :=
-  F2R_change_exp (beta := beta) (f := FlocqFloat.mk n e) (e' := e')
-    ValidRadix.valid he
+          (FlocqFloat.mk (n * beta ^ (e - e').natAbs) e' : FlocqFloat beta) := by
+  rw [← FloatSpec.Core.Zaux.Zpower_Zpower_nat beta _ (sub_nonneg.mpr he)]
+  exact F2R_change_exp (beta := beta) e' n e he
 
 /-- `dyadicLt` decides the real strict order on dyadic payloads. -/
 theorem dyadicLt_iff (n₁ e₁ n₂ e₂ : Int) :
@@ -63,10 +63,10 @@ theorem dyadicLt_iff (n₁ e₁ n₂ e₂ : Int) :
   split
   · next h =>
       rw [decide_eq_true_eq, val_align (beta := beta) n₂ e₂ e₁ h]
-      exact lt_F2R_iff (beta := beta) e₁ _ _ ValidRadix.valid
+      exact lt_F2R_iff (beta := beta) e₁ _ _
   · next h =>
       rw [decide_eq_true_eq, val_align (beta := beta) n₁ e₁ e₂ (not_le.mp h).le]
-      exact lt_F2R_iff (beta := beta) e₂ _ _ ValidRadix.valid
+      exact lt_F2R_iff (beta := beta) e₂ _ _
 
 /-- `dyadicEq` decides real equality of dyadic payloads. -/
 theorem dyadicEq_iff (n₁ e₁ n₂ e₂ : Int) :

@@ -399,9 +399,8 @@ theorem Bnormfr_mantissa_correct {prec emax : Int}
         · simpa using hm_int_ne
         · simpa using neg_ne_zero.mpr hm_int_ne
       have hmag_digits :=
-        FloatSpec.Core.Float_prop.Raux_mag_F2R_Zdigits
-          (beta := 2) (m := if s then -(m : Int) else (m : Int)) (e := e)
-          (by norm_num : (1 : Int) < 2) hsigned_ne
+        FloatSpec.Core.Float_prop.mag_F2R_Zdigits
+          (beta := 2) (m := if s then -(m : Int) else (m : Int)) (e := e) hsigned_ne
       have hsum_signed :
           FloatSpec.Core.Digits.Zdigits 2 (if s then -(m : Int) else (m : Int)) + e = 0 := by
         rw [← hmag_digits]
@@ -580,9 +579,9 @@ private theorem canonical_mantissa_bsn_of_canonical
     · simpa using hmx_ne
     · simpa using neg_ne_zero.mpr hmx_ne
   have hmag :=
-    FloatSpec.Core.Float_prop.Raux_mag_F2R_Zdigits
+    FloatSpec.Core.Float_prop.mag_F2R_Zdigits
       (beta := 2) (m := if sx then -(mx : Int) else (mx : Int)) (e := ex)
-      (by norm_num : (1 : Int) < 2) hsigned_ne
+      hsigned_ne
   have hzdigits_signed :
       FloatSpec.Core.Digits.Zdigits 2 (if sx then -(mx : Int) else (mx : Int)) =
         FloatSpec.Core.Digits.Zdigits 2 (mx : Int) := by
@@ -617,9 +616,9 @@ private theorem canonical_mantissa_bsn_of_repr_cexp
   have hmx_ne : (mx : Int) ≠ 0 := by
     exact_mod_cast (Nat.pos_iff_ne_zero.mp hmx_pos)
   have hmag :=
-    FloatSpec.Core.Float_prop.Raux_mag_F2R_Zdigits
+    FloatSpec.Core.Float_prop.mag_F2R_Zdigits
       (beta := 2) (m := (mx : Int)) (e := ex)
-      (by norm_num : (1 : Int) < 2) hmx_ne
+      hmx_ne
   calc
     ex = FloatSpec.Core.Generic_fmt.cexp 2 (FLT_exp (3 - emax - prec) prec) x := hexp
     _ = FLT_exp (3 - emax - prec) prec (FloatSpec.Core.Raux.mag 2 x) := rfl
@@ -2943,8 +2942,8 @@ private theorem binary_round_aux_correct_proof
       Bx (by norm_num : (1 : Int) < 2)
     have hupper_pos := lt_of_le_of_lt (abs_nonneg x) hbounds.2
     have hm_add_pos := FloatSpec.Core.Float_prop.gt_0_F2R
-      (beta := 2) (f := FloatSpec.Core.Defs.FlocqFloat.mk (mx + 1) ex)
-      (by norm_num : (1 : Int) < 2) hupper_pos
+      (beta := 2) (m := (mx + 1)) (e := ex)
+      hupper_pos
     change 0 < mx + 1 at hm_add_pos
     omega
   have hround_repr :
@@ -2985,8 +2984,8 @@ private theorem binary_round_aux_correct_proof
     have hm1_add_pos :=
       FloatSpec.Core.Float_prop.gt_0_F2R
         (beta := 2)
-        (f := FloatSpec.Core.Defs.FlocqFloat.mk (m1 + 1) e1)
-        (by norm_num : (1 : Int) < 2) hupper_pos
+        (m := (m1 + 1)) (e := e1)
+        hupper_pos
     have hm1_add_pos_int : 0 < m1 + 1 := by
       simpa using hm1_add_pos
     omega
@@ -3067,7 +3066,7 @@ private theorem binary_round_aux_correct_proof
         FloatSpec.Core.Float_prop.F2R_gt_0
           (beta := 2)
           (f := FloatSpec.Core.Defs.FlocqFloat.mk m1' e1)
-          (by norm_num : (1 : Int) < 2) hm1'_pos
+          hm1'_pos
       simpa [hrounded_abs] using hm1'_f_pos
     have hrounded_ne : rounded ≠ 0 := by
       exact abs_pos.mp hrounded_abs_pos
@@ -3088,9 +3087,9 @@ private theorem binary_round_aux_correct_proof
           fexp (FloatSpec.Core.Digits.Zdigits 2 m1' + e1) := by
       have hm1'_ne : m1' ≠ 0 := ne_of_gt hm1'_pos
       have hmag :=
-        FloatSpec.Core.Float_prop.Raux_mag_F2R_Zdigits
+        FloatSpec.Core.Float_prop.mag_F2R_Zdigits
           (beta := 2) (m := m1') (e := e1)
-          (by norm_num : (1 : Int) < 2) hm1'_ne
+          hm1'_ne
       calc
         FloatSpec.Core.Generic_fmt.cexp 2 fexp |rounded|
             = fexp (FloatSpec.Core.Raux.mag 2 |rounded|) := rfl
@@ -3160,8 +3159,8 @@ private theorem binary_round_aux_correct_proof
         simpa [htr2_format.1] using hrounded_abs_pos
       exact FloatSpec.Core.Float_prop.gt_0_F2R
         (beta := 2)
-        (f := FloatSpec.Core.Defs.FlocqFloat.mk m2 e2)
-        (by norm_num : (1 : Int) < 2) hpos
+        (m := m2) (e := e2)
+        hpos
     have hm2_nonneg : 0 ≤ m2 := le_of_lt hm2_pos
     have hm2_toNat_pos : 0 < m2.toNat := by
       have hcast : ((m2.toNat : Nat) : Int) = m2 :=
@@ -3627,10 +3626,10 @@ private theorem SFdiv_core_binary_correct_data {prec emax : Int}
   let quotient := F2R X / F2R Y
   have hx_pos : 0 < F2R X :=
     FloatSpec.Core.Float_prop.F2R_gt_0
-      (beta := 2) (f := X) (by norm_num) (by simpa [X] using hmx_pos)
+      (beta := 2) (f := X) (by simpa [X] using hmx_pos)
   have hy_pos : 0 < F2R Y :=
     FloatSpec.Core.Float_prop.F2R_gt_0
-      (beta := 2) (f := Y) (by norm_num) (by simpa [Y] using hmy_pos)
+      (beta := 2) (f := Y) (by simpa [Y] using hmy_pos)
   have hdiv := FloatSpec.Calc.Div.Fdiv_correct
     (beta := 2) (fexp := fexp) X Y hx_pos hy_pos
   have hbetween :
@@ -3703,7 +3702,7 @@ private theorem SFsqrt_core_binary_correct_data {prec emax : Int}
     FloatSpec.Core.Defs.FlocqFloat.mk mx ex
   have hx_pos : 0 < F2R input :=
     FloatSpec.Core.Float_prop.F2R_gt_0
-      (beta := 2) (f := input) (by norm_num) (by simpa [input] using hmx_pos)
+      (beta := 2) (f := input) (by simpa [input] using hmx_pos)
   have hsqrt := FloatSpec.Calc.Sqrt.Fsqrt_correct
     (beta := 2) (fexp := FLT_exp (3 - emax - prec) prec)
     input hx_pos
@@ -3837,7 +3836,7 @@ theorem binary_round_aux_correct {prec emax : Int}
       FloatSpec.Core.Float_prop.F2R_gt_0
         (beta := 2)
         (f := FloatSpec.Core.Defs.FlocqFloat.mk (mx : Int) ex)
-        (by norm_num : (1 : Int) < 2) hmx_int_pos
+        hmx_int_pos
     exact lt_of_lt_of_le hF_pos hleft
   have hx_ne : x ≠ 0 := abs_pos.mp hx_abs_pos
   exact ExperimentalSingleNaNArithmetic.binary_round_aux_correct_proof
@@ -3893,12 +3892,12 @@ theorem Bdiv_correct_aux {prec emax : Int}
     FloatSpec.Core.Float_prop.F2R_gt_0
       (beta := 2)
       (f := FloatSpec.Core.Defs.FlocqFloat.mk (mxn : Int) ex)
-      (by norm_num : (1 : Int) < 2) hmx_int_pos
+      hmx_int_pos
   have hunsignedY_pos : 0 < unsignedY :=
     FloatSpec.Core.Float_prop.F2R_gt_0
       (beta := 2)
       (f := FloatSpec.Core.Defs.FlocqFloat.mk (myn : Int) ey)
-      (by norm_num : (1 : Int) < 2) hmy_int_pos
+      hmy_int_pos
   have hx_repr : x = if sx then -unsignedX else unsignedX := by
     cases sx <;>
       simp [x, unsignedX, SF2R, F2R, FloatSpec.Core.Defs.F2R]
@@ -4115,14 +4114,14 @@ theorem binary_round_correct {prec emax : Int}
     FloatSpec.Core.Float_prop.F2R_ge_0
       (beta := 2)
       (f := FloatSpec.Core.Defs.FlocqFloat.mk (mx : Int) ex)
-      (by norm_num : (1 : Int) < 2) hmx_nonneg_int
+      hmx_nonneg_int
   have hunsigned_pos :
       0 < F2R (FloatSpec.Core.Defs.FlocqFloat.mk (mx : Int) ex :
         FloatSpec.Core.Defs.FlocqFloat 2) :=
     FloatSpec.Core.Float_prop.F2R_gt_0
       (beta := 2)
       (f := FloatSpec.Core.Defs.FlocqFloat.mk (mx : Int) ex)
-      (by norm_num : (1 : Int) < 2) hmx_pos_int
+      hmx_pos_int
   have hx_abs :
       |x| = F2R (FloatSpec.Core.Defs.FlocqFloat.mk (aligned.1 : Int) aligned.2 :
           FloatSpec.Core.Defs.FlocqFloat 2) := by
@@ -4576,9 +4575,9 @@ private theorem Bfrexp_exp_eq_mag_of_finite
     exact_mod_cast (Nat.ne_of_gt hmx)
   have hsignedInt : (if sx then -(mx : Int) else (mx : Int)) ≠ 0 := by
     cases sx <;> simp <;> omega
-  have hmagSigned := FloatSpec.Core.Float_prop.Raux_mag_F2R_Zdigits
+  have hmagSigned := FloatSpec.Core.Float_prop.mag_F2R_Zdigits
     (beta:=2) (m:=if sx then -(mx : Int) else (mx : Int)) (e:=ex)
-    (by norm_num : (1 : Int) < 2) hsignedInt
+    hsignedInt
   have hsignDigits :
       FloatSpec.Core.Digits.Zdigits 2 (if sx then -(mx : Int) else (mx : Int)) =
         FloatSpec.Core.Digits.Zdigits 2 (mx : Int) :=
@@ -4912,7 +4911,7 @@ theorem is_finite_strict_Bulp
           (beta := 2)
           (f := FloatSpec.Core.Defs.FlocqFloat.mk
             (if sx then -((mx : Int)) else (mx : Int)) ex)
-          (by norm_num : (1 : Int) < 2) hmx_int_ne
+          hmx_int_ne
       have hulp_ne :
           FloatSpec.Core.Ulp.ulp 2 (FLT_exp (3 - emax - prec) prec)
             (B754_to_R (binarySingleNaNFloatToB754 (prec:=prec) (emax:=emax) xfin)) ≠ 0 := by
@@ -5118,10 +5117,10 @@ private theorem B2R_finite_ne_zero {prec emax : Int}
   cases s
   · exact ne_of_gt (FloatSpec.Core.Float_prop.F2R_gt_0
       (beta:=2) (f:=FloatSpec.Core.Defs.FlocqFloat.mk
-        (FloatSpec.Core.Zaux.positiveToNat m : Int) e) (by norm_num) hm)
+        (FloatSpec.Core.Zaux.positiveToNat m : Int) e) hm)
   · exact ne_of_lt (FloatSpec.Core.Float_prop.F2R_lt_0
       (beta:=2) (f:=FloatSpec.Core.Defs.FlocqFloat.mk
-        (-(FloatSpec.Core.Zaux.positiveToNat m : Int)) e) (by norm_num)
+        (-(FloatSpec.Core.Zaux.positiveToNat m : Int)) e)
           (neg_neg_of_pos hm))
 
 @[flocq_source "src/IEEE754/Binary.v" 473 "B2R_Bsign_inj"]
@@ -7357,7 +7356,7 @@ theorem normalize_correct {prec emax : Int}
           (FloatSpec.Core.Defs.FlocqFloat.mk m e :
             FloatSpec.Core.Defs.FlocqFloat 2) :=
         FloatSpec.Core.Float_prop.F2R_gt_0 (beta:=2)
-          (f:=FloatSpec.Core.Defs.FlocqFloat.mk m e) (by norm_num) hmpos
+          (f:=FloatSpec.Core.Defs.FlocqFloat.mk m e) hmpos
       have hinput : SF2R 2 (StandardFloat.S754_finite false mn e) =
           F2R (FloatSpec.Core.Defs.FlocqFloat.mk m e :
             FloatSpec.Core.Defs.FlocqFloat 2) := by
@@ -7453,7 +7452,7 @@ theorem normalize_correct {prec emax : Int}
           (FloatSpec.Core.Defs.FlocqFloat.mk m e :
             FloatSpec.Core.Defs.FlocqFloat 2) < 0 :=
         FloatSpec.Core.Float_prop.F2R_lt_0 (beta:=2)
-          (f:=FloatSpec.Core.Defs.FlocqFloat.mk m e) (by norm_num) hmneg
+          (f:=FloatSpec.Core.Defs.FlocqFloat.mk m e) hmneg
       have hinput : SF2R 2 (StandardFloat.S754_finite true mn e) =
           F2R (FloatSpec.Core.Defs.FlocqFloat.mk m e :
             FloatSpec.Core.Defs.FlocqFloat 2) := by
@@ -10040,11 +10039,11 @@ private theorem binaryFinite_ne_zero {prec emax : Int}
   · simp only [Binary.B2R]
     exact ne_of_gt (FloatSpec.Core.Float_prop.F2R_gt_0
       (beta:=2) (f:=FloatSpec.Core.Defs.FlocqFloat.mk
-        (FloatSpec.Core.Zaux.positiveToNat m : Int) e) (by norm_num) hmInt)
+        (FloatSpec.Core.Zaux.positiveToNat m : Int) e) hmInt)
   · simp only [Binary.B2R]
     exact ne_of_lt (FloatSpec.Core.Float_prop.F2R_lt_0
       (beta:=2) (f:=FloatSpec.Core.Defs.FlocqFloat.mk
-        (-(FloatSpec.Core.Zaux.positiveToNat m : Int)) e) (by norm_num)
+        (-(FloatSpec.Core.Zaux.positiveToNat m : Int)) e)
         (by
           change -(FloatSpec.Core.Zaux.positiveToNat m : Int) < 0
           omega))
@@ -10061,12 +10060,12 @@ private theorem binaryFinite_decide_lt_zero {prec emax : Int}
   cases s
   · have hpos := FloatSpec.Core.Float_prop.F2R_gt_0
       (beta:=2) (f:=FloatSpec.Core.Defs.FlocqFloat.mk
-        (FloatSpec.Core.Zaux.positiveToNat m : Int) e) (by norm_num) hmInt
+        (FloatSpec.Core.Zaux.positiveToNat m : Int) e) hmInt
     simp only [Binary.B2R]
     exact decide_eq_false_iff_not.mpr (not_lt_of_ge (le_of_lt hpos))
   · have hneg := FloatSpec.Core.Float_prop.F2R_lt_0
       (beta:=2) (f:=FloatSpec.Core.Defs.FlocqFloat.mk
-        (-(FloatSpec.Core.Zaux.positiveToNat m : Int)) e) (by norm_num)
+        (-(FloatSpec.Core.Zaux.positiveToNat m : Int)) e)
         (by
           change -(FloatSpec.Core.Zaux.positiveToNat m : Int) < 0
           omega)
@@ -10233,8 +10232,7 @@ private theorem roundRSqrtBinaryFiniteLtEmax {prec emax : Int}
       (FloatSpec.Core.Float_prop.F2R_gt_0
         (beta:=2)
         (f:=FloatSpec.Core.Defs.FlocqFloat.mk
-          (FloatSpec.Core.Zaux.positiveToNat m : Int) e)
-        (by norm_num) hmInt)
+          (FloatSpec.Core.Zaux.positiveToNat m : Int) e) hmInt)
   have hinputLt : input < FloatSpec.Core.Raux.bpow 2 emax := by
     have h := absBinaryFiniteLtEmax (prec:=prec) (emax:=emax)
       false m e hbounded
@@ -11476,8 +11474,7 @@ theorem Bsqrt_correct {prec emax : Int}
           exact FloatSpec.Core.Float_prop.F2R_lt_0
             (beta:=2)
             (f:=FloatSpec.Core.Defs.FlocqFloat.mk
-              (-(FloatSpec.Core.Zaux.positiveToNat mx : Int)) ex)
-            (by norm_num) (by
+              (-(FloatSpec.Core.Zaux.positiveToNat mx : Int)) ex) (by
               change -(FloatSpec.Core.Zaux.positiveToNat mx : Int) < 0
               omega)
         have hsqrt0 : Real.sqrt (Binary.B2R (prec:=prec) (emax:=emax)
@@ -13981,7 +13978,7 @@ theorem binary_normalize_correct {prec emax : Int}
             (FloatSpec.Core.Defs.FlocqFloat.mk m e :
               FloatSpec.Core.Defs.FlocqFloat 2) :=
           FloatSpec.Core.Float_prop.F2R_gt_0 (beta:=2)
-            (f:=FloatSpec.Core.Defs.FlocqFloat.mk m e) (by norm_num) hmp
+            (f:=FloatSpec.Core.Defs.FlocqFloat.mk m e) hmp
         have hvalueRaw : 0 < (m : ℝ) * (2 : ℝ) ^ e := by
           simpa [F2R, FloatSpec.Core.Defs.F2R] using hvalue
         simp [binary_overflow_exact, FloatSpec.Core.Raux.Rlt_bool_eq_decide,
@@ -14020,7 +14017,7 @@ theorem binary_normalize_correct {prec emax : Int}
             (FloatSpec.Core.Defs.FlocqFloat.mk m e :
               FloatSpec.Core.Defs.FlocqFloat 2) < 0 :=
           FloatSpec.Core.Float_prop.F2R_lt_0 (beta:=2)
-            (f:=FloatSpec.Core.Defs.FlocqFloat.mk m e) (by norm_num) hmneg
+            (f:=FloatSpec.Core.Defs.FlocqFloat.mk m e) hmneg
         have hvalueRaw : (m : ℝ) * (2 : ℝ) ^ e < 0 := by
           simpa [F2R, FloatSpec.Core.Defs.F2R] using hvalue
         simp [binary_overflow_exact, FloatSpec.Core.Raux.Rlt_bool_eq_decide,
@@ -14317,16 +14314,14 @@ private theorem single_finite_ne_zero_and_sign {prec emax : Int}
       change 0 < F2R (FloatSpec.Core.Defs.FlocqFloat.mk (m : Int) e :
         FloatSpec.Core.Defs.FlocqFloat 2)
       exact FloatSpec.Core.Float_prop.F2R_gt_0
-        (beta:=2) (f:=FloatSpec.Core.Defs.FlocqFloat.mk (m : Int) e)
-        (by norm_num) hmInt
+        (beta:=2) (f:=FloatSpec.Core.Defs.FlocqFloat.mk (m : Int) e) hmInt
     exact ⟨ne_of_gt hpos, by simp [not_lt_of_ge (le_of_lt hpos)]⟩
   · have hneg : B2R
         (BinarySingleNaNFloat.B754_finite true m e hm hb) < 0 := by
       change F2R (FloatSpec.Core.Defs.FlocqFloat.mk (-(m : Int)) e :
         FloatSpec.Core.Defs.FlocqFloat 2) < 0
       exact FloatSpec.Core.Float_prop.F2R_lt_0
-        (beta:=2) (f:=FloatSpec.Core.Defs.FlocqFloat.mk (-(m : Int)) e)
-        (by norm_num) (neg_neg_of_pos hmInt)
+        (beta:=2) (f:=FloatSpec.Core.Defs.FlocqFloat.mk (-(m : Int)) e) (neg_neg_of_pos hmInt)
     exact ⟨ne_of_lt hneg, by simp [hneg]⟩
 
 -- Coq `BinarySingleNaN.v:Bmult_correct` on the exact SingleNaN carrier.
@@ -15234,8 +15229,7 @@ theorem Bsqrt_correct {prec emax : Int}
             FloatSpec.Core.Defs.FlocqFloat 2) < 0
           exact FloatSpec.Core.Float_prop.F2R_lt_0
             (beta:=2)
-            (f:=FloatSpec.Core.Defs.FlocqFloat.mk (-(mx : Int)) ex)
-            (by norm_num) (neg_neg_of_pos hmxInt)
+            (f:=FloatSpec.Core.Defs.FlocqFloat.mk (-(mx : Int)) ex) (neg_neg_of_pos hmxInt)
         have hsqrt0 : Real.sqrt (B2R
             (BinarySingleNaNFloat.B754_finite true mx ex hmx Hx)) = 0 :=
           Real.sqrt_eq_zero_of_nonpos (le_of_lt hneg)

@@ -30,7 +30,7 @@ open FloatSpec.Core.Digits
 
 namespace FloatSpec.Core.Float_prop
 
-variable (beta : Int) [ValidRadix beta] (hbeta : 1 < beta)
+variable (beta : Int) [ValidRadix beta]
 
 section FloatProp
 
@@ -74,15 +74,14 @@ Theorem Rcompare_F2R : forall e m1 m2 : Z,
     apply bpow_gt_0.
   Qed.
   -/
+  @[flocq_source "src/Core/Float_prop.v" 31 "Rcompare_F2R"]
   theorem Rcompare_F2R (e m1 m2 : Int) :
-    let f1 := F2R (FlocqFloat.mk m1 e : FlocqFloat beta)
-    let f2 := F2R (FlocqFloat.mk m2 e : FlocqFloat beta)
-    FloatSpec.Core.Raux.Rcompare f1 f2 = compare m1 m2 := by
-    intro f1 f2
+    FloatSpec.Core.Raux.Rcompare (F2R (FlocqFloat.mk m1 e : FlocqFloat beta))
+      (F2R (FlocqFloat.mk m2 e : FlocqFloat beta)) = compare m1 m2 := by
     have hbpos_real : (0 : ℝ) < (beta : ℝ) := by
       exact_mod_cast lt_trans (by decide) (ValidRadix.valid (beta := beta))
     -- As in the source: cancel the positive scale, then compare the integer casts.
-    simp only [f1, f2, FloatSpec.Core.Defs.F2R]
+    simp only [FloatSpec.Core.Defs.F2R]
     rw [FloatSpec.Core.Raux.Rcompare_mult_r _ _ _ (zpow_pos hbpos_real e),
       FloatSpec.Core.Raux.Rcompare_IZR]
 
@@ -98,8 +97,9 @@ Proof.
   exact H.
 Qed.
 -/
-theorem le_F2R_iff (e m1 m2 : Int) (hbeta : 1 < beta) :
+theorem le_F2R_iff (e m1 m2 : Int) :
   m1 ≤ m2 ↔ (F2R (FlocqFloat.mk m1 e : FlocqFloat beta)) ≤ (F2R (FlocqFloat.mk m2 e : FlocqFloat beta)) := by
+  have hbeta : 1 < beta := ValidRadix.valid
   -- Let p = (beta : ℝ) ^ e, with p > 0
   have hbpos_int : (0 : Int) < beta := lt_trans (by decide) hbeta
   have hbpos_real : (0 : ℝ) < (beta : ℝ) := by exact_mod_cast hbpos_int
@@ -129,16 +129,18 @@ Proof.
   now apply IZR_le.
 Qed.
 -/
+@[flocq_source "src/Core/Float_prop.v" 43 "le_F2R"]
 theorem le_F2R (e m1 m2 : Int) :
   (F2R (FlocqFloat.mk m1 e : FlocqFloat beta)) ≤
       (F2R (FlocqFloat.mk m2 e : FlocqFloat beta)) → m1 ≤ m2 :=
-  (le_F2R_iff (beta := beta) e m1 m2 ValidRadix.valid).mpr
+  (le_F2R_iff (beta := beta) e m1 m2).mpr
 
+@[flocq_source "src/Core/Float_prop.v" 55 "F2R_le"]
 theorem F2R_le (m1 m2 e : Int) :
   m1 ≤ m2 →
     (F2R (FlocqFloat.mk m1 e : FlocqFloat beta)) ≤
       (F2R (FlocqFloat.mk m2 e : FlocqFloat beta)) :=
-  (le_F2R_iff (beta := beta) e m1 m2 ValidRadix.valid).mp
+  (le_F2R_iff (beta := beta) e m1 m2).mp
 
 /-
 Coq original:
@@ -152,8 +154,9 @@ Proof.
   exact H.
 Qed.
 -/
-theorem lt_F2R_iff (e m1 m2 : Int) (hbeta : 1 < beta) :
+theorem lt_F2R_iff (e m1 m2 : Int) :
   m1 < m2 ↔ (F2R (FlocqFloat.mk m1 e : FlocqFloat beta)) < (F2R (FlocqFloat.mk m2 e : FlocqFloat beta)) := by
+  have hbeta : 1 < beta := ValidRadix.valid
   -- Let p = (beta : ℝ) ^ e, with p > 0
   have hbpos_int : (0 : Int) < beta := lt_trans (by decide) hbeta
   have hbpos_real : (0 : ℝ) < (beta : ℝ) := by exact_mod_cast hbpos_int
@@ -180,16 +183,18 @@ Proof.
   now apply IZR_lt.
 Qed.
 -/
+@[flocq_source "src/Core/Float_prop.v" 67 "lt_F2R"]
 theorem lt_F2R (e m1 m2 : Int) :
   (F2R (FlocqFloat.mk m1 e : FlocqFloat beta)) <
       (F2R (FlocqFloat.mk m2 e : FlocqFloat beta)) → m1 < m2 :=
-  (lt_F2R_iff (beta := beta) e m1 m2 ValidRadix.valid).mpr
+  (lt_F2R_iff (beta := beta) e m1 m2).mpr
 
+@[flocq_source "src/Core/Float_prop.v" 79 "F2R_lt"]
 theorem F2R_lt (e m1 m2 : Int) :
   m1 < m2 →
     (F2R (FlocqFloat.mk m1 e : FlocqFloat beta)) <
       (F2R (FlocqFloat.mk m2 e : FlocqFloat beta)) :=
-  (lt_F2R_iff (beta := beta) e m1 m2 ValidRadix.valid).mp
+  (lt_F2R_iff (beta := beta) e m1 m2).mp
 
 /-
 Coq original:
@@ -200,8 +205,9 @@ Proof.
   now apply (f_equal (fun m => F2R (Float beta m e))).
 Qed.
 -/
-theorem eq_F2R_from_payload (e m1 m2 : Int) (hbeta : 1 < beta) :
+theorem eq_F2R_from_payload (e m1 m2 : Int) :
   (F2R (FlocqFloat.mk m1 e : FlocqFloat beta)) = (F2R (FlocqFloat.mk m2 e : FlocqFloat beta)) → m1 = m2 := by
+  have hbeta : 1 < beta := ValidRadix.valid
   intro h
   -- Unfold and cancel the common nonzero factor (beta : ℝ) ^ e
   unfold FloatSpec.Core.Defs.F2R at h
@@ -221,6 +227,7 @@ Proof.
   apply Zle_antisym ; apply le_F2R with e ; rewrite H ; apply Rle_refl.
 Qed.
 -/
+@[flocq_source "src/Core/Float_prop.v" 91 "F2R_eq"]
 theorem F2R_eq (e m1 m2 : Int) :
   m1 = m2 →
     (F2R (FlocqFloat.mk m1 e : FlocqFloat beta)) =
@@ -229,10 +236,11 @@ theorem F2R_eq (e m1 m2 : Int) :
   subst h
   rfl
 
+@[flocq_source "src/Core/Float_prop.v" 100 "eq_F2R"]
 theorem eq_F2R (e m1 m2 : Int) :
   (F2R (FlocqFloat.mk m1 e : FlocqFloat beta)) =
       (F2R (FlocqFloat.mk m2 e : FlocqFloat beta)) → m1 = m2 :=
-  eq_F2R_from_payload (beta := beta) e m1 m2 ValidRadix.valid
+  eq_F2R_from_payload (beta := beta) e m1 m2
 
 -- Absolute value and negation theorems
 
@@ -252,22 +260,12 @@ Proof.
   apply bpow_ge_0.
 Qed.
 -/
-theorem F2R_Zabs (f : FlocqFloat beta) (hbeta : 1 < beta) :
-  |(F2R f)| = (F2R (FlocqFloat.mk (Int.natAbs f.Fnum) f.Fexp : FlocqFloat beta)) := by
-  -- Let p = (beta : ℝ) ^ f.Fexp, with p > 0
-  have hbpos_int : (0 : Int) < beta := lt_trans (by decide) hbeta
-  have hbpos_real : (0 : ℝ) < (beta : ℝ) := by exact_mod_cast hbpos_int
-  have hp_pos : 0 < (beta : ℝ) ^ f.Fexp := by exact zpow_pos hbpos_real _
-  have hp_nonneg : 0 ≤ (beta : ℝ) ^ f.Fexp := le_of_lt hp_pos
-  unfold FloatSpec.Core.Defs.F2R
-  -- Reduce to |m| = natAbs m over ℝ
-  have h_abs_natAbs : (Int.natAbs f.Fnum : ℝ) = |(f.Fnum : ℝ)| := by
-    -- Standard lemma relating casts and absolute values
-    simpa [Nat.cast_natAbs, Int.cast_abs]
-  -- |m * p| = |m| * p and |p| = p (since p ≥ 0)
-  have : |(f.Fnum : ℝ) * (beta : ℝ) ^ f.Fexp| = (Int.natAbs f.Fnum : ℝ) * (beta : ℝ) ^ f.Fexp := by
-    simpa [abs_mul, abs_of_nonneg hp_nonneg, h_abs_natAbs]
-  simpa using this
+@[flocq_source "src/Core/Float_prop.v" 112 "F2R_Zabs"]
+theorem F2R_Zabs (m e : Int) :
+    F2R (FlocqFloat.mk |m| e : FlocqFloat beta) = |F2R (FlocqFloat.mk m e : FlocqFloat beta)| := by
+  have hb : (0 : ℝ) < (beta : ℝ) := by
+    exact_mod_cast lt_trans Int.zero_lt_one (ValidRadix.valid (beta := beta))
+  simp only [FloatSpec.Core.Defs.F2R, Int.cast_abs, abs_mul, abs_of_pos (zpow_pos hb e)]
 
 /-
 Coq original:
@@ -280,11 +278,10 @@ Proof.
   now rewrite opp_IZR.
 Qed.
 -/
-theorem F2R_Zopp (f : FlocqFloat beta) (hbeta : 1 < beta) :
-  -(F2R f) = (F2R (FlocqFloat.mk (-f.Fnum) f.Fexp : FlocqFloat beta)) := by
-  unfold FloatSpec.Core.Defs.F2R
-  -- -(m * p) = (-m) * p
-  simpa using (neg_mul (f.Fnum : ℝ) ((beta : ℝ) ^ f.Fexp)).symm
+@[flocq_source "src/Core/Float_prop.v" 127 "F2R_Zopp"]
+theorem F2R_Zopp (m e : Int) :
+    F2R (FlocqFloat.mk (-m) e : FlocqFloat beta) = -F2R (FlocqFloat.mk m e : FlocqFloat beta) := by
+  simp [FloatSpec.Core.Defs.F2R]
 
 /-
 Coq original:
@@ -296,16 +293,12 @@ Proof.
   apply refl_equal.
 Qed.
 -/
-theorem F2R_cond_Zopp (b : Bool) (f : FlocqFloat beta) (hbeta : 1 < beta) :
-  (if b then -(F2R f) else (F2R f)) =
-  (F2R (FlocqFloat.mk (if b then -f.Fnum else f.Fnum) f.Fexp : FlocqFloat beta)) := by
-  unfold FloatSpec.Core.Defs.F2R
-  by_cases hb : b
-  · simp [hb]
-    -- -(m * p) = (-m) * p
-  · simp [hb]
-
--- Zero properties
+@[flocq_source "src/Core/Float_prop.v" 137 "F2R_cond_Zopp"]
+theorem F2R_cond_Zopp (b : Bool) (m e : Int) :
+    F2R (FlocqFloat.mk (FloatSpec.Core.Zaux.cond_Zopp b m) e : FlocqFloat beta) =
+      FloatSpec.Core.Raux.cond_Ropp b (F2R (FlocqFloat.mk m e : FlocqFloat beta)) := by
+  cases b <;> simp [FloatSpec.Core.Defs.F2R, FloatSpec.Core.Zaux.cond_Zopp,
+    FloatSpec.Core.Raux.cond_Ropp]
 
 /-
 Coq original:
@@ -316,7 +309,8 @@ Proof.
   apply Rmult_0_l.
 Qed.
 -/
-theorem F2R_0 (e : Int) (hbeta : 1 < beta) :
+@[flocq_source "src/Core/Float_prop.v" 147 "F2R_0"]
+theorem F2R_0 (e : Int) :
   (F2R (FlocqFloat.mk 0 e : FlocqFloat beta)) = 0 := by
   unfold FloatSpec.Core.Defs.F2R
   simp
@@ -331,8 +325,9 @@ Proof.
   now rewrite F2R_0.
 Qed.
 -/
-theorem eq_0_F2R (f : FlocqFloat beta) (hbeta : 1 < beta) :
+private theorem eq_0_F2R_f (f : FlocqFloat beta) :
   (F2R f) = 0 → f.Fnum = 0 := by
+  have hbeta : 1 < beta := ValidRadix.valid
   intro h
   -- Unfold F2R and use that (beta : ℝ) ^ e ≠ 0 since beta > 1
   unfold FloatSpec.Core.Defs.F2R at h
@@ -353,6 +348,11 @@ theorem eq_0_F2R (f : FlocqFloat beta) (hbeta : 1 < beta) :
   -- Cast back to integers
   exact (by exact_mod_cast hnum0)
 
+/-- FLoCq `eq_0_F2R`. -/
+@[flocq_source "src/Core/Float_prop.v" 156 "eq_0_F2R"]
+theorem eq_0_F2R (m e : Int) : F2R (FlocqFloat.mk m e : FlocqFloat beta) = 0 → m = 0 :=
+  eq_0_F2R_f beta (FlocqFloat.mk m e)
+
 /-
 Coq original:
 Theorem ge_0_F2R : forall m e : Z,
@@ -363,8 +363,9 @@ Proof.
   now rewrite F2R_0.
 Qed.
 -/
-theorem ge_0_F2R (f : FlocqFloat beta) (hbeta : 1 < beta) :
+private theorem ge_0_F2R_f (f : FlocqFloat beta) :
   0 ≤ (F2R f) → 0 ≤ f.Fnum := by
+  have hbeta : 1 < beta := ValidRadix.valid
   intro h
   -- F2R f = f.Fnum * beta^f.Fexp, and beta^f.Fexp > 0
   simp only [F2R, pure, Id.run] at h
@@ -378,6 +379,11 @@ theorem ge_0_F2R (f : FlocqFloat beta) (hbeta : 1 < beta) :
   push Not at hcontra
   have : (f.Fnum : ℝ) < 0 := Int.cast_lt_zero.mpr hcontra
   exact not_lt.mpr hfnum_real_nn this
+/-- FLoCq `ge_0_F2R`. -/
+@[flocq_source "src/Core/Float_prop.v" 166 "ge_0_F2R"]
+theorem ge_0_F2R (m e : Int) : 0 ≤ F2R (FlocqFloat.mk m e : FlocqFloat beta) → 0 ≤ m :=
+  ge_0_F2R_f beta (FlocqFloat.mk m e)
+
 /-
 Coq original:
 Lemma Fnum_ge_0: forall (f : float beta),
@@ -390,10 +396,11 @@ Proof.
   now apply F2R_lt_0.
 Qed.
 -/
-theorem Fnum_ge_0 (f : FlocqFloat beta) (hbeta : 1 < beta) :
+@[flocq_source "src/Core/Float_prop.v" 257 "Fnum_ge_0"]
+theorem Fnum_ge_0 (f : FlocqFloat beta) :
   0 ≤ (F2R f) → 0 ≤ f.Fnum := by
   -- Directly reuse ge_0_F2R
-  exact ge_0_F2R (beta := beta) f hbeta
+  exact ge_0_F2R_f (beta := beta) f
 
 /-
 Coq original:
@@ -405,8 +412,9 @@ Proof.
   now rewrite F2R_0.
 Qed.
 -/
-theorem le_0_F2R (f : FlocqFloat beta) (hbeta : 1 < beta) :
+private theorem le_0_F2R_f (f : FlocqFloat beta) :
   (F2R f) ≤ 0 → f.Fnum ≤ 0 := by
+  have hbeta : 1 < beta := ValidRadix.valid
   intro h
   -- F2R f = f.Fnum * beta^f.Fexp, and beta^f.Fexp > 0
   simp only [F2R, pure, Id.run] at h
@@ -420,6 +428,11 @@ theorem le_0_F2R (f : FlocqFloat beta) (hbeta : 1 < beta) :
   have hfnum_pos : (f.Fnum : ℝ) > 0 := Int.cast_pos.mpr hcontra
   have hprod_pos : (f.Fnum : ℝ) * (beta : ℝ) ^ f.Fexp > 0 := mul_pos hfnum_pos hpow_pos
   exact not_lt.mpr h hprod_pos
+/-- FLoCq `le_0_F2R`. -/
+@[flocq_source "src/Core/Float_prop.v" 176 "le_0_F2R"]
+theorem le_0_F2R (m e : Int) : F2R (FlocqFloat.mk m e : FlocqFloat beta) ≤ 0 → m ≤ 0 :=
+  le_0_F2R_f beta (FlocqFloat.mk m e)
+
 /-
 Coq original:
 Lemma Fnum_le_0: forall (f : float beta),
@@ -432,10 +445,11 @@ Proof.
   now apply F2R_gt_0.
 Qed.
 -/
-theorem Fnum_le_0 (f : FlocqFloat beta) (hbeta : 1 < beta) :
+@[flocq_source "src/Core/Float_prop.v" 267 "Fnum_le_0"]
+theorem Fnum_le_0 (f : FlocqFloat beta) :
   (F2R f) ≤ 0 → f.Fnum ≤ 0 := by
   -- Directly reuse le_0_F2R
-  exact le_0_F2R (beta := beta) f hbeta
+  exact le_0_F2R_f (beta := beta) f
 
 /-
 Coq original:
@@ -447,8 +461,9 @@ Proof.
   now rewrite F2R_0.
 Qed.
 -/
-theorem gt_0_F2R (f : FlocqFloat beta) (hbeta : 1 < beta) :
+private theorem gt_0_F2R_f (f : FlocqFloat beta) :
   0 < (F2R f) → 0 < f.Fnum := by
+  have hbeta : 1 < beta := ValidRadix.valid
   intro h
   simp only [F2R, pure, Id.run] at h
   have hβpos : (0 : ℝ) < (beta : ℝ) := by
@@ -457,6 +472,11 @@ theorem gt_0_F2R (f : FlocqFloat beta) (hbeta : 1 < beta) :
   have hpow_pos : (0 : ℝ) < (beta : ℝ) ^ f.Fexp := zpow_pos hβpos f.Fexp
   have := (mul_pos_iff_of_pos_right hpow_pos).mp h
   exact Int.cast_pos.mp this
+/-- FLoCq `gt_0_F2R`. -/
+@[flocq_source "src/Core/Float_prop.v" 186 "gt_0_F2R"]
+theorem gt_0_F2R (m e : Int) : 0 < F2R (FlocqFloat.mk m e : FlocqFloat beta) → 0 < m :=
+  gt_0_F2R_f beta (FlocqFloat.mk m e)
+
 /-
 Coq original:
 Theorem lt_0_F2R : forall m e : Z,
@@ -467,8 +487,9 @@ Proof.
   now rewrite F2R_0.
 Qed.
 -/
-theorem lt_0_F2R (f : FlocqFloat beta) (hbeta : 1 < beta) :
+private theorem lt_0_F2R_f (f : FlocqFloat beta) :
   (F2R f) < 0 → f.Fnum < 0 := by
+  have hbeta : 1 < beta := ValidRadix.valid
   intro h
   simp only [F2R, pure, Id.run] at h
   have hβpos : (0 : ℝ) < (beta : ℝ) := by
@@ -483,6 +504,11 @@ theorem lt_0_F2R (f : FlocqFloat beta) (hbeta : 1 < beta) :
   have hprod_nn : (f.Fnum : ℝ) * (beta : ℝ) ^ f.Fexp ≥ 0 :=
     mul_nonneg hfnum_nn (le_of_lt hpow_pos)
   exact not_lt.mpr hprod_nn h
+/-- FLoCq `lt_0_F2R`. -/
+@[flocq_source "src/Core/Float_prop.v" 196 "lt_0_F2R"]
+theorem lt_0_F2R (m e : Int) : F2R (FlocqFloat.mk m e : FlocqFloat beta) < 0 → m < 0 :=
+  lt_0_F2R_f beta (FlocqFloat.mk m e)
+
 /-
 Coq original:
 Theorem F2R_ge_0 : forall f : float beta,
@@ -493,8 +519,10 @@ Proof.
   now apply F2R_le.
 Qed.
 -/
-theorem F2R_ge_0 (f : FlocqFloat beta) (hbeta : 1 < beta) :
+@[flocq_source "src/Core/Float_prop.v" 206 "F2R_ge_0"]
+theorem F2R_ge_0 (f : FlocqFloat beta) :
   0 ≤ f.Fnum → 0 ≤ (F2R f) := by
+  have hbeta : 1 < beta := ValidRadix.valid
   intro hnum
   unfold FloatSpec.Core.Defs.F2R
   -- 0 ≤ m and 0 ≤ p ⇒ 0 ≤ m * p
@@ -515,8 +543,10 @@ Proof.
   now apply F2R_le.
 Qed.
 -/
-theorem F2R_le_0 (f : FlocqFloat beta) (hbeta : 1 < beta) :
+@[flocq_source "src/Core/Float_prop.v" 216 "F2R_le_0"]
+theorem F2R_le_0 (f : FlocqFloat beta) :
   f.Fnum ≤ 0 → (F2R f) ≤ 0 := by
+  have hbeta : 1 < beta := ValidRadix.valid
   intro hnum
   unfold FloatSpec.Core.Defs.F2R
   have hbpos_int : (0 : Int) < beta := lt_trans (by decide) hbeta
@@ -536,8 +566,10 @@ Proof.
   now apply F2R_lt.
 Qed.
 -/
-theorem F2R_gt_0 (f : FlocqFloat beta) (hbeta : 1 < beta) :
+@[flocq_source "src/Core/Float_prop.v" 226 "F2R_gt_0"]
+theorem F2R_gt_0 (f : FlocqFloat beta) :
   0 < f.Fnum → 0 < (F2R f) := by
+  have hbeta : 1 < beta := ValidRadix.valid
   intro hnum
   unfold FloatSpec.Core.Defs.F2R
   have hbpos_int : (0 : Int) < beta := lt_trans (by decide) hbeta
@@ -556,8 +588,10 @@ Proof.
   now apply F2R_lt.
 Qed.
 -/
-theorem F2R_lt_0 (f : FlocqFloat beta) (hbeta : 1 < beta) :
+@[flocq_source "src/Core/Float_prop.v" 236 "F2R_lt_0"]
+theorem F2R_lt_0 (f : FlocqFloat beta) :
   f.Fnum < 0 → (F2R f) < 0 := by
+  have hbeta : 1 < beta := ValidRadix.valid
   intro hnum
   unfold FloatSpec.Core.Defs.F2R
   have hbpos_int : (0 : Int) < beta := lt_trans (by decide) hbeta
@@ -576,10 +610,11 @@ Proof.
   now apply eq_0_F2R with (Fexp f).
 Qed.
 -/
-theorem F2R_neq_0 (f : FlocqFloat beta) (hbeta : 1 < beta) :
+@[flocq_source "src/Core/Float_prop.v" 246 "F2R_neq_0"]
+theorem F2R_neq_0 (f : FlocqFloat beta) :
   f.Fnum ≠ 0 → (F2R f) ≠ 0 := by
   intro hnum ne0
-  have := eq_0_F2R (beta := beta) f hbeta ne0
+  have := eq_0_F2R_f (beta := beta) f ne0
   exact hnum this
 
 -- Power of beta properties
@@ -593,8 +628,9 @@ Proof.
   apply Rmult_1_l.
 Qed.
 -/
-theorem F2R_bpow (e : Int) (hbeta : 1 < beta) :
-  (F2R (FlocqFloat.mk 1 e : FlocqFloat beta)) = (beta : ℝ) ^ e := by
+@[flocq_source "src/Core/Float_prop.v" 278 "F2R_bpow"]
+theorem F2R_bpow (e : Int) :
+  (F2R (FlocqFloat.mk 1 e : FlocqFloat beta)) = FloatSpec.Core.Raux.bpow beta e := by
   unfold FloatSpec.Core.Defs.F2R
   simp
 
@@ -609,8 +645,9 @@ Proof.
   now apply (Zlt_le_succ 0).
 Qed.
 -/
-theorem bpow_le_F2R (f : FlocqFloat beta) (hbeta : 1 < beta) :
+private theorem bpow_le_F2R_f (f : FlocqFloat beta) :
   0 < f.Fnum → (beta : ℝ) ^ f.Fexp ≤ (F2R f) := by
+  have hbeta : 1 < beta := ValidRadix.valid
   intro hm_pos
   -- From 0 < m (integer), deduce 1 ≤ m
   have hm_one_le : (1 : Int) ≤ f.Fnum := by
@@ -625,6 +662,11 @@ theorem bpow_le_F2R (f : FlocqFloat beta) (hbeta : 1 < beta) :
   -- Multiply both sides by p ≥ 0: 1*p ≤ m*p
   unfold FloatSpec.Core.Defs.F2R
   simpa using (mul_le_mul_of_nonneg_right hm_one_leR hp_nonneg)
+
+/-- FLoCq `bpow_le_F2R`. -/
+@[flocq_source "src/Core/Float_prop.v" 287 "bpow_le_F2R"]
+theorem bpow_le_F2R (m e : Int) : 0 < m → FloatSpec.Core.Raux.bpow beta e ≤ F2R (FlocqFloat.mk m e : FlocqFloat beta) :=
+  bpow_le_F2R_f beta (FlocqFloat.mk m e)
 
 /-
 Coq original:
@@ -652,11 +694,14 @@ Proof.
   now apply Zle_minus_le_0.
 Qed.
 -/
-theorem F2R_p1_le_bpow (m e1 e2 : Int) (hbeta : 1 < beta) :
+@[flocq_source "src/Core/Float_prop.v" 298 "F2R_p1_le_bpow"]
+theorem F2R_p1_le_bpow (m e1 e2 : Int) :
   0 < m →
-  (F2R (FlocqFloat.mk m e1 : FlocqFloat beta)) < (beta : ℝ) ^ e2 →
-  (F2R (FlocqFloat.mk (m + 1) e1 : FlocqFloat beta)) ≤ (beta : ℝ) ^ e2 := by
+  (F2R (FlocqFloat.mk m e1 : FlocqFloat beta)) < FloatSpec.Core.Raux.bpow beta e2 →
+  (F2R (FlocqFloat.mk (m + 1) e1 : FlocqFloat beta)) ≤ FloatSpec.Core.Raux.bpow beta e2 := by
+  have hbeta : 1 < beta := ValidRadix.valid
   intro hm_pos hlt
+  simp only [FloatSpec.Core.Raux.bpow] at hlt ⊢
   -- Notation
   set b : ℝ := (beta : ℝ)
   have hbpos_int : (0 : Int) < beta := lt_trans (by decide) hbeta
@@ -796,11 +841,13 @@ theorem bpow_le_F2R_m1_from_negative_payload
 
 /-- Exact source contract: decreasing a positive mantissa by one preserves a
     crossed power-of-the-radix lower bound. -/
+@[flocq_source "src/Core/Float_prop.v" 334 "bpow_le_F2R_m1"]
 theorem bpow_le_F2R_m1 (m e1 e2 : Int) (hm : 1 < m)
-    (hcross : (beta : ℝ) ^ e2 <
+    (hcross : FloatSpec.Core.Raux.bpow beta e2 <
       F2R (FlocqFloat.mk m e1 : FlocqFloat beta)) :
-    (beta : ℝ) ^ e2 ≤
+    FloatSpec.Core.Raux.bpow beta e2 ≤
       F2R (FlocqFloat.mk (m - 1) e1 : FlocqFloat beta) := by
+  simp only [FloatSpec.Core.Raux.bpow] at hcross ⊢
   have hb : (0 : ℝ) < (beta : ℝ) := by exact_mod_cast
     (lt_trans Int.zero_lt_one (ValidRadix.valid (beta := beta)))
   have hp : 0 < (beta : ℝ) ^ e1 := zpow_pos hb _
@@ -867,8 +914,9 @@ This is a simple but always-valid bound used in place of the Coq lemma
 that requires a normalization hypothesis on the mantissa. It suffices for
 local ordering arguments and avoids adding extra preconditions.
 -/
-theorem F2R_lt_bpow_of_neg_mantissa (f : FlocqFloat beta) (hbeta : 1 < beta) :
+theorem F2R_lt_bpow_of_neg_mantissa (f : FlocqFloat beta) :
   f.Fnum < 0 → (F2R f) < (beta : ℝ) ^ f.Fexp := by
+  have hbeta : 1 < beta := ValidRadix.valid
   intro hneg
   -- Unfold and use that (β : ℝ) ^ e > 0 when β > 1
   unfold FloatSpec.Core.Defs.F2R
@@ -883,9 +931,11 @@ theorem F2R_lt_bpow_of_neg_mantissa (f : FlocqFloat beta) (hbeta : 1 < beta) :
 
 /-- FLoCq `F2R_lt_bpow`: a mantissa bound at exponent `e' - f.Fexp`
 implies the corresponding absolute real-value bound at `e'`. -/
-theorem F2R_lt_bpow (f : FlocqFloat beta) (e' : Int) (hbeta : 1 < beta) :
+@[flocq_source "src/Core/Float_prop.v" 369 "F2R_lt_bpow"]
+theorem F2R_lt_bpow (f : FlocqFloat beta) (e' : Int) :
     |f.Fnum| < FloatSpec.Core.Zaux.Zpower beta (e' - f.Fexp) →
-    |F2R f| < (beta : ℝ) ^ e' := by
+    |F2R f| < FloatSpec.Core.Raux.bpow beta e' := by
+  have hbeta : 1 < beta := ValidRadix.valid
   intro hm
   let d := e' - f.Fexp
   have hd : 0 ≤ d := by
@@ -942,8 +992,9 @@ Proof.
   now apply Zle_minus_le_0.
 Qed.
 -/
-theorem F2R_change_exp (f : FlocqFloat beta) (e' : Int) (hbeta : 1 < beta) (he : e' ≤ f.Fexp) :
+private theorem F2R_change_exp_f (f : FlocqFloat beta) (e' : Int) (he : e' ≤ f.Fexp) :
   (F2R f) = (F2R (FlocqFloat.mk (f.Fnum * beta ^ (f.Fexp - e').natAbs) e' : FlocqFloat beta)) := by
+  have hbeta : 1 < beta := ValidRadix.valid
   -- Expand both sides
   unfold FloatSpec.Core.Defs.F2R
   -- Notation for the real base and basic facts
@@ -1042,6 +1093,13 @@ theorem F2R_change_exp (f : FlocqFloat beta) (e' : Int) (hbeta : 1 < beta) (he :
   --   _   = (((f.Fnum * beta ^ ((f.Fexp - e').natAbs) : Int) : ℝ)) * b ^ e' := by
   --             simpa [hnat]
 
+/-- FLoCq `F2R_change_exp`. -/
+@[flocq_source "src/Core/Float_prop.v" 391 "F2R_change_exp"]
+theorem F2R_change_exp (e' m e : Int) (he : e' ≤ e) :
+    F2R (FlocqFloat.mk m e : FlocqFloat beta) = F2R (FlocqFloat.mk (m * FloatSpec.Core.Zaux.Zpower beta (e - e')) e' : FlocqFloat beta) := by
+  rw [FloatSpec.Core.Zaux.Zpower_Zpower_nat beta (e - e') (by omega)]
+  exact F2R_change_exp_f beta (FlocqFloat.mk m e) e' he
+
 /-
 Coq original:
 Theorem F2R_prec_normalize : forall m e e' p : Z,
@@ -1068,11 +1126,12 @@ Proof.
   exact Hp.
 Qed.
 -/
-theorem F2R_prec_normalize (m e e' p : Int) (hbeta : 1 < beta) :
+private theorem F2R_prec_normalize_natAbs (m e e' p : Int) :
   Int.natAbs m < Int.natAbs beta ^ (p.toNat) →
   (beta : ℝ) ^ (e' - 1) ≤ |(F2R (FlocqFloat.mk m e : FlocqFloat beta))| →
   (F2R (FlocqFloat.mk m e : FlocqFloat beta)) =
     (F2R (FlocqFloat.mk (m * beta ^ (e - e' + p).natAbs) (e' - p) : FlocqFloat beta)) := by
+  have hbeta : 1 < beta := ValidRadix.valid
   intro habs_bound hlower
   classical
   -- Notation and basic facts about the base b = (beta : ℝ)
@@ -1177,7 +1236,7 @@ theorem F2R_prec_normalize (m e e' p : Int) (hbeta : 1 < beta) :
     have := Int.sub_le_sub_left he_le p
     simpa [sub_eq_add_neg, add_comm, add_left_comm, add_assoc] using this
   -- Apply the generic exponent change lemma with e" = e' - p
-  have := F2R_change_exp (beta := beta) (f := FlocqFloat.mk m e) (e' := e' - p) hbeta he'
+  have := F2R_change_exp_f (beta := beta) (f := FlocqFloat.mk m e) (e' := e' - p) he'
   -- Massage the mantissa exponent to the requested form
   -- e - (e' - p) = e - e' + p
   have hsum : e - (e' - p) = e - e' + p := by
@@ -1185,6 +1244,43 @@ theorem F2R_prec_normalize (m e e' p : Int) (hbeta : 1 < beta) :
   -- Rewrite the exponent difference inside natAbs accordingly
   simpa [hsum]
     using this
+
+/-- FLoCq `F2R_prec_normalize`. -/
+@[flocq_source "src/Core/Float_prop.v" 405 "F2R_prec_normalize"]
+theorem F2R_prec_normalize (m e e' p : Int) :
+    |m| < FloatSpec.Core.Zaux.Zpower beta p →
+    FloatSpec.Core.Raux.bpow beta (e' - 1) ≤ |F2R (FlocqFloat.mk m e : FlocqFloat beta)| →
+    F2R (FlocqFloat.mk m e : FlocqFloat beta) = F2R (FlocqFloat.mk (m * FloatSpec.Core.Zaux.Zpower beta (e - e' + p)) (e' - p) : FlocqFloat beta) := by
+  intro hm hx
+  have hbeta : 1 < beta := ValidRadix.valid
+  have hb : (0 : ℝ) < (beta : ℝ) := by
+    exact_mod_cast lt_trans Int.zero_lt_one (ValidRadix.valid (beta := beta))
+  by_cases hp : 0 ≤ p
+  swap
+  · simp only [FloatSpec.Core.Zaux.Zpower, hp, ↓reduceIte] at hm
+    exact absurd hm (not_lt.mpr (abs_nonneg m))
+  rw [FloatSpec.Core.Zaux.Zpower_Zpower_nat beta p hp] at hm
+  have hm' : Int.natAbs m < Int.natAbs beta ^ p.toNat := by
+    have h1 : ((Int.natAbs m : Nat) : Int) < ((Int.natAbs beta ^ p.toNat : Nat) : Int) := by
+      push_cast
+      rw [abs_of_pos (by omega : (0 : Int) < beta), show p.toNat = p.natAbs by omega]
+      exact hm
+    exact_mod_cast h1
+  -- The result exponent is nonnegative because |F2R| < beta ^ (p + e).
+  have hexp : 0 ≤ e - e' + p := by
+    have hpow : ((|m| : Int) : ℝ) < (beta : ℝ) ^ p := by
+      have : ((|m| : Int) : ℝ) < ((beta ^ p.natAbs : Int) : ℝ) := by exact_mod_cast hm
+      simpa [← zpow_natCast, show ((p.natAbs : Nat) : Int) = p by omega] using this
+    have hlt : FloatSpec.Core.Raux.bpow beta (e' - 1) < FloatSpec.Core.Raux.bpow beta (p + e) := by
+      refine lt_of_le_of_lt hx ?_
+      simp only [FloatSpec.Core.Defs.F2R, abs_mul, abs_of_pos (zpow_pos hb e), FloatSpec.Core.Raux.bpow,
+        zpow_add₀ hb.ne']
+      rw [← Int.cast_abs]
+      exact mul_lt_mul_of_pos_right hpow (zpow_pos hb e)
+    have := (zpow_lt_zpow_iff_right₀ (by exact_mod_cast hbeta : (1 : ℝ) < beta)).mp hlt
+    omega
+  rw [FloatSpec.Core.Zaux.Zpower_Zpower_nat beta _ hexp]
+  exact F2R_prec_normalize_natAbs beta m e e' p hm' hx
 
 /-
 Coq original:
@@ -1212,15 +1308,17 @@ Proof.
   now apply F2R_p1_le_bpow.
 Qed.
 -/
-theorem mag_F2R_bounds (x : ℝ) (m e : Int) (hbeta : 1 < beta) :
+@[flocq_source "src/Core/Float_prop.v" 430 "mag_F2R_bounds"]
+theorem mag_F2R_bounds (x : ℝ) (m e : Int) :
   0 < m →
   ((F2R (FlocqFloat.mk m e : FlocqFloat beta)) ≤ x ∧
     x < (F2R (FlocqFloat.mk (m + 1) e : FlocqFloat beta))) →
   mag beta x = mag beta (F2R (FlocqFloat.mk m e : FlocqFloat beta)) := by
+  have hbeta : 1 < beta := ValidRadix.valid
   intro hm_pos ⟨hx_lo, hx_hi⟩
   let f : ℝ := F2R (FlocqFloat.mk m e : FlocqFloat beta)
   have hf_pos : 0 < f :=
-    F2R_gt_0 (beta := beta) (f := FlocqFloat.mk m e) hbeta hm_pos
+    F2R_gt_0 (beta := beta) (f := FlocqFloat.mk m e) hm_pos
   have hx_pos : 0 < x := lt_of_lt_of_le hf_pos hx_lo
   have hf_ne : f ≠ 0 := ne_of_gt hf_pos
   have hx_ne : x ≠ 0 := ne_of_gt hx_pos
@@ -1241,7 +1339,7 @@ theorem mag_F2R_bounds (x : ℝ) (m e : Int) (hbeta : 1 < beta) :
         (beta : ℝ) ^ (mag beta f) := by
     change F2R (FlocqFloat.mk (m + 1) e : FlocqFloat beta) ≤
       (beta : ℝ) ^ (FloatSpec.Core.Raux.mag beta f)
-    apply F2R_p1_le_bpow (beta := beta) m e (mag beta f) hbeta hm_pos
+    apply F2R_p1_le_bpow (beta := beta) m e (mag beta f) hm_pos
     change f < (beta : ℝ) ^ (FloatSpec.Core.Raux.mag beta f)
     simpa [abs_of_pos hf_pos] using hf_high
   have hupp : |x| < (beta : ℝ) ^ (mag beta f) := by
@@ -1310,9 +1408,11 @@ Proof.
   now apply IZR_neq.
 Qed.
 -/
-theorem mag_F2R (m e : Int) (hbeta : 1 < beta) :
+@[flocq_source "src/Core/Float_prop.v" 453 "mag_F2R"]
+theorem mag_F2R (m e : Int) :
   m ≠ 0 →
   mag beta ((F2R (FlocqFloat.mk m e : FlocqFloat beta))) = mag beta (m : ℝ) + e := by
+  have hbeta : 1 < beta := ValidRadix.valid
   intro hm_ne
   apply FloatSpec.Core.Raux.mag_mult_bpow beta (m : ℝ) e hbeta
   exact_mod_cast hm_ne
@@ -1392,18 +1492,12 @@ In this file, `mag` is the legacy ceiling-based local definition, not
 code that uses `Generic_fmt.cexp` should use `FloatSpec.Core.Raux.mag` bridges
 instead.
 -/
-theorem Zdigits_pos (n : Int) (hbeta : 1 < beta) :
-  n ≠ 0 → (Zdigits beta n) > 0 := by
-  intro hn
-  -- Direct consequence of `Zdigits_gt_0` from `Digits.lean`.
-  have := FloatSpec.Core.Digits.Zdigits_gt_0 (beta := beta) n hn
-  simpa
-    using this
-
 /-- Digit count agrees with the Coq-compatible magnitude used by `Raux` and
 `Generic_fmt.cexp` for nonzero integer casts. -/
-theorem Zdigits_mag (n : Int) (hbeta : 1 < beta) :
+@[flocq_source "src/Core/Float_prop.v" 464 "Zdigits_mag"]
+theorem Zdigits_mag (n : Int) :
   n ≠ 0 → Zdigits beta n = FloatSpec.Core.Raux.mag beta (n : ℝ) := by
+  have hbeta : 1 < beta := ValidRadix.valid
   intro hn
   set d : Int := Zdigits beta n with hd
   have hβ_digits : beta > 1 := by simpa using hbeta
@@ -1450,12 +1544,6 @@ theorem Zdigits_mag (n : Int) (hbeta : 1 < beta) :
     simpa using hmag
   simpa [d, hd] using hmag_eq.symm
 
-/-- Compatibility spelling retained for callers that previously had to
-    distinguish the canonical `Raux.mag` from the duplicate local one. -/
-theorem Zdigits_Raux_mag (n : Int) (hbeta : 1 < beta) :
-    n ≠ 0 → Zdigits beta n = FloatSpec.Core.Raux.mag beta (n : ℝ) :=
-  Zdigits_mag (beta := beta) n hbeta
-
 /-
 Coq original:
 Theorem mag_F2R_Zdigits : forall m e,
@@ -1475,102 +1563,15 @@ For nonzero mantissas, we can always rewrite the magnitude of a float as
 `mag_F2R_Zdigits` to keep downstream references stable. The connection to
 `Zdigits` is captured separately in surrounding comments and lemmas.
 -/
-theorem mag_F2R_Zdigits (m e : Int) (hbeta : 1 < beta) :
+@[flocq_source "src/Core/Float_prop.v" 484 "mag_F2R_Zdigits"]
+theorem mag_F2R_Zdigits (m e : Int) :
   m ≠ 0 →
   mag beta ((F2R (FlocqFloat.mk m e : FlocqFloat beta))) = Zdigits beta m + e := by
   intro hm
   calc
     mag beta (F2R (FlocqFloat.mk m e : FlocqFloat beta))
-        = mag beta (m : ℝ) + e := mag_F2R (beta := beta) m e hbeta hm
-    _ = Zdigits beta m + e := by rw [Zdigits_mag (beta := beta) m hbeta hm]
-
-/-- Coq-compatible magnitude version of `mag_F2R_Zdigits`.
-
-This is the bridge used by `Generic_fmt.cexp`, whose definition is based on
-`FloatSpec.Core.Raux.mag` rather than the legacy local `Float_prop.mag`.
--/
-theorem Raux_mag_F2R_Zdigits (m e : Int) (hbeta : 1 < beta) :
-  m ≠ 0 →
-  FloatSpec.Core.Raux.mag beta
-      (F2R (FlocqFloat.mk m e : FlocqFloat beta)) =
-    Zdigits beta m + e := by
-  intro hm
-  set d : Int := Zdigits beta m with hd
-  have hβ_digits : beta > 1 := by simpa using hbeta
-  have hbounds := FloatSpec.Core.Digits.Zdigits_correct (beta := beta) m hβ_digits
-  have hd_pos : 0 < d := by
-    simpa [d, hd] using
-      (FloatSpec.Core.Digits.Zdigits_gt_0 (beta := beta) m hm)
-  have hd_nonneg : 0 ≤ d := le_of_lt hd_pos
-  have hdm1_nonneg : 0 ≤ d - 1 := by grind
-  have hlow_int : beta ^ ((d - 1).natAbs) ≤ |m| := by
-    have h := hbounds.1
-    change FloatSpec.Core.Zaux.Zpower beta (d - 1) ≤ |m| at h
-    rw [FloatSpec.Core.Zaux.Zpower, ite_eq_left hdm1_nonneg] at h
-    have heq : (d - 1).toNat = (d - 1).natAbs := by omega
-    simpa [heq] using h
-  have hupp_int : |m| < beta ^ d.natAbs := by
-    have h := hbounds.2
-    change |m| < FloatSpec.Core.Zaux.Zpower beta d at h
-    rw [FloatSpec.Core.Zaux.Zpower, ite_eq_left hd_nonneg] at h
-    have heq : d.toNat = d.natAbs := by omega
-    simpa [heq] using h
-  have hbposℤ : (0 : Int) < beta := lt_trans Int.zero_lt_one hbeta
-  have hbpos : (0 : ℝ) < (beta : ℝ) := by exact_mod_cast hbposℤ
-  have hbne : (beta : ℝ) ≠ 0 := ne_of_gt hbpos
-  have hpow_pos : 0 < (beta : ℝ) ^ e := zpow_pos hbpos e
-  have hpow_nonneg : 0 ≤ (beta : ℝ) ^ e := le_of_lt hpow_pos
-  have hlow_nat : ((beta : ℝ) ^ ((d - 1).natAbs) : ℝ) ≤ |(m : ℝ)| := by
-    exact_mod_cast hlow_int
-  have hupp_nat : |(m : ℝ)| < ((beta : ℝ) ^ d.natAbs : ℝ) := by
-    exact_mod_cast hupp_int
-  have hlow_pow : (beta : ℝ) ^ (d - 1) = (beta : ℝ) ^ ((d - 1).natAbs) := by
-    calc
-      (beta : ℝ) ^ (d - 1) = (beta : ℝ) ^ (((d - 1).natAbs : Int)) := by
-        rw [Int.natAbs_of_nonneg hdm1_nonneg]
-      _ = (beta : ℝ) ^ ((d - 1).natAbs) := zpow_ofNat _ _
-  have hupp_pow : (beta : ℝ) ^ d = (beta : ℝ) ^ d.natAbs := by
-    calc
-      (beta : ℝ) ^ d = (beta : ℝ) ^ ((d.natAbs : Int)) := by
-        rw [Int.natAbs_of_nonneg hd_nonneg]
-      _ = (beta : ℝ) ^ d.natAbs := zpow_ofNat _ _
-  have hlow_m : (beta : ℝ) ^ (d - 1) ≤ |(m : ℝ)| := by
-    simpa [hlow_pow] using hlow_nat
-  have hupp_m : |(m : ℝ)| < (beta : ℝ) ^ d := by
-    simpa [hupp_pow] using hupp_nat
-  have hlow_scaled :
-      (beta : ℝ) ^ (d + e - 1) ≤
-        |F2R (FlocqFloat.mk m e : FlocqFloat beta)| := by
-    have hmul := mul_le_mul_of_nonneg_right hlow_m hpow_nonneg
-    have hpow :
-        (beta : ℝ) ^ (d - 1) * (beta : ℝ) ^ e =
-          (beta : ℝ) ^ (d + e - 1) := by
-      calc
-        (beta : ℝ) ^ (d - 1) * (beta : ℝ) ^ e
-            = (beta : ℝ) ^ ((d - 1) + e) := by
-                exact (_root_.zpow_add₀ hbne (d - 1) e).symm
-        _ = (beta : ℝ) ^ (d + e - 1) := by ring_nf
-    simpa [F2R, abs_mul, abs_of_nonneg hpow_nonneg, hpow]
-      using hmul
-  have hupp_scaled :
-      |F2R (FlocqFloat.mk m e : FlocqFloat beta)| <
-        (beta : ℝ) ^ (d + e) := by
-    have hmul := mul_lt_mul_of_pos_right hupp_m hpow_pos
-    have hpow :
-        (beta : ℝ) ^ d * (beta : ℝ) ^ e =
-          (beta : ℝ) ^ (d + e) := by
-      exact (_root_.zpow_add₀ hbne d e).symm
-    simpa [F2R, abs_mul, abs_of_nonneg hpow_nonneg, hpow]
-      using hmul
-  have hmag := FloatSpec.Core.Raux.mag_unique
-    (beta := beta)
-    (x := F2R (FlocqFloat.mk m e : FlocqFloat beta))
-    (e := d + e) hbeta ⟨hlow_scaled, hupp_scaled⟩
-  have hmag_eq :
-      FloatSpec.Core.Raux.mag beta
-          (F2R (FlocqFloat.mk m e : FlocqFloat beta)) = d + e := by
-    simpa using hmag
-  simpa [d, hd] using hmag_eq
+        = mag beta (m : ℝ) + e := mag_F2R (beta := beta) m e hm
+    _ = Zdigits beta m + e := by rw [Zdigits_mag (beta := beta) m hm]
 
 /-- Coq-compatible magnitude for values strictly between adjacent positive
 floats with the same exponent.
@@ -1579,7 +1580,8 @@ This is the `Raux.mag` analogue of the legacy local
 `mag_F2R_bounds_Zdigits` theorem and is the magnitude fact needed by
 `Generic_fmt.cexp`.
 -/
-theorem mag_F2R_bounds_Zdigits (x : ℝ) (m e : Int) (hbeta : 1 < beta) :
+@[flocq_source "src/Core/Float_prop.v" 495 "mag_F2R_bounds_Zdigits"]
+theorem mag_F2R_bounds_Zdigits (x : ℝ) (m e : Int) :
   0 < m →
   (F2R (FlocqFloat.mk m e : FlocqFloat beta) ≤ x ∧
     x < F2R (FlocqFloat.mk (m + 1) e : FlocqFloat beta)) →
@@ -1589,8 +1591,8 @@ theorem mag_F2R_bounds_Zdigits (x : ℝ) (m e : Int) (hbeta : 1 < beta) :
     FloatSpec.Core.Raux.mag beta x =
         FloatSpec.Core.Raux.mag beta
           (F2R (FlocqFloat.mk m e : FlocqFloat beta)) :=
-      mag_F2R_bounds (beta := beta) x m e hbeta hm hx
-    _ = Zdigits beta m + e := mag_F2R_Zdigits (beta := beta) m e hbeta (ne_of_gt hm)
+      mag_F2R_bounds (beta := beta) x m e hm hx
+    _ = Zdigits beta m + e := mag_F2R_Zdigits (beta := beta) m e (ne_of_gt hm)
 
 /- Legacy direct logarithmic proof, superseded by the two exact source lemmas.
   intro hm_pos hx
@@ -1871,15 +1873,6 @@ Qed.
     simpa [Int.cast_add] using hdiv
 -/
 
-/-- Compatibility spelling for callers written while `Float_prop` had a
-    second magnitude implementation. -/
-theorem Raux_mag_F2R_bounds_Zdigits (x : ℝ) (m e : Int) (hbeta : 1 < beta) :
-    0 < m →
-    (F2R (FlocqFloat.mk m e : FlocqFloat beta) ≤ x ∧
-      x < F2R (FlocqFloat.mk (m + 1) e : FlocqFloat beta)) →
-    FloatSpec.Core.Raux.mag beta x = Zdigits beta m + e :=
-  mag_F2R_bounds_Zdigits (beta := beta) x m e hbeta
-
 /-
 Coq original:
 Theorem float_distribution_pos : forall m1 e1 m2 e2 : Z,
@@ -1934,11 +1927,12 @@ Proof.
   now apply Zlt_not_eq.
 Qed.
 -/
-theorem float_distribution_pos (m1 e1 m2 e2 : Int) (hbeta : 1 < beta) :
+private theorem float_distribution_pos_Zdigits (m1 e1 m2 e2 : Int) :
   0 < m1 →
   ((F2R (FlocqFloat.mk m1 e1 : FlocqFloat beta)) < (F2R (FlocqFloat.mk m2 e2 : FlocqFloat beta)) ∧
     (F2R (FlocqFloat.mk m2 e2 : FlocqFloat beta)) < (F2R (FlocqFloat.mk (m1 + 1) e1 : FlocqFloat beta))) →
   (e2 < e1) ∧ (e1 + (Zdigits beta m1) = e2 + mag beta (m2 : ℝ)) := by
+  have hbeta : 1 < beta := ValidRadix.valid
   intro hm1_pos ⟨hlo, hhi⟩
   -- Basic setup
   have hbpos_int : (0 : Int) < beta := lt_trans (by decide) hbeta
@@ -1948,11 +1942,11 @@ theorem float_distribution_pos (m1 e1 m2 e2 : Int) (hbeta : 1 < beta) :
   have hm1_ne : m1 ≠ 0 := ne_of_gt hm1_pos
   -- F2R(m1,e1) > 0 from m1 > 0
   have hF2R_m1_pos : 0 < (F2R (FlocqFloat.mk m1 e1 : FlocqFloat beta)) :=
-    F2R_gt_0 beta (FlocqFloat.mk m1 e1) hbeta hm1_pos
+    F2R_gt_0 beta (FlocqFloat.mk m1 e1) hm1_pos
   -- m2 > 0 from transitivity: 0 < F2R(m1,e1) < F2R(m2,e2)
   have hF2R_m2_pos : 0 < (F2R (FlocqFloat.mk m2 e2 : FlocqFloat beta)) :=
     lt_trans hF2R_m1_pos hlo
-  have hm2_pos : 0 < m2 := gt_0_F2R beta (FlocqFloat.mk m2 e2) hbeta hF2R_m2_pos
+  have hm2_pos : 0 < m2 := gt_0_F2R beta m2 e2 hF2R_m2_pos
   have hm2_ne : m2 ≠ 0 := ne_of_gt hm2_pos
   constructor
   -- Part 1: Prove e2 < e1 by contradiction
@@ -1976,17 +1970,17 @@ theorem float_distribution_pos (m1 e1 m2 e2 : Int) (hbeta : 1 < beta) :
     -- F2R(m2,e2) = F2R(m2',e1)
     have hchange : (F2R (FlocqFloat.mk m2 e2 : FlocqFloat beta)) =
                    (F2R (FlocqFloat.mk m2' e1 : FlocqFloat beta)) := by
-      have := F2R_change_exp (beta := beta) (f := FlocqFloat.mk m2 e2) (e' := e1) hbeta he1_le
+      have := F2R_change_exp_f (beta := beta) (f := FlocqFloat.mk m2 e2) (e' := e1) he1_le
       simp only [FlocqFloat.mk] at this ⊢
       convert this using 2
     -- From F2R(m1,e1) < F2R(m2,e2) = F2R(m2',e1), we get m1 < m2'
     have hm1_lt_m2' : m1 < m2' := by
-      have hlt := lt_F2R_iff (beta := beta) e1 m1 m2' hbeta
+      have hlt := lt_F2R_iff (beta := beta) e1 m1 m2'
       rw [← hchange] at hlt
       exact hlt.mpr hlo
     -- From F2R(m2',e1) = F2R(m2,e2) < F2R(m1+1,e1), we get m2' < m1+1
     have hm2'_lt_m1succ : m2' < m1 + 1 := by
-      have hlt := lt_F2R_iff (beta := beta) e1 m2' (m1 + 1) hbeta
+      have hlt := lt_F2R_iff (beta := beta) e1 m2' (m1 + 1)
       rw [← hchange] at hlt
       exact hlt.mpr hhi
     -- So m1 < m2' < m1+1, but m2' is an integer, contradiction!
@@ -1998,17 +1992,28 @@ theorem float_distribution_pos (m1 e1 m2 e2 : Int) (hbeta : 1 < beta) :
     have hmag_eq1 : mag beta (F2R (FlocqFloat.mk m2 e2 : FlocqFloat beta)) =
                     (Zdigits beta m1) + e1 := by
       apply mag_F2R_bounds_Zdigits beta (x := (F2R (FlocqFloat.mk m2 e2 : FlocqFloat beta)))
-        (m := m1) (e := e1) hbeta hm1_pos
+        (m := m1) (e := e1) hm1_pos
       exact ⟨le_of_lt hlo, hhi⟩
     -- By mag_F2R: mag(F2R(m2,e2)) = mag(m2) + e2
     have hmag_eq2 : mag beta (F2R (FlocqFloat.mk m2 e2 : FlocqFloat beta)) =
                     mag beta (m2 : ℝ) + e2 := by
-      exact mag_F2R (beta := beta) m2 e2 hbeta hm2_ne
+      exact mag_F2R (beta := beta) m2 e2 hm2_ne
     -- Combine: Zdigits(m1) + e1 = mag(m2) + e2
     have h_comb : (Zdigits beta m1) + e1 = mag beta (m2 : ℝ) + e2 := by
       rw [← hmag_eq1, hmag_eq2]
     -- Rearrange to e1 + Zdigits(m1) = e2 + mag(m2)
     linarith
+/-- FLoCq `float_distribution_pos`. -/
+@[flocq_source "src/Core/Float_prop.v" 507 "float_distribution_pos"]
+theorem float_distribution_pos (m1 e1 m2 e2 : Int) :
+    0 < m1 →
+    (F2R (FlocqFloat.mk m1 e1 : FlocqFloat beta) < F2R (FlocqFloat.mk m2 e2 : FlocqFloat beta) ∧
+      F2R (FlocqFloat.mk m2 e2 : FlocqFloat beta) < F2R (FlocqFloat.mk (m1 + 1) e1 : FlocqFloat beta)) →
+    e2 < e1 ∧ e1 + mag beta (m1 : ℝ) = e2 + mag beta (m2 : ℝ) := by
+  intro hm1 h
+  obtain ⟨h1, h2⟩ := float_distribution_pos_Zdigits beta m1 e1 m2 e2 hm1 h
+  exact ⟨h1, by rw [← Zdigits_mag beta m1 (ne_of_gt hm1)]; exact h2⟩
+
 end FloatProp
 
 end FloatSpec.Core.Float_prop

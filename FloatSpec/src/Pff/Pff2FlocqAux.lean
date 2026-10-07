@@ -2117,7 +2117,7 @@ theorem Fulp_ulp_aux (beta : Int) [ValidRadix beta] (b : Fbound) (p : Int)
   have hvnum : b.vNum = Zpower_nat beta p.natAbs := hpBound
   by_cases hx : pff_to_R_aux beta f = 0
   · have hmzero : f.Fnum = 0 :=
-      FloatSpec.Core.Float_prop.eq_0_F2R (beta := beta) f hbeta hx
+      FloatSpec.Core.Float_prop.eq_0_F2R (beta := beta) f.Fnum f.Fexp hx
     have hzero := Fulp_zero (beta := beta) b beta p.natAbs f
     have hzero' : PFulp beta b p f = (beta : ℝ) ^ (-b.dExp) := by
       simpa only [pure,

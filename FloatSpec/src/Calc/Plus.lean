@@ -209,19 +209,19 @@ theorem Fplus_correct (x y : FlocqFloat beta) :
         have hmag1 : FloatSpec.Core.Raux.mag beta
               (F2R (FlocqFloat.mk m1 e1 : FlocqFloat beta)) = p1 := by
           simpa [p1] using
-            (FloatSpec.Core.Float_prop.Raux_mag_F2R_Zdigits
-              (beta := beta) m1 e1 hβ hm1)
+            (FloatSpec.Core.Float_prop.mag_F2R_Zdigits
+              (beta := beta) m1 e1 hm1)
         have hmag2 : FloatSpec.Core.Raux.mag beta
               (F2R (FlocqFloat.mk m2 e2 : FlocqFloat beta)) = p2 := by
           simpa [p2] using
-            (FloatSpec.Core.Float_prop.Raux_mag_F2R_Zdigits
-              (beta := beta) m2 e2 hβ hm2)
+            (FloatSpec.Core.Float_prop.mag_F2R_Zdigits
+              (beta := beta) m2 e2 hm2)
         have hnz1 : F2R (FlocqFloat.mk m1 e1 : FlocqFloat beta) ≠ 0 :=
           FloatSpec.Core.Float_prop.F2R_neq_0
-            (beta := beta) (FlocqFloat.mk m1 e1) hβ hm1
+            (beta := beta) (FlocqFloat.mk m1 e1) hm1
         have hnz2 : F2R (FlocqFloat.mk m2 e2 : FlocqFloat beta) ≠ 0 :=
           FloatSpec.Core.Float_prop.F2R_neq_0
-            (beta := beta) (FlocqFloat.mk m2 e2) hβ hm2
+            (beta := beta) (FlocqFloat.mk m2 e2) hm2
         have hmag : max p1 p2 - 1 ≤ FloatSpec.Core.Raux.mag beta z := by
           rcases le_total p1 p2 with hp12 | hp21
           · have hpcast : (2 : Int) ≤ (Int.natAbs (p1 - p2) : Int) := by

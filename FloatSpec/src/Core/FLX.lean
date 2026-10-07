@@ -262,7 +262,7 @@ theorem generic_format_FLX (beta : Int) [ValidRadix beta] (x : ℝ) :
     ValidRadix.valid hm hbound
   have hmag : mag beta (F2R f) = mag beta (f.Fnum : ℝ) + f.Fexp :=
     FloatSpec.Core.Float_prop.mag_F2R
-      (beta := beta) f.Fnum f.Fexp ValidRadix.valid hm
+      (beta := beta) f.Fnum f.Fexp hm
   have hce : cexp beta (FLX_exp prec) (F2R f) ≤ f.Fexp := by
     simp only [cexp, FLX_exp]
     rw [hmag]
@@ -420,23 +420,9 @@ theorem FIX_format_FLX (beta : Int) [ValidRadix beta] (x : ℝ) (e : Int) :
       FLX_format prec beta x →
         FloatSpec.Core.FIX.FIX_format (emin := e - prec) beta x := by
   rintro ⟨hlow, _hupp⟩ ⟨f, hxf, hm⟩
-  have hprec : 0 ≤ prec := by
-    by_contra hp
-    exact (not_lt_of_ge (abs_nonneg f.Fnum)) (by
-      simpa [FloatSpec.Core.Zaux.Zpower, hp] using hm)
-  have hm' : Int.natAbs f.Fnum < Int.natAbs beta ^ prec.toNat := by
-    have hm' : |f.Fnum| < beta ^ prec.toNat := by
-      simpa [FloatSpec.Core.Zaux.Zpower, hprec] using hm
-    rw [Int.abs_eq_natAbs] at hm'
-    have hm'' : (Int.natAbs f.Fnum : Int) <
-        (Int.natAbs beta : Int) ^ prec.toNat := by
-      simpa only [Int.natAbs_of_nonneg
-        (le_of_lt (Int.zero_lt_one.trans ValidRadix.valid))] using hm'
-    exact_mod_cast hm''
   have hnorm := FloatSpec.Core.Float_prop.F2R_prec_normalize
-    (beta := beta) f.Fnum f.Fexp e prec ValidRadix.valid hm'
-      (by simpa [hxf] using hlow)
-  let m' := f.Fnum * beta ^ (f.Fexp - e + prec).natAbs
+    (beta := beta) f.Fnum f.Fexp e prec hm (by simpa [hxf] using hlow)
+  let m' := f.Fnum * FloatSpec.Core.Zaux.Zpower beta (f.Fexp - e + prec)
   rw [hxf, hnorm]
   exact ⟨⟨m', e - prec⟩, rfl, rfl⟩
 

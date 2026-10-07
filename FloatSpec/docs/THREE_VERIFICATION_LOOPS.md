@@ -202,6 +202,18 @@ check validates every observed pair against Python's floor division and exact
 integer reconstruction; it is not a fresh execution. No universal cross-prover
 equivalence is claimed from the finite grid.
 
+## Float_prop (October 7)
+
+```sh
+lake env lean -DwarningAsError=true scripts/fixtures/FloatPropContracts.lean
+coqc -q -R "$FLOCQ_AUDIT_DIR/src" Flocq \
+  -o /tmp/FloatPropContracts.vo scripts/fixtures/FloatPropContracts.v
+uv run scripts/test_float_prop_contracts.py -v
+```
+
+All 36 `Float_prop.v` laws are stated in both assistants; 16 mutations are
+rejected.
+
 ## Digits (October 7)
 
 ```sh

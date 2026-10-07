@@ -1719,7 +1719,7 @@ theorem FSuccNormPos {beta : Int} [ValidRadix beta]
   subst beta
   have ha_bounded : Fbounded (beta:=radix) b a := ha_normal.1
   have ha_num_nonneg : 0 ≤ a.Fnum :=
-    FloatSpec.Core.Float_prop.Fnum_ge_0 (beta:=radix) a hradix
+    FloatSpec.Core.Float_prop.Fnum_ge_0 (beta:=radix) a
       (by simpa [FtoR] using ha_nonneg)
   have hnpos : 0 < nNormMin radix precision := by
     cases precision with
@@ -2851,7 +2851,7 @@ theorem FSuccNormNegNotNormMin {beta : Int} [ValidRadix beta]
   have hprecision_ne : precision ≠ 0 := by omega
   have hx_bounded : Fbounded (beta:=radix) b x := hx_normal.1
   have hx_num_nonpos : x.Fnum ≤ 0 := by
-    exact FloatSpec.Core.Float_prop.le_0_F2R (beta:=radix) x hradix
+    exact FloatSpec.Core.Float_prop.le_0_F2R (beta:=radix) x.Fnum x.Fexp
       (by simpa [FtoR] using hx_nonpos)
   have hsucc_bounded : Fbounded (beta:=radix) b
       (FSucc (beta:=radix) b radix precision x) := by
@@ -3170,7 +3170,7 @@ theorem R0RltRleSucc {beta : Int} [ValidRadix beta]
       (FSucc (beta:=beta) b radix precision x) ≤ 0 := by
   subst beta
   have hxnum_neg : x.Fnum < 0 :=
-    FloatSpec.Core.Float_prop.lt_0_F2R (beta:=radix) x hradix hxneg
+    FloatSpec.Core.Float_prop.lt_0_F2R (beta:=radix) x.Fnum x.Fexp hxneg
   have hradix_pos : 0 < radix := by omega
   have hvnum_gt_one : (1 : Int) < b.vNum := by
     rw [hvnum, Zpower_nat]
@@ -3184,7 +3184,7 @@ theorem R0RltRleSucc {beta : Int} [ValidRadix beta]
   have hle_zero_of_fnum
       (f : FloatSpec.Core.Defs.FlocqFloat radix) (hf : f.Fnum ≤ 0) :
       _root_.F2R (beta:=radix) f ≤ 0 :=
-    FloatSpec.Core.Float_prop.F2R_le_0 (beta:=radix) f hradix hf
+    FloatSpec.Core.Float_prop.F2R_le_0 (beta:=radix) f hf
   unfold FSucc
   by_cases htop : x.Fnum = pPred b.vNum
   · exfalso
@@ -4764,7 +4764,7 @@ theorem FSuccPropPos {beta : Int} [ValidRadix beta]
         simp [FSucc, htop]
       by_cases hadj : x.Fexp + 1 = y.Fexp
       · have hy_fnum_nonneg : 0 ≤ y.Fnum :=
-          FloatSpec.Core.Float_prop.ge_0_F2R (beta:=beta) y hbeta_gt hy_nonneg
+          FloatSpec.Core.Float_prop.ge_0_F2R (beta:=beta) y.Fnum y.Fexp hy_nonneg
         have hy_bound : Fbounded (beta:=beta) b y :=
           (FcanonicBound (beta:=beta) radix b y) hy_can
         have hy_num_lower : nNormMin radix precision ≤ y.Fnum := by
@@ -4812,7 +4812,7 @@ theorem FSuccPropPos {beta : Int} [ValidRadix beta]
     · have hnot_low : x.Fnum ≠ -nNormMin radix precision := by
         intro hlow
         have hx_fnum_nonneg : 0 ≤ x.Fnum :=
-          FloatSpec.Core.Float_prop.ge_0_F2R (beta:=beta) x hbeta_gt hx_nonneg
+          FloatSpec.Core.Float_prop.ge_0_F2R (beta:=beta) x.Fnum x.Fexp hx_nonneg
         have hnm_pos : 0 < nNormMin radix precision := by
           unfold nNormMin
           exact pow_pos (by omega : 0 < radix) _
@@ -4837,7 +4837,7 @@ theorem FSuccPropPos {beta : Int} [ValidRadix beta]
     have hnot_low : x.Fnum ≠ -nNormMin radix precision := by
       intro hlow
       have hx_fnum_nonneg : 0 ≤ x.Fnum :=
-        FloatSpec.Core.Float_prop.ge_0_F2R (beta:=beta) x hbeta_gt hx_nonneg
+        FloatSpec.Core.Float_prop.ge_0_F2R (beta:=beta) x.Fnum x.Fexp hx_nonneg
       have hnm_pos : 0 < nNormMin radix precision := by
         unfold nNormMin
         exact pow_pos (by omega : 0 < radix) _
@@ -5986,7 +5986,7 @@ theorem radixRangeBoundExp {beta : Int} [ValidRadix beta]
                 (firstNormalPos (beta:=radix) radix b precision) :=
           by
             have hp_fnum_nonneg : 0 ≤ p.Fnum :=
-              FloatSpec.Core.Float_prop.ge_0_F2R (beta := radix) p hradix hp_nonneg
+              FloatSpec.Core.Float_prop.ge_0_F2R (beta := radix) p.Fnum p.Fexp hp_nonneg
             have hsub_abs : |radix * p.Fnum| < b.vNum := hp_subnormal.2.2
             have hradix_mul_nonneg : 0 ≤ radix * p.Fnum :=
               mul_nonneg (le_of_lt hradix_pos_int) hp_fnum_nonneg
@@ -11805,7 +11805,8 @@ theorem F2R_rep_at_lower_exp {beta : Int} [ValidRadix beta]
         _root_.F2R (beta:=beta) ⟨m, e⟩ := by
   have hbeta : 1 < beta := ValidRadix.valid
   refine ⟨q.Fnum * beta ^ (q.Fexp - e).natAbs, ?_⟩
-  exact FloatSpec.Core.Float_prop.F2R_change_exp (beta:=beta) q e hbeta hexp
+  rw [← FloatSpec.Core.Zaux.Zpower_Zpower_nat beta _ (sub_nonneg.mpr hexp)]
+  exact FloatSpec.Core.Float_prop.F2R_change_exp (beta:=beta) e q.Fnum q.Fexp hexp
 
 /-- Coq's `FmaxRep` is a short negation wrapper around `FminRep`.  This lemma
 keeps that dependency explicit: once the min-side representation theorem is
@@ -13637,9 +13638,9 @@ theorem FSuccPropNeg {beta : Int} [ValidRadix beta]
       (FcanonicLtNeg (beta:=beta) radix hradix_eq_beta b x y) hx_can hy_can
           (le_of_lt hyneg) hxy
     have hx_fnum_neg : x.Fnum < 0 :=
-      FloatSpec.Core.Float_prop.lt_0_F2R (beta:=beta) x hbeta_gt hxneg
+      FloatSpec.Core.Float_prop.lt_0_F2R (beta:=beta) x.Fnum x.Fexp hxneg
     have hy_fnum_neg : y.Fnum < 0 :=
-      FloatSpec.Core.Float_prop.lt_0_F2R (beta:=beta) y hbeta_gt hyneg
+      FloatSpec.Core.Float_prop.lt_0_F2R (beta:=beta) y.Fnum y.Fexp hyneg
     have hradix_pos : 0 < radix := by omega
     have hnm_pos : 0 < nNormMin radix precision := by
       unfold nNormMin
@@ -13876,7 +13877,7 @@ theorem FnormalLtFirstNormalPos {beta : Int} [ValidRadix beta]
   have hbeta_ge_one : (1 : ℝ) ≤ (beta : ℝ) := by
     exact_mod_cast (le_of_lt hbeta)
   have hp_fnum_nonneg : 0 ≤ p.Fnum :=
-    FloatSpec.Core.Float_prop.ge_0_F2R (beta := beta) p hbeta hp_nonneg
+    FloatSpec.Core.Float_prop.ge_0_F2R (beta := beta) p.Fnum p.Fexp hp_nonneg
   have hmin_abs : nNormMin radix precision ≤ |p.Fnum| :=
     (pNormal_absolu_min (beta := beta) radix) hradix b precision hprecision hvNum p
         ⟨⟨hnum_bound, hexp_lb⟩, hnormal_num⟩
@@ -13999,7 +14000,7 @@ theorem FsubnormalLtFirstNormalPos {beta : Int} [ValidRadix beta]
   have hbeta_pos : (0 : ℝ) < (beta : ℝ) := by
     exact_mod_cast (lt_trans (by norm_num : (0 : Int) < 1) hbeta)
   have hp_fnum_nonneg : 0 ≤ p.Fnum :=
-    FloatSpec.Core.Float_prop.ge_0_F2R (beta := beta) p hbeta hp_nonneg
+    FloatSpec.Core.Float_prop.ge_0_F2R (beta := beta) p.Fnum p.Fexp hp_nonneg
   have hsub_abs : |p.Fnum| < nNormMin radix precision :=
     (pSubnormal_absolu_min (beta := beta) radix) hradix b precision hprecision hvNum
         p hsubPrime_full
@@ -14212,10 +14213,11 @@ theorem FnormalLtPos {beta : Int} [ValidRadix beta]
         rw [hshift_val]
         exact hp_nonneg
       have hq_fnum_nonneg : 0 ≤ q.Fnum :=
-        FloatSpec.Core.Float_prop.ge_0_F2R (beta := beta) q hbeta hq_nonneg
+        FloatSpec.Core.Float_prop.ge_0_F2R (beta := beta) q.Fnum q.Fexp hq_nonneg
       have hshift_fnum_nonneg : 0 ≤ (Fshift (beta:=beta) radix n p).Fnum :=
         FloatSpec.Core.Float_prop.ge_0_F2R
-          (beta := beta) (Fshift (beta:=beta) radix n p) hbeta hshift_nonneg
+          (beta := beta) (Fshift (beta:=beta) radix n p).Fnum (Fshift (beta:=beta) radix n p).Fexp
+          hshift_nonneg
       have hq_fnum_pos : 0 < q.Fnum := by omega
       have hshift_abs_lt_q_abs :
           Int.natAbs (Fshift (beta:=beta) radix n p).Fnum < Int.natAbs q.Fnum := by
@@ -15744,7 +15746,7 @@ theorem is_Fzero_rep2 {beta : Int} [ValidRadix beta]
     is_Fzero x := by
   have hβ : 1 < beta := ValidRadix.valid
   show is_Fzero x
-  exact FloatSpec.Core.Float_prop.eq_0_F2R (beta:=beta) x hβ hx
+  exact FloatSpec.Core.Float_prop.eq_0_F2R (beta:=beta) x.Fnum x.Fexp hx
 
 -- Coq: `NisFzeroComp` — if x is not zero and F2R x = F2R y then y is not zero
 theorem NisFzeroComp {beta : Int} [ValidRadix beta]
@@ -15759,7 +15761,7 @@ theorem NisFzeroComp {beta : Int} [ValidRadix beta]
     have hy_num : y.Fnum = 0 := hy
     simp [_root_.F2R, FloatSpec.Core.Defs.F2R, hy_num]
   have hx0 : _root_.F2R x = 0 := hxy.trans hy0
-  exact FloatSpec.Core.Float_prop.eq_0_F2R (beta:=beta) x hβ hx0
+  exact FloatSpec.Core.Float_prop.eq_0_F2R (beta:=beta) x.Fnum x.Fexp hx0
 
 /-- Coq: `Fle_Zle` — `n1 ≤ n2 → Fle (Float n1 d) (Float n2 d)`: floats with
 the same exponent are ordered by their mantissas. -/
@@ -18651,7 +18653,7 @@ theorem Fabs_correct1 {beta : Int} [ValidRadix beta]
     _root_.F2R (Fabs (beta:=beta) x) = _root_.F2R x := by
   have hβ : 1 < beta := ValidRadix.valid
   show _root_.F2R (Fabs x) = _root_.F2R x
-  have hnum : 0 ≤ x.Fnum := FloatSpec.Core.Float_prop.ge_0_F2R (beta:=beta) x hβ hx
+  have hnum : 0 ≤ x.Fnum := FloatSpec.Core.Float_prop.ge_0_F2R (beta:=beta) x.Fnum x.Fexp hx
   cases x with
   | mk m e =>
     simp only [FloatSpec.Core.Defs.FlocqFloat.Fnum] at hnum
@@ -20468,7 +20470,7 @@ theorem ExactMinusIntervalAux_pred_same_exp_case {beta : Int} [ValidRadix beta]
   refine ⟨pred_rp, ?_, ?_⟩
   · rcases hnrpBound with ⟨hnum, hexp⟩
     have hm_pos : 0 < nrp.Fnum :=
-      FloatSpec.Core.Float_prop.gt_0_F2R (beta:=beta) nrp hβ hnrp_pos
+      FloatSpec.Core.Float_prop.gt_0_F2R (beta:=beta) nrp.Fnum nrp.Fexp hnrp_pos
     constructor
     · have hm_minus_nonneg : 0 ≤ nrp.Fnum - 1 := by omega
       have hm_abs : |nrp.Fnum| = nrp.Fnum := abs_of_pos hm_pos
@@ -20639,7 +20641,7 @@ theorem ExactMinusIntervalAux_pred_one_ulp_case {beta : Int} [ValidRadix beta]
   refine ⟨pred_rp, ?_, ?_⟩
   · rcases hnrpBound with ⟨hnum, hexp⟩
     have hm_pos : 0 < nrp.Fnum :=
-      FloatSpec.Core.Float_prop.gt_0_F2R (beta:=beta) nrp hβ hnrp_pos
+      FloatSpec.Core.Float_prop.gt_0_F2R (beta:=beta) nrp.Fnum nrp.Fexp hnrp_pos
     constructor
     · have hm_minus_nonneg : 0 ≤ nrp.Fnum - 1 := by omega
       have hm_abs : |nrp.Fnum| = nrp.Fnum := abs_of_pos hm_pos
@@ -20795,7 +20797,7 @@ theorem ExactMinusIntervalAux_pred_beta_ulp_case {beta : Int} [ValidRadix beta]
     constructor
     · have hnrp_num_nonneg : 0 ≤ nrp.Fnum := by
         exact FloatSpec.Core.Float_prop.ge_0_F2R
-          (beta:=beta) nrp hβ hnrp_nonneg
+          (beta:=beta) nrp.Fnum nrp.Fexp hnrp_nonneg
       by_cases hle : nrp.Fnum ≤ beta
       · have habs : |nrp.Fnum - beta| = beta - nrp.Fnum := by
           rw [abs_of_nonpos (by omega : nrp.Fnum - beta ≤ 0)]
@@ -20931,7 +20933,7 @@ theorem ExactMinusIntervalAux_pred_constructive_cases {beta : Int} [ValidRadix b
   have hprecision_ne : precision ≠ 0 := by omega
   have hnot_neg_pred : r.Fnum ≠ -pPred b.vNum := by
     have hr_num_pos : 0 < r.Fnum :=
-      FloatSpec.Core.Float_prop.gt_0_F2R (beta:=beta) r hβ hr_pos
+      FloatSpec.Core.Float_prop.gt_0_F2R (beta:=beta) r.Fnum r.Fexp hr_pos
     have hvpos : 0 < b.vNum := by
       rw [hvnum]
       unfold Zpower_nat
@@ -21064,7 +21066,7 @@ theorem ExactMinusIntervalAux_same_exp_normmin_non_minexp_contradiction {beta : 
     simpa only [Int.cast_ofNat] using
       hTrip hβ b precision hprecision hvnum nrp hnrp_normal
   have hnrp_num_nonneg : 0 ≤ nrp.Fnum :=
-    FloatSpec.Core.Float_prop.ge_0_F2R (beta:=beta) nrp hβ hnrp_nonneg
+    FloatSpec.Core.Float_prop.ge_0_F2R (beta:=beta) nrp.Fnum nrp.Fexp hnrp_nonneg
   have habs : |nrp.Fnum| = nrp.Fnum := abs_of_nonneg hnrp_num_nonneg
   rw [habs] at hmin_le_abs
   omega
@@ -23327,9 +23329,9 @@ theorem errorBoundedMultMin {beta : Int} [ValidRadix beta]
   have hprecision_pos : 0 < precision := Nat.pos_of_ne_zero hprecision
   have hbeta_gt : 1 < beta := by omega
   have hp_num_nonneg : 0 ≤ p.Fnum :=
-    FloatSpec.Core.Float_prop.ge_0_F2R (beta:=beta) p hbeta_gt hp_nonneg
+    FloatSpec.Core.Float_prop.ge_0_F2R (beta:=beta) p.Fnum p.Fexp hp_nonneg
   have hq_num_nonneg : 0 ≤ q.Fnum :=
-    FloatSpec.Core.Float_prop.ge_0_F2R (beta:=beta) q hbeta_gt hq_nonneg
+    FloatSpec.Core.Float_prop.ge_0_F2R (beta:=beta) q.Fnum q.Fexp hq_nonneg
   have hprod_nonneg : 0 ≤ p.Fnum * q.Fnum :=
     mul_nonneg hp_num_nonneg hq_num_nonneg
   have hradix_pos : 0 < radix := lt_trans (by decide : (0 : Int) < 1) hradix
@@ -23477,9 +23479,9 @@ theorem errorBoundedMultMax {beta : Int} [ValidRadix beta]
   have hprecision_pos : 0 < precision := Nat.pos_of_ne_zero hprecision
   have hbeta_gt : 1 < beta := by omega
   have hp_num_nonneg : 0 ≤ p.Fnum :=
-    FloatSpec.Core.Float_prop.ge_0_F2R (beta:=beta) p hbeta_gt hp_nonneg
+    FloatSpec.Core.Float_prop.ge_0_F2R (beta:=beta) p.Fnum p.Fexp hp_nonneg
   have hq_num_nonneg : 0 ≤ q.Fnum :=
-    FloatSpec.Core.Float_prop.ge_0_F2R (beta:=beta) q hbeta_gt hq_nonneg
+    FloatSpec.Core.Float_prop.ge_0_F2R (beta:=beta) q.Fnum q.Fexp hq_nonneg
   have hprod_nonneg : 0 ≤ p.Fnum * q.Fnum :=
     mul_nonneg hp_num_nonneg hq_num_nonneg
   have hradix_pos : 0 < radix := lt_trans (by decide : (0 : Int) < 1) hradix
@@ -29826,7 +29828,7 @@ theorem FSuccDiffPos {beta : Int} [ValidRadix beta]
         (radix : ℝ) ^ x.Fexp := by
   subst beta
   have hxnum_nonneg : 0 ≤ x.Fnum :=
-    FloatSpec.Core.Float_prop.Fnum_ge_0 (beta:=radix) x hradix hxNonneg
+    FloatSpec.Core.Float_prop.Fnum_ge_0 (beta:=radix) x hxNonneg
   have hminus :
       _root_.F2R
           (FloatSpec.Calc.Operations.Fminus (beta:=radix)
@@ -33946,7 +33948,7 @@ theorem ClosestImplyEven_int {beta : Int} [ValidRadix beta]
   have hpow_pos : 0 < (radix : ℝ) ^ f.Fexp :=
     zpow_pos hradix_pos f.Fexp
   have hfNum_nonneg : 0 ≤ f.Fnum :=
-    FloatSpec.Core.Float_prop.ge_0_F2R (beta:=beta) f hbeta_gt hfNonneg
+    FloatSpec.Core.Float_prop.ge_0_F2R (beta:=beta) f.Fnum f.Fexp hfNonneg
   have hnorm_eq_f :
       Fnormalize (beta:=beta) beta b precision f = f := by
     have h := FcanonicFnormalizeEq (beta:=beta) beta
@@ -34294,8 +34296,8 @@ theorem plusExact2Aux_from_format_payload {beta : Int} [ValidRadix beta]
               simpa only [Int.cast_ofNat] using
                 h hradix bo precision hprecision hvNum p hp_norm
             have hp_num_nonneg : 0 ≤ p.Fnum := by
-              exact FloatSpec.Core.Float_prop.ge_0_F2R (beta:=radix) p
-                hradix hp_nonneg
+              exact FloatSpec.Core.Float_prop.ge_0_F2R (beta:=radix) p.Fnum p.Fexp
+                hp_nonneg
             have hmin_num_int : nNormMin radix precision ≤ p.Fnum := by
               simpa [abs_of_nonneg hp_num_nonneg] using hmin_abs
             have hmin_num : (nNormMin radix precision : ℝ) ≤ (p.Fnum : ℝ) := by
@@ -41696,7 +41698,7 @@ private theorem eqLe_low {beta : Int} [ValidRadix beta]
     exact_mod_cast (le_of_lt hradix)
   have hradixNe : (radix : ℝ) ≠ 0 := ne_of_gt hradixPos
   have hxNumPos : 0 < x.Fnum :=
-    FloatSpec.Core.Float_prop.gt_0_F2R (beta:=radix) x hradix hxPos
+    FloatSpec.Core.Float_prop.gt_0_F2R (beta:=radix) x.Fnum x.Fexp hxPos
   let g : FloatSpec.Core.Defs.FlocqFloat radix :=
     ⟨x.Fnum + radix, x.Fexp + (s : Int)⟩
   have hgNumPos : 0 < g.Fnum := by
@@ -41880,7 +41882,7 @@ private theorem velt_p_upper {beta : Int} [ValidRadix beta]
     exact_mod_cast hradixPosInt
   have hradixNe : (radix : ℝ) ≠ 0 := ne_of_gt hradixPos
   have hxNumPos : 0 < x.Fnum :=
-    FloatSpec.Core.Float_prop.gt_0_F2R (beta:=radix) x hradix hxPos
+    FloatSpec.Core.Float_prop.gt_0_F2R (beta:=radix) x.Fnum x.Fexp hxPos
   have hxNumLt : x.Fnum < Zpower_nat radix t := by
     have hnum := hxBound.1
     rw [abs_of_pos hxNumPos, hvNum] at hnum
@@ -42032,7 +42034,7 @@ private theorem eqLe_high {beta : Int} [ValidRadix beta]
     exact_mod_cast (le_of_lt hradix)
   have hradixNe : (radix : ℝ) ≠ 0 := ne_of_gt hradixPos
   have hxNumPos : 0 < x.Fnum :=
-    FloatSpec.Core.Float_prop.gt_0_F2R (beta:=radix) x hradix hxPos
+    FloatSpec.Core.Float_prop.gt_0_F2R (beta:=radix) x.Fnum x.Fexp hxPos
   have hqExpLeP : q.Fexp ≤ p.Fexp :=
     eqLeep (beta:=radix) b radix s t x p q rfl hradix hvNum hxBound
       hpDef hqDef hxPos hpNormal hqNormal
@@ -42065,7 +42067,7 @@ private theorem eqLe_high {beta : Int} [ValidRadix beta]
     have hqNonpos : _root_.F2R (beta:=radix) q ≤ 0 :=
       qNeg (beta:=radix) b radix s t x p q hradix hvNum hxBound hxPos hpDef hqDef
     have hqNumNonpos : q.Fnum ≤ 0 :=
-      FloatSpec.Core.Float_prop.le_0_F2R (beta:=radix) q hradix hqNonpos
+      FloatSpec.Core.Float_prop.le_0_F2R (beta:=radix) q.Fnum q.Fexp hqNonpos
     have hqAbsMin : nNormMin radix t ≤ |q.Fnum| := by
       have h := pNormal_absolu_min (beta:=radix) radix
       simpa only [Int.cast_ofNat] using
@@ -43147,7 +43149,7 @@ theorem eqGe {beta : Int} [ValidRadix beta]
       hsGe hsLe hxBound hpDef hqDef hqNormal hxMiddle (by omega)
   have htNe : t ≠ 0 := by omega
   have hxNumPos : 0 < x.Fnum :=
-    FloatSpec.Core.Float_prop.gt_0_F2R (beta:=radix) x hradix hxPos
+    FloatSpec.Core.Float_prop.gt_0_F2R (beta:=radix) x.Fnum x.Fexp hxPos
   have hxNumMin : nNormMin radix t ≤ x.Fnum := by
     have h := pNormal_absolu_min (beta:=radix) radix
     have hAbs : nNormMin radix t ≤ |x.Fnum| := by
@@ -43227,7 +43229,7 @@ private theorem Veltkamp_aux_aux_low {beta : Int} [ValidRadix beta]
     exact_mod_cast (by omega : (2 : Int) ≤ radix)
   have hradixOne : (1 : ℝ) ≤ (radix : ℝ) := le_trans (by norm_num) hradixTwo
   have hxNumPos : 0 < x.Fnum :=
-    FloatSpec.Core.Float_prop.gt_0_F2R (beta:=radix) x hradix hxPos
+    FloatSpec.Core.Float_prop.gt_0_F2R (beta:=radix) x.Fnum x.Fexp hxPos
   have hxNumMin : nNormMin radix t ≤ x.Fnum := by
     have h := pNormal_absolu_min (beta:=radix) radix
     have hAbs : nNormMin radix t ≤ |x.Fnum| := by
@@ -43821,7 +43823,7 @@ private theorem Veltkamp_aux_reduced_rep {beta : Int} [ValidRadix beta]
         hxBound hpDef hqDef hhxDef hxPos hpNormal hqNormal hxNormal)
   have heLeSum : e ≤ sum.Fexp := by rw [hsumExp]; exact heLeQ
   have hxNumPos : 0 < x.Fnum :=
-    FloatSpec.Core.Float_prop.gt_0_F2R (beta:=radix) x hradix hxPos
+    FloatSpec.Core.Float_prop.gt_0_F2R (beta:=radix) x.Fnum x.Fexp hxPos
   have hxNumLt : x.Fnum < Zpower_nat radix t := by
     have h := hxBound.1
     rw [abs_of_pos hxNumPos, hvNum] at h
@@ -44039,7 +44041,7 @@ private theorem VeltkampEven1_candidate {beta : Int} [ValidRadix beta]
     rw [Int.cast_mul, hpowKCast, hsumPowSplit]
     ring
   have hxNumPos : 0 < x.Fnum :=
-    FloatSpec.Core.Float_prop.gt_0_F2R (beta:=radix) x hradix hxPos
+    FloatSpec.Core.Float_prop.gt_0_F2R (beta:=radix) x.Fnum x.Fexp hxPos
   have hxNumLt : x.Fnum < Zpower_nat radix t := by
     have h := hxBound.1
     rw [abs_of_pos hxNumPos, hvNum] at h
@@ -44538,7 +44540,7 @@ theorem Veltkamp_aux {beta : Int} [ValidRadix beta]
     rw [hvValue]
     simpa only [e, Int.cast_ofNat] using hResidual
   have hxNumPos : 0 < x.Fnum :=
-    FloatSpec.Core.Float_prop.gt_0_F2R (beta:=radix) x hradix hxPos
+    FloatSpec.Core.Float_prop.gt_0_F2R (beta:=radix) x.Fnum x.Fexp hxPos
   have hxNumMin : nNormMin radix t ≤ x.Fnum := by
     have h := pNormal_absolu_min (beta:=radix) radix
     have hAbs : nNormMin radix t ≤ |x.Fnum| := by
@@ -44732,7 +44734,7 @@ theorem VeltkampEven1 {beta : Int} [ValidRadix beta]
     rw [hvValue]
     simpa only [e, Int.cast_ofNat] using hResidual
   have hxNumPos : 0 < x.Fnum :=
-    FloatSpec.Core.Float_prop.gt_0_F2R (beta:=radix) x hradix hxPos
+    FloatSpec.Core.Float_prop.gt_0_F2R (beta:=radix) x.Fnum x.Fexp hxPos
   have hxNumMin : nNormMin radix t ≤ x.Fnum := by
     have h := pNormal_absolu_min (beta:=radix) radix
     have hAbs : nNormMin radix t ≤ |x.Fnum| := by
@@ -45006,7 +45008,7 @@ theorem VeltkampEven2 {beta : Int} [ValidRadix beta]
     rw [hvValue]
     simpa only [e, Int.cast_ofNat] using hResidual
   have hxNumPos : 0 < x.Fnum :=
-    FloatSpec.Core.Float_prop.gt_0_F2R (beta:=radix) x hradix hxPos
+    FloatSpec.Core.Float_prop.gt_0_F2R (beta:=radix) x.Fnum x.Fexp hxPos
   have hxNumMin : nNormMin radix t ≤ x.Fnum := by
     have h := pNormal_absolu_min (beta:=radix) radix
     have hAbs : nNormMin radix t ≤ |x.Fnum| := by
@@ -45406,7 +45408,7 @@ theorem VeltkampN_aux {beta : Int} [ValidRadix beta]
     rw [hxNumZero, mul_zero, abs_zero] at hnormalMant
     omega
   have hxValueNe : _root_.F2R (beta:=radix) x ≠ 0 :=
-    FloatSpec.Core.Float_prop.F2R_neq_0 (beta:=radix) x hradix hxNumNe
+    FloatSpec.Core.Float_prop.F2R_neq_0 (beta:=radix) x hxNumNe
   by_cases hxNonneg : 0 ≤ _root_.F2R (beta:=radix) x
   · have hxPos : 0 < _root_.F2R (beta:=radix) x :=
       lt_of_le_of_ne hxNonneg hxValueNe.symm
@@ -45824,7 +45826,7 @@ theorem VeltkampEvenN_aux {beta : Int} [ValidRadix beta]
     rw [hxNumZero, mul_zero, abs_zero] at hnormalMant
     omega
   have hxValueNe : _root_.F2R (beta:=radix) x ≠ 0 :=
-    FloatSpec.Core.Float_prop.F2R_neq_0 (beta:=radix) x hradix hxNumNe
+    FloatSpec.Core.Float_prop.F2R_neq_0 (beta:=radix) x hxNumNe
   by_cases hxNonneg : 0 ≤ _root_.F2R (beta:=radix) x
   · have hxPos : 0 < _root_.F2R (beta:=radix) x :=
       lt_of_le_of_ne hxNonneg hxValueNe.symm
@@ -49513,7 +49515,7 @@ theorem Subexact {beta : Int} [ValidRadix beta]
   have hxNumNe : x.Fnum ≠ 0 := by
     simpa [is_Fzero] using hxNotFzero
   have hxValueNe : _root_.F2R (beta:=radix) x ≠ 0 :=
-    FloatSpec.Core.Float_prop.F2R_neq_0 (beta:=radix) x hradix hxNumNe
+    FloatSpec.Core.Float_prop.F2R_neq_0 (beta:=radix) x hxNumNe
   have hxBound : Fbounded (beta:=radix) bo x := hxNormal.1
   have hyBound : Fbounded (beta:=radix) bo y := hyNormal.1
   have hxAbsLe2y : |_root_.F2R (beta:=radix) x| ≤
@@ -49798,7 +49800,7 @@ theorem gatCorrect {beta : Int} [ValidRadix beta]
       simpa only [Int.cast_ofNat] using h hr1Normal
     have hnum : r1.Fnum ≠ 0 := by
       simpa [is_Fzero] using hnotZero
-    exact FloatSpec.Core.Float_prop.F2R_neq_0 (beta:=radix) r1 hradix hnum
+    exact FloatSpec.Core.Float_prop.F2R_neq_0 (beta:=radix) r1 hnum
   have hSign :
       (0 ≤ _root_.F2R (beta:=radix) r1 →
           0 ≤ _root_.F2R (beta:=radix) be1) ∧
@@ -49946,7 +49948,7 @@ theorem Expr1 {beta : Int} [ValidRadix beta]
       simpa only [Int.cast_ofNat] using h hbe1Normal
     have hnum : be1.Fnum ≠ 0 := by
       simpa [is_Fzero] using hnotZero
-    exact FloatSpec.Core.Float_prop.F2R_neq_0 (beta:=radix) be1 hradix hnum
+    exact FloatSpec.Core.Float_prop.F2R_neq_0 (beta:=radix) be1 hnum
   have hal2_u1_ulp :
       |_root_.F2R (beta:=radix) al2| ≤
         (1 / 2 : ℝ) * Fulp (beta:=radix) bo radix precision u1 := by
@@ -60396,7 +60398,7 @@ theorem LtR0Fnum {beta : Int} [ValidRadix beta]
     (hx : 0 < _root_.F2R x) :
     0 < x.Fnum := by
   have hβ : 1 < beta := ValidRadix.valid
-  exact FloatSpec.Core.Float_prop.gt_0_F2R (beta:=beta) x hβ hx
+  exact FloatSpec.Core.Float_prop.gt_0_F2R (beta:=beta) x.Fnum x.Fexp hx
 
 -- Coq: `LeR0Fnum` — 0 ≤ x → 0 ≤ Fnum x
 theorem LeR0Fnum {beta : Int} [ValidRadix beta]
@@ -60404,7 +60406,7 @@ theorem LeR0Fnum {beta : Int} [ValidRadix beta]
     (hx : 0 ≤ _root_.F2R x) :
     0 ≤ x.Fnum := by
   have hβ : 1 < beta := ValidRadix.valid
-  exact FloatSpec.Core.Float_prop.ge_0_F2R (beta:=beta) x hβ hx
+  exact FloatSpec.Core.Float_prop.ge_0_F2R (beta:=beta) x.Fnum x.Fexp hx
 
 -- Coq: `LeFnumZERO` — 0 ≤ Fnum x → 0 ≤ x
 theorem LeFnumZERO {beta : Int} [ValidRadix beta]
@@ -60412,7 +60414,7 @@ theorem LeFnumZERO {beta : Int} [ValidRadix beta]
     (hx : 0 ≤ x.Fnum) :
     0 ≤ _root_.F2R x := by
   have hβ : 1 < beta := ValidRadix.valid
-  exact FloatSpec.Core.Float_prop.F2R_ge_0 (beta:=beta) x hβ hx
+  exact FloatSpec.Core.Float_prop.F2R_ge_0 (beta:=beta) x hx
 
 -- Coq: `R0LtFnum` — x < 0 → Fnum x < 0
 theorem R0LtFnum {beta : Int} [ValidRadix beta]
@@ -60420,7 +60422,7 @@ theorem R0LtFnum {beta : Int} [ValidRadix beta]
     (hx : _root_.F2R x < 0) :
     x.Fnum < 0 := by
   have hβ : 1 < beta := ValidRadix.valid
-  exact FloatSpec.Core.Float_prop.lt_0_F2R (beta:=beta) x hβ hx
+  exact FloatSpec.Core.Float_prop.lt_0_F2R (beta:=beta) x.Fnum x.Fexp hx
 
 -- Coq: `R0LeFnum` — x ≤ 0 → Fnum x ≤ 0
 theorem R0LeFnum {beta : Int} [ValidRadix beta]
@@ -60428,7 +60430,7 @@ theorem R0LeFnum {beta : Int} [ValidRadix beta]
     (hx : _root_.F2R x ≤ 0) :
     x.Fnum ≤ 0 := by
   have hβ : 1 < beta := ValidRadix.valid
-  exact FloatSpec.Core.Float_prop.le_0_F2R (beta:=beta) x hβ hx
+  exact FloatSpec.Core.Float_prop.le_0_F2R (beta:=beta) x.Fnum x.Fexp hx
 
 -- Coq: `LeZEROFnum` — Fnum x ≤ 0 → x ≤ 0
 theorem LeZEROFnum {beta : Int} [ValidRadix beta]
@@ -60436,7 +60438,7 @@ theorem LeZEROFnum {beta : Int} [ValidRadix beta]
     (hx : x.Fnum ≤ 0) :
     _root_.F2R x ≤ 0 := by
   have hβ : 1 < beta := ValidRadix.valid
-  exact FloatSpec.Core.Float_prop.F2R_le_0 (beta:=beta) x hβ hx
+  exact FloatSpec.Core.Float_prop.F2R_le_0 (beta:=beta) x hx
 
 -- Coq: `LtFnumZERO` — 0 < Fnum x → 0 < x
 theorem LtFnumZERO {beta : Int} [ValidRadix beta]
@@ -60444,7 +60446,7 @@ theorem LtFnumZERO {beta : Int} [ValidRadix beta]
     (hx : 0 < x.Fnum) :
     0 < _root_.F2R x := by
   have hβ : 1 < beta := ValidRadix.valid
-  exact FloatSpec.Core.Float_prop.F2R_gt_0 (beta:=beta) x hβ hx
+  exact FloatSpec.Core.Float_prop.F2R_gt_0 (beta:=beta) x hx
 
 -- Coq: `Zlt_Zabs_inv1` — |z1| < z2 → -z2 < z1
 theorem Zlt_Zabs_inv1 (z1 z2 : Int)

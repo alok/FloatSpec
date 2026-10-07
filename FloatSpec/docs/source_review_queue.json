@@ -9953,6 +9953,783 @@
           "noncomputable": false
         }
       }
+    },
+    {
+      "source_id": "src/Core/Float_prop.v:bpow@909",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.bpow"
+      ],
+      "scope": "Section-local notation bpow e := bpow beta e. Lean writes Raux.bpow beta e at each use; this slice restated the four statements that spelled it as (beta : ℝ) ^ e.",
+      "evidence": [
+        "scripts/fixtures/FloatPropContracts.lean",
+        "scripts/fixtures/FloatPropContracts.v",
+        "scripts/test_float_prop_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.bpow": {
+          "type_hash": "124344772",
+          "value_hash": "1695158982",
+          "noncomputable": true
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Float_prop.v:Rcompare_F2R@943",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Float_prop.Rcompare_F2R"
+      ],
+      "scope": "Same statement Rcompare (F2R m1 e) (F2R m2 e) = Z.compare m1 m2, with Lean's compare. Restated this slice from a let-bound form. The radix is an Int with ValidRadix (E5); this slice removed the duplicate explicit 1 < beta every lemma also took. Swapping the mantissas is a rejected mutation.",
+      "evidence": [
+        "scripts/fixtures/FloatPropContracts.lean",
+        "scripts/fixtures/FloatPropContracts.v",
+        "scripts/test_float_prop_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Float_prop.Rcompare_F2R": {
+          "type_hash": "2966266588",
+          "value_hash": "1599149768",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Float_prop.v:le_F2R@1195",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Float_prop.le_F2R"
+      ],
+      "scope": "Same statement. Rocq's Float beta m e is FlocqFloat.mk m e. The radix is an Int with ValidRadix (E5); this slice removed the duplicate explicit 1 < beta every lemma also took.",
+      "evidence": [
+        "scripts/fixtures/FloatPropContracts.lean",
+        "scripts/fixtures/FloatPropContracts.v",
+        "scripts/test_float_prop_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Float_prop.le_F2R": {
+          "type_hash": "693334809",
+          "value_hash": "1185913525",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Float_prop.v:F2R_le@1413",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Float_prop.F2R_le"
+      ],
+      "scope": "Same statement. Rocq's Float beta m e is FlocqFloat.mk m e. The radix is an Int with ValidRadix (E5); this slice removed the duplicate explicit 1 < beta every lemma also took.",
+      "evidence": [
+        "scripts/fixtures/FloatPropContracts.lean",
+        "scripts/fixtures/FloatPropContracts.v",
+        "scripts/test_float_prop_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Float_prop.F2R_le": {
+          "type_hash": "4028804940",
+          "value_hash": "1377499883",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Float_prop.v:lt_F2R@1634",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Float_prop.lt_F2R"
+      ],
+      "scope": "Same statement. Rocq's Float beta m e is FlocqFloat.mk m e. The radix is an Int with ValidRadix (E5); this slice removed the duplicate explicit 1 < beta every lemma also took.",
+      "evidence": [
+        "scripts/fixtures/FloatPropContracts.lean",
+        "scripts/fixtures/FloatPropContracts.v",
+        "scripts/test_float_prop_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Float_prop.lt_F2R": {
+          "type_hash": "2144113390",
+          "value_hash": "4046246883",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Float_prop.v:F2R_lt@1850",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Float_prop.F2R_lt"
+      ],
+      "scope": "Same statement. Rocq's Float beta m e is FlocqFloat.mk m e. The radix is an Int with ValidRadix (E5); this slice removed the duplicate explicit 1 < beta every lemma also took.",
+      "evidence": [
+        "scripts/fixtures/FloatPropContracts.lean",
+        "scripts/fixtures/FloatPropContracts.v",
+        "scripts/test_float_prop_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Float_prop.F2R_lt": {
+          "type_hash": "405046994",
+          "value_hash": "127722720",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Float_prop.v:F2R_eq@2069",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Float_prop.F2R_eq"
+      ],
+      "scope": "Same statement. Rocq's Float beta m e is FlocqFloat.mk m e. The radix is an Int with ValidRadix (E5); this slice removed the duplicate explicit 1 < beta every lemma also took.",
+      "evidence": [
+        "scripts/fixtures/FloatPropContracts.lean",
+        "scripts/fixtures/FloatPropContracts.v",
+        "scripts/test_float_prop_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Float_prop.F2R_eq": {
+          "type_hash": "1773299413",
+          "value_hash": "3183085336",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Float_prop.v:eq_F2R@2262",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Float_prop.eq_F2R"
+      ],
+      "scope": "Same statement. Rocq's Float beta m e is FlocqFloat.mk m e. The radix is an Int with ValidRadix (E5); this slice removed the duplicate explicit 1 < beta every lemma also took.",
+      "evidence": [
+        "scripts/fixtures/FloatPropContracts.lean",
+        "scripts/fixtures/FloatPropContracts.v",
+        "scripts/test_float_prop_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Float_prop.eq_F2R": {
+          "type_hash": "505212679",
+          "value_hash": "1572744629",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Float_prop.v:F2R_Zabs@2470",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Float_prop.F2R_Zabs"
+      ],
+      "scope": "Same statement F2R (Float (Z.abs m) e) = Rabs (F2R (Float m e)). Restated this slice: the old form was over a float f, reversed, and used the natAbs cast. The radix is an Int with ValidRadix (E5); this slice removed the duplicate explicit 1 < beta every lemma also took. Dropping Rabs is a rejected mutation.",
+      "evidence": [
+        "scripts/fixtures/FloatPropContracts.lean",
+        "scripts/fixtures/FloatPropContracts.v",
+        "scripts/test_float_prop_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Float_prop.F2R_Zabs": {
+          "type_hash": "1193639020",
+          "value_hash": "1224958521",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Float_prop.v:F2R_Zopp@2730",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Float_prop.F2R_Zopp"
+      ],
+      "scope": "Same statement F2R (Float (-m) e) = -F2R (Float m e). Restated this slice from a reversed form over a float f. The radix is an Int with ValidRadix (E5); this slice removed the duplicate explicit 1 < beta every lemma also took. Dropping the negation is a rejected mutation.",
+      "evidence": [
+        "scripts/fixtures/FloatPropContracts.lean",
+        "scripts/fixtures/FloatPropContracts.v",
+        "scripts/test_float_prop_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Float_prop.F2R_Zopp": {
+          "type_hash": "2510483691",
+          "value_hash": "2265888498",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Float_prop.v:F2R_cond_Zopp@2932",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Float_prop.F2R_cond_Zopp"
+      ],
+      "scope": "Same statement with Zaux.cond_Zopp and Raux.cond_Ropp. Restated this slice from an inline if over a float f, reversed. The radix is an Int with ValidRadix (E5); this slice removed the duplicate explicit 1 < beta every lemma also took.",
+      "evidence": [
+        "scripts/fixtures/FloatPropContracts.lean",
+        "scripts/fixtures/FloatPropContracts.v",
+        "scripts/test_float_prop_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Float_prop.F2R_cond_Zopp": {
+          "type_hash": "158423422",
+          "value_hash": "2008613248",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Float_prop.v:F2R_0@3181",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Float_prop.F2R_0"
+      ],
+      "scope": "Same statement. Rocq's Float beta m e is FlocqFloat.mk m e. The radix is an Int with ValidRadix (E5); this slice removed the duplicate explicit 1 < beta every lemma also took.",
+      "evidence": [
+        "scripts/fixtures/FloatPropContracts.lean",
+        "scripts/fixtures/FloatPropContracts.v",
+        "scripts/test_float_prop_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Float_prop.F2R_0": {
+          "type_hash": "1609244217",
+          "value_hash": "881500558",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Float_prop.v:eq_0_F2R@3302",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Float_prop.eq_0_F2R"
+      ],
+      "scope": "Same statement over m e. Restated this slice from a float f; the old form survives as a private helper. The radix is an Int with ValidRadix (E5); this slice removed the duplicate explicit 1 < beta every lemma also took.",
+      "evidence": [
+        "scripts/fixtures/FloatPropContracts.lean",
+        "scripts/fixtures/FloatPropContracts.v",
+        "scripts/test_float_prop_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Float_prop.eq_0_F2R": {
+          "type_hash": "2689654290",
+          "value_hash": "536617583",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Float_prop.v:ge_0_F2R@3448",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Float_prop.ge_0_F2R"
+      ],
+      "scope": "Same statement over m e. Restated this slice from a float f (private helper). The radix is an Int with ValidRadix (E5); this slice removed the duplicate explicit 1 < beta every lemma also took. A strict conclusion is a rejected mutation.",
+      "evidence": [
+        "scripts/fixtures/FloatPropContracts.lean",
+        "scripts/fixtures/FloatPropContracts.v",
+        "scripts/test_float_prop_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Float_prop.ge_0_F2R": {
+          "type_hash": "3345609082",
+          "value_hash": "701233414",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Float_prop.v:le_0_F2R@3601",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Float_prop.le_0_F2R"
+      ],
+      "scope": "Same statement over m e. Restated this slice from a float f (private helper). The radix is an Int with ValidRadix (E5); this slice removed the duplicate explicit 1 < beta every lemma also took.",
+      "evidence": [
+        "scripts/fixtures/FloatPropContracts.lean",
+        "scripts/fixtures/FloatPropContracts.v",
+        "scripts/test_float_prop_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Float_prop.le_0_F2R": {
+          "type_hash": "383741325",
+          "value_hash": "536506363",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Float_prop.v:gt_0_F2R@3754",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Float_prop.gt_0_F2R"
+      ],
+      "scope": "Same statement over m e. Restated this slice from a float f (private helper). The radix is an Int with ValidRadix (E5); this slice removed the duplicate explicit 1 < beta every lemma also took.",
+      "evidence": [
+        "scripts/fixtures/FloatPropContracts.lean",
+        "scripts/fixtures/FloatPropContracts.v",
+        "scripts/test_float_prop_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Float_prop.gt_0_F2R": {
+          "type_hash": "4107511281",
+          "value_hash": "3602713723",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Float_prop.v:lt_0_F2R@3905",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Float_prop.lt_0_F2R"
+      ],
+      "scope": "Same statement over m e. Restated this slice from a float f (private helper). The radix is an Int with ValidRadix (E5); this slice removed the duplicate explicit 1 < beta every lemma also took.",
+      "evidence": [
+        "scripts/fixtures/FloatPropContracts.lean",
+        "scripts/fixtures/FloatPropContracts.v",
+        "scripts/test_float_prop_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Float_prop.lt_0_F2R": {
+          "type_hash": "276428445",
+          "value_hash": "2338762491",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Float_prop.v:F2R_ge_0@4056",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Float_prop.F2R_ge_0"
+      ],
+      "scope": "Same statement. Rocq's Float beta m e is FlocqFloat.mk m e. The radix is an Int with ValidRadix (E5); this slice removed the duplicate explicit 1 < beta every lemma also took.",
+      "evidence": [
+        "scripts/fixtures/FloatPropContracts.lean",
+        "scripts/fixtures/FloatPropContracts.v",
+        "scripts/test_float_prop_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Float_prop.F2R_ge_0": {
+          "type_hash": "1521343929",
+          "value_hash": "3743006622",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Float_prop.v:F2R_le_0@4214",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Float_prop.F2R_le_0"
+      ],
+      "scope": "Same statement. Rocq's Float beta m e is FlocqFloat.mk m e. The radix is an Int with ValidRadix (E5); this slice removed the duplicate explicit 1 < beta every lemma also took.",
+      "evidence": [
+        "scripts/fixtures/FloatPropContracts.lean",
+        "scripts/fixtures/FloatPropContracts.v",
+        "scripts/test_float_prop_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Float_prop.F2R_le_0": {
+          "type_hash": "123689518",
+          "value_hash": "4277742390",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Float_prop.v:F2R_gt_0@4372",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Float_prop.F2R_gt_0"
+      ],
+      "scope": "Same statement. Rocq's Float beta m e is FlocqFloat.mk m e. The radix is an Int with ValidRadix (E5); this slice removed the duplicate explicit 1 < beta every lemma also took.",
+      "evidence": [
+        "scripts/fixtures/FloatPropContracts.lean",
+        "scripts/fixtures/FloatPropContracts.v",
+        "scripts/test_float_prop_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Float_prop.F2R_gt_0": {
+          "type_hash": "2592198375",
+          "value_hash": "305531098",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Float_prop.v:F2R_lt_0@4528",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Float_prop.F2R_lt_0"
+      ],
+      "scope": "Same statement. Rocq's Float beta m e is FlocqFloat.mk m e. The radix is an Int with ValidRadix (E5); this slice removed the duplicate explicit 1 < beta every lemma also took.",
+      "evidence": [
+        "scripts/fixtures/FloatPropContracts.lean",
+        "scripts/fixtures/FloatPropContracts.v",
+        "scripts/test_float_prop_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Float_prop.F2R_lt_0": {
+          "type_hash": "391882745",
+          "value_hash": "541390581",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Float_prop.v:F2R_neq_0@4684",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Float_prop.F2R_neq_0"
+      ],
+      "scope": "Same statement. Rocq's Float beta m e is FlocqFloat.mk m e. The radix is an Int with ValidRadix (E5); this slice removed the duplicate explicit 1 < beta every lemma also took.",
+      "evidence": [
+        "scripts/fixtures/FloatPropContracts.lean",
+        "scripts/fixtures/FloatPropContracts.v",
+        "scripts/test_float_prop_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Float_prop.F2R_neq_0": {
+          "type_hash": "2438597866",
+          "value_hash": "2663537302",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Float_prop.v:Fnum_ge_0@4837",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Float_prop.Fnum_ge_0"
+      ],
+      "scope": "Same statement. Rocq's Float beta m e is FlocqFloat.mk m e. The radix is an Int with ValidRadix (E5); this slice removed the duplicate explicit 1 < beta every lemma also took.",
+      "evidence": [
+        "scripts/fixtures/FloatPropContracts.lean",
+        "scripts/fixtures/FloatPropContracts.v",
+        "scripts/test_float_prop_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Float_prop.Fnum_ge_0": {
+          "type_hash": "269245141",
+          "value_hash": "2662442582",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Float_prop.v:Fnum_le_0@5042",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Float_prop.Fnum_le_0"
+      ],
+      "scope": "Same statement. Rocq's Float beta m e is FlocqFloat.mk m e. The radix is an Int with ValidRadix (E5); this slice removed the duplicate explicit 1 < beta every lemma also took.",
+      "evidence": [
+        "scripts/fixtures/FloatPropContracts.lean",
+        "scripts/fixtures/FloatPropContracts.v",
+        "scripts/test_float_prop_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Float_prop.Fnum_le_0": {
+          "type_hash": "4147630339",
+          "value_hash": "3760247548",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Float_prop.v:F2R_bpow@5272",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Float_prop.F2R_bpow"
+      ],
+      "scope": "Same statement F2R (Float 1 e) = bpow e, now stated with Raux.bpow (this slice). The radix is an Int with ValidRadix (E5); this slice removed the duplicate explicit 1 < beta every lemma also took.",
+      "evidence": [
+        "scripts/fixtures/FloatPropContracts.lean",
+        "scripts/fixtures/FloatPropContracts.v",
+        "scripts/test_float_prop_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Float_prop.F2R_bpow": {
+          "type_hash": "2517360817",
+          "value_hash": "876685848",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Float_prop.v:bpow_le_F2R@5399",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Float_prop.bpow_le_F2R"
+      ],
+      "scope": "Same statement over m e with Raux.bpow. Restated this slice from a float f (private helper). The radix is an Int with ValidRadix (E5); this slice removed the duplicate explicit 1 < beta every lemma also took.",
+      "evidence": [
+        "scripts/fixtures/FloatPropContracts.lean",
+        "scripts/fixtures/FloatPropContracts.v",
+        "scripts/test_float_prop_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Float_prop.bpow_le_F2R": {
+          "type_hash": "266942825",
+          "value_hash": "1257254434",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Float_prop.v:F2R_p1_le_bpow@5581",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Float_prop.F2R_p1_le_bpow"
+      ],
+      "scope": "Same statement, now stated with Raux.bpow (this slice). The radix is an Int with ValidRadix (E5); this slice removed the duplicate explicit 1 < beta every lemma also took. A strict conclusion is a rejected mutation.",
+      "evidence": [
+        "scripts/fixtures/FloatPropContracts.lean",
+        "scripts/fixtures/FloatPropContracts.v",
+        "scripts/test_float_prop_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Float_prop.F2R_p1_le_bpow": {
+          "type_hash": "3948362228",
+          "value_hash": "809447461",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Float_prop.v:bpow_le_F2R_m1@6346",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Float_prop.bpow_le_F2R_m1"
+      ],
+      "scope": "Same statement, now stated with Raux.bpow (this slice). The radix is an Int with ValidRadix (E5); this slice removed the duplicate explicit 1 < beta every lemma also took.",
+      "evidence": [
+        "scripts/fixtures/FloatPropContracts.lean",
+        "scripts/fixtures/FloatPropContracts.v",
+        "scripts/test_float_prop_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Float_prop.bpow_le_F2R_m1": {
+          "type_hash": "116373292",
+          "value_hash": "1672208580",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Float_prop.v:F2R_lt_bpow@7098",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Float_prop.F2R_lt_bpow"
+      ],
+      "scope": "Same statement with |.| and Zpower, now concluding with Raux.bpow (this slice). The radix is an Int with ValidRadix (E5); this slice removed the duplicate explicit 1 < beta every lemma also took.",
+      "evidence": [
+        "scripts/fixtures/FloatPropContracts.lean",
+        "scripts/fixtures/FloatPropContracts.v",
+        "scripts/test_float_prop_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Float_prop.F2R_lt_bpow": {
+          "type_hash": "2311561457",
+          "value_hash": "3109249554",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Float_prop.v:F2R_change_exp@7662",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Float_prop.F2R_change_exp"
+      ],
+      "scope": "Same statement F2R (Float m e) = F2R (Float (m * Zpower beta (e - e')) e') with binder order e' m e. Restated this slice from a float f and a natural power (private helper). The radix is an Int with ValidRadix (E5); this slice removed the duplicate explicit 1 < beta every lemma also took. Reversing the exponent difference is a rejected mutation.",
+      "evidence": [
+        "scripts/fixtures/FloatPropContracts.lean",
+        "scripts/fixtures/FloatPropContracts.v",
+        "scripts/test_float_prop_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Float_prop.F2R_change_exp": {
+          "type_hash": "3750028402",
+          "value_hash": "2487102804",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Float_prop.v:F2R_prec_normalize@8006",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Float_prop.F2R_prec_normalize"
+      ],
+      "scope": "Same statement with |m| < Zpower beta p and Raux.bpow. Restated this slice: the old premise natAbs m < natAbs beta ^ p.toNat and natAbs exponent survive as a private helper, and the new proof derives the exponent's nonnegativity from the premises. The radix is an Int with ValidRadix (E5); this slice removed the duplicate explicit 1 < beta every lemma also took. Both assistants show the lower bound is needed (at 5 · 10^0 the shifted mantissa is 0).",
+      "evidence": [
+        "scripts/fixtures/FloatPropContracts.lean",
+        "scripts/fixtures/FloatPropContracts.v",
+        "scripts/test_float_prop_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Float_prop.F2R_prec_normalize": {
+          "type_hash": "82074298",
+          "value_hash": "3800727374",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Float_prop.v:mag_F2R_bounds@8683",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Float_prop.mag_F2R_bounds"
+      ],
+      "scope": "Same statement. Rocq's Float beta m e is FlocqFloat.mk m e. The radix is an Int with ValidRadix (E5); this slice removed the duplicate explicit 1 < beta every lemma also took.",
+      "evidence": [
+        "scripts/fixtures/FloatPropContracts.lean",
+        "scripts/fixtures/FloatPropContracts.v",
+        "scripts/test_float_prop_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Float_prop.mag_F2R_bounds": {
+          "type_hash": "207263231",
+          "value_hash": "1951743295",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Float_prop.v:mag_F2R@9363",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Float_prop.mag_F2R"
+      ],
+      "scope": "Same statement. Rocq's Float beta m e is FlocqFloat.mk m e. The radix is an Int with ValidRadix (E5); this slice removed the duplicate explicit 1 < beta every lemma also took.",
+      "evidence": [
+        "scripts/fixtures/FloatPropContracts.lean",
+        "scripts/fixtures/FloatPropContracts.v",
+        "scripts/test_float_prop_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Float_prop.mag_F2R": {
+          "type_hash": "508203423",
+          "value_hash": "825387514",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Float_prop.v:Zdigits_mag@9566",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Float_prop.Zdigits_mag"
+      ],
+      "scope": "Same statement. The radix is an Int with ValidRadix (E5); this slice removed the duplicate explicit 1 < beta every lemma also took. This slice deleted its compatibility spelling Zdigits_Raux_mag.",
+      "evidence": [
+        "scripts/fixtures/FloatPropContracts.lean",
+        "scripts/fixtures/FloatPropContracts.v",
+        "scripts/test_float_prop_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Float_prop.Zdigits_mag": {
+          "type_hash": "39807136",
+          "value_hash": "2411462947",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Float_prop.v:mag_F2R_Zdigits@10085",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Float_prop.mag_F2R_Zdigits"
+      ],
+      "scope": "Same statement. The radix is an Int with ValidRadix (E5); this slice removed the duplicate explicit 1 < beta every lemma also took. This slice deleted its duplicate Raux_mag_F2R_Zdigits (the same proposition under another name) and moved callers here. Dropping + e is a rejected mutation.",
+      "evidence": [
+        "scripts/fixtures/FloatPropContracts.lean",
+        "scripts/fixtures/FloatPropContracts.v",
+        "scripts/test_float_prop_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Float_prop.mag_F2R_Zdigits": {
+          "type_hash": "279318315",
+          "value_hash": "1664951940",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Float_prop.v:mag_F2R_bounds_Zdigits@10336",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Float_prop.mag_F2R_bounds_Zdigits"
+      ],
+      "scope": "Same statement. The radix is an Int with ValidRadix (E5); this slice removed the duplicate explicit 1 < beta every lemma also took. This slice deleted its compatibility spelling Raux_mag_F2R_bounds_Zdigits.",
+      "evidence": [
+        "scripts/fixtures/FloatPropContracts.lean",
+        "scripts/fixtures/FloatPropContracts.v",
+        "scripts/test_float_prop_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Float_prop.mag_F2R_bounds_Zdigits": {
+          "type_hash": "1279083865",
+          "value_hash": "1273523918",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Float_prop.v:float_distribution_pos@10639",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Float_prop.float_distribution_pos"
+      ],
+      "scope": "Same statement e2 < e1 and e1 + mag (IZR m1) = e2 + mag (IZR m2). Restated this slice from a form with Zdigits m1 in place of mag (IZR m1), which survives as a private helper. The radix is an Int with ValidRadix (E5); this slice removed the duplicate explicit 1 < beta every lemma also took. Swapping m1 and m2 is a rejected mutation.",
+      "evidence": [
+        "scripts/fixtures/FloatPropContracts.lean",
+        "scripts/fixtures/FloatPropContracts.v",
+        "scripts/test_float_prop_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Float_prop.float_distribution_pos": {
+          "type_hash": "3281907256",
+          "value_hash": "2363710240",
+          "noncomputable": false
+        }
+      }
     }
   ]
 }

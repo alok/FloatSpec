@@ -541,6 +541,46 @@ Evidence:
 - `scripts/digits_bridge.py` runs the six functions against pinned Rocq and an
   independent truncating-division oracle: 2,908 cases at seed 865701.
 
+### Fifteenth ordered slice: Float_prop
+
+All 37 `Float_prop.v` sites are reviewed: 36 theorems and the section-local
+`bpow` notation, which Lean writes as `Raux.bpow beta e` at each use. No body
+changed, since the file has no definitions, but the statements needed work.
+
+Every lemma took the radix invariant twice: once through the section's
+`[ValidRadix beta]` instance and once as an explicit `(hbeta : 1 < beta)`. The
+explicit premise is gone. Proofs that need the bound read it from the
+instance, and call sites in Calc, Prop, IEEE754 and Pff (about 200 changed lines) drop the
+argument.
+
+Sixteen statements were restated in source form:
+- Seven lemmas took a float `f` where Rocq takes `m e`: the five sign lemmas
+  `eq_0_F2R`…`lt_0_F2R`, plus `bpow_le_F2R` and `F2R_change_exp`.
+- `F2R_Zabs`, `F2R_Zopp` and `F2R_cond_Zopp` were stated in reverse, over `f`,
+  with the `natAbs` cast or an inline `if`.
+- `F2R_bpow`, `F2R_p1_le_bpow`, `bpow_le_F2R_m1` and `F2R_lt_bpow` wrote
+  `(beta : ℝ) ^ e` instead of `bpow`.
+- `F2R_change_exp` uses `Zpower`, in binder order `e' m e`.
+- `F2R_prec_normalize` had the premise `natAbs m < natAbs beta ^ p.toNat`
+  where Rocq has `Z.abs m < Zpower beta p`. The new proof derives the result
+  exponent's sign from the premises.
+- `float_distribution_pos` concluded with `Zdigits m1` where Rocq has
+  `mag (IZR m1)`.
+- `Rcompare_F2R` had `let`-bound operands.
+
+Where internal proofs relied on an old shape, that shape remains as a private
+helper. Four duplicates were deleted, with callers moved to the source names
+(no shims): `Raux_mag_F2R_Zdigits`, `Raux_mag_F2R_bounds_Zdigits`,
+`Zdigits_Raux_mag` and `Zdigits_pos`.
+
+Evidence:
+- `FloatPropContracts.lean/.v` state the 36 laws in both assistants.
+  Changing the exponent of 3.4 from `34 · 10⁻¹` to `340 · 10⁻²` checks in
+  both, and both show that `F2R_prec_normalize` needs its lower bound.
+- Sixteen mutations are rejected: swapped comparison operands, a dropped
+  `Rabs` or negation, strict conclusions, a reversed exponent difference, a
+  dropped `+ e`, and swapped mantissas.
+
 ## Unindexed Pff negation and absolute value (earlier slice)
 
 The source facade now also exports `Fopp_correct`, `Fopp_Fopp`, `Fabs_correct`

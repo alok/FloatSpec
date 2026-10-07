@@ -231,7 +231,7 @@ private theorem FTZ_generic_format_run (beta : Int) [ValidRadix beta] (x : ℝ)
   have hmagx : FloatSpec.Core.Raux.mag beta x
       = FloatSpec.Core.Raux.mag beta ((f.Fnum : Int) : ℝ) + f.Fexp := by
     rw [hxf]
-    exact FloatSpec.Core.Float_prop.mag_F2R (beta := beta) f.Fnum f.Fexp hbeta hfnum
+    exact FloatSpec.Core.Float_prop.mag_F2R (beta := beta) f.Fnum f.Fexp hfnum
   have hbranch : ¬ (FloatSpec.Core.Raux.mag beta x - prec < emin) := by omega
   simp [FTZ_exp, FloatSpec.Core.FLX.FLX_exp, hbranch]
 

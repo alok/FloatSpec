@@ -302,7 +302,7 @@ theorem generic_format_FLT (beta : Int) [ValidRadix beta] (x : ℝ) :
       beta f.Fnum prec ValidRadix.valid hm hbound
     have hmag : mag beta (F2R f) = mag beta (f.Fnum : ℝ) + f.Fexp :=
       FloatSpec.Core.Float_prop.mag_F2R
-      (beta := beta) f.Fnum f.Fexp ValidRadix.valid hm
+      (beta := beta) f.Fnum f.Fexp hm
     have hce : cexp beta (FLT_exp prec emin) (F2R f) ≤ f.Fexp := by
       simp only [cexp, FLT_exp]
       rw [hmag]

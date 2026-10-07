@@ -4587,6 +4587,30 @@ The open four (`digits2_pos`, `Zdigits2`, `Zpos_digits2_pos`,
 
 Receipts: `/private/tmp/floatspec-digits-20261007/`.
 
+### October 7: Float_prop (37 sites)
+
+`Float_prop.v` has no definitions; the work was in statements. Each lemma
+took `1 < beta` explicitly alongside the section's `[ValidRadix beta]`
+instance, so callers passed the radix twice. The explicit premise is removed
+and proofs read it from the instance. The compiler located every affected
+call; scripted passes and a dozen hand edits fixed them.
+
+Sixteen statements were restated in source form (float `f` versus `m e`,
+reversed equations, `bpow`, `Zpower`, the `F2R_prec_normalize` premise, the
+`float_distribution_pos` conclusion). Four duplicate lemma names were deleted.
+
+One scripted pass went wrong first. It stripped `(hbeta := …)` from every
+call in five files, including Generic_fmt lemmas that do take it. Those
+arguments were restored, and the remaining removals were audited
+token-by-token against their owning lemma.
+
+Evidence:
+- Paired fixtures with 16 rejected mutations.
+- Full 6,350-job build and all Lean fixtures strict with kernel replay.
+- Drift gate: 489 entries. No earlier review drifted.
+
+Receipts: `/private/tmp/floatspec-floatprop-20261007/`.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In

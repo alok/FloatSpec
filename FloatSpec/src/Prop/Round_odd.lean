@@ -2799,8 +2799,10 @@ theorem mag_round_odd_from_explicit_payload
             (FloatSpec.Core.Defs.FlocqFloat.mk (Int.ofNat (Int.natAbs g.Fnum)) g.Fexp :
               FloatSpec.Core.Defs.FlocqFloat beta) =
             (beta : ℝ) ^ e := by
-        have hFabs := FloatSpec.Core.Float_prop.F2R_Zabs
-          (beta := beta) g hβ
+        have hFabs : |FloatSpec.Core.Defs.F2R g| = FloatSpec.Core.Defs.F2R
+            (FloatSpec.Core.Defs.FlocqFloat.mk (Int.natAbs g.Fnum) g.Fexp :
+              FloatSpec.Core.Defs.FlocqFloat beta) := by
+          simpa using (FloatSpec.Core.Float_prop.F2R_Zabs (beta := beta) g.Fnum g.Fexp).symm
         calc
           F2R
               (FloatSpec.Core.Defs.FlocqFloat.mk (Int.ofNat (Int.natAbs g.Fnum)) g.Fexp :
@@ -2926,7 +2928,7 @@ theorem fexp_round_odd_from_explicit_payload
           exact hr0
         have hg_zero : g.Fnum = 0 := by
           exact FloatSpec.Core.Float_prop.eq_0_F2R
-            (beta := beta) g hβ hg_val_zero
+            (beta := beta) g.Fnum g.Fexp hg_val_zero
         have hg_even : g.Fnum % 2 = 0 := by simp [hg_zero]
         exact hg_odd hg_even
     have hr_abs_pos : 0 < |r| := abs_pos.mpr hr_ne

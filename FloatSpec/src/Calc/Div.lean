@@ -40,12 +40,12 @@ lemma mag_div_F2R (m1 e1 m2 e2 : Int) (Hm1 : 0 < m1) (Hm2 : 0 < m2)
         F2R (FlocqFloat.mk m2 e2 : FlocqFloat beta)) ≤ e + 1 := by
   have Hβ : 1 < beta := ValidRadix.valid
   have hx := FloatSpec.Core.Float_prop.F2R_gt_0
-    (beta := beta) (f := FlocqFloat.mk m1 e1) Hβ Hm1
+    (beta := beta) (f := FlocqFloat.mk m1 e1) Hm1
   have hy := FloatSpec.Core.Float_prop.F2R_gt_0
-    (beta := beta) (f := FlocqFloat.mk m2 e2) Hβ Hm2
+    (beta := beta) (f := FlocqFloat.mk m2 e2) Hm2
   have h := FloatSpec.Core.Raux.mag_div beta _ _ Hβ (ne_of_gt hx) (ne_of_gt hy)
-  have hmx := FloatSpec.Core.Float_prop.Raux_mag_F2R_Zdigits beta m1 e1 Hβ (ne_of_gt Hm1)
-  have hmy := FloatSpec.Core.Float_prop.Raux_mag_F2R_Zdigits beta m2 e2 Hβ (ne_of_gt Hm2)
+  have hmx := FloatSpec.Core.Float_prop.mag_F2R_Zdigits beta m1 e1 (ne_of_gt Hm1)
+  have hmy := FloatSpec.Core.Float_prop.mag_F2R_Zdigits beta m2 e2 (ne_of_gt Hm2)
   change mag beta (F2R (FlocqFloat.mk m1 e1 : FlocqFloat beta)) -
       mag beta (F2R (FlocqFloat.mk m2 e2 : FlocqFloat beta)) ≤
       mag beta (F2R (FlocqFloat.mk m1 e1 : FlocqFloat beta) /
@@ -411,9 +411,9 @@ theorem Fdiv_correct (x y : FlocqFloat beta)
     | mk m2 e2 =>
       -- Positive F2R implies positive mantissas when 1 < beta
       have hm1_pos : 0 < m1 :=
-        (FloatSpec.Core.Float_prop.gt_0_F2R (beta := beta) (f := FlocqFloat.mk m1 e1) Hβ) hx_pos
+        (FloatSpec.Core.Float_prop.gt_0_F2R (beta := beta) (m := m1) (e := e1)) hx_pos
       have hm2_pos : 0 < m2 :=
-        (FloatSpec.Core.Float_prop.gt_0_F2R (beta := beta) (f := FlocqFloat.mk m2 e2) Hβ) hy_pos
+        (FloatSpec.Core.Float_prop.gt_0_F2R (beta := beta) (m := m2) (e := e2)) hy_pos
       -- Reduce the Id binds of Fdiv
       simp (config := {zeta := true}) [Fdiv, bind, pure]
       -- Notations for digit counts, candidate exponent, and quotient

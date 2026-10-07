@@ -2311,8 +2311,8 @@ theorem inbetween_float_new_location
     have he : e ≤ e + k := by exact Int.le_add_of_nonneg_right (le_of_lt Hk)
     -- Invoke change-exp on f = (m/p, e+k) toward e'
     have hce := FloatSpec.Core.Float_prop.F2R_change_exp
-      (beta := beta) (f := Defs.FlocqFloat.mk (m / p) (e + k)) (e' := e)
-      hbeta he
+      (beta := beta) (m := (m / p)) (e := e + k) (e' := e) he
+    rw [FloatSpec.Core.Zaux.Zpower_Zpower_nat beta _ (sub_nonneg.mpr he)] at hce
     -- Unfold the right-hand side
     -- (m/p) * beta^( (e+k) - e) = (m/p) * beta^k = (m/p) * p
     have hkabs : ((e + k) - e).natAbs = Int.natAbs k := by
@@ -2336,8 +2336,8 @@ theorem inbetween_float_new_location
         = ((((m / p : Int) : ℝ) * (p : ℝ)) + (p : ℝ)) * step := by
     have he : e ≤ e + k := by exact Int.le_add_of_nonneg_right (le_of_lt Hk)
     have hce := FloatSpec.Core.Float_prop.F2R_change_exp
-      (beta := beta) (f := Defs.FlocqFloat.mk ((m / p) + 1) (e + k)) (e' := e)
-      hbeta he
+      (beta := beta) (m := ((m / p) + 1)) (e := e + k) (e' := e) he
+    rw [FloatSpec.Core.Zaux.Zpower_Zpower_nat beta _ (sub_nonneg.mpr he)] at hce
     have hkabs : ((e + k) - e).natAbs = Int.natAbs k := by
       have : 0 ≤ (e + k) - e := by simpa using (sub_nonneg.mpr he)
       simpa [Int.add_comm, Int.add_left_comm, Int.sub_add_cancel] using

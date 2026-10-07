@@ -263,8 +263,7 @@ theorem DN_UP_parity_aux_payload
       -- From hxdeq: (-xd) = (F2R gu_pos).run
       -- So xd = -(F2R gu_pos).run = (F2R gd).run via F2R_Zopp
       have hx' : -(F2R gu_pos) = (F2R gd) := by
-        have := FloatSpec.Core.Float_prop.F2R_Zopp (beta := beta) (f := gu_pos) (hbeta := hβ)
-        exact this
+        exact (FloatSpec.Core.Float_prop.F2R_Zopp (beta := beta) (m := gu_pos.Fnum) (e := gu_pos.Fexp)).symm
       have hneg : xd = -(F2R gu_pos) := by
         have h := congrArg Neg.neg hxdeq
         simpa using h
@@ -273,8 +272,7 @@ theorem DN_UP_parity_aux_payload
     have hxu : xu = (F2R gu) := by
       -- From hxueq: (-xu) = (F2R gd_pos).run
       have hx' : -(F2R gd_pos) = (F2R gu) := by
-        have := FloatSpec.Core.Float_prop.F2R_Zopp (beta := beta) (f := gd_pos) (hbeta := hβ)
-        exact this
+        exact (FloatSpec.Core.Float_prop.F2R_Zopp (beta := beta) (m := gd_pos.Fnum) (e := gd_pos.Fexp)).symm
       have hneg : xu = -(F2R gd_pos) := by
         have h := congrArg Neg.neg hxueq
         simpa using h
@@ -696,10 +694,10 @@ private theorem scaled_int_eq_power_mantissa
     (hval : (m : ℝ) * (beta : ℝ) ^ c = (beta : ℝ) ^ e) :
     m = beta ^ ((e - c).natAbs) := by
   have hbpow := FloatSpec.Core.Float_prop.F2R_bpow
-    (beta := beta) (e := e) hβ
+    (beta := beta) (e := e)
   have hchange := FloatSpec.Core.Float_prop.F2R_change_exp
-    (beta := beta) (f := (FlocqFloat.mk 1 e : FlocqFloat beta))
-    (e' := c) hβ hce
+    (beta := beta) (m := 1) (e := e) (e' := c) hce
+  rw [FloatSpec.Core.Zaux.Zpower_Zpower_nat beta _ (by omega)] at hchange
   have hsame :
       F2R (FlocqFloat.mk m c : FlocqFloat beta) =
         F2R (FlocqFloat.mk (beta ^ ((e - c).natAbs)) c : FlocqFloat beta) := by
@@ -749,10 +747,11 @@ private theorem canonical_power_mantissa
       simpa [heq] using hbound
   have hgle : g.Fexp ≤ e := by simpa [hgexp] using hfe1
   have hchange := FloatSpec.Core.Float_prop.F2R_change_exp
-    (beta := beta) (f := (FlocqFloat.mk 1 e : FlocqFloat beta))
-    (e' := g.Fexp) hβ hgle
+    (beta := beta) (m := 1) (e := e)
+    (e' := g.Fexp) hgle
+  rw [FloatSpec.Core.Zaux.Zpower_Zpower_nat beta _ (by omega)] at hchange
   have hbpow := FloatSpec.Core.Float_prop.F2R_bpow
-    (beta := beta) (e := e) hβ
+    (beta := beta) (e := e)
   have hsame :
       F2R g =
         F2R (FlocqFloat.mk (beta ^ ((e - g.Fexp).natAbs)) g.Fexp : FlocqFloat beta) := by
@@ -796,7 +795,7 @@ private theorem canonical_zero_mantissa
     (g : FlocqFloat beta) (hβ : 1 < beta)
     (hg : F2R g = 0) :
     g.Fnum = 0 :=
-  FloatSpec.Core.Float_prop.eq_0_F2R (beta := beta) g hβ hg
+  FloatSpec.Core.Float_prop.eq_0_F2R (beta := beta) g.Fnum g.Fexp hg
 
 /-- If a float value is written at its own exponent, the mantissa is unique. -/
 private theorem same_exp_mantissa
@@ -2183,7 +2182,7 @@ theorem Rnd_NE_pt_abs (x f : ℝ) (hNE : Rnd_NE_pt beta fexp x f) :
               calc |f| = |((F2R g))| := by rw [← hf']
                    _ = -(F2R g) := abs_of_neg hg_neg
             have hF2Rneg : -(F2R g) = (F2R gabs) := by
-              simpa [gabs] using (FloatSpec.Core.Float_prop.F2R_Zopp (beta := beta) (f := g) (hbeta := hβ))
+              simpa [gabs] using (FloatSpec.Core.Float_prop.F2R_Zopp (beta := beta) (m := g.Fnum) (e := g.Fexp))
             calc |f| = -(F2R g) := hfneg
                  _ = (F2R gabs) := hF2Rneg
           -- Canonicality preserved under mantissa negation; parity invariant modulo 2.
@@ -2375,8 +2374,7 @@ private theorem NE_prop_opp (x f : ℝ) (h : NE_prop beta fexp x f) :
   rcases h with ⟨g, hf, hcanon, heven⟩
   refine ⟨⟨-g.Fnum, g.Fexp⟩, ?_, ?_, ?_⟩
   · rw [hf]
-    exact FloatSpec.Core.Float_prop.F2R_Zopp (beta := beta) (f := g)
-      (hbeta := ValidRadix.valid)
+    exact (FloatSpec.Core.Float_prop.F2R_Zopp (beta := beta) (m := g.Fnum) (e := g.Fexp)).symm
   · exact FloatSpec.Core.Generic_fmt.canonical_opp (beta := beta) (fexp := fexp)
       (m := g.Fnum) (e := g.Fexp) hcanon
   · simpa using heven

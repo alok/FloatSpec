@@ -69,7 +69,7 @@ The important recent changes are:
   policies need zero in the format. All 78 top-level source contracts in this
   module now have paired typed clients and explicit reviews; its constructor
   and four generated eliminators are accounted for separately. There are
-  452 total review dispositions, including the three nearest-even laws below.
+  489 total review dispositions, including the three nearest-even laws below.
   This does not certify unreviewed imports or
   the other modules, nor identify Rocq and Lean proof terms.
 
@@ -104,7 +104,10 @@ The important recent changes are:
   bodies, including `Zdigits` on Flocq's own fuel and `digits2_Pnat` on
   `Positive`. Eighteen statements were restated in the source's shape, and a
   new bridge compares all six functions with Rocq. The four open sites wait on
-  the `digits2_pos` carrier (owner decision O1). `Float_prop.v` is next.
+  the `digits2_pos` carrier (owner decision O1). `Float_prop.v` followed, with
+  all 37 sites reviewed. Its lemmas had each taken the radix invariant twice;
+  16 statements were restated in source form and four duplicate names were
+  deleted. `Generic_fmt.v` is next.
   "Same sign" is a nonnegative product, so zero is neutral: both assistants
   prove that transitivity through a zero middle factor fails (`1·0`, `0·(−1)`)
   and that a negative divisor breaks `0 ≤ u·quot(u, v)`. The Boolean
@@ -163,6 +166,7 @@ Current verification is deliberately separated by source snapshot:
 
 | Snapshot | Completed evidence |
 |---|---|
+| Float_prop | All 37 `Float_prop.v` sites reviewed and anchored. Explicit radix premises removed (the `ValidRadix` instance carries the bound); 16 statements restated and four duplicate lemmas deleted, with callers migrated. Paired fixtures reject 16 mutations. Statement-only, so no new bridge run. Full 6,350-job build; all Lean fixtures strict and kernel-replayed. 489 explicit reviews. |
 | Digits | 63 of 67 `Digits.v` sites reviewed; four wait on owner decision O1. Six bodies ported to the source's (`Zdigits` on the source fuel, `digits2_Pnat` on `Positive`) and 18 statements restated. Two paired fixtures pin the bodies with `rfl` and reject 32 mutations. New digits bridge: 2,908 cases at seed 865701 with live mutations. CI bridge op set: 4,307 cases at seed 865691. Full 6,350-job build; all Lean fixtures strict and kernel-replayed. 452 explicit reviews. |
 | Defs | All 14 `Defs.v` sites reviewed with `rfl` body pins in both assistants and 16 rejected mutations; 15 identity aliases (M2) removed, with 69 drift-flagged fingerprints refreshed after their paired suites passed. Full 6,350-job build; all Lean fixtures strict and kernel-replayed. 389 explicit reviews. |
 | End of Raux | Last 16 `Raux.v` sites reviewed (13 with new paired fixtures and 16 rejected mutations, three LPO results on their existing paired controls); seven anchors. Full 6,350-job build; all Lean fixtures strict and kernel-replayed. Attribute-only production change, so no new bridge run. 375 explicit reviews; `Version.v`, `Zaux.v` and `Raux.v` complete. |

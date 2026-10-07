@@ -313,14 +313,17 @@ theorem relative_error_F2R_emin (rnd : ℝ → Int) [FloatSpec.Core.Generic_fmt.
   let fabs : FloatSpec.Core.Defs.FlocqFloat beta :=
     FloatSpec.Core.Defs.FlocqFloat.mk (Int.natAbs m) emin
   have hFabs : |x| = F2R fabs := by
-    have h := FloatSpec.Core.Float_prop.F2R_Zabs (beta := beta) f hβ
+    have h : |FloatSpec.Core.Defs.F2R f| = FloatSpec.Core.Defs.F2R
+        (FloatSpec.Core.Defs.FlocqFloat.mk (Int.natAbs f.Fnum) f.Fexp :
+          FloatSpec.Core.Defs.FlocqFloat beta) := by
+      simpa using (FloatSpec.Core.Float_prop.F2R_Zabs (beta := beta) f.Fnum f.Fexp).symm
     change |FloatSpec.Core.Defs.F2R f| =
       FloatSpec.Core.Defs.F2R
         (FloatSpec.Core.Defs.FlocqFloat.mk (Int.natAbs m) emin :
           FloatSpec.Core.Defs.FlocqFloat beta)
     exact h
   have hlow_abs : (beta : ℝ) ^ emin ≤ F2R fabs :=
-    FloatSpec.Core.Float_prop.bpow_le_F2R (beta := beta) (f := fabs) hβ hm_abs_pos
+    FloatSpec.Core.Float_prop.bpow_le_F2R (beta := beta) (m := fabs.Fnum) (e := fabs.Fexp) hm_abs_pos
   have h_bound : (beta : ℝ) ^ emin ≤ |x| := by
     calc
       (beta : ℝ) ^ emin ≤ F2R fabs := hlow_abs
@@ -524,7 +527,10 @@ theorem relative_error_N_F2R_emin (m : Int) (hβ : 1 < beta)
       FloatSpec.Core.Defs.FlocqFloat.mk (Int.natAbs m) emin
     have hFabs :
         |x| = F2R fabs := by
-      have h := FloatSpec.Core.Float_prop.F2R_Zabs (beta := beta) f hβ
+      have h : |FloatSpec.Core.Defs.F2R f| = FloatSpec.Core.Defs.F2R
+          (FloatSpec.Core.Defs.FlocqFloat.mk (Int.natAbs f.Fnum) f.Fexp :
+            FloatSpec.Core.Defs.FlocqFloat beta) := by
+        simpa using (FloatSpec.Core.Float_prop.F2R_Zabs (beta := beta) f.Fnum f.Fexp).symm
       change |FloatSpec.Core.Defs.F2R f| =
         FloatSpec.Core.Defs.F2R
           (FloatSpec.Core.Defs.FlocqFloat.mk (Int.natAbs m) emin :
@@ -532,7 +538,7 @@ theorem relative_error_N_F2R_emin (m : Int) (hβ : 1 < beta)
       exact h
     have hlow_abs :
         (beta : ℝ) ^ emin ≤ F2R fabs :=
-      FloatSpec.Core.Float_prop.bpow_le_F2R (beta := beta) (f := fabs) hβ hm_abs_pos
+      FloatSpec.Core.Float_prop.bpow_le_F2R (beta := beta) (m := fabs.Fnum) (e := fabs.Fexp) hm_abs_pos
     have h_bound : (beta : ℝ) ^ emin ≤ |x| := by
       calc
         (beta : ℝ) ^ emin ≤ F2R fabs := hlow_abs
@@ -770,7 +776,10 @@ theorem relative_error_N_round_F2R_emin (h_pos : 0 < p) (m : Int) (hβ : 1 < bet
       FloatSpec.Core.Defs.FlocqFloat.mk (Int.natAbs m) emin
     have hFabs :
         |x| = F2R fabs := by
-      have h := FloatSpec.Core.Float_prop.F2R_Zabs (beta := beta) f hβ
+      have h : |FloatSpec.Core.Defs.F2R f| = FloatSpec.Core.Defs.F2R
+          (FloatSpec.Core.Defs.FlocqFloat.mk (Int.natAbs f.Fnum) f.Fexp :
+            FloatSpec.Core.Defs.FlocqFloat beta) := by
+        simpa using (FloatSpec.Core.Float_prop.F2R_Zabs (beta := beta) f.Fnum f.Fexp).symm
       change |FloatSpec.Core.Defs.F2R f| =
         FloatSpec.Core.Defs.F2R
           (FloatSpec.Core.Defs.FlocqFloat.mk (Int.natAbs m) emin :
@@ -778,7 +787,7 @@ theorem relative_error_N_round_F2R_emin (h_pos : 0 < p) (m : Int) (hβ : 1 < bet
       exact h
     have hlow_abs :
         (beta : ℝ) ^ emin ≤ F2R fabs :=
-      FloatSpec.Core.Float_prop.bpow_le_F2R (beta := beta) (f := fabs) hβ hm_abs_pos
+      FloatSpec.Core.Float_prop.bpow_le_F2R (beta := beta) (m := fabs.Fnum) (e := fabs.Fexp) hm_abs_pos
     have h_bound : (beta : ℝ) ^ emin ≤ |x| := by
       calc
         (beta : ℝ) ^ emin ≤ F2R fabs := hlow_abs
@@ -899,14 +908,17 @@ theorem relative_error_round_F2R_emin (rnd : ℝ → Int) [FloatSpec.Core.Generi
   let fabs : FloatSpec.Core.Defs.FlocqFloat beta :=
     FloatSpec.Core.Defs.FlocqFloat.mk (Int.natAbs m) emin
   have hFabs : |x| = F2R fabs := by
-    have h := FloatSpec.Core.Float_prop.F2R_Zabs (beta := beta) f hβ
+    have h : |FloatSpec.Core.Defs.F2R f| = FloatSpec.Core.Defs.F2R
+        (FloatSpec.Core.Defs.FlocqFloat.mk (Int.natAbs f.Fnum) f.Fexp :
+          FloatSpec.Core.Defs.FlocqFloat beta) := by
+      simpa using (FloatSpec.Core.Float_prop.F2R_Zabs (beta := beta) f.Fnum f.Fexp).symm
     change |FloatSpec.Core.Defs.F2R f| =
       FloatSpec.Core.Defs.F2R
         (FloatSpec.Core.Defs.FlocqFloat.mk (Int.natAbs m) emin :
           FloatSpec.Core.Defs.FlocqFloat beta)
     exact h
   have hlow_abs : (beta : ℝ) ^ emin ≤ F2R fabs :=
-    FloatSpec.Core.Float_prop.bpow_le_F2R (beta := beta) (f := fabs) hβ hm_abs_pos
+    FloatSpec.Core.Float_prop.bpow_le_F2R (beta := beta) (m := fabs.Fnum) (e := fabs.Fexp) hm_abs_pos
   have h_bound : (beta : ℝ) ^ emin ≤ |x| := by
     calc
       (beta : ℝ) ^ emin ≤ F2R fabs := hlow_abs

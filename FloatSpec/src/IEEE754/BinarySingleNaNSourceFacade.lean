@@ -280,7 +280,7 @@ private theorem finite_B2R_ne_zero {prec emax : Int}
     (beta:=2)
     (f:=FloatSpec.Core.Defs.FlocqFloat.mk
       (if s then -(m : Int) else (m : Int)) e)
-    (by norm_num) hm'
+    hm'
 
 theorem B2R_Bsign_inj {prec emax : Int}
     (x y : binary_float prec emax)

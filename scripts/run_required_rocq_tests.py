@@ -35,7 +35,7 @@ LIVE_MODULES = (
     'test_raux_floor_contracts', 'test_raux_pow_contracts',
     'test_raux_mag_contracts', 'test_raux_cond_opp_contracts',
     'test_defs_contracts', 'test_digits_bridge', 'test_digits_digit_contracts',
-    'test_digits_count_contracts',
+    'test_digits_count_contracts', 'test_float_prop_contracts',
     'test_pff_bridge', 'test_pff_basic_contracts', 'test_pff_aux_bridge',
     'test_pff_statement_contracts',
     'test_pff_integer_bridge', 'test_pff_rounding_contracts',

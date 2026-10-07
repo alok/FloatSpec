@@ -39,9 +39,8 @@ theorem round_repr_same_exp
   · refine ⟨m, ?_⟩
     let n := m * beta ^ (e - c).natAbs
     have hx : x = (n : ℝ) * (beta : ℝ) ^ c := by
-      simpa [x, n, _root_.F2R, FloatSpec.Core.Defs.F2R] using
-        FloatSpec.Core.Float_prop.F2R_change_exp (beta := beta)
-          (FloatSpec.Core.Defs.FlocqFloat.mk m e) c hβ hce
+      simpa [x, n, _root_.F2R, FloatSpec.Core.Defs.F2R, FloatSpec.Core.Zaux.Zpower_Zpower_nat beta _ (sub_nonneg.mpr hce)] using
+        FloatSpec.Core.Float_prop.F2R_change_exp (beta := beta) c m e hce
     have hscaled : FloatSpec.Core.Generic_fmt.scaled_mantissa beta fexp x = (n : ℝ) := by
       change x * (beta : ℝ) ^ (-c) = (n : ℝ)
       rw [hx, mul_assoc, ← zpow_add₀ hb]
@@ -52,8 +51,8 @@ theorem round_repr_same_exp
   · let n := rnd (FloatSpec.Core.Generic_fmt.scaled_mantissa beta fexp x)
     refine ⟨n * beta ^ (c - e).natAbs, ?_⟩
     have hec : e ≤ c := le_of_lt (lt_of_not_ge hce)
-    exact FloatSpec.Core.Float_prop.F2R_change_exp (beta := beta)
-      (FloatSpec.Core.Defs.FlocqFloat.mk n c) e hβ hec
+    rw [← FloatSpec.Core.Zaux.Zpower_Zpower_nat beta _ (sub_nonneg.mpr hec)]
+    exact FloatSpec.Core.Float_prop.F2R_change_exp (beta := beta) e n c hec
 
 variable [FloatSpec.Core.Generic_fmt.Monotone_exp fexp]
 variable (hβ : 1 < beta)
@@ -380,9 +379,11 @@ theorem generic_format_shift (x : ℝ) (e : Int)
       _root_.F2R f =
         _root_.F2R (FloatSpec.Core.Defs.FlocqFloat.mk m e :
           FloatSpec.Core.Defs.FlocqFloat beta) := by
+    have hle : e ≤ f.Fexp := by simpa [f, c] using h_exp
     have h :=
-      FloatSpec.Core.Float_prop.F2R_change_exp (beta := beta) (f := f)
-        (e' := e) hβ (by simpa [f, c] using h_exp)
+      FloatSpec.Core.Float_prop.F2R_change_exp (beta := beta) (m := f.Fnum) (e := f.Fexp)
+        (e' := e) hle
+    rw [FloatSpec.Core.Zaux.Zpower_Zpower_nat beta _ (sub_nonneg.mpr hle)] at h
     simpa only [f, m, m0, c] using h
   calc
     x = _root_.F2R f := hx_repr
@@ -784,9 +785,11 @@ lemma ex_shift (x : ℝ) (e : Int)
       _root_.F2R f =
         _root_.F2R (FloatSpec.Core.Defs.FlocqFloat.mk m e :
           FloatSpec.Core.Defs.FlocqFloat beta) := by
+    have hle : e ≤ f.Fexp := by simpa [f, c] using h_exp
     have h :=
-      FloatSpec.Core.Float_prop.F2R_change_exp (beta := beta) (f := f)
-        (e' := e) hβ (by simpa [f, c] using h_exp)
+      FloatSpec.Core.Float_prop.F2R_change_exp (beta := beta) (m := f.Fnum) (e := f.Fexp)
+        (e' := e) hle
+    rw [FloatSpec.Core.Zaux.Zpower_Zpower_nat beta _ (sub_nonneg.mpr hle)] at h
     simpa only [f, m, m0, c] using h
   calc
     x = _root_.F2R f := hx_repr
@@ -906,11 +909,12 @@ theorem round_plus_F2R (x y : ℝ)
           _root_.F2R
             (FloatSpec.Core.Defs.FlocqFloat.mk (n * beta ^ (c - e).natAbs) e :
               FloatSpec.Core.Defs.FlocqFloat beta) := by
+      have hle : e ≤ c := by simpa [c, hc] using he_sum
       have h :=
         FloatSpec.Core.Float_prop.F2R_change_exp
           (beta := beta)
-          (f := FloatSpec.Core.Defs.FlocqFloat.mk n c)
-              (e' := e) hβ (by simpa [c, hc] using he_sum)
+          (m := n) (e := c) (e' := e) hle
+      rw [FloatSpec.Core.Zaux.Zpower_Zpower_nat beta _ (sub_nonneg.mpr hle)] at h
       change
         ((n : ℝ) * (beta : ℝ) ^ c) =
           (((n * beta ^ (c - e).natAbs : Int) : ℝ) * (beta : ℝ) ^ e)

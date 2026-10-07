@@ -3045,7 +3045,7 @@ private theorem id_m_ulp_ge_bpow_early (x : ℝ) (e : Int)
         (FlocqFloat.mk m c : FlocqFloat beta)) := by
       simpa [FloatSpec.Core.Defs.F2R, hx_eq] using hxpos
     have hm_posZ := FloatSpec.Core.Float_prop.gt_0_F2R (beta := beta)
-       (f := (FlocqFloat.mk m c : FlocqFloat beta)) hβ hF2R_pos
+       (m := m) (e := c) hF2R_pos
     simpa using hm_posZ
   have hm_ge_one : (1 : Int) ≤ m := Int.add_one_le_iff.mpr hm_pos
   have hulprun' : (ulp (beta := beta) (fexp := fexp) x) = b ^ c := by
@@ -3763,7 +3763,7 @@ theorem id_p_ulp_le_bpow (x : ℝ) (e : Int)
         (FlocqFloat.mk m c : FlocqFloat beta)) := by
       simpa [FloatSpec.Core.Defs.F2R, hx_eq] using hx
     have hm_posZ := FloatSpec.Core.Float_prop.gt_0_F2R (beta := beta)
-       (f := (FlocqFloat.mk m c : FlocqFloat beta)) hβ hF2R_pos
+       (m := m) (e := c) hF2R_pos
     simpa using hm_posZ
   have hm_ge_one : (1 : Int) ≤ m := (Int.add_one_le_iff.mpr hm_pos)
   -- Evaluate ulp x and rewrite the goal with m and c
@@ -4576,7 +4576,7 @@ private theorem generic_format_pred_aux1_theorem_early
     have hF2R_pos : 0 < FloatSpec.Core.Defs.F2R (FlocqFloat.mk m c : FlocqFloat beta) := by
       simpa [FloatSpec.Core.Defs.F2R, hx_repr] using hx
     exact FloatSpec.Core.Float_prop.gt_0_F2R
-      (beta := beta) (f := (FlocqFloat.mk m c : FlocqFloat beta)) hβ hF2R_pos
+      (beta := beta) (m := m) (e := c) hF2R_pos
 
   have hc_lt_e : c < e := by
     by_contra hnot
@@ -7684,7 +7684,7 @@ private theorem mag_plus_eps_theorem
       have hF2R_pos : 0 < (FloatSpec.Core.Defs.F2R (FlocqFloat.mk m c : FlocqFloat beta)) := by
         simpa [FloatSpec.Core.Defs.F2R, hx_eq] using hx
       have hm_posZ := FloatSpec.Core.Float_prop.gt_0_F2R (beta := beta)
-           (f := (FlocqFloat.mk m c : FlocqFloat beta)) hβ hF2R_pos
+           (m := m) (e := c) hF2R_pos
       have hm_ge_one : (1 : Int) ≤ m := (Int.add_one_le_iff.mpr hm_posZ)
       have h_one_le_m : (1 : ℝ) ≤ (m : ℝ) := by exact_mod_cast hm_ge_one
       -- Hence b^c ≤ m * b^c
@@ -9113,7 +9113,7 @@ theorem ulp_canonical (m e : Int)
   have hx_ne :
       (FloatSpec.Core.Defs.F2R (FloatSpec.Core.Defs.FlocqFloat.mk m e : FloatSpec.Core.Defs.FlocqFloat beta)) ≠ 0 :=
     FloatSpec.Core.Float_prop.F2R_neq_0 (beta := beta)
-      (f := FloatSpec.Core.Defs.FlocqFloat.mk m e) hβ hm
+      (f := FloatSpec.Core.Defs.FlocqFloat.mk m e) hm
   have hx_ne' : x ≠ 0 := by
     -- Rewrite the `F2R` value to our abbreviation x
     simpa [x, FloatSpec.Core.Defs.F2R] using hx_ne
@@ -9283,7 +9283,7 @@ theorem id_m_ulp_ge_bpow (x : ℝ) (e : Int)
     have hF2R_pos : 0 < (FloatSpec.Core.Defs.F2R (FlocqFloat.mk m c : FlocqFloat beta)) := by
       simpa [FloatSpec.Core.Defs.F2R, hx_eq] using hxpos
     have hm_posZ := FloatSpec.Core.Float_prop.gt_0_F2R (beta := beta)
-       (f := (FlocqFloat.mk m c : FlocqFloat beta)) hβ hF2R_pos
+       (m := m) (e := c) hF2R_pos
     simpa using hm_posZ
   have hm_ge_one : (1 : Int) ≤ m := (Int.add_one_le_iff.mpr hm_pos)
   -- Evaluate ulp x and rewrite the goal with m and c

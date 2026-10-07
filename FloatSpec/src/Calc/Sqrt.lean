@@ -278,7 +278,7 @@ lemma mag_sqrt_F2R (m1 e1 : Int) (Hm1 : 0 < m1) :
   have Hβ : 1 < beta := ValidRadix.valid
   -- Step 1: F2R is positive since m1 > 0
   have hF2R_pos : 0 < F2R (FlocqFloat.mk m1 e1 : FlocqFloat beta) := by
-    exact FloatSpec.Core.Float_prop.F2R_gt_0 (beta := beta) (f := FlocqFloat.mk m1 e1) Hβ Hm1
+    exact FloatSpec.Core.Float_prop.F2R_gt_0 (beta := beta) (f := FlocqFloat.mk m1 e1) Hm1
   -- Step 2: Use mag_sqrt_eq_div2
   have h_sqrt_mag := mag_sqrt_eq_div2 beta (F2R (FlocqFloat.mk m1 e1 : FlocqFloat beta)) hF2R_pos Hβ
   rw [h_sqrt_mag]
@@ -660,7 +660,7 @@ theorem Fsqrt_correct (x : FlocqFloat beta) (Hx : 0 < F2R x) :
   set m1 := x.Fnum with hm1_def
   set e1 := x.Fexp with he1_def
   -- Step 1: Get Hm1 : 0 < m1 from Hx : 0 < F2R x
-  have Hm1 : 0 < m1 := FloatSpec.Core.Float_prop.gt_0_F2R beta x Hβ Hx
+  have Hm1 : 0 < m1 := FloatSpec.Core.Float_prop.gt_0_F2R beta x.Fnum x.Fexp Hx
   -- Unfold Fsqrt and set up the key values
   simp only [Fsqrt]
   set d := Zdigits beta m1 with hd_def
