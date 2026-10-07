@@ -16,7 +16,7 @@ External Rocq imports are recorded in the JSON report, not counted as Flocq decl
 |---:|---|---:|---:|---:|---:|
 | 1 | src/Version.v | 1 | 1 | 1 | 1 |
 | 2 | src/Core/Zaux.v | 102 | 82 | 91 | 102 |
-| 3 | src/Core/Raux.v | 186 | 133 | 178 | 121 |
+| 3 | src/Core/Raux.v | 186 | 133 | 178 | 141 |
 | 4 | src/Core/Defs.v | 14 | 11 | 14 | 0 |
 | 5 | src/Core/Round_pred.v | 83 | 78 | 78 | 83 |
 | 6 | src/Core/Digits.v | 67 | 0 | 67 | 0 |
@@ -57,26 +57,26 @@ the full Lean type/body with Rocq, and add an evidence-bearing review entry.
 Resolve aliases and generated proof infrastructure explicitly; do not create
 unnecessary numerical APIs to satisfy a raw name count.
 
-- `src/Core/Raux.v:1335` — `radix_pos` (prf): `FloatSpec.Core.Raux.radix_pos`.
-- `src/Core/Raux.v:1345` — `bpow` (def): `FloatSpec.Core.Raux.bpow`.
-- `src/Core/Raux.v:1352` — `IZR_Zpower_pos` (prf): `FloatSpec.Core.Raux.IZR_Zpower_pos`.
-- `src/Core/Raux.v:1368` — `bpow_powerRZ` (prf): `FloatSpec.Core.Raux.bpow_powerRZ`.
-- `src/Core/Raux.v:1378` — `bpow_ge_0` (prf): `FloatSpec.Core.Raux.bpow_ge_0`.
-- `src/Core/Raux.v:1387` — `bpow_gt_0` (prf): `FloatSpec.Core.Raux.bpow_gt_0`.
-- `src/Core/Raux.v:1396` — `bpow_plus` (prf): `FloatSpec.Core.Raux.bpow_plus`.
-- `src/Core/Raux.v:1406` — `bpow_1` (prf): `FloatSpec.Core.Raux.bpow_1`.
-- `src/Core/Raux.v:1413` — `bpow_plus_1` (prf): `FloatSpec.Core.Raux.bpow_plus_1`.
-- `src/Core/Raux.v:1422` — `bpow_opp` (prf): `FloatSpec.Core.Raux.bpow_opp`.
-- `src/Core/Raux.v:1434` — `IZR_Zpower_nat` (prf): `FloatSpec.Core.Raux.IZR_Zpower_nat`.
-- `src/Core/Raux.v:1445` — `IZR_Zpower` (prf): `FloatSpec.Core.Raux.IZR_Zpower`.
-- `src/Core/Raux.v:1456` — `bpow_lt` (prf): `FloatSpec.Core.Raux.bpow_lt`.
-- `src/Core/Raux.v:1474` — `lt_bpow` (prf): `FloatSpec.Core.Raux.lt_bpow`.
-- `src/Core/Raux.v:1490` — `bpow_le` (prf): `FloatSpec.Core.Raux.bpow_le`.
-- `src/Core/Raux.v:1502` — `le_bpow` (prf): `FloatSpec.Core.Raux.le_bpow`.
-- `src/Core/Raux.v:1514` — `bpow_inj` (prf): `FloatSpec.Core.Raux.bpow_inj`.
-- `src/Core/Raux.v:1526` — `bpow_exp` (prf): `FloatSpec.Core.Raux.bpow_exp`.
-- `src/Core/Raux.v:1563` — `sqrt_bpow` (prf): `FloatSpec.Core.Raux.sqrt_bpow`.
-- `src/Core/Raux.v:1572` — `sqrt_bpow_ge` (prf): `FloatSpec.Core.Raux.sqrt_bpow_ge`.
+- `src/Core/Raux.v:1583` — `mag_prop` (rec): `FloatSpec.Core.Raux.Source.mag_prop`, `FloatSpec.Core.Raux.mag_prop`.
+- `src/Core/Raux.v:1584` — `mag_val` (proj): `FloatSpec.Core.Raux.Source.mag_val`, `FloatSpec.Core.Raux.mag_prop.mag_val`, `FloatSpec.Core.Raux.mag_val`.
+- `src/Core/Raux.v:1588` — `mag` (def): `FloatSpec.Core.Float_prop.mag`, `FloatSpec.Core.Raux.Source.mag`, `FloatSpec.Core.Raux.mag` (+1 ambiguous candidates).
+- `src/Core/Raux.v:1633` — `bpow_lt_bpow` (prf): `FloatSpec.Core.Raux.bpow_lt_bpow`.
+- `src/Core/Raux.v:1644` — `bpow_unique` (prf): `FloatSpec.Core.Raux.bpow_unique`.
+- `src/Core/Raux.v:1657` — `mag_unique` (prf): `FloatSpec.Core.Raux.mag_unique`.
+- `src/Core/Raux.v:1673` — `mag_opp` (prf): `FloatSpec.Core.Raux.mag_opp`.
+- `src/Core/Raux.v:1687` — `mag_abs` (prf): `FloatSpec.Core.Raux.mag_abs`.
+- `src/Core/Raux.v:1698` — `mag_unique_pos` (prf): `FloatSpec.Core.Raux.mag_unique_pos`.
+- `src/Core/Raux.v:1713` — `mag_le_abs` (prf): `FloatSpec.Core.Raux.mag_le_abs`.
+- `src/Core/Raux.v:1734` — `mag_le` (prf): `FloatSpec.Core.Raux.mag_le`.
+- `src/Core/Raux.v:1749` — `lt_mag` (prf): `FloatSpec.Core.Raux.lt_mag`.
+- `src/Core/Raux.v:1771` — `mag_bpow` (prf): `FloatSpec.Core.Raux.mag_bpow`.
+- `src/Core/Raux.v:1786` — `mag_mult_bpow` (prf): `FloatSpec.Core.Raux.mag_mult_bpow`.
+- `src/Core/Raux.v:1808` — `mag_le_bpow` (prf): `FloatSpec.Core.Raux.mag_le_bpow`.
+- `src/Core/Raux.v:1821` — `mag_gt_bpow` (prf): `FloatSpec.Core.Raux.mag_gt_bpow`.
+- `src/Core/Raux.v:1837` — `mag_ge_bpow` (prf): `FloatSpec.Core.Raux.mag_ge_bpow`.
+- `src/Core/Raux.v:1854` — `bpow_mag_gt` (prf): `FloatSpec.Core.Raux.bpow_mag_gt`.
+- `src/Core/Raux.v:1866` — `bpow_mag_le` (prf): `FloatSpec.Core.Raux.bpow_mag_le`.
+- `src/Core/Raux.v:1876` — `mag_le_Zpower` (prf): `FloatSpec.Core.Raux.mag_le_Zpower`.
 
 ## Reproduce
 

@@ -4442,6 +4442,26 @@ which has two Lean candidates (`Raux.bpow`, `Raux.Source.bpow`).
 Receipts: `/private/tmp/floatspec-floorceil-20261006/`,
 `/private/tmp/floatspec-rfloor-20261006/`.
 
+### October 6: radix powers (20 sites)
+
+`b4c77eb3` states twelve laws (`bpow_plus` through `sqrt_bpow_ge`) about
+`bpow`, as Flocq does; they had been about `beta ^ e` and typechecked only by
+unfolding. `bpow_opp` now uses the inverse and `IZR_Zpower_pos` writes
+`Zpos m`. A script read the compiler's "After simplification" errors and
+added `bpow` to 35 `simpa` sets (three build rounds); four more were manual.
+`bpow`'s `zpow` body and the `Int` radix with a `1 < beta` premise are kept
+and documented (Flocq's `bpow_powerRZ`; plan E5). `RauxPowContracts.lean/.v`:
+20 interfaces, concrete values, each prover's half of the radix invariant,
+16 rejected mutations; kernel replay of 20 fixture declarations.
+
+Full build 6350 jobs; all Lean fixtures strict with kernel replay; CI bridge
+op set at seed 865671 (4311 cases, source digest `d067a38b`); drift gate 330
+entries (309 contracts, 21 infrastructure, 2386 unreviewed). `Raux.v`: 133 of
+186 sites anchored, 141 dispositioned. Next: `mag_prop`/`mag`, whose Lean
+candidates include the `Raux.Source` facade and a `Float_prop.mag` alias.
+
+Receipts: `/private/tmp/floatspec-rpow-20261006/`.
+
 ### Unreviewed scope
 
 The bulk of the complete theorem-by-theorem port remains unreviewed. In

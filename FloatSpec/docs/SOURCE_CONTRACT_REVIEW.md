@@ -385,6 +385,32 @@ zero zero, so `Zfloor_div` and `Ztrunc_div` also hold at `y = 0`. Both
 assistants prove that, and the faithful statements keep the premise.
 Sixteen mutations are rejected.
 
+### Tenth ordered slice: radix powers
+
+`Raux.v:1331–1582` defines `bpow r e` and 19 laws. Twelve Lean "bpow" laws
+(`bpow_plus`, `bpow_le`, `bpow_opp`, `sqrt_bpow` and others) were stated about
+the real power `(beta : ℝ) ^ e` rather than about `bpow`. They typechecked only
+because `bpow` unfolds to that power. They are now stated about `bpow`, as the
+source does, and `bpow_opp` uses the source's inverse (`/bpow e`, not
+`1 / …`). Thirty-five `simpa` steps that had matched the power form now unfold
+`bpow` explicitly; a small script found them from the compiler's errors.
+
+Two representation choices are recorded, not changed. First, `bpow`'s body
+is `beta ^ e`. Rocq matches the exponent's `Z0`/`Zpos`/`Zneg` cases, then proves
+`bpow_powerRZ` that this is `powerRZ`, and Lean's `zpow` on ℝ is `powerRZ`.
+Second, the radix is an `Int` whose invariant `1 < beta` is an explicit premise
+(plan exemption E5), where Rocq bundles `2 ≤ r` in its `radix` record. The
+invariant is real: at radix 0, `bpow 0 0 = 1 > 0 = bpow 0 1`, so monotonicity
+fails without it, while Rocq's record cannot even form radix 0. Both
+fixtures show their half of that. The `Raux.Source.bpow` facade over `Zaux.Radix`
+is a second Lean meaning for the same Flocq name; the plan's critic schedules
+it for deletion in batch 6A.
+
+`RauxPowContracts.lean/.v` state the 20 interfaces, evaluate `bpow 2 (−3) = 1/8`
+and `bpow 10 2 = 100`, and reject 16 mutations (dropped radix premise,
+non-strict for strict, negation for inverse, sum for product, swapped square
+roots and exponential forms).
+
 ## Unindexed Pff negation and absolute value (earlier slice)
 
 The source facade now also exports `Fopp_correct`, `Fopp_Fopp`, `Fabs_correct`

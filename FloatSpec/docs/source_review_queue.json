@@ -6947,6 +6947,426 @@
           "noncomputable": false
         }
       }
+    },
+    {
+      "source_id": "src/Core/Raux.v:radix_pos@27467",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.radix_pos"
+      ],
+      "scope": "Same variables and conclusion as the source; paired typed clients in both assistants. The radix is an Int with its invariant 1 < beta as an explicit premise (cutover plan E5; Rocq bundles 2 <= r in the radix record); both assistants show the invariant is needed (Lean: bpow monotonicity fails at radix 0; Rocq: the record excludes 0).",
+      "evidence": [
+        "scripts/fixtures/RauxPowContracts.lean",
+        "scripts/fixtures/RauxPowContracts.v",
+        "scripts/test_raux_pow_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.radix_pos": {
+          "type_hash": "2778253126",
+          "value_hash": "1554058703",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:bpow@27707",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.bpow"
+      ],
+      "scope": "Body is (beta:R)^e (Lean zpow). Rocq matches Z0/Zpos/Zneg with Zpower_pos and proves bpow_powerRZ that this is powerRZ, which Lean's zpow is; each fixture pins its own body and both evaluate bpow 2 (-3) = 1/8 and bpow 10 2 = 100. Raux.Source.bpow (Zaux Radix facade) is a second Lean meaning to delete in batch 6A per the plan critic.",
+      "evidence": [
+        "scripts/fixtures/RauxPowContracts.lean",
+        "scripts/fixtures/RauxPowContracts.v",
+        "scripts/test_raux_pow_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.bpow": {
+          "type_hash": "124344772",
+          "value_hash": "1695158982",
+          "noncomputable": true
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:IZR_Zpower_pos@27839",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.IZR_Zpower_pos"
+      ],
+      "scope": "Same variables and conclusion as the source; paired typed clients in both assistants. The radix is an Int with its invariant 1 < beta as an explicit premise (cutover plan E5; Rocq bundles 2 <= r in the radix record); both assistants show the invariant is needed (Lean: bpow monotonicity fails at radix 0; Rocq: the record excludes 0). Exponent written Zpos m, the source's Zpos constructor (was a Nat cast).",
+      "evidence": [
+        "scripts/fixtures/RauxPowContracts.lean",
+        "scripts/fixtures/RauxPowContracts.v",
+        "scripts/test_raux_pow_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.IZR_Zpower_pos": {
+          "type_hash": "2337472906",
+          "value_hash": "1433720047",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:bpow_powerRZ@28104",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.bpow_powerRZ"
+      ],
+      "scope": "Same variables and conclusion as the source; paired typed clients in both assistants. The radix is an Int with its invariant 1 < beta as an explicit premise (cutover plan E5; Rocq bundles 2 <= r in the radix record); both assistants show the invariant is needed (Lean: bpow monotonicity fails at radix 0; Rocq: the record excludes 0). Rocq powerRZ is Lean zpow; holds by rfl.",
+      "evidence": [
+        "scripts/fixtures/RauxPowContracts.lean",
+        "scripts/fixtures/RauxPowContracts.v",
+        "scripts/test_raux_pow_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.bpow_powerRZ": {
+          "type_hash": "4105090237",
+          "value_hash": "429852978",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:bpow_ge_0@28278",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.bpow_ge_0"
+      ],
+      "scope": "Same variables and conclusion as the source; paired typed clients in both assistants. The radix is an Int with its invariant 1 < beta as an explicit premise (cutover plan E5; Rocq bundles 2 <= r in the radix record); both assistants show the invariant is needed (Lean: bpow monotonicity fails at radix 0; Rocq: the record excludes 0).",
+      "evidence": [
+        "scripts/fixtures/RauxPowContracts.lean",
+        "scripts/fixtures/RauxPowContracts.v",
+        "scripts/test_raux_pow_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.bpow_ge_0": {
+          "type_hash": "978148554",
+          "value_hash": "2216460920",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:bpow_gt_0@28409",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.bpow_gt_0"
+      ],
+      "scope": "Same variables and conclusion as the source; paired typed clients in both assistants. The radix is an Int with its invariant 1 < beta as an explicit premise (cutover plan E5; Rocq bundles 2 <= r in the radix record); both assistants show the invariant is needed (Lean: bpow monotonicity fails at radix 0; Rocq: the record excludes 0).",
+      "evidence": [
+        "scripts/fixtures/RauxPowContracts.lean",
+        "scripts/fixtures/RauxPowContracts.v",
+        "scripts/test_raux_pow_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.bpow_gt_0": {
+          "type_hash": "768216750",
+          "value_hash": "2888413925",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:bpow_plus@28539",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.bpow_plus"
+      ],
+      "scope": "Same variables and conclusion as the source; paired typed clients in both assistants. The radix is an Int with its invariant 1 < beta as an explicit premise (cutover plan E5; Rocq bundles 2 <= r in the radix record); both assistants show the invariant is needed (Lean: bpow monotonicity fails at radix 0; Rocq: the record excludes 0). Restated in this slice about bpow, as the source (it was stated about the zpow (beta:R)^e, which only matched because bpow unfolds to zpow).",
+      "evidence": [
+        "scripts/fixtures/RauxPowContracts.lean",
+        "scripts/fixtures/RauxPowContracts.v",
+        "scripts/test_raux_pow_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.bpow_plus": {
+          "type_hash": "61378588",
+          "value_hash": "1464887927",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:bpow_1@28723",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.bpow_1"
+      ],
+      "scope": "Same variables and conclusion as the source; paired typed clients in both assistants. The radix is an Int with its invariant 1 < beta as an explicit premise (cutover plan E5; Rocq bundles 2 <= r in the radix record); both assistants show the invariant is needed (Lean: bpow monotonicity fails at radix 0; Rocq: the record excludes 0). Restated in this slice about bpow, as the source (it was stated about the zpow (beta:R)^e, which only matched because bpow unfolds to zpow).",
+      "evidence": [
+        "scripts/fixtures/RauxPowContracts.lean",
+        "scripts/fixtures/RauxPowContracts.v",
+        "scripts/test_raux_pow_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.bpow_1": {
+          "type_hash": "2539309270",
+          "value_hash": "3403001125",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:bpow_plus_1@28826",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.bpow_plus_1"
+      ],
+      "scope": "Same variables and conclusion as the source; paired typed clients in both assistants. The radix is an Int with its invariant 1 < beta as an explicit premise (cutover plan E5; Rocq bundles 2 <= r in the radix record); both assistants show the invariant is needed (Lean: bpow monotonicity fails at radix 0; Rocq: the record excludes 0). Restated in this slice about bpow, as the source (it was stated about the zpow (beta:R)^e, which only matched because bpow unfolds to zpow).",
+      "evidence": [
+        "scripts/fixtures/RauxPowContracts.lean",
+        "scripts/fixtures/RauxPowContracts.v",
+        "scripts/test_raux_pow_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.bpow_plus_1": {
+          "type_hash": "1642846511",
+          "value_hash": "4231769176",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:bpow_opp@28985",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.bpow_opp"
+      ],
+      "scope": "Same variables and conclusion as the source; paired typed clients in both assistants. The radix is an Int with its invariant 1 < beta as an explicit premise (cutover plan E5; Rocq bundles 2 <= r in the radix record); both assistants show the invariant is needed (Lean: bpow monotonicity fails at radix 0; Rocq: the record excludes 0). Restated in this slice about bpow, as the source (it was stated about the zpow (beta:R)^e, which only matched because bpow unfolds to zpow). Uses the inverse, the source's /bpow e (it was 1 / ...).",
+      "evidence": [
+        "scripts/fixtures/RauxPowContracts.lean",
+        "scripts/fixtures/RauxPowContracts.v",
+        "scripts/test_raux_pow_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.bpow_opp": {
+          "type_hash": "3912998591",
+          "value_hash": "995430532",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:IZR_Zpower_nat@29254",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.IZR_Zpower_nat"
+      ],
+      "scope": "Same variables and conclusion as the source; paired typed clients in both assistants. The radix is an Int with its invariant 1 < beta as an explicit premise (cutover plan E5; Rocq bundles 2 <= r in the radix record); both assistants show the invariant is needed (Lean: bpow monotonicity fails at radix 0; Rocq: the record excludes 0). Takes the Zaux Radix record, matching the section's radix variable.",
+      "evidence": [
+        "scripts/fixtures/RauxPowContracts.lean",
+        "scripts/fixtures/RauxPowContracts.v",
+        "scripts/test_raux_pow_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.IZR_Zpower_nat": {
+          "type_hash": "32668338",
+          "value_hash": "2013306861",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:IZR_Zpower@29490",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.IZR_Zpower"
+      ],
+      "scope": "Same variables and conclusion as the source; paired typed clients in both assistants. The radix is an Int with its invariant 1 < beta as an explicit premise (cutover plan E5; Rocq bundles 2 <= r in the radix record); both assistants show the invariant is needed (Lean: bpow monotonicity fails at radix 0; Rocq: the record excludes 0). Takes the Zaux Radix record; Zpower is the source's.",
+      "evidence": [
+        "scripts/fixtures/RauxPowContracts.lean",
+        "scripts/fixtures/RauxPowContracts.v",
+        "scripts/test_raux_pow_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.IZR_Zpower": {
+          "type_hash": "308333538",
+          "value_hash": "511540343",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:bpow_lt@29628",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.bpow_lt"
+      ],
+      "scope": "Same variables and conclusion as the source; paired typed clients in both assistants. The radix is an Int with its invariant 1 < beta as an explicit premise (cutover plan E5; Rocq bundles 2 <= r in the radix record); both assistants show the invariant is needed (Lean: bpow monotonicity fails at radix 0; Rocq: the record excludes 0). Restated in this slice about bpow, as the source (it was stated about the zpow (beta:R)^e, which only matched because bpow unfolds to zpow).",
+      "evidence": [
+        "scripts/fixtures/RauxPowContracts.lean",
+        "scripts/fixtures/RauxPowContracts.v",
+        "scripts/test_raux_pow_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.bpow_lt": {
+          "type_hash": "1625123482",
+          "value_hash": "610135311",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:lt_bpow@30024",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.lt_bpow"
+      ],
+      "scope": "Same variables and conclusion as the source; paired typed clients in both assistants. The radix is an Int with its invariant 1 < beta as an explicit premise (cutover plan E5; Rocq bundles 2 <= r in the radix record); both assistants show the invariant is needed (Lean: bpow monotonicity fails at radix 0; Rocq: the record excludes 0). Restated in this slice about bpow, as the source (it was stated about the zpow (beta:R)^e, which only matched because bpow unfolds to zpow).",
+      "evidence": [
+        "scripts/fixtures/RauxPowContracts.lean",
+        "scripts/fixtures/RauxPowContracts.v",
+        "scripts/test_raux_pow_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.lt_bpow": {
+          "type_hash": "3329097769",
+          "value_hash": "330571449",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:bpow_le@30300",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.bpow_le"
+      ],
+      "scope": "Same variables and conclusion as the source; paired typed clients in both assistants. The radix is an Int with its invariant 1 < beta as an explicit premise (cutover plan E5; Rocq bundles 2 <= r in the radix record); both assistants show the invariant is needed (Lean: bpow monotonicity fails at radix 0; Rocq: the record excludes 0). Restated in this slice about bpow, as the source (it was stated about the zpow (beta:R)^e, which only matched because bpow unfolds to zpow).",
+      "evidence": [
+        "scripts/fixtures/RauxPowContracts.lean",
+        "scripts/fixtures/RauxPowContracts.v",
+        "scripts/test_raux_pow_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.bpow_le": {
+          "type_hash": "2761662289",
+          "value_hash": "3206598003",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:le_bpow@30504",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.le_bpow"
+      ],
+      "scope": "Same variables and conclusion as the source; paired typed clients in both assistants. The radix is an Int with its invariant 1 < beta as an explicit premise (cutover plan E5; Rocq bundles 2 <= r in the radix record); both assistants show the invariant is needed (Lean: bpow monotonicity fails at radix 0; Rocq: the record excludes 0). Restated in this slice about bpow, as the source (it was stated about the zpow (beta:R)^e, which only matched because bpow unfolds to zpow).",
+      "evidence": [
+        "scripts/fixtures/RauxPowContracts.lean",
+        "scripts/fixtures/RauxPowContracts.v",
+        "scripts/test_raux_pow_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.le_bpow": {
+          "type_hash": "2931564041",
+          "value_hash": "696129190",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:bpow_inj@30708",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.bpow_inj"
+      ],
+      "scope": "Same variables and conclusion as the source; paired typed clients in both assistants. The radix is an Int with its invariant 1 < beta as an explicit premise (cutover plan E5; Rocq bundles 2 <= r in the radix record); both assistants show the invariant is needed (Lean: bpow monotonicity fails at radix 0; Rocq: the record excludes 0). Restated in this slice about bpow, as the source (it was stated about the zpow (beta:R)^e, which only matched because bpow unfolds to zpow).",
+      "evidence": [
+        "scripts/fixtures/RauxPowContracts.lean",
+        "scripts/fixtures/RauxPowContracts.v",
+        "scripts/test_raux_pow_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.bpow_inj": {
+          "type_hash": "4241500124",
+          "value_hash": "4057650902",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:bpow_exp@30885",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.bpow_exp"
+      ],
+      "scope": "Same variables and conclusion as the source; paired typed clients in both assistants. The radix is an Int with its invariant 1 < beta as an explicit premise (cutover plan E5; Rocq bundles 2 <= r in the radix record); both assistants show the invariant is needed (Lean: bpow monotonicity fails at radix 0; Rocq: the record excludes 0). Restated in this slice about bpow, as the source (it was stated about the zpow (beta:R)^e, which only matched because bpow unfolds to zpow).",
+      "evidence": [
+        "scripts/fixtures/RauxPowContracts.lean",
+        "scripts/fixtures/RauxPowContracts.v",
+        "scripts/test_raux_pow_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.bpow_exp": {
+          "type_hash": "1378346565",
+          "value_hash": "700038726",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:sqrt_bpow@31652",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.sqrt_bpow"
+      ],
+      "scope": "Same variables and conclusion as the source; paired typed clients in both assistants. The radix is an Int with its invariant 1 < beta as an explicit premise (cutover plan E5; Rocq bundles 2 <= r in the radix record); both assistants show the invariant is needed (Lean: bpow monotonicity fails at radix 0; Rocq: the record excludes 0). Restated in this slice about bpow, as the source (it was stated about the zpow (beta:R)^e, which only matched because bpow unfolds to zpow).",
+      "evidence": [
+        "scripts/fixtures/RauxPowContracts.lean",
+        "scripts/fixtures/RauxPowContracts.v",
+        "scripts/test_raux_pow_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.sqrt_bpow": {
+          "type_hash": "2290812344",
+          "value_hash": "3827071466",
+          "noncomputable": false
+        }
+      }
+    },
+    {
+      "source_id": "src/Core/Raux.v:sqrt_bpow_ge@31842",
+      "status": "reviewed-contract",
+      "lean_names": [
+        "FloatSpec.Core.Raux.sqrt_bpow_ge"
+      ],
+      "scope": "Same variables and conclusion as the source; paired typed clients in both assistants. The radix is an Int with its invariant 1 < beta as an explicit premise (cutover plan E5; Rocq bundles 2 <= r in the radix record); both assistants show the invariant is needed (Lean: bpow monotonicity fails at radix 0; Rocq: the record excludes 0). Restated in this slice about bpow, as the source (it was stated about the zpow (beta:R)^e, which only matched because bpow unfolds to zpow).",
+      "evidence": [
+        "scripts/fixtures/RauxPowContracts.lean",
+        "scripts/fixtures/RauxPowContracts.v",
+        "scripts/test_raux_pow_contracts.py",
+        "FloatSpec/docs/SOURCE_CONTRACT_REVIEW.md"
+      ],
+      "lean_fingerprints": {
+        "FloatSpec.Core.Raux.sqrt_bpow_ge": {
+          "type_hash": "1809548741",
+          "value_hash": "3354684519",
+          "noncomputable": false
+        }
+      }
     }
   ]
 }

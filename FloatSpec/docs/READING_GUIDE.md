@@ -69,7 +69,7 @@ The important recent changes are:
   policies need zero in the format. All 78 top-level source contracts in this
   module now have paired typed clients and explicit reviews; its constructor
   and four generated eliminators are accounted for separately. There are
-  310 total review dispositions, including the three nearest-even laws below.
+  330 total review dispositions, including the three nearest-even laws below.
   This does not certify unreviewed imports or
   the other modules, nor identify Rocq and Lean proof terms.
 
@@ -90,8 +90,10 @@ The important recent changes are:
   reals followed: `Zceil`, `Ztrunc` and `Zaway` now have the source's bodies,
   and five statements were restated to the source's exact shape. Both
   assistants show `Zfloor_div` and `Ztrunc_div` also hold for a zero divisor,
-  so the source premise is redundant (it is kept). The next entries are
-  Raux's radix powers (`radix_pos`, `bpow`).
+  so the source premise is redundant (it is kept). Radix powers came next:
+  twelve `bpow` laws had been stated about the real power `beta ^ e` instead of
+  `bpow` and now state the source's propositions. The next entries are the
+  magnitude function `mag` and its record `mag_prop`.
   "Same sign" is a nonnegative product, so zero is neutral: both assistants
   prove that transitivity through a zero middle factor fails (`1·0`, `0·(−1)`)
   and that a negative divisor breaks `0 ≤ u·quot(u, v)`. The Boolean
@@ -150,6 +152,7 @@ Current verification is deliberately separated by source snapshot:
 
 | Snapshot | Completed evidence |
 |---|---|
+| Radix powers, `d067a38b` | Twelve `bpow` laws restated about `bpow` (they were about `beta ^ e`); 20 anchors. Full 6,350-job build; all Lean fixtures strict and kernel-replayed; 20 source sites reviewed, radix-invariant counterpart in each assistant, 16 rejected mutations. CI bridge op set (seed 865671): 4,311 cases. 330 explicit reviews. |
 | Integer rounding of reals, `9e1a34d8` | `Zceil`, `Ztrunc`, `Zaway` given the source bodies; five statements restated to the source's shape; 30 anchors. Full 6,350-job build; all 41+ Lean fixtures strict and kernel-replayed; 34 source sites reviewed with two premise counterexamples and 16 rejected mutations. CI bridge op set (seed 865661): 4,308 cases. 310 explicit reviews. |
 | Real comparison port, `3e0c4841` | `Rcompare` returns `Ordering`; Boolean tests and `Znearest` follow the source; a duplicate comparator deleted. Full 6,350-job build; all 41 Lean fixtures strict and kernel-replayed. 60 more source sites reviewed, four paired counterexamples, 16 rejected mutations. CI bridge op set plus `nearby`, `ieee_round` and `comparison` (seed 865641): 13,886 cases and kernel equalities. 276 explicit reviews. |
 | Raux prelude | Full 6,350-job macOS Lean 4.34 build. 27 `Raux.v` facts reviewed with paired clients, 14 new source anchors, six paired premise counterexamples and 16 rejected mutations. 216 explicit reviews. Theorem-only: no bridge run. |

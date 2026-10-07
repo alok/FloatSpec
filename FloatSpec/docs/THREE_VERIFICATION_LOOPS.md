@@ -202,6 +202,20 @@ check validates every observed pair against Python's floor division and exact
 integer reconstruction; it is not a fresh execution. No universal cross-prover
 equivalence is claimed from the finite grid.
 
+## Radix powers (October 6)
+
+`Raux.v:1331–1582`: `bpow` and 19 laws, now stated about `bpow` itself.
+
+```sh
+lake env lean -DwarningAsError=true scripts/fixtures/RauxPowContracts.lean
+coqc -q -R "$FLOCQ_AUDIT_DIR/src" Flocq \
+  -o /tmp/RauxPowContracts.vo scripts/fixtures/RauxPowContracts.v
+uv run scripts/test_raux_pow_contracts.py -v
+```
+
+Sixteen mutations are rejected; both assistants evaluate `bpow 2 (−3)` and
+`bpow 10 2`, and each shows its half of the radix invariant.
+
 ## Integer rounding of reals (October 6)
 
 `Raux.v:785–1330`: `Zfloor`, `Zceil`, `Ztrunc`, `Zaway` and their laws. Each

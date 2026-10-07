@@ -32,7 +32,7 @@ LIVE_MODULES = (
     'test_zaux_power_contracts', 'test_zaux_division_contracts',
     'test_zaux_boolean_contracts', 'test_zaux_algorithm_contracts',
     'test_raux_prelude_contracts', 'test_raux_compare_contracts',
-    'test_raux_floor_contracts',
+    'test_raux_floor_contracts', 'test_raux_pow_contracts',
     'test_pff_bridge', 'test_pff_basic_contracts', 'test_pff_aux_bridge',
     'test_pff_statement_contracts',
     'test_pff_integer_bridge', 'test_pff_rounding_contracts',
